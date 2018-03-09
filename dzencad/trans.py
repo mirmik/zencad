@@ -1,0 +1,1 @@
+from dzencad.dzenlib import trans_translate as translate
