@@ -23,7 +23,10 @@ void display(std::shared_ptr<DzenShape> ptr) {
 }
 
 void show() {
-	if (a == nullptr) {
+	QLocale curLocale(QLocale("en_EN"));
+    QLocale::setDefault(curLocale);
+
+    if (a == nullptr) {
 		int argc = 0;
     	a = new QApplication(argc, nullptr);
     	w = new DzenWidget;

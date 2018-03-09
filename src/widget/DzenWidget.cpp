@@ -1,13 +1,19 @@
 #include <DzenWidget.h>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
+#include <QtCore/QDebug>
 
 // occ header files.
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCone.hxx>
 #include <BRepPrimAPI_MakeSphere.hxx>
+#include <StlAPI_Writer.hxx>
 
 #include <V3d_View.hxx>
 #include <AIS_Shape.hxx>
+
+#include <gxx/print.h>
 
 DzenWidget::DzenWidget(QWidget* parent) : QMainWindow(parent) {
     display = new DisplayWidget(this);
@@ -16,72 +22,29 @@ DzenWidget::DzenWidget(QWidget* parent) : QMainWindow(parent) {
     createMenus();
 
     setCentralWidget(display);
-    //display->init();
-
     resize(640, 480);
-    //display->m_view->MustBeResized();
-    //display->m_view->Redraw();
 }
 
 void DzenWidget::createActions() {
     mExitAction = new QAction(tr("Exit"), this);
     mExitAction->setShortcut(tr("Ctrl+Q"));
-    //mExitAction->setIcon(QIcon(":/Resources/close.png"));
     mExitAction->setStatusTip(tr("Exit the application"));
     connect(mExitAction, SIGNAL(triggered()), this, SLOT(close()));
 
-    mMakeBoxAction = new QAction(tr("Box"), this);
-    //mMakeBoxAction->setIcon(QIcon(":/Resources/box.png"));
-    mMakeBoxAction->setStatusTip(tr("Make a box"));
-    connect(mMakeBoxAction, SIGNAL(triggered()), this, SLOT(makeBox()));
-
-    mMakeConeAction = new QAction(tr("Cone"), this);
-    //mMakeConeAction->setIcon(QIcon(":/Resources/cone.png"));
-    mMakeConeAction->setStatusTip(tr("Make a cone"));
-    connect(mMakeConeAction, SIGNAL(triggered()), this, SLOT(makeCone()));
-
-    mMakeSphereAction = new QAction(tr("Sphere"), this);
-    mMakeSphereAction->setStatusTip(tr("Make a sphere"));
-    //mMakeSphereAction->setIcon(QIcon(":/Resources/sphere.png"));
-    connect(mMakeSphereAction, SIGNAL(triggered()), this, SLOT(makeSphere()));
+    mStlExport = new QAction(tr("Export STL..."), this);
+    mStlExport->setStatusTip(tr("Export file with external STL-Mesh format"));
+    connect(mStlExport, SIGNAL(triggered()), this, SLOT(export_stl()));
 
     mAboutAction = new QAction(tr("About"), this);
     mAboutAction->setStatusTip(tr("About the application"));
-    //mAboutAction->setIcon(QIcon(":/Resources/lamp.png"));
     connect(mAboutAction, SIGNAL(triggered()), this, SLOT(about()));
 }
 
 void DzenWidget::createMenus() {
     mFileMenu = menuBar()->addMenu(tr("&File"));
+    mFileMenu->addAction(mStlExport);
+    mFileMenu->addSeparator();
     mFileMenu->addAction(mExitAction);
-
-    /*mViewMenu = menuBar()->addMenu(tr("&View"));
-    mViewMenu->addAction(mViewZoomAction);
-    mViewMenu->addAction(mViewPanAction);
-    mViewMenu->addAction(mViewRotateAction);
-    mViewMenu->addSeparator();
-    mViewMenu->addAction(mViewResetAction);
-    mViewMenu->addAction(mViewFitallAction);
-    */
-    mPrimitiveMenu = menuBar()->addMenu(tr("&Primitive"));
-    mPrimitiveMenu->addAction(mMakeBoxAction);
-    mPrimitiveMenu->addAction(mMakeConeAction);
-    mPrimitiveMenu->addAction(mMakeSphereAction);
-    //mPrimitiveMenu->addAction(mMakeCylinderAction);
-    //mPrimitiveMenu->addAction(mMakeTorusAction);
-
-    /*mModelingMenu = menuBar()->addMenu(tr("&Modeling"));
-    mModelingMenu->addAction(mFilletAction);
-    mModelingMenu->addAction(mChamferAction);
-    mModelingMenu->addAction(mExtrudeAction);
-    mModelingMenu->addAction(mRevolveAction);
-    mModelingMenu->addAction(mLoftAction);
-    mModelingMenu->addSeparator();
-    mModelingMenu->addAction(mCutAction);
-    mModelingMenu->addAction(mFuseAction);
-    mModelingMenu->addAction(mCommonAction);
-    mModelingMenu->addSeparator();
-    mModelingMenu->addAction(myHelixAction);*/
 
     mHelpMenu = menuBar()->addMenu(tr("&Help"));
     mHelpMenu->addAction(mAboutAction);
@@ -100,7 +63,35 @@ void DzenWidget::about() {
 }
 
 
-void DzenWidget::makeBox() {
+void DzenWidget::export_stl() {
+    gxx::println("export_stl");
+    bool ok;
+    
+    QFileDialog fileDialog(this, "Choose file to export");
+    fileDialog.setNameFilter("STL-Mesh (*.stl)");
+    fileDialog.setDefaultSuffix(".stl");
+    ok = fileDialog.exec();
+
+    if (!ok) return;
+    QString path = fileDialog.selectedFiles().first();
+
+    QInputDialog *inputDialog = new QInputDialog();
+    inputDialog->setTextValue("Test"); // has no effect
+    
+    double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
+                                       tr("Amount:"), 0.01, 0, 10, 5, &ok);
+
+    if (display->display_on_init_list.size() != 1) {
+        gxx::panic("TODO");
+    } 
+
+    StlAPI_Writer stl_writer;
+    stl_writer.SetDeflection(d);
+    stl_writer.RelativeMode() = false;
+    stl_writer.Write(display->display_on_init_list[0]->native, path.toStdString().c_str());
+}
+
+/*void DzenWidget::makeBox() {
     TopoDS_Shape aTopoBox = BRepPrimAPI_MakeBox(3.0, 4.0, 5.0).Shape();
     Handle(AIS_Shape) anAisBox = new AIS_Shape(aTopoBox);
 
@@ -141,4 +132,4 @@ void DzenWidget::makeSphere()
     anAisSphere->SetColor(Quantity_NOC_BLUE1);
 
     display->getContext()->Display(anAisSphere);
-}
+}*/

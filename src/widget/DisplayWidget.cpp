@@ -16,6 +16,8 @@
 
 // occ header files.
 #include <V3d_View.hxx>
+#include <V3d_AmbientLight.hxx>
+#include <V3d_DirectionalLight.hxx>
 
 #include <Aspect_Handle.hxx>
 #include <Aspect_DisplayConnection.hxx>
@@ -58,9 +60,17 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
     if (m_context.IsNull()) {
         init();
         for (auto& wrap : display_on_init_list) {
-            Handle(AIS_Shape) anAisBox = new AIS_Shape(wrap->native);
-            anAisBox->SetColor(Quantity_NOC_AZURE);
-            getContext()->Display(anAisBox);
+            Handle(AIS_Shape) anAisBox1 = new AIS_Shape(wrap->native);
+            Handle(AIS_Shape) anAisBox2 = new AIS_Shape(wrap->native);
+
+            Quantity_Color shpcolor (0.6, 0.6, 0.8,  Quantity_TOC_RGB);  
+            anAisBox1->SetColor(shpcolor);
+            getContext()->Display(anAisBox1, false);
+            
+            anAisBox2->SetColor(Quantity_NOC_BLACK);
+            anAisBox2->SetDisplayMode(AIS_WireFrame);  
+            getContext()->Display(anAisBox2, false);
+            m_view->FitAll (0.5, false);
         }
     }
 
@@ -108,22 +118,24 @@ void DisplayWidget::init() {
     m_context = new AIS_InteractiveContext(m_viewer);
 
     // Set up lights etc
-    m_viewer->SetDefaultLights();
-    m_viewer->SetLightOn();
+    //m_viewer->SetDefaultLights();
+    m_viewer->SetLightOn (new V3d_DirectionalLight (m_viewer, V3d_Zneg , Quantity_NOC_WHITE, true));
+    //m_viewer->SetLightOn(new V3d_AmbientLight (m_viewer, Quantity_NOC_BLUE1));
 
-    m_view->SetBackgroundColor(Quantity_NOC_BLACK);
+    //m_view->SetBackgroundColor(Quantity_NOC_FOREST);
     m_view->MustBeResized();
     m_view->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_GOLD, 0.08, V3d_ZBUFFER);
 
-    m_context->SetDisplayMode(AIS_Shaded);
+    //m_context->SetDisplayMode(AIS_Shaded, false);
+    m_context->SetDisplayMode(AIS_Shaded, false);
+    //m_context->SetHilightColor(Quantity_NOC_AZURE);
 
-    gxx::println("on init display");
-    //display on init
-    /*for (auto& wrap : display_on_init_list) {
-        Handle(AIS_Shape) anAisBox = new AIS_Shape(dynamic_cast<Shape*>(wrap.get())->native);
-        anAisBox->SetColor(Quantity_NOC_AZURE);
-        getContext()->Display(anAisBox);
-    }*/
+    m_view->SetBgGradientColors(
+        Quantity_Color(0.5,0.5,0.5,Quantity_TOC_RGB), 
+        Quantity_Color(0.3,0.3,0.3,Quantity_TOC_RGB), 
+        Aspect_GFM_VER, 
+        Standard_False
+    );
 }
 
 void DisplayWidget::wheelEvent( QWheelEvent * e ) {

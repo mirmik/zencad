@@ -9,12 +9,8 @@ class DzenWidget : public QMainWindow {
 	Q_OBJECT
 
     //! the exit action.
+    QAction* mStlExport;
     QAction* mExitAction;
-
-    //! test algorithm
-    QAction* mMakeBoxAction;
-    QAction* mMakeSphereAction;
-    QAction* mMakeConeAction;
 
     //! show the about info action.
     QAction* mAboutAction;
@@ -22,7 +18,7 @@ class DzenWidget : public QMainWindow {
     //! the menus of the application.
     QMenu* mFileMenu;
     //QMenu* mViewMenu;
-    QMenu* mPrimitiveMenu;
+    //QMenu* mPrimitiveMenu;
     //QMenu* mModelingMenu;
     QMenu* mHelpMenu;
 
@@ -43,10 +39,7 @@ private:
 
 private slots:
     void about(void);
-
-    void makeBox(void);
-    void makeSphere(void);
-    void makeCone(void);
+    void export_stl();
 
 public:
 	DzenWidget(QWidget* parent = nullptr);
