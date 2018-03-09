@@ -27,6 +27,7 @@
 #else
   #include <Xw_Window.hxx>
 #endif
+#include <AIS_Shape.hxx>
 
 // qt header files
 #include <QtGui/QMouseEvent>
@@ -44,11 +45,23 @@ const Handle_AIS_InteractiveContext& DisplayWidget::getContext() const {
     return m_context;    
 }
 
+void DisplayWidget::showEvent(QShowEvent* e) {
+    QWidget::showEvent(e);
+    //init();
+    //m_view->MustBeResized();
+    //m_view->Redraw();
+}
+
 void DisplayWidget::paintEvent(QPaintEvent* e) {
     Q_UNUSED(e);
 
     if (m_context.IsNull()) {
         init();
+        for (auto& wrap : display_on_init_list) {
+            Handle(AIS_Shape) anAisBox = new AIS_Shape(wrap->native);
+            anAisBox->SetColor(Quantity_NOC_AZURE);
+            getContext()->Display(anAisBox);
+        }
     }
 
     m_view->Redraw();
@@ -103,6 +116,14 @@ void DisplayWidget::init() {
     m_view->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_GOLD, 0.08, V3d_ZBUFFER);
 
     m_context->SetDisplayMode(AIS_Shaded);
+
+    gxx::println("on init display");
+    //display on init
+    /*for (auto& wrap : display_on_init_list) {
+        Handle(AIS_Shape) anAisBox = new AIS_Shape(dynamic_cast<Shape*>(wrap.get())->native);
+        anAisBox->SetColor(Quantity_NOC_AZURE);
+        getContext()->Display(anAisBox);
+    }*/
 }
 
 void DisplayWidget::wheelEvent( QWheelEvent * e ) {

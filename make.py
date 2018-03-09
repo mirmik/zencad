@@ -1,40 +1,79 @@
 #!/usr/bin/env python3
 
-from licant.cxx_modules import application, doit
+from licant.cxx_modules import application, shared_library, doit
+from licant.modules import submodule, module
 
-application("target",
-	sources = ["main.cpp", "occQt.cpp", "occView.cpp", "res.cpp"],
-	moc = ["occQt.h", "occView.h"],
+import licant
+import licant.libs
 
-	include_paths = [
-		"~/Qt/5.10.1/gcc_64/include",
-		"~/Qt/5.10.1/gcc_64/include/QtCore", 
-		"~/Qt/5.10.1/gcc_64/include/QtWidgets", 
-		"~/Qt/5.10.1/gcc_64/include/QtOpenGL", 
-		"~/Qt/5.10.1/gcc_64/include/QtGui", 
-		'/usr/include/oce',
-		"./",
-	],
-	cxx_flags = '-fPIC -L/home/mirmik/Qt/5.10.1/gcc_64/include/QtCore -DQT_NO_VERSION_TAGGING',
-	libs = [
-		'Qt5Core', 'Qt5Widgets', 'Qt5Test', 'Qt5Gui', 'Qt5OpenGL',
+qt_include_path = "~/Qt/5.10.1/gcc_64/include/"
+python_include_path = "/usr/include/python3.5m/"
 
-    	'TKernel',
-    	'TKMath',
-    	'TKG3d',
-    	'TKBRep',
-    	'TKGeomBase',
-    	'TKGeomAlgo',
-    	'TKTopAlgo',
-    	'TKPrim',
-    	'TKBO',
-    	'TKBool',
-    	'TKOffset',
-    	'TKService',
-    	'TKV3d',
-    	'TKOpenGl',
-    	'TKFillet',
-    ]
+licant.libs.include("gxx")
+
+module('libraries', 
+    include_paths = [
+       '/usr/include/oce',
+       './src',
+        "./",
+        qt_include_path,
+        python_include_path,
+    ],
+    
+    cxx_flags = '-fPIC -L/home/mirmik/Qt/5.10.1/gcc_64/include/QtCore -DQT_NO_VERSION_TAGGING',
+    cc_flags = '-fPIC',
+
+    libs = [
+        'Qt5Core', 
+        'Qt5Widgets', 
+        #'Qt5Test', 
+        'Qt5Gui', 
+        'Qt5OpenGL',
+
+        'TKernel',
+        'TKMath',
+        'TKG3d',
+        'TKBRep',
+        'TKGeomBase',
+        'TKGeomAlgo',
+        'TKTopAlgo',
+        'TKPrim',
+        'TKBO',
+        'TKBool',
+        'TKOffset',
+        'TKService',
+        'TKV3d',
+        'TKOpenGl',
+        'TKFillet',
+        'TKSTL',
+
+        'boost_python-py35',
+        'boost_system',
+    ],
+
+    include_modules = [
+        submodule("gxx.print", "cout"),
+        submodule("gxx.dprint", "cout"),
+        submodule("gxx", "posix"),
+        submodule("gxx.include"),
+    ], 
 )
 
-doit("target")
+shared_library("dzenlib",
+    target = "dzencad/dzenlib.so",
+    srcdir = "src/dzencad",
+    sources = ["base.cpp", "solid.cpp", "boolops.cpp", "cache.cpp", "pywrap.cpp"],
+    include_modules = [submodule("libraries")],
+)
+
+shared_library("widget",
+    target = "dzencad/widget.so",
+    srcdir = "src/widget",
+    sources = ["DzenWidget.cpp", "DisplayWidget.cpp", "widget.cpp"],
+    moc = ["DisplayWidget.h", "DzenWidget.h"],
+    include_paths = ["src/widget"],
+    include_modules = [submodule("libraries")],
+)
+
+doit("dzenlib")
+doit("widget")
