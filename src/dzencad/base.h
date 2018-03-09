@@ -2,8 +2,9 @@
 #define DZENCAD_BASE_H
 
 #include <inttypes.h>
+#include <memory>
 
-struct DzenCadObject {
+struct DzenCadObject : public std::enable_shared_from_this<DzenCadObject> {
 	bool prepared = false;
 
 	virtual uint64_t evaluate_hash();

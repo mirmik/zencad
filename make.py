@@ -62,7 +62,15 @@ module('libraries',
 shared_library("dzenlib",
     target = "dzencad/dzenlib.so",
     srcdir = "src/dzencad",
-    sources = ["base.cpp", "solid.cpp", "boolops.cpp", "cache.cpp", "pywrap.cpp"],
+    sources = [
+        "base.cpp", 
+        "solid.cpp", 
+        "boolops.cpp", 
+        "cache.cpp", 
+        "pywrap.cpp", 
+        "trans.cpp", 
+        "topo.cpp"
+    ],
     include_modules = [submodule("libraries")],
 )
 
