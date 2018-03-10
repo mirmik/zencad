@@ -23,5 +23,5 @@ display(m)
 show()
 ```
 
-![result.jpeg][result.jpeg]
+![/docs/result.jpeg](/docs/result.jpeg)
 
