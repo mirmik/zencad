@@ -50,18 +50,18 @@ std::shared_ptr<DzenShape> DzenShape::rotateZ(double a) {
 
 
 
-std::shared_ptr<DzenShape> DzenShape::operator+ (std::shared_ptr<DzenShape> rhs) {
-	return std::shared_ptr<DzenShape>(new DzenUnion(get_spointer(), rhs));
+std::shared_ptr<DzenShape> operator+ (const DzenShape& lhs, const DzenShape& rhs) {
+	return std::shared_ptr<DzenShape>(new DzenUnion(lhs.get_spointer(), rhs.get_spointer()));
 }
 
-std::shared_ptr<DzenShape> DzenShape::operator- (std::shared_ptr<DzenShape> rhs) {
-	return std::shared_ptr<DzenShape>(new DzenDifference(get_spointer(), rhs));
+std::shared_ptr<DzenShape> operator- (const DzenShape& lhs, const DzenShape& rhs) {
+	return std::shared_ptr<DzenShape>(new DzenDifference(lhs.get_spointer(), rhs.get_spointer()));
 }
 
-std::shared_ptr<DzenShape> DzenShape::operator^ (std::shared_ptr<DzenShape> rhs) {
-	return std::shared_ptr<DzenShape>(new DzenIntersect(get_spointer(), rhs));
+std::shared_ptr<DzenShape> operator^ (const DzenShape& lhs, const DzenShape& rhs) {
+	return std::shared_ptr<DzenShape>(new DzenIntersect(lhs.get_spointer(), rhs.get_spointer()));
 }
 
-std::shared_ptr<DzenShape> DzenShape::get_spointer() {
-	return std::dynamic_pointer_cast<DzenShape,DzenCadObject>(shared_from_this());
+std::shared_ptr<DzenShape> DzenShape::get_spointer() const {
+	return std::dynamic_pointer_cast<DzenShape, DzenCadObject>((const_cast<DzenShape*>(this))->shared_from_this());
 }

@@ -11,6 +11,7 @@ using namespace boost::python;
 #include <dzencad/widget.h>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 namespace py = pybind11;
 
 PYBIND11_MODULE(dzenlib, m) {
@@ -30,9 +31,13 @@ PYBIND11_MODULE(dzenlib, m) {
 	    .def("rotateY", &DzenShape::rotateY)
 	    .def("rotateZ", &DzenShape::rotateZ)
 
-    	/*.def(self + other<std::shared_ptr<DzenShape>>())
-    	.def(self - other<std::shared_ptr<DzenShape>>())
-    	.def(self ^ other<std::shared_ptr<DzenShape>>())*/
+    	//.def(py::self + py::other<std::shared_ptr<DzenShape>>())
+    	//.def(py::self - py::other<std::shared_ptr<DzenShape>>())
+    	//.def(py::self ^ py::other<std::shared_ptr<DzenShape>>())
+
+    	.def(py::self + py::self)
+    	.def(py::self - py::self)
+    	.def(py::self ^ py::self)
     ;
 	
 	py::class_<DzenTransform, std::shared_ptr<DzenTransform>>(m, "DzenTransform");
