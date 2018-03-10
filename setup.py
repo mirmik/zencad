@@ -16,7 +16,7 @@ from setuptools import setup, Extension, Command
 #        self.plat_name = platform_name
 
 dzenlib = Extension('dzenlib',
-    extra_compile_args = ["-std=c++14"],
+    extra_compile_args = ["-std=c++14", '-DQT_NO_VERSION_TAGGING'],
 
     define_macros = [('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
 
@@ -63,6 +63,8 @@ dzenlib = Extension('dzenlib',
         "src/dzencad/topo.cpp",
         "src/dzencad/DzenWidget.cpp", 
         "src/dzencad/DisplayWidget.cpp", 
+        "src/dzencad/DzenWidget.h.cxx", 
+        "src/dzencad/DisplayWidget.h.cxx", 
         "src/dzencad/widget.cpp",
    	]
 )

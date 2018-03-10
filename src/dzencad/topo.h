@@ -26,11 +26,11 @@ struct DzenShape : public DzenCadObject {
 	std::shared_ptr<DzenShape> rotateY(double a);
 	std::shared_ptr<DzenShape> rotateZ(double a);
 
-	std::shared_ptr<DzenShape> operator+ (std::shared_ptr<DzenShape> rhs);
-	std::shared_ptr<DzenShape> operator- (std::shared_ptr<DzenShape> rhs);
-	std::shared_ptr<DzenShape> operator^ (std::shared_ptr<DzenShape> rhs);
+	std::shared_ptr<DzenShape> get_spointer() const;	
 
-	std::shared_ptr<DzenShape> get_spointer();	
+	friend std::shared_ptr<DzenShape> operator+ (const DzenShape& lhs, const DzenShape& rhs);
+	friend std::shared_ptr<DzenShape> operator- (const DzenShape& lhs, const DzenShape& rhs);
+	friend std::shared_ptr<DzenShape> operator^ (const DzenShape& lhs, const DzenShape& rhs);
 };
 
 struct DzenSolid : public DzenShape {};
