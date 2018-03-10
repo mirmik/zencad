@@ -4,7 +4,7 @@
 #include <dzencad/base.h>
 #include <dzencad/topo.h>
 
-#include <gxx/panic.h>
+//#include <gxx/panic.h>
 
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Cut.hxx>

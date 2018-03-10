@@ -35,7 +35,7 @@
 #include <QtGui/QMouseEvent>
 
 // gxx header files
-#include <gxx/print.h>
+//#include <gxx/print.h>
 
 
 static Handle(Graphic3d_GraphicDriver)& GetGraphicDriver() {

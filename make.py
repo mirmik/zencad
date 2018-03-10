@@ -9,7 +9,7 @@ import licant.libs
 qt_include_path = "~/Qt/5.10.1/gcc_64/include/"
 qt_lib_path = "/home/mirmik/Qt/5.10.1/gcc_64/lib/"
 boost_lib_path = "./third-party/"
-python_include_path = "/usr/include/python3.5m/"
+python_include_path = "/usr/include/python3.6/"
 
 licant.libs.include("gxx")
 
@@ -48,9 +48,6 @@ module('libraries',
         'TKOpenGl',
         'TKFillet',
         'TKSTL',
-
-        'boost_python-py35',
-        'boost_system',
     ],
 
     #objects = [
