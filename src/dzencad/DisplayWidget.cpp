@@ -34,6 +34,9 @@
 // qt header files
 #include <QtGui/QMouseEvent>
 
+#include <Geom_Line.hxx>
+#include <Geom_Axis1Placement.hxx>
+#include <AIS_Axis.hxx>
 // gxx header files
 //#include <gxx/print.h>
 
@@ -60,8 +63,8 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
     if (m_context.IsNull()) {
         init();
         for (auto& wrap : display_on_init_list) {
-            Handle(AIS_Shape) anAisBox1 = new AIS_Shape(wrap->native);
-            Handle(AIS_Shape) anAisBox2 = new AIS_Shape(wrap->native);
+            Handle(AIS_Shape) anAisBox1 = new AIS_Shape(wrap->shape());
+            Handle(AIS_Shape) anAisBox2 = new AIS_Shape(wrap->shape());
 
             Quantity_Color shpcolor (0.6, 0.6, 0.8,  Quantity_TOC_RGB);  
             anAisBox1->SetColor(shpcolor);
@@ -72,6 +75,10 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
             getContext()->Display(anAisBox2, false);
             m_view->FitAll (0.5, false);
         }
+
+        getContext()->Display(new AIS_Axis(new Geom_Axis1Placement(gp_Pnt(0,0,0), gp_Vec(1,0,0))));
+        getContext()->Display(new AIS_Axis(new Geom_Axis1Placement(gp_Pnt(0,0,0), gp_Vec(0,1,0))));
+        getContext()->Display(new AIS_Axis(new Geom_Axis1Placement(gp_Pnt(0,0,0), gp_Vec(0,0,1))));
     }
 
     m_view->Redraw();

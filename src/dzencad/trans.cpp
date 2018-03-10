@@ -1,5 +1,6 @@
 #include <dzencad/trans.h>
 #include <gp_Ax1.hxx>
+#include <gp_Ax2.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Vec.hxx>
 
@@ -9,6 +10,14 @@ void DzenTranslate::doit() {
 
 void DzenRotation::doit() {
 	trsf.SetRotation(gp_Ax1(gp_Pnt(0,0,0), gp_Vec(ax,ay,az)), angle);
+}
+
+void DzenAxisMirror::doit() {
+	trsf.SetMirror(gp_Ax1(gp_Pnt(0,0,0), gp_Vec(ax,ay,az)));
+}
+
+void DzenPlaneMirror::doit() {
+	trsf.SetMirror(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(ax,ay,az)));
 }
 
 void DzenTransformMultiply::doit() {
