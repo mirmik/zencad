@@ -15,4 +15,5 @@ def cup(r,h,t,rr,wr):
 		solid.cylinder(r, h) - solid.cylinder(r-t, h-t).up(t))
 
 display(cup(40,90,3.5,25,5))
+#display(solid.box(1,1,1))
 show()
