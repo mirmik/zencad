@@ -6,7 +6,7 @@
 
 #include <BRepBuilderAPI_Transform.hxx>
 
-#include <gxx/math/malgo3.h>
+//#include <gxx/math/malgo3.h>
 
 class DzenShape;
 

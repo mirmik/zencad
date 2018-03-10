@@ -4,12 +4,12 @@
 #include <dzencad/base.h>
 #include <StlAPI_Writer.hxx>
 
-#include <gxx/print.h>
+///#include <gxx/print.h>
 
 //class DzenStlMaker : public 
 
 static inline void make_stl(std::string path, std::shared_ptr<DzenShape> sptr) {
-	gxx::println("make_stl");
+	//gxx::println("make_stl");
 	sptr->prepare();
 
     StlAPI_Writer stl_writer;
