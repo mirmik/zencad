@@ -12,7 +12,7 @@
 #undef Expose
 
 // base header
-#include <DisplayWidget.h>
+#include <dzencad/DisplayWidget.h>
 
 // occ header files.
 #include <V3d_View.hxx>

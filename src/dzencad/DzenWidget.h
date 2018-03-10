@@ -3,7 +3,7 @@
 
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMainWindow>
-#include <DisplayWidget.h>
+#include <dzencad/DisplayWidget.h>
 
 class DzenWidget : public QMainWindow {
 	Q_OBJECT

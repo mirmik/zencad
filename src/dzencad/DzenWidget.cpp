@@ -1,4 +1,4 @@
-#include <DzenWidget.h>
+#include <dzencad/DzenWidget.h>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>

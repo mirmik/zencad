@@ -22,7 +22,7 @@ module('libraries',
         python_include_path,
     ],
     
-    cxx_flags = '-fPIC -L/home/mirmik/Qt/5.10.1/gcc_64/include/QtCore -L./third-party -DQT_NO_VERSION_TAGGING',
+    cxx_flags = '-fPIC -DQT_NO_VERSION_TAGGING',
     cc_flags = '-fPIC',
 
     libs = [
@@ -68,27 +68,20 @@ module('libraries',
 
 shared_library("dzenlib",
     target = "dzencad/dzenlib.so",
-    srcdir = "src/dzencad",
+    srcdir = "src",
     sources = [
-        "base.cpp", 
-        "solid.cpp", 
-        "boolops.cpp", 
-        "cache.cpp", 
-        "pywrap.cpp", 
-        "trans.cpp", 
-        "topo.cpp"
+        "dzencad/base.cpp", 
+        "dzencad/solid.cpp", 
+        "dzencad/boolops.cpp", 
+        "dzencad/cache.cpp", 
+        "dzencad/pywrap.cpp", 
+        "dzencad/trans.cpp", 
+        "dzencad/topo.cpp",
+        "dzencad/DzenWidget.cpp", 
+        "dzencad/DisplayWidget.cpp", 
+        "dzencad/widget.cpp",
     ],
+    moc = ["dzencad/DisplayWidget.h", "dzencad/DzenWidget.h"],    
     include_modules = [submodule("libraries")],
 )
-
-shared_library("widget",
-    target = "dzencad/widget.so",
-    srcdir = "src/widget",
-    sources = ["DzenWidget.cpp", "DisplayWidget.cpp", "widget.cpp"],
-    moc = ["DisplayWidget.h", "DzenWidget.h"],
-    include_paths = ["src/widget"],
-    include_modules = [submodule("libraries")],
-)
-
 doit("dzenlib")
-doit("widget")
