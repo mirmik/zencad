@@ -9,13 +9,12 @@
 //class DzenStlMaker : public 
 
 static inline void make_stl(std::string path, std::shared_ptr<DzenShape> sptr) {
-	//gxx::println("make_stl");
 	sptr->prepare();
 
     StlAPI_Writer stl_writer;
     stl_writer.SetDeflection(0.1);
     stl_writer.RelativeMode() = false;
-    stl_writer.Write(sptr->native, path.c_str());
+    stl_writer.Write(sptr->shape(), path.c_str());
 }
 
 #endif
