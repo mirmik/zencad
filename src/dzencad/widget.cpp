@@ -1,11 +1,12 @@
-#include <boost/python.hpp>
-using namespace boost::python;
+//#include <boost/python.hpp>
+//using namespace boost::python;
+#include <pybind11/pybind11.h>
 
 #include <QtWidgets/QApplication>
-#include <DzenWidget.h>
+#include <dzencad/DzenWidget.h>
 
-#include <dzencad/base.h>
-
+#include <dzencad/topo.h>
+#include <dzencad/widget.h>
 #include <AIS_Shape.hxx>
 
 QApplication* a = nullptr;
@@ -34,9 +35,4 @@ void show() {
 
     w->show();
 	a->exec();
-}
-
-BOOST_PYTHON_MODULE(widget) {
-    def("display", display, args("shape"), "display's docstring");
-    def("show", show);
 }
