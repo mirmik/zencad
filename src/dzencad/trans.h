@@ -14,7 +14,7 @@ struct DzenTransform : public DzenCadObject {
 	gp_Trsf trsf;
 };
 
-struct DzenTransformShape : public DzenShape {
+/*struct DzenTransformShape : public DzenShape {
 	std::shared_ptr<DzenShape> shp;
 	std::shared_ptr<DzenTransform> trsf;
 	DzenTransformShape(	std::shared_ptr<DzenShape> shp, std::shared_ptr<DzenTransform> trsf) :
@@ -23,10 +23,10 @@ struct DzenTransformShape : public DzenShape {
 	void doit() override {
 		shp->prepare();
 		trsf->prepare();
-		BRepBuilderAPI_Transform algo(shp->native, trsf->trsf, true);
+		BRepBuilderAPI_Transform algo(shp->shape(), trsf->trsf, true);
 		native = algo.Shape();
 	}
-};
+};*/
 
 struct DzenTranslate : public DzenTransform {
 	double x, y, z;
@@ -39,6 +39,18 @@ struct DzenRotation : public DzenTransform {
 	double ax, ay, az;
 	double angle;
 	DzenRotation(double ax, double ay, double az, double angle) : ax(ax), ay(ay), az(az), angle(angle) {}
+	void doit() override;
+};
+
+struct DzenAxisMirror : public DzenTransform {
+	double ax, ay, az;
+	DzenAxisMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {}
+	void doit() override;
+};
+
+struct DzenPlaneMirror : public DzenTransform {
+	double ax, ay, az;
+	DzenPlaneMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {}
 	void doit() override;
 };
 
@@ -56,6 +68,30 @@ static inline std::shared_ptr<DzenTransform> trans_rotateY(double a) {
 
 static inline std::shared_ptr<DzenTransform> trans_rotateZ(double a) {
 	return std::shared_ptr<DzenTransform>(new DzenRotation(0,0,1,a));
+}
+
+static inline std::shared_ptr<DzenTransform> trans_mirrorX() {
+	return std::shared_ptr<DzenTransform>(new DzenAxisMirror(1,0,0));
+}
+
+static inline std::shared_ptr<DzenTransform> trans_mirrorY() {
+	return std::shared_ptr<DzenTransform>(new DzenAxisMirror(0,1,0));
+}
+
+static inline std::shared_ptr<DzenTransform> trans_mirrorZ() {
+	return std::shared_ptr<DzenTransform>(new DzenAxisMirror(0,0,1));
+}
+
+static inline std::shared_ptr<DzenTransform> trans_mirrorXY() {
+	return std::shared_ptr<DzenTransform>(new DzenPlaneMirror(0,0,1));
+}
+
+static inline std::shared_ptr<DzenTransform> trans_mirrorYZ() {
+	return std::shared_ptr<DzenTransform>(new DzenPlaneMirror(1,0,0));
+}
+
+static inline std::shared_ptr<DzenTransform> trans_mirrorXZ() {
+	return std::shared_ptr<DzenTransform>(new DzenPlaneMirror(0,1,0));
 }
 
 struct DzenTransformMultiply : public DzenTransform {
