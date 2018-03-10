@@ -1,6 +1,6 @@
-#include <boost/python.hpp>
+/*#include <boost/python.hpp>
 using namespace boost::python;
-
+*/
 #include <dzencad/base.h>
 #include <dzencad/cache.h>
 #include <dzencad/topo.h>
@@ -8,10 +8,14 @@ using namespace boost::python;
 #include <dzencad/boolops.h>
 #include <dzencad/trans.h>
 #include <dzencad/stl.h>
+#include <dzencad/widget.h>
 
-BOOST_PYTHON_MODULE(dzenlib) {
-	class_<DzenCadObject, std::shared_ptr<DzenCadObject> , boost::noncopyable >("DzenCadObject");
-	class_<DzenShape, std::shared_ptr<DzenShape> , boost::noncopyable >("DzenShape")
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
+PYBIND11_MODULE(dzenlib, m) {
+	py::class_<DzenCadObject, std::shared_ptr<DzenCadObject>>(m, "DzenCadObject");
+	py::class_<DzenShape, std::shared_ptr<DzenShape>>(m, "DzenShape")
         .def("transform", &DzenShape::transform)
 	    
 	    .def("translate", &DzenShape::translate)
@@ -26,27 +30,31 @@ BOOST_PYTHON_MODULE(dzenlib) {
 	    .def("rotateY", &DzenShape::rotateY)
 	    .def("rotateZ", &DzenShape::rotateZ)
 
-    	.def(self + other<std::shared_ptr<DzenShape>>())
+    	/*.def(self + other<std::shared_ptr<DzenShape>>())
     	.def(self - other<std::shared_ptr<DzenShape>>())
-    	.def(self ^ other<std::shared_ptr<DzenShape>>())
+    	.def(self ^ other<std::shared_ptr<DzenShape>>())*/
     ;
 	
-	class_<DzenTransform, std::shared_ptr<DzenTransform> , boost::noncopyable >("DzenTransform");
+	py::class_<DzenTransform, std::shared_ptr<DzenTransform>>(m, "DzenTransform");
 
 	//class_<DzenUnion, std::shared_ptr<DzenUnion> , boost::noncopyable >("DzenUnion", init<std::shared_ptr<DzenShape>, std::shared_ptr<DzenShape>>());
 	//class_<DzenBox, std::shared_ptr<DzenBox> , boost::noncopyable >("box", init<double, double, double>());
 	
-	def("solid_box", solid_box);
-	def("solid_sphere", solid_sphere);
-	def("solid_cylinder", solid_cylinder);
-	def("solid_torus", solid_torus);
+	m.def("solid_box", solid_box);
+	m.def("solid_sphere", solid_sphere);
+	m.def("solid_cylinder", solid_cylinder);
+	m.def("solid_torus", solid_torus);
 
-	def("boolops_union", boolops_union);
+	m.def("boolops_union", boolops_union);
 
-	def("trans_translate", trans_translate);
+	m.def("trans_translate", trans_translate);
 
-	def("make_stl", make_stl);
+	m.def("make_stl", make_stl);
 
-	def("enable_cache", dzencache_enable);
-	def("disable_cache", dzencache_disable);
+	m.def("enable_cache", dzencache_enable);
+	m.def("disable_cache", dzencache_disable);
+
+
+    m.def("display", display);
+    m.def("show", show);
 }
