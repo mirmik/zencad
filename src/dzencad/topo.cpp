@@ -1,7 +1,7 @@
 #include <dzencad/topo.h>
 #include <dzencad/trans.h>
 #include <dzencad/boolops.h>
-#include <gxx/print.h>
+//#include <gxx/print.h>
 
 std::shared_ptr<DzenShape> DzenShape::transform(std::shared_ptr<DzenTransform> trsf) {
 	return std::shared_ptr<DzenShape>(new DzenTransformShape(get_spointer(), trsf));

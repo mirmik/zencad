@@ -1,9 +1,7 @@
 #include <dzencad/base.h>
+//#include <gxx/exception.h>
 
-#include <boost/python.hpp>
-using namespace boost::python;
-
-#include <gxx/exception.h>
+#include <iostream>
 
 uint64_t DzenCadObject::evaluate_hash() {
 
@@ -17,7 +15,9 @@ void DzenCadObject::prepare() {
 }
 
 void DzenCadObject::doit() {
-	throw GXX_NOT_IMPLEMENTED;
+	std::cout << "DzenCadObject::doit" << std::endl;
+	exit(0);
+	//throw GXX_NOT_IMPLEMENTED;
 }
 
 DzenCadObject::~DzenCadObject() {

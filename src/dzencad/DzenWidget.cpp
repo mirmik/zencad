@@ -13,7 +13,7 @@
 #include <V3d_View.hxx>
 #include <AIS_Shape.hxx>
 
-#include <gxx/print.h>
+//#include <gxx/print.h>
 
 DzenWidget::DzenWidget(QWidget* parent) : QMainWindow(parent) {
     display = new DisplayWidget(this);
@@ -64,7 +64,7 @@ void DzenWidget::about() {
 
 
 void DzenWidget::export_stl() {
-    gxx::println("export_stl");
+    //gxx::println("export_stl");
     bool ok;
     
     QFileDialog fileDialog(this, "Choose file to export");
@@ -82,7 +82,8 @@ void DzenWidget::export_stl() {
                                        tr("Amount:"), 0.01, 0, 10, 5, &ok);
 
     if (display->display_on_init_list.size() != 1) {
-        gxx::panic("TODO");
+        exit(1);
+        //gxx::panic("TODO");
     } 
 
     StlAPI_Writer stl_writer;
