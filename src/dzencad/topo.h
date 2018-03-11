@@ -6,6 +6,7 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Solid.hxx>
+#include <TopoDS_Face.hxx>
 #include <TopoDS_Wire.hxx>
 #include <TopoDS_Edge.hxx>
 
@@ -39,8 +40,7 @@ struct DzenShape : public DzenCadObject {
 	std::shared_ptr<DzenShape> mirrorYZ();
 	std::shared_ptr<DzenShape> mirrorXZ();
 
-	std::shared_ptr<DzenShape> get_spointer() const;	
-
+	
 	//friend std::shared_ptr<DzenShape> operator+ (const DzenShape& lhs, const DzenShape& rhs);
 	//friend std::shared_ptr<DzenShape> operator- (const DzenShape& lhs, const DzenShape& rhs);
 	//friend std::shared_ptr<DzenShape> operator^ (const DzenShape& lhs, const DzenShape& rhs);
@@ -52,6 +52,12 @@ struct DzenShapeInterface : public DzenShape {
 		Self* self = static_cast<Self*>(this);
 		return self->native; 
 	};
+
+	std::shared_ptr<Self> get_spointer() {
+		Self* self = static_cast<Self*>(this);
+		return std::dynamic_pointer_cast<Self,DzenCadObject>(self->shared_from_this());
+	}	
+
 
 	std::shared_ptr<Self> transform(std::shared_ptr<DzenTransform> trsf);
 	std::shared_ptr<Self> translate(double x, double y, double z);
@@ -75,15 +81,14 @@ struct DzenShapeInterface : public DzenShape {
 	std::shared_ptr<Self> mirrorYZ();
 	std::shared_ptr<Self> mirrorXZ();
 
-	std::shared_ptr<Self> get_spointer() const;
 };
 
 struct DzenSolid : public DzenShapeInterface<DzenSolid> {
 	TopoDS_Solid native;
 };
 
-struct DzenWire : public DzenShapeInterface<DzenWire> {
-	TopoDS_Wire native;
+struct DzenFace : public DzenShapeInterface<DzenFace> {
+	TopoDS_Face native;
 };
 
 struct DzenEdge : public DzenShapeInterface<DzenEdge> {

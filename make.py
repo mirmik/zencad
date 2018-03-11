@@ -69,6 +69,7 @@ shared_library("dzenlib",
     sources = [
         "dzencad/base.cpp", 
         "dzencad/solid.cpp", 
+        "dzencad/wire.cpp", 
         "dzencad/boolops.cpp", 
         "dzencad/cache.cpp", 
         "dzencad/pywrap.cpp", 
