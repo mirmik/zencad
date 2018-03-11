@@ -63,8 +63,8 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
     if (m_context.IsNull()) {
         init();
         for (auto& wrap : display_on_init_list) {
-            Handle(AIS_Shape) anAisBox1 = new AIS_Shape(wrap->shape());
-            Handle(AIS_Shape) anAisBox2 = new AIS_Shape(wrap->shape());
+            Handle(AIS_Shape) anAisBox1 = new AIS_Shape(wrap);
+            Handle(AIS_Shape) anAisBox2 = new AIS_Shape(wrap);
 
             Quantity_Color shpcolor (0.6, 0.6, 0.8,  Quantity_TOC_RGB);  
             anAisBox1->SetColor(shpcolor);
@@ -143,6 +143,14 @@ void DisplayWidget::init() {
         Aspect_GFM_VER, 
         Standard_False
     );
+
+    Quantity_Parameter Vx; 
+    Quantity_Parameter Vy; 
+    Quantity_Parameter Vz;
+    m_view->Proj(Vx,Vy,Vz);
+    gxx::println(asin(Vz));
+
+    //m_view->SetProj(0,1,0);
 }
 
 void DisplayWidget::wheelEvent( QWheelEvent * e ) {
@@ -198,11 +206,13 @@ void DisplayWidget::onMouseWheel( const int theFlags, const int theDelta, const 
 void DisplayWidget::onLButtonDown( const int theFlags, const QPoint thePoint ) {
     Q_UNUSED(theFlags);
     m_view->StartRotation(thePoint.x(), thePoint.y());
+    temporary1 = thePoint;
 }
 
 void DisplayWidget::onMButtonDown( const int theFlags, const QPoint thePoint ) {
     Q_UNUSED(theFlags);
-    m_view->StartRotation(thePoint.x(), thePoint.y());
+    //m_view->StartRotation(thePoint.x(), thePoint.y());
+    temporary1 = thePoint;
 }
 
 void DisplayWidget::onRButtonDown( const int theFlags, const QPoint thePoint ) {
@@ -220,13 +230,38 @@ void DisplayWidget::onRButtonUp( const int theFlags, const QPoint thePoint ) {
 }
 
 void DisplayWidget::onMouseMove( const int theFlags, const QPoint thePoint ) {
+    QPoint mv = thePoint - temporary1; 
+    temporary1 = thePoint;
+
     if (theFlags & Qt::LeftButton) {
         m_view->Rotation(thePoint.x(), thePoint.y());
+    //    quat_orient.self_small_rotate1(thePoint.x() * 0.0001);
+    //    quat_orient.self_small_rotate3(thePoint.y() * 0.0001);
+    
+        //gxx::println(mv.x());
+        phi -= mv.x() * 0.01;
+        psi += mv.y() * 0.01;
+        //psi = 0.5;
     }
 
     if (theFlags & Qt::RightButton) {
-        QPoint mv = thePoint - temporary1; 
-        temporary1 = thePoint;
         m_view->Pan(mv.x(), -mv.y());
     }
+
+    //Quantity_Parameter Vx; 
+    //Quantity_Parameter Vy; 
+    //Quantity_Parameter Vz;
+    //m_view->Proj(Vx,Vy,Vz);
+    //gxx::println(quat_orient);
+
+    //double mod = sqrt(quat_orient.q1*quat_orient.q1 + quat_orient.q2*quat_orient.q2 + quat_orient.q3*quat_orient.q3);
+    //Vx = quat_orient.q1 / mod;
+    //Vy = quat_orient.q2 / mod;
+    //Vz = quat_orient.q3 / mod;
+
+    //malgo::vector3<double> vect = quat_orient * malgo::vector3<double>(0,1,0);
+
+    //m_view->SetProj(cos(psi) * cos(phi), cos(psi) * sin(phi), sin(psi));
+    //m_view->Proj(Vx,Vy,Vz);
+    //gxx::println(Vx,Vy,Vz);
 }

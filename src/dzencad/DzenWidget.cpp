@@ -89,7 +89,7 @@ void DzenWidget::export_stl() {
     StlAPI_Writer stl_writer;
     stl_writer.SetDeflection(d);
     stl_writer.RelativeMode() = false;
-    stl_writer.Write(display->display_on_init_list[0]->shape(), path.toStdString().c_str());
+    stl_writer.Write(display->display_on_init_list[0], path.toStdString().c_str());
 }
 
 /*void DzenWidget::makeBox() {
