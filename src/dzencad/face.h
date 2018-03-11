@@ -13,7 +13,7 @@ struct DzenWireFace : public DzenFace {
 	void doit() {
 		wr->prepare();
 		BRepBuilderAPI_MakeFace alg(wr->native);
-		native = alg.Face();
+		m_native = alg.Face();
 	}
 };
 

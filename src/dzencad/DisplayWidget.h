@@ -4,6 +4,8 @@
 #include <QtOpenGL/QGLWidget>
 #include <AIS_InteractiveContext.hxx>
 
+#include <gxx/math/quaternion.h>
+
 #include <memory>
 #include <dzencad/base.h>
 #include <dzencad/topo.h>
@@ -18,10 +20,14 @@ public:
 
 private:
 	QPoint temporary1;
+    malgo::quaternion<double> quat_orient;
+
+    double phi = - cos(M_PI / 4);
+    double psi = 0.61548;//cos(M_PI / 4);
 
 public:
     void init();
-    std::vector<std::shared_ptr<DzenShape>> display_on_init_list;
+    std::vector<TopoDS_Shape> display_on_init_list;
 
 protected:
     // Paint events.
@@ -52,6 +58,13 @@ public:
 	DisplayWidget(QWidget* parent = nullptr) : QGLWidget(parent) {
     	setBackgroundRole( QPalette::NoRole );
 	}
+
+    ~DisplayWidget() {
+        gxx::println("~DisplayWidget");
+        //delete m_view;
+        //delete m_viewer;
+        //delete m_context;
+    }
 
 public:
     const Handle_AIS_InteractiveContext& getContext() const;

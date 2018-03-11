@@ -1,7 +1,7 @@
 #ifndef DZENCAD_TRANSFORM_H
 #define DZENCAD_TRANSFORM_H
 
-#include <dzencad/topo.h>
+#include <dzencad/base.h>
 #include <gp_Trsf.hxx>
 
 #include <BRepBuilderAPI_Transform.hxx>
@@ -14,19 +14,20 @@ struct DzenTransform : public DzenCadObject {
 	gp_Trsf trsf;
 };
 
-/*struct DzenTransformShape : public DzenShape {
-	std::shared_ptr<DzenShape> shp;
+template<typename Topo>
+struct DzenTransformed : public Topo {
 	std::shared_ptr<DzenTransform> trsf;
-	DzenTransformShape(	std::shared_ptr<DzenShape> shp, std::shared_ptr<DzenTransform> trsf) :
-		shp(shp), trsf(trsf) {}	
-
+	std::shared_ptr<Topo> topo;
+	DzenTransformed(std::shared_ptr<Topo> topo, std::shared_ptr<DzenTransform> trsf)
+		: trsf(trsf), topo(topo) {}
+	
 	void doit() override {
-		shp->prepare();
+		topo->prepare();
 		trsf->prepare();
-		BRepBuilderAPI_Transform algo(shp->shape(), trsf->trsf, true);
-		native = algo.Shape();
+		BRepBuilderAPI_Transform algo(topo->native(), trsf->trsf, true);
+		Topo::m_native = algo.Shape();
 	}
-};*/
+};
 
 struct DzenTranslate : public DzenTransform {
 	double x, y, z;

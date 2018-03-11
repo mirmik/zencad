@@ -64,7 +64,7 @@ module('libraries',
 )
 
 shared_library("dzenlib",
-    target = "dzenlib.so",
+    target = "dzencad/dzenlib.so",
     srcdir = "src",
     sources = [
         "dzencad/base.cpp", 

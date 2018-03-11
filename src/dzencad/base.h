@@ -10,6 +10,7 @@ struct DzenCadObject : public std::enable_shared_from_this<DzenCadObject> {
 	virtual uint64_t evaluate_hash();
 	virtual void prepare();
 	virtual void doit();
+	virtual const char* class_name() { return "DzenCadObject"; }
 	
 	virtual ~DzenCadObject();
 };

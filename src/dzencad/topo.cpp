@@ -1,7 +1,7 @@
 #include <dzencad/topo.h>
 #include <dzencad/trans.h>
 #include <dzencad/boolops.h>
-//#include <gxx/print.h>
+#include <gxx/print.h>
 
 /*std::shared_ptr<DzenShape> DzenShape::transform(std::shared_ptr<DzenTransform> trsf) {
 	return std::shared_ptr<DzenShape>(new DzenTransformShape(get_spointer(), trsf));
@@ -71,19 +71,19 @@ std::shared_ptr<DzenShape> DzenShape::mirrorYZ() {
 std::shared_ptr<DzenShape> DzenShape::mirrorXZ() {
 	return std::shared_ptr<DzenShape>(new DzenTransformShape(get_spointer(), trans_mirrorXZ()));
 }
-
-std::shared_ptr<DzenShape> operator+ (const DzenShape& lhs, const DzenShape& rhs) {
-	return std::shared_ptr<DzenShape>(new DzenUnion(lhs.get_spointer(), rhs.get_spointer()));
+*/
+std::shared_ptr<DzenSolid> operator+ (const DzenSolid& lhs, const DzenSolid& rhs) {
+	return std::shared_ptr<DzenSolid>(new DzenUnion(lhs.get_spointer(), rhs.get_spointer()));
 }
 
-std::shared_ptr<DzenShape> operator- (const DzenShape& lhs, const DzenShape& rhs) {
-	return std::shared_ptr<DzenShape>(new DzenDifference(lhs.get_spointer(), rhs.get_spointer()));
+std::shared_ptr<DzenSolid> operator- (const DzenSolid& lhs, const DzenSolid& rhs) {
+	return std::shared_ptr<DzenSolid>(new DzenDifference(lhs.get_spointer(), rhs.get_spointer()));
 }
 
-std::shared_ptr<DzenShape> operator^ (const DzenShape& lhs, const DzenShape& rhs) {
-	return std::shared_ptr<DzenShape>(new DzenIntersect(lhs.get_spointer(), rhs.get_spointer()));
+std::shared_ptr<DzenSolid> operator^ (const DzenSolid& lhs, const DzenSolid& rhs) {
+	return std::shared_ptr<DzenSolid>(new DzenIntersect(lhs.get_spointer(), rhs.get_spointer()));
 }
 
-std::shared_ptr<DzenShape> DzenShape::get_spointer() const {
-	return std::dynamic_pointer_cast<DzenShape, DzenCadObject>((const_cast<DzenShape*>(this))->shared_from_this());
-}*/
+std::shared_ptr<DzenSolid> DzenSolid::get_spointer() const {
+	return std::dynamic_pointer_cast<DzenSolid, DzenCadObject>((const_cast<DzenSolid*>(this))->shared_from_this());
+}
