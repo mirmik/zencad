@@ -14,13 +14,25 @@ DzenWidget* w = nullptr;
 int argc = 0;
 
 void display(std::shared_ptr<DzenShape> ptr) {
+    gxx::println("display");
 	if (!a) {
 		a = new QApplication(argc, nullptr);
     	w = new DzenWidget;
     }
 
+    gxx::println("prepare");
     ptr->prepare();
-	w->display->display_on_init_list.push_back(ptr);
+    gxx::println("link");
+	w->display->display_on_init_list.push_back(ptr->native());
+}
+
+void display_native(const TopoDS_Shape& shp) {
+    if (!a) {
+        a = new QApplication(argc, nullptr);
+        w = new DzenWidget;
+    }
+
+    w->display->display_on_init_list.push_back(shp);
 }
 
 void show() {

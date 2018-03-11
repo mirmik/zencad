@@ -4,18 +4,24 @@
 #include <dzencad/base.h>
 #include <dzencad/topo.h>
 
-//#include <gxx/panic.h>
+#include <gxx/print.h>
 
 #include <TopoDS.hxx>
+#include <TopoDS_CompSolid.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Compound.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
+
+#include <dzencad/widget.h>
 
 struct DzenBooleanOperation : public DzenSolid {
 
 };
 
 struct DzenUnion : public DzenBooleanOperation {
+	virtual const char* class_name() { return "DzenUnion"; }
 	std::shared_ptr<DzenSolid> a;
 	std::shared_ptr<DzenSolid> b;
 
@@ -24,12 +30,12 @@ struct DzenUnion : public DzenBooleanOperation {
 	void doit() override {
 		a->prepare();
 		b->prepare();
-		TopoDS_Shape shp = BRepAlgoAPI_Fuse(a->native, b->native);
-		native = TopoDS::Solid(shp);
+		m_native = BRepAlgoAPI_Fuse(a->native(), b->native());
 	}
 };
 
 struct DzenDifference : public DzenBooleanOperation {
+	virtual const char* class_name() { return "DzenDifference"; }
 	std::shared_ptr<DzenSolid> a;
 	std::shared_ptr<DzenSolid> b;
 
@@ -38,12 +44,12 @@ struct DzenDifference : public DzenBooleanOperation {
 	void doit() override {
 		a->prepare();
 		b->prepare();
-		TopoDS_Shape shp = BRepAlgoAPI_Cut(a->native, b->native);
-		native = TopoDS::Solid(shp);
+		m_native = BRepAlgoAPI_Cut(a->native(), b->native());
 	}
 };
 
 struct DzenIntersect : public DzenBooleanOperation {
+	virtual const char* class_name() { return "DzenIntersect"; }
 	std::shared_ptr<DzenSolid> a;
 	std::shared_ptr<DzenSolid> b;
 
@@ -52,8 +58,7 @@ struct DzenIntersect : public DzenBooleanOperation {
 	void doit() override {
 		a->prepare();
 		b->prepare();
-		TopoDS_Shape shp = BRepAlgoAPI_Common(a->native, b->native);
-		native = TopoDS::Solid(shp);
+		m_native = BRepAlgoAPI_Common(a->native(), b->native());
 	}
 };
 /*

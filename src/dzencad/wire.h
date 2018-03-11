@@ -28,6 +28,7 @@
 class DzenFace;
 
 struct DzenWire : public DzenShapeInterface<DzenWire> {
+	TopoDS_Shape shape() { return native; }
 	TopoDS_Wire native;
 	std::shared_ptr<DzenFace> make_face();
 };
@@ -38,7 +39,7 @@ struct DzenSegment : public DzenEdge {
 
 	DzenSegment(DzenPoint3 a, DzenPoint3 b) : a(a), b(b) {}
 	void doit() override { 
-		native = BRepBuilderAPI_MakeEdge(a.Pnt(), b.Pnt()); 
+		m_native = BRepBuilderAPI_MakeEdge(a.Pnt(), b.Pnt()); 
 	}
 };
 
@@ -62,7 +63,7 @@ struct DzenPolySegment : public DzenWire {
 			mkWire.Add(BRepBuilderAPI_MakeEdge(pnts[i].Pnt(), pnts[i+1].Pnt()));
 		}
 		if (closed) mkWire.Add(BRepBuilderAPI_MakeEdge(pnts[pnts.size()-1].Pnt(), pnts[0].Pnt()));
-		native = mkWire.Wire(); 
+		m_native = mkWire.Wire(); 
 	}
 };
 

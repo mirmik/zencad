@@ -1,2 +1,2 @@
-from dzenlib import display
-from dzenlib import show
+from dzencad.dzenlib import display
+from dzencad.dzenlib import show
