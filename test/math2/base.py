@@ -12,10 +12,12 @@ import math
 
 a = point(-1,1,0)
 b = point(1,1,0)
-c = point(1,-1,0)
+c = point(1,-2,0)
 d = point(-1,-1,0)
 
-display(polysegment([a,b,c,d], closed = True))
+ff = polysegment([a,b,c,d], closed = True).face()
+
+display(ff)
 
 #m = solid.box(10,10,10)
 show()

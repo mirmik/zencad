@@ -2,6 +2,7 @@
 #define DZENCAD_WIRE_H
 
 #include <dzencad/topo.h>
+//#include <dzencad/face.h>
 #include <dzencad/math3.h>
 #include <memory>
 
@@ -23,6 +24,13 @@
 	}
 };
 }*/
+
+class DzenFace;
+
+struct DzenWire : public DzenShapeInterface<DzenWire> {
+	TopoDS_Wire native;
+	std::shared_ptr<DzenFace> make_face();
+};
 
 struct DzenSegment : public DzenEdge {
 	DzenPoint3 a; 
