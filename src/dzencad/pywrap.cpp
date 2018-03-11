@@ -50,8 +50,13 @@ PYBIND11_MODULE(dzenlib, m) {
     //;
 
     py::class_<DzenSolid, DzenShape, std::shared_ptr<DzenSolid>>(m, "DzenSolid");
-    py::class_<DzenWire, DzenShape, std::shared_ptr<DzenWire>>(m, "DzenWire");
+
+    py::class_<DzenWire, DzenShape, std::shared_ptr<DzenWire>>(m, "DzenWire")
+    	.def("face", &DzenWire::make_face);
+
     py::class_<DzenEdge, DzenShape, std::shared_ptr<DzenEdge>>(m, "DzenEdge");
+
+    py::class_<DzenFace, DzenShape, std::shared_ptr<DzenFace>>(m, "DzenFace");
 	
 	py::class_<DzenTransform, std::shared_ptr<DzenTransform>>(m, "DzenTransform");
 
@@ -85,6 +90,7 @@ PYBIND11_MODULE(dzenlib, m) {
 	//m.def("boolops_union", boolops_union);
     py::class_<DzenSegment, DzenEdge, std::shared_ptr<DzenSegment>>(m, "edge_segment")
     	.def(py::init<DzenPoint3, DzenPoint3>());
+
     py::class_<DzenPolySegment, DzenWire, std::shared_ptr<DzenPolySegment>>(m, "wire_polysegment")
     	.def(py::init<py::list>())
     	.def(py::init<py::list, py::kwargs>());

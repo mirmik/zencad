@@ -1,6 +1,8 @@
 #ifndef DZENCAD_MATH_H
 #define DZENCAD_MATH_H
 
+#include <gp_Pnt.hxx>
+
 struct XYZ {
 	double x, y, z;
 	XYZ(double x, double y, double z) : x(x), y(y), z(z) {}
