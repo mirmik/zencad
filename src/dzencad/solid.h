@@ -18,8 +18,11 @@ struct DzenBox : public DzenSolid {
 	virtual const char* class_name() { return "DzenBox"; }
 	double x, y, z;
 	bool center = false;
-	DzenBox(double x, double y, double z) : x(x), y(y), z(z) {}
-	DzenBox(double x, double y, double z, py::kwargs kw) : x(x), y(y), z(z) {
+	DzenBox(double x, double y, double z) : x(x), y(y), z(z) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z));
+		set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z));
+	}
+	DzenBox(double x, double y, double z, py::kwargs kw) : DzenBox(x,y,z) {
 		center = kw["center"].cast<bool>();
 	}
 	void doit() override { 
@@ -35,21 +38,28 @@ struct DzenBox : public DzenSolid {
 struct DzenSphere : public DzenSolid {
 	virtual const char* class_name() { return "DzenSphere"; }
 	double r;
-	DzenSphere(double r) : r(r) {}
+	DzenSphere(double r) : r(r) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(r));
+		set_hash2(typeid(this).hash_code() + make_hash(r));
+	}
 	void doit() override { m_native = BRepPrimAPI_MakeSphere(r).Solid(); }
 };
 
 struct DzenCylinder : public DzenSolid {
 	virtual const char* class_name() { return "DzenCylinder"; }
 	double r, h;
-	DzenCylinder(double r, double h) : r(r), h(h) {}
+	DzenCylinder(double r, double h) : r(r), h(h) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(r) ^ make_hash(h));
+		set_hash2(typeid(this).hash_code() + make_hash(r) + make_hash(h));}
 	void doit() override { m_native = BRepPrimAPI_MakeCylinder(r, h).Solid(); }
 };
 
 struct DzenTorus : public DzenSolid {
 	virtual const char* class_name() { return "DzenTorus"; }
 	double r1, r2;
-	DzenTorus(double r1, double r2) : r1(r1), r2(r2) {}
+	DzenTorus(double r1, double r2) : r1(r1), r2(r2) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(r1) ^ make_hash(r2));
+		set_hash2(typeid(this).hash_code() + make_hash(r1) + make_hash(r2));}
 	void doit() override { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
 };
 /*

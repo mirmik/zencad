@@ -18,7 +18,11 @@ using namespace boost::python;
 namespace py = pybind11;
 
 PYBIND11_MODULE(dzenlib, m) {
-	py::class_<DzenCadObject, std::shared_ptr<DzenCadObject>>(m, "DzenCadObject");
+	py::class_<DzenCadObject, std::shared_ptr<DzenCadObject>>(m, "DzenCadObject")
+		.def("get_hash1", &DzenCadObject::get_hash1)
+		.def("get_hash2", &DzenCadObject::get_hash2)
+		.def("get_hash_base64", &DzenCadObject::get_hash_base64)		
+	;
 	py::class_<DzenShape, DzenCadObject, std::shared_ptr<DzenShape>>(m, "DzenShape");
 	
 	//py::class_<DzenShape, std::shared_ptr<DzenShape>>(m, "DzenShape")
@@ -127,9 +131,9 @@ PYBIND11_MODULE(dzenlib, m) {
 
 	m.def("make_stl", make_stl);
 
-	m.def("enable_cache", dzencache_enable);
-	m.def("disable_cache", dzencache_disable);
-
+	m.def("cache_enable", dzencache_enable);
+	m.def("cache_disable", dzencache_disable);
+	m.def("cache_is_enabled", dzencache_is_enabled);
 
 	m.def("display", display);
 	m.def("show", show);

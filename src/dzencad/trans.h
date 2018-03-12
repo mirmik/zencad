@@ -12,6 +12,14 @@ class DzenShape;
 
 struct DzenTransform : public DzenCadObject {
 	gp_Trsf trsf;
+
+	void serialize_to_stream(std::ostream& out) override {
+		out.write((char*)&trsf, sizeof(gp_Trsf));
+	}
+
+	void deserialize_from_stream(std::istream& out) override {
+		out.read((char*)&trsf, sizeof(gp_Trsf));
+	}
 };
 
 template<typename Topo>
@@ -19,7 +27,11 @@ struct DzenTransformed : public Topo {
 	std::shared_ptr<DzenTransform> trsf;
 	std::shared_ptr<Topo> topo;
 	DzenTransformed(std::shared_ptr<Topo> topo, std::shared_ptr<DzenTransform> trsf)
-		: trsf(trsf), topo(topo) {}
+		: trsf(trsf), topo(topo) 
+	{
+		Topo::set_hash1(typeid(this).hash_code() ^ trsf->hash1 ^ topo->hash1);
+		Topo::set_hash2(typeid(this).hash_code() + trsf->hash2 + topo->hash2);
+	}
 	
 	void doit() override {
 		topo->prepare();
@@ -27,31 +39,49 @@ struct DzenTransformed : public Topo {
 		BRepBuilderAPI_Transform algo(topo->native(), trsf->trsf, true);
 		Topo::m_native = algo.Shape();
 	}
+
+	const char* class_name() override { return "DzenTransformed"; }
 };
 
 struct DzenTranslate : public DzenTransform {
+	const char* class_name() override { return "DzenTranslate"; }
 	double x, y, z;
-	DzenTranslate(double x, double y, double z) : x(x), y(y), z(z) {}
+	DzenTranslate(double x, double y, double z) : x(x), y(y), z(z) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z));
+		set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z));
+	}
 	void doit() override;
 };
 
-struct DzenRotation : public DzenTransform {
+struct DzenRotate : public DzenTransform {
+	const char* class_name() override { return "DzenRotate"; }
 	//malgo::matrix3<double> mat;
 	double ax, ay, az;
 	double angle;
-	DzenRotation(double ax, double ay, double az, double angle) : ax(ax), ay(ay), az(az), angle(angle) {}
+	DzenRotate(double ax, double ay, double az, double angle) : ax(ax), ay(ay), az(az), angle(angle) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) ^ make_hash(angle));
+		set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az) + make_hash(angle));
+	}
 	void doit() override;
 };
 
 struct DzenAxisMirror : public DzenTransform {
+	const char* class_name() override { return "DzenAxisMirror"; }
 	double ax, ay, az;
-	DzenAxisMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {}
+	DzenAxisMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) );
+		set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
+	}
 	void doit() override;
 };
 
 struct DzenPlaneMirror : public DzenTransform {
+	const char* class_name() override { return "DzenPlaneMirror"; }
 	double ax, ay, az;
-	DzenPlaneMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {}
+	DzenPlaneMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az));
+		set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
+	}
 	void doit() override;
 };
 
@@ -60,15 +90,15 @@ static inline std::shared_ptr<DzenTransform> trans_translate(double x, double y,
 }
 
 static inline std::shared_ptr<DzenTransform> trans_rotateX(double a) {
-	return std::shared_ptr<DzenTransform>(new DzenRotation(1,0,0,a));
+	return std::shared_ptr<DzenTransform>(new DzenRotate(1,0,0,a));
 }
 
 static inline std::shared_ptr<DzenTransform> trans_rotateY(double a) {
-	return std::shared_ptr<DzenTransform>(new DzenRotation(0,1,0,a));
+	return std::shared_ptr<DzenTransform>(new DzenRotate(0,1,0,a));
 }
 
 static inline std::shared_ptr<DzenTransform> trans_rotateZ(double a) {
-	return std::shared_ptr<DzenTransform>(new DzenRotation(0,0,1,a));
+	return std::shared_ptr<DzenTransform>(new DzenRotate(0,0,1,a));
 }
 
 static inline std::shared_ptr<DzenTransform> trans_mirrorX() {
@@ -98,7 +128,10 @@ static inline std::shared_ptr<DzenTransform> trans_mirrorXZ() {
 struct DzenTransformMultiply : public DzenTransform {
 	std::shared_ptr<DzenTransform> a;
 	std::shared_ptr<DzenTransform> b;
-	DzenTransformMultiply(std::shared_ptr<DzenTransform> a, std::shared_ptr<DzenTransform> b) : a(a), b(b) {}
+	DzenTransformMultiply(std::shared_ptr<DzenTransform> a, std::shared_ptr<DzenTransform> b) : a(a), b(b) {
+		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	}
 	void doit() override;
 };
 
