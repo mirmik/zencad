@@ -8,7 +8,7 @@ void DzenTranslate::doit() {
 	trsf.SetTranslation(gp_Vec(x,y,z));
 }
 
-void DzenRotation::doit() {
+void DzenRotate::doit() {
 	trsf.SetRotation(gp_Ax1(gp_Pnt(0,0,0), gp_Vec(ax,ay,az)), angle);
 }
 

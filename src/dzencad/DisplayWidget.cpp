@@ -148,7 +148,7 @@ void DisplayWidget::init() {
     Quantity_Parameter Vy; 
     Quantity_Parameter Vz;
     m_view->Proj(Vx,Vy,Vz);
-    gxx::println(asin(Vz));
+    //gxx::println(asin(Vz));
 
     //m_view->SetProj(0,1,0);
 }

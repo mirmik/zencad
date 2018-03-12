@@ -9,6 +9,8 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Wire.hxx>
 #include <TopoDS_Edge.hxx>
+#include <BinTools_ShapeSet.hxx>
+#include <BinTools.hxx>
 
 #include <dzencad/trans.h>
 #include <gxx/print.h>
@@ -26,6 +28,76 @@ struct DzenShape : public DzenCadObject {
 		}
 		return m_native;
 	}
+
+	void serialize_to_stream(std::ostream& out) override {
+		 // An example how to use BinTools_ShapeSet can be found in BinMNaming_NamedShapeDriver.cxx
+    	BinTools_ShapeSet theShapeSet;
+    	if (m_native.IsNull()) {
+    	    theShapeSet.Add(m_native);
+    	    theShapeSet.Write(out);
+    	    BinTools::PutInteger(out, -1);
+    	    BinTools::PutInteger(out, -1);
+    	    BinTools::PutInteger(out, -1);
+    	}
+    	else {
+    	    Standard_Integer shapeId = theShapeSet.Add(m_native);
+    	    Standard_Integer locId = theShapeSet.Locations().Index(m_native.Location());
+    	    Standard_Integer orient = static_cast<int>(m_native.Orientation());
+	
+    	    theShapeSet.Write(out);
+    	    BinTools::PutInteger(out, shapeId);
+    	    BinTools::PutInteger(out, locId);
+    	    BinTools::PutInteger(out, orient);
+    	}
+	}
+
+	void deserialize_from_stream(std::istream& in) override {
+	    BinTools_ShapeSet theShapeSet;
+	    theShapeSet.Read(in);
+	    Standard_Integer shapeId=0, locId=0, orient=0;
+	    BinTools::GetInteger(in, shapeId);
+	    if (shapeId <= 0 || shapeId > theShapeSet.NbShapes())
+	        return;
+	
+	    BinTools::GetInteger(in, locId);
+	    BinTools::GetInteger(in, orient);
+	    TopAbs_Orientation anOrient = static_cast<TopAbs_Orientation>(orient);
+	
+	    try {
+	        m_native = theShapeSet.Shape(shapeId);
+	        m_native.Location(theShapeSet.Locations().Location (locId));
+	        m_native.Orientation (anOrient);
+	    }
+	    catch (Standard_Failure) {
+	        gxx::println("Failed to read shape from binary stream");
+	        exit(-1);
+	    }
+	}
+
+
+/*void TopoShape::exportBinary(std::ostream& out)
+{
+    // An example how to use BinTools_ShapeSet can be found in BinMNaming_NamedShapeDriver.cxx
+    BinTools_ShapeSet theShapeSet;
+    if (this->_Shape.IsNull()) {
+        theShapeSet.Add(this->_Shape);
+        theShapeSet.Write(out);
+        BinTools::PutInteger(out, -1);
+        BinTools::PutInteger(out, -1);
+        BinTools::PutInteger(out, -1);
+    }
+    else {
+        Standard_Integer shapeId = theShapeSet.Add(this->_Shape);
+        Standard_Integer locId = theShapeSet.Locations().Index(this->_Shape.Location());
+        Standard_Integer orient = static_cast<int>(this->_Shape.Orientation());
+
+        theShapeSet.Write(out);
+        BinTools::PutInteger(out, shapeId);
+        BinTools::PutInteger(out, locId);
+        BinTools::PutInteger(out, orient);
+    }
+}*/
+
 
 	//virtual TopoDS_Shape shape() = 0;
 

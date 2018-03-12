@@ -21,11 +21,14 @@ struct DzenBooleanOperation : public DzenSolid {
 };
 
 struct DzenUnion : public DzenBooleanOperation {
-	virtual const char* class_name() { return "DzenUnion"; }
+	virtual const char* class_name() override { return "DzenUnion"; }
 	std::shared_ptr<DzenSolid> a;
 	std::shared_ptr<DzenSolid> b;
 
-	DzenUnion(std::shared_ptr<DzenSolid> a, std::shared_ptr<DzenSolid> b) : a(a), b(b) {}
+	DzenUnion(std::shared_ptr<DzenSolid> a, std::shared_ptr<DzenSolid> b) : a(a), b(b) {
+		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	}
 
 	void doit() override {
 		a->prepare();
@@ -35,11 +38,14 @@ struct DzenUnion : public DzenBooleanOperation {
 };
 
 struct DzenDifference : public DzenBooleanOperation {
-	virtual const char* class_name() { return "DzenDifference"; }
+	virtual const char* class_name() override { return "DzenDifference"; }
 	std::shared_ptr<DzenSolid> a;
 	std::shared_ptr<DzenSolid> b;
 
-	DzenDifference(std::shared_ptr<DzenSolid> a, std::shared_ptr<DzenSolid> b) : a(a), b(b) {}
+	DzenDifference(std::shared_ptr<DzenSolid> a, std::shared_ptr<DzenSolid> b) : a(a), b(b) {
+		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	}
 
 	void doit() override {
 		a->prepare();
@@ -49,11 +55,14 @@ struct DzenDifference : public DzenBooleanOperation {
 };
 
 struct DzenIntersect : public DzenBooleanOperation {
-	virtual const char* class_name() { return "DzenIntersect"; }
+	virtual const char* class_name() override { return "DzenIntersect"; }
 	std::shared_ptr<DzenSolid> a;
 	std::shared_ptr<DzenSolid> b;
 
-	DzenIntersect(std::shared_ptr<DzenSolid> a, std::shared_ptr<DzenSolid> b) : a(a), b(b) {}
+	DzenIntersect(std::shared_ptr<DzenSolid> a, std::shared_ptr<DzenSolid> b) : a(a), b(b) {
+		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	}
 
 	void doit() override {
 		a->prepare();
