@@ -48,6 +48,7 @@ module('libraries',
         'TKOpenGl',
         'TKFillet',
         'TKSTL',
+        'TKBin',
     ],
 
     #objects = [

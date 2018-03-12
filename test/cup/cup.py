@@ -8,6 +8,9 @@ import dzencad.solid as solid
 from dzencad.widget import *
 import math
 
+import dzencad.cache
+dzencad.cache.enable("cache")
+
 def cup(r,h,t,rr,wr):
 	return (
 		solid.torus(rr,wr).rotateY(math.pi/2).forw(r).up(h/2)

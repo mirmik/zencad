@@ -14,15 +14,15 @@ DzenWidget* w = nullptr;
 int argc = 0;
 
 void display(std::shared_ptr<DzenShape> ptr) {
-    gxx::println("display");
+    //gxx::println("display");
 	if (!a) {
 		a = new QApplication(argc, nullptr);
     	w = new DzenWidget;
     }
 
-    gxx::println("prepare");
+    //gxx::println("prepare");
     ptr->prepare();
-    gxx::println("link");
+    //gxx::println("link");
 	w->display->display_on_init_list.push_back(ptr->native());
 }
 
