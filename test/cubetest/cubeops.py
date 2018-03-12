@@ -18,4 +18,6 @@ display((m1 + m2).right(20))
 display((m1 - m2).left(20))
 display((m1 ^ m2))
 
+(m1 ^ m2).dump("temporary.bin")
+
 show()

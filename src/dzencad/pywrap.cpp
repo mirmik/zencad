@@ -23,8 +23,11 @@ PYBIND11_MODULE(dzenlib, m) {
 		.def("get_hash2", &DzenCadObject::get_hash2)
 		.def("get_hash_base64", &DzenCadObject::get_hash_base64)		
 	;
-	py::class_<DzenShape, DzenCadObject, std::shared_ptr<DzenShape>>(m, "DzenShape");
-	
+	py::class_<DzenShape, DzenCadObject, std::shared_ptr<DzenShape>>(m, "DzenShape")
+		.def("dump", &DzenShape::dump_binary)
+		//.def("load", &DzenShape::load_binary)
+	;
+
 	//py::class_<DzenShape, std::shared_ptr<DzenShape>>(m, "DzenShape")
 	//    .def("transform", &DzenShape::transform)
 	//    
@@ -80,7 +83,7 @@ PYBIND11_MODULE(dzenlib, m) {
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
 	;
-
+	m.def("solid_load", dzen_load<DzenSolid>);
 
 	py::class_<DzenWire, DzenShape, std::shared_ptr<DzenWire>>(m, "DzenWire")
 		.def("face", &DzenWire::make_face);
