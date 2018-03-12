@@ -70,9 +70,20 @@ struct DzenShape : public DzenCadObject {
 	    }
 	    catch (Standard_Failure) {
 	        gxx::println("Failed to read shape from binary stream");
-	        exit(-1);
+	        exit(-1);	
 	    }
 	}
+
+	void dump_binary(std::string path) {
+		prepare();
+		std::ofstream file(path, std::ios::binary);
+		serialize_to_stream(file);
+	}
+
+	//void load_binary(std::string path) {
+	//	std::ifstream file(path, std::ios::binary);
+	//	deserialize_from_stream(file);
+	//}
 
 
 /*void TopoShape::exportBinary(std::ostream& out)
@@ -167,8 +178,17 @@ struct DzenShapeInterface : public DzenShape {
 	std::shared_ptr<Self> mirrorXZ() { return transform(trans_mirrorXZ()); }
 };
 
+template <typename Topo>
+std::shared_ptr<Topo> dzen_load(std::string path) {
+	std::shared_ptr<Topo> topo(new Topo);
+	std::ifstream file(path, std::ios::binary);
+	topo->deserialize_from_stream(file);
+	topo->prepared = true;
+	return topo;
+}
 
 struct DzenSolid : public DzenShapeInterface<DzenSolid> {
+	const char* class_name() { return "DzenSolid"; }
 	//TopoDS_Solid native;
 	//TopoDS_Shape shape() {
 	// 	gxx::println("shape");
