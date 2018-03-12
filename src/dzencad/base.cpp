@@ -9,6 +9,8 @@
 #include <fstream>
 
 void DzenCadObject::prepare() {
+	if (prepared) return;
+
 	if (setted_hash1 == 0 || setted_hash2 == 0) {
 		gxx::fprintln("warn: {} in class {}", gxx::text::bright_red("uninitialized hash"), gxx::text::bright_yellow(class_name()));
 	}
