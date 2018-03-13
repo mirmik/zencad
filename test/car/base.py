@@ -8,6 +8,9 @@ import dzencad.solid as solid
 from dzencad.widget import *
 import math
 
+import dzencad.cache
+dzencad.cache.enable("cache")
+
 z = 3
 
 x = 160
