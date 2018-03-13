@@ -1,0 +1,71 @@
+#ifndef DZENCAD_WIRE_H
+#define DZENCAD_WIRE_H
+
+#include <zencad/topo.h>
+//#include <zencad/face.h>
+#include <zencad/math3.h>
+#include <memory>
+
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
+
+#include <pybind11/pybind11.h>
+
+/*class ZenWireUnion : public ZenWire {
+	std::shared_ptr<ZenWire> a;
+	std::shared_ptr<ZenWire> b;
+
+	ZenWireUnion(std::shared_ptr<ZenWire> a, std::shared_ptr<ZenWire> b) : a(a), b(b) {}
+
+	void doit() override {
+		a->prepare();
+		b->prepare();
+		native = BRepAlgoAPI_Fuse(a->native, b->native);
+	}
+};
+}*/
+
+class ZenFace;
+
+struct ZenWire : public ZenShapeInterface<ZenWire> {
+	TopoDS_Shape shape() { return native; }
+	TopoDS_Wire native;
+	std::shared_ptr<ZenFace> make_face();
+};
+
+struct ZenSegment : public ZenEdge {
+	ZenPoint3 a; 
+	ZenPoint3 b;
+
+	ZenSegment(ZenPoint3 a, ZenPoint3 b) : a(a), b(b) {}
+	void doit() override { 
+		m_native = BRepBuilderAPI_MakeEdge(a.Pnt(), b.Pnt()); 
+	}
+};
+
+struct ZenPolySegment : public ZenWire {
+	std::vector<ZenPoint3> pnts;
+	bool closed;
+	
+	ZenPolySegment(pybind11::list args) {
+    	for (auto item : args)
+          	pnts.push_back(item.cast<ZenPoint3>());
+	}
+
+	ZenPolySegment(pybind11::list args, pybind11::kwargs kw) : ZenPolySegment(args) {
+        closed = kw["closed"].cast<bool>();
+	}
+
+
+	void doit() override { 
+		BRepBuilderAPI_MakeWire mkWire;
+		for (int i = 0; i < pnts.size() - 1; ++i) {
+			mkWire.Add(BRepBuilderAPI_MakeEdge(pnts[i].Pnt(), pnts[i+1].Pnt()));
+		}
+		if (closed) mkWire.Add(BRepBuilderAPI_MakeEdge(pnts[pnts.size()-1].Pnt(), pnts[0].Pnt()));
+		m_native = mkWire.Wire(); 
+	}
+};
+
+
+#endif

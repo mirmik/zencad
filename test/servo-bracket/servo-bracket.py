@@ -4,8 +4,8 @@
 import sys
 sys.path.insert(0, "../..")
 
-import dzencad.solid as solid
-from dzencad.widget import *
+import zencad.solid as solid
+from zencad.widget import *
 
 
 ear_width = 5

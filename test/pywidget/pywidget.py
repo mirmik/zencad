@@ -4,6 +4,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-import dzencad.pywidget as widget
+import zencad.pywidget as widget
 
 widget.show()

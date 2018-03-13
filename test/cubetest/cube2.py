@@ -4,9 +4,9 @@
 import sys
 sys.path.insert(0, "../..")
 
-import dzencad.solid as solid
-from dzencad.widget import *
-import dzencad.cache
+import zencad.solid as solid
+from zencad.widget import *
+import zencad.cache
 import math
 
 m = solid.load("temporary.bin")

@@ -4,12 +4,12 @@
 import sys
 sys.path.insert(0, "../..")
 
-import dzencad.solid as solid
-from dzencad.widget import *
-import dzencad.cache
+import zencad.solid as solid
+from zencad.widget import *
+import zencad.cache
 import math
 
-dzencad.cache.enable("dzencache")
+zencad.cache.enable("zencache")
 
 m1 = solid.box(10,10,10)
 m2 = solid.box(10,10,10).translate(5,5,5)
