@@ -4,12 +4,12 @@
 import sys
 sys.path.insert(0, "../..")
 
-import dzencad.solid as solid
-from dzencad.widget import *
+import zencad.solid as solid
+from zencad.widget import *
 import math
 
-import dzencad.cache
-dzencad.cache.enable("cache")
+import zencad.cache
+zencad.cache.enable("cache")
 
 def cup(r,h,t,rr,wr):
 	return (

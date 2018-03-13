@@ -4,10 +4,10 @@
 import sys
 sys.path.insert(0, "../..")
 
-import dzencad.solid as solid
-from dzencad.widget import *
-from dzencad.math3 import point
-from dzencad.wire import segment, polysegment
+import zencad.solid as solid
+from zencad.widget import *
+from zencad.math3 import point
+from zencad.wire import segment, polysegment
 import math
 
 a = point(-1,1,0)

@@ -51,11 +51,6 @@ module('libraries',
         'TKBin',
     ],
 
-    #objects = [
-    #	"/usr/lib/x86_64-linux-gnu/libboost_python-py35.a",
-    #	 qt_lib_path + "libQt5Core.la",
-    #],
-
     include_modules = [
         submodule("gxx.print", "cout"),
         submodule("gxx.dprint", "cout"),
@@ -64,23 +59,23 @@ module('libraries',
     ], 
 )
 
-shared_library("dzenlib",
-    target = "dzencad/dzenlib.so",
+shared_library("zenlib",
+    target = "zencad/zenlib.so",
     srcdir = "src",
     sources = [
-        "dzencad/base.cpp", 
-        "dzencad/solid.cpp", 
-        "dzencad/wire.cpp", 
-        "dzencad/boolops.cpp", 
-        "dzencad/cache.cpp", 
-        "dzencad/pywrap.cpp", 
-        "dzencad/trans.cpp", 
-        "dzencad/topo.cpp",
-        "dzencad/DzenWidget.cpp", 
-        "dzencad/DisplayWidget.cpp", 
-        "dzencad/widget.cpp",
+        "zencad/base.cpp", 
+        "zencad/solid.cpp", 
+        "zencad/wire.cpp", 
+        "zencad/boolops.cpp", 
+        "zencad/cache.cpp", 
+        "zencad/pywrap.cpp", 
+        "zencad/trans.cpp", 
+        "zencad/topo.cpp",
+        "zencad/ZenWidget.cpp", 
+        "zencad/DisplayWidget.cpp", 
+        "zencad/widget.cpp",
     ],
-    moc = ["dzencad/DisplayWidget.h", "dzencad/DzenWidget.h"],    
+    moc = ["zencad/DisplayWidget.h", "zencad/ZenWidget.h"],    
     include_modules = [submodule("libraries")],
 )
-doit("dzenlib")
+doit("zenlib")
