@@ -6,8 +6,8 @@ from licant.modules import submodule, module
 import licant
 import licant.libs
 
-qt_include_path = "~/Qt/5.10.1/gcc_64/include/"
-qt_lib_path = "/home/mirmik/Qt/5.10.1/gcc_64/lib/"
+qt_include_path = "/usr/include/x86_64-linux-gnu/qt5/"
+#qt_lib_path = "/home/mirmik/Qt/5.10.1/gcc_64/lib/"
 boost_lib_path = "./third-party/"
 python_include_path = "/usr/include/python3.5/"
 
