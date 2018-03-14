@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from licant.cxx_modules import application, shared_library, doit
+from licant.cxx_modules import application, shared_library
 from licant.modules import submodule, module
 
 import licant
@@ -69,15 +69,26 @@ def registry_library(py):
 	        "zencad/widget.cpp",
 	    ],
 	    moc = ["zencad/DisplayWidget.h", "zencad/ZenWidget.h"],    
-	    include_modules = [submodule("libqt"), submodule("liboce"),
-	    	submodule("gxx", "posix")],
-	    include_paths = [".", "src", python_include_prefix + py]
+	    include_modules = [
+            submodule("libqt"), 
+            submodule("liboce"),
+	    	submodule("gxx", "posix")
+        ],
+	    include_paths = [
+            ".", 
+            "src", 
+            python_include_prefix + py
+        ]
 	)
 
 registry_library("python2.7")
 registry_library("python3.5")
 registry_library("python3.5m")
 
-doit("zenlib.python2.7")
-doit("zenlib.python3.5")
-doit("zenlib.python3.5m")
+licant.add_makefile_target(tgt = "all", targets = [
+    "zenlib.python2.7",
+    "zenlib.python3.5",
+    "zenlib.python3.5m",
+])
+
+licant.ex(default = "all")
