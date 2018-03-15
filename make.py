@@ -85,10 +85,40 @@ registry_library("python2.7")
 registry_library("python3.5")
 registry_library("python3.5m")
 
-licant.add_makefile_target(tgt = "all", targets = [
-    "zenlib.python2.7",
-    "zenlib.python3.5",
-    "zenlib.python3.5m",
-])
+#licant.add_makefile_target(tgt = "all", targets = [
+#   "zenlib.python2.7",
+#  "zenlib.python3.5",
+#    "zenlib.python3.5m",
+#])
+
+@licant.routine
+def local35():
+    licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
+    licant.do("zencad/zenlib.so", "makefile")
+
+@licant.routine
+def local35m():
+    licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5m/zenlib.so")
+    licant.do("zencad/zenlib.so", "makefile")
+
+@licant.routine
+def local27():
+    licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python2.7/zenlib.so")
+    licant.do("zencad/zenlib.so", "makefile")
+
+@licant.routine
+def all():
+    licant.do("zenlib.python3.5", "makefile")
+    licant.do("zenlib.python2.7", "makefile")
+    licant.do("zenlib.python3.5m", "makefile")
+
+@licant.routine
+def clean():
+    licant.do("zenlib.python3.5", "clean")
+    licant.do("zenlib.python2.7", "clean")
+    licant.do("zenlib.python3.5m", "clean")
+    licant.make.ftarget(tgt = "zencad/zenlib.so")
+    licant.do("zencad/zenlib.so", "clean")
+
 
 licant.ex(default = "all")
