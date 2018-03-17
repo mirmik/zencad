@@ -8,6 +8,7 @@
 
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <gp_Circ.hxx>
 
 #include <pybind11/pybind11.h>
 
@@ -28,12 +29,19 @@
 class ZenFace;
 
 struct ZenWire : public ZenShapeInterface<ZenWire> {
-	TopoDS_Shape shape() { return native; }
-	TopoDS_Wire native;
+	const char* class_name() override { return "ZenWire"; }
+	TopoDS_Shape shape() { return m_native; }
 	std::shared_ptr<ZenFace> make_face();
 };
 
+struct ZenEdge : public ZenShapeInterface<ZenEdge> {
+	const char* class_name() { return "ZenEdge"; }
+	std::shared_ptr<ZenFace> make_face();
+	TopoDS_Wire wire() { return BRepBuilderAPI_MakeWire(TopoDS::Edge(native())); }
+};
+
 struct ZenSegment : public ZenEdge {
+	const char* class_name() override { return "ZenSegment"; }
 	ZenPoint3 a; 
 	ZenPoint3 b;
 
@@ -43,19 +51,30 @@ struct ZenSegment : public ZenEdge {
 	}
 };
 
+struct ZenEdgeCircle : public ZenEdge {
+	const char* class_name() override { return "ZenEdgeCircle"; }
+	double r; 
+	ZenEdgeCircle(double r) : r(r) {}
+	void doit() override { 
+		m_native = BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r)); 
+	}
+};
+
 struct ZenPolySegment : public ZenWire {
+	const char* class_name() override { return "ZenPolySegment"; }
 	std::vector<ZenPoint3> pnts;
 	bool closed;
 	
 	ZenPolySegment(pybind11::list args) {
-    	for (auto item : args)
-          	pnts.push_back(item.cast<ZenPoint3>());
+    	for (auto item : args) {
+    		auto pnt = item.cast<ZenPoint3>();
+    		pnts.push_back(pnt);
+    	}
 	}
 
 	ZenPolySegment(pybind11::list args, pybind11::kwargs kw) : ZenPolySegment(args) {
         closed = kw["closed"].cast<bool>();
 	}
-
 
 	void doit() override { 
 		BRepBuilderAPI_MakeWire mkWire;
@@ -65,6 +84,7 @@ struct ZenPolySegment : public ZenWire {
 		if (closed) mkWire.Add(BRepBuilderAPI_MakeEdge(pnts[pnts.size()-1].Pnt(), pnts[0].Pnt()));
 		m_native = mkWire.Wire(); 
 	}
+
 };
 
 
