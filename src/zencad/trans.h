@@ -20,6 +20,8 @@ struct ZenTransform : public ZenCadObject {
 	void deserialize_from_stream(std::istream& out) override {
 		out.read((char*)&trsf, sizeof(gp_Trsf));
 	}
+
+	const char* class_name() override { return "ZenTransform"; }
 };
 
 template<typename Topo>
