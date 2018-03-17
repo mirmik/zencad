@@ -12,6 +12,7 @@
 #include <BinTools_ShapeSet.hxx>
 #include <BinTools.hxx>
 
+#include <zencad/boolops.h>
 #include <zencad/trans.h>
 #include <gxx/print.h>
 
@@ -22,10 +23,7 @@ class ZenTransform;
 
 struct ZenShape : public ZenCadObject {
 	const TopoDS_Shape& native() {
-		if (!prepared) {
-			gxx::println("ZenCadError: object isn't prepared");
-			exit(-1);
-		}
+		if (!prepared) prepare();
 		return m_native;
 	}
 
@@ -178,6 +176,21 @@ struct ZenShapeInterface : public ZenShape {
 	std::shared_ptr<Self> mirrorXZ() { return transform(trans_mirrorXZ()); }
 };
 
+template <typename Self> 
+struct ZenBooleanShapeInterface : public ZenShapeInterface<Self> {
+	std::shared_ptr<Self> operator+ (const Self& rhs) const {
+		return std::shared_ptr<Self>(new ZenUnion<Self>(ZenShapeInterface<Self>::get_spointer(), rhs.get_spointer()));
+	}
+
+	std::shared_ptr<Self> operator- (const Self& rhs) const {
+		return std::shared_ptr<Self>(new ZenDifference<Self>(ZenShapeInterface<Self>::get_spointer(), rhs.get_spointer()));
+	}
+
+	std::shared_ptr<Self> operator^ (const Self& rhs) const {
+		return std::shared_ptr<Self>(new ZenIntersect<Self>(ZenShapeInterface<Self>::get_spointer(), rhs.get_spointer()));
+	}
+};
+
 template <typename Topo>
 std::shared_ptr<Topo> zen_load(std::string path) {
 	std::shared_ptr<Topo> topo(new Topo);
@@ -187,7 +200,7 @@ std::shared_ptr<Topo> zen_load(std::string path) {
 	return topo;
 }
 
-struct ZenSolid : public ZenShapeInterface<ZenSolid> {
+struct ZenSolid : public ZenBooleanShapeInterface<ZenSolid> {
 	const char* class_name() { return "ZenSolid"; }
 	//TopoDS_Solid native;
 	//TopoDS_Shape shape() {
@@ -196,21 +209,21 @@ struct ZenSolid : public ZenShapeInterface<ZenSolid> {
 	//}
 	//TopoDS_Solid to_native(const TopoDS_Shape& shp) { return TopoDS::Solid(shp); } 
 
-	friend std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs);
-	friend std::shared_ptr<ZenSolid> operator- (const ZenSolid& lhs, const ZenSolid& rhs);
-	friend std::shared_ptr<ZenSolid> operator^ (const ZenSolid& lhs, const ZenSolid& rhs);
+	//friend std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs);
+	//friend std::shared_ptr<ZenSolid> operator- (const ZenSolid& lhs, const ZenSolid& rhs);
+	//friend std::shared_ptr<ZenSolid> operator^ (const ZenSolid& lhs, const ZenSolid& rhs);
 
-	std::shared_ptr<ZenSolid> get_spointer() const;
+	//std::shared_ptr<ZenSolid> get_spointer() const;
 };
 
-struct ZenFace : public ZenShapeInterface<ZenFace> {
+struct ZenFace : public ZenBooleanShapeInterface<ZenFace> {
+	const char* class_name() { return "ZenFace"; }
 	//TopoDS_Shape shape() { return native; }
 	//TopoDS_Face native;
-};
 
-struct ZenEdge : public ZenShapeInterface<ZenEdge> {
-	//TopoDS_Shape shape() { return native; }
-	//TopoDS_Edge native;
+	//friend std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs);
+	//friend std::shared_ptr<ZenSolid> operator- (const ZenSolid& lhs, const ZenSolid& rhs);
+	//friend std::shared_ptr<ZenSolid> operator^ (const ZenSolid& lhs, const ZenSolid& rhs);
 };
 
 #endif

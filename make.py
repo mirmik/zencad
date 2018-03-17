@@ -72,7 +72,9 @@ def registry_library(py):
 	    include_modules = [
             "libqt", 
             "liboce",
-	    	("gxx", "posix")
+	    	("gxx", "posix"),
+            ("gxx.print", "cout"),
+            ("gxx.dprint", "cout")
         ],
 	    include_paths = [
             ".", 

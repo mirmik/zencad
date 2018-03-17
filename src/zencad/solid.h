@@ -6,8 +6,11 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
 #include <BRepPrimAPI_MakeTorus.hxx>
+//#include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepPrimAPI_MakePrism.hxx>
 
 #include <zencad/topo.h>
+#include <zencad/math3.h>
 #include <memory>
 
 #include <pybind11/pybind11.h>
@@ -62,22 +65,17 @@ struct ZenTorus : public ZenSolid {
 		set_hash2(typeid(this).hash_code() + make_hash(r1) + make_hash(r2));}
 	void doit() override { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
 };
-/*
-static inline std::shared_ptr<ZenSolid> solid_box(double x, double y, double z) {
-	return std::shared_ptr<ZenSolid>(new ZenBox(x, y, z));
-}
 
-static inline std::shared_ptr<ZenSolid> solid_sphere(double r) {
-	return std::shared_ptr<ZenSolid>(new ZenSphere(r));
-}
-
-static inline std::shared_ptr<ZenSolid> solid_cylinder(double r, double h) {
-	return std::shared_ptr<ZenSolid>(new ZenCylinder(r, h));
-}
-
-static inline std::shared_ptr<ZenSolid> solid_torus(double r1, double r2) {
-	return std::shared_ptr<ZenSolid>(new ZenTorus(r1, r2));
-}*/
-
+struct ZenLinearExtrude : public ZenSolid {
+	virtual const char* class_name() { return "ZenLinearExtrude"; }
+	gp_Vec vec;
+	std::shared_ptr<ZenFace> fc;
+	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z) : fc(fc), vec(0,0,z) {}
+	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v) : fc(fc), vec(v.Vec()) {}
+	void doit() override { 
+		BRepPrimAPI_MakePrism mk(fc->native(), vec);
+		m_native = mk; 
+	}
+};
 
 #endif

@@ -2,7 +2,7 @@
 #define DZENCAD_BOOLOPS_H
 
 #include <zencad/base.h>
-#include <zencad/topo.h>
+//#include <zencad/topo.h>
 
 #include <gxx/print.h>
 
@@ -14,65 +14,60 @@
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 
-#include <zencad/widget.h>
+//#include <zencad/widget.h>
 
-struct ZenBooleanOperation : public ZenSolid {
-
-};
-
-struct ZenUnion : public ZenBooleanOperation {
+template <typename Topo>
+struct ZenUnion : public Topo {
 	virtual const char* class_name() override { return "ZenUnion"; }
-	std::shared_ptr<ZenSolid> a;
-	std::shared_ptr<ZenSolid> b;
+	std::shared_ptr<Topo> a;
+	std::shared_ptr<Topo> b;
 
-	ZenUnion(std::shared_ptr<ZenSolid> a, std::shared_ptr<ZenSolid> b) : a(a), b(b) {
-		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	ZenUnion(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
+		Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
 	}
 
 	void doit() override {
 		a->prepare();
 		b->prepare();
-		m_native = BRepAlgoAPI_Fuse(a->native(), b->native());
+		Topo::m_native = BRepAlgoAPI_Fuse(a->native(), b->native());
 	}
 };
 
-struct ZenDifference : public ZenBooleanOperation {
+template <typename Topo>
+struct ZenDifference : public Topo {
 	virtual const char* class_name() override { return "ZenDifference"; }
-	std::shared_ptr<ZenSolid> a;
-	std::shared_ptr<ZenSolid> b;
+	std::shared_ptr<Topo> a;
+	std::shared_ptr<Topo> b;
 
-	ZenDifference(std::shared_ptr<ZenSolid> a, std::shared_ptr<ZenSolid> b) : a(a), b(b) {
-		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	ZenDifference(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
+		Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
 	}
 
 	void doit() override {
 		a->prepare();
 		b->prepare();
-		m_native = BRepAlgoAPI_Cut(a->native(), b->native());
+		Topo::m_native = BRepAlgoAPI_Cut(a->native(), b->native());
 	}
 };
 
-struct ZenIntersect : public ZenBooleanOperation {
+template <typename Topo>
+struct ZenIntersect : public Topo {
 	virtual const char* class_name() override { return "ZenIntersect"; }
-	std::shared_ptr<ZenSolid> a;
-	std::shared_ptr<ZenSolid> b;
+	std::shared_ptr<Topo> a;
+	std::shared_ptr<Topo> b;
 
-	ZenIntersect(std::shared_ptr<ZenSolid> a, std::shared_ptr<ZenSolid> b) : a(a), b(b) {
-		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	ZenIntersect(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
+		Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
 	}
 
 	void doit() override {
 		a->prepare();
 		b->prepare();
-		m_native = BRepAlgoAPI_Common(a->native(), b->native());
+		Topo::m_native = BRepAlgoAPI_Common(a->native(), b->native());
 	}
 };
-/*
-static inline std::shared_ptr<ZenSolid> boolops_union(std::shared_ptr<ZenSolid> a, std::shared_ptr<ZenShape> b) {
-	return std::shared_ptr<ZenSolid>(new ZenUnion(a, b));
-}*/
 
 #endif

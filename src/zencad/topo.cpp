@@ -72,7 +72,8 @@ std::shared_ptr<ZenShape> ZenShape::mirrorXZ() {
 	return std::shared_ptr<ZenShape>(new ZenTransformShape(get_spointer(), trans_mirrorXZ()));
 }
 */
-std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs) {
+
+/*std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs) {
 	return std::shared_ptr<ZenSolid>(new ZenUnion(lhs.get_spointer(), rhs.get_spointer()));
 }
 
@@ -82,8 +83,8 @@ std::shared_ptr<ZenSolid> operator- (const ZenSolid& lhs, const ZenSolid& rhs) {
 
 std::shared_ptr<ZenSolid> operator^ (const ZenSolid& lhs, const ZenSolid& rhs) {
 	return std::shared_ptr<ZenSolid>(new ZenIntersect(lhs.get_spointer(), rhs.get_spointer()));
-}
+}*/
 
-std::shared_ptr<ZenSolid> ZenSolid::get_spointer() const {
-	return std::dynamic_pointer_cast<ZenSolid, ZenCadObject>((const_cast<ZenSolid*>(this))->shared_from_this());
-}
+//std::shared_ptr<ZenSolid> ZenSolid::get_spointer() const {
+//	return std::dynamic_pointer_cast<ZenSolid, ZenCadObject>((const_cast<ZenSolid*>(this))->shared_from_this());
+//}
