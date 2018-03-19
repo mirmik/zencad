@@ -64,6 +64,7 @@ def registry_library(py):
 	        "zencad/pywrap.cpp", 
 	        "zencad/trans.cpp", 
 	        "zencad/topo.cpp",
+            "zencad/face.cpp",
 	        "zencad/ZenWidget.cpp", 
 	        "zencad/DisplayWidget.cpp", 
 	        "zencad/widget.cpp",

@@ -8,6 +8,8 @@
 #include <BRepPrimAPI_MakeTorus.hxx>
 //#include <BRepBuilderAPI_MakePolygon.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
+#include <BRepPrimAPI_MakeWedge.hxx>
+#include <BRepOffsetAPI_ThruSections.hxx>
 
 #include <zencad/topo.h>
 #include <zencad/math3.h>
@@ -66,16 +68,37 @@ struct ZenTorus : public ZenSolid {
 	void doit() override { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
 };
 
+struct ZenWedge : public ZenSolid {
+	virtual const char* class_name() { return "ZenTorus"; }
+	double x, y, z, ltx;
+	ZenWedge(double x, double y, double z, double ltx) : x(x), y(y), z(z), ltx(ltx) {
+		set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z) ^ make_hash(ltx));
+		set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z) + make_hash(ltx));}
+	void doit() override { m_native = BRepPrimAPI_MakeWedge(x,y,z,ltx).Solid(); }
+};
+
 struct ZenLinearExtrude : public ZenSolid {
 	virtual const char* class_name() { return "ZenLinearExtrude"; }
 	gp_Vec vec;
 	std::shared_ptr<ZenFace> fc;
 	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z) : fc(fc), vec(0,0,z) {}
 	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v) : fc(fc), vec(v.Vec()) {}
-	void doit() override { 
-		BRepPrimAPI_MakePrism mk(fc->native(), vec);
-		m_native = mk; 
+	void doit() override;
+};
+
+
+struct ZenLoft : public ZenSolid {
+	virtual const char* class_name() { return "ZenLoft"; }
+	std::vector<std::shared_ptr<ZenShape>> shapes;
+
+	ZenLoft(pybind11::list args) {
+    	for (auto item : args) {
+    		auto pnt = item.cast<std::shared_ptr<ZenShape>>();
+    		shapes.push_back(pnt);
+    	}
 	}
+
+	void doit() override;
 };
 
 #endif

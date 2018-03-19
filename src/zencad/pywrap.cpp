@@ -46,6 +46,11 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenShape, ZenCadObject, std::shared_ptr<ZenShape>>(m, "ZenShape")
 		.def("dump", &ZenShape::dump_binary);
 
+	py::class_<ZenVertex, ZenShape, std::shared_ptr<ZenVertex>>(m, "ZenVertex")
+		DEF_TRANSFORM_OPERATIONS(ZenVertex)
+		.def(py::init<double, double, double>())
+	;
+
 	///SOLIDS
 	py::class_<ZenSolid, ZenShape, std::shared_ptr<ZenSolid>>(m, "ZenSolid")
 		DEF_TRANSFORM_OPERATIONS(ZenSolid)
@@ -67,13 +72,18 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenCylinder, ZenSolid, std::shared_ptr<ZenCylinder>>(m, "solid_cylinder")
 		.def(py::init<double, double>());
 
-
 	py::class_<ZenTorus, ZenSolid, std::shared_ptr<ZenTorus>>(m, "solid_torus")
 		.def(py::init<double, double>());
+
+	py::class_<ZenWedge, ZenSolid, std::shared_ptr<ZenWedge>>(m, "solid_wedge")
+		.def(py::init<double, double, double, double>());
 	
 	py::class_<ZenLinearExtrude, ZenSolid, std::shared_ptr<ZenLinearExtrude>>(m, "solid_linear_extrude")
 		.def(py::init<std::shared_ptr<ZenFace>, double>())
 		.def(py::init<std::shared_ptr<ZenFace>, ZenVector3>());
+
+	py::class_<ZenLoft, ZenSolid, std::shared_ptr<ZenLoft>>(m, "solid_loft")
+		.def(py::init<py::list>());
 	
 	///EDGES
 	py::class_<ZenEdge, ZenShape, std::shared_ptr<ZenEdge>>(m, "ZenEdge")
@@ -85,6 +95,9 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<ZenEdgeCircle, ZenEdge, std::shared_ptr<ZenEdgeCircle>>(m, "edge_circle")
 		.def(py::init<double>());
+
+	py::class_<ZenCircleArcByPoints, ZenEdge, std::shared_ptr<ZenCircleArcByPoints>>(m, "edge_circle_arc_by_points")
+		.def(py::init<ZenPoint3, ZenPoint3, ZenPoint3>());
 
 	///WIRES
 	py::class_<ZenWire, ZenShape, std::shared_ptr<ZenWire>>(m, "ZenWire")
@@ -102,10 +115,14 @@ PYBIND11_MODULE(zenlib, m) {
 		.def(py::self + py::self)
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
+		.def("fillet", &ZenFace::fillet)
 	;
 
 	py::class_<ZenPolygon, ZenFace, std::shared_ptr<ZenPolygon>>(m, "face_polygon")
 		.def(py::init<py::list>());
+
+	py::class_<ZenFilletFace, ZenFace, std::shared_ptr<ZenFilletFace>>(m, "face_fillet")
+		.def(py::init<std::shared_ptr<ZenFace>, int>());
 		
 	py::class_<ZenCircle, ZenFace, std::shared_ptr<ZenCircle>>(m, "face_circle")
 		.def(py::init<double>());
