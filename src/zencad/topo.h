@@ -202,28 +202,20 @@ std::shared_ptr<Topo> zen_load(std::string path) {
 
 struct ZenSolid : public ZenBooleanShapeInterface<ZenSolid> {
 	const char* class_name() { return "ZenSolid"; }
-	//TopoDS_Solid native;
-	//TopoDS_Shape shape() {
-	// 	gxx::println("shape");
-	// 	return native; 
-	//}
-	//TopoDS_Solid to_native(const TopoDS_Shape& shp) { return TopoDS::Solid(shp); } 
-
-	//friend std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs);
-	//friend std::shared_ptr<ZenSolid> operator- (const ZenSolid& lhs, const ZenSolid& rhs);
-	//friend std::shared_ptr<ZenSolid> operator^ (const ZenSolid& lhs, const ZenSolid& rhs);
-
-	//std::shared_ptr<ZenSolid> get_spointer() const;
 };
 
-struct ZenFace : public ZenBooleanShapeInterface<ZenFace> {
-	const char* class_name() { return "ZenFace"; }
-	//TopoDS_Shape shape() { return native; }
-	//TopoDS_Face native;
+class ZenFace;
+class ZenWire;
+class ZenEdge;
 
-	//friend std::shared_ptr<ZenSolid> operator+ (const ZenSolid& lhs, const ZenSolid& rhs);
-	//friend std::shared_ptr<ZenSolid> operator- (const ZenSolid& lhs, const ZenSolid& rhs);
-	//friend std::shared_ptr<ZenSolid> operator^ (const ZenSolid& lhs, const ZenSolid& rhs);
+#include <BRepBuilderAPI_MakeVertex.hxx>
+struct ZenVertex : ZenShapeInterface<ZenVertex> {
+	double x,y,z;
+	const char* class_name() override { return "ZenVertex"; }
+	std::shared_ptr<ZenVertex> vtx;
+	ZenVertex(){}
+	ZenVertex(double x, double y, double z) : x(x), y(y), z(z) {}
+	void doit() override {m_native = BRepBuilderAPI_MakeVertex(gp_Pnt(x,y,z)); }
 };
 
 #endif
