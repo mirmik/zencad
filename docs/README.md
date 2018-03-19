@@ -24,4 +24,5 @@ show()
 ```
 
 ![/docs/result.jpeg](/docs/result.jpeg)
+![/docs/fullscreen.png](/docs/fullscreen.png)
 
