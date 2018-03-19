@@ -29,12 +29,12 @@ pnts = zencad.math3.points([
 ])
 
 f0 = face.polygon(pnts)
-s0 = solid.linear_extrude(f0, zencad.math3.vector(10,1,10))
-s1 = solid.linear_extrude(f0, zencad.math3.vector(5,1,10))
-s2 = solid.linear_extrude(f0, 10)
+s0 = solid.linear_extrude(f0, (10,1,10))
+s1 = solid.linear_extrude(f0, (5,1,10))
+s2 = solid.linear_extrude(f0, (0,0,10))
 
 f1 = face.polygon(pnts).rotateX(zencad.gr(10)).up(30)
-s3 = solid.linear_extrude(f1, 10)
+s3 = solid.linear_extrude(f1, (0,0,10))
 
 display(s0.right(20))
 display(s1)

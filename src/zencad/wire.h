@@ -8,6 +8,7 @@
 
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <GC_MakeArcOfCircle.hxx>
 #include <gp_Circ.hxx>
 
 #include <pybind11/pybind11.h>
@@ -51,12 +52,16 @@ struct ZenSegment : public ZenEdge {
 	}
 };
 
-struct ZenEdgeCircle : public ZenEdge {
-	const char* class_name() override { return "ZenEdgeCircle"; }
-	double r; 
-	ZenEdgeCircle(double r) : r(r) {}
-	void doit() override { 
-		m_native = BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r)); 
+struct ZenCircleArcByPoints : public ZenEdge {
+	const char* class_name() override { return "ZenCircleArcByPoints"; }
+	ZenPoint3  a;
+	ZenPoint3  b;
+	ZenPoint3  c;
+
+	ZenCircleArcByPoints(ZenPoint3 a, ZenPoint3 b, ZenPoint3 c) : a(a), b(b), c(c) {}
+	void doit() override {  
+		gxx::println(a,b,c);
+		m_native = BRepBuilderAPI_MakeEdge(GC_MakeArcOfCircle(a.Pnt(), b.Pnt(), c.Pnt()));
 	}
 };
 
@@ -84,8 +89,18 @@ struct ZenPolySegment : public ZenWire {
 		if (closed) mkWire.Add(BRepBuilderAPI_MakeEdge(pnts[pnts.size()-1].Pnt(), pnts[0].Pnt()));
 		m_native = mkWire.Wire(); 
 	}
-
 };
+
+struct ZenEdgeCircle : public ZenEdge {
+	const char* class_name() override { return "ZenEdgeCircle"; }
+	double r; 
+	ZenEdgeCircle(double r) : r(r) {}
+	void doit() override { 
+		m_native = BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r)); 
+	}
+};
+
+
 
 
 #endif
