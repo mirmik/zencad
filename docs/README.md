@@ -1,6 +1,11 @@
 # zencad
 CAD system for righteous zen programmers
 
+What is it?
+-----------
+ZenCad - it's a system for use oce geometry core in openscad's script style.
+So, it's  openscad idea, python language and opencascade power in one.  
+
 Install
 -------
 sudo apt install qt5-default  
