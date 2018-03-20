@@ -17,6 +17,7 @@
 #include <gxx/print.h>
 
 #include <memory>
+#include <vector>
 
 class ZenTransformShape;
 class ZenTransform;
@@ -136,6 +137,15 @@ protected:
 	TopoDS_Shape m_native;
 };
 
+
+struct ZenVertex;
+struct ZenEdge;
+struct ZenWire;
+struct ZenFace;
+struct ZenSolid;
+
+template <typename Self> struct ZenShapeExplorer;
+
 template <typename Self>
 struct ZenShapeInterface : public ZenShape {
 	//TopoDS_Shape shape() override { 
@@ -174,6 +184,14 @@ struct ZenShapeInterface : public ZenShape {
 	std::shared_ptr<Self> mirrorXY() { return transform(trans_mirrorXY()); }
 	std::shared_ptr<Self> mirrorYZ() { return transform(trans_mirrorYZ()); }
 	std::shared_ptr<Self> mirrorXZ() { return transform(trans_mirrorXZ()); }
+
+	std::shared_ptr<ZenShapeExplorer<ZenWire>> wires() {
+		return std::shared_ptr<ZenShapeExplorer<ZenWire>>(new ZenShapeExplorer<ZenWire>(get_spointer()));
+	}
+
+	std::shared_ptr<ZenShapeExplorer<ZenVertex>> vertexs() {
+		return std::shared_ptr<ZenShapeExplorer<ZenVertex>>(new ZenShapeExplorer<ZenVertex>(get_spointer()));
+	}
 };
 
 template <typename Self> 
@@ -204,18 +222,55 @@ struct ZenSolid : public ZenBooleanShapeInterface<ZenSolid> {
 	const char* class_name() { return "ZenSolid"; }
 };
 
-class ZenFace;
-class ZenWire;
-class ZenEdge;
-
 #include <BRepBuilderAPI_MakeVertex.hxx>
 struct ZenVertex : ZenShapeInterface<ZenVertex> {
+	using native_type = TopoDS_Vertex;
+	static constexpr TopAbs_ShapeEnum shape_topabs = TopAbs_VERTEX;
+	static native_type shape_convert(const TopoDS_Shape& shp) { return TopoDS::Vertex(shp); }
+
 	double x,y,z;
 	const char* class_name() override { return "ZenVertex"; }
 	std::shared_ptr<ZenVertex> vtx;
 	ZenVertex(){}
 	ZenVertex(double x, double y, double z) : x(x), y(y), z(z) {}
 	void doit() override {m_native = BRepBuilderAPI_MakeVertex(gp_Pnt(x,y,z)); }
+};
+
+
+#include <TopExp_Explorer.hxx>
+template <typename Self> struct ZenFromExplorer;
+
+template <typename Self>
+struct ZenShapeExplorer : public ZenCadObject {
+	const char* class_name() override { return "ZenShapeExplorer"; }
+	std::vector<typename Self::native_type> shps;
+	std::shared_ptr<ZenShape> src;
+	ZenShapeExplorer(std::shared_ptr<ZenShape> src) : src(src) {}
+	void doit() override { 
+		for(TopExp_Explorer nexp(src->native(), Self::shape_topabs); nexp.More(); nexp.Next()) {	
+			shps.push_back(Self::shape_convert(nexp.Current()));			
+		}
+	}
+	size_t size() {
+		prepare();
+		return shps.size();
+	}
+
+	std::shared_ptr<Self> getitem(int n) {
+		auto sptr = std::dynamic_pointer_cast<ZenShapeExplorer, ZenCadObject>(shared_from_this());
+		return std::shared_ptr<Self>(new ZenFromExplorer<Self>(sptr, n));
+	}
+};
+
+template <typename Self>
+struct ZenFromExplorer : public Self {
+	int n;
+	std::shared_ptr<ZenShapeExplorer<Self>> exp;
+	ZenFromExplorer(std::shared_ptr<ZenShapeExplorer<Self>> exp, int n) : exp(exp), n(n) {}
+	void doit() {
+		exp->prepare();
+		Self::m_native = exp->shps[n];
+	}
 };
 
 #endif
