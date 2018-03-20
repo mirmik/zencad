@@ -1,0 +1,1 @@
+int do_nothing() {}
