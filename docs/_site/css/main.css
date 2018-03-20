@@ -455,3 +455,30 @@ pre {
     color: #008080; }
   .highlight .il {
     color: #099; }
+
+.leftpane {
+  width: 25%;
+  height: 100%;
+  float: left;
+  background-color: rosybrown;
+  border-collapse: collapse; }
+
+.middlepane {
+  width: 50%;
+  height: 100%;
+  float: left;
+  border-collapse: collapse; }
+
+.rightpane {
+  width: 25%;
+  height: 100%;
+  position: relative;
+  float: right;
+  background-color: yellow;
+  border-collapse: collapse; }
+
+.toppane {
+  width: 100%;
+  height: 100px;
+  border-collapse: collapse;
+  background-color: #4da6ff; }
