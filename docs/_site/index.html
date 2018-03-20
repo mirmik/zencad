@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="css/main.css">
+		<body>
+    		<h1 id="zencad-tutorial">zencad tutorial</h1>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">licant.make</span> <span class="kn">as</span> <span class="nn">lmake</span>
+<span class="kn">import</span> <span class="nn">licant</span>
+
+<span class="n">lmake</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="s">"a.txt"</span><span class="p">)</span>
+<span class="n">lmake</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tgt</span> <span class="o">=</span> <span class="s">"build/b.txt"</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="s">"a.txt"</span><span class="p">)</span>
+<span class="n">lmake</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tgt</span> <span class="o">=</span> <span class="s">"build/c.txt"</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="s">"build/b.txt"</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"licant targets list:"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">licant</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">targets</span><span class="p">))</span>
+
+<span class="n">licant</span><span class="o">.</span><span class="n">ex</span><span class="p">(</span><span class="n">default</span> <span class="o">=</span> <span class="s">"build/c.txt"</span><span class="p">)</span></code></pre></figure>
+
+		</body>
+</html>
