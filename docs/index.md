@@ -4,13 +4,13 @@ layout: default
 
 # ZenCad
 
-##Description
+## Description
 ZenCad библиотека создания 3д CAD моделей.  
 ZenCad использует ядро OpenCascade, скриптовый стиль OpenScad и язык общего назначения Python.  
 
-##Installation
+## Installation
 
-###Install dependies
+### Install dependies
 
 {% highlight sh %}
 	sudo apt install qt5-default  
@@ -23,15 +23,15 @@ ZenCad использует ядро OpenCascade, скриптовый стил�
 	pip install zencad
 {% endhighlight %}
 
-###Get source code
+### Get source code
 
 {% highlight sh %}
 	git clone https://github.com/mirmik/zencad
 {% endhighlight %}
 
-##Usage
+## Usage
 
-###Simple example
+### Simple example
 
 Нарисуем параллелепипед:
 {% highlight python %}
@@ -45,7 +45,7 @@ ZenCad использует ядро OpenCascade, скриптовый стил�
 	show()
 {% endhighlight %}
 
-###Second simple example
+### Second simple example
 {% highlight python %}
 	import zencad
 	import zencad.solid as solid
