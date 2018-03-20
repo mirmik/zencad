@@ -71,15 +71,8 @@ std::shared_ptr<ZenFilletFace> ZenFace::fillet(int num) {
 void ZenFilletFace::doit() {
 	BRepFilletAPI_MakeFillet2d mk(TopoDS::Face(fc->native()));
 	for(TopExp_Explorer expWire(TopoDS::Face(fc->native()), TopAbs_WIRE); expWire.More(); expWire.Next()) {
-		gxx::println("HEER");
-	
-
 		BRepTools_WireExplorer explorer(TopoDS::Wire(expWire.Current()));
-    	//while explorer.More():
-      	//  vertex = explorer.CurrentVertex()
-       	//filleted_face.AddFillet(vertex, roller_radius)
-        //explorer.Next()
-		while (explorer.More()) {
+    	while (explorer.More()) {
 			mk.AddFillet(explorer.CurrentVertex(), r);
 			explorer.Next();
 		}

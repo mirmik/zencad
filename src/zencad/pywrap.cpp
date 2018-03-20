@@ -37,6 +37,11 @@ namespace py = pybind11;
 .def("mirrorYZ", &TYPE::mirrorYZ)				\
 .def("mirrorXZ", &TYPE::mirrorXZ)				
 
+#define DEF_EXPLORER_OPERATIONS(TYPE) 				\
+.def("wires", &TYPE::wires)							\
+.def("vertexs", &TYPE::vertexs)				
+
+
 PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenCadObject, std::shared_ptr<ZenCadObject>>(m, "ZenCadObject")
 		.def("get_hash1", &ZenCadObject::get_hash1)
@@ -48,12 +53,14 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<ZenVertex, ZenShape, std::shared_ptr<ZenVertex>>(m, "ZenVertex")
 		DEF_TRANSFORM_OPERATIONS(ZenVertex)
+		DEF_EXPLORER_OPERATIONS(ZenVertex)
 		.def(py::init<double, double, double>())
 	;
 
 	///SOLIDS
 	py::class_<ZenSolid, ZenShape, std::shared_ptr<ZenSolid>>(m, "ZenSolid")
 		DEF_TRANSFORM_OPERATIONS(ZenSolid)
+		DEF_EXPLORER_OPERATIONS(ZenSolid)
 		.def(py::self + py::self)
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
@@ -88,6 +95,7 @@ PYBIND11_MODULE(zenlib, m) {
 	///EDGES
 	py::class_<ZenEdge, ZenShape, std::shared_ptr<ZenEdge>>(m, "ZenEdge")
 		DEF_TRANSFORM_OPERATIONS(ZenEdge)
+		DEF_EXPLORER_OPERATIONS(ZenEdge)
 		.def("face", &ZenEdge::make_face)
 	;
 	py::class_<ZenSegment, ZenEdge, std::shared_ptr<ZenSegment>>(m, "edge_segment")
@@ -102,20 +110,28 @@ PYBIND11_MODULE(zenlib, m) {
 	///WIRES
 	py::class_<ZenWire, ZenShape, std::shared_ptr<ZenWire>>(m, "ZenWire")
 		DEF_TRANSFORM_OPERATIONS(ZenWire)
+		DEF_EXPLORER_OPERATIONS(ZenWire)
 		.def("face", &ZenWire::make_face)
 	;
 
 	py::class_<ZenPolySegment, ZenWire, std::shared_ptr<ZenPolySegment>>(m, "wire_polysegment")
 		.def(py::init<py::list>())
-		.def(py::init<py::list, py::kwargs>());
+		.def(py::init<py::list, py::kwargs>())
+	;
 
+	//py::class_<ZenWiresFromFace, ZenWire, std::shared_ptr<ZenWiresFromFace>>(m, "wires_from_face")
+	//	.def(py::init<std::shared_ptr<std::shared_ptr<ZenFace>>>())
+	//;
+		
 	///FACE	
 	py::class_<ZenFace, ZenShape, std::shared_ptr<ZenFace>>(m, "ZenFace")
 		DEF_TRANSFORM_OPERATIONS(ZenFace)
+		DEF_EXPLORER_OPERATIONS(ZenFace)
 		.def(py::self + py::self)
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
 		.def("fillet", &ZenFace::fillet)
+		//.def("wires", &ZenFace::wires)
 	;
 
 	py::class_<ZenPolygon, ZenFace, std::shared_ptr<ZenPolygon>>(m, "face_polygon")
@@ -148,5 +164,20 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenPoint3>(m, "point3")
 		.def(py::init<double,double,double>())
 		.def(py::init<double,double>());
-		
+
+	py::class_<ZenShapeExplorer<ZenWire>, std::shared_ptr<ZenShapeExplorer<ZenWire>>>(m, "ZenShapeExplorer<ZenWire>")
+		.def("__len__", &ZenShapeExplorer<ZenWire>::size)
+		.def("__getitem__", &ZenShapeExplorer<ZenWire>::getitem)
+	;	
+
+	py::class_<ZenShapeExplorer<ZenVertex>, std::shared_ptr<ZenShapeExplorer<ZenVertex>>>(m, "ZenShapeExplorer<ZenVertex>")
+		.def("__len__", &ZenShapeExplorer<ZenVertex>::size)
+		.def("__getitem__", &ZenShapeExplorer<ZenVertex>::getitem)
+	;	
+
+	//py::class_<ZenShapeExplorer<ZenFace>, std::shared_ptr<ZenShapeExplorer<ZenFace>>>(m, "ZenShapeExplorer<ZenFace>");
+	//;
+
+	//py::class_<ZenShapeExplorer<ZenSolid>, std::shared_ptr<ZenShapeExplorer<ZenSolid>>>(m, "ZenShapeExplorer<ZenSolid>");
+	//;
 }
