@@ -10,6 +10,7 @@
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <gp_Circ.hxx>
+#include <TopAbs.hxx>
 
 #include <pybind11/pybind11.h>
 
@@ -30,12 +31,20 @@
 class ZenFace;
 
 struct ZenWire : public ZenShapeInterface<ZenWire> {
+	using native_type = TopoDS_Wire;
+	static constexpr TopAbs_ShapeEnum shape_topabs = TopAbs_WIRE;
+	static native_type shape_convert(const TopoDS_Shape& shp) { return TopoDS::Wire(shp); }
+
 	const char* class_name() override { return "ZenWire"; }
 	TopoDS_Shape shape() { return m_native; }
 	std::shared_ptr<ZenFace> make_face();
 };
 
 struct ZenEdge : public ZenShapeInterface<ZenEdge> {
+	using native_type = TopoDS_Edge;
+	static constexpr TopAbs_ShapeEnum shape_topabs = TopAbs_EDGE;
+	static native_type shape_convert(const TopoDS_Shape& shp) { return TopoDS::Edge(shp); }
+
 	const char* class_name() { return "ZenEdge"; }
 	std::shared_ptr<ZenFace> make_face();
 	TopoDS_Wire wire() { return BRepBuilderAPI_MakeWire(TopoDS::Edge(native())); }
@@ -99,8 +108,5 @@ struct ZenEdgeCircle : public ZenEdge {
 		m_native = BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r)); 
 	}
 };
-
-
-
 
 #endif
