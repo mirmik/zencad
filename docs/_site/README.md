@@ -28,6 +28,6 @@ display(m)
 show()
 ```
 
-![/docs/result.jpeg](/docs/result.jpeg)
-![/docs/fullscreen.png](/docs/fullscreen.png)
+![/docs/images/result.jpeg](/docs/images/result.jpeg)
+![/docs/images/fullscreen.png](/docs/images/fullscreen.png)
 

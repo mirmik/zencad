@@ -1,8 +1,17 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
 <html>
-	<meta charset="utf-8">
-	<link rel="stylesheet" href="{{ "css/main.css" | prepend: site.baseurl }}">
-		<body>
-    		{{ content }}
-		</body>
+	<div class="container">
+	  	<div class="toppane">Test Page</div>
+	  	<div class="leftpane">
+	  		<h1>Test Page</h1></div>
+	  	<div class="middlepane">
+			<link rel="stylesheet" href="{{ "css/main.css" | prepend: site.baseurl }}">
+				<body>
+    				{{ content }}
+				</body>
+		</div>
+	  	<div class="rightpane">
+	  		<h1>Test Page</h1></div>
+	</div>
 </html>
