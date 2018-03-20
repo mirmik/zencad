@@ -1,0 +1,10 @@
+title: ZenCad
+email: mirmikns@yandex.ru
+description: >
+  ZenCad 3d modeling
+baseurl: ""
+url: "https://github.com/mirmik/zencad"
+github_username: mirmik
+
+# Build settings
+markdown: kramdown
