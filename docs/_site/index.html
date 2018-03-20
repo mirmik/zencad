@@ -3,20 +3,55 @@
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="css/main.css">
 		<body>
-    		<h1 id="zencad-tutorial">zencad tutorial</h1>
+    		<h1 id="zencad">ZenCad</h1>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/env python</span>
+<h2 id="description">Description</h2>
+<p>ZenCad библиотека создания 3д CAD моделей.<br />
+ZenCad использует ядро OpenCascade, скриптовый стиль OpenScad и язык общего назначения Python.</p>
 
-<span class="kn">import</span> <span class="nn">licant.make</span> <span class="kn">as</span> <span class="nn">lmake</span>
-<span class="kn">import</span> <span class="nn">licant</span>
+<h2 id="installation">Installation</h2>
 
-<span class="n">lmake</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="s">"a.txt"</span><span class="p">)</span>
-<span class="n">lmake</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tgt</span> <span class="o">=</span> <span class="s">"build/b.txt"</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="s">"a.txt"</span><span class="p">)</span>
-<span class="n">lmake</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tgt</span> <span class="o">=</span> <span class="s">"build/c.txt"</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="s">"build/b.txt"</span><span class="p">)</span>
+<h3 id="install-dependies">Install dependies</h3>
 
-<span class="k">print</span><span class="p">(</span><span class="s">"licant targets list:"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">licant</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">targets</span><span class="p">))</span>
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh">	sudo apt install qt5-default  
+	sudo apt install liboce-<span class="k">*</span>  </code></pre></figure>
 
-<span class="n">licant</span><span class="o">.</span><span class="n">ex</span><span class="p">(</span><span class="n">default</span> <span class="o">=</span> <span class="s">"build/c.txt"</span><span class="p">)</span></code></pre></figure>
+<h3 id="install-with-pip">Install with pip</h3>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh">	pip install zencad</code></pre></figure>
+
+<h3 id="get-source-code">Get source code</h3>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh">	git clone https://github.com/mirmik/zencad</code></pre></figure>
+
+<h2 id="usage">Usage</h2>
+
+<h3 id="simple-example">Simple example</h3>
+
+<p>Нарисуем параллелепипед:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">	<span class="kn">import</span> <span class="nn">zencad</span>
+	<span class="kn">import</span> <span class="nn">zencad.solid</span> <span class="kn">as</span> <span class="nn">solid</span>
+	<span class="kn">from</span> <span class="nn">zencad.widget</span> <span class="kn">import</span> <span class="o">*</span>
+	
+	<span class="n">box</span> <span class="o">=</span> <span class="n">solid</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+	
+	<span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+	<span class="n">show</span><span class="p">()</span></code></pre></figure>
+
+<h3 id="second-simple-example">Second simple example</h3>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">	<span class="kn">import</span> <span class="nn">zencad</span>
+	<span class="kn">import</span> <span class="nn">zencad.solid</span> <span class="kn">as</span> <span class="nn">solid</span>
+	<span class="kn">from</span> <span class="nn">zencad.widget</span> <span class="kn">import</span> <span class="o">*</span>
+	
+	<span class="n">box</span> <span class="o">=</span> <span class="n">solid</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+	<span class="n">sphere</span> <span class="o">=</span> <span class="n">solid</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+	
+	<span class="n">union</span> <span class="o">=</span> <span class="n">box</span> <span class="o">+</span> <span class="n">sphere</span>
+	
+	<span class="n">display</span><span class="p">(</span><span class="n">union</span><span class="p">)</span>
+	<span class="n">show</span><span class="p">()</span></code></pre></figure>
 
 		</body>
 </html>
