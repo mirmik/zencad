@@ -91,6 +91,9 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<ZenLoft, ZenSolid, std::shared_ptr<ZenLoft>>(m, "solid_loft")
 		.def(py::init<py::list>());
+
+	py::class_<ZenPipe, ZenSolid, std::shared_ptr<ZenPipe>>(m, "solid_pipe")
+		.def(py::init<std::shared_ptr<ZenWire>, std::shared_ptr<ZenShape>>());
 	
 	///EDGES
 	py::class_<ZenEdge, ZenShape, std::shared_ptr<ZenEdge>>(m, "ZenEdge")
@@ -98,14 +101,6 @@ PYBIND11_MODULE(zenlib, m) {
 		DEF_EXPLORER_OPERATIONS(ZenEdge)
 		.def("face", &ZenEdge::make_face)
 	;
-	py::class_<ZenSegment, ZenEdge, std::shared_ptr<ZenSegment>>(m, "edge_segment")
-		.def(py::init<ZenPoint3, ZenPoint3>());
-
-	py::class_<ZenEdgeCircle, ZenEdge, std::shared_ptr<ZenEdgeCircle>>(m, "edge_circle")
-		.def(py::init<double>());
-
-	py::class_<ZenCircleArcByPoints, ZenEdge, std::shared_ptr<ZenCircleArcByPoints>>(m, "edge_circle_arc_by_points")
-		.def(py::init<ZenPoint3, ZenPoint3, ZenPoint3>());
 
 	///WIRES
 	py::class_<ZenWire, ZenShape, std::shared_ptr<ZenWire>>(m, "ZenWire")
@@ -114,10 +109,25 @@ PYBIND11_MODULE(zenlib, m) {
 		.def("face", &ZenWire::make_face)
 	;
 
+	py::class_<ZenSegment, ZenWire, std::shared_ptr<ZenSegment>>(m, "wire_segment")
+		.def(py::init<ZenPoint3, ZenPoint3>());
+
+	py::class_<ZenWireCircle, ZenWire, std::shared_ptr<ZenWireCircle>>(m, "wire_circle")
+		.def(py::init<double, py::kwargs>(), py::arg("r"));
+
+	py::class_<ZenCircleArcByPoints, ZenWire, std::shared_ptr<ZenCircleArcByPoints>>(m, "wire_circle_arc_by_points")
+		.def(py::init<ZenPoint3, ZenPoint3, ZenPoint3>());
+
 	py::class_<ZenPolySegment, ZenWire, std::shared_ptr<ZenPolySegment>>(m, "wire_polysegment")
 		.def(py::init<py::list>())
 		.def(py::init<py::list, py::kwargs>())
 	;
+
+
+	py::class_<ZenWireComplex, ZenWire, std::shared_ptr<ZenWireComplex>>(m, "wire_complex")
+		.def(py::init<py::list>())
+	;
+
 
 	//py::class_<ZenWiresFromFace, ZenWire, std::shared_ptr<ZenWiresFromFace>>(m, "wires_from_face")
 	//	.def(py::init<std::shared_ptr<std::shared_ptr<ZenFace>>>())
