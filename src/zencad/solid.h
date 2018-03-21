@@ -10,6 +10,7 @@
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepPrimAPI_MakeWedge.hxx>
 #include <BRepOffsetAPI_ThruSections.hxx>
+#include <BRepOffsetAPI_MakePipe.hxx>
 
 #include <zencad/topo.h>
 #include <zencad/math3.h>
@@ -96,6 +97,21 @@ struct ZenLoft : public ZenSolid {
     		auto pnt = item.cast<std::shared_ptr<ZenShape>>();
     		shapes.push_back(pnt);
     	}
+	}
+
+	void doit() override;
+};
+
+
+struct ZenPipe : public ZenSolid {
+	virtual const char* class_name() { return "ZenPipe"; }
+	std::shared_ptr<ZenWire> path;
+	std::shared_ptr<ZenShape> profile;
+
+	ZenPipe(std::shared_ptr<ZenWire> path, std::shared_ptr<ZenShape> profile) 
+		: profile(profile), path(path) 
+	{
+    	
 	}
 
 	void doit() override;
