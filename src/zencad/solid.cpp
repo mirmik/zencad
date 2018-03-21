@@ -4,6 +4,9 @@
 #include <TopExp_Explorer.hxx>
 #include <TopAbs.hxx>
 
+#include <BRepOffsetAPI_MakePipe.hxx>
+#include <BRepOffsetAPI_MakePipeShell.hxx>
+
 void ZenLinearExtrude::doit() { 
 	BRepPrimAPI_MakePrism mk(fc->native(), vec);
 	m_native = mk; 
@@ -59,3 +62,17 @@ void ZenLoft::doit() {
 		}*/
 	}
 };
+
+void ZenPipe::doit() {
+	BRepOffsetAPI_MakePipe builder(TopoDS::Wire(path->native()), profile->native());
+	m_native = builder.Shape();
+
+	/*BRepOffsetAPI_MakePipeShell builder(TopoDS::Wire(path->native()));
+	builder.Add(profile->native());
+	builder.SetMode(true);
+
+	builder.Build();
+	builder.MakeSolid();
+
+	m_native = builder;*/
+}

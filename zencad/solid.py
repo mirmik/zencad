@@ -5,6 +5,7 @@ from zencad.zenlib import solid_torus as torus
 from zencad.zenlib import solid_wedge as wedge
 from zencad.zenlib import solid_load as load
 from zencad.zenlib import solid_loft as loft
+from zencad.zenlib import solid_pipe as pipe
 
 from zencad.zenlib import solid_linear_extrude as __linear_extrude
 

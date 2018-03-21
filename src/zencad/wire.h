@@ -50,18 +50,18 @@ struct ZenEdge : public ZenShapeInterface<ZenEdge> {
 	TopoDS_Wire wire() { return BRepBuilderAPI_MakeWire(TopoDS::Edge(native())); }
 };
 
-struct ZenSegment : public ZenEdge {
+struct ZenSegment : public ZenWire {
 	const char* class_name() override { return "ZenSegment"; }
 	ZenPoint3 a; 
 	ZenPoint3 b;
 
 	ZenSegment(ZenPoint3 a, ZenPoint3 b) : a(a), b(b) {}
 	void doit() override { 
-		m_native = BRepBuilderAPI_MakeEdge(a.Pnt(), b.Pnt()); 
+		m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(a.Pnt(), b.Pnt())); 
 	}
 };
 
-struct ZenCircleArcByPoints : public ZenEdge {
+struct ZenCircleArcByPoints : public ZenWire {
 	const char* class_name() override { return "ZenCircleArcByPoints"; }
 	ZenPoint3  a;
 	ZenPoint3  b;
@@ -70,7 +70,7 @@ struct ZenCircleArcByPoints : public ZenEdge {
 	ZenCircleArcByPoints(ZenPoint3 a, ZenPoint3 b, ZenPoint3 c) : a(a), b(b), c(c) {}
 	void doit() override {  
 		gxx::println(a,b,c);
-		m_native = BRepBuilderAPI_MakeEdge(GC_MakeArcOfCircle(a.Pnt(), b.Pnt(), c.Pnt()));
+		m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(GC_MakeArcOfCircle(a.Pnt(), b.Pnt(), c.Pnt())));
 	}
 };
 
@@ -100,13 +100,45 @@ struct ZenPolySegment : public ZenWire {
 	}
 };
 
-struct ZenEdgeCircle : public ZenEdge {
-	const char* class_name() override { return "ZenEdgeCircle"; }
+struct ZenWireCircle : public ZenWire {
+	const char* class_name() override { return "ZenWireCircle"; }
 	double r; 
-	ZenEdgeCircle(double r) : r(r) {}
+	bool is_arc;
+	std::pair<double, double> arc;
+	ZenWireCircle(double r, pybind11::kwargs kw) : r(r) {
+		try {
+			arc = kw["arc"].cast<std::pair<double, double>>();
+			is_arc = true;
+		} catch(...) {
+			is_arc = false;
+		}
+	}
 	void doit() override { 
-		m_native = BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r)); 
+		if (is_arc) {
+			m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r), arc.first, arc.second)); 
+		} else {
+			m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r))); 
+		}
 	}
 };
 
+struct ZenWireComplex : public ZenWire {
+	const char* class_name() override { return "ZenWireComplex"; }
+	
+	std::vector<std::shared_ptr<ZenWire>> v;
+
+	ZenWireComplex(pybind11::list lst) {
+    	for (auto item : lst) {
+    		auto wr = item.cast<std::shared_ptr<ZenWire>>();
+    		v.push_back(wr);
+    	}
+	}
+	void doit() override { 
+		BRepBuilderAPI_MakeWire mkWire;
+		for (int i = 0; i < v.size(); ++i) {
+			mkWire.Add(TopoDS::Wire(v[i]->native()));
+		}
+		m_native = mkWire.Wire(); 
+	}
+};
 #endif
