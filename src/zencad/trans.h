@@ -21,7 +21,7 @@ struct ZenTransform : public ZenCadObject {
 		out.read((char*)&trsf, sizeof(gp_Trsf));
 	}
 
-	const char* class_name() override { return "ZenTransform"; }
+	const char* class_name() const override { return "ZenTransform"; }
 };
 
 template<typename Topo>
@@ -31,8 +31,9 @@ struct ZenTransformed : public Topo {
 	ZenTransformed(std::shared_ptr<Topo> topo, std::shared_ptr<ZenTransform> trsf)
 		: trsf(trsf), topo(topo) 
 	{
-		Topo::set_hash1(typeid(this).hash_code() ^ trsf->hash1 ^ topo->hash1);
-		Topo::set_hash2(typeid(this).hash_code() + trsf->hash2 + topo->hash2);
+		//Topo::set_hash1(typeid(this).hash_code() ^ trsf->hash1 ^ topo->hash1);
+		//Topo::set_hash2(typeid(this).hash_code() + trsf->hash2 + topo->hash2);
+		//Topo::initialize_hash();
 	}
 	
 	void doit() override {
@@ -42,47 +43,51 @@ struct ZenTransformed : public Topo {
 		Topo::m_native = algo.Shape();
 	}
 
-	const char* class_name() override { return "ZenTransformed"; }
+	const char* class_name() const override { return "ZenTransformed"; }
 };
 
 struct ZenTranslate : public ZenTransform {
-	const char* class_name() override { return "ZenTranslate"; }
+	const char* class_name() const override { return "ZenTranslate"; }
 	double x, y, z;
 	ZenTranslate(double x, double y, double z) : x(x), y(y), z(z) {
-		set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z));
-		set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z));
+		//set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z));
+		//set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z));
+		initialize_hash();
 	}
 	void doit() override;
 };
 
 struct ZenRotate : public ZenTransform {
-	const char* class_name() override { return "ZenRotate"; }
+	const char* class_name() const override { return "ZenRotate"; }
 	//malgo::matrix3<double> mat;
 	double ax, ay, az;
 	double angle;
 	ZenRotate(double ax, double ay, double az, double angle) : ax(ax), ay(ay), az(az), angle(angle) {
-		set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) ^ make_hash(angle));
-		set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az) + make_hash(angle));
+		//set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) ^ make_hash(angle));
+		//set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az) + make_hash(angle));
+		initialize_hash();
 	}
 	void doit() override;
 };
 
 struct ZenAxisMirror : public ZenTransform {
-	const char* class_name() override { return "ZenAxisMirror"; }
+	const char* class_name() const override { return "ZenAxisMirror"; }
 	double ax, ay, az;
 	ZenAxisMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {
-		set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) );
-		set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
+		//set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) );
+		//set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
+		initialize_hash();
 	}
 	void doit() override;
 };
 
 struct ZenPlaneMirror : public ZenTransform {
-	const char* class_name() override { return "ZenPlaneMirror"; }
+	const char* class_name() const override { return "ZenPlaneMirror"; }
 	double ax, ay, az;
 	ZenPlaneMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {
-		set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az));
-		set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
+		//set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az));
+		//set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
+		initialize_hash();
 	}
 	void doit() override;
 };
@@ -131,8 +136,9 @@ struct ZenTransformMultiply : public ZenTransform {
 	std::shared_ptr<ZenTransform> a;
 	std::shared_ptr<ZenTransform> b;
 	ZenTransformMultiply(std::shared_ptr<ZenTransform> a, std::shared_ptr<ZenTransform> b) : a(a), b(b) {
-		set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+		//set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+		//set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+		initialize_hash();
 	}
 	void doit() override;
 };

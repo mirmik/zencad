@@ -13,14 +13,14 @@ struct ZenFace : public ZenBooleanShapeInterface<ZenFace> {
 };
 
 struct ZenWireFace : public ZenFace {
-	const char* class_name() override { return "ZenWireFace"; }
+	const char* class_name() const override { return "ZenWireFace"; }
 	std::shared_ptr<ZenWire> wr;
 	ZenWireFace(std::shared_ptr<ZenWire> wr) : wr(wr) {}
 	void doit() override;
 };
 
 struct ZenEdgeFace : public ZenFace {
-	const char* class_name() override { return "ZenEdgeFace"; }
+	const char* class_name() const override { return "ZenEdgeFace"; }
 	
 	std::shared_ptr<ZenEdge> wr;
 	ZenEdgeFace(std::shared_ptr<ZenEdge> wr) : wr(wr) {}
@@ -28,7 +28,7 @@ struct ZenEdgeFace : public ZenFace {
 };
 
 struct ZenPolygon : public ZenFace {
-	const char* class_name() override { return "ZenPolygon"; }
+	const char* class_name() const override { return "ZenPolygon"; }
 	
 	std::vector<ZenPoint3> pnts;
 
@@ -42,7 +42,7 @@ struct ZenPolygon : public ZenFace {
 };
 
 struct ZenCircle : public ZenFace {
-	const char* class_name() override { return "ZenCircle"; }
+	const char* class_name() const override { return "ZenCircle"; }
 	double r;
 	ZenCircle(double r) : r(r) {}
 	void doit() override;

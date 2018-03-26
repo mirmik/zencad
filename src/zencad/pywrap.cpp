@@ -44,9 +44,12 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenCadObject, std::shared_ptr<ZenCadObject>>(m, "ZenCadObject")
-		.def("get_hash1", &ZenCadObject::get_hash1)
-		.def("get_hash2", &ZenCadObject::get_hash2)
-		.def("get_hash_base64", &ZenCadObject::get_hash_base64)		
+		//.def("get_hash1", &ZenCadObject::get_hash1)
+		//.def("get_hash2", &ZenCadObject::get_hash2)
+		//.def("hash1", &ZenCadObject::vreflect_evaluate_hash1)
+		//.def("hash2", &ZenCadObject::vreflect_evaluate_hash2)
+		//.def("get_hash_base64", &ZenCadObject::get_hash_base64)		
+		//.def("print_zen_info", &ZenCadObject::vreflect_print_info)		
 	;
 	py::class_<ZenShape, ZenCadObject, std::shared_ptr<ZenShape>>(m, "ZenShape")
 		.def("dump", &ZenShape::dump_binary);
