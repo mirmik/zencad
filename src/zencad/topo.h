@@ -229,7 +229,7 @@ struct ZenVertex : ZenShapeInterface<ZenVertex> {
 	static native_type shape_convert(const TopoDS_Shape& shp) { return TopoDS::Vertex(shp); }
 
 	double x,y,z;
-	const char* class_name() override { return "ZenVertex"; }
+	const char* class_name() const override { return "ZenVertex"; }
 	std::shared_ptr<ZenVertex> vtx;
 	ZenVertex(){}
 	ZenVertex(double x, double y, double z) : x(x), y(y), z(z) {}
@@ -242,7 +242,7 @@ template <typename Self> struct ZenFromExplorer;
 
 template <typename Self>
 struct ZenShapeExplorer : public ZenCadObject {
-	const char* class_name() override { return "ZenShapeExplorer"; }
+	const char* class_name() const override { return "ZenShapeExplorer"; }
 	std::vector<typename Self::native_type> shps;
 	std::shared_ptr<ZenShape> src;
 	ZenShapeExplorer(std::shared_ptr<ZenShape> src) : src(src) {}

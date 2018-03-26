@@ -18,13 +18,13 @@
 
 template <typename Topo>
 struct ZenUnion : public Topo {
-	virtual const char* class_name() override { return "ZenUnion"; }
+	virtual const char* class_name() const override { return "ZenUnion"; }
 	std::shared_ptr<Topo> a;
 	std::shared_ptr<Topo> b;
 
 	ZenUnion(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
-		Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	//	Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+	//	Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
 	}
 
 	void doit() override {
@@ -36,13 +36,13 @@ struct ZenUnion : public Topo {
 
 template <typename Topo>
 struct ZenDifference : public Topo {
-	virtual const char* class_name() override { return "ZenDifference"; }
+	virtual const char* class_name() const override { return "ZenDifference"; }
 	std::shared_ptr<Topo> a;
 	std::shared_ptr<Topo> b;
 
 	ZenDifference(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
-		Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	//	Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+	//	Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
 	}
 
 	void doit() override {
@@ -54,13 +54,13 @@ struct ZenDifference : public Topo {
 
 template <typename Topo>
 struct ZenIntersect : public Topo {
-	virtual const char* class_name() override { return "ZenIntersect"; }
+	virtual const char* class_name() const override { return "ZenIntersect"; }
 	std::shared_ptr<Topo> a;
 	std::shared_ptr<Topo> b;
 
 	ZenIntersect(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
-		Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+	//	Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
+	//	Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
 	}
 
 	void doit() override {
