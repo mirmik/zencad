@@ -1,6 +1,8 @@
 #ifndef DZENCAD_WIRE_H
 #define DZENCAD_WIRE_H
 
+#include <gp_Circ.hxx>
+
 #include <zencad/topo.h>
 //#include <zencad/face.h>
 #include <zencad/math3.h>
@@ -9,7 +11,6 @@
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <GC_MakeArcOfCircle.hxx>
-#include <gp_Circ.hxx>
 #include <TopAbs.hxx>
 
 #include <pybind11/pybind11.h>
@@ -35,7 +36,7 @@ struct ZenWire : public ZenShapeInterface<ZenWire> {
 	static constexpr TopAbs_ShapeEnum shape_topabs = TopAbs_WIRE;
 	static native_type shape_convert(const TopoDS_Shape& shp) { return TopoDS::Wire(shp); }
 
-	const char* class_name() override { return "ZenWire"; }
+	const char* class_name() const override { return "ZenWire"; }
 	TopoDS_Shape shape() { return m_native; }
 	std::shared_ptr<ZenFace> make_face();
 };
@@ -51,7 +52,7 @@ struct ZenEdge : public ZenShapeInterface<ZenEdge> {
 };
 
 struct ZenSegment : public ZenWire {
-	const char* class_name() override { return "ZenSegment"; }
+	const char* class_name() const override { return "ZenSegment"; }
 	ZenPoint3 a; 
 	ZenPoint3 b;
 
@@ -62,7 +63,7 @@ struct ZenSegment : public ZenWire {
 };
 
 struct ZenCircleArcByPoints : public ZenWire {
-	const char* class_name() override { return "ZenCircleArcByPoints"; }
+	const char* class_name() const override { return "ZenCircleArcByPoints"; }
 	ZenPoint3  a;
 	ZenPoint3  b;
 	ZenPoint3  c;
@@ -75,7 +76,7 @@ struct ZenCircleArcByPoints : public ZenWire {
 };
 
 struct ZenPolySegment : public ZenWire {
-	const char* class_name() override { return "ZenPolySegment"; }
+	const char* class_name() const override { return "ZenPolySegment"; }
 	std::vector<ZenPoint3> pnts;
 	bool closed;
 	
@@ -101,7 +102,7 @@ struct ZenPolySegment : public ZenWire {
 };
 
 struct ZenWireCircle : public ZenWire {
-	const char* class_name() override { return "ZenWireCircle"; }
+	const char* class_name() const override { return "ZenWireCircle"; }
 	double r; 
 	bool is_arc;
 	std::pair<double, double> arc;
@@ -123,7 +124,7 @@ struct ZenWireCircle : public ZenWire {
 };
 
 struct ZenWireComplex : public ZenWire {
-	const char* class_name() override { return "ZenWireComplex"; }
+	const char* class_name() const override { return "ZenWireComplex"; }
 	
 	std::vector<std::shared_ptr<ZenWire>> v;
 
