@@ -1,14 +1,59 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <html>
-	<div class="container">
-	  	<div class="toppane">Test Page</div>
-	  	<div class="leftpane">
-	  		<h1>Test Page</h1></div>
-	  	<div class="middlepane">
-			<link rel="stylesheet" href="css/main.css">
-				<body>
-    				<h1 id="zencad">ZenCad</h1>
+	<head>
+		<style>
+			div {
+					width: 100%;
+					border: 1px solid gray;
+			}
+			
+			header, footer {
+					padding: 1em;
+					color: white;
+					background-color: black;
+					clear: left;
+					text-align: center;
+			}
+			
+			nav {
+					float: left;
+					max-width: 240px;
+					margin: 0;
+					padding: 1em;
+			}
+			
+			nav ul {
+					list-style-type: none;
+					padding: 0;
+			}
+				 
+			nav ul a {
+					text-decoration: none;
+			}
+			
+			article {
+					margin-left: 170px;
+					border-left: 1px solid gray;
+					padding: 1em;
+					overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<header>
+				 <h1>ZenCad</h1>
+			</header>
+				
+			<nav>
+          		<a href="/index.html">Главная</a></p>
+          		<a href="/texts/solid_prim.html">Твердотельные примитивы</a></p>
+			</nav>
+			
+			<article>
+				<link rel="stylesheet" href="/css/main.css">
+				<h1 id="zencad">ZenCad</h1>
 
 <h2 id="description">Description</h2>
 <p>ZenCad библиотека создания 3д CAD моделей.<br />
@@ -58,9 +103,12 @@ ZenCad использует ядро OpenCascade, скриптовый стил�
 	<span class="n">display</span><span class="p">(</span><span class="n">union</span><span class="p">)</span>
 	<span class="n">show</span><span class="p">()</span></code></pre></figure>
 
-				</body>
+			</article>
+			
+			<footer>
+				by mirmik
+			</footer>
+	
 		</div>
-	  	<div class="rightpane">
-	  		<h1>Test Page</h1></div>
-	</div>
+	</body>
 </html>

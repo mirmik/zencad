@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+	<head>
+		<style>
+			div {
+					width: 100%;
+					border: 1px solid gray;
+			}
+			
+			header, footer {
+					padding: 1em;
+					color: white;
+					background-color: black;
+					clear: left;
+					text-align: center;
+			}
+			
+			nav {
+					float: left;
+					max-width: 240px;
+					margin: 0;
+					padding: 1em;
+			}
+			
+			nav ul {
+					list-style-type: none;
+					padding: 0;
+			}
+				 
+			nav ul a {
+					text-decoration: none;
+			}
+			
+			article {
+					margin-left: 170px;
+					border-left: 1px solid gray;
+					padding: 1em;
+					overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<header>
+				 <h1>ZenCad</h1>
+			</header>
+				
+			<nav>
+          		<a href="/index.html">Главная</a></p>
+          		<a href="/texts/solid_prim.html">Твердотельные примитивы</a></p>
+			</nav>
+			
+			<article>
+				<link rel="stylesheet" href="/css/main.css">
+				<h1 id="csg-">CSG Примитивы</h1>
+
+<h2 id="box">Box</h2>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cube</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
+<span class="n">cube</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span>  <span class="n">x</span> <span class="p">,</span>     <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+
+<h2 id="sphere">Sphere</h2>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">solid</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="n">radius</span><span class="p">)</span></code></pre></figure>
+
+<h2 id="cylinder">Cylinder</h2>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cylinder</span><span class="p">(</span><span class="n">h</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">radius</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+
+<h2 id="cone">Cone</h2>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cone</span><span class="p">(</span><span class="n">h</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">r1</span> <span class="o">=</span> <span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">topRadius</span><span class="p">);</span></code></pre></figure>
+
+			</article>
+			
+			<footer>
+				by mirmik
+			</footer>
+	
+		</div>
+	</body>
+</html>
