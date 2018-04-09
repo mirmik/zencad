@@ -7,7 +7,7 @@
 ///#include <gxx/print.h>
 
 //class ZenStlMaker : public 
-
+/*
 static inline void make_stl(std::string path, std::shared_ptr<ZenShape> sptr) {
 	sptr->prepare();
 
@@ -15,6 +15,6 @@ static inline void make_stl(std::string path, std::shared_ptr<ZenShape> sptr) {
     stl_writer.SetDeflection(0.1);
     stl_writer.RelativeMode() = false;
     stl_writer.Write(sptr->native(), path.c_str());
-}
+}*/
 
 #endif

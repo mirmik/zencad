@@ -21,106 +21,83 @@
 namespace py = pybind11;
 
 struct ZenBox : public ZenSolid {
-	const char* class_name() const override { return "ZenBox"; }
+	const char* class_name() const override;
 	double x, y, z;
 	bool center = false;
-	ZenBox(double x, double y, double z) : x(x), y(y), z(z) {
-		initialize_hash();
-	}
-	
-	ZenBox(double x, double y, double z, py::kwargs kw) : ZenBox(x,y,z) {
-		center = kw["center"].cast<bool>();
-		initialize_hash();
-	}
-	
-	void doit() override { 
-		if (!center) {
-			m_native = BRepPrimAPI_MakeBox(x, y, z).Solid(); 
-		} else {
-			gp_Ax2 ax2(gp_Pnt(-x/2,-y/2,-z/2), gp_Vec(0,0,1));
-			m_native = BRepPrimAPI_MakeBox(ax2, x, y, z).Solid(); 			
-		}
-	}
-
-	void vreflect(ZenVisitor& v) {
-		v & x; v & y; v & z; v & center;
-	}
+	ZenBox(double x, double y, double z);
+	ZenBox(double x, double y, double z, py::kwargs kw);
+	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
 
 struct ZenSphere : public ZenSolid {
-	const char* class_name() const override { return "ZenSphere"; }
+	const char* class_name() const override;
 	double r;
-	ZenSphere(double r) : r(r) {
-		//set_hash1(typeid(this).hash_code() ^ make_hash(r));
-		//set_hash2(typeid(this).hash_code() + make_hash(r));
-	}
-	void doit() override { m_native = BRepPrimAPI_MakeSphere(r).Solid(); }
+	ZenSphere(double r);
+	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
 
 struct ZenCylinder : public ZenSolid {
-	const char* class_name() const override { return "ZenCylinder"; }
+	const char* class_name() const override;
 	double r, h;
-	ZenCylinder(double r, double h) : r(r), h(h) { }
-		//set_hash1(typeid(this).hash_code() ^ make_hash(r) ^ make_hash(h));
-		//set_hash2(typeid(this).hash_code() + make_hash(r) + make_hash(h));}
-	void doit() override { m_native = BRepPrimAPI_MakeCylinder(r, h).Solid(); }
+	bool center = false;
+	ZenCylinder(double r, double h);
+	ZenCylinder(double r, double h, py::kwargs kw);
+	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
 
 struct ZenTorus : public ZenSolid {
-	const char* class_name() const override { return "ZenTorus"; }
+	const char* class_name() const override;
 	double r1, r2;
-	ZenTorus(double r1, double r2) : r1(r1), r2(r2) {}
-		//set_hash1(typeid(this).hash_code() ^ make_hash(r1) ^ make_hash(r2));
-		//set_hash2(typeid(this).hash_code() + make_hash(r1) + make_hash(r2));}
-	void doit() override { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
+	ZenTorus(double r1, double r2);
+	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
 
+struct ZenCone : public ZenSolid {
+	const char* class_name() const override;
+	double r1, r2, h;
+	ZenCone(double r1, double r2, double h);
+	ZenCone(double r, double h);
+	void doit() override;
+	void vreflect(ZenVisitor& v) override;	
+};
+
+/*
 struct ZenWedge : public ZenSolid {
-	const char* class_name() const override { return "ZenWedge"; }
+	const char* class_name() const override;
 	double x, y, z, ltx;
-	ZenWedge(double x, double y, double z, double ltx) : x(x), y(y), z(z), ltx(ltx) {}
-		//set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z) ^ make_hash(ltx));
-		//set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z) + make_hash(ltx));}
-	void doit() override { m_native = BRepPrimAPI_MakeWedge(x,y,z,ltx).Solid(); }
+	ZenWedge(double x, double y, double z, double ltx);
+	void doit() override;
 };
-
+*/
+/*
 struct ZenLinearExtrude : public ZenSolid {
-	const char* class_name() const override { return "ZenLinearExtrude"; }
+	const char* class_name() const override;
 	gp_Vec vec;
 	std::shared_ptr<ZenFace> fc;
-	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z) : fc(fc), vec(0,0,z) {}
-	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v) : fc(fc), vec(v.Vec()) {}
+	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z);
+	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v);
 	void doit() override;
 };
-
-
+*/
+/*
 struct ZenLoft : public ZenSolid {
-	const char* class_name() const override { return "ZenLoft"; }
+	const char* class_name() const override;
 	std::vector<std::shared_ptr<ZenShape>> shapes;
-
-	ZenLoft(pybind11::list args) {
-    	for (auto item : args) {
-    		auto pnt = item.cast<std::shared_ptr<ZenShape>>();
-    		shapes.push_back(pnt);
-    	}
-	}
-
+	ZenLoft(pybind11::list args);
 	void doit() override;
 };
-
-
+*/
+/*
 struct ZenPipe : public ZenSolid {
-	const char* class_name() const override { return "ZenPipe"; }
+	const char* class_name() const override;
 	std::shared_ptr<ZenWire> path;
 	std::shared_ptr<ZenShape> profile;
-
-	ZenPipe(std::shared_ptr<ZenWire> path, std::shared_ptr<ZenShape> profile) 
-		: profile(profile), path(path) 
-	{
-    	
-	}
-
+	ZenPipe(std::shared_ptr<ZenWire> path, std::shared_ptr<ZenShape> profile);
 	void doit() override;
 };
-
+*/
 #endif

@@ -43,48 +43,50 @@ namespace py = pybind11;
 
 
 PYBIND11_MODULE(zenlib, m) {
-	py::class_<ZenCadObject, std::shared_ptr<ZenCadObject>>(m, "ZenCadObject")
-		//.def("get_hash1", &ZenCadObject::get_hash1)
-		//.def("get_hash2", &ZenCadObject::get_hash2)
-		//.def("hash1", &ZenCadObject::vreflect_evaluate_hash1)
-		//.def("hash2", &ZenCadObject::vreflect_evaluate_hash2)
-		//.def("get_hash_base64", &ZenCadObject::get_hash_base64)		
-		//.def("print_zen_info", &ZenCadObject::vreflect_print_info)		
-	;
-	py::class_<ZenShape, ZenCadObject, std::shared_ptr<ZenShape>>(m, "ZenShape")
-		.def("dump", &ZenShape::dump_binary);
+	py::class_<ZenCadObject, std::shared_ptr<ZenCadObject>>(m, "ZenCadObject");
 
-	py::class_<ZenVertex, ZenShape, std::shared_ptr<ZenVertex>>(m, "ZenVertex")
-		DEF_TRANSFORM_OPERATIONS(ZenVertex)
-		DEF_EXPLORER_OPERATIONS(ZenVertex)
-		.def(py::init<double, double, double>())
+	py::class_<ZenShape, ZenCadObject, std::shared_ptr<ZenShape>>(m, "ZenShape")
+	//	.def("dump", &ZenShape::dump_binary)
 	;
 
 	///SOLIDS
 	py::class_<ZenSolid, ZenShape, std::shared_ptr<ZenSolid>>(m, "ZenSolid")
 		DEF_TRANSFORM_OPERATIONS(ZenSolid)
-		DEF_EXPLORER_OPERATIONS(ZenSolid)
+	//	DEF_EXPLORER_OPERATIONS(ZenSolid)
 		.def(py::self + py::self)
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
 	;
-	m.def("solid_load", zen_load<ZenSolid>);
 
 	py::class_<ZenBox, ZenSolid, std::shared_ptr<ZenBox>>(m, "solid_box")
 		.def(py::init<double, double, double>())
-		.def(py::init<double, double, double, py::kwargs>());
+		.def(py::init<double, double, double, py::kwargs>())
+	;
 
+	//m.def("solid_load", zen_load<ZenSolid>);
 
+	/*
+	py::class_<ZenVertex, ZenShape, std::shared_ptr<ZenVertex>>(m, "ZenVertex")
+		DEF_TRANSFORM_OPERATIONS(ZenVertex)
+		DEF_EXPLORER_OPERATIONS(ZenVertex)
+		.def(py::init<double, double, double>())
+	;
+*/
 	py::class_<ZenSphere, ZenSolid, std::shared_ptr<ZenSphere>>(m, "solid_sphere")
 		.def(py::init<double>());
 
-
 	py::class_<ZenCylinder, ZenSolid, std::shared_ptr<ZenCylinder>>(m, "solid_cylinder")
-		.def(py::init<double, double>());
+		.def(py::init<double, double>())
+		.def(py::init<double, double, py::kwargs>());
 
 	py::class_<ZenTorus, ZenSolid, std::shared_ptr<ZenTorus>>(m, "solid_torus")
 		.def(py::init<double, double>());
 
+	py::class_<ZenCone, ZenSolid, std::shared_ptr<ZenCone>>(m, "solid_cone")
+		.def(py::init<double, double>())
+		.def(py::init<double, double, double>());
+
+/*
 	py::class_<ZenWedge, ZenSolid, std::shared_ptr<ZenWedge>>(m, "solid_wedge")
 		.def(py::init<double, double, double, double>());
 	
@@ -164,20 +166,21 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_stl", make_stl);
 
 	///CACHE
+*/
 	m.def("cache_enable", zencache_enable);
 	m.def("cache_disable", zencache_disable);
 	m.def("cache_is_enabled", zencache_is_enabled);
-
+    
 	///VIEW
 	m.def("display", display);
 	m.def("show", show);
 
-	py::class_<ZenDirection3>(m, "direction3").def(py::init<double,double,double>());
-	py::class_<ZenVector3>(m, "vector3").def(py::init<double,double,double>());
+//	py::class_<ZenDirection3>(m, "direction3").def(py::init<double,double,double>());
+//	py::class_<ZenVector3>(m, "vector3").def(py::init<double,double,double>());
 	py::class_<ZenPoint3>(m, "point3")
 		.def(py::init<double,double,double>())
 		.def(py::init<double,double>());
-
+/*
 	py::class_<ZenShapeExplorer<ZenWire>, std::shared_ptr<ZenShapeExplorer<ZenWire>>>(m, "ZenShapeExplorer<ZenWire>")
 		.def("__len__", &ZenShapeExplorer<ZenWire>::size)
 		.def("__getitem__", &ZenShapeExplorer<ZenWire>::getitem)
@@ -193,4 +196,6 @@ PYBIND11_MODULE(zenlib, m) {
 
 	//py::class_<ZenShapeExplorer<ZenSolid>, std::shared_ptr<ZenShapeExplorer<ZenSolid>>>(m, "ZenShapeExplorer<ZenSolid>");
 	//;
+
+	*/
 }

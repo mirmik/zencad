@@ -13,27 +13,30 @@ void ZenCadObject::prepare() {
 	if (prepared) return;
 
 	if (setted_hash == 0) {
-		gxx::fprintln("warn: {} in class {}", gxx::text::bright_red("uninitialized hash"), gxx::text::bright_yellow(class_name()));
+		gxx::fprintln("warn: {} in class {}", 
+			gxx::text::bright_red("uninitialized hash"), 
+			gxx::text::bright_yellow(class_name())
+		);
 	}
 
 	if (!prepared) {
-		//if (zencache_is_enabled() && setted_hash1 && setted_hash2) {
 		if (zencache_is_enabled() && setted_hash) {
-			std::string hashstr = get_hash_base64();
-			std::string filepath = gxx::format("{}/{}.dump", zencache_path(), hashstr);		
+			GXX_PANIC_TRACED();
+			//std::string hashstr = get_hash_base64();
+			//std::string filepath = gxx::format("{}/{}.dump", zencache_path(), hashstr);		
 			
-			if (zencache_set.find(hashstr) != zencache_set.end()) {
-				gxx::fprintln("load data from cache {}", class_name());
-				std::ifstream file(filepath, std::ios::binary);
-				load_cached(file);
+			//if (zencache_set.find(hashstr) != zencache_set.end()) {
+				//gxx::fprintln("load data from cache {}", class_name());
+				//std::ifstream file(filepath, std::ios::binary);
+				//load_cached(file);
 				//deserialize_from_stream(file);
-			} else {
+			//} else {
 				//gxx::fprintln("cache miss {}", class_name());
-				doit();	
-				std::ofstream file(filepath, std::ios::binary);
-				dump(file);
+				//doit();	
+				//std::ofstream file(filepath, std::ios::binary);
+				//dump(file);
 				//serialize_to_stream(file);
-			}
+			//}
 		} else {
 			doit();
 		}
@@ -41,7 +44,7 @@ void ZenCadObject::prepare() {
 		prepared = true;
 	}
 }
-
+/*
 int ZenCadObject::vreflect_count() {
 	ZenVisitor_Count alg;
 	vreflect(alg);
@@ -68,7 +71,7 @@ size_t ZenCadObject::vreflect_evaluate_hash2() {
 	vreflect(alg);	
 	return alg.hash;	
 }
-*/
+*//*
 void ZenCadObject::dump(std::ostream& out) {
 	ZenVisitor_Hashes alg;
 	vreflect(alg);
@@ -102,10 +105,18 @@ void ZenCadObject::load_cached(std::istream& in) {
 	gxx::println("load_cached finish");
 }
 
-
+*/
 void ZenCadObject::initialize_hash() {
 	ZenVisitor_Hashes alg;
 	vreflect(alg);
 	hash = alg.evaluate_current_hash();
 	setted_hash = true;
+}
+
+size_t ZenVisitor_Hashes::evaluate_current_hash() {
+	size_t hash = hashes[0];
+	for ( int i = 1; i < hashes.size(); ++i ) {
+		hash ^= hashes[i];
+	}
+	return hash;
 }

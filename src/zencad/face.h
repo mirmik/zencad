@@ -4,7 +4,7 @@
 #include <zencad/topo.h>
 #include <memory>
 #include <pybind11/pybind11.h>
-
+/*
 struct ZenFilletFace;
 
 struct ZenFace : public ZenBooleanShapeInterface<ZenFace> {
@@ -55,5 +55,5 @@ struct ZenFilletFace : public ZenFace {
 	ZenFilletFace(std::shared_ptr<ZenFace> fc, double r) : fc(fc), r(r) {}
 	void doit() override;
 };
-
+*/
 #endif

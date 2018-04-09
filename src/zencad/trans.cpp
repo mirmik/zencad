@@ -19,7 +19,7 @@ void ZenAxisMirror::doit() {
 void ZenPlaneMirror::doit() {
 	trsf.SetMirror(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(ax,ay,az)));
 }
-
+/*
 void ZenTransformMultiply::doit() {
 	trsf = a->trsf.Multiplied(b->trsf);
-}
+}*/

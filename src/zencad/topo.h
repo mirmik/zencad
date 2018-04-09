@@ -18,17 +18,61 @@
 
 #include <memory>
 #include <vector>
-
+/*
 class ZenTransformShape;
 class ZenTransform;
+*/
 
 struct ZenShape : public ZenCadObject {
-	const TopoDS_Shape& native() {
-		if (!prepared) prepare();
-		return m_native;
+	TopoDS_Shape m_native;
+	const TopoDS_Shape& native() { if (!prepared) prepare(); return m_native; }
+	
+	void dump(std::ostream& out) override {
+		BinTools_ShapeSet theShapeSet;
+    	if (m_native.IsNull()) {
+    	    theShapeSet.Add(m_native);
+    	    theShapeSet.Write(out);
+    	    BinTools::PutInteger(out, -1);
+    	    BinTools::PutInteger(out, -1);
+    	    BinTools::PutInteger(out, -1);
+    	}
+    	else {
+    	    Standard_Integer shapeId = theShapeSet.Add(m_native);
+    	    Standard_Integer locId = theShapeSet.Locations().Index(m_native.Location());
+    	    Standard_Integer orient = static_cast<int>(m_native.Orientation());
+	
+    	    theShapeSet.Write(out);
+    	    BinTools::PutInteger(out, shapeId);
+    	    BinTools::PutInteger(out, locId);
+    	    BinTools::PutInteger(out, orient);
+    	}
 	}
 
-	void serialize_to_stream(std::ostream& out) override {
+	void load(std::istream& in) override {
+	    BinTools_ShapeSet theShapeSet;
+	    theShapeSet.Read(in);
+	    Standard_Integer shapeId=0, locId=0, orient=0;
+	    BinTools::GetInteger(in, shapeId);
+	    if (shapeId <= 0 || shapeId > theShapeSet.NbShapes())
+	        return;
+	
+	    BinTools::GetInteger(in, locId);
+	    BinTools::GetInteger(in, orient);
+	    TopAbs_Orientation anOrient = static_cast<TopAbs_Orientation>(orient);
+	
+	    try {
+	        m_native = theShapeSet.Shape(shapeId);
+	        m_native.Location(theShapeSet.Locations().Location (locId));
+	        m_native.Orientation (anOrient);
+	    }
+	    catch (Standard_Failure) {
+	        gxx::println("Failed to read shape from binary stream");
+	        exit(-1);	
+	    }
+	}
+};
+
+/*	void serialize_to_stream(std::ostream& out) override {
 		 // An example how to use BinTools_ShapeSet can be found in BinMNaming_NamedShapeDriver.cxx
     	BinTools_ShapeSet theShapeSet;
     	if (m_native.IsNull()) {
@@ -84,7 +128,7 @@ struct ZenShape : public ZenCadObject {
 	//	deserialize_from_stream(file);
 	//}
 
-
+*/
 /*void TopoShape::exportBinary(std::ostream& out)
 {
     // An example how to use BinTools_ShapeSet can be found in BinMNaming_NamedShapeDriver.cxx
@@ -132,7 +176,7 @@ struct ZenShape : public ZenCadObject {
 	//std::shared_ptr<ZenShape> mirrorXY();
 	//std::shared_ptr<ZenShape> mirrorYZ();
 	//std::shared_ptr<ZenShape> mirrorXZ();
-
+/*
 protected:
 	TopoDS_Shape m_native;
 };
@@ -145,21 +189,16 @@ struct ZenFace;
 struct ZenSolid;
 
 template <typename Self> struct ZenShapeExplorer;
-
+*/
 template <typename Self>
-struct ZenShapeInterface : public ZenShape {
-	//TopoDS_Shape shape() override { 
-	//	Self* self = static_cast<Self*>(this);
-	//	return self->native; 
-	//};
-
+struct ZenShapeTransI {
 	std::shared_ptr<Self> get_spointer() const {
-		Self* self = static_cast<Self*>( const_cast<ZenShapeInterface*>(this) );
+		Self* self = static_cast<Self*>( const_cast<ZenShapeTransI<Self>*>(this) );
 		return std::dynamic_pointer_cast<Self,ZenCadObject>(self->shared_from_this());
-	}	
+	}
 
 	std::shared_ptr<Self> transform(std::shared_ptr<ZenTransform> trsf) {
-		return std::shared_ptr<Self>(new ZenTransformed<Self>(get_spointer(), trsf));
+		return std::shared_ptr<Self>(new ZenTransformed<Self>(this->get_spointer(), trsf));
 	}
 
 	std::shared_ptr<Self> translate(double x, double y, double z) {
@@ -185,30 +224,38 @@ struct ZenShapeInterface : public ZenShape {
 	std::shared_ptr<Self> mirrorYZ() { return transform(trans_mirrorYZ()); }
 	std::shared_ptr<Self> mirrorXZ() { return transform(trans_mirrorXZ()); }
 
-	std::shared_ptr<ZenShapeExplorer<ZenWire>> wires() {
+	/*std::shared_ptr<ZenShapeExplorer<ZenWire>> wires() {
 		return std::shared_ptr<ZenShapeExplorer<ZenWire>>(new ZenShapeExplorer<ZenWire>(get_spointer()));
 	}
 
 	std::shared_ptr<ZenShapeExplorer<ZenVertex>> vertexs() {
 		return std::shared_ptr<ZenShapeExplorer<ZenVertex>>(new ZenShapeExplorer<ZenVertex>(get_spointer()));
-	}
+	}*/
 };
 
 template <typename Self> 
-struct ZenBooleanShapeInterface : public ZenShapeInterface<Self> {
+struct ZenBoolOpsI {
+	/*std::shared_ptr<Self> get_spointer() const {
+		Self* self = static_cast<Self*>( const_cast<ZenBoolOpsI<Self>*>(this) );
+		return std::dynamic_pointer_cast<Self,ZenCadObject>(self->shared_from_this());
+	}*/	
+
 	std::shared_ptr<Self> operator+ (const Self& rhs) const {
-		return std::shared_ptr<Self>(new ZenUnion<Self>(ZenShapeInterface<Self>::get_spointer(), rhs.get_spointer()));
+		const Self& self = static_cast<const Self&>(*this); 
+		return std::shared_ptr<Self>(new ZenUnion<Self>(self.spointer(), rhs.spointer()));
 	}
 
 	std::shared_ptr<Self> operator- (const Self& rhs) const {
-		return std::shared_ptr<Self>(new ZenDifference<Self>(ZenShapeInterface<Self>::get_spointer(), rhs.get_spointer()));
+		const Self& self = static_cast<const Self&>(*this); 
+		return std::shared_ptr<Self>(new ZenDifference<Self>(self.spointer(), rhs.spointer()));
 	}
 
 	std::shared_ptr<Self> operator^ (const Self& rhs) const {
-		return std::shared_ptr<Self>(new ZenIntersect<Self>(ZenShapeInterface<Self>::get_spointer(), rhs.get_spointer()));
+		const Self& self = static_cast<const Self&>(*this); 
+		return std::shared_ptr<Self>(new ZenIntersect<Self>(self.spointer(), rhs.spointer()));
 	}
 };
-
+/*
 template <typename Topo>
 std::shared_ptr<Topo> zen_load(std::string path) {
 	std::shared_ptr<Topo> topo(new Topo);
@@ -217,11 +264,17 @@ std::shared_ptr<Topo> zen_load(std::string path) {
 	topo->prepared = true;
 	return topo;
 }
+*/
+struct ZenSolid : public ZenShape, public ZenShapeTransI<ZenSolid>, public ZenBoolOpsI<ZenSolid> {
+	const char* class_name() const { return "ZenSolid"; }
 
-struct ZenSolid : public ZenBooleanShapeInterface<ZenSolid> {
-	const char* class_name() { return "ZenSolid"; }
+	std::shared_ptr<ZenSolid> spointer() const {
+		ZenSolid* self = const_cast<ZenSolid*>(this);
+		return std::dynamic_pointer_cast<ZenSolid,ZenCadObject>(self->shared_from_this());
+	}
 };
 
+/*
 #include <BRepBuilderAPI_MakeVertex.hxx>
 struct ZenVertex : ZenShapeInterface<ZenVertex> {
 	using native_type = TopoDS_Vertex;
@@ -272,5 +325,5 @@ struct ZenFromExplorer : public Self {
 		Self::m_native = exp->shps[n];
 	}
 };
-
+*/
 #endif
