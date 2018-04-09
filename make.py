@@ -57,17 +57,19 @@ def registry_library(py):
 		srcdir = "src",
 		sources = [
 			"zencad/base.cpp", 
-			"zencad/solid.cpp", 
-			"zencad/wire.cpp", 
-			"zencad/boolops.cpp", 
 			"zencad/cache.cpp", 
-			"zencad/pywrap.cpp", 
-			"zencad/trans.cpp", 
-			"zencad/topo.cpp",
-			"zencad/face.cpp",
+			"zencad/pywrap.cpp",  
+			
 			"zencad/ZenWidget.cpp", 
 			"zencad/DisplayWidget.cpp", 
 			"zencad/widget.cpp",
+
+			"zencad/solid.cpp", 
+			"zencad/trans.cpp", 
+			#"zencad/topo.cpp",
+			#"zencad/face.cpp",
+			#"zencad/wire.cpp", 
+			#"zencad/boolops.cpp",
 		],
 		moc = ["zencad/DisplayWidget.h", "zencad/ZenWidget.h"],    
 		include_modules = [

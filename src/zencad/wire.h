@@ -28,7 +28,7 @@
 	}
 };
 }*/
-
+/*
 class ZenFace;
 
 struct ZenWire : public ZenShapeInterface<ZenWire> {
@@ -141,5 +141,5 @@ struct ZenWireComplex : public ZenWire {
 		}
 		m_native = mkWire.Wire(); 
 	}
-};
+};*/
 #endif

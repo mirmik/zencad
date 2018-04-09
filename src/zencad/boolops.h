@@ -18,13 +18,12 @@
 
 template <typename Topo>
 struct ZenUnion : public Topo {
-	virtual const char* class_name() const override { return "ZenUnion"; }
+	const char* class_name() const override { return "ZenUnion"; }
 	std::shared_ptr<Topo> a;
 	std::shared_ptr<Topo> b;
 
 	ZenUnion(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
-	//	Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-	//	Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+		Topo::initialize_hash();
 	}
 
 	void doit() override {
@@ -32,17 +31,18 @@ struct ZenUnion : public Topo {
 		b->prepare();
 		Topo::m_native = BRepAlgoAPI_Fuse(a->native(), b->native());
 	}
+
+	void vreflect(ZenVisitor& v) override { v & *a; v & *b; }
 };
 
 template <typename Topo>
 struct ZenDifference : public Topo {
-	virtual const char* class_name() const override { return "ZenDifference"; }
+	const char* class_name() const override { return "ZenDifference"; }
 	std::shared_ptr<Topo> a;
 	std::shared_ptr<Topo> b;
 
 	ZenDifference(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
-	//	Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-	//	Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+		Topo::initialize_hash();
 	}
 
 	void doit() override {
@@ -50,17 +50,18 @@ struct ZenDifference : public Topo {
 		b->prepare();
 		Topo::m_native = BRepAlgoAPI_Cut(a->native(), b->native());
 	}
+
+	void vreflect(ZenVisitor& v) override { v & *a; v & *b; }
 };
 
 template <typename Topo>
 struct ZenIntersect : public Topo {
-	virtual const char* class_name() const override { return "ZenIntersect"; }
+	const char* class_name() const override { return "ZenIntersect"; }
 	std::shared_ptr<Topo> a;
 	std::shared_ptr<Topo> b;
 
 	ZenIntersect(std::shared_ptr<Topo> a, std::shared_ptr<Topo> b) : a(a), b(b) {
-	//	Topo::set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-	//	Topo::set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
+		Topo::initialize_hash();
 	}
 
 	void doit() override {
@@ -68,6 +69,8 @@ struct ZenIntersect : public Topo {
 		b->prepare();
 		Topo::m_native = BRepAlgoAPI_Common(a->native(), b->native());
 	}
+
+	void vreflect(ZenVisitor& v) override { v & *a; v & *b; }
 };
 
 #endif
