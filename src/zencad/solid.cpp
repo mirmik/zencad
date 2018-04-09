@@ -7,6 +7,208 @@
 #include <BRepOffsetAPI_MakePipe.hxx>
 #include <BRepOffsetAPI_MakePipeShell.hxx>
 
+ZenBox::ZenBox(double x, double y, double z) : x(x), y(y), z(z) { initialize_hash(); }
+ZenCylinder::ZenCylinder(double r, double h) : r(r), h(h) { initialize_hash(); }
+ZenSphere::ZenSphere(double r) : r(r) { initialize_hash(); }
+ZenTorus::ZenTorus(double r1, double r2) : r1(r1), r2(r2) { initialize_hash(); }
+
+ZenCone::ZenCone(double r1, double r2, double h) : r1(r1), r2(r2), h(h) { initialize_hash(); }
+ZenCone::ZenCone(double r, double h) : r1(r), r2(0), h(h) { initialize_hash(); }
+
+ZenBox::ZenBox(double x, double y, double z, py::kwargs kw) : ZenBox(x,y,z) {
+	center = kw["center"].cast<bool>();
+	initialize_hash();
+}
+
+ZenCylinder::ZenCylinder(double r, double h, py::kwargs kw) : ZenCylinder(r,h) {
+	center = kw["center"].cast<bool>();
+	initialize_hash();
+}
+
+const char* ZenBox::class_name() const { return "ZenBox"; }
+const char* ZenSphere::class_name() const { return "ZenSphere"; }
+const char* ZenCylinder::class_name() const { return "ZenCylinder"; }
+const char* ZenTorus::class_name() const { return "ZenTorus"; }
+const char* ZenCone::class_name() const { return "ZenCone"; }
+
+void ZenBox::doit() { 
+	if (!center) {
+		m_native = BRepPrimAPI_MakeBox(x, y, z).Solid(); 
+	} else {
+		gp_Ax2 ax2(gp_Pnt(-x/2,-y/2,-z/2), gp_Vec(0,0,1));
+		m_native = BRepPrimAPI_MakeBox(ax2, x, y, z).Solid(); 			
+	}
+}
+
+void ZenCylinder::doit() { 
+	if (!center) {
+		m_native = BRepPrimAPI_MakeCylinder(r, h).Solid(); 
+	} else {
+		gp_Ax2 ax2(gp_Pnt(0,0,-h/2), gp_Vec(0,0,1));
+		m_native = BRepPrimAPI_MakeCylinder(ax2, r, h).Solid(); 		
+	}
+}
+
+void ZenCone::doit() { 
+	//if (!center) {
+		m_native = BRepPrimAPI_MakeCone(r1, r2, h).Solid(); 
+	//} else {
+	//	gp_Ax2 ax2(gp_Pnt(0,0,-h/2), gp_Vec(0,0,1));
+	///	m_native = BRepPrimAPI_MakeCylinder(ax2, r1, r2, h).Solid(); 		
+	//}
+}
+
+void ZenSphere::doit() { m_native = BRepPrimAPI_MakeSphere(r).Solid(); }
+void ZenTorus::doit() { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
+
+void ZenBox::vreflect(ZenVisitor& v) { v & x; v & y; v & z; v & center; }
+void ZenSphere::vreflect(ZenVisitor& v) { v & r; }
+void ZenCylinder::vreflect(ZenVisitor& v) { v & r; v & h; v & center; }
+void ZenTorus::vreflect(ZenVisitor& v) { v & r1; v & r2; }
+void ZenCone::vreflect(ZenVisitor& v) { v & r1; v & r2; v & h; }
+
+/*
+void ZenBox::doit() { 
+	if (!center) {
+		set_native(BRepPrimAPI_MakeBox(x, y, z).Solid()); 
+	} else {
+		gp_Ax2 ax2(gp_Pnt(-x/2,-y/2,-z/2), gp_Vec(0,0,1));
+		set_native(BRepPrimAPI_MakeBox(ax2, x, y, z).Solid()); 			
+	}
+}
+
+void ZenBox::vreflect(ZenVisitor& v) {
+	v & x; v & y; v & z; v & center;
+}
+
+
+
+	ZenSphere(double r) : r(r);
+	void doit() override;
+	//void doit() override { m_native = BRepPrimAPI_MakeSphere(r).Solid(); }
+};
+
+
+
+
+struct ZenCylinder : public ZenSolid {
+	const char* class_name() const override { return "ZenCylinder"; }
+	double r, h;
+	ZenCylinder(double r, double h) : r(r), h(h) { }
+		//set_hash1(typeid(this).hash_code() ^ make_hash(r) ^ make_hash(h));
+		//set_hash2(typeid(this).hash_code() + make_hash(r) + make_hash(h));}
+	void doit() override { m_native = BRepPrimAPI_MakeCylinder(r, h).Solid(); }
+};
+
+struct ZenTorus : public ZenSolid {
+	const char* class_name() const override { return "ZenTorus"; }
+	double r1, r2;
+	ZenTorus(double r1, double r2) : r1(r1), r2(r2) {}
+		//set_hash1(typeid(this).hash_code() ^ make_hash(r1) ^ make_hash(r2));
+		//set_hash2(typeid(this).hash_code() + make_hash(r1) + make_hash(r2));}
+};
+
+
+
+/*
+
+
+
+
+
+
+
+
+
+
+struct ZenSphere : public ZenSolid {
+	const char* class_name() const override;// { return "ZenSphere"; }
+	double r;
+	ZenSphere(double r) : r(r);
+	void doit() override;
+	//void doit() override { m_native = BRepPrimAPI_MakeSphere(r).Solid(); }
+};
+
+struct ZenCylinder : public ZenSolid {
+	const char* class_name() const override { return "ZenCylinder"; }
+	double r, h;
+	ZenCylinder(double r, double h) : r(r), h(h) { }
+		//set_hash1(typeid(this).hash_code() ^ make_hash(r) ^ make_hash(h));
+		//set_hash2(typeid(this).hash_code() + make_hash(r) + make_hash(h));}
+	void doit() override { m_native = BRepPrimAPI_MakeCylinder(r, h).Solid(); }
+};
+
+struct ZenTorus : public ZenSolid {
+	const char* class_name() const override { return "ZenTorus"; }
+	double r1, r2;
+	ZenTorus(double r1, double r2) : r1(r1), r2(r2) {}
+		//set_hash1(typeid(this).hash_code() ^ make_hash(r1) ^ make_hash(r2));
+		//set_hash2(typeid(this).hash_code() + make_hash(r1) + make_hash(r2));}
+	void doit() override { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
+};
+
+struct ZenWedge : public ZenSolid {
+	const char* class_name() const override { return "ZenWedge"; }
+	double x, y, z, ltx;
+	ZenWedge(double x, double y, double z, double ltx) : x(x), y(y), z(z), ltx(ltx) {}
+		//set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z) ^ make_hash(ltx));
+		//set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z) + make_hash(ltx));}
+	void doit() override { m_native = BRepPrimAPI_MakeWedge(x,y,z,ltx).Solid(); }
+};
+
+struct ZenLinearExtrude : public ZenSolid {
+	const char* class_name() const override { return "ZenLinearExtrude"; }
+	gp_Vec vec;
+	std::shared_ptr<ZenFace> fc;
+	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z) : fc(fc), vec(0,0,z) {}
+	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v) : fc(fc), vec(v.Vec()) {}
+	void doit() override;
+};
+
+
+struct ZenLoft : public ZenSolid {
+	const char* class_name() const override { return "ZenLoft"; }
+	std::vector<std::shared_ptr<ZenShape>> shapes;
+
+	ZenLoft(pybind11::list args) {
+    	for (auto item : args) {
+    		auto pnt = item.cast<std::shared_ptr<ZenShape>>();
+    		shapes.push_back(pnt);
+    	}
+	}
+
+	void doit() override;
+};
+
+
+struct ZenPipe : public ZenSolid {
+	const char* class_name() const override { return "ZenPipe"; }
+	std::shared_ptr<ZenWire> path;
+	std::shared_ptr<ZenShape> profile;
+
+	ZenPipe(std::shared_ptr<ZenWire> path, std::shared_ptr<ZenShape> profile) 
+		: profile(profile), path(path) 
+	{
+    	
+	}
+
+	void doit() override;
+};*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 void ZenLinearExtrude::doit() { 
 	BRepPrimAPI_MakePrism mk(fc->native(), vec);
 	m_native = mk; 
@@ -60,7 +262,7 @@ void ZenLoft::doit() {
 		else if (typeid(*shp) == typeid(ZenShape)) {
 			gxx::println("shape");
 		}*/
-	}
+/*	}
 };
 
 void ZenPipe::doit() {
@@ -75,4 +277,4 @@ void ZenPipe::doit() {
 	builder.MakeSolid();
 
 	m_native = builder;*/
-}
+//}

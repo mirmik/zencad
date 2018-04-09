@@ -3,24 +3,14 @@
 
 #include <zencad/base.h>
 #include <gp_Trsf.hxx>
-
 #include <BRepBuilderAPI_Transform.hxx>
-
-//#include <gxx/math/malgo3.h>
 
 class ZenShape;
 
 struct ZenTransform : public ZenCadObject {
 	gp_Trsf trsf;
-
-	void serialize_to_stream(std::ostream& out) override {
-		out.write((char*)&trsf, sizeof(gp_Trsf));
-	}
-
-	void deserialize_from_stream(std::istream& out) override {
-		out.read((char*)&trsf, sizeof(gp_Trsf));
-	}
-
+	void dump(std::ostream& out) override { out.write((char*)&trsf, sizeof(gp_Trsf)); }
+	void load(std::istream& out) override { out.read((char*)&trsf, sizeof(gp_Trsf)); }
 	const char* class_name() const override { return "ZenTransform"; }
 };
 
@@ -28,13 +18,7 @@ template<typename Topo>
 struct ZenTransformed : public Topo {
 	std::shared_ptr<ZenTransform> trsf;
 	std::shared_ptr<Topo> topo;
-	ZenTransformed(std::shared_ptr<Topo> topo, std::shared_ptr<ZenTransform> trsf)
-		: trsf(trsf), topo(topo) 
-	{
-		//Topo::set_hash1(typeid(this).hash_code() ^ trsf->hash1 ^ topo->hash1);
-		//Topo::set_hash2(typeid(this).hash_code() + trsf->hash2 + topo->hash2);
-		//Topo::initialize_hash();
-	}
+	ZenTransformed(std::shared_ptr<Topo> topo, std::shared_ptr<ZenTransform> trsf) : trsf(trsf), topo(topo) { Topo::initialize_hash(); }
 	
 	void doit() override {
 		topo->prepare();
@@ -44,52 +28,42 @@ struct ZenTransformed : public Topo {
 	}
 
 	const char* class_name() const override { return "ZenTransformed"; }
+	void vreflect(ZenVisitor& v) override { v & *trsf; v & *topo; }
+
+	
 };
 
 struct ZenTranslate : public ZenTransform {
 	const char* class_name() const override { return "ZenTranslate"; }
 	double x, y, z;
-	ZenTranslate(double x, double y, double z) : x(x), y(y), z(z) {
-		//set_hash1(typeid(this).hash_code() ^ make_hash(x) ^ make_hash(y) ^ make_hash(z));
-		//set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z));
-		initialize_hash();
-	}
+	ZenTranslate(double x, double y, double z) : x(x), y(y), z(z) {	initialize_hash(); }
 	void doit() override;
+	void vreflect(ZenVisitor& v) override { v & x; v & y; v & z; }
 };
 
 struct ZenRotate : public ZenTransform {
 	const char* class_name() const override { return "ZenRotate"; }
-	//malgo::matrix3<double> mat;
 	double ax, ay, az;
 	double angle;
-	ZenRotate(double ax, double ay, double az, double angle) : ax(ax), ay(ay), az(az), angle(angle) {
-		//set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) ^ make_hash(angle));
-		//set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az) + make_hash(angle));
-		initialize_hash();
-	}
+	ZenRotate(double ax, double ay, double az, double angle) : ax(ax), ay(ay), az(az), angle(angle) { initialize_hash(); }
 	void doit() override;
+	void vreflect(ZenVisitor& v) override { v & ax; v & ay; v & az; v & angle; }
 };
 
 struct ZenAxisMirror : public ZenTransform {
 	const char* class_name() const override { return "ZenAxisMirror"; }
 	double ax, ay, az;
-	ZenAxisMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {
-		//set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az) );
-		//set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
-		initialize_hash();
-	}
+	ZenAxisMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) { initialize_hash(); }
 	void doit() override;
+	void vreflect(ZenVisitor& v) override { v & ax; v & ay; v & az; }
 };
 
 struct ZenPlaneMirror : public ZenTransform {
 	const char* class_name() const override { return "ZenPlaneMirror"; }
 	double ax, ay, az;
-	ZenPlaneMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) {
-		//set_hash1(typeid(this).hash_code() ^ make_hash(ax) ^ make_hash(ay) ^ make_hash(az));
-		//set_hash2(typeid(this).hash_code() + make_hash(ax) + make_hash(ay) + make_hash(az));
-		initialize_hash();
-	}
+	ZenPlaneMirror(double ax, double ay, double az) : ax(ax), ay(ay), az(az) { initialize_hash(); }
 	void doit() override;
+	void vreflect(ZenVisitor& v) override { v & ax; v & ay; v & az; }
 };
 
 static inline std::shared_ptr<ZenTransform> trans_translate(double x, double y, double z) {
@@ -131,23 +105,16 @@ static inline std::shared_ptr<ZenTransform> trans_mirrorYZ() {
 static inline std::shared_ptr<ZenTransform> trans_mirrorXZ() {
 	return std::shared_ptr<ZenTransform>(new ZenPlaneMirror(0,1,0));
 }
-
+/*
 struct ZenTransformMultiply : public ZenTransform {
 	std::shared_ptr<ZenTransform> a;
 	std::shared_ptr<ZenTransform> b;
-	ZenTransformMultiply(std::shared_ptr<ZenTransform> a, std::shared_ptr<ZenTransform> b) : a(a), b(b) {
-		//set_hash1(typeid(this).hash_code() ^ a->hash1 ^ b->hash1);
-		//set_hash2(typeid(this).hash_code() + a->hash2 + b->hash2);
-		initialize_hash();
-	}
+	ZenTransformMultiply(std::shared_ptr<ZenTransform> a, std::shared_ptr<ZenTransform> b) : a(a), b(b) { initialize_hash(); }
 	void doit() override;
 };
 
 static inline std::shared_ptr<ZenTransform> trans_multiply(std::shared_ptr<ZenTransform> a, std::shared_ptr<ZenTransform> b) {
 	return std::shared_ptr<ZenTransform>(new ZenTransformMultiply(a, b));
-}
-
-
-
+}*/
 
 #endif

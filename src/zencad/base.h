@@ -21,77 +21,78 @@ struct ZenVisitor {
 };
 
 struct ZenCadObject : public std::enable_shared_from_this<ZenCadObject> {
-	bool prepared = false;
-	//bool setted_hash1 = false;
-	//bool setted_hash2 = false;
-
-	bool setted_hash = false;
+	//Хеш используется для кеширования результатов длинных вычислений.
 	size_t hash;
-	
-	//size_t hash1;
-	//size_t hash2;
 
-	ZenCadObject() = default;
+	//В случае колизии кеша, объект сохраняется с уникальным минором.
+	uint8_t minor;
 
-	//size_t set_hash1(size_t hash1) { setted_hash1 = true; this->hash1 = hash1; }
-	//size_t set_hash2(size_t hash2) { setted_hash2 = true; this->hash2 = hash2; }
-	virtual void prepare();
-	virtual void doit() { throw GXX_NOT_IMPLEMENTED; }
-	virtual const char* class_name() const { throw GXX_NOT_IMPLEMENTED; }
-	virtual ~ZenCadObject(){};
+	//Если установлен этот флаг, поле m_native валидно.
+	bool prepared = false;
 
-	//size_t get_hash1() const { assert(setted_hash1); return hash1; };
-	//size_t get_hash2() const { assert(setted_hash2); return hash2; };
-	std::string get_hash_base64() const {
-		assert(setted_hash);
-		return gxx::base64url_encode((const uint8_t*)&hash, sizeof(size_t));
-	}
+	//Если установлен этот флаг, поле хэша валидно.
+	bool setted_hash = false;
 
-	void dump(std::ostream& out);
-	void load_cached(std::istream& in);
+	//Если установлен этот флаг, поле хэша валидно.
+	bool checked_hash = false;
 
-	virtual void serialize_to_stream(std::ostream& out) { 
-		gxx::println(class_name());
-		throw GXX_NOT_IMPLEMENTED; 
-	}
-
-	virtual void deserialize_from_stream(std::istream& out) { 
-		gxx::println(class_name());
-		throw GXX_NOT_IMPLEMENTED; 
-	}
-
-	virtual void vreflect(ZenVisitor& visitor) { 
-		gxx::println(class_name());
-		throw GXX_NOT_IMPLEMENTED; 
-	}
-
+	//Расчитать хэш объекта.
 	void initialize_hash();
 
-	int vreflect_count();
-	void vreflect_print_info();
+	//Подготовить данные для последующего использования. Если данные уже готовы, ничего не делать.
+	void prepare();
 	
-	//void vreflect_hashes();
-	size_t vreflect_evaluate_hash1();
-	size_t vreflect_evaluate_hash2();
+	//Записать хешы зависимостей в поток. 
+	void info_dump(std::ostream& out);
 
-	//virtual uint64_t hash() { throw GXX_NOT_IMPLEMENTED; }
+	//Пропустить часть потока по размеру зависимостей.
+	void info_skip(std::istream& in);
+
+	//Проверить хэши зависимостей в потоке.
+	bool info_check(std::istream& in);
+
+	//Записать данные объекта в поток.
+	virtual void dump(std::ostream& out) { PANIC_TRACED(); }
+
+	//Считать данные объекта из потока.
+	virtual void load(std::istream& in) { PANIC_TRACED(); }
+
+	//Выполнение операции.
+	virtual void doit() { PANIC_TRACED(); }
+	
+	//Возвращает имя класса.
+	virtual const char* class_name() const { PANIC_TRACED(); }
+
+	//Обход зависимостей объекта. Для реализации рефлексии.  
+	virtual void vreflect(ZenVisitor& visitor) { PANIC_TRACED(); }
+
+	//Методы, приминяющие рефлексию.
+
+	//Количество зависимостей.
+	int vreflect_deps_count();
+	
+	//Количество сложных зависимостей.
+	int vreflect_objdeps_count();
+
+	//void vreflect_print_info();
 };
 
-template <typename T>
-static size_t make_hash(const T &v) {
-    return std::hash<T>()(v);
-}
+/*template <typename Self> class ZenCadObject_Typed : public ZenCadObject {
+public:
+};*/
+
+/*template <typename T> static size_t make_hash(const T &v) { return std::hash<T>()(v); }
 
 struct ZenVisitor_Count : public ZenVisitor {
 	int count;
 	void operator & (const ZenCadObject& obj) override { ++count; }	
 	void operator & (double obj) override { ++count; }
-};
+};*/
 
-struct ZenVisitor_PrintClass : public ZenVisitor {
+/*struct ZenVisitor_PrintClass : public ZenVisitor {
 	void operator & (const ZenCadObject& obj) override { gxx::print(obj.class_name()); gxx::putchar(' '); }	
 	void operator & (double obj) override { gxx::print("double "); }
-};    
+};*/    
 
 /*struct ZenVisitor_Hash1 : public ZenVisitor {
 	size_t hash;
@@ -120,14 +121,7 @@ struct ZenVisitor_Hashes : public ZenVisitor {
 	std::vector<size_t> hashes;
 	void operator & (const ZenCadObject& obj) override { hashes.push_back(obj.hash); }	
 	void operator & (double obj) override { hashes.push_back(std::hash<double>()(obj)); }
-
-	size_t evaluate_current_hash() {
-		size_t hash = hashes[0];
-		for ( int i = 1; i < hashes.size(); ++i ) {
-			hash ^= hashes[i];
-		}
-		return hash;
-	}
+	size_t evaluate_current_hash();
 };
 
 #endif
