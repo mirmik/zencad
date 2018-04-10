@@ -6,6 +6,7 @@ layout : default
 
 ## Box  
 {% highlight python %}
+box(x, y, z, center = True/False);
 box(size = (x,y,z), center = True/False);
 box(size = x, center = True/False);
 {% endhighlight %}
