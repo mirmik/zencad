@@ -4,15 +4,43 @@
 #include <gxx/print.h>
 #include <gxx/print/stdprint.h>
 #include <gxx/util/text.h>
+#include <gxx/util/base64.h>
+#include <gxx/osutil/file.h>
 
 #include <iostream>
 #include <fstream>
 
+
+bool ZenCadObject::check_cache() {
+	if (checked_cache) return true;
+
+	assert(checked_cache == false && minor == 0);
+	assert(setted_hash);
+
+	hashstr = gxx::base64url_encode((const uint8_t*)&hash, sizeof(hash));
+
+	while(true) {
+		std::string filepath = gxx::format(minor ? "{}/{}_{}.dump" : "{}/{}.dump", zencache_path(), hashstr, minor);
+
+		if (!gxx::osutil::isexist(filepath)) {
+			gxx::fprintln("file {} isn't exist", gxx::text::yellow(filepath));
+			cached = false;
+			return false;
+		} else {
+			std::ifstream file(filepath, std::ios::binary);
+			cached = info_check(file) && vreflect_check_cache();
+			file.close();
+			if (cached) return true;		
+		}
+
+		minor++;
+	}
+}
+
 void ZenCadObject::prepare() {
-	gxx::println("prepare");
 	if (prepared) return;
 
-	if (setted_hash == 0) {
+	if (!setted_hash) {
 		gxx::fprintln("warn: {} in class {}", 
 			gxx::text::bright_red("uninitialized hash"), 
 			gxx::text::bright_yellow(class_name())
@@ -21,22 +49,27 @@ void ZenCadObject::prepare() {
 
 	if (!prepared) {
 		if (zencache_is_enabled() && setted_hash) {
-			GXX_PANIC_TRACED();
-			//std::string hashstr = get_hash_base64();
-			//std::string filepath = gxx::format("{}/{}.dump", zencache_path(), hashstr);		
-			
-			//if (zencache_set.find(hashstr) != zencache_set.end()) {
-				//gxx::fprintln("load data from cache {}", class_name());
-				//std::ifstream file(filepath, std::ios::binary);
-				//load_cached(file);
-				//deserialize_from_stream(file);
-			//} else {
-				//gxx::fprintln("cache miss {}", class_name());
-				//doit();	
-				//std::ofstream file(filepath, std::ios::binary);
-				//dump(file);
-				//serialize_to_stream(file);
-			//}
+			if (!checked_cache) check_cache();
+
+			std::string filepath = gxx::format(minor ? "{}/{}_{}.dump" : "{}/{}.dump", zencache_path(), hashstr, minor);
+			if (!cached) {
+				gxx::fprintln("save to {}", filepath);
+
+				doit();
+				std::ofstream file(filepath, std::ios::binary);
+				info_dump(file);
+				dump(file);
+				file.close();
+			}
+
+			else {
+				gxx::fprintln("load from {}", filepath);
+
+				std::ifstream file(filepath, std::ios::binary);
+				info_skip(file);
+				load(file);	
+				file.close();			
+			}	
 		} else {
 			doit();
 		}
@@ -44,6 +77,50 @@ void ZenCadObject::prepare() {
 		prepared = true;
 	}
 }
+
+bool ZenCadObject::vreflect_check_cache() {
+	ZenVisitor_CheckCache alg;
+	vreflect(alg);
+	return alg.result;
+}
+
+bool ZenCadObject::info_check(std::istream& in) {
+	ZenVisitor_Hashes alg;
+	vreflect(alg);
+	
+	size_t ls = alg.hashes.size();
+	size_t es;
+	in.read((char*)&es, sizeof(size_t));
+	
+	if (ls != es) return false;
+	for (size_t lh : alg.hashes) { 
+		size_t eh;
+		in.read((char*)&eh, sizeof(size_t)); 
+		if (lh != eh) return false;		
+	}
+
+	return true;
+}
+
+void ZenCadObject::info_dump(std::ostream& out) {
+	ZenVisitor_Hashes alg;
+	vreflect(alg);
+	auto s = alg.hashes.size();
+	out.write((const char*)&s, sizeof(size_t));
+	for (size_t h : alg.hashes) { 
+		out.write((const char*)&h, sizeof(size_t)); 
+	}
+}
+
+void ZenCadObject::info_skip(std::istream& in) {
+	ZenVisitor_Hashes alg;
+	vreflect(alg);
+	in.ignore(sizeof(size_t));
+	for (size_t h : alg.hashes) { 
+		in.ignore(sizeof(size_t)); 
+	}
+}
+
 /*
 int ZenCadObject::vreflect_count() {
 	ZenVisitor_Count alg;
@@ -109,11 +186,11 @@ void ZenCadObject::load_cached(std::istream& in) {
 void ZenCadObject::initialize_hash() {
 	ZenVisitor_Hashes alg;
 	vreflect(alg);
-	hash = alg.evaluate_current_hash();
+	hash = alg.evaluate() ^ typeid(this).hash_code();
 	setted_hash = true;
 }
 
-size_t ZenVisitor_Hashes::evaluate_current_hash() {
+size_t ZenVisitor_Hashes::evaluate() {
 	size_t hash = hashes[0];
 	for ( int i = 1; i < hashes.size(); ++i ) {
 		hash ^= hashes[i];

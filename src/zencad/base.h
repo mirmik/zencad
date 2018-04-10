@@ -3,29 +3,27 @@
 
 #include <typeinfo>
 #include <typeindex>
-
-#include <gxx/exception.h>
-#include <gxx/util/base64.h>
 #include <inttypes.h>
 #include <memory>
 #include <iostream>
 #include <vector>
 
-#include <zencad/cache.h>
+#include <gxx/exception.h>
 
 struct ZenCadObject;
 
 struct ZenVisitor {
-	virtual void operator & (const ZenCadObject& obj) = 0;	
+	virtual void operator & (ZenCadObject& obj) = 0;	
 	virtual void operator & (double obj) = 0;	
 };
 
 struct ZenCadObject : public std::enable_shared_from_this<ZenCadObject> {
 	//Хеш используется для кеширования результатов длинных вычислений.
 	size_t hash;
+	std::string hashstr; // инициализируется в операциях с кэшем.
 
 	//В случае колизии кеша, объект сохраняется с уникальным минором.
-	uint8_t minor;
+	uint8_t minor = 0;
 
 	//Если установлен этот флаг, поле m_native валидно.
 	bool prepared = false;
@@ -33,8 +31,9 @@ struct ZenCadObject : public std::enable_shared_from_this<ZenCadObject> {
 	//Если установлен этот флаг, поле хэша валидно.
 	bool setted_hash = false;
 
-	//Если установлен этот флаг, поле хэша валидно.
-	bool checked_hash = false;
+	//Если установлен этот флаг, поле кэш найден и валиден.
+	bool checked_cache = false;
+	bool cached;
 
 	//Расчитать хэш объекта.
 	void initialize_hash();
@@ -50,6 +49,7 @@ struct ZenCadObject : public std::enable_shared_from_this<ZenCadObject> {
 
 	//Проверить хэши зависимостей в потоке.
 	bool info_check(std::istream& in);
+	bool check_cache();
 
 	//Записать данные объекта в поток.
 	virtual void dump(std::ostream& out) { PANIC_TRACED(); }
@@ -74,6 +74,7 @@ struct ZenCadObject : public std::enable_shared_from_this<ZenCadObject> {
 	//Количество сложных зависимостей.
 	int vreflect_objdeps_count();
 
+	bool vreflect_check_cache();
 	//void vreflect_print_info();
 };
 
@@ -119,9 +120,18 @@ struct ZenVisitor_Hash2 : public ZenVisitor {
 
 struct ZenVisitor_Hashes : public ZenVisitor {
 	std::vector<size_t> hashes;
-	void operator & (const ZenCadObject& obj) override { hashes.push_back(obj.hash); }	
+	void operator & (ZenCadObject& obj) override { hashes.push_back(obj.hash); }	
 	void operator & (double obj) override { hashes.push_back(std::hash<double>()(obj)); }
-	size_t evaluate_current_hash();
+	size_t evaluate();
+};
+
+struct ZenVisitor_CheckCache : public ZenVisitor {
+	bool result = true;
+	void operator & (ZenCadObject& obj) override { 
+		if (!result) return; 
+		result = obj.check_cache();  
+	}	
+	void operator & (double obj) override { return; }
 };
 
 #endif
