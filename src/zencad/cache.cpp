@@ -4,6 +4,8 @@
 #include <gxx/print.h>
 #include <iterator>
 
+#include <gxx/util/base64.h>
+
 bool __cache_is_enabled = false;
 std::string dirpath;
 std::set<std::string> zencache_set;
