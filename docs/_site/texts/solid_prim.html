@@ -38,17 +38,52 @@
 					padding: 1em;
 					overflow: hidden;
 			}
+
+
+			/* Buttons
+			*/
+			.btn {
+			  display: inline-block;
+			  background: -webkit-linear-gradient(top, rgba(40, 40, 40, 0.3), rgba(35, 35, 35, 0.3) 50%, rgba(10,			 10, 10, 0.3) 50%, rgba(0, 0, 0, 0.3));
+			  padding: 8px 18px;
+			  border-radius: 50px;
+			  border: 2px solid rgba(0, 0, 0, 0.7);
+			  border-bottom: 2px solid rgba(0, 0, 0, 0.7);
+			  border-top: 2px solid black;
+			  color: rgba(255, 255, 255, 0.8);
+			  font-family: Helvetica, Arial, sans-serif;
+			  font-weight: bold;
+			  font-size: 13px;
+			  text-decoration: none;
+			  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);
+			  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+			
+			.btn:hover {
+			  background: -webkit-linear-gradient(top, rgba(40, 40, 40, 0.6), rgba(35, 35, 35, 0.6) 50%, rgba(10,			 10, 10, 0.8) 50%, rgba(0, 0, 0, 0.8)); }
+			
+			.btn .icon {
+			  display: inline-block;
+			  width: 16px;
+			  height: 16px;
+			  margin: 1px 8px 0 0;
+			  float: left; }
+			
+			.btn-github .icon {
+			  opacity: 0.6;
+			  background: url("../images/blacktocat.png") 0 0 no-repeat; }
 		</style>
 	</head>
 	<body>
 		<div>
 			<header>
-				 <h1>ZenCad</h1>
+				<h1>ZenCad</h1>
+          		<a href="https://github.com/mirmik/zencad" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
 			</header>
 				
 			<nav>
           		<a href="/zencad/index.html">Главная</a></p>
-          		<a href="/zencad/texts/solid_prim.html">Твердотельные примитивы</a></p>
+          		<a href="/zencad/texts/solid_prim.html">3д примитивы.</a></p>
+          		<a href="/zencad/texts/face_prim.html">2д примитивы.</a></p>
 			</nav>
 			
 			<article>
@@ -57,7 +92,8 @@
 
 <h2 id="box">Box</h2>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">box</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">box</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
+<span class="n">box</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
 <span class="n">box</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
 
 <p>Example:</p>
@@ -109,7 +145,7 @@
 			</article>
 			
 			<footer>
-				by mirmik
+				by <a href="https://mirmik.github.io">mirmik</a></p>
 			</footer>
 	
 		</div>
