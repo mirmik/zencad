@@ -1,8 +1,10 @@
 from zencad.zenlib import solid_box as _box
-from zencad.zenlib import solid_sphere as sphere
-from zencad.zenlib import solid_cylinder as cylinder
-from zencad.zenlib import solid_torus as torus
-from zencad.zenlib import solid_cone as cone
+from zencad.zenlib import solid_cylinder as _cylinder
+from zencad.zenlib import solid_cone as _cone
+
+from zencad.zenlib import solid_sphere as _sphere
+from zencad.zenlib import solid_torus as _torus
+
 #from zencad.zenlib import solid_wedge as wedge
 #from zencad.zenlib import solid_load as load
 #from zencad.zenlib import solid_loft as loft
@@ -17,10 +19,21 @@ def linear_extrude(face, vector):
 
 def box(size, arg2 = None, arg3 = None, center = False):
 	if arg3 == None:
-		try:
+		if hasattr(size, '__getitem__'):
 			return _box(size[0], size[1], size[2], center)
-		except:
+		else:
 			return _box(size, size, size, center)
 	else:
 		return _box(size, arg2, arg3, center)
 	
+def cylinder(r, h, center = False):
+	return _cylinder(r, h, center)
+
+def cone(r1, r2, h, center = False):
+	return _cone(r1, r2, h, center)
+	
+def sphere(r):
+	return _sphere(r)
+	
+def torus(r1, r2):
+	return _torus(r1, r2)
