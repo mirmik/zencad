@@ -7,18 +7,18 @@
 #include <BRepOffsetAPI_MakePipe.hxx>
 #include <BRepOffsetAPI_MakePipeShell.hxx>
 
-ZenBox::ZenBox(double x, double y, double z) : x(x), y(y), z(z) { initialize_hash(); }
+ZenBox::ZenBox(double x, double y, double z, bool center) : x(x), y(y), z(z), center(center) { initialize_hash(); }
 ZenCylinder::ZenCylinder(double r, double h) : r(r), h(h) { initialize_hash(); }
 ZenSphere::ZenSphere(double r) : r(r) { initialize_hash(); }
 ZenTorus::ZenTorus(double r1, double r2) : r1(r1), r2(r2) { initialize_hash(); }
 
 ZenCone::ZenCone(double r1, double r2, double h) : r1(r1), r2(r2), h(h) { initialize_hash(); }
 ZenCone::ZenCone(double r, double h) : r1(r), r2(0), h(h) { initialize_hash(); }
-
+/*
 ZenBox::ZenBox(double x, double y, double z, py::kwargs kw) : ZenBox(x,y,z) {
 	center = kw["center"].cast<bool>();
 	initialize_hash();
-}
+}*/
 
 ZenCylinder::ZenCylinder(double r, double h, py::kwargs kw) : ZenCylinder(r,h) {
 	center = kw["center"].cast<bool>();

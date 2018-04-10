@@ -3,6 +3,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtCore/QDebug>
+#include <QtCore/QDir>
 
 // occ header files.
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -35,6 +36,10 @@ void ZenWidget::createActions() {
     mStlExport->setStatusTip(tr("Export file with external STL-Mesh format"));
     connect(mStlExport, SIGNAL(triggered()), this, SLOT(export_stl()));
 
+    mScreen = new QAction(tr("Screenshot..."), this);
+    mScreen->setStatusTip(tr("Do screen"));
+    connect(mScreen, SIGNAL(triggered()), this, SLOT(screenshot()));
+
     mAboutAction = new QAction(tr("About"), this);
     mAboutAction->setStatusTip(tr("About the application"));
     connect(mAboutAction, SIGNAL(triggered()), this, SLOT(about()));
@@ -43,6 +48,7 @@ void ZenWidget::createActions() {
 void ZenWidget::createMenus() {
     mFileMenu = menuBar()->addMenu(tr("&File"));
     mFileMenu->addAction(mStlExport);
+    mFileMenu->addAction(mScreen);
     mFileMenu->addSeparator();
     mFileMenu->addAction(mExitAction);
 
@@ -90,6 +96,44 @@ void ZenWidget::export_stl() {
     stl_writer.SetDeflection(d);
     stl_writer.RelativeMode() = false;
     stl_writer.Write(display->display_on_init_list[0], path.toStdString().c_str());
+}
+
+void ZenWidget::screenshot() {
+    bool ok;
+
+    //QPixmap pixmap(size()); 
+    //render(&pixmap, QPoint(), QRegion(display->rect()));
+    
+    auto disp = display->grabFrameBuffer();
+
+    QFileDialog fileDialog(this, "Choose file to export");
+    fileDialog.setDirectory(QDir::current());
+    fileDialog.setNameFilter("png (*.png)");
+    fileDialog.setDefaultSuffix(".png");
+    ok = fileDialog.exec();
+
+    if (!ok) return;
+    QString path = fileDialog.selectedFiles().first();
+
+    QFile file(path);
+    disp.save(&file, "PNG");
+    file.close();
+
+    //QInputDialog *inputDialog = new QInputDialog();
+    //inputDialog->setTextValue("Test"); // has no effect
+    
+    //double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
+      //                                 tr("Amount:"), 0.01, 0, 10, 5, &ok);
+
+    //if (display->display_on_init_list.size() != 1) {
+     //   exit(1);
+        //gxx::panic("TODO");
+    //} 
+
+    //StlAPI_Writer stl_writer;
+    //stl_writer.SetDeflection(d);
+    //stl_writer.RelativeMode() = false;
+    //stl_writer.Write(display->display_on_init_list[0], path.toStdString().c_str());*/
 }
 
 /*void ZenWidget::makeBox() {
