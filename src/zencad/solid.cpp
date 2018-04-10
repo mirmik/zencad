@@ -8,22 +8,11 @@
 #include <BRepOffsetAPI_MakePipeShell.hxx>
 
 ZenBox::ZenBox(double x, double y, double z, bool center) : x(x), y(y), z(z), center(center) { initialize_hash(); }
-ZenCylinder::ZenCylinder(double r, double h) : r(r), h(h) { initialize_hash(); }
+ZenCylinder::ZenCylinder(double r, double h, bool center) : r(r), h(h), center(center) { initialize_hash(); }
 ZenSphere::ZenSphere(double r) : r(r) { initialize_hash(); }
 ZenTorus::ZenTorus(double r1, double r2) : r1(r1), r2(r2) { initialize_hash(); }
 
-ZenCone::ZenCone(double r1, double r2, double h) : r1(r1), r2(r2), h(h) { initialize_hash(); }
-ZenCone::ZenCone(double r, double h) : r1(r), r2(0), h(h) { initialize_hash(); }
-/*
-ZenBox::ZenBox(double x, double y, double z, py::kwargs kw) : ZenBox(x,y,z) {
-	center = kw["center"].cast<bool>();
-	initialize_hash();
-}*/
-
-ZenCylinder::ZenCylinder(double r, double h, py::kwargs kw) : ZenCylinder(r,h) {
-	center = kw["center"].cast<bool>();
-	initialize_hash();
-}
+ZenCone::ZenCone(double r1, double r2, double h, bool center) : r1(r1), r2(r2), h(h), center(center) { initialize_hash(); }
 
 const char* ZenBox::class_name() const { return "ZenBox"; }
 const char* ZenSphere::class_name() const { return "ZenSphere"; }
@@ -50,22 +39,22 @@ void ZenCylinder::doit() {
 }
 
 void ZenCone::doit() { 
-	//if (!center) {
+	if (!center) {
 		m_native = BRepPrimAPI_MakeCone(r1, r2, h).Solid(); 
-	//} else {
-	//	gp_Ax2 ax2(gp_Pnt(0,0,-h/2), gp_Vec(0,0,1));
-	///	m_native = BRepPrimAPI_MakeCylinder(ax2, r1, r2, h).Solid(); 		
-	//}
+	} else {
+		gp_Ax2 ax2(gp_Pnt(0,0,-h/2), gp_Vec(0,0,1));
+		m_native = BRepPrimAPI_MakeCone(ax2, r1, r2, h).Solid(); 		
+	}
 }
 
 void ZenSphere::doit() { m_native = BRepPrimAPI_MakeSphere(r).Solid(); }
 void ZenTorus::doit() { m_native = BRepPrimAPI_MakeTorus(r1,r2).Solid(); }
 
-void ZenBox::vreflect(ZenVisitor& v) { v & x; v & y; v & z; v & center; }
-void ZenSphere::vreflect(ZenVisitor& v) { v & r; }
-void ZenCylinder::vreflect(ZenVisitor& v) { v & r; v & h; v & center; }
-void ZenTorus::vreflect(ZenVisitor& v) { v & r1; v & r2; }
-void ZenCone::vreflect(ZenVisitor& v) { v & r1; v & r2; v & h; }
+void ZenBox::vreflect(ZenVisitor& v) { v&x; v&y; v&z; v&center; }
+void ZenSphere::vreflect(ZenVisitor& v) { v&r; }
+void ZenCylinder::vreflect(ZenVisitor& v) { v&r; v&h; v&center; }
+void ZenTorus::vreflect(ZenVisitor& v) { v&r1; v&r2; }
+void ZenCone::vreflect(ZenVisitor& v) { v&r1; v&r2; v&h; v&center; }
 
 /*
 void ZenBox::doit() { 

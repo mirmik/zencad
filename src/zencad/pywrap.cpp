@@ -76,15 +76,13 @@ PYBIND11_MODULE(zenlib, m) {
 		.def(py::init<double>());
 
 	py::class_<ZenCylinder, ZenSolid, std::shared_ptr<ZenCylinder>>(m, "solid_cylinder")
-		.def(py::init<double, double>())
-		.def(py::init<double, double, py::kwargs>());
+		.def(py::init<double, double, bool>());
 
 	py::class_<ZenTorus, ZenSolid, std::shared_ptr<ZenTorus>>(m, "solid_torus")
 		.def(py::init<double, double>());
 
 	py::class_<ZenCone, ZenSolid, std::shared_ptr<ZenCone>>(m, "solid_cone")
-		.def(py::init<double, double>())
-		.def(py::init<double, double, double>());
+		.def(py::init<double, double, double, bool>());
 
 /*
 	py::class_<ZenWedge, ZenSolid, std::shared_ptr<ZenWedge>>(m, "solid_wedge")

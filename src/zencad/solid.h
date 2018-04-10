@@ -42,8 +42,7 @@ struct ZenCylinder : public ZenSolid {
 	const char* class_name() const override;
 	double r, h;
 	bool center = false;
-	ZenCylinder(double r, double h);
-	ZenCylinder(double r, double h, py::kwargs kw);
+	ZenCylinder(double r, double h, bool center);
 	void doit() override;
 	void vreflect(ZenVisitor& v) override;
 };
@@ -59,8 +58,8 @@ struct ZenTorus : public ZenSolid {
 struct ZenCone : public ZenSolid {
 	const char* class_name() const override;
 	double r1, r2, h;
-	ZenCone(double r1, double r2, double h);
-	ZenCone(double r, double h);
+	bool center;
+	ZenCone(double r1, double r2, double h, bool center);
 	void doit() override;
 	void vreflect(ZenVisitor& v) override;	
 };
