@@ -24,8 +24,8 @@ struct ZenBox : public ZenSolid {
 	const char* class_name() const override;
 	double x, y, z;
 	bool center = false;
-	ZenBox(double x, double y, double z);
-	ZenBox(double x, double y, double z, py::kwargs kw);
+	ZenBox(double x, double y, double z, bool center);
+	//ZenBox(double x, double y, double z, py::kwargs kw);
 	void doit() override;
 	void vreflect(ZenVisitor& v) override;
 };

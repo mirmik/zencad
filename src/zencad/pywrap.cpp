@@ -59,8 +59,8 @@ PYBIND11_MODULE(zenlib, m) {
 	;
 
 	py::class_<ZenBox, ZenSolid, std::shared_ptr<ZenBox>>(m, "solid_box")
-		.def(py::init<double, double, double>())
-		.def(py::init<double, double, double, py::kwargs>())
+		.def(py::init<double, double, double, bool>())
+		//.def(py::init<double, double, double, py::kwargs>())
 	;
 
 	//m.def("solid_load", zen_load<ZenSolid>);

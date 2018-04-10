@@ -11,6 +11,7 @@ class ZenWidget : public QMainWindow {
     //! the exit action.
     QAction* mStlExport;
     QAction* mExitAction;
+    QAction* mScreen;
 
     //! show the about info action.
     QAction* mAboutAction;
@@ -40,6 +41,7 @@ private:
 private slots:
     void about(void);
     void export_stl();
+    void screenshot();
 
 public:
 	ZenWidget(QWidget* parent = nullptr);

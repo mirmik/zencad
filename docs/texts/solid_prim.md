@@ -6,13 +6,13 @@ layout : default
 
 ## Box  
 {% highlight python %}
-cube(size = [x,y,z], center = True/False);
-cube(size =  x ,     center = True/False);
+box(size = (x,y,z), center = True/**False**);
+box(size = x, center = True/**False**);
 {% endhighlight %}
 
 ## Sphere  
 {% highlight python %}
-solid.sphere(r = radius)
+sphere(r = radius)
 {% endhighlight %}
 
 ## Cylinder  
