@@ -57,20 +57,54 @@
 
 <h2 id="box">Box</h2>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cube</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
-<span class="n">cube</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span>  <span class="n">x</span> <span class="p">,</span>     <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">box</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
+<span class="n">box</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+
+<p>Example:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span></code></pre></figure>
+
+<p><img src="box.png" alt="box.png" /></p>
 
 <h2 id="sphere">Sphere</h2>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">solid</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="n">radius</span><span class="p">)</span></code></pre></figure>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">sphere</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="n">radius</span><span class="p">)</span></code></pre></figure>
+
+<p>Example:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span></code></pre></figure>
+
+<p><img src="sphere.png" alt="sphere.png" /></p>
 
 <h2 id="cylinder">Cylinder</h2>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cylinder</span><span class="p">(</span><span class="n">h</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">radius</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="n">radius</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+
+<p>Example:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span></code></pre></figure>
+
+<p><img src="cylinder.png" alt="cylinder.png" /></p>
 
 <h2 id="cone">Cone</h2>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cone</span><span class="p">(</span><span class="n">h</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">r1</span> <span class="o">=</span> <span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">topRadius</span><span class="p">);</span></code></pre></figure>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">cone</span><span class="p">(</span><span class="n">r1</span> <span class="o">=</span> <span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">topRadius</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span></code></pre></figure>
+
+<p>Example:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span></code></pre></figure>
+
+<p><img src="cone.png" alt="cone.png" /></p>
+
+<h2 id="torus">Torus</h2>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">torus</span><span class="p">(</span><span class="n">r1</span> <span class="o">=</span> <span class="n">centralRadius</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">localRadius</span><span class="p">);</span></code></pre></figure>
+
+<p>Example:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">torus</span><span class="p">(</span><span class="n">r1</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="mi">3</span><span class="p">);</span></code></pre></figure>
+
+<p><img src="torus.png" alt="torus.png" /></p>
 
 			</article>
 			
