@@ -23,12 +23,6 @@ sudo apt install liboce-*
 pip install zencad
 {% endhighlight %}
 
-### Get source code
-
-{% highlight sh %}
-git clone https://github.com/mirmik/zencad
-{% endhighlight %}
-
 ## Usage
 
 ### Simple example
