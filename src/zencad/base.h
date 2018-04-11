@@ -39,7 +39,7 @@ struct ZenCadObject : public std::enable_shared_from_this<ZenCadObject> {
 	void initialize_hash();
 
 	//Подготовить данные для последующего использования. Если данные уже готовы, ничего не делать.
-	void prepare();
+	virtual void prepare();
 	
 	//Записать хешы зависимостей в поток. 
 	void info_dump(std::ostream& out);

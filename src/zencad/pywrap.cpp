@@ -4,9 +4,10 @@ using namespace boost::python;
 #include <zencad/base.h>
 #include <zencad/cache.h>
 #include <zencad/topo.h>
-#include <zencad/solid.h>
+#include <zencad/vertex.h>
 #include <zencad/wire.h>
 #include <zencad/face.h>
+#include <zencad/solid.h>
 #include <zencad/boolops.h>
 #include <zencad/trans.h>
 #include <zencad/stl.h>
@@ -73,16 +74,16 @@ PYBIND11_MODULE(zenlib, m) {
 	;
 */
 	py::class_<ZenSphere, ZenSolid, std::shared_ptr<ZenSphere>>(m, "solid_sphere")
-		.def(py::init<double>());
+		.def(py::init<double>(), py::arg("r"));
 
 	py::class_<ZenCylinder, ZenSolid, std::shared_ptr<ZenCylinder>>(m, "solid_cylinder")
-		.def(py::init<double, double, bool>());
+		.def(py::init<double, double, bool>(), py::arg("r"), py::arg("h"), py::arg("center")=false);
 
 	py::class_<ZenTorus, ZenSolid, std::shared_ptr<ZenTorus>>(m, "solid_torus")
-		.def(py::init<double, double>());
+		.def(py::init<double, double>(), py::arg("r1"), py::arg("r2"));
 
 	py::class_<ZenCone, ZenSolid, std::shared_ptr<ZenCone>>(m, "solid_cone")
-		.def(py::init<double, double, double, bool>());
+		.def(py::init<double, double, double, bool>(), py::arg("r1"), py::arg("r2"), py::arg("h"), py::arg("center")=false);
 
 /*
 	py::class_<ZenWedge, ZenSolid, std::shared_ptr<ZenWedge>>(m, "solid_wedge")
@@ -104,29 +105,28 @@ PYBIND11_MODULE(zenlib, m) {
 		DEF_EXPLORER_OPERATIONS(ZenEdge)
 		.def("face", &ZenEdge::make_face)
 	;
-
+*/
 	///WIRES
 	py::class_<ZenWire, ZenShape, std::shared_ptr<ZenWire>>(m, "ZenWire")
 		DEF_TRANSFORM_OPERATIONS(ZenWire)
-		DEF_EXPLORER_OPERATIONS(ZenWire)
-		.def("face", &ZenWire::make_face)
+		//DEF_EXPLORER_OPERATIONS(ZenWire)
+		//.def("face", &ZenWire::make_face)
 	;
 
 	py::class_<ZenSegment, ZenWire, std::shared_ptr<ZenSegment>>(m, "wire_segment")
-		.def(py::init<ZenPoint3, ZenPoint3>());
+		.def(py::init<ZenPoint, ZenPoint>());
 
 	py::class_<ZenWireCircle, ZenWire, std::shared_ptr<ZenWireCircle>>(m, "wire_circle")
-		.def(py::init<double, py::kwargs>(), py::arg("r"));
+		.def(py::init<double, double, double>(), py::arg("r"), py::arg("a")=0, py::arg("b")=360);
 
 	py::class_<ZenCircleArcByPoints, ZenWire, std::shared_ptr<ZenCircleArcByPoints>>(m, "wire_circle_arc_by_points")
-		.def(py::init<ZenPoint3, ZenPoint3, ZenPoint3>());
+		.def(py::init<ZenPoint, ZenPoint, ZenPoint>());
 
 	py::class_<ZenPolySegment, ZenWire, std::shared_ptr<ZenPolySegment>>(m, "wire_polysegment")
-		.def(py::init<py::list>())
-		.def(py::init<py::list, py::kwargs>())
+		.def(py::init<py::list, bool>(), py::arg("pnts"), py::arg("closed")=false)
 	;
 
-
+/*
 	py::class_<ZenWireComplex, ZenWire, std::shared_ptr<ZenWireComplex>>(m, "wire_complex")
 		.def(py::init<py::list>())
 	;
@@ -135,11 +135,11 @@ PYBIND11_MODULE(zenlib, m) {
 	//py::class_<ZenWiresFromFace, ZenWire, std::shared_ptr<ZenWiresFromFace>>(m, "wires_from_face")
 	//	.def(py::init<std::shared_ptr<std::shared_ptr<ZenFace>>>())
 	//;
-		
+*/	
 	///FACE	
 	py::class_<ZenFace, ZenShape, std::shared_ptr<ZenFace>>(m, "ZenFace")
 		DEF_TRANSFORM_OPERATIONS(ZenFace)
-		DEF_EXPLORER_OPERATIONS(ZenFace)
+		//DEF_EXPLORER_OPERATIONS(ZenFace)
 		.def(py::self + py::self)
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
@@ -151,11 +151,25 @@ PYBIND11_MODULE(zenlib, m) {
 		.def(py::init<py::list>());
 
 	py::class_<ZenFilletFace, ZenFace, std::shared_ptr<ZenFilletFace>>(m, "face_fillet")
-		.def(py::init<std::shared_ptr<ZenFace>, int>());
+		.def(py::init<std::shared_ptr<ZenFace>, double>(), py::arg("face"), py::arg("r"));
 		
 	py::class_<ZenCircle, ZenFace, std::shared_ptr<ZenCircle>>(m, "face_circle")
-		.def(py::init<double>());
+		.def(py::init<double>(), py::arg("r"));
 
+
+	py::class_<ZenVertex, ZenShape, std::shared_ptr<ZenVertex>>(m, "ZenVertex")
+		DEF_TRANSFORM_OPERATIONS(ZenVertex)
+		//DEF_EXPLORER_OPERATIONS(ZenFace)
+		.def(py::self + py::self)
+		.def(py::self - py::self)
+		.def(py::self ^ py::self)
+		//.def("wires", &ZenFace::wires)
+	;
+
+	py::class_<ZenPoint, ZenVertex, std::shared_ptr<ZenPoint>>(m, "point3")
+		.def(py::init<double,double,double>())
+		.def(py::init<double,double>());
+/*
 	///TRANS
 	py::class_<ZenTransform, std::shared_ptr<ZenTransform>>(m, "ZenTransform");
 	m.def("trans_translate", trans_translate);
@@ -175,9 +189,6 @@ PYBIND11_MODULE(zenlib, m) {
 
 //	py::class_<ZenDirection3>(m, "direction3").def(py::init<double,double,double>());
 //	py::class_<ZenVector3>(m, "vector3").def(py::init<double,double,double>());
-	py::class_<ZenPoint3>(m, "point3")
-		.def(py::init<double,double,double>())
-		.def(py::init<double,double>());
 /*
 	py::class_<ZenShapeExplorer<ZenWire>, std::shared_ptr<ZenShapeExplorer<ZenWire>>>(m, "ZenShapeExplorer<ZenWire>")
 		.def("__len__", &ZenShapeExplorer<ZenWire>::size)

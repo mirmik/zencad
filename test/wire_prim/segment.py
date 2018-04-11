@@ -5,7 +5,8 @@ import sys
 sys.path.insert(0, "../..")
 
 import zencad
-m0 = zencad.cylinder(r = 10, h = 20)
 
-zencad.display(m0)
+m = zencad.segment(zencad.point(0,0,0), zencad.point(10,20,30))
+zencad.display(m)
+
 zencad.show()

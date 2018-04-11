@@ -15,7 +15,7 @@ Example:
 {% highlight python %}
 zencad.box(size = [20, 20, 10], center = True)
 {% endhighlight %}
-![box.png](box.png)
+![box.png](../images/box.png)
 
 ## Sphere  
 {% highlight python %}
@@ -26,7 +26,7 @@ Example:
 {% highlight python %}
 zencad.sphere(r = 10)
 {% endhighlight %}
-![sphere.png](sphere.png)
+![sphere.png](../images/sphere.png)
 
 ## Cylinder  
 {% highlight python %}
@@ -37,7 +37,7 @@ Example:
 {% highlight python %}
 zencad.cylinder(r = 10, h = 20)
 {% endhighlight %}
-![cylinder.png](cylinder.png)
+![cylinder.png](../images/cylinder.png)
 
 ## Cone  
 {% highlight python %}
@@ -48,7 +48,7 @@ Example:
 {% highlight python %}
 zencad.cone(r1 = 20, r2 = 10, h = 20, center = True)
 {% endhighlight %}
-![cone.png](cone.png)
+![cone.png](../images/cone.png)
 
 ## Torus  
 {% highlight python %}
@@ -59,4 +59,4 @@ Example:
 {% highlight python %}
 zencad.torus(r1 = 10, r2 = 3);
 {% endhighlight %}
-![torus.png](torus.png)
+![torus.png](../images/torus.png)

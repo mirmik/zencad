@@ -27,6 +27,23 @@ const char* makeFaceErrorToStr(const auto& err) {
 	};
 }
 
+ZenCircle::ZenCircle(double r) : r(r) {
+	initialize_hash();
+}
+
+ZenPolygon::ZenPolygon(pybind11::list args) {
+   	for (auto item : args) {
+   		auto pnt = item.cast<ZenPoint>();
+   		pnts.push_back(pnt);
+   	}
+   	initialize_hash();
+}
+
+ZenFilletFace::ZenFilletFace(std::shared_ptr<ZenFace> fc, double r) : fc(fc), r(r) {
+	initialize_hash();
+}
+
+/*
 void ZenWireFace::doit() {
 	wr->prepare();
 	BRepBuilderAPI_MakeFace alg(TopoDS::Wire(wr->native()));
@@ -48,7 +65,7 @@ void ZenEdgeFace::doit() {
 	
 	m_native = alg.Face();
 }
-
+*/
 void ZenCircle::doit() {
 	gp_Circ EL ( gp::XOY(), r );
 	Handle(Geom_Circle) anCircle = GC_MakeCircle(EL).Value();
@@ -56,7 +73,7 @@ void ZenCircle::doit() {
 	TopoDS_Wire aCircle = BRepBuilderAPI_MakeWire( aEdge );
 	m_native = BRepBuilderAPI_MakeFace(aCircle);
 }
-
+/*
 void ZenPolygon::doit() {
 	BRepBuilderAPI_MakePolygon mk;
 	for (auto& p : pnts) mk.Add(p.Pnt());
@@ -67,7 +84,7 @@ void ZenPolygon::doit() {
 std::shared_ptr<ZenFilletFace> ZenFace::fillet(int num) {
 	return std::shared_ptr<ZenFilletFace>(new ZenFilletFace(get_spointer(), num));
 };
-
+*/
 void ZenFilletFace::doit() {
 	BRepFilletAPI_MakeFillet2d mk(TopoDS::Face(fc->native()));
 	for(TopExp_Explorer expWire(TopoDS::Face(fc->native()), TopAbs_WIRE); expWire.More(); expWire.Next()) {
@@ -79,3 +96,23 @@ void ZenFilletFace::doit() {
 	}
 	m_native = mk;
 }
+
+
+
+void ZenPolygon::doit() {
+	BRepBuilderAPI_MakePolygon mk;
+	for (auto& p : pnts) mk.Add(p.Pnt());
+	mk.Close();
+	m_native = BRepBuilderAPI_MakeFace(mk);
+}
+
+std::shared_ptr<ZenFilletFace> ZenFace::fillet(double r) {
+	return std::shared_ptr<ZenFilletFace>(new ZenFilletFace(spointer(), r));
+};
+
+
+void ZenCircle::vreflect(ZenVisitor& v) { v&r; }
+void ZenPolygon::vreflect(ZenVisitor& v) { 
+	for (auto& pnt : pnts) v&pnt; 
+}
+void ZenFilletFace::vreflect(ZenVisitor& v) { v&*fc; v&r; }
