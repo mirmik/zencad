@@ -21,7 +21,6 @@ git clone https://github.com/mirmik/zencad
 
 Install with source
 -------------------
-
 ```sh
 ./make.py install35
 ```

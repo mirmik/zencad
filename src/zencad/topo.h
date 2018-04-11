@@ -317,4 +317,10 @@ struct ZenFromExplorer : public Self {
 	}
 };
 */
+
+struct ZenSolid;
+struct ZenFace;
+struct ZenWire;
+struct ZenVertex;
+
 #endif
