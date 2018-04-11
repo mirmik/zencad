@@ -2,7 +2,7 @@
 layout: default
 ---
 
-{% highlight sh %}
+{% highlight python %}
 #!/usr/bin/env python3.5
 #coding: utf-8
 
@@ -46,7 +46,7 @@ show()
 ![sphere.png](../images/storage.png)
 
 
-{% highlight sh %}
+{% highlight python %}
 #!/usr/bin/env python3.5
 #coding: utf-8
 
