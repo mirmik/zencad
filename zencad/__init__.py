@@ -14,6 +14,8 @@ from zencad.solid import torus
 from zencad.solid import cylinder
 from zencad.solid import cone
 
+from zencad.solid import linear_extrude
+
 #face
 from zencad.face import circle
 from zencad.face import ngon

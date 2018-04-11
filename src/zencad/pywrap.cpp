@@ -88,11 +88,11 @@ PYBIND11_MODULE(zenlib, m) {
 /*
 	py::class_<ZenWedge, ZenSolid, std::shared_ptr<ZenWedge>>(m, "solid_wedge")
 		.def(py::init<double, double, double, double>());
-	
+	*/
 	py::class_<ZenLinearExtrude, ZenSolid, std::shared_ptr<ZenLinearExtrude>>(m, "solid_linear_extrude")
 		.def(py::init<std::shared_ptr<ZenFace>, double>())
 		.def(py::init<std::shared_ptr<ZenFace>, ZenVector3>());
-
+/*
 	py::class_<ZenLoft, ZenSolid, std::shared_ptr<ZenLoft>>(m, "solid_loft")
 		.def(py::init<py::list>());
 
@@ -188,7 +188,7 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("show", show);
 
 //	py::class_<ZenDirection3>(m, "direction3").def(py::init<double,double,double>());
-//	py::class_<ZenVector3>(m, "vector3").def(py::init<double,double,double>());
+	py::class_<ZenVector3>(m, "vector3").def(py::init<double,double,double>());
 /*
 	py::class_<ZenShapeExplorer<ZenWire>, std::shared_ptr<ZenShapeExplorer<ZenWire>>>(m, "ZenShapeExplorer<ZenWire>")
 		.def("__len__", &ZenShapeExplorer<ZenWire>::size)

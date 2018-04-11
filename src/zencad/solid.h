@@ -1,17 +1,6 @@
 #ifndef DZENCAD_SOLID_H
 #define DZENCAD_SOLID_H
 
-#include <BRepPrimAPI_MakeBox.hxx>
-#include <BRepPrimAPI_MakeCone.hxx>
-#include <BRepPrimAPI_MakeSphere.hxx>
-#include <BRepPrimAPI_MakeCylinder.hxx>
-#include <BRepPrimAPI_MakeTorus.hxx>
-//#include <BRepBuilderAPI_MakePolygon.hxx>
-#include <BRepPrimAPI_MakePrism.hxx>
-#include <BRepPrimAPI_MakeWedge.hxx>
-#include <BRepOffsetAPI_ThruSections.hxx>
-#include <BRepOffsetAPI_MakePipe.hxx>
-
 #include <zencad/topo.h>
 #include <zencad/math3.h>
 #include <memory>
@@ -81,16 +70,17 @@ struct ZenWedge : public ZenSolid {
 	void doit() override;
 };
 */
-/*
+
 struct ZenLinearExtrude : public ZenSolid {
 	const char* class_name() const override;
-	gp_Vec vec;
+	ZenVector3 vec;
 	std::shared_ptr<ZenFace> fc;
 	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z);
 	ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v);
 	void doit() override;
+	void vreflect(ZenVisitor& v) override;	
 };
-*/
+
 /*
 struct ZenLoft : public ZenSolid {
 	const char* class_name() const override;
