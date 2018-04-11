@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+	<head>
+		<style>
+			div {
+					width: 100%;
+					border: 1px solid gray;
+			}
+			
+			header, footer {
+					padding: 1em;
+					color: white;
+					background-color: black;
+					clear: left;
+					text-align: center;
+			}
+			
+			nav {
+					float: left;
+					max-width: 240px;
+					margin: 0;
+					padding: 1em;
+			}
+			
+			nav ul {
+					list-style-type: none;
+					padding: 0;
+			}
+				 
+			nav ul a {
+					text-decoration: none;
+			}
+			
+			article {
+					padding: 1em;
+					overflow: hidden;
+
+			 	 	width: 90%;
+			  		max-width: 600px;
+			  		margin: 0 auto;
+			}
+
+			/* Buttons
+			*/
+			.btn {
+			  display: inline-block;
+			  background: -webkit-linear-gradient(top, rgba(40, 40, 40, 0.3), rgba(35, 35, 35, 0.3) 50%, rgba(10,			 10, 10, 0.3) 50%, rgba(0, 0, 0, 0.3));
+			  padding: 8px 18px;
+			  border-radius: 50px;
+			  border: 2px solid rgba(0, 0, 0, 0.7);
+			  border-bottom: 2px solid rgba(0, 0, 0, 0.7);
+			  border-top: 2px solid black;
+			  color: rgba(255, 255, 255, 0.8);
+			  font-family: Helvetica, Arial, sans-serif;
+			  font-weight: bold;
+			  font-size: 13px;
+			  text-decoration: none;
+			  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);
+			  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+			
+			.btn:hover {
+			  background: -webkit-linear-gradient(top, rgba(40, 40, 40, 0.6), rgba(35, 35, 35, 0.6) 50%, rgba(10,			 10, 10, 0.8) 50%, rgba(0, 0, 0, 0.8)); }
+			
+			.btn .icon {
+			  display: inline-block;
+			  width: 16px;
+			  height: 16px;
+			  margin: 1px 8px 0 0;
+			  float: left; }
+			
+			.btn-github .icon {
+			  opacity: 0.6;
+			  background: url("/zencad/images/blacktocat.png") 0 0 no-repeat; }
+		</style>
+	</head>
+	<body>
+		<div>
+			<header>
+				<h1>ZenCad</h1>
+          		<a href="https://github.com/mirmik/zencad" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+			</header>
+				
+			<nav>
+          		<a href="/zencad/index.html">Главная</a></p>
+          		<a href="/zencad/texts/base.html">Основные понятия.</a></p>
+          		<a href="/zencad/texts/prim3d.html">Объёмные примитивы.</a></p>
+          		<a href="/zencad/texts/prim2d.html">Плоские примитивы.</a></p>
+          		
+          		Линии.<p>
+
+          		Афинные преобразования<p>
+          		Булевы операции<p>
+          		
+          		Рефлексия<p>
+          		
+          		<a href="/zencad/texts/trajops.html">Траекторные операции</a></p>
+          		
+          		Операции сглаживания<p>
+          		<a href="/zencad/texts/cache.html">Кэширование</a></p>
+          		Экспорт/импорт
+
+          		Библиотеки:<p>
+          		Резьбовые соединения<p>
+          		Шестерни<p>
+
+          		Примеры:<p>
+          		<a href="/zencad/texts/storage.html">Хранилище для деталей</a></p>
+
+			</nav>
+			
+			<article>
+				<link rel="stylesheet" href="/zencad/css/main.css">
+				
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="c">#!/usr/bin/env python3.5</span>
+<span class="c">#coding: utf-8</span>
+
+import sys
+sys.path.insert<span class="o">(</span>0, <span class="s2">"../.."</span><span class="o">)</span>
+
+from zencad import <span class="k">*</span>
+
+enable_cache<span class="o">(</span><span class="s2">".cache"</span><span class="o">)</span>
+
+def section<span class="o">(</span>w, h, l, t, d, d2<span class="o">)</span>:
+	<span class="k">return</span> <span class="o">(</span>
+		  box<span class="o">(</span>2<span class="k">*</span>t+w, t+l, 2<span class="k">*</span>t+h<span class="o">)</span>
+		- box<span class="o">(</span>w, l, h<span class="o">)</span>.translate<span class="o">(</span>t,0,t<span class="o">)</span>
+		- box<span class="o">(</span>w-2<span class="k">*</span>d,l,h+2<span class="k">*</span>t<span class="o">)</span>.translate<span class="o">(</span>t+d,0,0<span class="o">)</span>
+		- box<span class="o">(</span>w,l+t,h-d2<span class="o">)</span>.translate<span class="o">(</span>t,0,d2+t<span class="o">)</span>
+	<span class="o">)</span>
+
+<span class="c">#n, m - параметры матрицы.</span>
+<span class="c">#w,h,l - параметры нишы.</span>
+<span class="c">#t - толщина стенок.</span>
+<span class="c">#d - выступ поддержки.</span>
+<span class="c">#d2 - высота заднего бампера.</span>
+def storage<span class="o">(</span>m, n, w, h, l, t, d, d2<span class="o">)</span>:
+	arr <span class="o">=</span> <span class="o">[]</span>
+	sect <span class="o">=</span> section<span class="o">(</span>w,h,l,t,d,d2<span class="o">)</span>
+	b1 <span class="o">=</span> box<span class="o">(</span>w<span class="k">*</span>m+t<span class="k">*</span><span class="o">(</span>m+1<span class="o">)</span>, l+t, t<span class="o">)</span>
+	b2 <span class="o">=</span> box<span class="o">(</span>w<span class="k">*</span>m + t<span class="k">*</span><span class="o">(</span>m+1<span class="o">)</span>,l+t,t<span class="o">)</span>
+	<span class="k">for </span>i <span class="k">in </span>range<span class="o">(</span>0, n<span class="o">)</span>:
+		<span class="k">for </span>j <span class="k">in </span>range<span class="o">(</span>0, m<span class="o">)</span>:
+			arr.append<span class="o">(</span>sect.translate<span class="o">(</span>j<span class="k">*</span><span class="o">(</span>w+t<span class="o">)</span>,0,i<span class="k">*</span><span class="o">(</span>h+t<span class="o">)))</span> 
+		arr.append<span class="o">(</span>b2.translate<span class="o">(</span>0,0,h<span class="k">*</span>n+t<span class="k">*</span>n<span class="o">))</span>
+	arr.append<span class="o">(</span>b1<span class="o">)</span>
+	<span class="k">return </span>union<span class="o">(</span>arr<span class="o">)</span>
+
+m <span class="o">=</span> storage<span class="o">(</span>3,3,27,20,64,1.5,5,5<span class="o">)</span>
+
+display<span class="o">(</span>m<span class="o">)</span>
+show<span class="o">()</span></code></pre></figure>
+
+<p><img src="../images/storage.png" alt="sphere.png" /></p>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="c">#!/usr/bin/env python3.5</span>
+<span class="c">#coding: utf-8</span>
+
+from zencad import <span class="k">*</span>
+
+def <span class="k">case</span><span class="o">(</span>w,h,l,t,r,z,s<span class="p">)</span>:
+	w <span class="o">=</span> w<span class="k">*</span>s;
+	h <span class="o">=</span> h<span class="k">*</span>0.95;
+	
+	<span class="k">return</span> <span class="o">(</span>
+		  box<span class="o">(</span>w,l,h<span class="o">)</span>
+		- box<span class="o">(</span>w-2<span class="k">*</span>t, l-2<span class="k">*</span>t,h-t<span class="o">)</span>.translate<span class="o">(</span>t,t,t<span class="o">)</span>
+		- cylinder<span class="o">(</span><span class="nv">r</span><span class="o">=</span>r,h<span class="o">=</span>t+1<span class="o">)</span>.rotateX<span class="o">(</span>gr<span class="o">(</span>90<span class="o">))</span>.translate<span class="o">(</span>w/2,t+0.5,h<span class="o">)</span>
+
+		+ box<span class="o">(</span>w-2<span class="k">*</span>t, z<span class="k">*</span>2, h-r<span class="o">)</span>.translate<span class="o">(</span>t,-z<span class="k">*</span>2,0<span class="o">)</span>
+		- box<span class="o">(</span>w-2<span class="k">*</span>t-2<span class="k">*</span>z, z, h-r-z<span class="o">)</span>.translate<span class="o">(</span>t+z,-z,z<span class="o">)</span>
+		- box<span class="o">(</span>w-2<span class="k">*</span>t-6<span class="k">*</span>z, z, h-r-2<span class="k">*</span>z<span class="o">)</span>.translate<span class="o">(</span>t+z<span class="k">*</span>3,-2<span class="k">*</span>z,2<span class="k">*</span>z<span class="o">)</span>
+	<span class="o">)</span>
+
+m <span class="o">=</span> <span class="k">case</span><span class="o">(</span><span class="nv">w</span><span class="o">=</span>27,h<span class="o">=</span>20,l<span class="o">=</span>64,t<span class="o">=</span>1.5,r<span class="o">=</span>27/2-4,z<span class="o">=</span>1,s<span class="o">=</span>0.965<span class="p">)</span>;
+
+display<span class="o">(</span>m<span class="o">)</span>
+show<span class="o">()</span></code></pre></figure>
+
+<p><img src="../images/case.png" alt="sphere.png" /></p>
+
+			</article>
+			
+			<footer>
+				by <a href="https://mirmik.github.io">mirmik</a></p>
+			</footer>
+	
+		</div>
+	</body>
+</html>
