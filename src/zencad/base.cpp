@@ -12,13 +12,16 @@
 
 
 bool ZenCadObject::check_cache() {
+	gxx::println("check_cache", class_name());
 	if (checked_cache) return true;
 
+	//gxx::println(class_name());
 	assert(checked_cache == false && minor == 0);
 	assert(setted_hash);
 
 	hashstr = gxx::base64url_encode((const uint8_t*)&hash, sizeof(hash));
 
+	checked_cache = true;
 	while(true) {
 		std::string filepath = gxx::format(minor ? "{}/{}_{}.dump" : "{}/{}.dump", zencache_path(), hashstr, minor);
 
@@ -28,6 +31,7 @@ bool ZenCadObject::check_cache() {
 			return false;
 		} else {
 			std::ifstream file(filepath, std::ios::binary);
+			gxx::println("info_check for", class_name());
 			cached = info_check(file) && vreflect_check_cache();
 			file.close();
 			if (cached) return true;		
@@ -38,6 +42,7 @@ bool ZenCadObject::check_cache() {
 }
 
 void ZenCadObject::prepare() {
+	gxx::fprintln("prepare {}", class_name());
 	if (prepared) return;
 
 	if (!setted_hash) {

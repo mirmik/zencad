@@ -92,7 +92,7 @@ registry_library("python3.5")
 registry_library("python3.6")
 
 def do_wheel(suffix):
-	os.system("python{} setup.py bdist_wheel".format(suffx))
+	os.system("python{} setup.py bdist_wheel".format(suffix))
 
 def install_egg(suffix):
 	os.system("sudo python{} setup.py install".format(suffix))	
@@ -101,7 +101,6 @@ def install_egg(suffix):
 def local35():
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
-	do_wheel("3.5")
 
 @licant.routine
 def install35():
@@ -113,7 +112,6 @@ def install35():
 def local36():
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.6/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
-	do_wheel("3.6")
 
 @licant.routine
 def install36():
@@ -125,7 +123,6 @@ def install36():
 def local27():
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python2.7/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
-	do_wheel("2.7")
 
 @licant.routine
 def install27():
