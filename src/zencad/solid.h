@@ -20,6 +20,15 @@
 
 namespace py = pybind11;
 
+struct ZenSolid : public ZenShape, public ZenShapeTransI<ZenSolid>, public ZenBoolOpsI<ZenSolid> {
+	const char* class_name() const { return "ZenSolid"; }
+
+	std::shared_ptr<ZenSolid> spointer() const {
+		ZenSolid* self = const_cast<ZenSolid*>(this);
+		return std::dynamic_pointer_cast<ZenSolid,ZenCadObject>(self->shared_from_this());
+	}
+};
+
 struct ZenBox : public ZenSolid {
 	const char* class_name() const override;
 	double x, y, z;

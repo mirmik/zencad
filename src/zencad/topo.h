@@ -265,15 +265,6 @@ std::shared_ptr<Topo> zen_load(std::string path) {
 	return topo;
 }
 */
-struct ZenSolid : public ZenShape, public ZenShapeTransI<ZenSolid>, public ZenBoolOpsI<ZenSolid> {
-	const char* class_name() const { return "ZenSolid"; }
-
-	std::shared_ptr<ZenSolid> spointer() const {
-		ZenSolid* self = const_cast<ZenSolid*>(this);
-		return std::dynamic_pointer_cast<ZenSolid,ZenCadObject>(self->shared_from_this());
-	}
-};
-
 /*
 #include <BRepBuilderAPI_MakeVertex.hxx>
 struct ZenVertex : ZenShapeInterface<ZenVertex> {

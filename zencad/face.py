@@ -1,21 +1,25 @@
+import zencad
+
 from zencad.zenlib import face_polygon as polygon
 from zencad.zenlib import face_circle as circle
 
 import math
 import zencad.math3
-from zencad import pnt
-from zencad import error
 
-def ngon(n, rad = None, a = None):
-	if a == None and rad == None:
+from zencad.math3 import point
+from zencad.math3 import point as pnt
+#from zencad import error
+
+def ngon(n, r = None, a = None):
+	if (a==None and r==None) or (a!=None and r!=None) :
 		zencad.error("ngon args error")
 
 	angles = [2*math.pi / n * i for i in range(0, n)]
 
 	if a != None:
-		rad = a / 2 / math.sin(math.pi/n)
+		r = a / 2 / math.sin(math.pi/n)
 
-	pnts = zencad.math3.points((rad*math.cos(a), rad*math.sin(a)) for a in angles)
+	pnts = zencad.math3.points((r*math.cos(a), r*math.sin(a)) for a in angles)
 	return polygon(pnts)	
 
 
@@ -29,9 +33,6 @@ def ngon(n, rad = None, a = None):
 #
 #	pnts = zencad.math3.points((rad*math.cos(a), rad*math.sin(a)) for a in angles)
 #	return polygon(pnts)	
-
-
-	
 
 def square(a, center = False):
 	if center:
@@ -71,4 +72,4 @@ def rectangle(a, b, center = False):
 				pnt(a, b),
 				pnt(a, 0),
 			],
-		)
+		)#

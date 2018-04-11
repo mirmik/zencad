@@ -67,7 +67,7 @@ def registry_library(py):
 			"zencad/solid.cpp", 
 			"zencad/trans.cpp", 
 			#"zencad/topo.cpp",
-			#"zencad/face.cpp",
+			"zencad/face.cpp",
 			#"zencad/wire.cpp", 
 			#"zencad/boolops.cpp",
 		],
@@ -91,25 +91,47 @@ registry_library("python3.5")
 #registry_library("python3.5m")
 registry_library("python3.6")
 
+def do_wheel(suffix):
+	os.system("python{} setup.py bdist_wheel".format(suffx))
+
+def install_egg(suffix):
+	os.system("sudo python{} setup.py install".format(suffix))	
+
 @licant.routine
 def local35():
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
+	do_wheel("3.5")
+
+@licant.routine
+def install35():
+	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
+	licant.do("zencad/zenlib.so", "makefile")
+	install_egg("3.5")
 
 @licant.routine
 def local36():
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.6/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
+	do_wheel("3.6")
 
-#@licant.routine
-#def local35m():
-#	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5m/zenlib.so")
-#	licant.do("zencad/zenlib.so", "makefile")
+@licant.routine
+def install36():
+	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
+	licant.do("zencad/zenlib.so", "makefile")
+	install_egg("3.6")
 
 @licant.routine
 def local27():
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python2.7/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
+	do_wheel("2.7")
+
+@licant.routine
+def install27():
+	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
+	licant.do("zencad/zenlib.so", "makefile")
+	install_egg("2.7")
 
 licant.add_makefile_target(tgt = "all", targets = [
 	"zenlib.python2.7",
@@ -126,15 +148,22 @@ def wheels():
 		os.system("cp zencad/python{}/zenlib.so zencad/zenlib.so".format(suffx))
 		os.system("python{} setup.py bdist_wheel".format(suffx))
 
+	#os.system("mkdir -p dist")
 	do_for_suffix("2.7")
 	do_for_suffix("3.5")
 	do_for_suffix("3.6")
 
-
 @licant.routine
 def publish():
-	licant.do("all", "makefile")
 	licant.do("wheels")
 	os.system("twine upload dist/* --repository-url https://upload.pypi.org/legacy/")
+
+@licant.routine
+def distclean():
+	os.system("rm -rf dist")
+	os.system("rm -rf build")
+	os.system("rm -rf zencad/python*")
+	os.system("rm -rf zencad/__pycache__")
+	print("distclean success")
 
 licant.ex(default = "all")

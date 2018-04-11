@@ -82,10 +82,10 @@
 			</header>
 				
 			<nav>
-          		<a href="{{ "/index.html" | prepend: site.baseurl }}">Главная</a></p>
-          		<a href="{{ "/texts/base.html" | prepend: site.baseurl }}">Основные понятия.</a></p>
-          		<a href="{{ "/texts/prim3d.html" | prepend: site.baseurl }}">Объёмные примитивы.</a></p>
-          		<a href="{{ "/texts/prim2d.html" | prepend: site.baseurl }}">Плоские примитивы.</a></p>
+          		<a href="/zencad/index.html">Главная</a></p>
+          		<a href="/zencad/texts/base.html">Основные понятия.</a></p>
+          		<a href="/zencad/texts/prim3d.html">Объёмные примитивы.</a></p>
+          		<a href="/zencad/texts/prim2d.html">Плоские примитивы.</a></p>
           		
           		Линии.
 
@@ -100,8 +100,25 @@
 			</nav>
 			
 			<article>
-				<link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl }}">
-				{{content}}
+				<link rel="stylesheet" href="/zencad/css/main.css">
+				<h1 id="section">Базовые понятия</h1>
+
+<h1 id="section-1">Базовые объекты</h1>
+
+<h2 id="point">Point</h2>
+<p>Объект типа точка. Является аргументом многих операций.
+Может быть отображен.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">pnt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">point</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span></code></pre></figure>
+
+<p>Example:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">zencad</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span></code></pre></figure>
+
+<p><img src="../images/point.png" alt="point.png" /></p>
+
 			</article>
 			
 			<footer>
