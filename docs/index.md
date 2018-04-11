@@ -13,14 +13,14 @@ ZenCad использует ядро OpenCascade, скриптовый стил�
 ### Install dependies
 
 {% highlight sh %}
-	sudo apt install qt5-default  
-	sudo apt install liboce-*  
+sudo apt install qt5-default  
+sudo apt install liboce-*  
 {% endhighlight %}
 
 ### Install with pip
 
 {% highlight sh %}
-	pip install zencad
+pip install zencad
 {% endhighlight %}
 
 ### Get source code
@@ -35,23 +35,23 @@ ZenCad использует ядро OpenCascade, скриптовый стил�
 
 Нарисуем параллелепипед:
 {% highlight python %}
-	import zencad
-	
-	m = zencad.box(300, 200, 100, center = True)
-	
-	display(box)
-	show()
+import zencad
+
+m = zencad.box(300, 200, 100, center = True)
+
+display(box)
+show()
 {% endhighlight %}
 
 ### Second simple example
 {% highlight python %}
-	import zencad
-	
-	box = zencad.box(300, 200, 100, center = True)
-	sphere = zencad.sphere(100).up(100)
-	
-	union = box + sphere
-	
-	display(union)
-	show()
+import zencad
+
+box = zencad.box(300, 200, 100, center = True)
+sphere = zencad.sphere(100).up(100)
+
+union = box + sphere
+
+display(union)
+show()
 {% endhighlight %}
