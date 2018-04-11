@@ -1,9 +1,6 @@
 #!/usr/bin/env python3.5
 #coding: utf-8
 
-import sys
-sys.path.insert(0, "../..")
-
 from zencad import *
 
 enable_cache(".cache")
