@@ -152,6 +152,7 @@ def wheels():
 
 @licant.routine
 def publish():
+	os.system("rm -rf dist")
 	licant.do("wheels")
 	os.system("twine upload dist/* --repository-url https://upload.pypi.org/legacy/")
 
