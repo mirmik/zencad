@@ -4,7 +4,11 @@
 #include <zencad/topo.h>
 #include <zencad/vertex.h>
 #include <memory>
+#include <vector>
+#include <set>
 #include <pybind11/pybind11.h>
+
+namespace py = pybind11;
 
 struct ZenFilletFace;
 
@@ -15,7 +19,7 @@ struct ZenFace : public ZenShape, public ZenShapeTransI<ZenFace>, public ZenBool
 		ZenFace* self = const_cast<ZenFace*>(this);
 		return std::dynamic_pointer_cast<ZenFace,ZenCadObject>(self->shared_from_this());
 	}
-	std::shared_ptr<ZenFilletFace> fillet(double num);
+	std::shared_ptr<ZenFilletFace> fillet(double rad, py::list nums);
 };
 /*
 struct ZenWireFace : public ZenFace {
@@ -53,7 +57,8 @@ struct ZenFilletFace : public ZenFace {
 	const char* class_name() const override { return "ZenFilletFace"; }
 	double r;
 	std::shared_ptr<ZenFace> fc;
-	ZenFilletFace(std::shared_ptr<ZenFace> fc, double r);
+	std::set<int> nums;
+	ZenFilletFace(std::shared_ptr<ZenFace> fc, std::set<int> nums, double r);
 	void doit() override;
 	void vreflect(ZenVisitor& v) override;
 };

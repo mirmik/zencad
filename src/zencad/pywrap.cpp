@@ -143,7 +143,7 @@ PYBIND11_MODULE(zenlib, m) {
 		.def(py::self + py::self)
 		.def(py::self - py::self)
 		.def(py::self ^ py::self)
-		.def("fillet", &ZenFace::fillet)
+		.def("fillet", &ZenFace::fillet, py::arg("r"), py::arg("nums")=py::list())
 		//.def("wires", &ZenFace::wires)
 	;
 
@@ -151,8 +151,9 @@ PYBIND11_MODULE(zenlib, m) {
 		.def(py::init<py::list>());
 
 	py::class_<ZenFilletFace, ZenFace, std::shared_ptr<ZenFilletFace>>(m, "face_fillet")
-		.def(py::init<std::shared_ptr<ZenFace>, double>(), py::arg("face"), py::arg("r"));
-		
+		//.def(py::init<std::shared_ptr<ZenFace>, double, py::list>(), py::arg("face"), py::arg("r"), py::arg("nums"));
+	;
+
 	py::class_<ZenCircle, ZenFace, std::shared_ptr<ZenCircle>>(m, "face_circle")
 		.def(py::init<double>(), py::arg("r"));
 
