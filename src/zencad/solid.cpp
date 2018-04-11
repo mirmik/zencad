@@ -4,8 +4,15 @@
 #include <TopExp_Explorer.hxx>
 #include <TopAbs.hxx>
 
+#include <BRepPrimAPI_MakeBox.hxx>
+#include <BRepPrimAPI_MakeCone.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+#include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepPrimAPI_MakeTorus.hxx>
+#include <BRepPrimAPI_MakePrism.hxx>
+#include <BRepPrimAPI_MakeWedge.hxx>
+#include <BRepOffsetAPI_ThruSections.hxx>
 #include <BRepOffsetAPI_MakePipe.hxx>
-#include <BRepOffsetAPI_MakePipeShell.hxx>
 
 ZenBox::ZenBox(double x, double y, double z, bool center) : x(x), y(y), z(z), center(center) { initialize_hash(); }
 ZenCylinder::ZenCylinder(double r, double h, bool center) : r(r), h(h), center(center) { initialize_hash(); }
@@ -19,6 +26,7 @@ const char* ZenSphere::class_name() const { return "ZenSphere"; }
 const char* ZenCylinder::class_name() const { return "ZenCylinder"; }
 const char* ZenTorus::class_name() const { return "ZenTorus"; }
 const char* ZenCone::class_name() const { return "ZenCone"; }
+const char* ZenLinearExtrude::class_name() const { return "ZenLinearExtrude"; }
 
 void ZenBox::doit() { 
 	if (!center) {
@@ -55,6 +63,7 @@ void ZenSphere::vreflect(ZenVisitor& v) { v&r; }
 void ZenCylinder::vreflect(ZenVisitor& v) { v&r; v&h; v&center; }
 void ZenTorus::vreflect(ZenVisitor& v) { v&r1; v&r2; }
 void ZenCone::vreflect(ZenVisitor& v) { v&r1; v&r2; v&h; v&center; }
+void ZenLinearExtrude::vreflect(ZenVisitor& v) { v&*fc; v&vec; }	
 
 /*
 void ZenBox::doit() { 
@@ -102,8 +111,15 @@ struct ZenTorus : public ZenSolid {
 /*
 
 
+*/
+ZenLinearExtrude::ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z) : fc(fc), vec(0,0,z) {
+	initialize_hash();
+}
 
-
+ZenLinearExtrude::ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v) : fc(fc), vec(v) {
+	initialize_hash();
+}
+/*
 
 
 
@@ -144,8 +160,8 @@ struct ZenWedge : public ZenSolid {
 		//set_hash2(typeid(this).hash_code() + make_hash(x) + make_hash(y) + make_hash(z) + make_hash(ltx));}
 	void doit() override { m_native = BRepPrimAPI_MakeWedge(x,y,z,ltx).Solid(); }
 };
-
-struct ZenLinearExtrude : public ZenSolid {
+*/
+/*struct ZenLinearExtrude : public ZenSolid {
 	const char* class_name() const override { return "ZenLinearExtrude"; }
 	gp_Vec vec;
 	std::shared_ptr<ZenFace> fc;
@@ -197,12 +213,12 @@ struct ZenPipe : public ZenSolid {
 
 
 
-/*
+
 void ZenLinearExtrude::doit() { 
-	BRepPrimAPI_MakePrism mk(fc->native(), vec);
+	BRepPrimAPI_MakePrism mk(fc->native(), vec.Vec());
 	m_native = mk; 
 }
-
+/*
 void ZenLoft::doit() {
 	BRepOffsetAPI_ThruSections tsect(true, true);
 	for (auto& shp : shapes) {
