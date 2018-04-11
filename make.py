@@ -99,33 +99,39 @@ def install_egg(suffix):
 
 @licant.routine
 def local35():
+	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
 
 @licant.routine
 def install35():
+	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
 	install_egg("3.5")
 
 @licant.routine
 def local36():
+	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.6/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
 
 @licant.routine
 def install36():
+	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
 	install_egg("3.6")
 
 @licant.routine
 def local27():
+	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python2.7/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
 
 @licant.routine
 def install27():
+	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
 	licant.do("zencad/zenlib.so", "makefile")
 	install_egg("2.7")
