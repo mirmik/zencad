@@ -26,7 +26,7 @@ pip install zencad
 ### Get source code
 
 {% highlight sh %}
-	git clone https://github.com/mirmik/zencad
+git clone https://github.com/mirmik/zencad
 {% endhighlight %}
 
 ## Usage
