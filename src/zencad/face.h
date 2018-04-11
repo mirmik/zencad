@@ -2,16 +2,22 @@
 #define DZENCAD_FACE_H
 
 #include <zencad/topo.h>
+#include <zencad/vertex.h>
 #include <memory>
 #include <pybind11/pybind11.h>
-/*
+
 struct ZenFilletFace;
 
-struct ZenFace : public ZenBooleanShapeInterface<ZenFace> {
+struct ZenFace : public ZenShape, public ZenShapeTransI<ZenFace>, public ZenBoolOpsI<ZenFace> {
 	const char* class_name() { return "ZenFace"; }
-	std::shared_ptr<ZenFilletFace> fillet(int num);
-};
 
+	std::shared_ptr<ZenFace> spointer() const {
+		ZenFace* self = const_cast<ZenFace*>(this);
+		return std::dynamic_pointer_cast<ZenFace,ZenCadObject>(self->shared_from_this());
+	}
+	std::shared_ptr<ZenFilletFace> fillet(double num);
+};
+/*
 struct ZenWireFace : public ZenFace {
 	const char* class_name() const override { return "ZenWireFace"; }
 	std::shared_ptr<ZenWire> wr;
@@ -26,34 +32,30 @@ struct ZenEdgeFace : public ZenFace {
 	ZenEdgeFace(std::shared_ptr<ZenEdge> wr) : wr(wr) {}
 	void doit() override;
 };
-
+*/
 struct ZenPolygon : public ZenFace {
 	const char* class_name() const override { return "ZenPolygon"; }
-	
-	std::vector<ZenPoint3> pnts;
-
-	ZenPolygon(pybind11::list args) {
-    	for (auto item : args) {
-    		auto pnt = item.cast<ZenPoint3>();
-    		pnts.push_back(pnt);
-    	}
-	}
+	std::vector<ZenPoint> pnts;
+	ZenPolygon(pybind11::list args);
 	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
 
 struct ZenCircle : public ZenFace {
 	const char* class_name() const override { return "ZenCircle"; }
 	double r;
-	ZenCircle(double r) : r(r) {}
+	ZenCircle(double r);
 	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
 
 struct ZenFilletFace : public ZenFace {
+	const char* class_name() const override { return "ZenFilletFace"; }
 	double r;
 	std::shared_ptr<ZenFace> fc;
-	const char* class_name() { return "ZenFilletFace"; }
-	ZenFilletFace(std::shared_ptr<ZenFace> fc, double r) : fc(fc), r(r) {}
+	ZenFilletFace(std::shared_ptr<ZenFace> fc, double r);
 	void doit() override;
+	void vreflect(ZenVisitor& v) override;
 };
-*/
+
 #endif
