@@ -29,6 +29,10 @@ from zencad.wire import polysegment
 from zencad.wire import circle as wcircle
 from zencad.wire import arc_by_points
 
+#boolops
+from zencad.boolops import union
+from zencad.boolops import difference
+from zencad.boolops import intersect
 
 def error(str):
 	print("ZenCadError: " + str)
