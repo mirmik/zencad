@@ -1,17 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 #coding: utf-8
 
-import sys
-sys.path.insert(0, "../..")
+from zencad import *
 
-import zencad.solid as solid
-from zencad.widget import *
-import math
-
-import zencad.cache
-zencad.cache.enable("cache")
-
-m = solid.box(10,10,10)
+enable_cache("cache")
+m = box(10,10,10)
 
 display(m)
 show() 
