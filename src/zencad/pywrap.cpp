@@ -15,6 +15,11 @@ using namespace boost::python;
 
 #include <zencad/math3.h>
 
+#include <zencad/scene.h>
+#include <zencad/camera.h>
+#include <zencad/view.h>
+
+
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 namespace py = pybind11;
@@ -208,4 +213,21 @@ PYBIND11_MODULE(zenlib, m) {
 	//;
 
 	*/
+
+
+	//EXPERIMENTAL
+	py::class_<ZenScene, std::shared_ptr<ZenScene>>(m, "scene")
+		.def(py::init<>())
+		.def("add", &ZenScene::add)
+		.def("clear", &ZenScene::clear)
+	;
+
+	py::class_<ZenCamera, std::shared_ptr<ZenCamera>>(m, "camera")
+		.def(py::init<>())
+	;
+
+	py::class_<ZenView, std::shared_ptr<ZenView>>(m, "view")
+		.def(py::init<std::shared_ptr<ZenScene>, std::shared_ptr<ZenCamera>>(), py::arg("scene"), py::arg("camera"))
+		.def("screen", &ZenView::screen)
+	;
 }
