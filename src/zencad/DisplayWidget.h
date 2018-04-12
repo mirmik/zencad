@@ -68,6 +68,9 @@ public:
 
 public:
     const Handle_AIS_InteractiveContext& getContext() const;
+
+public slots:
+    void autoscale();
 };
 
 #endif
