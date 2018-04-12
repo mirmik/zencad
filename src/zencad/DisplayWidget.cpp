@@ -73,7 +73,8 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
             anAisBox2->SetColor(Quantity_NOC_BLACK);
             anAisBox2->SetDisplayMode(AIS_WireFrame);  
             getContext()->Display(anAisBox2, false);
-            m_view->FitAll (0.5, false);
+
+            autoscale();
         }
 
         getContext()->Display(new AIS_Axis(new Geom_Axis1Placement(gp_Pnt(0,0,0), gp_Vec(1,0,0))));
@@ -82,6 +83,11 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
     }
 
     m_view->Redraw();
+}
+
+void DisplayWidget::autoscale() {
+    gxx::println("autoscale emitted");
+    m_view->FitAll (0.5, false);
 }
 
 void DisplayWidget::resizeEvent(QResizeEvent* e) {
@@ -205,7 +211,7 @@ void DisplayWidget::onMouseWheel( const int theFlags, const int theDelta, const 
 
 void DisplayWidget::onLButtonDown( const int theFlags, const QPoint thePoint ) {
     Q_UNUSED(theFlags);
-    m_view->StartRotation(thePoint.x(), thePoint.y());
+    m_view->StartRotation(thePoint.x(), thePoint.y(), 1);
     temporary1 = thePoint;
 }
 
@@ -233,8 +239,10 @@ void DisplayWidget::onMouseMove( const int theFlags, const QPoint thePoint ) {
     QPoint mv = thePoint - temporary1; 
     temporary1 = thePoint;
 
+    //m_view->SetAxis(0, 0, 0, 0, 0, 1);
+
     if (theFlags & Qt::LeftButton) {
-        m_view->Rotation(thePoint.x(), thePoint.y());
+    //    m_view->Rotation(thePoint.x(), thePoint.y());
     //    quat_orient.self_small_rotate1(thePoint.x() * 0.0001);
     //    quat_orient.self_small_rotate3(thePoint.y() * 0.0001);
     
@@ -253,15 +261,15 @@ void DisplayWidget::onMouseMove( const int theFlags, const QPoint thePoint ) {
     //Quantity_Parameter Vz;
     //m_view->Proj(Vx,Vy,Vz);
     //gxx::println(quat_orient);
-
+//
     //double mod = sqrt(quat_orient.q1*quat_orient.q1 + quat_orient.q2*quat_orient.q2 + quat_orient.q3*quat_orient.q3);
     //Vx = quat_orient.q1 / mod;
     //Vy = quat_orient.q2 / mod;
     //Vz = quat_orient.q3 / mod;
-
+//
     //malgo::vector3<double> vect = quat_orient * malgo::vector3<double>(0,1,0);
-
-    //m_view->SetProj(cos(psi) * cos(phi), cos(psi) * sin(phi), sin(psi));
+//
+    m_view->SetProj(cos(psi) * cos(phi), cos(psi) * sin(phi), sin(psi));
     //m_view->Proj(Vx,Vy,Vz);
     //gxx::println(Vx,Vy,Vz);
 }

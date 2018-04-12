@@ -2,7 +2,7 @@
 layout : default
 ---
 
-# CSG Примитивы
+# 3d Примитивы
 
 ## Box  
 {% highlight python %}
