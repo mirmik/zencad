@@ -168,6 +168,7 @@ def distclean():
 	os.system("rm -rf build")
 	os.system("rm -rf zencad/python*")
 	os.system("rm -rf zencad/__pycache__")
+	os.system("rm -rf zencad/zenlib.so")
 	os.system("rm -rf zencad.egg-info")
 	print("distclean success")
 
