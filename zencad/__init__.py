@@ -44,3 +44,15 @@ from zencad.math3 import points
 
 def gr(rad): return rad / 180 * math.pi
 from zencad.math3 import point as pnt
+
+
+def execfile(path):
+	with open(path) as f:
+		code = compile(f.read(), path, 'exec')
+		exec(code, globals(), locals())
+		return locals()
+
+
+from zencad.zenlib import scene
+from zencad.zenlib import camera
+from zencad.zenlib import view
