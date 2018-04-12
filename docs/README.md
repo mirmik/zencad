@@ -6,6 +6,11 @@ What is it?
 ZenCad - it's a system for use oce geometry core in openscad's script style.
 So, it's  openscad idea, python language and opencascade power in one.  
 
+Manual
+------
+[Мануал читать тут](https://mirmik.github.io/zencad/)
+
+
 Install
 -------
 sudo apt install qt5-default  
@@ -41,5 +46,4 @@ show()
 ```
 
 ![/docs/images/result.jpeg](/docs/images/result.jpeg)
-![/docs/images/fullscreen.png](/docs/images/fullscreen.png)
 
