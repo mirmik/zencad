@@ -29,6 +29,7 @@ Install with source
 ```sh
 ./make.py install35
 ```
+(You can install licant make system with: ```pip install licant```)
 
 HelloWorld
 ----------
