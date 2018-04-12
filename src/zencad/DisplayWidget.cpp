@@ -148,14 +148,6 @@ void DisplayWidget::init() {
         Aspect_GFM_VER, 
         Standard_False
     );
-
-    Quantity_Parameter Vx; 
-    Quantity_Parameter Vy; 
-    Quantity_Parameter Vz;
-    m_view->Proj(Vx,Vy,Vz);
-    //gxx::println(asin(Vz));
-
-    //m_view->SetProj(0,1,0);
 }
 
 void DisplayWidget::wheelEvent( QWheelEvent * e ) {
