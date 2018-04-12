@@ -16,11 +16,15 @@ class ZenWidget : public QMainWindow {
     //! show the about info action.
     QAction* mAboutAction;
 
+
+    QAction* mAutoscale;
+
     //! the menus of the application.
     QMenu* mFileMenu;
     //QMenu* mViewMenu;
     //QMenu* mPrimitiveMenu;
     //QMenu* mModelingMenu;
+    QMenu* mNavigationMenu;
     QMenu* mHelpMenu;
 
     //! the toolbars of the application.

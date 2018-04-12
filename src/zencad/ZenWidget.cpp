@@ -43,6 +43,10 @@ void ZenWidget::createActions() {
     mAboutAction = new QAction(tr("About"), this);
     mAboutAction->setStatusTip(tr("About the application"));
     connect(mAboutAction, SIGNAL(triggered()), this, SLOT(about()));
+
+    mAutoscale = new QAction(tr("Autoscale"), this);
+    mAutoscale->setStatusTip(tr("Autoscale"));
+    connect(mAutoscale, SIGNAL(triggered()), display, SLOT(autoscale()));
 }
 
 void ZenWidget::createMenus() {
@@ -51,6 +55,9 @@ void ZenWidget::createMenus() {
     mFileMenu->addAction(mScreen);
     mFileMenu->addSeparator();
     mFileMenu->addAction(mExitAction);
+
+    mNavigationMenu = menuBar()->addMenu(tr("&Navigation"));
+    mNavigationMenu->addAction(mAutoscale);
 
     mHelpMenu = menuBar()->addMenu(tr("&Help"));
     mHelpMenu->addAction(mAboutAction);
