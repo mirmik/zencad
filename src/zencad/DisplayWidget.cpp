@@ -73,9 +73,8 @@ void DisplayWidget::paintEvent(QPaintEvent* e) {
             anAisBox2->SetColor(Quantity_NOC_BLACK);
             anAisBox2->SetDisplayMode(AIS_WireFrame);  
             getContext()->Display(anAisBox2, false);
-
-            autoscale();
         }
+        autoscale();
 
         getContext()->Display(new AIS_Axis(new Geom_Axis1Placement(gp_Pnt(0,0,0), gp_Vec(1,0,0))));
         getContext()->Display(new AIS_Axis(new Geom_Axis1Placement(gp_Pnt(0,0,0), gp_Vec(0,1,0))));
