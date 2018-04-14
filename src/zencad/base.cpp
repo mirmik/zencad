@@ -191,7 +191,7 @@ void ZenCadObject::load_cached(std::istream& in) {
 void ZenCadObject::initialize_hash() {
 	ZenVisitor_Hashes alg;
 	vreflect(alg);
-	hash = alg.evaluate() ^ typeid(this).hash_code();
+	hash = alg.evaluate() ^ typeid(*this).hash_code();
 	setted_hash = true;
 }
 
