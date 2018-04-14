@@ -21,14 +21,31 @@ struct ZenDirection3 : public XYZ {
 };
 */
 
-struct ZenVector3 : public XYZ {
+/*struct ZenVector3 : public XYZ {
 	ZenVector3(double x, double y, double z) : XYZ(x,y,z) {}
 	gp_Vec Vec() { return gp_Vec(x,y,z); }	
 };
 
 static inline void operator&(ZenVisitor& v, ZenVector3& vec) {
 	v&vec.x; v&vec.y; v&vec.z;
-}
+}*/
+
+struct ZenVector3 : public ZenCadObject {
+	double x, y, z;
+	
+	const char* class_name() const override { return "ZenVector3"; }
+	ZenVector3(double x, double y) : x(x), y(y), z(0) { initialize_hash(); }
+	ZenVector3(double x, double y, double z) : x(x), y(y), z(z) { initialize_hash(); }
+	gp_Vec Vec() { return gp_Vec(x,y,z); }
+	void vreflect(ZenVisitor& v) override { v&x; v&y; v&z; }
+
+	void prepare() override {
+		//m_native = //BRepBuilderAPI_MakeVertex(Pnt()).Vertex();
+	};
+
+	bool operator == (const ZenVector3& oth) { return oth.x == x && oth.y == y && oth.z == z; }
+	bool operator != (const ZenVector3& oth) { return ! operator==(oth); }
+};
 
 /*struct ZenVector3 : public ZenCadObject{
 	double x, y, z;
