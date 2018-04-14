@@ -28,6 +28,7 @@ from zencad.wire import segment
 from zencad.wire import polysegment
 from zencad.wire import circle as wcircle
 from zencad.wire import arc_by_points
+from zencad.wire import interpolate
 
 #boolops
 from zencad.boolops import union
@@ -38,7 +39,11 @@ def error(str):
 	print("ZenCadError: " + str)
 	exit(-1)
 
+from zencad.math3 import vector
+from zencad.math3 import vector as vec
+from zencad.math3 import vectors
 from zencad.math3 import point
+from zencad.math3 import point as pnt
 from zencad.math3 import points
 #from zencad.zenlib import ZenVertex as vertex
 

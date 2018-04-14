@@ -1,6 +1,8 @@
 #ifndef DZENCAD_WIRE_H
 #define DZENCAD_WIRE_H
 
+#include <gxx/print/stdprint.h>
+
 #include <gp_Circ.hxx>
 
 #include <zencad/topo.h>
@@ -14,7 +16,14 @@
 #include <TopAbs.hxx>
 
 #include <pybind11/pybind11.h>
+#include <TColgp_HArray1OfPnt.hxx>
+#include <TColgp_Array1OfVec.hxx>
+#include <TColStd_HArray1OfBoolean.hxx>
+#include <TColStd_HArray1OfReal.hxx>
 
+#include <GeomAPI_Interpolate.hxx>
+
+namespace py = pybind11;
 
 struct ZenWire : public ZenShape, public ZenShapeTransI<ZenWire>, public ZenBoolOpsI<ZenWire> {
 	const char* class_name() const { return "ZenSolid"; }
@@ -64,10 +73,10 @@ struct ZenEdge : public ZenShapeInterface<ZenEdge> {
 */
 struct ZenSegment : public ZenWire {
 	const char* class_name() const override { return "ZenSegment"; }
-	ZenPoint a; 
-	ZenPoint b;
+	ZenPoint3 a; 
+	ZenPoint3 b;
 
-	ZenSegment(ZenPoint a, ZenPoint b) : a(a), b(b) {}
+	ZenSegment(ZenPoint3 a, ZenPoint3 b) : a(a), b(b) {}
 	void doit() override { 
 		m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(a.Pnt(), b.Pnt())); 
 	}
@@ -75,11 +84,11 @@ struct ZenSegment : public ZenWire {
 
 struct ZenCircleArcByPoints : public ZenWire {
 	const char* class_name() const override { return "ZenCircleArcByPoints"; }
-	ZenPoint  a;
-	ZenPoint  b;
-	ZenPoint  c;
+	ZenPoint3  a;
+	ZenPoint3  b;
+	ZenPoint3  c;
 
-	ZenCircleArcByPoints(ZenPoint a, ZenPoint b, ZenPoint c) : a(a), b(b), c(c) {
+	ZenCircleArcByPoints(ZenPoint3 a, ZenPoint3 b, ZenPoint3 c) : a(a), b(b), c(c) {
     	initialize_hash();
     }
 	void doit() override {  
@@ -89,12 +98,12 @@ struct ZenCircleArcByPoints : public ZenWire {
 
 struct ZenPolySegment : public ZenWire {
 	const char* class_name() const override { return "ZenPolySegment"; }
-	std::vector<ZenPoint> pnts;
+	std::vector<ZenPoint3> pnts;
 	bool closed;
 	
 	ZenPolySegment(pybind11::list args, bool closed) : closed(closed) {
     	for (auto item : args) {
-    		auto pnt = item.cast<ZenPoint>();
+    		auto pnt = item.cast<ZenPoint3>();
     		pnts.push_back(pnt);
     	}
     	initialize_hash();
@@ -132,7 +141,77 @@ struct ZenWireCircle : public ZenWire {
 			m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(gp_Circ(gp_Ax2(gp_Pnt(0,0,0), gp_Vec(0,0,1)), r), a, b)); 
 		}
 	}
+
+	void vreflect(ZenVisitor& v) { v&a; v&b; v&r; }
 };
+
+struct ZenInterpolateWire : public ZenWire {
+	const char* class_name() const override { return "ZenInterpolateWire"; }
+	std::vector<ZenPoint3> pnts;
+	std::vector<ZenVector3> tang;
+	//std::vector<double> params;
+	//std::vector<bool> btang;
+	bool closed;
+	
+	ZenInterpolateWire(py::list pntslst, py::list tanglst, py::list paramslst, bool closed) : closed(closed) {
+		for (auto& a : pntslst) { pnts.push_back(a.cast<ZenPoint3>()); }
+		for (auto& a : tanglst) { tang.push_back(a.cast<ZenVector3>()); }
+		/*if (paramslst.size()) {
+			for (auto& a : paramslst) { 
+				params.push_back(a.cast<double>()); 
+			}
+		} else { 
+			for (int i = 0; i < pnts.size(); ++i) {
+				params.push_back(0.1);
+			} 
+		}*/
+		//for (auto& a : tang) { ); }
+		initialize_hash();
+	}
+
+	void doit() override { 
+		Handle(TColgp_HArray1OfPnt) _pnts = new TColgp_HArray1OfPnt(1, pnts.size());
+		for (int i = 0; i < pnts.size(); ++i) _pnts->SetValue(i + 1, pnts[i].Pnt());
+
+		/*Handle(TColStd_HArray1OfReal) _params = new TColStd_HArray1OfReal(1, pnts.size());
+		for (int i = 0; i < pnts.size(); ++i) _params->SetValue(i + 1, params[i]);*/
+
+		GeomAPI_Interpolate algo(_pnts, /*_params,*/ closed, 0.0000001);
+		
+		if (tang.size()) {
+			TColgp_Array1OfVec _tang(1, tang.size());
+			Handle(TColStd_HArray1OfBoolean) _bools = new TColStd_HArray1OfBoolean(1, tang.size());
+			for (int i = 0; i < pnts.size(); ++i) _tang.SetValue(i + 1, tang[i].Vec());
+			for (int i = 0; i < pnts.size(); ++i) _bools->SetValue(i + 1, tang[i] != ZenVector3(0,0,0));
+			algo.Load(_tang, _bools);
+		}
+		
+		algo.Perform();
+		m_native = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(algo.Curve()));
+	}
+
+	void vreflect(ZenVisitor& v) { 
+		for (auto& tan : tang) v&tan; 
+		for (auto& pnt : pnts) v&pnt; 
+		//for (auto& param : params) v&param; 
+		v&closed;
+	}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 struct ZenWireComplex : public ZenWire {
 	const char* class_name() const override { return "ZenWireComplex"; }

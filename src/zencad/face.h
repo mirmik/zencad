@@ -39,7 +39,7 @@ struct ZenEdgeFace : public ZenFace {
 */
 struct ZenPolygon : public ZenFace {
 	const char* class_name() const override { return "ZenPolygon"; }
-	std::vector<ZenPoint> pnts;
+	std::vector<ZenPoint3> pnts;
 	ZenPolygon(pybind11::list args);
 	void doit() override;
 	void vreflect(ZenVisitor& v) override;

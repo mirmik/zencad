@@ -33,7 +33,7 @@ ZenCircle::ZenCircle(double r) : r(r) {
 
 ZenPolygon::ZenPolygon(pybind11::list args) {
    	for (auto item : args) {
-   		auto pnt = item.cast<ZenPoint>();
+   		auto pnt = item.cast<ZenPoint3>();
    		pnts.push_back(pnt);
    	}
    	initialize_hash();
