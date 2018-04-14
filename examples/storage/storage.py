@@ -30,7 +30,7 @@ def storage(m, n, w, h, l, t, d, d2):
 	arr.append(b1)
 	return union(arr)
 
-m = storage(3,3,27,20,64,1.5,5,5)
+m = storage(8,9,27,20,64,1.5,5,5)
 
 display(m)
 show()
