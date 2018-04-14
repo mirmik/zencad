@@ -119,13 +119,16 @@ PYBIND11_MODULE(zenlib, m) {
 	;
 
 	py::class_<ZenSegment, ZenWire, std::shared_ptr<ZenSegment>>(m, "wire_segment")
-		.def(py::init<ZenPoint, ZenPoint>());
+		.def(py::init<ZenPoint3, ZenPoint3>());
 
 	py::class_<ZenWireCircle, ZenWire, std::shared_ptr<ZenWireCircle>>(m, "wire_circle")
 		.def(py::init<double, double, double>(), py::arg("r"), py::arg("a")=0, py::arg("b")=360);
 
+	py::class_<ZenInterpolateWire, ZenWire, std::shared_ptr<ZenInterpolateWire>>(m, "wire_interpolate")
+		.def(py::init<py::list, py::list, py::list, bool>(), py::arg("pnts"), py::arg("tang") = py::list(), py::arg("params") = py::list(), py::arg("closed")=false);
+
 	py::class_<ZenCircleArcByPoints, ZenWire, std::shared_ptr<ZenCircleArcByPoints>>(m, "wire_circle_arc_by_points")
-		.def(py::init<ZenPoint, ZenPoint, ZenPoint>());
+		.def(py::init<ZenPoint3, ZenPoint3, ZenPoint3>());
 
 	py::class_<ZenPolySegment, ZenWire, std::shared_ptr<ZenPolySegment>>(m, "wire_polysegment")
 		.def(py::init<py::list, bool>(), py::arg("pnts"), py::arg("closed")=false)
@@ -165,14 +168,14 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<ZenVertex, ZenShape, std::shared_ptr<ZenVertex>>(m, "ZenVertex")
 		DEF_TRANSFORM_OPERATIONS(ZenVertex)
-		//DEF_EXPLORER_OPERATIONS(ZenFace)
-		.def(py::self + py::self)
-		.def(py::self - py::self)
-		.def(py::self ^ py::self)
-		//.def("wires", &ZenFace::wires)
 	;
 
-	py::class_<ZenPoint, ZenVertex, std::shared_ptr<ZenPoint>>(m, "point3")
+	py::class_<ZenPoint3, ZenVertex, std::shared_ptr<ZenPoint3>>(m, "point3")
+		.def(py::init<double,double,double>())
+		.def(py::init<double,double>());
+
+
+	py::class_<ZenVector3, std::shared_ptr<ZenVector3>>(m, "vector3")
 		.def(py::init<double,double,double>())
 		.def(py::init<double,double>());
 /*
@@ -194,7 +197,6 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("show", show);
 
 //	py::class_<ZenDirection3>(m, "direction3").def(py::init<double,double,double>());
-	py::class_<ZenVector3>(m, "vector3").def(py::init<double,double,double>());
 /*
 	py::class_<ZenShapeExplorer<ZenWire>, std::shared_ptr<ZenShapeExplorer<ZenWire>>>(m, "ZenShapeExplorer<ZenWire>")
 		.def("__len__", &ZenShapeExplorer<ZenWire>::size)
