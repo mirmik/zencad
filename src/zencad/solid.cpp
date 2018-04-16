@@ -27,6 +27,7 @@ const char* ZenCylinder::class_name() const { return "ZenCylinder"; }
 const char* ZenTorus::class_name() const { return "ZenTorus"; }
 const char* ZenCone::class_name() const { return "ZenCone"; }
 const char* ZenLinearExtrude::class_name() const { return "ZenLinearExtrude"; }
+const char* ZenPipe::class_name() const { return "ZenPipe"; }
 
 void ZenBox::doit() { 
 	if (!center) {
@@ -64,6 +65,7 @@ void ZenCylinder::vreflect(ZenVisitor& v) { v&r; v&h; v&center; }
 void ZenTorus::vreflect(ZenVisitor& v) { v&r1; v&r2; }
 void ZenCone::vreflect(ZenVisitor& v) { v&r1; v&r2; v&h; v&center; }
 void ZenLinearExtrude::vreflect(ZenVisitor& v) { v&*fc; v&vec; }	
+void ZenPipe::vreflect(ZenVisitor& v) { v&*path; v&*profile; }	
 
 /*
 void ZenBox::doit() { 
@@ -119,6 +121,11 @@ ZenLinearExtrude::ZenLinearExtrude(std::shared_ptr<ZenFace> fc, double z) : fc(f
 ZenLinearExtrude::ZenLinearExtrude(std::shared_ptr<ZenFace> fc, ZenVector3 v) : fc(fc), vec(v) {
 	initialize_hash();
 }
+
+ZenPipe::ZenPipe(std::shared_ptr<ZenWire> path, std::shared_ptr<ZenShape> profile) : path(path), profile(profile) {
+	initialize_hash();
+}
+
 /*
 
 
@@ -216,7 +223,12 @@ struct ZenPipe : public ZenSolid {
 
 void ZenLinearExtrude::doit() { 
 	BRepPrimAPI_MakePrism mk(fc->native(), vec.Vec());
-	m_native = mk; 
+	m_native = mk.Shape(); 
+}
+
+void ZenPipe::doit() { 
+	BRepOffsetAPI_MakePipe mk(TopoDS::Wire(path->native()), profile->native());
+	m_native = mk.Shape(); 
 }
 /*
 void ZenLoft::doit() {

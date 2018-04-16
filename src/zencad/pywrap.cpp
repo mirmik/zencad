@@ -97,6 +97,9 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenLinearExtrude, ZenSolid, std::shared_ptr<ZenLinearExtrude>>(m, "solid_linear_extrude")
 		.def(py::init<std::shared_ptr<ZenFace>, double>())
 		.def(py::init<std::shared_ptr<ZenFace>, ZenVector3>());
+
+	py::class_<ZenPipe, ZenSolid, std::shared_ptr<ZenPipe>>(m, "solid_pipe")
+		.def(py::init<std::shared_ptr<ZenWire>, std::shared_ptr<ZenShape>>(), py::arg("path"), py::arg("profile"));
 /*
 	py::class_<ZenLoft, ZenSolid, std::shared_ptr<ZenLoft>>(m, "solid_loft")
 		.def(py::init<py::list>());
@@ -172,7 +175,12 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<ZenPoint3, ZenVertex, std::shared_ptr<ZenPoint3>>(m, "point3")
 		.def(py::init<double,double,double>())
-		.def(py::init<double,double>());
+		.def(py::init<double,double>())
+    //	.def_readwrite("name", &Pet::name)
+		.def_readwrite("x", &ZenPoint3::x)
+		.def_readwrite("y", &ZenPoint3::y)
+		.def_readwrite("z", &ZenPoint3::z)
+	;
 
 
 	py::class_<ZenVector3, std::shared_ptr<ZenVector3>>(m, "vector3")
