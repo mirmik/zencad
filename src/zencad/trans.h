@@ -36,7 +36,9 @@ struct ZenTransformed : public Topo {
 struct ZenTranslate : public ZenTransform {
 	const char* class_name() const override { return "ZenTranslate"; }
 	double x, y, z;
-	ZenTranslate(double x, double y, double z) : x(x), y(y), z(z) {	initialize_hash(); }
+	ZenTranslate(double x, double y, double z) : x(x), y(y), z(z) {	initialize_hash();
+		gxx::fprintln("ZenTranslate {},{},{},{}",x,y,z,hash);
+	}
 	void doit() override;
 	void vreflect(ZenVisitor& v) override { v & x; v & y; v & z; }
 };

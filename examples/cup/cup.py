@@ -3,7 +3,7 @@
 
 from zencad import *
 
-thikness = 3.5
+thikness = 2.5
 height = 90
 radius = 40
 handle_radius = 5
