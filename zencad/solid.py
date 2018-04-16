@@ -11,6 +11,7 @@ from zencad.zenlib import solid_torus as torus
 #from zencad.zenlib import solid_pipe as pipe
 #
 from zencad.zenlib import solid_linear_extrude as __linear_extrude
+from zencad.zenlib import solid_pipe as pipe
 #
 import zencad.math3
 

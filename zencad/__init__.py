@@ -15,6 +15,7 @@ from zencad.solid import cylinder
 from zencad.solid import cone
 
 from zencad.solid import linear_extrude
+from zencad.solid import pipe
 
 #face
 from zencad.face import circle
@@ -42,9 +43,11 @@ def error(str):
 from zencad.math3 import vector
 from zencad.math3 import vector as vec
 from zencad.math3 import vectors
+
 from zencad.math3 import point
 from zencad.math3 import point as pnt
 from zencad.math3 import points
+
 #from zencad.zenlib import ZenVertex as vertex
 
 def gr(rad): return rad / 180 * math.pi
