@@ -33,6 +33,7 @@ bool ZenCadObject::check_cache() {
 			std::ifstream file(filepath, std::ios::binary);
 			gxx::println("info_check for", class_name());
 			cached = info_check(file) && vreflect_check_cache();
+			GXX_PRINT(cached);
 			file.close();
 			if (cached) return true;		
 		}
@@ -97,11 +98,18 @@ bool ZenCadObject::info_check(std::istream& in) {
 	size_t es;
 	in.read((char*)&es, sizeof(size_t));
 	
-	if (ls != es) return false;
+	if (ls != es) {
+		gxx::println("HERE1");
+		return false;
+	}
+
 	for (size_t lh : alg.hashes) { 
 		size_t eh;
 		in.read((char*)&eh, sizeof(size_t)); 
-		if (lh != eh) return false;		
+		if (lh != eh) {
+			gxx::println("HERE2", eh, lh);
+			return false;
+		}		
 	}
 
 	return true;

@@ -199,6 +199,22 @@ struct ZenInterpolateWire : public ZenWire {
 };
 
 
+struct ZenHelix : public ZenWire {
+	const char* class_name() const override { return "ZenHelix"; }
+	double r; 
+	double h;
+	double step;
+	
+	ZenHelix(double r, double h, double step) : r(r), h(h), step(step) {
+		initialize_hash();
+	}
+
+	void doit() override { 
+	}
+
+	void vreflect(ZenVisitor& v) { v&r; v&h; v&step; }
+};
+
 
 
 
