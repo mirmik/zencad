@@ -81,6 +81,16 @@ struct ZenLinearExtrude : public ZenSolid {
 	void vreflect(ZenVisitor& v) override;	
 };
 
+struct ZenPipe : public ZenSolid {
+	const char* class_name() const override;
+	//ZenVector3 vec;
+	std::shared_ptr<ZenWire> path;
+	std::shared_ptr<ZenShape> profile;
+	ZenPipe(std::shared_ptr<ZenWire> path, std::shared_ptr<ZenShape> profile);
+	void doit() override;
+	void vreflect(ZenVisitor& v) override;	
+};
+
 /*
 struct ZenLoft : public ZenSolid {
 	const char* class_name() const override;
