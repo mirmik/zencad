@@ -6,8 +6,10 @@ sys.path.insert(0, "..")
 
 import zencad
 
-m = zencad.make_box(3,5,6).up(20)
+m = zencad.make_polysegment([])
 
+#m = zencad.make_box(3,5,6).up(20)
+#
 scn = zencad.Scene()
 scn.add(m)
 
