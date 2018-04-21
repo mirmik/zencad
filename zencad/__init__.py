@@ -1,4 +1,5 @@
 import math
+from zencad.zenlib import *
 
 ##widget
 #from zencad.widget import display
@@ -64,12 +65,3 @@ import math
 #from zencad.zenlib import scene
 #from zencad.zenlib import camera
 #from zencad.zenlib import view
-
-from zencad.zenlib import make_box
-from zencad.zenlib import make_sphere
-from zencad.zenlib import make_cylinder
-from zencad.zenlib import make_cone
-from zencad.zenlib import make_torus
-
-from zencad.zenlib import Scene
-from zencad.zenlib import display_scene
