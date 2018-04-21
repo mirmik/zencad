@@ -1,66 +1,75 @@
 import math
 
-#widget
-from zencad.widget import display
-from zencad.widget import show
+##widget
+#from zencad.widget import display
+#from zencad.widget import show
+#
+##cache
+#from zencad.cache import enable as enable_cache
+#
+##solid
+#from zencad.solid import box
+#from zencad.solid import sphere
+#from zencad.solid import torus
+#from zencad.solid import cylinder
+#from zencad.solid import cone
+#
+#from zencad.solid import linear_extrude
+#from zencad.solid import pipe
+#
+##face
+#from zencad.face import circle
+#from zencad.face import ngon
+#from zencad.face import square
+#from zencad.face import rectangle
+#from zencad.face import polygon
+#
+##wire
+#from zencad.wire import segment
+#from zencad.wire import polysegment
+#from zencad.wire import circle as wcircle
+#from zencad.wire import arc_by_points
+#from zencad.wire import interpolate
+#
+##boolops
+#from zencad.boolops import union
+#from zencad.boolops import difference
+#from zencad.boolops import intersect
+#
+#def error(str):
+#	print("ZenCadError: " + str)
+#	exit(-1)
+#
+#from zencad.math3 import vector
+#from zencad.math3 import vector as vec
+#from zencad.math3 import vectors
+#
+#from zencad.math3 import point
+#from zencad.math3 import point as pnt
+#from zencad.math3 import points
+#
+##from zencad.zenlib import ZenVertex as vertex
+#
+#def gr(rad): return rad / 180 * math.pi
+#from zencad.math3 import point as pnt
+#
+#
+#def execfile(path):
+#	with open(path) as f:
+#		code = compile(f.read(), path, 'exec')
+#		exec(code, globals(), locals())
+#		return locals()
+#
+#
+#from zencad.zenlib import scene
+#from zencad.zenlib import camera
+#from zencad.zenlib import view
 
-#cache
-from zencad.cache import enable as enable_cache
+from zencad.zenlib import make_box
+from zencad.zenlib import make_sphere
+from zencad.zenlib import make_cylinder
+from zencad.zenlib import make_cone
+from zencad.zenlib import make_torus
 
-#solid
-from zencad.solid import box
-from zencad.solid import sphere
-from zencad.solid import torus
-from zencad.solid import cylinder
-from zencad.solid import cone
-
-from zencad.solid import linear_extrude
-from zencad.solid import pipe
-
-#face
-from zencad.face import circle
-from zencad.face import ngon
-from zencad.face import square
-from zencad.face import rectangle
-from zencad.face import polygon
-
-#wire
-from zencad.wire import segment
-from zencad.wire import polysegment
-from zencad.wire import circle as wcircle
-from zencad.wire import arc_by_points
-from zencad.wire import interpolate
-
-#boolops
-from zencad.boolops import union
-from zencad.boolops import difference
-from zencad.boolops import intersect
-
-def error(str):
-	print("ZenCadError: " + str)
-	exit(-1)
-
-from zencad.math3 import vector
-from zencad.math3 import vector as vec
-from zencad.math3 import vectors
-
-from zencad.math3 import point
-from zencad.math3 import point as pnt
-from zencad.math3 import points
-
-#from zencad.zenlib import ZenVertex as vertex
-
-def gr(rad): return rad / 180 * math.pi
-from zencad.math3 import point as pnt
-
-
-def execfile(path):
-	with open(path) as f:
-		code = compile(f.read(), path, 'exec')
-		exec(code, globals(), locals())
-		return locals()
-
-
-from zencad.zenlib import scene
-from zencad.zenlib import camera
-from zencad.zenlib import view
+from zencad.zenlib import Scene
+from zencad.zenlib import display_scene

@@ -1,6 +1,9 @@
 /*#include <boost/python.hpp>
 using namespace boost::python;
 */
+#include <servoce/servoce.h>
+#include <servoce/display.h>
+/*
 #include <zencad/base.h>
 #include <zencad/cache.h>
 #include <zencad/topo.h>
@@ -17,7 +20,7 @@ using namespace boost::python;
 
 #include <zencad/scene.h>
 #include <zencad/camera.h>
-#include <zencad/view.h>
+#include <zencad/view.h>*/
 
 
 #include <pybind11/pybind11.h>
@@ -42,14 +45,14 @@ namespace py = pybind11;
 .def("mirrorXY", &TYPE::mirrorXY)				\
 .def("mirrorYZ", &TYPE::mirrorYZ)				\
 .def("mirrorXZ", &TYPE::mirrorXZ)				
-
+/*
 #define DEF_EXPLORER_OPERATIONS(TYPE) 				\
 .def("wires", &TYPE::wires)							\
 .def("vertexs", &TYPE::vertexs)				
 
-
+*/
 PYBIND11_MODULE(zenlib, m) {
-	py::class_<ZenCadObject, std::shared_ptr<ZenCadObject>>(m, "ZenCadObject");
+	/*py::class_<ZenCadObject, std::shared_ptr<ZenCadObject>>(m, "ZenCadObject");
 
 	py::class_<ZenShape, ZenCadObject, std::shared_ptr<ZenShape>>(m, "ZenShape")
 	//	.def("dump", &ZenShape::dump_binary)
@@ -78,7 +81,7 @@ PYBIND11_MODULE(zenlib, m) {
 		.def(py::init<double, double, double>())
 	;
 */
-	py::class_<ZenSphere, ZenSolid, std::shared_ptr<ZenSphere>>(m, "solid_sphere")
+	/*py::class_<ZenSphere, ZenSolid, std::shared_ptr<ZenSphere>>(m, "solid_sphere")
 		.def(py::init<double>(), py::arg("r"));
 
 	py::class_<ZenCylinder, ZenSolid, std::shared_ptr<ZenCylinder>>(m, "solid_cylinder")
@@ -94,7 +97,7 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenWedge, ZenSolid, std::shared_ptr<ZenWedge>>(m, "solid_wedge")
 		.def(py::init<double, double, double, double>());
 	*/
-	py::class_<ZenLinearExtrude, ZenSolid, std::shared_ptr<ZenLinearExtrude>>(m, "solid_linear_extrude")
+	/*py::class_<ZenLinearExtrude, ZenSolid, std::shared_ptr<ZenLinearExtrude>>(m, "solid_linear_extrude")
 		.def(py::init<std::shared_ptr<ZenFace>, double>())
 		.def(py::init<std::shared_ptr<ZenFace>, ZenVector3>());
 
@@ -115,7 +118,7 @@ PYBIND11_MODULE(zenlib, m) {
 	;
 */
 	///WIRES
-	py::class_<ZenWire, ZenShape, std::shared_ptr<ZenWire>>(m, "ZenWire")
+	/*py::class_<ZenWire, ZenShape, std::shared_ptr<ZenWire>>(m, "ZenWire")
 		DEF_TRANSFORM_OPERATIONS(ZenWire)
 		//DEF_EXPLORER_OPERATIONS(ZenWire)
 		//.def("face", &ZenWire::make_face)
@@ -148,7 +151,7 @@ PYBIND11_MODULE(zenlib, m) {
 	//;
 */	
 	///FACE	
-	py::class_<ZenFace, ZenShape, std::shared_ptr<ZenFace>>(m, "ZenFace")
+	/*py::class_<ZenFace, ZenShape, std::shared_ptr<ZenFace>>(m, "ZenFace")
 		DEF_TRANSFORM_OPERATIONS(ZenFace)
 		//DEF_EXPLORER_OPERATIONS(ZenFace)
 		.def(py::self + py::self)
@@ -196,7 +199,7 @@ PYBIND11_MODULE(zenlib, m) {
 
 	///CACHE
 */
-	m.def("cache_enable", zencache_enable);
+	/*m.def("cache_enable", zencache_enable);
 	m.def("cache_disable", zencache_disable);
 	m.def("cache_is_enabled", zencache_is_enabled);
     
@@ -226,7 +229,7 @@ PYBIND11_MODULE(zenlib, m) {
 
 
 	//EXPERIMENTAL
-	py::class_<ZenScene, std::shared_ptr<ZenScene>>(m, "scene")
+	/*py::class_<ZenScene, std::shared_ptr<ZenScene>>(m, "scene")
 		.def(py::init<>())
 		.def("add", &ZenScene::add)
 		.def("clear", &ZenScene::clear)
@@ -239,5 +242,30 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<ZenView, std::shared_ptr<ZenView>>(m, "view")
 		.def(py::init<std::shared_ptr<ZenScene>, std::shared_ptr<ZenCamera>>(), py::arg("scene"), py::arg("camera"))
 		.def("screen", &ZenView::screen)
-	;
+	;*/
+
+
+
+
+
+
+
+
+
+
+	py::class_<servoce::shape>(m, "Shape");
+
+	py::class_<servoce::solid, servoce::shape>(m, "Solid")
+	DEF_TRANSFORM_OPERATIONS(servoce::solid);
+	m.def("make_box", servoce::prim3d::make_box, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("center") = false);
+	m.def("make_sphere", 	servoce::prim3d::make_sphere);
+	m.def("make_cylinder", 	servoce::prim3d::make_cylinder);
+	m.def("make_cone", 		servoce::prim3d::make_cone);
+	m.def("make_torus", 	servoce::prim3d::make_torus);
+	
+	py::class_<servoce::scene>(m, "Scene")
+	.def(py::init<>())
+	.def("add", &servoce::scene::add);
+
+	m.def("display_scene", 	servoce::display);
 }
