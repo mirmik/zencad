@@ -4,12 +4,11 @@
 import sys
 sys.path.insert(0, "..")
 
-import zencad.solid as solid
+import zencad
 
-m1 = solid.box(10,10,10)
-m2 = solid.box(10,10,9)
+m = zencad.make_box(3,5,6).up(20)
 
-print(m1.hash1())
-print(m2.hash1())
-print(m1.hash2())
-print(m2.hash2())
+scn = zencad.Scene()
+scn.add(m)
+
+zencad.display_scene(scn)

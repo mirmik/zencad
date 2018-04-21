@@ -2,49 +2,48 @@
 
 from licant.cxx_modules import shared_library
 from licant.modules import module
-
 import licant
-import licant.libs
+#import licant.libs
 
-licant.libs.include("gxx")
+#licant.libs.include("gxx")
 
-libqt_include_path = "/usr/include/x86_64-linux-gnu/qt5/"
-liboce_include_path = "/usr/include/oce"
+#libqt_include_path = "/usr/include/x86_64-linux-gnu/qt5/"
+#liboce_include_path = "/usr/include/oce"
 python_include_prefix = "/usr/include/"
 
-module('liboce', 
-	libs = [     
-		'TKernel',
-		'TKMath',
-		'TKG3d',
-		'TKBRep',
-		'TKGeomBase',
-		'TKGeomAlgo',
-		'TKTopAlgo',
-		'TKPrim',
-		'TKBO',
-		'TKBool',
-		'TKOffset',
-		'TKService',
-		'TKV3d',
-		'TKOpenGl',
-		'TKFillet',
-		'TKSTL',
-		'TKBin',
-	],
-	include_paths = [liboce_include_path]    
-)
+#module('liboce', 
+#	libs = [     
+#		'TKernel',
+#		'TKMath',
+#		'TKG3d',
+#		'TKBRep',
+#		'TKGeomBase',
+#		'TKGeomAlgo',
+#		'TKTopAlgo',
+#		'TKPrim',
+#		'TKBO',
+#		'TKBool',
+#		'TKOffset',
+#		'TKService',
+#		'TKV3d',
+#		'TKOpenGl',
+#		'TKFillet',
+#		'TKSTL',
+#		'TKBin',
+#	],
+#	include_paths = [liboce_include_path]    
+#)
 
-module('libqt', 
-	libs = [    
-		'Qt5Core', 
-		'Qt5Widgets', 
-		'Qt5Test', 
-		'Qt5Gui', 
-		'Qt5OpenGL',
-	],
-	include_paths = [libqt_include_path]    
-)
+#module('libqt', 
+#	libs = [    
+#		'Qt5Core', 
+#		'Qt5Widgets', 
+#		'Qt5Test', 
+#		'Qt5Gui', 
+#		'Qt5OpenGL',
+#	],
+#	include_paths = [libqt_include_path]    
+#)
 
 def registry_library(py):
 	shared_library("zenlib." + py,
@@ -56,34 +55,35 @@ def registry_library(py):
 	
 		srcdir = "src",
 		sources = [
-			"zencad/base.cpp", 
-			"zencad/cache.cpp", 
+		#	"zencad/base.cpp", 
+		#	"zencad/cache.cpp", 
 			"zencad/pywrap.cpp",  
 			
-			"zencad/ZenWidget.cpp", 
-			"zencad/DisplayWidget.cpp", 
-			"zencad/widget.cpp",
+		#	"zencad/ZenWidget.cpp", 
+		#	"zencad/DisplayWidget.cpp", 
+		#	"zencad/widget.cpp",
 
-			"zencad/solid.cpp", 
-			"zencad/trans.cpp", 
+		#	"zencad/solid.cpp", 
+		#	"zencad/trans.cpp", 
 			#"zencad/topo.cpp",
-			"zencad/face.cpp",
+		#	"zencad/face.cpp",
 			#"zencad/wire.cpp", 
 			#"zencad/boolops.cpp",
 		],
-		moc = ["zencad/DisplayWidget.h", "zencad/ZenWidget.h"],    
-		include_modules = [
-			"libqt", 
-			"liboce",
-			("gxx", "posix"),
-			("gxx.print", "cout"),
-			("gxx.dprint", "cout")
-		],
+		#moc = ["zencad/DisplayWidget.h", "zencad/ZenWidget.h"],    
+		#include_modules = [
+		#	"libqt", 
+		#	"liboce",
+		#	("gxx", "posix"),
+		#	("gxx.print", "cout"),
+		#	("gxx.dprint", "cout")
+		#],
 		include_paths = [
 			".", 
 			"src", 
 			python_include_prefix + py
-		]
+		],
+		libs = ["servoce"]
 	)
 
 registry_library("python2.7")
