@@ -33,7 +33,7 @@ namespace py = pybind11;
 */
 
 PYBIND11_MODULE(zenlib, m) {
-	py::register_exception<servoce::RuntimeException>(m, "ServoceRuntimeException");
+	//py::register_exception<servoce::RuntimeException>(m, "ServoceRuntimeException");
 
 	py::class_<servoce::point3>(m, "point3")
 	.def(py::init<double,double,double>());
@@ -43,18 +43,29 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<servoce::shape>(m, "Shape");
 
 	py::class_<servoce::solid, servoce::shape>(m, "Solid")
-	DEF_TRANSFORM_OPERATIONS(servoce::solid);
+		DEF_TRANSFORM_OPERATIONS(servoce::solid)
+		.def(py::self + py::self)
+		.def(py::self - py::self)
+		.def(py::self ^ py::self)
+	;
+
 	m.def("make_box", servoce::prim3d::make_box, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("center") = false);
-	m.def("make_sphere", 	servoce::prim3d::make_sphere);
-	m.def("make_cylinder", 	servoce::prim3d::make_cylinder);
-	m.def("make_cone", 		servoce::prim3d::make_cone);
-	m.def("make_torus", 	servoce::prim3d::make_torus);
+	m.def("make_sphere", 	servoce::prim3d::make_sphere, py::arg("r"));
+	m.def("make_cylinder", 	servoce::prim3d::make_cylinder, py::arg("r"), py::arg("h"), py::arg("center") = false);
+	m.def("make_cone", 		servoce::prim3d::make_cone, py::arg("r1"), py::arg("r2"), py::arg("h"), py::arg("center") = false);
+	m.def("make_torus", 	servoce::prim3d::make_torus, py::arg("r1"), py::arg("r2"));
 
 	py::class_<servoce::face, servoce::shape>(m, "Face")
-	DEF_TRANSFORM_OPERATIONS(servoce::face);
+		DEF_TRANSFORM_OPERATIONS(servoce::face)
+		//.def(py::self + py::self)
+		//.def(py::self - py::self)
+		//.def(py::self ^ py::self)
+	;
 
 	py::class_<servoce::wire, servoce::shape>(m, "Wire")
-	DEF_TRANSFORM_OPERATIONS(servoce::wire);
+		DEF_TRANSFORM_OPERATIONS(servoce::wire)
+	;
+	
 	m.def("make_segment", servoce::curve::make_segment);
 	m.def("make_polysegment", servoce::curve::make_polysegment, py::arg("pnts"), py::arg("closed") = false);
 	//m.def("make_interpolate", servoce::curve::make_interpolate);
