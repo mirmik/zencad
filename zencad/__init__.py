@@ -1,6 +1,9 @@
 import math
 from zencad.zenlib import *
 
+def union(arr):
+	return make_union(arr)
+
 def points(tpls):
 	return [ point3(*t) for t in tpls ]
 
@@ -49,6 +52,9 @@ def torus(r1, r2):
 def linear_extrude(shp, vec):
 	return make_linear_extrude(shp, to_vector3(vec))
 
+def pipe(profile, path):
+	return make_pipe(profile, path)
+
 #face
 def circle(r):
 	return make_circle(r)
@@ -58,6 +64,11 @@ def ngon(r, n):
 
 def polygon(pnts):
 	return make_polygon(pnts)
+
+#wire
+def interpolate(*args, **kwargs):
+	return make_interpolate(*args, **kwargs)
+
 
 ##widget
 #from zencad.widget import display
