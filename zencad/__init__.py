@@ -65,6 +65,12 @@ def ngon(r, n):
 def polygon(pnts):
 	return make_polygon(pnts)
 
+def square(a, center = False):
+	return make_square(a, center)
+
+def rectangle(a, b, center = False):
+	return make_rectangle(a, b, center)
+
 #wire
 def interpolate(*args, **kwargs):
 	return make_interpolate(*args, **kwargs)
