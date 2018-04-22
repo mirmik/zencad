@@ -18,6 +18,7 @@ def to_vector3(v):
 def enable_cache(arg):
 	print("Warn: cache in rework state. comming soon.")
 
+#display
 default_scene = Scene()
 
 def display(shp):
