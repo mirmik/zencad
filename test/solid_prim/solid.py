@@ -9,7 +9,7 @@ m0 = zencad.box(size = 10, center = True)
 m1 = zencad.sphere(5)
 m2 = zencad.torus(5, 2)
 m3 = zencad.cylinder(5, 10, center = True)
-m4 = zencad.cone(5, 10)
+m4 = zencad.cone(5, 10, 10)
 
 m5 = zencad.box(10,10,10) + zencad.sphere(5)
 
