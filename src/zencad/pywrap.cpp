@@ -71,12 +71,15 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<servoce::face, servoce::shape>(m, "Face")
 		DEF_TRANSFORM_OPERATIONS(servoce::face)
+		.def("fillet", &servoce::face::fillet, py::arg("r"), py::arg("nums"))
 		//.def(py::self + py::self)
 		//.def(py::self - py::self)
 		//.def(py::self ^ py::self)
 	;
 	m.def("make_circle", 	servoce::prim2d::make_circle, py::arg("r"));
 	m.def("make_ngon", 		servoce::prim2d::make_ngon, py::arg("r"), py::arg("n"));
+	m.def("make_square", 	servoce::prim2d::make_square, py::arg("a"), py::arg("center") = false);
+	m.def("make_rectangle", servoce::prim2d::make_rectangle, py::arg("a"), py::arg("b"), py::arg("center") = false);
 	m.def("make_polygon", 	(servoce::face(*)(const std::vector<servoce::point3>&))&servoce::prim2d::make_polygon, py::arg("pnts"));
 
 
