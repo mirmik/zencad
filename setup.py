@@ -36,7 +36,7 @@ setup(
 	classifiers = [],
 
    	include_package_data=True,
-    package_data={'zencad': ['zenlib.so']},
+    package_data={'zencad': ['zenlib.so', "libservoce.so"]},
 
     ext_modules = [zenlib_stub],
     cmdclass = {"bdist_wheel" : bdist_wheel}
