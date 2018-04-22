@@ -3,8 +3,6 @@
 
 from zencad import *
 
-enable_cache(".cache")
-
 def section(w, h, l, t, d, d2):
 	return (
 		  box(2*t+w, t+l, 2*t+h)
@@ -31,7 +29,7 @@ def storage(m, n, w, h, l, t, d, d2):
 
 	return union(arr)
 
-m = storage(4,4,27,20,64,1.5,5,5)
+m = storage(3,5,27,20,64,1.5,5,5)
 
 display(m)
 show()
