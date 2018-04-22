@@ -1,6 +1,64 @@
 import math
 from zencad.zenlib import *
 
+def points(tpls):
+	return [ point3(*t) for t in tpls ]
+
+def vectors(tpls):
+	return [ vector3(*t) for t in tpls ]
+
+def to_vector3(v):
+	if isinstance(v, vector3):
+		return v
+	return vector3(v[0], v[1], v[2])
+
+def enable_cache(arg):
+	print("Warn: cache in rework state. comming soon.")
+
+default_scene = Scene()
+
+def display(shp):
+	default_scene.add(shp)
+
+def show():
+	display_scene(default_scene)
+
+#prim3d
+def box(size, arg2 = None, arg3 = None, center = False):
+	if arg3 == None:
+		if hasattr(size, '__getitem__'):
+			return make_box(size[0], size[1], size[2], center)
+		else:
+			return make_box(size, size, size, center)
+	else:
+		return make_box(size, arg2, arg3, center)
+
+def sphere(r): 
+	return make_sphere(r)
+
+def cylinder(r, h, center = False): 
+	return make_cylinder(r,h,center)
+
+def cone(r1, r2, h, center = False): 
+	return make_cone(r1,r2,h,center)
+
+def torus(r1, r2): 
+	return make_torus(r1,r2)
+
+#sweep
+def linear_extrude(shp, vec):
+	return make_linear_extrude(shp, to_vector3(vec))
+
+#face
+def circle(r):
+	return make_circle(r)
+
+def ngon(r, n):
+	return make_ngon(r, n)
+
+def polygon(pnts):
+	return make_polygon(pnts)
+
 ##widget
 #from zencad.widget import display
 #from zencad.widget import show
@@ -51,7 +109,7 @@ from zencad.zenlib import *
 #
 ##from zencad.zenlib import ZenVertex as vertex
 #
-#def gr(rad): return rad / 180 * math.pi
+def gr(rad): return rad / 180 * math.pi
 #from zencad.math3 import point as pnt
 #
 #
