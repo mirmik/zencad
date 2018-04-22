@@ -77,6 +77,8 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_segment", servoce::curve::make_segment);
 	m.def("make_polysegment", servoce::curve::make_polysegment, py::arg("pnts"), py::arg("closed") = false);
 	//m.def("make_interpolate", servoce::curve::make_interpolate);
+	m.def("make_helix", servoce::curve::make_helix, py::arg("pitch"), py::arg("height"), py::arg("radius"), py::arg("angle") = 0, py::arg("leftHanded") = false, py::arg("newStyle") = true);
+	m.def("make_long_helix", servoce::curve::make_long_helix, py::arg("pitch"), py::arg("height"), py::arg("radius"), py::arg("angle") = 0, py::arg("leftHanded") = false);
 
 	py::class_<servoce::sweep_solid, servoce::solid>(m, "SolidSweep");
 	
