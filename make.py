@@ -86,6 +86,9 @@ def registry_library(py):
 		libs = ["servoce"]
 	)
 
+licant.make.source("../servoce/build/libservoce.so")
+licant.make.copy(tgt = "zencad/libservoce.so", src = "../servoce/build/libservoce.so")
+
 registry_library("python2.7")
 registry_library("python3.5")
 #registry_library("python3.5m")
@@ -101,12 +104,14 @@ def install_egg(suffix):
 def local35():
 	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
+	licant.do("zencad/libservoce.so")
 	licant.do("zencad/zenlib.so", "makefile")
 
 @licant.routine
 def install35():
 	os.system("rm zencad/zenlib.so")
 	licant.make.copy(tgt = "zencad/zenlib.so", src = "zencad/python3.5/zenlib.so")
+	licant.do("zencad/libservoce.so")
 	licant.do("zencad/zenlib.so", "makefile")
 	install_egg("3.5")
 
