@@ -1,6 +1,5 @@
 #include <servoce/servoce.h>
 #include <servoce/display.h>
-#include <servoce/except.h>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
