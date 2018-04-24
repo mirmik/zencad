@@ -2,13 +2,12 @@
 #coding: utf-8
 
 import zencad
-import zencad.solid as solid
-from zencad.widget import *
 
-box = solid.box(300, 200, 100, center = True)
-sphere = solid.sphere(100).up(100)
+box = zencad.box(200, 200, 200, center = True)
+sphere1 = zencad.sphere(120)
+sphere2 = zencad.sphere(60)
 
-union = box + sphere
+union = box - sphere1 + sphere2
 
-display(union)
-show()
+zencad.display(union)
+zencad.show()
