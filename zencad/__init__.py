@@ -1,8 +1,9 @@
 import math
 from zencad.zenlib import *
 
-def union(arr):
-	return make_union(arr)
+def union(arr): return make_union(arr)
+def difference(arr): return make_difference(arr)
+def intersect(arr): return make_intersect(arr)
 
 def points(tpls):
 	return [ point3(*t) for t in tpls ]
