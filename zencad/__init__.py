@@ -54,8 +54,8 @@ def torus(r1, r2):
 def linear_extrude(shp, vec):
 	return make_linear_extrude(shp, to_vector3(vec))
 
-def pipe(profile, path):
-	return make_pipe(profile, path)
+def pipe(prof, path):
+	return make_pipe(prof, path)
 
 #face
 def circle(r):
@@ -74,8 +74,17 @@ def rectangle(a, b, center = False):
 	return make_rectangle(a, b, center)
 
 #wire
+def segment(*args, **kwargs):
+	return make_segment(*args, **kwargs)
+
 def interpolate(*args, **kwargs):
 	return make_interpolate(*args, **kwargs)
+
+def complex_wire(*args, **kwargs):
+	return make_complex_wire(*args, **kwargs)
+
+def sweep(prof, path):
+	return make_sweep(prof, path)
 
 
 ##widget
