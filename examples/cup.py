@@ -35,7 +35,8 @@ base = cylinder(r = radius, h = height)
 hole = cylinder(r = radius - thikness, h = height - thikness).up(thikness)
 handle = pipe(path = spine, profile = profile)
 
-cup = base + handle.right(40).up(17) - hole
+cup = (base + handle.right(40).up(17) 
+	- hole)
 
 display(cup)
 show()

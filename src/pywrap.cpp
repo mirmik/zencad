@@ -8,8 +8,7 @@ namespace py = pybind11;
 
 #define DEF_TRANSFORM_OPERATIONS(TYPE) 				\
 .def("transform", &TYPE::transform)				\
-.def("translate", (TYPE(TYPE::*)(double, double, double))&TYPE::transform)				\
-.def("translate", (TYPE(TYPE::*)(double, double))&TYPE::translate)				\
+.def("translate", &TYPE::translate)							\
 .def("up", &TYPE::up)							\
 .def("down", &TYPE::down)						\
 .def("right", &TYPE::right)						\
@@ -25,6 +24,8 @@ namespace py = pybind11;
 .def("mirrorXY", &TYPE::mirrorXY)				\
 .def("mirrorYZ", &TYPE::mirrorYZ)				\
 .def("mirrorXZ", &TYPE::mirrorXZ)				
+//.def("translate", (TYPE(TYPE::*)(double, double, double))&TYPE::transform)				\
+\ //.def("translate", (TYPE(TYPE::*)(double, double))&TYPE::translate)				
 /*
 #define DEF_EXPLORER_OPERATIONS(TYPE) 				\
 .def("wires", &TYPE::wires)							\
