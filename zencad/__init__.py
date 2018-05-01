@@ -51,8 +51,8 @@ def torus(r1, r2):
 	return make_torus(r1,r2)
 
 #sweep
-def linear_extrude(shp, vec):
-	return make_linear_extrude(shp, to_vector3(vec))
+def linear_extrude(shp, vec, center = False):
+	return make_linear_extrude(shp, to_vector3(vec), center)
 
 def pipe(prof, path):
 	return make_pipe(prof, path)
@@ -85,6 +85,18 @@ def complex_wire(*args, **kwargs):
 
 def sweep(prof, path):
 	return make_sweep(prof, path)
+
+
+class multitransform:
+	def __init__(self, transes):
+		self.transes = transes
+
+	def __call__(self, shp):
+		return union([t(shp) for t in self.transes])
+
+
+
+
 
 
 ##widget
