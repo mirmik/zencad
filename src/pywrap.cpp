@@ -69,7 +69,7 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_cone", 		servoce::prim3d::make_cone, py::arg("r1"), py::arg("r2"), py::arg("h"), py::arg("center") = false);
 	m.def("make_torus", 	servoce::prim3d::make_torus, py::arg("r1"), py::arg("r2"));
 
-	m.def("make_linear_extrude", 	servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"));
+	m.def("make_linear_extrude", 	servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"), py::arg("center")=false);
 	m.def("make_pipe", 				servoce::sweep3d::make_pipe, py::arg("prof"), py::arg("path"));
 
 	py::class_<servoce::face, servoce::shape>(m, "Face")
@@ -113,4 +113,40 @@ PYBIND11_MODULE(zenlib, m) {
 
 
 	m.def("display_scene", 	servoce::display);
+
+	py::class_<servoce::trans::transformation>(m, "transformation")
+		//.def(py::init<>())
+		.def("__call__", (servoce::solid(servoce::trans::transformation::*)(const servoce::solid&)const)&servoce::trans::transformation::operator())
+		.def("__call__", (servoce::face(servoce::trans::transformation::*)(const servoce::face&)const)&servoce::trans::transformation::operator())
+		.def("__call__", (servoce::wire(servoce::trans::transformation::*)(const servoce::wire&)const)&servoce::trans::transformation::operator())
+		.def("__call__", (servoce::trans::complex_transformation(servoce::trans::transformation::*)(const servoce::trans::transformation&)const)&servoce::trans::transformation::operator())
+		.def("__mul__", &servoce::trans::transformation::operator* )
+	;
+
+	py::class_<servoce::trans::complex_transformation, servoce::trans::transformation>(m, "complex_transformation");
+
+
+	py::class_<servoce::trans::translate, servoce::trans::transformation>(m, "translate")
+		.def(py::init<double,double,double>());
+	py::class_<servoce::trans::axrotation, servoce::trans::transformation>(m, "axrotation")
+		.def(py::init<double,double,double,double>());
+	py::class_<servoce::trans::axis_mirror, servoce::trans::transformation>(m, "axis_mirror")
+		.def(py::init<double,double,double>());
+	py::class_<servoce::trans::plane_mirror, servoce::trans::transformation>(m, "plane_mirror")
+		.def(py::init<double,double,double>());
+	m.def("rotateX", servoce::trans::rotateX);
+	m.def("rotateY", servoce::trans::rotateY);
+	m.def("rotateZ", servoce::trans::rotateZ);
+	m.def("mirrorX", servoce::trans::mirrorX);
+	m.def("mirrorY", servoce::trans::mirrorY);
+	m.def("mirrorZ", servoce::trans::mirrorZ);
+	m.def("mirrorXY", servoce::trans::mirrorXY);
+	m.def("mirrorXZ", servoce::trans::mirrorXZ);
+	m.def("mirrorYZ", servoce::trans::mirrorYZ);
+	m.def("up", servoce::trans::up);
+	m.def("down", servoce::trans::down);
+	m.def("left", servoce::trans::left);
+	m.def("right", servoce::trans::right);
+	m.def("forw", servoce::trans::forw);
+	m.def("back", servoce::trans::back);
 }
