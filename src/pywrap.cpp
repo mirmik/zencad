@@ -58,9 +58,11 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<servoce::solid, servoce::shape>(m, "Solid")
 		DEF_TRANSFORM_OPERATIONS(servoce::solid)
-		.def(py::self + py::self)
-		.def(py::self - py::self)
-		.def(py::self ^ py::self)
+		.def("__add__", &servoce::solid::operator+)
+		.def("__sub__", &servoce::solid::operator-)
+		.def("__xor__", &servoce::solid::operator^)
+		//.def(py::self - servoce::shape)
+		//.def(py::self ^ servoce::shape)
 	;
 
 	m.def("make_box", servoce::prim3d::make_box, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("center") = false);
@@ -71,13 +73,15 @@ PYBIND11_MODULE(zenlib, m) {
 
 	m.def("make_linear_extrude", 	servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"), py::arg("center")=false);
 	m.def("make_pipe", 				servoce::sweep3d::make_pipe, py::arg("prof"), py::arg("path"));
+	m.def("make_pipe_shell", 	servoce::sweep3d::make_pipe_shell, py::arg("prof"), py::arg("path"), py::arg("isFrenet") = false);
 
 	py::class_<servoce::face, servoce::shape>(m, "Face")
 		DEF_TRANSFORM_OPERATIONS(servoce::face)
+		.def("__add__", &servoce::face::operator+)
+		.def("__sub__", &servoce::face::operator-)
+		.def("__xor__", &servoce::face::operator^)
 		.def("fillet", &servoce::face::fillet, py::arg("r"), py::arg("nums"))
-		//.def(py::self + py::self)
-		//.def(py::self - py::self)
-		//.def(py::self ^ py::self)
+		.def("wires", &servoce::face::wires)
 	;
 	m.def("make_circle", 	servoce::prim2d::make_circle, py::arg("r"));
 	m.def("make_ngon", 		servoce::prim2d::make_ngon, py::arg("r"), py::arg("n"));
@@ -88,6 +92,9 @@ PYBIND11_MODULE(zenlib, m) {
 
 	py::class_<servoce::wire, servoce::shape>(m, "Wire")
 		DEF_TRANSFORM_OPERATIONS(servoce::wire)
+		.def("__add__", &servoce::wire::operator+)
+		.def("__sub__", &servoce::wire::operator-)
+		.def("__xor__", &servoce::wire::operator^)
 		.def("face", &servoce::wire::to_face)
 	;
 	
@@ -95,16 +102,19 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_polysegment", servoce::curve::make_polysegment, py::arg("pnts"), py::arg("closed") = false);
 	m.def("make_interpolate", (servoce::wire(*)(const std::vector<servoce::point3>&, const std::vector<servoce::vector3>&, bool))&servoce::curve::make_interpolate, py::arg("pnts"), py::arg("tang"), py::arg("closed") = false);
 	m.def("make_interpolate", (servoce::wire(*)(const std::vector<servoce::point3>&, const bool))&servoce::curve::make_interpolate, py::arg("pnts"), py::arg("closed") = false);
-	m.def("make_helix", servoce::curve::make_helix, py::arg("pitch"), py::arg("height"), py::arg("radius"), py::arg("angle") = 0, py::arg("leftHanded") = false, py::arg("newStyle") = true);
-	m.def("make_long_helix", servoce::curve::make_long_helix, py::arg("pitch"), py::arg("height"), py::arg("radius"), py::arg("angle") = 0, py::arg("leftHanded") = false);
+	m.def("make_helix", servoce::curve::make_helix, py::arg("step"), py::arg("height"), py::arg("radius"), py::arg("angle") = 0, py::arg("leftHanded") = false, py::arg("newStyle") = true);
+	m.def("make_long_helix", servoce::curve::make_long_helix, py::arg("step"), py::arg("height"), py::arg("radius"), py::arg("angle") = 0, py::arg("leftHanded") = false);
 	m.def("make_complex_wire", servoce::curve::make_complex_wire, py::arg("wires"));
+	m.def("make_wcircle", (servoce::wire(*)(double))&servoce::curve::make_circle);
+	m.def("make_wcircle", (servoce::wire(*)(double,double,double))&servoce::curve::make_circle);
 
 	py::class_<servoce::sweep_solid, servoce::solid>(m, "SolidSweep");
 	py::class_<servoce::sweep_face, servoce::face>(m, "FaceSweep");
 	
 	py::class_<servoce::scene>(m, "Scene")
 		.def(py::init<>())
-		.def("add", &servoce::scene::add)
+		.def("add", (void(servoce::scene::*)(const servoce::solid&))&servoce::scene::add)
+		.def("add", (void(servoce::scene::*)(const servoce::shape&))&servoce::scene::add)
 	;
 
 	m.def("make_union", (servoce::solid(*)(const std::vector<const servoce::solid*>&))&servoce::boolops::make_union);
@@ -149,4 +159,17 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("right", servoce::trans::right);
 	m.def("forw", servoce::trans::forw);
 	m.def("back", servoce::trans::back);
+
+
+
+
+
+
+
+
+
+	m.def("simplify_with_bspline", &servoce::curve::simplify_with_bspline);
+	m.def("make_stl", &servoce::make_stl);
+
+
 }
