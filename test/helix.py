@@ -3,5 +3,5 @@
 
 from zencad import *
 
-display(helix(h = 50, r = 10, step = 10))
+display(helix(pitch = gr(10), height = 50, radius = 10))
 show()
