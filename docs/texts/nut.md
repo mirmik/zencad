@@ -4,4 +4,4 @@ layout : default
 #Библиотека резьбовых соединений.
 ##CommingSoon
 
-![nut.png](../images/nut.png)
+![bolt.png](../images/bolt.png)
