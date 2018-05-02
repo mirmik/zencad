@@ -57,6 +57,9 @@ def linear_extrude(shp, vec, center = False):
 def pipe(prof, path):
 	return make_pipe(prof, path)
 
+def pipe_shell(prof, path, frenet = False):
+	return make_pipe_shell(prof, path, frenet)
+
 #face
 def circle(r):
 	return make_circle(r)
@@ -77,6 +80,12 @@ def rectangle(a, b, center = False):
 def segment(*args, **kwargs):
 	return make_segment(*args, **kwargs)
 
+def polysegment(*args, **kwargs):
+	return make_polysegment(*args, **kwargs)
+
+def wcircle(r):
+	return make_wcircle(r)
+
 def interpolate(*args, **kwargs):
 	return make_interpolate(*args, **kwargs)
 
@@ -96,7 +105,9 @@ class multitransform:
 
 
 
-
+def helix(*args, **kwargs):
+	#return make_helix(*args, **kwargs)
+	return make_long_helix(*args, **kwargs)
 
 
 ##widget
