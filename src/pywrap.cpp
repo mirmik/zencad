@@ -121,6 +121,9 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_difference", (servoce::solid(*)(const std::vector<const servoce::solid*>&))&servoce::boolops::make_difference);
 	m.def("make_intersect", (servoce::solid(*)(const std::vector<const servoce::solid*>&))&servoce::boolops::make_intersect);
 
+	m.def("make_union", (servoce::face(*)(const std::vector<const servoce::face*>&))&servoce::boolops::make_union);
+	m.def("make_difference", (servoce::face(*)(const std::vector<const servoce::face*>&))&servoce::boolops::make_difference);
+	m.def("make_intersect", (servoce::face(*)(const std::vector<const servoce::face*>&))&servoce::boolops::make_intersect);
 
 	m.def("display_scene", 	servoce::display);
 
