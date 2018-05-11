@@ -71,7 +71,8 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_cone", 		servoce::prim3d::make_cone, py::arg("r1"), py::arg("r2"), py::arg("h"), py::arg("center") = false);
 	m.def("make_torus", 	servoce::prim3d::make_torus, py::arg("r1"), py::arg("r2"));
 
-	m.def("make_linear_extrude", 	servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"), py::arg("center")=false);
+	m.def("make_linear_extrude", (servoce::sweep_solid(*)(const servoce::shape&,const servoce::vector3&,bool)) &servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"), py::arg("center")=false);
+	m.def("make_linear_extrude", (servoce::sweep_solid(*)(const servoce::shape&,double,bool)) &servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("z"), py::arg("center")=false);
 	m.def("make_pipe", 				servoce::sweep3d::make_pipe, py::arg("prof"), py::arg("path"));
 	m.def("make_pipe_shell", 	servoce::sweep3d::make_pipe_shell, py::arg("prof"), py::arg("path"), py::arg("isFrenet") = false);
 
@@ -113,8 +114,8 @@ PYBIND11_MODULE(zenlib, m) {
 	
 	py::class_<servoce::scene>(m, "Scene")
 		.def(py::init<>())
-		.def("add", (void(servoce::scene::*)(const servoce::solid&))&servoce::scene::add)
 		.def("add", (void(servoce::scene::*)(const servoce::shape&))&servoce::scene::add)
+		.def("add", (void(servoce::scene::*)(const servoce::point3&))&servoce::scene::add)
 	;
 
 	m.def("make_union", (servoce::solid(*)(const std::vector<const servoce::solid*>&))&servoce::boolops::make_union);
