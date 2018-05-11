@@ -12,9 +12,13 @@ def vectors(tpls):
 	return [ vector3(*t) for t in tpls ]
 
 def to_vector3(v):
-	if isinstance(v, vector3):
-		return v
-	return vector3(v[0], v[1], v[2])
+	try:
+		if isinstance(v, vector3):
+			return v
+		return vector3(v[0], v[1], v[2])
+	except Exception:
+		return vector3(0,0,v)
+
 
 def enable_cache(arg):
 	print("Warn: cache in rework state. comming soon.")
@@ -83,8 +87,8 @@ def segment(*args, **kwargs):
 def polysegment(*args, **kwargs):
 	return make_polysegment(*args, **kwargs)
 
-def wcircle(r):
-	return make_wcircle(r)
+def wcircle(*args, **kwargs):
+	return make_wcircle(*args, *kwargs)
 
 def interpolate(*args, **kwargs):
 	return make_interpolate(*args, **kwargs)
