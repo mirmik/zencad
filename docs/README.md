@@ -46,5 +46,5 @@ display(m)
 show()
 ```
 
-![/docs/images/cup.png](/docs/images/cup.png)
+![/docs/images/result.jpeg](/docs/images/result.jpeg)
 
