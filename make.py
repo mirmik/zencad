@@ -16,7 +16,7 @@ def registry_library(py):
 		
 		cxx_flags = '-fPIC -DQT_NO_VERSION_TAGGING',
 		cc_flags = '-fPIC',
-		ld_flags = '-Wl,-rpath,\'$ORIGIN/\'',
+		#ld_flags = '-Wl,-rpath,\'$ORIGIN/\'',
 	
 		srcdir = "src",
 		sources = [
@@ -27,7 +27,7 @@ def registry_library(py):
 		],
 
 		include_modules = [
-			(("servoce_sources"))
+			submodule("servoce_sources")
 		],
 
 		#libs = ["servoce"]
