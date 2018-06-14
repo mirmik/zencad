@@ -33,7 +33,7 @@ profile = circle(handle_radius).rotateY(gr(45)).translate(pnts[0].x, 0, pnts[0].
 
 base = cylinder(r = radius, h = height)
 hole = cylinder(r = radius - thikness, h = height - thikness).up(thikness)
-handle = pipe(path = spine, profile = profile)
+handle = pipe(path = spine, prof = profile)
 
 cup = (base + handle.right(40).up(17) 
 	- hole)
