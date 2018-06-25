@@ -29,8 +29,8 @@ default_scene = Scene()
 def display(shp):
 	default_scene.add(shp)
 
-def show():
-	display_scene(default_scene)
+def show(scn = default_scene):
+	display_scene(scn)
 
 #prim3d
 def box(size, arg2 = None, arg3 = None, center = False):
@@ -164,7 +164,8 @@ def helix(*args, **kwargs):
 #
 ##from zencad.zenlib import ZenVertex as vertex
 #
-def gr(rad): return rad / 180 * math.pi
+def gr(grad): return float(grad) / 180.0 * math.pi
+def deg(grad): return float(grad) / 180.0 * math.pi
 #from zencad.math3 import point as pnt
 #
 #
@@ -173,3 +174,6 @@ def gr(rad): return rad / 180 * math.pi
 #from zencad.zenlib import scene
 #from zencad.zenlib import camera
 #from zencad.zenlib import view
+
+def nulltrans(): return translate(0,0,0) 
+def sqrtrans(): return multitransform([ nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ() ])

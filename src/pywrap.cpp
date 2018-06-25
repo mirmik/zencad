@@ -112,10 +112,13 @@ PYBIND11_MODULE(zenlib, m) {
 	py::class_<servoce::sweep_solid, servoce::solid>(m, "SolidSweep");
 	py::class_<servoce::sweep_face, servoce::face>(m, "FaceSweep");
 	
+	py::class_<servoce::color>(m, "Color")
+		.def(py::init<float, float, float>());
 	py::class_<servoce::scene>(m, "Scene")
 		.def(py::init<>())
-		.def("add", (void(servoce::scene::*)(const servoce::shape&))&servoce::scene::add)
-		.def("add", (void(servoce::scene::*)(const servoce::point3&))&servoce::scene::add)
+		.def("add", (void(servoce::scene::*)(const servoce::shape&, servoce::color))&servoce::scene::add, py::arg("shape"), py::arg("color") = servoce::color())
+		.def("add", (void(servoce::scene::*)(const servoce::point3&, servoce::color))&servoce::scene::add, py::arg("shape"), py::arg("color") = servoce::color())
+		.def("append", (void(servoce::scene::*)(const servoce::scene&))&servoce::scene::append, py::arg("scene"))
 	;
 
 	m.def("make_union", (servoce::solid(*)(const std::vector<const servoce::solid*>&))&servoce::boolops::make_union);
