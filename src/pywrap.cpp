@@ -1,6 +1,9 @@
 #include <servoce/servoce.h>
 #include <servoce/display.h>
 
+#include <gxx/print.h>
+#include <gxx/util/base64.h>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
@@ -63,7 +66,14 @@ PYBIND11_MODULE(zenlib, m) {
 		.def("__xor__", &servoce::solid::operator^)
 		//.def(py::self - servoce::shape)
 		//.def(py::self ^ servoce::shape)
-	;
+		.def("fillet", &servoce::solid::fillet, py::arg("r"), py::arg("nums"))
+
+		.def(py::pickle(
+        	[](const servoce::shape &self) { return gxx::base64_encode(self.string_dump()); },
+        	[](const std::string& in) { return servoce::shape::restore_string_dump(gxx::base64_decode(in)).to_solid(); }
+    	))
+    ;
+	
 
 	m.def("make_box", servoce::prim3d::make_box, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("center") = false);
 	m.def("make_sphere", 	servoce::prim3d::make_sphere, py::arg("r"));
@@ -71,8 +81,8 @@ PYBIND11_MODULE(zenlib, m) {
 	m.def("make_cone", 		servoce::prim3d::make_cone, py::arg("r1"), py::arg("r2"), py::arg("h"), py::arg("center") = false);
 	m.def("make_torus", 	servoce::prim3d::make_torus, py::arg("r1"), py::arg("r2"));
 
-	m.def("make_linear_extrude", (servoce::sweep_solid(*)(const servoce::shape&,const servoce::vector3&,bool)) &servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"), py::arg("center")=false);
-	m.def("make_linear_extrude", (servoce::sweep_solid(*)(const servoce::shape&,double,bool)) &servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("z"), py::arg("center")=false);
+	m.def("make_linear_extrude", (servoce::solid(*)(const servoce::shape&,const servoce::vector3&,bool)) &servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("vec"), py::arg("center")=false);
+	m.def("make_linear_extrude", (servoce::solid(*)(const servoce::shape&,double,bool)) &servoce::sweep3d::make_linear_extrude, py::arg("shp"), py::arg("z"), py::arg("center")=false);
 	m.def("make_pipe", 				servoce::sweep3d::make_pipe, py::arg("prof"), py::arg("path"));
 	m.def("make_pipe_shell", 	servoce::sweep3d::make_pipe_shell, py::arg("prof"), py::arg("path"), py::arg("isFrenet") = false);
 

@@ -2,6 +2,9 @@
 #coding: utf-8
 
 from zencad import *
+import evalcache
+
+evalcache.enable()
 
 thikness = 2.5
 height = 90
