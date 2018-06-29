@@ -146,21 +146,30 @@ PYBIND11_MODULE(zenlib, m) {
 		.def("__call__", (servoce::solid(servoce::trans::transformation::*)(const servoce::solid&)const)&servoce::trans::transformation::operator())
 		.def("__call__", (servoce::face(servoce::trans::transformation::*)(const servoce::face&)const)&servoce::trans::transformation::operator())
 		.def("__call__", (servoce::wire(servoce::trans::transformation::*)(const servoce::wire&)const)&servoce::trans::transformation::operator())
-		.def("__call__", (servoce::trans::complex_transformation(servoce::trans::transformation::*)(const servoce::trans::transformation&)const)&servoce::trans::transformation::operator())
+		.def("__call__", (servoce::trans::transformation(servoce::trans::transformation::*)(const servoce::trans::transformation&)const)&servoce::trans::transformation::operator())
 		.def("__mul__", &servoce::trans::transformation::operator* )
+
+		.def(py::pickle(
+        	[](const servoce::trans::transformation &self) { return gxx::base64_encode(self.string_dump()); },
+        	[](const std::string& in) { return servoce::trans::transformation::restore_string_dump(gxx::base64_decode(in)); }
+    	))
 	;
 
-	py::class_<servoce::trans::complex_transformation, servoce::trans::transformation>(m, "complex_transformation");
+	//py::class_<servoce::trans::translate, servoce::trans::transformation>(m, "translate")
+	//	.def(py::init<double,double,double>());
+	//py::class_<servoce::trans::axrotation, servoce::trans::transformation>(m, "axrotation")
+	//	.def(py::init<double,double,double,double>());
+	//py::class_<servoce::trans::axis_mirror, servoce::trans::transformation>(m, "axis_mirror")
+	//	.def(py::init<double,double,double>());
+	//py::class_<servoce::trans::plane_mirror, servoce::trans::transformation>(m, "plane_mirror")
+	//	.def(py::init<double,double,double>());
+	m.def("translate", (servoce::trans::transformation(*)(double,double,double)) &servoce::trans::translate);
+	m.def("translate", (servoce::trans::transformation(*)(double,double)) &servoce::trans::translate);
+	m.def("translate", (servoce::trans::transformation(*)(const servoce::vector3&)) &servoce::trans::translate);
+	m.def("axrotation", servoce::trans::axrotation);
+	m.def("axis_mirror", servoce::trans::axis_mirror);
+	m.def("plane_mirror", servoce::trans::plane_mirror);
 
-
-	py::class_<servoce::trans::translate, servoce::trans::transformation>(m, "translate")
-		.def(py::init<double,double,double>());
-	py::class_<servoce::trans::axrotation, servoce::trans::transformation>(m, "axrotation")
-		.def(py::init<double,double,double,double>());
-	py::class_<servoce::trans::axis_mirror, servoce::trans::transformation>(m, "axis_mirror")
-		.def(py::init<double,double,double>());
-	py::class_<servoce::trans::plane_mirror, servoce::trans::transformation>(m, "plane_mirror")
-		.def(py::init<double,double,double>());
 	m.def("rotateX", servoce::trans::rotateX);
 	m.def("rotateY", servoce::trans::rotateY);
 	m.def("rotateZ", servoce::trans::rotateZ);
