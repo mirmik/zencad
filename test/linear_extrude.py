@@ -3,6 +3,9 @@
 
 from zencad import *
 
+import evalcache
+evalcache.enable()
+
 pnts = points([
 	(0,0),
 	(0,20),
@@ -29,5 +32,6 @@ s3 = linear_extrude(f1, (0,0,10))
 display(s0.right(20))
 display(s1)
 display(s2.left(20))
-display(s3.right(40))
+display(s3.transform(translate(0,0,30) * translate(0,0,40))
+	)
 show()
