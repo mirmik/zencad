@@ -26,7 +26,7 @@ zenlib_stub = Extension('zenlib_stub.so',
 setup(
 	name = 'zencad',
 	packages = ['zencad'],
-	version = '0.3.5',
+	version = '0.3.6',
 	license='MIT',
 	description = 'CAD system for righteous zen programmers ',
 	author = 'Sorokin Nikolay',
