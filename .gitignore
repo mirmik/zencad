@@ -103,3 +103,4 @@ ENV/
 
 *.dump
 *.zen
+.evalcache
