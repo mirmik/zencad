@@ -35,6 +35,10 @@ setup(
 	keywords = ['testing', 'cad'],
 	classifiers = [],
 
+    install_requires=[
+        'evalcache',
+    ],
+
    	include_package_data=True,
     package_data={'zencad': ['zenlib.so', "libservoce.so"]},
 
