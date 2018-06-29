@@ -4,19 +4,12 @@
 import sys
 sys.path.insert(0, "..")
 
-import zencad
-import zencad.solid as solid
-import zencad.face as face
-import zencad.wire as wire
-import zencad.math3
-from zencad.widget import *
+from zencad import *
 
-import math
+display(circle(28).face())
+display(circle(28).right(40))
 
-display(wire.circle(28).face())
-display(face.circle(28).right(40))
-
-f = (wire.circle(28).face() + face.circle(28).right(40)).forw(80)
-display(solid.linear_extrude(f, 20))
+f = (circle(28).face() + face.circle(28).right(40)).forw(80)
+display(linear_extrude(f, 20))
 
 show()
