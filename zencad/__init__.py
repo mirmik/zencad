@@ -5,6 +5,7 @@ import hashlib
 import pyservoce
 from pyservoce import Scene, point3, Color
 
+evalcache.enable()
 
 ShapeWrap = evalcache.create_class_wrap("ShapeWrap", wrapclass = pyservoce.Shape)
 ShapeWrap.__wrapmethod__("__add__", ShapeWrap, pyservoce.Shape.__add__)
