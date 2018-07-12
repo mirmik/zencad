@@ -26,6 +26,7 @@ ShapeWrap.__wrapmethod__("mirrorXZ", ShapeWrap, pyservoce.Shape.mirrorXZ)
 ShapeWrap.__wrapmethod__("translate", ShapeWrap, pyservoce.Shape.translate)
 ShapeWrap.__wrapmethod__("transform", ShapeWrap, pyservoce.Shape.transform)
 ShapeWrap.__wrapmethod__("fillet", ShapeWrap, pyservoce.Shape.fillet)
+ShapeWrap.__wrapmethod__("extrude", ShapeWrap, pyservoce.Shape.extrude)
 
 def point3_hash(pnt):
 	m = hashlib.sha1()
