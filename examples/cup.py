@@ -2,9 +2,9 @@
 #coding: utf-8
 
 from zencad import *
-import evalcache
 
-evalcache.enable()
+import evalcache
+evalcache.enable_diagnostic()
 
 thikness = 2.5
 height = 90
@@ -31,8 +31,8 @@ tang = vectors([
 	(0,0),
 ]) 
 
-spine = interpolate(pnts, tang).rotateX(gr(90))
-profile = circle(handle_radius).rotateY(gr(45)).translate(pnts[0].x, 0, pnts[0].y)
+spine = interpolate(pnts, tang).rotateX(deg(90))
+profile = circle(handle_radius).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
 
 base = cylinder(r = radius, h = height)
 hole = cylinder(r = radius - thikness, h = height - thikness).up(thikness)
@@ -43,3 +43,4 @@ cup = (base + handle.right(40).up(17)
 
 display(cup)
 show()
+
