@@ -10,7 +10,7 @@ def case(w,h,l,t,r,z,s):
 	return (
 		  box(w,l,h)
 		- box(w-2*t, l-2*t,h-t).translate(t,t,t)
-		- cylinder(r=r,h=t+1).rotateX(gr(90)).translate(w/2,t+0.5,h)
+		- cylinder(r=r,h=t+1).rotateX(deg(90)).translate(w/2,t+0.5,h)
 
 		+ box(w-2*t, z*2, h-r).translate(t,-z*2,0)
 		- box(w-2*t-2*z, z, h-r-z).translate(t+z,-z,z)

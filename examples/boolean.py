@@ -2,12 +2,15 @@
 #coding: utf-8
 
 from zencad import *
+import evalcache
+
+evalcache.enable_diagnostic()
 
 base = box(100,100,100,center=True)
 
 f1 = ngon(r = 35, n = 3).down(50)
-f2 = ngon(r = 35, n = 5).rotateY(gr(90)).left(50)
-f3 = circle(35).rotateX(gr(90)).back(50)
+f2 = ngon(r = 35, n = 5).rotateY(deg(90)).left(50)
+f3 = circle(35).rotateX(deg(90)).back(50)
 
 s1 = linear_extrude(f1, (0,0,100))
 s2 = linear_extrude(f2, (100,0,0))
