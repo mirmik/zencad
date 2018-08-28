@@ -281,3 +281,6 @@ def sqrtrans(): return multitransform([
 	mirrorXZ(), 
 	mirrorZ() 
 ])
+
+def enable_cache_diagnostic():
+	evalcache.enable_diagnostic()
