@@ -2,9 +2,6 @@
 #coding: utf-8
 
 import zencad
-import evalcache
-
-evalcache.enable_diagnostic()
 
 box = zencad.box(200, 200, 200, center = True)
 sphere1 = zencad.sphere(120)

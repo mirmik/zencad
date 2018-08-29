@@ -2,10 +2,7 @@
 #coding: utf-8
 
 from zencad import *
-
 import sys
-import evalcache
-evalcache.enable_diagnostic()
 
 def instrument_metric_nut(drad, step, h):
 	H = step * math.tan(deg(60))
