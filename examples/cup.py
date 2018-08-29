@@ -3,9 +3,6 @@
 
 from zencad import *
 
-import evalcache
-evalcache.enable_diagnostic()
-
 thikness = 2.5
 height = 90
 radius = 40
