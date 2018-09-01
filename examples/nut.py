@@ -4,6 +4,10 @@
 from zencad import *
 import sys
 
+lazy.encache = False
+lazy.diag = True
+
+@lazy
 def instrument_metric_nut(drad, step, h):
 	H = step * math.tan(deg(60))
 
@@ -18,6 +22,7 @@ def instrument_metric_nut(drad, step, h):
 	base = pipe_shell(path = path, prof = pseg, frenet = True)
 	return base
 
+@lazy
 def metric_nut(d, step, h):
 	H = step * math.tan(deg(60))
 	drad = d/2 - 3/8*H
@@ -27,10 +32,22 @@ def metric_nut(d, step, h):
 
 	return ret
 
-m = metric_nut(8, 1.25, 30).up(25.3) + cylinder(r=8/2, h=20).up(5.3) + linear_extrude(ngon(r = 7.1, n=6),(0,0,5.3))
+nut = metric_nut(8, 1.25, 30)
+
+m = nut.up(25.3) + cylinder(r=8/2, h=20).up(5.3) + linear_extrude(ngon(r = 7.1, n=6),(0,0,5.3))
 
 if len(sys.argv) > 1 and sys.argv[1] == "summ":
 	m = m + m.rotateX(deg(45)).forw(25).up(10)
+
+if len(sys.argv) > 1 and sys.argv[1] == "summ2":
+	m = m + m.rotateX(deg(45)).forw(25).up(10)
+	m = m + m.right(40) + m.right(80) 
+
+
+evalcache.encache(nut)
+evalcache.encache(m)
+
+evalcache.print_tree(m)
 
 display(m)
 show()
