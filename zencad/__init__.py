@@ -7,7 +7,7 @@ import hashlib
 import pyservoce
 from pyservoce import Scene, point3, Color
 
-lazy = evalcache.Lazy(cache = evalcache.dirdict.dirdict(".evalcache"), algo = hashlib.sha256)
+lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
 
 @lazy
 def union(arr): return pyservoce.make_union(arr)
@@ -141,83 +141,12 @@ def helix(*args, **kwargs):
 	#return make_helix(*args, **kwargs)
 	return pyservoce.make_long_helix(*args, **kwargs)
 
-
-###widget
-##from zencad.widget import display
-##from zencad.widget import show
-##
-###cache
-##from zencad.cache import enable as enable_cache
-##
-###solid
-##from zencad.solid import box
-##from zencad.solid import sphere
-##from zencad.solid import torus
-##from zencad.solid import cylinder
-##from zencad.solid import cone
-##
-##from zencad.solid import linear_extrude
-##from zencad.solid import pipe
-##
-###face
-##from zencad.face import circle
-##from zencad.face import ngon
-##from zencad.face import square
-##from zencad.face import rectangle
-##from zencad.face import polygon
-##
-###wire
-##from zencad.wire import segment
-##from zencad.wire import polysegment
-##from zencad.wire import circle as wcircle
-##from zencad.wire import arc_by_points
-##from zencad.wire import interpolate
-##
-###boolops
-##from zencad.boolops import union
-##from zencad.boolops import difference
-##from zencad.boolops import intersect
-##
-##def error(str):
-##	print("ZenCadError: " + str)
-##	exit(-1)
-##
-##from zencad.math3 import vector
-##from zencad.math3 import vector as vec
-##from zencad.math3 import vectors
-##
-##from zencad.math3 import point
-##from zencad.math3 import point as pnt
-##from zencad.math3 import points
-##
-###from pyservoce import ZenVertex as vertex
-##
-
 def gr(grad): 
 	print("'gr' function is deprecated. Use 'deg' instead")
 	return float(grad) / 180.0 * math.pi
 
 def deg(grad): return float(grad) / 180.0 * math.pi
 
-##from zencad.math3 import point as pnt
-##
-##
-##
-##
-##from pyservoce import scene
-##from pyservoce import camera
-##from pyservoce import view
-#
-#def trans_type(obj, arg):
-#	if (isinstance(arg, ShapeWrap)): return ShapeWrap
-#	if (isinstance(arg, ShapeWrap)): return ShapeWrap
-#	print("???2")
-#	exit(-1)
-#
-#TransformWrap = evalcache.create_class_wrap("TransformWrap", wrapclass = pyservoce.transformation)
-#TransformWrap .__wrapmethod__("__mul__", TransformWrap, pyservoce.transformation.__mul__ )
-#TransformWrap .__wrapmethod__("__call__", trans_type, pyservoce.transformation.__call__ )
-#
 @lazy
 def translate(*args, **kwargs): return pyservoce.translate(*args, **kwargs)
 
@@ -283,4 +212,4 @@ def sqrtrans(): return multitransform([
 ])
 
 def enable_cache_diagnostic():
-	evalcache.enable_diagnostic()
+	evalcache.diagnostic = True
