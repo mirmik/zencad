@@ -11,11 +11,13 @@ Manual
 [Мануал читать тут](https://mirmik.github.io/zencad/)
 
 
+Dependency
+----------
+```sudo apt install qt5-default```
+
 Install
--------
-sudo apt install qt5-default  
-sudo apt install python3-pip  
-python3 -m pip install zencad  
+-------  
+```python3 -m pip install zencad ```
 
 Get source code
 ---------------
