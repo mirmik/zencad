@@ -14,7 +14,6 @@ Manual
 Install
 -------
 sudo apt install qt5-default  
-sudo apt install liboce-*  
 sudo apt install python3-pip  
 python3 -m pip install zencad  
 
@@ -23,13 +22,6 @@ Get source code
 ```sh
 git clone https://github.com/mirmik/zencad
 ```
-
-Install with source
--------------------
-```sh
-./make.py install35
-```
-(You can install licant make system with: ```pip install licant```)
 
 HelloWorld
 ----------
