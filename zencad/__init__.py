@@ -1,5 +1,5 @@
 import evalcache
-import evalcache.dirdict
+import evalcache.dircache
 
 import math
 import hashlib
