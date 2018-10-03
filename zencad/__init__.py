@@ -67,8 +67,11 @@ def sphere(r):
 	return pyservoce.make_sphere(r)
 
 @lazy
-def cylinder(r, h, center = False): 
-	return pyservoce.make_cylinder(r,h,center)
+def cylinder(r, h, center=False, angle=None): 
+	if angle is None:
+		return pyservoce.make_cylinder(r,h,center)
+	else:
+		return pyservoce.make_cylinder(r,h,center,angle)
 
 @lazy
 def cone(r1, r2, h, center = False): 
