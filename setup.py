@@ -7,7 +7,7 @@ from distutils.util import get_platform
 setup(
 	name = 'zencad',
 	packages = ['zencad'],
-	version = '0.6.1',
+	version = '0.6.2',
 	license='MIT',
 	description = 'CAD system for righteous zen programmers ',
 	author = 'Sorokin Nikolay',
