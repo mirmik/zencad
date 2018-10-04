@@ -71,7 +71,7 @@ def cylinder(r, h, center=False, angle=None):
 	if angle is None:
 		return pyservoce.make_cylinder(r,h,center)
 	else:
-		return pyservoce.make_cylinder(r,h,center,angle)
+		return pyservoce.make_cylinder(r,h,angle,center)
 
 @lazy
 def cone(r1, r2, h, center = False): 
