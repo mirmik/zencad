@@ -19,5 +19,7 @@ setup(
     install_requires=[
         'evalcache',
         'pyservoce',
+        'PyQt5',
+        'pyopengl',
     ],
 )

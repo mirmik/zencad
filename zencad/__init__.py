@@ -5,7 +5,7 @@ import math
 import hashlib
 
 import pyservoce
-from pyservoce import Scene, point3, Color
+from pyservoce import Scene, View, Viewer, point3, Color
 
 lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
 
