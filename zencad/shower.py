@@ -23,22 +23,26 @@ class DisplayWidget(QOpenGLWidget):
 		self.view = view
 		self.inited = 0
 
-	def paintGL(self):
+	def paintEvent(self, ev):
+		print("paintEvent")
 		if self.inited == 0:
 			self.inited = 1
 	
 			self.initializeGL()
 			self.resizeGL(651,551)
 			self.view.set_window(self.winId())
-
-			#self.view.set_triedron()
+			self.view.set_triedron()
+			self.view.fit_all()
+		
+		self.view.redraw()
+		
 
 
 def show(scene):
 	viewer = zencad.Viewer(scene)
 	view = viewer.create_view()
 
-	view.see(800,800)
+	#view.see(800,800)
 
 	app = QApplication(sys.argv)
 	
