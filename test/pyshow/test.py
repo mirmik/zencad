@@ -8,7 +8,7 @@ sys.path.insert(0, '../../')
 from zencad import *
 import zencad.shower
 
-m = box(10,10,10)
+m = box(100,100,100)
 
 scn = zencad.Scene()
 scn.add(m.unlazy())
