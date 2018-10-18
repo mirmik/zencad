@@ -5,6 +5,7 @@ import zencad
 import sys
 from PyQt5.QtWidgets import * #QApplication, QWidget
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 #from PyQt5.QtOpenGl import *
 
 #import PySide
@@ -17,42 +18,79 @@ class MainWidget(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
-class DisplayWidget(QOpenGLWidget):
-	def __init__(self, view):
-		QOpenGLWidget.__init__(self)
-		self.view = view
+#class DisplayWidget(QOpenGLWidget):
+class DisplayWidget(QWidget):
+	def __init__(self, arg):
+		#QOpenGLWidget.__init__(self)
+		QWidget.__init__(self)
+		
+		self.scene = arg
+		self.visinit()
+
+		self.setBackgroundRole( QPalette.NoRole );
+		self.setAttribute(Qt.WA_PaintOnScreen, True); 
+		#self.setAttribute(Qt.WA_NoSystemBackground, True); 
+		
 		self.inited = 0
 
+	def visinit(self):
+		print("visinit")
+		self.viewer = zencad.Viewer(self.scene)
+		self.view = self.viewer.create_view()
+
+		self.view.set_triedron()
+		self.view.set_window(self.winId())
+		self.view.fit_all()
+
+
 	def paintEvent(self, ev):
-		print("paintEvent")
-		if self.inited == 0:
-			self.inited = 1
-	
-			self.initializeGL()
-			self.resizeGL(651,551)
-			self.view.set_window(self.winId())
-			self.view.set_triedron()
-			self.view.fit_all()
-		
-		self.view.redraw()
+		pass
+		#print("paintEvent")		
+		#self.view.redraw()
+
+	def showEvent(self, ev):
+		print("showEvent")
+		self.view.redraw()		
+
+	def resizeEvent(self, ev):
+		print("resizeEvent")
+		self.view.redraw()		
+
+	def paintEngine(self):
+		return None;
+
 		
 
 
 def show(scene):
-	viewer = zencad.Viewer(scene)
-	view = viewer.create_view()
 
 	#view.see(800,800)
 
 	app = QApplication(sys.argv)
 	
-	disp = DisplayWidget(view)
+	disp = DisplayWidget(scene)
 
-	w = QMainWindow()
-	w.setCentralWidget(disp)
-	w.resize(250, 150)
-	w.move(300, 300)
-	w.setWindowTitle('Simple')
-	w.show()
+
+	#w = QWindow()
+	#ww = QWidget.createWindowContainer(w)
+
+
+	#viewer = zencad.Viewer(scene)
+	#view = viewer.create_view()
+	#view.set_window(w.winId())
+	#view.set_triedron()
+	#view.fit_all()
+#
+	#view.set_window(w.winId())
+		
+	#w = QMainWindow()
+	#w.setCentralWidget(disp)
+	#w.resize(250, 150)
+	#w.move(300, 300)
+	#w.setWindowTitle('Simple')
+	#w.show()
+	disp.show()
+
+	#w.show()
 
 	sys.exit(app.exec_())
