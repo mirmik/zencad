@@ -18,12 +18,15 @@ class MainWidget(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
-#class DisplayWidget(QOpenGLWidget):
-class DisplayWidget(QWidget):
+class DisplayWidget(QOpenGLWidget):
+#class DisplayWidget(QWidget):
 	def __init__(self, arg):
-		#QOpenGLWidget.__init__(self)
-		QWidget.__init__(self)
+		QOpenGLWidget.__init__(self)
+#		QWidget.__init__(self)
 		
+		#self.initializeGL()
+		#self.resizeGL(800, 800)
+
 		self.scene = arg
 		self.visinit()
 
@@ -44,9 +47,8 @@ class DisplayWidget(QWidget):
 
 
 	def paintEvent(self, ev):
-		pass
-		#print("paintEvent")		
-		#self.view.redraw()
+		print("paintEvent")		
+		self.view.redraw()
 
 	def showEvent(self, ev):
 		print("showEvent")
@@ -54,10 +56,11 @@ class DisplayWidget(QWidget):
 
 	def resizeEvent(self, ev):
 		print("resizeEvent")
-		self.view.redraw()		
+		self.view.must_be_resized()
 
-	def paintEngine(self):
-		return None;
+	
+	#def paintEngine(self):
+	#	return None;
 
 		
 
@@ -67,9 +70,17 @@ def show(scene):
 	#view.see(800,800)
 
 	app = QApplication(sys.argv)
-	
-	disp = DisplayWidget(scene)
 
+	fmt = QSurfaceFormat()
+	fmt.setDepthBufferSize(24)
+	fmt.setStencilBufferSize(8)
+	fmt.setVersion(3, 2)
+	fmt.setProfile(QSurfaceFormat.CoreProfile)
+	QSurfaceFormat.setDefaultFormat(fmt); # must be called before the widget or its parent window gets shown
+
+	mw = QMainWindow();	
+	disp = DisplayWidget(scene)
+	mw.setCentralWidget(disp)
 
 	#w = QWindow()
 	#ww = QWidget.createWindowContainer(w)
@@ -89,7 +100,9 @@ def show(scene):
 	#w.move(300, 300)
 	#w.setWindowTitle('Simple')
 	#w.show()
-	disp.show()
+
+	mw.resize(800,600)
+	mw.show()
 
 	#w.show()
 
