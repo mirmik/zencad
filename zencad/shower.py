@@ -26,13 +26,16 @@ class DisplayWidget(QOpenGLWidget):
 		
 		#self.initializeGL()
 		#self.resizeGL(800, 800)
+		self.fitted = 0
+		self.inited = 0
 
 		self.scene = arg
-		self.visinit()
+		#self.visinit()
 
-		self.setBackgroundRole( QPalette.NoRole );
-		self.setAttribute(Qt.WA_PaintOnScreen, True); 
-		#self.setAttribute(Qt.WA_NoSystemBackground, True); 
+		self.setBackgroundRole( QPalette.NoRole )
+		#self.setAttribute(Qt.WA_NativeWindow, True)
+		self.setAttribute(Qt.WA_PaintOnScreen, True) 
+		#self.setAttribute(Qt.WA_NoSystemBackground, True) 
 		
 		self.inited = 0
 
@@ -40,27 +43,33 @@ class DisplayWidget(QOpenGLWidget):
 		print("visinit")
 		self.viewer = zencad.Viewer(self.scene)
 		self.view = self.viewer.create_view()
-
 		self.view.set_triedron()
 		self.view.set_window(self.winId())
-		self.view.fit_all()
-
+		self.inited = 1
+		
 
 	def paintEvent(self, ev):
-		print("paintEvent")		
+		print("paintEvent")
+
+		if not self.fitted:
+			self.view.fit_all()
+			self.view.must_be_resized()
+
+			self.fitted = 1
+
 		self.view.redraw()
 
 	def showEvent(self, ev):
 		print("showEvent")
-		self.view.redraw()		
+		self.visinit()	
 
 	def resizeEvent(self, ev):
 		print("resizeEvent")
-		self.view.must_be_resized()
+		if self.inited:
+			self.view.must_be_resized()
 
-	
-	#def paintEngine(self):
-	#	return None;
+	def paintEngine(self):
+		return None
 
 		
 

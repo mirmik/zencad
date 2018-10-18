@@ -1,1 +1,0 @@
-from zencad.zenlib import trans_translate as translate
