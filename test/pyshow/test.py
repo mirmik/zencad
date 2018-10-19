@@ -10,7 +10,10 @@ import zencad.shower
 
 m = box(100,100,100)
 
-scn = zencad.Scene()
-scn.add(m.unlazy())
+#scn = zencad.Scene()
+#scn.add(m.unlazy())
 
-zencad.shower.show(scn)
+#zencad.shower.show(scn)
+
+display(m)
+show()

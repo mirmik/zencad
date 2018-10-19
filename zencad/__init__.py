@@ -7,6 +7,8 @@ import hashlib
 import pyservoce
 from pyservoce import Scene, View, Viewer, point3, Color
 
+import zencad.shower
+
 lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
 
 @lazy
@@ -48,7 +50,8 @@ def display(shp):
 		default_scene.add(shp)
 
 def show(scn = default_scene):
-	pyservoce.display_scene(scn)
+	zencad.shower.show(scn)
+	#pyservoce.display_scene(scn)
 
 ##prim3d
 @lazy
