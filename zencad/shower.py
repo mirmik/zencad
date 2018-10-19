@@ -3,16 +3,14 @@
 import zencad
 
 import sys
-from PyQt5.QtWidgets import * #QApplication, QWidget
+
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-#from PyQt5.QtOpenGl import *
 
-#import PySide
-
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
+#from OpenGL.GL import *
+#from OpenGL.GLUT import *
+#from OpenGL.GLU import *
 
 import math
 
