@@ -44,17 +44,21 @@ class MainWidget(QMainWindow):
 		#self.mAboutAction.setStatusTip(self.tr("About the application"))
 		#connect(mAboutAction, SIGNAL(self.triggered()), self, SLOT(about()))
 	
+		self.mReset = QAction(self.tr("Reset"), self)
+		self.mReset.setStatusTip(self.tr("Reset"))
+		self.mReset.triggered.connect(self.resetAction)
+
 		self.mAutoscale = QAction(self.tr("Autoscale"), self)
 		self.mAutoscale.setStatusTip(self.tr("Autoscale"))
 		self.mAutoscale.triggered.connect(self.autoscaleAction)
 	
-		#self.mOrient1 = QAction(self.tr("Orient1"), self)
-		#self.mOrient1.setStatusTip(self.tr("Orient1"))
-		#connect(mOrient1, SIGNAL(self.triggered()), self, SLOT(orient1()))
+		self.mOrient1 = QAction(self.tr("Orient1"), self)
+		self.mOrient1.setStatusTip(self.tr("Orient1"))
+		self.mOrient1.triggered.connect(self.orient1)
 	
-		#self.mOrient2 = QAction(self.tr("Orient2"), self)
-		#self.mOrient2.setStatusTip(self.tr("Orient2"))
-		#connect(mOrient2, SIGNAL(self.triggered()), self, SLOT(orient2()))
+		self.mOrient2 = QAction(self.tr("Orient2"), self)
+		self.mOrient2.setStatusTip(self.tr("Orient2"))
+		self.mOrient2.triggered.connect(self.orient2)
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -64,9 +68,10 @@ class MainWidget(QMainWindow):
 		self.mFileMenu.addAction(self.mExitAction)
 	
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
+		self.mNavigationMenu.addAction(self.mReset)
 		self.mNavigationMenu.addAction(self.mAutoscale)
-		#self.mNavigationMenu.addAction(self.mOrient1)
-		#self.mNavigationMenu.addAction(self.mOrient2)
+		self.mNavigationMenu.addAction(self.mOrient1)
+		self.mNavigationMenu.addAction(self.mOrient2)
 	
 		#self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		#self.mHelpMenu.addAction(self.mAboutAction)
@@ -79,6 +84,16 @@ class MainWidget(QMainWindow):
 
 	def autoscaleAction(self):
 		self.dispw.view.fit_all()
+
+	def orient1(self):
+		self.dispw.reset_orient1()
+
+	def orient2(self):
+		self.dispw.reset_orient2()
+
+	def resetAction(self):
+		self.dispw.view.reset_orientation()
+		self.dispw.view.autoscale()
 
 class DisplayWidget(QWidget):
 	def __init__(self, arg):
@@ -97,6 +112,18 @@ class DisplayWidget(QWidget):
 		self.setBackgroundRole( QPalette.NoRole )
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
 
+	def reset_orient1(self):		
+		self.orient = 1
+		self.psi =   math.cos(math.pi / 4)
+		self.phi = - math.cos(math.pi / 4)
+		self.view.reset_orientation()
+		self.view.autoscale()
+
+	def reset_orient2(self):		
+		self.orient = 2
+		#self.view.reset_orientation()
+		
+
 	def set_orient1(self):
 		self.view.set_projection(
 			math.cos(self.psi) * math.cos(self.phi), 
@@ -113,14 +140,13 @@ class DisplayWidget(QWidget):
 	def showEvent(self, ev):
 		self.viewer = zencad.Viewer(self.scene)
 		self.view = self.viewer.create_view()
+		self.view.set_window(self.winId())
+		#self.view.set_gradient()
 		
 		self.set_orient1()
 		self.view.set_triedron()
 		self.viewer.set_triedron_axes()
 
-		self.view.set_gradient()
-
-		self.view.set_window(self.winId())
 
 		self.inited = True
 
@@ -133,6 +159,7 @@ class DisplayWidget(QWidget):
 
 	def onLButtonDown(self, theFlags, thePoint):
 		self.temporary1 = thePoint;
+		self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
 
 	def onRButtonDown(self, theFlags, thePoint):
 		self.temporary1 = thePoint;
@@ -164,17 +191,9 @@ class DisplayWidget(QWidget):
 				self.phi -= mv.x() * 0.01;
 				self.psi += mv.y() * 0.01;
 				self.set_orient1()
-				
-			
 		
 			if self.orient == 2:
-				pass
-				#if (theFlags & Qt::LeftButton:
-				#	m_view->Rotation(thePoint.x(), thePoint.y());
-				#	double Vx;
-				#	double Vy;
-				#	double Vz;
-				#	m_view.set_projection(Vx, Vy, Vz);
+					self.view.rotation(thePoint.x(), thePoint.y());
 		
 		if theFlags & Qt.RightButton:
 			self.view.pan(mv.x(), -mv.y())
