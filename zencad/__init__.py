@@ -5,14 +5,16 @@ import math
 import hashlib
 
 import pyservoce
-from pyservoce import Scene, View, Viewer, point3, Color
+from pyservoce import point3
+from pyservoce import Scene, View, Viewer, Color
 
 __version__ = '0.6.4'
 
 lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
 
 @lazy
-def union(arr): return pyservoce.make_union(arr)
+def union(arr): 
+	return pyservoce.make_union(arr)
 
 @lazy
 def difference(arr): return pyservoce.make_difference(arr)
@@ -20,25 +22,25 @@ def difference(arr): return pyservoce.make_difference(arr)
 @lazy
 def intersect(arr): return pyservoce.make_intersect(arr)
 
-def point3(*t):
-	return pyservoce.point3(*t)
+#def point3(*t):
+#	return pyservoce.point3(*t)
 
-def vector3(*t):
-	return pyservoce.vector3(*t)
+#def vector3(*t):
+#	return vector3(*t)
 
 def points(tpls):
-	return [ pyservoce.point3(*t) for t in tpls ]
+	return [ point3(*t) for t in tpls ]
 
 def vectors(tpls):
-	return [ pyservoce.vector3(*t) for t in tpls ]
+	return [ vector3(*t) for t in tpls ]
 
-def to_vector3(v):
-	try:
-		if isinstance(v, pyservoce.vector3):
-			return v
-		return pyservoce.vector3(v[0], v[1], v[2])
-	except Exception:
-		return pyservoce.vector3(0,0,v)
+#def to_vector3(v):
+#	try:
+#		if isinstance(v, pyservoce.vector3):
+#			return v
+#		return pyservoce.vector3(v[0], v[1], v[2])
+#	except Exception:
+#		return pyservoce.vector3(0,0,v)
 
 ##display
 default_scene = Scene()
@@ -51,6 +53,7 @@ def display(shp):
 
 def show(scn = default_scene):
 	import zencad.shower
+	#print("show")
 	zencad.shower.show(scn)
 
 ##prim3d
@@ -84,8 +87,8 @@ def torus(r1, r2):
 	return pyservoce.make_torus(r1,r2)
 
 @lazy
-def linear_extrude(shp, vec, center = False):
-	return pyservoce.make_linear_extrude(shp, to_vector3(vec), center)
+def linear_extrude(*args, **kwargs):
+	return pyservoce.make_linear_extrude(*args, **kwargs)
 
 @lazy
 def pipe(prof, path):
@@ -97,8 +100,8 @@ def pipe_shell(prof, path, frenet = False):
 
 #face
 @lazy
-def circle(r):
-	return pyservoce.make_circle(r)
+def circle(*args, **kwargs):
+	return pyservoce.make_circle(*args, **kwargs)
 
 @lazy
 def ngon(r, n):
@@ -199,6 +202,9 @@ def mirrorY(*args, **kwargs): return pyservoce.mirrorY(*args, **kwargs)
 
 @lazy
 def mirrorZ(*args, **kwargs): return pyservoce.mirrorZ(*args, **kwargs)
+
+@lazy
+def scale(factor, center): return pyservoce.scale(factor, point3(center).to_servoce())
 
 class multitransform:
 	def __init__(self, transes):
