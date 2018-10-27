@@ -13,6 +13,7 @@ import zencad.shower
 
 m = box(100,100,100)
 
+
 #scn = zencad.Scene()
 #scn.add(m.unlazy())
 
@@ -31,6 +32,8 @@ m = box(100,100,100)
 #Image.fromarray(pixels, 'RGB')
 
 #zencad.shower.show(scn)
+
+to_stl(m, "m.stl", 0.1)
 
 display(m)
 show()
