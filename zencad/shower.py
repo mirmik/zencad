@@ -3,6 +3,7 @@
 import zencad
 
 import sys
+import os
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -271,6 +272,7 @@ class DisplayWidget(QWidget):
 
 def show(scene):
 	app = QApplication(sys.argv)
+	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
 
 	fmt = QSurfaceFormat()
 	fmt.setDepthBufferSize(24)
