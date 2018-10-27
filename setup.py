@@ -29,7 +29,8 @@ setup(
 	keywords = ['testing', 'cad'],
 	classifiers = [],
 
-    install_requires=[
+    include_package_data=True,
+	install_requires=[
         'evalcache',
         'pyservoce',
         'numpy',
