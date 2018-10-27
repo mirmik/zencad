@@ -170,12 +170,14 @@ class DisplayWidget(QWidget):
 		);
 
 	def paintEvent(self, ev):
+#		print("paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()
 			self.painted = True
 
 	def showEvent(self, ev):
+#		print("showEvent")
 		self.viewer = zencad.Viewer(self.scene)
 		self.view = self.viewer.create_view()
 		self.view.set_window(self.winId())
@@ -283,6 +285,8 @@ def show(scene):
 	mw.setCentralWidget(disp)
 
 	mw.resize(800,600)
+
+#	print("show")
 	mw.show()
 
 	app.exec_()
