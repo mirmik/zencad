@@ -7,7 +7,7 @@ import hashlib
 import pyservoce
 from pyservoce import Scene, View, Viewer, point3, Color
 
-import zencad.shower
+__version__ = '0.6.4'
 
 lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
 
@@ -50,8 +50,8 @@ def display(shp):
 		default_scene.add(shp)
 
 def show(scn = default_scene):
+	import zencad.shower
 	zencad.shower.show(scn)
-	#pyservoce.display_scene(scn)
 
 ##prim3d
 @lazy
@@ -64,7 +64,6 @@ def box(size, arg2 = None, arg3 = None, center = False):
 	else:
 		return pyservoce.make_box(size, arg2, arg3, center)
 
-#prim3d
 @lazy
 def sphere(r): 
 	return pyservoce.make_sphere(r)

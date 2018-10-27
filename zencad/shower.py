@@ -40,9 +40,9 @@ class MainWidget(QMainWindow):
 		#self.mScreen.setStatusTip(self.tr("Do screen"))
 		#connect(mScreen, SIGNAL(self.triggered()), self, SLOT(screenshot()))
 	
-		#self.mAboutAction = QAction(self.tr("About"), self)
-		#self.mAboutAction.setStatusTip(self.tr("About the application"))
-		#connect(mAboutAction, SIGNAL(self.triggered()), self, SLOT(about()))
+		self.mAboutAction = QAction(self.tr("About"), self)
+		self.mAboutAction.setStatusTip(self.tr("About the application"))
+		self.mAboutAction.triggered.connect(self.aboutAction)
 	
 		self.mReset = QAction(self.tr("Reset"), self)
 		self.mReset.setStatusTip(self.tr("Reset"))
@@ -73,8 +73,8 @@ class MainWidget(QMainWindow):
 		self.mNavigationMenu.addAction(self.mOrient1)
 		self.mNavigationMenu.addAction(self.mOrient2)
 	
-		#self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
-		#self.mHelpMenu.addAction(self.mAboutAction)
+		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
+		self.mHelpMenu.addAction(self.mAboutAction)
 		
 	def createToolbars(self):
 		pass
@@ -94,6 +94,18 @@ class MainWidget(QMainWindow):
 	def resetAction(self):
 		self.dispw.view.reset_orientation()
 		self.dispw.view.autoscale()
+
+	def aboutAction(self):
+		QMessageBox.about(self, self.tr("About ZenCad Shower"),
+			self.tr("<h2>Shower</h2>"
+			"<p>Author: mirmik(mirmikns@yandex.ru) 2018"
+			"<p>Widget for display zencad geometry."));
+
+	def keyPressEvent (self, event):
+		if event.key() == Qt.Key_PageDown:
+			self.dispw.pageDownKeyHandler()
+		elif event.key() == Qt.Key_PageUp:
+			self.dispw.pageUpKeyHandler()
 
 class DisplayWidget(QWidget):
 	def __init__(self, arg):
@@ -216,6 +228,18 @@ class DisplayWidget(QWidget):
 		
 		elif e.button() == Qt.RightButton:
 			self.onRButtonDown((e.buttons() | e.modifiers()), e.pos())
+
+	def pageDownKeyHandler(self):
+		x = self.width()/2
+		y = self.height()/2
+		factor = 16
+		self.view.zoom(x, y, x - factor, y - factor)
+
+	def pageUpKeyHandler(self):
+		x = self.width()/2
+		y = self.height()/2
+		factor = 16
+		self.view.zoom(x, y, x + factor, y + factor)
 
 def show(scene):
 	app = QApplication(sys.argv)
