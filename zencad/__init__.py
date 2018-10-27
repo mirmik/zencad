@@ -218,3 +218,6 @@ def sqrtrans(): return multitransform([
 
 def enable_cache_diagnostic():
 	evalcache.diagnostic = True
+
+def to_stl(model, path, delta):
+	pyservoce.make_stl(path, model.unlazy(), delta)

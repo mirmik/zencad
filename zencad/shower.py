@@ -84,6 +84,7 @@ class MainWidget(QMainWindow):
 
 	def exportStlAction(self):
 		pass
+#		pyservoce.to_stl(self.dispw.scene[])
 
 	def autoscaleAction(self):
 		self.dispw.view.fit_all()
