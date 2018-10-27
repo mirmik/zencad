@@ -8,7 +8,7 @@ import pyservoce
 from pyservoce import point3
 from pyservoce import Scene, View, Viewer, Color
 
-__version__ = '0.6.4'
+__version__ = '0.7.0'
 
 lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
 
