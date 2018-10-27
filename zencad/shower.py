@@ -8,6 +8,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from PIL import Image
+import numpy as np
+
 #from OpenGL.GL import *
 #from OpenGL.GLUT import *
 #from OpenGL.GLU import *
@@ -36,9 +39,9 @@ class MainWidget(QMainWindow):
 		self.mStlExport.setStatusTip(self.tr("Export file with external STL-Mesh format"))
 		self.mStlExport.triggered.connect(self.exportStlAction);
 	
-		#self.mScreen = QAction(self.tr("Screenshot..."), self)
-		#self.mScreen.setStatusTip(self.tr("Do screen"))
-		#connect(mScreen, SIGNAL(self.triggered()), self, SLOT(screenshot()))
+		self.mScreen = QAction(self.tr("Screenshot..."), self)
+		self.mScreen.setStatusTip(self.tr("Do screen"))
+		self.mScreen.triggered.connect(self.screenshotAction)
 	
 		self.mAboutAction = QAction(self.tr("About"), self)
 		self.mAboutAction.setStatusTip(self.tr("About the application"))
@@ -63,7 +66,7 @@ class MainWidget(QMainWindow):
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mStlExport)
-		#self.mFileMenu.addAction(self.mScreen)
+		self.mFileMenu.addAction(self.mScreen)
 		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mExitAction)
 	
@@ -94,6 +97,28 @@ class MainWidget(QMainWindow):
 	def resetAction(self):
 		self.dispw.view.reset_orientation()
 		self.dispw.view.autoscale()
+
+	def screenshotAction(self):
+		filters = "*.png;;*.bmp;;*.jpg;;*.*";
+		defaultFilter = "*.png";
+
+		path = QFileDialog.getSaveFileName(self, "Dump image", 
+			QDir.currentPath(),
+			filters, defaultFilter);
+
+		path = path[0]
+		
+		raw = self.dispw.view.rawarray()
+		npixels = np.reshape(np.asarray(raw), (600,800,3))
+		nnnpixels = np.flip(npixels, 0).reshape((800 * 600 * 3))
+
+		rawiter = iter(nnnpixels)
+		pixels = list(zip(rawiter, rawiter, rawiter))
+		
+		image = Image.new("RGB", (800, 600))
+		image.putdata(pixels)
+
+		image.save(path)
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
