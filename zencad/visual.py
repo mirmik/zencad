@@ -5,9 +5,14 @@ from pyservoce import Scene, Viewer
 
 from PIL import Image
 
+from evalcache.lazyfile import LazyFile
+
+lazyfile = LazyFile()
+
+@lazyfile("path")
 def screen(model, path):
 	scn = Scene()
-	scn.add(model.unlazy())
+	scn.add(model)
 	viewer = Viewer(scn)
 	view = viewer.create_view()
 	view.set_virtual_window(800, 600)
