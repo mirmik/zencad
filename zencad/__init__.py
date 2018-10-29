@@ -8,6 +8,8 @@ import pyservoce
 from pyservoce import point3
 from pyservoce import Scene, View, Viewer, Color
 
+from zencad.visual import screen
+
 __version__ = '0.7.0'
 
 lazy = evalcache.Lazy(cache = evalcache.DirCache(".evalcache"), algo = hashlib.sha256)
