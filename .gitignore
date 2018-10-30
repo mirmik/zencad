@@ -105,4 +105,4 @@ ENV/
 *.zen
 .evalcache
 .evalfile
-/examples/screens/*.png
+/test/screens/*.png
