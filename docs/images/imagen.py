@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 #coding: utf-8
 
-
 from zencad import *
 
 screen(model=box(10,20,30), path="box.png")
