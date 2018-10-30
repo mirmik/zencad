@@ -121,12 +121,13 @@ def rectangle(a, b, center = False):
 
 #wire
 @lazy
-def segment(*args, **kwargs):
-	return pyservoce.make_segment(*args, **kwargs)
+def segment(pnt0, pnt1):
+	return pyservoce.make_segment(pyservoce.point3(pnt0), pyservoce.point3(pnt1))
 
 @lazy
-def polysegment(*args, **kwargs):
-	return pyservoce.make_polysegment(*args, **kwargs)
+def polysegment(lst, closed = False):
+	lst = [pyservoce.point3(p) for p in lst]
+	return pyservoce.make_polysegment(lst, closed)
 
 @lazy
 def wcircle(*args, **kwargs):
