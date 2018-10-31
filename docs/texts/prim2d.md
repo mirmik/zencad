@@ -5,23 +5,23 @@ layout : default
 # 2д Примитивы.
 
 ## Circle
-{% highlight python %}
+```python
 circle(r = radius)
-{% endhighlight %}
+```
 
 Example:
-{% highlight python %}
+```python
 zencad.circle(r = 10)
-{% endhighlight %}
+```
 ![box.png](../images/circle.png)
 
 ## Ngon
-{% highlight python %}
+```python
 ngon(r = radius, n = nums)
-{% endhighlight %}
+```
 
 Example:
-{% highlight python %}
+```python
 zencad.ngon(r = 10, n = 6)
-{% endhighlight %}
+```
 ![box.png](../images/ngon.png)

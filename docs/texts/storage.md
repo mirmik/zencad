@@ -1,8 +1,7 @@
 ---
 layout: default
 ---
-
-{% highlight python %}
+```python
 #!/usr/bin/env python3.5
 #coding: utf-8
 from zencad import *
@@ -39,11 +38,10 @@ m = storage(4,4,27,20,64,1.5,5,5)
 
 display(m)
 show()
-{% endhighlight %}
+```
 ![sphere.png](../images/storage.png)
 
-
-{% highlight python %}
+```python
 #!/usr/bin/env python3.5
 #coding: utf-8
 
@@ -67,5 +65,5 @@ m = case(w=27,h=20,l=64,t=1.5,r=27/2-4,z=1,s=0.965);
 
 display(m)
 show()
-{% endhighlight %}
+```
 ![sphere.png](../images/case.png)

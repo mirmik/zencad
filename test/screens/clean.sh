@@ -1,0 +1,2 @@
+rm *.png
+rm *.evalfile
