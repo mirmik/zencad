@@ -10,22 +10,22 @@ from evalcache.lazyfile import LazyFile
 lazyfile = LazyFile()
 
 @lazyfile("path")
-def screen(model, path):
+def screen(model, path, size=(800,600)):
 	scn = Scene()
 	scn.add(model)
 	viewer = Viewer(scn)
 	view = viewer.create_view()
-	view.set_virtual_window(800, 600)
+	view.set_virtual_window(size[0], size[1])
 	view.fit_all()
 
 	raw = view.rawarray()
-	npixels = np.reshape(np.asarray(raw), (600,800,3))
-	nnnpixels = np.flip(npixels, 0).reshape((800 * 600 * 3))
+	npixels = np.reshape(np.asarray(raw), (size[1],size[0],3))
+	nnnpixels = np.flip(npixels, 0).reshape((size[0] * size[1] * 3))
 
 	rawiter = iter(nnnpixels)
 	pixels = list(zip(rawiter, rawiter, rawiter))
 		
-	image = Image.new("RGB", (800, 600))
+	image = Image.new("RGB", (size[0], size[1]))
 	image.putdata(pixels)
 
 	image.save(path)
