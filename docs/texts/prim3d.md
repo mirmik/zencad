@@ -36,8 +36,9 @@ cylinder(r = radius, h = height, center = True/False);
 Example:
 {% highlight python %}
 zencad.cylinder(r = 10, h = 20)
+zencad.cylinder(r = 10, h = 20, angle=50)
 {% endhighlight %}
-![cylinder.png](../images/cylinder.png)
+![cylinder.png](../images/cylinder.png) ![cylinder_sector.png](../images/cylinder_sector.png)
 
 ## Cone  
 {% highlight python %}
