@@ -12,9 +12,9 @@ box(size = x, center = True/False);
 {% endhighlight %}
 
 Example:
-{% highlight python %}
+```python
 zencad.box(size = [20, 20, 10], center = True)
-{% endhighlight %}
+```
 ![box.png](../images/box.png)
 
 ## Sphere  
