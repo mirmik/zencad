@@ -3,7 +3,7 @@ layout : default
 ---
 
 ## Boolean Operations Example 
-{% highlight python %}
+```python
 #!/usr/bin/env python3
 #coding: utf-8
 
@@ -37,5 +37,5 @@ display(m2.left(xstep).back(ystep))
 display(m3.right(xstep).back(ystep))
 
 show()
-{% endhighlight %}
+```
 ![box.png](../images/boolops.png)
