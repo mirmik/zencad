@@ -44,9 +44,6 @@ scn.add(cup.unlazy(), Color(1,0,0))
 viewer = Viewer(scn)
 view = viewer.create_view()
 
-view.see(800,600)
-view.screen("a.png")
-
 display(cup)
 show()
 
