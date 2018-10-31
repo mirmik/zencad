@@ -5,11 +5,11 @@ layout : default
 # 3d Примитивы
 
 ## Box  
-{% highlight python %}
+```python
 box(x, y, z, center = True/False);
 box(size = (x,y,z), center = True/False);
 box(size = x, center = True/False);
-{% endhighlight %}
+```
 
 Example:
 ```python
