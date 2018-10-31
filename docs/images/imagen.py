@@ -14,4 +14,4 @@ screen(model=cylinder(r=10, h=20, angle=deg(50)), path="cylinder_sector.png", si
 screen(model=torus(r1=20, r2=5), path="torus.png", size=wsize)
 
 screen(model=circle(r=20), path="circle.png", size=wsize)
-screen(model=ngon(r=20, n=6), path="circle.png", size=wsize)
+screen(model=ngon(r=20, n=6), path="ngon.png", size=wsize)
