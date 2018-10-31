@@ -1,7 +1,7 @@
 import math
 
 import pyservoce
-from pyservoce import point3
+from pyservoce import point3, vector3
 from pyservoce import Scene, View, Viewer, Color
 
 from zencad.visual import screen
