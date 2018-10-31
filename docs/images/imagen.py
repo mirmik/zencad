@@ -12,3 +12,6 @@ screen(model=cylinder(r=10, h=20), path="cylinder.png", size=wsize)
 screen(model=cone(r1=20, r2=10, h=20), path="cone.png", size=wsize)
 screen(model=cylinder(r=10, h=20, angle=deg(50)), path="cylinder_sector.png", size=wsize)
 screen(model=torus(r1=20, r2=5), path="torus.png", size=wsize)
+
+screen(model=circle(r=20), path="circle.png", size=wsize)
+screen(model=ngon(r=20, n=6), path="circle.png", size=wsize)
