@@ -6,14 +6,13 @@ layout : default
 
 ## LinearExtrude  
 Стандартная операция вытягивания трехмерного объекта из двумерного профиля.
-
-{% highlight python %}
+```python
 linear_extrude(f = face, v = (x,y,z))
 linear_extrude(f = face, v = z)
-{% endhighlight %}
+```
 
 Example:
-{% highlight python %}
+```python
 from zencad import *
 
 pnts = points([
@@ -44,5 +43,5 @@ display(s1)
 display(s2.left(20))
 display(s3.right(40))
 show()
-{% endhighlight %}
+```
 ![box.png](../images/linear_extrude.png)

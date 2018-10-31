@@ -5,58 +5,56 @@ layout : default
 # CSG Примитивы
 
 ## Box  
-{% highlight python %}
+```python
 box(x, y, z, center = True/False);
 box(size = (x,y,z), center = True/False);
 box(size = x, center = True/False);
-{% endhighlight %}
+```
 
 Example:
-{% highlight python %}
+```python
 zencad.box(size = [20, 20, 10], center = True)
-{% endhighlight %}
+```
 ![box.png](../images/box.png)
 
 ## Sphere  
-{% highlight python %}
+```python
 sphere(r = radius)
-{% endhighlight %}
+```
 
 Example:
-{% highlight python %}
+```python
 zencad.sphere(r = 10)
-{% endhighlight %}
+```
 ![sphere.png](../images/sphere.png)
 
 ## Cylinder  
-{% highlight python %}
+```python
 cylinder(r = radius, h = height, center = True/False);
-{% endhighlight %}
+```
 
-Example:
-{% highlight python %}
+Example:```python
 zencad.cylinder(r = 10, h = 20)
-{% endhighlight %}
+```
 ![cylinder.png](../images/cylinder.png)
 
 ## Cone  
-{% highlight python %}
+```python
 cone(r1 = botRadius, r2 = topRadius, h = height, center = True/False);
-{% endhighlight %}
+```
 
-Example:
-{% highlight python %}
+Example:```python
 zencad.cone(r1 = 20, r2 = 10, h = 20, center = True)
-{% endhighlight %}
+```
 ![cone.png](../images/cone.png)
 
 ## Torus  
-{% highlight python %}
+```python
 torus(r1 = centralRadius, r2 = localRadius);
-{% endhighlight %}
+```
 
 Example:
-{% highlight python %}
+```python
 zencad.torus(r1 = 10, r2 = 3);
-{% endhighlight %}
+```
 ![torus.png](../images/torus.png)

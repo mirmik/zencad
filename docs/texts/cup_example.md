@@ -3,7 +3,7 @@ layout : default
 ---
 
 ## Cup Example 
-{% highlight python %}
+```python
 from zencad import *
 
 thikness = 3.5
@@ -40,7 +40,7 @@ cup = base + handle.right(40).up(17) - hole
 
 display(cup)
 show()
-{% endhighlight %}
+```
 ![box.png](../images/cup.png)
 
 
