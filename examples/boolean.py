@@ -4,9 +4,6 @@
 from zencad import *
 import evalcache
 
-print(evalcache.__version__)
-
-
 base = box(100,100,100,center=True)
 
 f1 = ngon(r = 35, n = 3).down(50)
