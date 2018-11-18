@@ -1,5 +1,6 @@
 import pyservoce
 from zencad.lazy import lazy
+from zencad.boolean import *
 
 @lazy
 def translate(*args, **kwargs): return pyservoce.translate(*args, **kwargs)

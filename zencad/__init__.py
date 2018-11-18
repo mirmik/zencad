@@ -12,16 +12,6 @@ import evalcache
 
 __version__ = '0.7.0'
 
-@lazy
-def union(arr): 
-	return pyservoce.make_union(arr)
-
-@lazy
-def difference(arr): return pyservoce.make_difference(arr)
-
-@lazy
-def intersect(arr): return pyservoce.make_intersect(arr)
-
 #def point3(*t):
 #	return pyservoce.point3(*t)
 
