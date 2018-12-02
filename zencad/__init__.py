@@ -10,7 +10,7 @@ from zencad.transform import *
 from zencad.lazy import lazy
 import evalcache
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 #def point3(*t):
 #	return pyservoce.point3(*t)
