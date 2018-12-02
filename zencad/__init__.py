@@ -8,6 +8,7 @@ from zencad.visual import screen
 from zencad.transform import *
 
 from zencad.lazy import lazy
+from zencad.lazy import lazyfile
 import evalcache
 
 __version__ = '0.8.1'
@@ -149,5 +150,11 @@ def deg(grad): return float(grad) / 180.0 * math.pi
 def enable_cache_diagnostic():
 	evalcache.diagnostic = True
 
+#CONVERT
+@lazyfile("path")
 def to_stl(model, path, delta):
-	pyservoce.make_stl(path, model.unlazy(), delta)
+	pyservoce.make_stl(model, path, delta)
+
+@lazyfile("path")
+def brep_write(model, path):
+	pyservoce.brep_write(model, path)
