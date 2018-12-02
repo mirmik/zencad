@@ -31,10 +31,9 @@ HelloWorld
 #!/usr/bin/env python3.6
 #coding: utf-8
 
-import zencad.solid as solid
-from zencad.widget import *
+from zencad import *
 
-m = solid.box(10,10,10) + solid.sphere(5).translate(5,5,10)
+m = box(10,10,10) + sphere(5).translate(5,5,10)
 
 display(m)
 show()
