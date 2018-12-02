@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import zencad
+import pyservoce
 
 import sys
 import os
@@ -39,6 +40,10 @@ class MainWidget(QMainWindow):
 		self.mStlExport = QAction(self.tr("Export STL..."), self)
 		self.mStlExport.setStatusTip(self.tr("Export file with external STL-Mesh format"))
 		self.mStlExport.triggered.connect(self.exportStlAction);
+
+		self.mBrepExport = QAction(self.tr("Export BREP..."), self)
+		self.mBrepExport.setStatusTip(self.tr("Export file in BREP format"))
+		self.mBrepExport.triggered.connect(self.exportBrepAction);
 	
 		self.mScreen = QAction(self.tr("Screenshot..."), self)
 		self.mScreen.setStatusTip(self.tr("Do screen"))
@@ -67,6 +72,7 @@ class MainWidget(QMainWindow):
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mStlExport)
+		self.mFileMenu.addAction(self.mBrepExport)
 		self.mFileMenu.addAction(self.mScreen)
 		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mExitAction)
@@ -84,8 +90,32 @@ class MainWidget(QMainWindow):
 		pass
 
 	def exportStlAction(self):
-		pass
-#		pyservoce.to_stl(self.dispw.scene[])
+		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.1, 0, 10, 10)
+		if not okPressed:
+			return
+
+		filters = "*.stl;;*.*";
+		defaultFilter = "*.stl";
+
+		path = QFileDialog.getSaveFileName(self, "STL Export", 
+			QDir.currentPath(),
+			filters, defaultFilter);
+
+		path = path[0]
+
+		pyservoce.make_stl(self.dispw.scene[0].shape(), path, d)
+
+	def exportBrepAction(self):
+		filters = "*.brep;;*.*";
+		defaultFilter = "*.brep";
+
+		path = QFileDialog.getSaveFileName(self, "BREP Export", 
+			QDir.currentPath(),
+			filters, defaultFilter);
+
+		path = path[0]
+
+		pyservoce.brep_write(self.dispw.scene[0].shape(), path)
 
 	def autoscaleAction(self):
 		self.dispw.view.fit_all()
@@ -110,14 +140,21 @@ class MainWidget(QMainWindow):
 
 		path = path[0]
 		
+		w = self.dispw.width()
+		h = self.dispw.height()
+
 		raw = self.dispw.view.rawarray()
-		npixels = np.reshape(np.asarray(raw), (600,800,3))
-		nnnpixels = np.flip(npixels, 0).reshape((800 * 600 * 3))
+		print (raw)
+
+		return
+
+		npixels = np.reshape(np.asarray(raw), (w,h,3))
+		nnnpixels = np.flip(npixels, 0).reshape((w * h * 3))
 
 		rawiter = iter(nnnpixels)
 		pixels = list(zip(rawiter, rawiter, rawiter))
 		
-		image = Image.new("RGB", (800, 600))
+		image = Image.new("RGB", (w, h))
 		image.putdata(pixels)
 
 		image.save(path)
