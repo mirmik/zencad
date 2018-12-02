@@ -5,9 +5,7 @@ from pyservoce import Scene, Viewer
 
 from PIL import Image
 
-from evalcache.lazyfile import LazyFile
-
-lazyfile = LazyFile()
+from zencad.lazy import lazyfile
 
 @lazyfile("path")
 def screen(model, path, size=(800,600)):
