@@ -3,8 +3,6 @@
 
 import zencad
 
-zencad.enable_cache(".cache")
-
 m0 = zencad.box(size = 10, center = True)
 m1 = zencad.sphere(5)
 m2 = zencad.torus(5, 2)

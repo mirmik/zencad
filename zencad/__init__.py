@@ -52,30 +52,30 @@ def show(scn = default_scene):
 def box(size, arg2 = None, arg3 = None, center = False):
 	if arg3 == None:
 		if hasattr(size, '__getitem__'):
-			return pyservoce.make_box(size[0], size[1], size[2], center)
+			return pyservoce.box(size[0], size[1], size[2], center)
 		else:
-			return pyservoce.make_box(size, size, size, center)
+			return pyservoce.box(size, size, size, center)
 	else:
-		return pyservoce.make_box(size, arg2, arg3, center)
+		return pyservoce.box(size, arg2, arg3, center)
 
 @lazy
 def sphere(r): 
-	return pyservoce.make_sphere(r)
+	return pyservoce.sphere(r)
 
 @lazy
 def cylinder(r, h, center=False, angle=None): 
 	if angle is None:
-		return pyservoce.make_cylinder(r,h,center)
+		return pyservoce.cylinder(r,h,center)
 	else:
-		return pyservoce.make_cylinder(r,h,angle,center)
+		return pyservoce.cylinder(r,h,angle,center)
 
 @lazy
 def cone(r1, r2, h, center = False): 
-	return pyservoce.make_cone(r1,r2,h,center)
+	return pyservoce.cone(r1,r2,h,center)
 
 @lazy
 def torus(r1, r2): 
-	return pyservoce.make_torus(r1,r2)
+	return pyservoce.torus(r1,r2)
 
 @lazy
 def linear_extrude(*args, **kwargs):
@@ -92,23 +92,23 @@ def pipe_shell(prof, path, frenet = False):
 #face
 @lazy
 def circle(*args, **kwargs):
-	return pyservoce.make_circle(*args, **kwargs)
+	return pyservoce.circle(*args, **kwargs)
 
 @lazy
 def ngon(r, n):
-	return pyservoce.make_ngon(r, n)
+	return pyservoce.ngon(r, n)
 
 @lazy
 def polygon(pnts):
-	return pyservoce.make_polygon(pnts)
+	return pyservoce.polygon(pnts)
 
 @lazy
 def square(a, center = False):
-	return pyservoce.make_square(a, center)
+	return pyservoce.square(a, center)
 
 @lazy
 def rectangle(a, b, center = False):
-	return pyservoce.make_rectangle(a, b, center)
+	return pyservoce.rectangle(a, b, center)
 
 #wire
 @lazy
