@@ -106,3 +106,6 @@ ENV/
 .evalcache
 .evalfile
 /test/screens/*.png
+
+*.stl
+*.brep
