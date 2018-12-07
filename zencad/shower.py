@@ -90,7 +90,7 @@ class MainWidget(QMainWindow):
 		pass
 
 	def exportStlAction(self):
-		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.1, 0, 10, 10)
+		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.01, 0, 10, 10)
 		if not okPressed:
 			return
 

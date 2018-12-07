@@ -11,6 +11,8 @@ from zencad.lazy import lazy
 from zencad.lazy import lazyfile
 import evalcache
 
+from zencad.util import deg
+
 __version__ = '0.8.1'
 
 #def point3(*t):
@@ -144,8 +146,6 @@ def helix(*args, **kwargs):
 def gr(grad): 
 	print("'gr' function is deprecated. Use 'deg' instead")
 	return float(grad) / 180.0 * math.pi
-
-def deg(grad): return float(grad) / 180.0 * math.pi
 
 def enable_cache_diagnostic():
 	evalcache.diagnostic = True

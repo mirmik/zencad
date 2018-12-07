@@ -1,4 +1,5 @@
 import pyservoce
+from zencad.util import deg
 from zencad.lazy import lazy
 from zencad.boolean import *
 
@@ -75,5 +76,5 @@ def sqrtrans(): return multitransform([
 ])
 
 def rotate_array(n):
-	transes = [rotateZ(angle) for angle in np.linspace(0, 360, num=n)]
+	transes = [rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)]
 	return multitrans(transes) 
