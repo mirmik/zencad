@@ -72,8 +72,11 @@ def cylinder(r, h, center=False, angle=None):
 		return pyservoce.cylinder(r,h,angle,center)
 
 @lazy
-def cone(r1, r2, h, center = False): 
-	return pyservoce.cone(r1,r2,h,center)
+def cone(r1, r2, h, center = False, angle=None): 
+	if angle is None:
+		return pyservoce.cone(r1,r2,h,center)
+	else:
+		return pyservoce.cone(r1,r2,h,angle,center)
 
 @lazy
 def torus(r1, r2): 
