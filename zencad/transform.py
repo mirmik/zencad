@@ -56,6 +56,15 @@ def mirrorZ(*args, **kwargs): return pyservoce.mirrorZ(*args, **kwargs)
 @lazy
 def scale(factor, center): return pyservoce.scale(factor, point3(center).to_servoce())
 
+@lazy
+def scaleX(factor): return pyservoce.scaleX(factor)
+
+@lazy
+def scaleY(factor): return pyservoce.scaleY(factor)
+
+@lazy
+def scaleZ(factor): return pyservoce.scaleZ(factor)
+
 class multitransform:
 	def __init__(self, transes):
 		self.transes = transes
