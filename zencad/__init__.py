@@ -100,7 +100,7 @@ def ngon(r, n):
 
 @lazy
 def polygon(pnts):
-	return pyservoce.polygon(pnts)
+	return pyservoce.polygon(points(pnts))
 
 @lazy
 def square(a, center = False):
@@ -125,8 +125,8 @@ def wcircle(*args, **kwargs):
 	return pyservoce.make_wcircle(*args, *kwargs)
 
 @lazy
-def interpolate(*args, **kwargs):
-	return pyservoce.make_interpolate(*args, **kwargs)
+def interpolate(pnts, tangs=[], closed=False):
+	return pyservoce.make_interpolate(points(pnts), vectors(tangs), closed)
 
 @lazy
 def complex_wire(*args, **kwargs):

@@ -2,6 +2,8 @@ import pyservoce
 from zencad.lazy import lazy
 from zencad.boolean import *
 
+import numpy as np
+
 @lazy
 def translate(*args, **kwargs): return pyservoce.translate(*args, **kwargs)
 
@@ -60,6 +62,9 @@ class multitransform:
 	def __call__(self, shp):
 		return union([t(shp) for t in self.transes])
 
+def multitrans(transes):
+	return multitransform(transes)
+
 def nulltrans(): return translate(0,0,0) 
 
 def sqrtrans(): return multitransform([ 
@@ -68,3 +73,7 @@ def sqrtrans(): return multitransform([
 	mirrorXZ(), 
 	mirrorZ() 
 ])
+
+def rotate_array(n):
+	transes = [rotateZ(angle) for angle in np.linspace(0, 360, num=n)]
+	return multitrans(transes) 
