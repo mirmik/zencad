@@ -4,9 +4,6 @@
 from zencad import *
 import sys
 
-lazy.encache = False
-lazy.diag = True
-
 @lazy
 def instrument_metric_nut(drad, step, h):
 	H = step * math.tan(deg(60))
@@ -42,12 +39,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "summ":
 if len(sys.argv) > 1 and sys.argv[1] == "summ2":
 	m = m + m.rotateX(deg(45)).forw(25).up(10)
 	m = m + m.right(40) + m.right(80) 
-
-
-evalcache.encache(nut)
-evalcache.encache(m)
-
-evalcache.print_tree(m)
 
 display(m)
 show()

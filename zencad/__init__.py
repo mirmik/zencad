@@ -7,33 +7,14 @@ from pyservoce import Scene, View, Viewer, Color
 from zencad.visual import screen
 from zencad.transform import *
 
-from zencad.lazy import lazy
+from zencad.lazy import lazy 
 from zencad.lazy import lazyfile
+from zencad.lazy import disable_cache, test_mode
 import evalcache
 
-from zencad.util import deg
+from zencad.util import deg, angle_pair, points, vectors
 
 __version__ = '0.8.1'
-
-#def point3(*t):
-#	return pyservoce.point3(*t)
-
-#def vector3(*t):
-#	return vector3(*t)
-
-def points(tpls):
-	return [ point3(*t) for t in tpls ]
-
-def vectors(tpls):
-	return [ vector3(*t) for t in tpls ]
-
-#def to_vector3(v):
-#	try:
-#		if isinstance(v, pyservoce.vector3):
-#			return v
-#		return pyservoce.vector3(v[0], v[1], v[2])
-#	except Exception:
-#		return pyservoce.vector3(0,0,v)
 
 ##display
 default_scene = Scene()
@@ -69,17 +50,31 @@ def cylinder(r, h, center=False, angle=None):
 	if angle is None:
 		return pyservoce.cylinder(r,h,center)
 	else:
-		return pyservoce.cylinder(r,h,angle,center)
+		ap = angle_pair(angle)
+		return pyservoce.cylinder(r, h, ap[0], ap[1], center)
 
 @lazy
 def cone(r1, r2, h, center = False, angle=None): 
 	if angle is None:
 		return pyservoce.cone(r1,r2,h,center)
 	else:
-		return pyservoce.cone(r1,r2,h,angle,center)
+		ap = angle_pair(angle)
+		return pyservoce.cone(r1,r2,h,ap[0],ap[1],center)
 
 @lazy
-def torus(r1, r2): 
+def torus(r1, r2, uangle=None, vangle=None): 
+	if vangle is not None:
+		vangle = angle_pair(vangle)
+
+	if uangle is not None and vangle is not None:
+		return pyservoce.torus(r1,r2,vangle[0],vangle[1],uangle)
+
+	if uangle is not None:
+		return pyservoce.torus(r1,r2,uangle)
+
+	if vangle is not None:
+		return pyservoce.torus(r1,r2,vangle[0],vangle[1])
+
 	return pyservoce.torus(r1,r2)
 
 @lazy
@@ -96,8 +91,20 @@ def pipe_shell(prof, path, frenet = False):
 
 #face
 @lazy
-def circle(*args, **kwargs):
-	return pyservoce.circle(*args, **kwargs)
+def circle(r, angle=None, wire=False):
+	if angle is not None:
+		ap = angle_pair(angle)
+
+	if wire:
+		if angle is not None:
+			return pyservoce.circle_wire(r, ap[0], ap[1])
+		else:
+			return pyservoce.circle_wire(r)
+	else:
+		if angle is not None:
+			return pyservoce.circle(r, ap[0], ap[1])
+		else:
+			return pyservoce.circle(r)
 
 @lazy
 def ngon(r, n):
