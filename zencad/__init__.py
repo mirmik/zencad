@@ -78,6 +78,10 @@ def torus(r1, r2, uangle=None, vangle=None):
 	return pyservoce.torus(r1,r2)
 
 @lazy
+def halfspace(): 
+	return pyservoce.halfspace()
+
+@lazy
 def linear_extrude(*args, **kwargs):
 	return pyservoce.make_linear_extrude(*args, **kwargs)
 
