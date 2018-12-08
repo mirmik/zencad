@@ -37,12 +37,6 @@ handle = pipe(path = spine, prof = profile)
 
 cup = (base + handle.right(40).up(17) - hole)
 
-scn = Scene()
-scn.add(cup.unlazy(), Color(1,0,0))
-
-viewer = Viewer(scn)
-view = viewer.create_view()
-
 display(cup)
 show()
 
