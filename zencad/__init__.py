@@ -95,16 +95,20 @@ def circle(r, angle=None, wire=False):
 	if angle is not None:
 		ap = angle_pair(angle)
 
-	if wire:
-		if angle is not None:
-			return pyservoce.circle_wire(r, ap[0], ap[1])
-		else:
-			return pyservoce.circle_wire(r)
+	if angle is not None:
+		return pyservoce.circle(r, ap[0], ap[1], wire=wire)
 	else:
-		if angle is not None:
-			return pyservoce.circle(r, ap[0], ap[1])
-		else:
-			return pyservoce.circle(r)
+		return pyservoce.circle(r, wire=wire)
+
+@lazy
+def ellipse(r1, r2, angle=None, wire=False):
+	if angle is not None:
+		ap = angle_pair(angle)
+
+	if angle is not None:
+		return pyservoce.ellipse(r1, r2, ap[0], ap[1], wire=wire)
+	else:
+		return pyservoce.ellipse(r1, r2, wire=wire)
 
 @lazy
 def ngon(r, n):
