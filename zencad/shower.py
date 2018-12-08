@@ -268,6 +268,8 @@ class DisplayWidget(QWidget):
 			if self.orient == 1:  
 				self.phi -= mv.x() * 0.01;
 				self.psi += mv.y() * 0.01;
+				if self.psi > math.pi*0.4999: self.psi = math.pi*0.4999
+				if self.psi < -math.pi*0.4999: self.psi = -math.pi*0.4999
 				self.set_orient1()
 		
 			if self.orient == 2:
