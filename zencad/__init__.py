@@ -129,33 +129,34 @@ def rectangle(a, b, center = False):
 #wire
 @lazy
 def segment(pnt0, pnt1):
-	return pyservoce.make_segment(pyservoce.point3(pnt0), pyservoce.point3(pnt1))
+	return pyservoce.segment(pyservoce.point3(pnt0), pyservoce.point3(pnt1))
 
 @lazy
 def polysegment(lst, closed = False):
-	lst = [pyservoce.point3(p) for p in lst]
-	return pyservoce.make_polysegment(lst, closed)
+	return pyservoce.polysegment(points(lst), closed)
 
 @lazy
 def wcircle(*args, **kwargs):
+	print("def wcircle(*args, **kwargs): deprecated")
 	return pyservoce.make_wcircle(*args, *kwargs)
 
 @lazy
 def interpolate(pnts, tangs=[], closed=False):
-	return pyservoce.make_interpolate(points(pnts), vectors(tangs), closed)
+	return pyservoce.interpolate(points(pnts), vectors(tangs), closed)
 
 @lazy
 def complex_wire(*args, **kwargs):
-	return pyservoce.make_complex_wire(*args, **kwargs)
+	return pyservoce.complex_wire(*args, **kwargs)
 
 @lazy
 def sweep(prof, path):
+	print("def sweep(prof, path): deprecated")
 	return pyservoce.make_sweep(prof, path)
 
 @lazy
 def helix(*args, **kwargs):
 	#return make_helix(*args, **kwargs)
-	return pyservoce.make_long_helix(*args, **kwargs)
+	return pyservoce.long_helix(*args, **kwargs)
 
 def gr(grad): 
 	print("'gr' function is deprecated. Use 'deg' instead")
