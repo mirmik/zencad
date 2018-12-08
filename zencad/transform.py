@@ -1,5 +1,5 @@
 import pyservoce
-from zencad.util import deg
+from zencad.util import deg, point3
 from zencad.lazy import lazy
 from zencad.boolean import *
 

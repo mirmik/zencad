@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 #coding: utf-8
 
-import zencad
-m = zencad.sphere(10)
+from zencad import *
+test_mode()
 
-zencad.display(m)
-zencad.show()
+m = sphere(10)
+
+display(m)
+show()

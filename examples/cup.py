@@ -35,8 +35,7 @@ base = cylinder(r = radius, h = height)
 hole = cylinder(r = radius - thikness, h = height - thikness).up(thikness)
 handle = pipe(path = spine, prof = profile)
 
-cup = (base + handle.right(40).up(17) 
-	- hole)
+cup = (base + handle.right(40).up(17) - hole)
 
 scn = Scene()
 scn.add(cup.unlazy(), Color(1,0,0))

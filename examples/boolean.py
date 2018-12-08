@@ -2,7 +2,6 @@
 #coding: utf-8
 
 from zencad import *
-import evalcache
 
 base = box(100,100,100,center=True)
 
