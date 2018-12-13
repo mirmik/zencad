@@ -25,10 +25,10 @@ def display(shp):
 	else:
 		default_scene.add(shp)
 
-def show(scn = default_scene, updater_function = None):
+def show(scn = default_scene, updater_function = None, update_time = 50):
 	import zencad.shower
 	#print("show")
-	zencad.shower.show(scn, updater_function)
+	zencad.shower.show(scn, updater_function, update_time)
 
 ##prim3d
 @lazy
