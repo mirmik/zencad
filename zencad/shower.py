@@ -13,6 +13,8 @@ from PyQt5.QtGui import *
 from PIL import Image
 import numpy as np
 
+import threading
+
 #from OpenGL.GL import *
 #from OpenGL.GLUT import *
 #from OpenGL.GLU import *
@@ -309,7 +311,12 @@ class DisplayWidget(QWidget):
 		factor = 16
 		self.view.zoom(x, y, x + factor, y + factor)
 
-def show(scene):
+def update_loop(updater_function, wdg):
+	while 1:
+		if wdg.inited:
+			updater_function()
+
+def show(scene, updater_function = None):
 	app = QApplication(sys.argv)
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
 
@@ -326,6 +333,11 @@ def show(scene):
 	mw.setCentralWidget(disp)
 
 	mw.resize(800,600)
+
+	if updater_function != None:
+		thr = threading.Thread(target=update_loop, args=(updater_function, disp))
+		thr.start()
+
 
 #	print("show")
 	mw.show()
