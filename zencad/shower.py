@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import zencad
+import zencad.lazy
 import pyservoce
 
 import sys
@@ -13,6 +14,7 @@ from PyQt5.QtGui import *
 from PIL import Image
 import numpy as np
 
+import time
 import threading
 
 #from OpenGL.GL import *
@@ -311,12 +313,20 @@ class DisplayWidget(QWidget):
 		factor = 16
 		self.view.zoom(x, y, x + factor, y + factor)
 
-def update_loop(updater_function, wdg):
+def update_loop(updater_function, wdg, update_time):
 	while 1:
+		ensave = zencad.lazy.encache 
+		desave = zencad.lazy.decache
 		if wdg.inited:
+			zencad.lazy.encache = False
+			zencad.lazy.decache = False
 			updater_function()
+			zencad.lazy.encache = ensave
+			zencad.lazy.decache = desave
+			#time.sleep(50/1000)
+		
 
-def show(scene, updater_function = None):
+def show(scene, updater_function = None, update_time = 50):
 	app = QApplication(sys.argv)
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
 
@@ -335,7 +345,7 @@ def show(scene, updater_function = None):
 	mw.resize(800,600)
 
 	if updater_function != None:
-		thr = threading.Thread(target=update_loop, args=(updater_function, disp))
+		thr = threading.Thread(target=update_loop, args=(updater_function, disp, update_time))
 		thr.start()
 
 
