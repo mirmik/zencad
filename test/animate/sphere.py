@@ -3,12 +3,15 @@
 
 import math
 from zencad import *
-test_mode()
 
-m = sphere(10).right(30)
+m1 = box(10).right(30)
+m2 = box(10)
+m3 = sphere(10)
 
 scn = Scene()
-controller = scn.add(m.unlazy())
+controller_1 = scn.add(m1.unlazy())
+controller_2 = scn.add(m2.unlazy())
+controller_3 = scn.add(m3.unlazy())
 
 i = 0
 r = 10
@@ -18,7 +21,9 @@ def updater_function():
 	if i > 360:
 		i = 0
 
-	controller.set_location(r*math.sin(deg(i)), r*math.cos(deg(i)), 0)
+	controller_1.set_location(rotateZ(deg(i)).unlazy())
+	controller_2.set_location(translate(0,r*math.sin(deg(i)),0).unlazy())
+	controller_3.set_location(translate(0,0,r*math.sin(deg(i))).unlazy())
 
 show(scn, updater_function)
 
