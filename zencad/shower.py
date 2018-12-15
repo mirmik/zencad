@@ -320,7 +320,7 @@ def update_loop(updater_function, wdg, update_time):
 		if wdg.inited:
 			zencad.lazy.encache = False
 			zencad.lazy.decache = False
-			updater_function()
+			updater_function(wdg.viewer)
 			zencad.lazy.encache = ensave
 			zencad.lazy.decache = desave
 			#time.sleep(50/1000)
