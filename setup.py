@@ -35,5 +35,6 @@ setup(
         'pyservoce',
         'numpy',
         'pillow',
+        'PyQt5',
     ],
 )
