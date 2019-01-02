@@ -26,14 +26,38 @@ import math
 class MainWidget(QMainWindow):
 	def __init__(self, dispw):
 		QMainWindow.__init__(self)
+		self.cw = QWidget()
 		self.dispw = dispw
+		self.layout = QVBoxLayout()
 
 		self.setWindowTitle("zenwidget");
 		#self.setWindowIcon(QIcon(":/industrial-robot.svg"));
 
+		self.layout.setSpacing(0)
+		self.layout.setContentsMargins(0,0,0,0)
+
+		self.poslbl = QLabel("HelloWorld")
+		self.poslbl.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed);
+
+		self.layout.addWidget(self.dispw)
+		self.layout.addWidget(self.poslbl)
+		self.cw.setLayout(self.layout)
+
+		self.setCentralWidget(self.cw)
+
 		self.createActions();
 		self.createMenus();
 		self.createToolbars();
+
+		self.dispw.intersectPointSignal.connect(self.poslblSlot)
+
+	def poslblSlot(self, obj):
+		#print(obj)
+		if obj[1]:
+			self.poslbl.setText("x:{:10.5f},  y:{:10.5f},  z:{:10.5f}".format(obj[0].x, obj[0].y, obj[0].z))
+		else:
+			self.poslbl.setText("")
+			self.update()
 
 	def createActions(self):
 		self.mExitAction = QAction(self.tr("Exit"), self)
@@ -91,6 +115,10 @@ class MainWidget(QMainWindow):
 		self.mHelpMenu.addAction(self.mAboutAction)
 		
 	def createToolbars(self):
+		#self.btoolbar = QToolBar()
+		#self.lbl = QLabel("HelloWorld")
+		#self.btoolbar.addWidget(self.lbl)
+		#self.addToolBar(Qt.BottomToolBarArea, self.btoolbar)
 		pass
 
 	def exportStlAction(self):
@@ -176,9 +204,11 @@ class MainWidget(QMainWindow):
 			self.dispw.pageUpKeyHandler()
 
 class DisplayWidget(QWidget):
+	intersectPointSignal = pyqtSignal(tuple)
+
 	def __init__(self, arg):
 		QWidget.__init__(self)
-
+	
 		self.orient = 1
 
 		self.inited = False
@@ -191,6 +221,7 @@ class DisplayWidget(QWidget):
 
 		self.setBackgroundRole( QPalette.NoRole )
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
+		self.setMouseTracking(True)
 
 	def reset_orient1(self):		
 		self.orient = 1
@@ -268,6 +299,9 @@ class DisplayWidget(QWidget):
 		mv = thePoint - self.temporary1
 		self.temporary1 = thePoint
 
+		ip = self.view.intersect_point(thePoint.x(), thePoint.y())
+		self.intersectPointSignal.emit(ip)
+
 		if theFlags & Qt.LeftButton: 
 			if self.orient == 1:  
 				self.phi -= mv.x() * 0.01;
@@ -339,9 +373,6 @@ def show(scene, updater_function = None, update_time = 50):
 
 	disp = DisplayWidget(scene)
 	mw = MainWidget(disp);	
-
-	mw.setCentralWidget(disp)
-
 	mw.resize(800,600)
 
 	if updater_function != None:
