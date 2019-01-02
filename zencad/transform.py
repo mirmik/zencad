@@ -27,10 +27,10 @@ def forw(*args, **kwargs): return pyservoce.forw(*args, **kwargs)
 def back(*args, **kwargs): return pyservoce.back(*args, **kwargs)
 
 @lazy
-def rotateX(*args, **kwargs): return pyservoce.rotateZ(*args, **kwargs)
+def rotateX(*args, **kwargs): return pyservoce.rotateX(*args, **kwargs)
 
 @lazy
-def rotateY(*args, **kwargs): return pyservoce.rotateZ(*args, **kwargs)
+def rotateY(*args, **kwargs): return pyservoce.rotateY(*args, **kwargs)
 
 @lazy
 def rotateZ(*args, **kwargs): return pyservoce.rotateZ(*args, **kwargs)
