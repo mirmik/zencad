@@ -207,13 +207,14 @@ class MainWidget(QMainWindow):
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
 
-	def __init__(self, arg):
+	def __init__(self, arg, nointersect):
 		QWidget.__init__(self)
 	
 		self.orient = 1
 
 		self.inited = False
 		self.painted = False
+		self.nointersect = nointersect
 
 		self.scene = arg
 		self.temporary1 = QPoint()	
@@ -300,8 +301,9 @@ class DisplayWidget(QWidget):
 		mv = thePoint - self.temporary1
 		self.temporary1 = thePoint
 
-		ip = self.view.intersect_point(thePoint.x(), thePoint.y())
-		self.intersectPointSignal.emit(ip)
+		if not self.nointersect:
+			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
+			self.intersectPointSignal.emit(ip)
 
 		if theFlags & Qt.LeftButton: 
 			if self.orient == 1:  
@@ -371,7 +373,7 @@ class update_loop(QThread):
 				#time.sleep(50/1000)
 		
 
-def show(scene, animate = None, update_time = 50):
+def show(scene, animate = None, update_time = 50, nointersect=False):
 	app = QApplication(sys.argv)
 	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
@@ -385,7 +387,7 @@ def show(scene, animate = None, update_time = 50):
 	fmt.setProfile(QSurfaceFormat.CoreProfile)
 	QSurfaceFormat.setDefaultFormat(fmt)
 
-	disp = DisplayWidget(scene)
+	disp = DisplayWidget(scene, nointersect)
 	mw = MainWidget(disp);	
 	mw.resize(800,600)
 

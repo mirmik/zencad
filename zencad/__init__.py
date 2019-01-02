@@ -14,8 +14,6 @@ import evalcache
 
 from zencad.util import deg, angle_pair, points, vectors
 
-from zencad.shower import show
-
 __version__ = '0.9.0'
 
 ##display
@@ -26,6 +24,10 @@ def display(shp):
 		default_scene.add(evalcache.unlazy(shp))
 	else:
 		default_scene.add(shp)
+
+def show(scene=default_scene, *args, **kwargs):
+	import zencad.shower
+	zencad.shower.show(scene, *args, **kwargs)
 
 ##prim3d
 @lazy
