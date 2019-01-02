@@ -86,6 +86,10 @@ class MainWidget(QMainWindow):
 		self.mReset.setStatusTip(self.tr("Reset"))
 		self.mReset.triggered.connect(self.resetAction)
 
+		self.mCentering = QAction(self.tr("Centering"), self)
+		self.mCentering.setStatusTip(self.tr("Centering"))
+		self.mCentering.triggered.connect(self.centeringAction)
+
 		self.mAutoscale = QAction(self.tr("Autoscale"), self)
 		self.mAutoscale.setStatusTip(self.tr("Autoscale"))
 		self.mAutoscale.triggered.connect(self.autoscaleAction)
@@ -108,6 +112,7 @@ class MainWidget(QMainWindow):
 	
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
 		self.mNavigationMenu.addAction(self.mReset)
+		self.mNavigationMenu.addAction(self.mCentering)
 		self.mNavigationMenu.addAction(self.mAutoscale)
 		self.mNavigationMenu.addAction(self.mOrient1)
 		self.mNavigationMenu.addAction(self.mOrient2)
@@ -152,6 +157,9 @@ class MainWidget(QMainWindow):
 
 	def autoscaleAction(self):
 		self.dispw.view.fit_all()
+
+	def centeringAction(self):
+		self.dispw.view.centering()
 
 	def orient1(self):
 		self.dispw.reset_orient1()
