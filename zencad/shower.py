@@ -30,6 +30,7 @@ class MainWidget(QMainWindow):
 		self.cw = QWidget()
 		self.dispw = dispw
 		self.layout = QVBoxLayout()
+		self.infolay = QHBoxLayout()
 
 		self.setWindowTitle("zenwidget");
 		#self.setWindowIcon(QIcon(":/industrial-robot.svg"));
@@ -37,11 +38,30 @@ class MainWidget(QMainWindow):
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
 
-		self.poslbl = QLabel("HelloWorld")
-		self.poslbl.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed);
+		self.poslbl = QLabel("PosLbl")
+		self.poslbl.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+
+		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
+		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
+
+		self.marker1Label = QLabel("MarkerQ")
+		self.marker1Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+		self.marker1Label.setStyleSheet("QLabel { background-color : red; color : white; }");
+
+		self.marker2Label = QLabel("MarkerW")
+		self.marker2Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+		self.marker2Label.setStyleSheet("QLabel { background-color : green; color : white; }");
+
+		self.markerDistLabel = QLabel("Dist")
+		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+
+		self.infolay.addWidget(self.poslbl)
+		self.infolay.addWidget(self.marker1Label)
+		self.infolay.addWidget(self.marker2Label)
+		self.infolay.addWidget(self.markerDistLabel)
 
 		self.layout.addWidget(self.dispw)
-		self.layout.addWidget(self.poslbl)
+		self.layout.addLayout(self.infolay)
 		self.cw.setLayout(self.layout)
 
 		self.setCentralWidget(self.cw)
@@ -55,7 +75,7 @@ class MainWidget(QMainWindow):
 	def poslblSlot(self, obj):
 		#print(obj)
 		if obj[1]:
-			self.poslbl.setText("x:{:10.5f},  y:{:10.5f},  z:{:10.5f}".format(obj[0].x, obj[0].y, obj[0].z))
+			self.poslbl.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
 		else:
 			self.poslbl.setText("")
 			self.update()
@@ -171,6 +191,13 @@ class MainWidget(QMainWindow):
 		self.dispw.view.reset_orientation()
 		self.dispw.view.autoscale()
 
+	def updateDistLabel(self):
+		qx,qy,qz = self.marker1[0].x, self.marker1[0].y, self.marker1[0].z
+		wx,wy,wz = self.marker2[0].x, self.marker2[0].y, self.marker2[0].z
+		xx,yy,zz = wx-qx, wy-qy, wz-qz
+		dist = math.sqrt(xx**2 + yy**2 + zz**2)
+		self.markerDistLabel.setText("{}".format(dist))		
+
 	def screenshotAction(self):
 		filters = "*.png;;*.bmp;;*.jpg;;*.*";
 		defaultFilter = "*.png";
@@ -207,6 +234,20 @@ class MainWidget(QMainWindow):
 			"<p>Widget for display zencad geometry."));
 
 	def keyPressEvent (self, event):
+		if event.key() == Qt.Key_Q:
+			self.marker1 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
+			x = self.marker1[0].x
+			y = self.marker1[0].y
+			z = self.marker1[0].z
+			self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			self.updateDistLabel()
+		if event.key() == Qt.Key_W:
+			self.marker2 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
+			x = self.marker2[0].x
+			y = self.marker2[0].y
+			z = self.marker2[0].z
+			self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			self.updateDistLabel()
 		if event.key() == Qt.Key_PageDown:
 			self.dispw.pageDownKeyHandler()
 		elif event.key() == Qt.Key_PageUp:
@@ -308,6 +349,8 @@ class DisplayWidget(QWidget):
 	def onMouseMove(self, theFlags, thePoint):
 		mv = thePoint - self.temporary1
 		self.temporary1 = thePoint
+
+		self.lastPosition = thePoint
 
 		if not self.nointersect:
 			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
