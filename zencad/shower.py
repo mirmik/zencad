@@ -47,7 +47,7 @@ class MainWidget(QMainWindow):
 
 		self.marker1Label = QLabel("MarkerQ")
 		self.marker1Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
-		self.marker1Label.setStyleSheet("QLabel { background-color : red; color : white; }");
+		self.marker1Label.setStyleSheet("QLabel { background-color : rgb(100,100,100); color : white; }");
 		self.marker1Label.setAlignment(Qt.AlignCenter)
 
 		self.marker2Label = QLabel("MarkerW")
