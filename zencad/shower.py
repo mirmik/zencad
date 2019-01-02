@@ -40,6 +40,7 @@ class MainWidget(QMainWindow):
 
 		self.poslbl = QLabel("PosLbl")
 		self.poslbl.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+		self.poslbl.setAlignment(Qt.AlignCenter)
 
 		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
 		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
@@ -47,13 +48,16 @@ class MainWidget(QMainWindow):
 		self.marker1Label = QLabel("MarkerQ")
 		self.marker1Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker1Label.setStyleSheet("QLabel { background-color : red; color : white; }");
+		self.marker1Label.setAlignment(Qt.AlignCenter)
 
 		self.marker2Label = QLabel("MarkerW")
 		self.marker2Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker2Label.setStyleSheet("QLabel { background-color : green; color : white; }");
+		self.marker2Label.setAlignment(Qt.AlignCenter)
 
 		self.markerDistLabel = QLabel("Dist")
 		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+		self.markerDistLabel.setAlignment(Qt.AlignCenter)
 
 		self.infolay.addWidget(self.poslbl)
 		self.infolay.addWidget(self.marker1Label)
@@ -75,7 +79,7 @@ class MainWidget(QMainWindow):
 	def poslblSlot(self, obj):
 		#print(obj)
 		if obj[1]:
-			self.poslbl.setText(" x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
+			self.poslbl.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
 		else:
 			self.poslbl.setText("")
 			self.update()
@@ -239,14 +243,14 @@ class MainWidget(QMainWindow):
 			x = self.marker1[0].x
 			y = self.marker1[0].y
 			z = self.marker1[0].z
-			self.marker1Label.setText(" x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
 			self.updateDistLabel()
 		if event.key() == Qt.Key_W:
 			self.marker2 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
 			x = self.marker2[0].x
 			y = self.marker2[0].y
 			z = self.marker2[0].z
-			self.marker2Label.setText(" x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
 			self.updateDistLabel()
 		if event.key() == Qt.Key_PageDown:
 			self.dispw.pageDownKeyHandler()
