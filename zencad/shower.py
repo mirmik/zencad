@@ -75,7 +75,7 @@ class MainWidget(QMainWindow):
 	def poslblSlot(self, obj):
 		#print(obj)
 		if obj[1]:
-			self.poslbl.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
+			self.poslbl.setText(" x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
 		else:
 			self.poslbl.setText("")
 			self.update()
@@ -239,14 +239,14 @@ class MainWidget(QMainWindow):
 			x = self.marker1[0].x
 			y = self.marker1[0].y
 			z = self.marker1[0].z
-			self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			self.marker1Label.setText(" x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
 			self.updateDistLabel()
 		if event.key() == Qt.Key_W:
 			self.marker2 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
 			x = self.marker2[0].x
 			y = self.marker2[0].y
 			z = self.marker2[0].z
-			self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			self.marker2Label.setText(" x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
 			self.updateDistLabel()
 		if event.key() == Qt.Key_PageDown:
 			self.dispw.pageDownKeyHandler()
