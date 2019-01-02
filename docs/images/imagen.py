@@ -4,6 +4,8 @@
 from zencad import *
 import os
 
+import zencad.visual
+
 wsize = (400, 300)
 
 if not os.path.exists("generic"):
@@ -24,3 +26,5 @@ doscreen(model=cylinder(r=10, h=20, angle=deg(50)), path="cylinder_sector.png", 
 doscreen(model=torus(r1=20, r2=5), path="torus.png", size=wsize)
 doscreen(model=circle(r=20), path="circle.png", size=wsize)
 doscreen(model=ngon(r=20, n=6), path="ngon.png", size=wsize)
+
+zencad.visual.screen_debug(model=box(10,20,30).unlazy(), size=wsize)
