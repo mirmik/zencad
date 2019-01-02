@@ -16,6 +16,7 @@ import numpy as np
 
 import time
 import threading
+import signal
 
 #from OpenGL.GL import *
 #from OpenGL.GLUT import *
@@ -347,21 +348,34 @@ class DisplayWidget(QWidget):
 		factor = 16
 		self.view.zoom(x, y, x + factor, y + factor)
 
-def update_loop(updater_function, wdg, update_time):
-	while 1:
-		ensave = zencad.lazy.encache 
-		desave = zencad.lazy.decache
-		if wdg.inited:
-			zencad.lazy.encache = False
-			zencad.lazy.decache = False
-			updater_function(wdg.viewer)
-			zencad.lazy.encache = ensave
-			zencad.lazy.decache = desave
-			#time.sleep(50/1000)
+class update_loop(QThread):
+	def __init__(self, parent, updater_function, wdg, update_time):
+		QThread.__init__(self, parent)
+		self.updater_function = updater_function 
+		self.wdg = wdg
+		self.update_time = update_time
+
+	def run(self):
+		while 1:
+			ensave = zencad.lazy.encache 
+			desave = zencad.lazy.decache
+			onplace = zencad.lazy.onplace
+			if self.wdg.inited:
+				zencad.lazy.encache = False
+				zencad.lazy.decache = False
+				zencad.lazy.onplace = True
+				self.updater_function(self.wdg.viewer)
+				zencad.lazy.onplace = onplace
+				zencad.lazy.encache = ensave
+				zencad.lazy.decache = desave
+				#time.sleep(50/1000)
 		
 
-def show(scene, updater_function = None, update_time = 50):
+def show(scene, animate = None, update_time = 50):
 	app = QApplication(sys.argv)
+	#app.lastWindowClosed.connect(app.quit)
+	app.lastWindowClosed.connect(sys.exit)
+
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
 
 	fmt = QSurfaceFormat()
@@ -375,12 +389,23 @@ def show(scene, updater_function = None, update_time = 50):
 	mw = MainWidget(disp);	
 	mw.resize(800,600)
 
-	if updater_function != None:
-		thr = threading.Thread(target=update_loop, args=(updater_function, disp, update_time))
+	if animate != None:
+		thr = update_loop(mw, animate, disp, update_time)
 		thr.start()
+		#thr = QThread(update_loop, animate, disp, update_time)
+		#thr.start()
 
+#	def sigint_handler(*args):
+#		"""Handler for the SIGINT signal."""
+#		sys.stderr.write('\r')
+#		if QMessageBox.question(None, '', "Are you sure you want to quit?",
+#								QMessageBox.Yes | QMessageBox.No,
+#								QMessageBox.No) == QMessageBox.Yes:
+#			QApplication.quit()
+#	
+#	signal.signal(signal.SIGINT, sigint_handler)
 
 #	print("show")
 	mw.show()
 
-	app.exec_()
+	return app.exec()
