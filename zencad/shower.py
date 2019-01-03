@@ -28,6 +28,10 @@ ensave = None
 desave = None
 onplace = None
 
+QMARKER_MESSAGE = "Press 'Q' to set marker"
+WMARKER_MESSAGE = "Press 'W' to set marker"
+DISTANCE_DEFAULT_MESSAGE = "Distance"
+
 def disable_lazy():
 	global ensave, desave, onplace
 	ensave = zencad.lazy.encache 
@@ -63,17 +67,17 @@ class MainWidget(QMainWindow):
 		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
 		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
 
-		self.marker1Label = QLabel("Press 'Q' to set marker")
+		self.marker1Label = QLabel(QMARKER_MESSAGE)
 		self.marker1Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker1Label.setStyleSheet("QLabel { background-color : rgb(100,0,0); color : white; }");
 		self.marker1Label.setAlignment(Qt.AlignCenter)
 
-		self.marker2Label = QLabel("Press 'W' to set marker")
+		self.marker2Label = QLabel(WMARKER_MESSAGE)
 		self.marker2Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker2Label.setStyleSheet("QLabel { background-color : rgb(0,100,0); color : white; }");
 		self.marker2Label.setAlignment(Qt.AlignCenter)
 
-		self.markerDistLabel = QLabel("Distance")
+		self.markerDistLabel = QLabel(DISTANCE_DEFAULT_MESSAGE)
 		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.markerDistLabel.setAlignment(Qt.AlignCenter)
 
@@ -230,7 +234,10 @@ class MainWidget(QMainWindow):
 		wx,wy,wz = self.marker2[0].x, self.marker2[0].y, self.marker2[0].z
 		xx,yy,zz = wx-qx, wy-qy, wz-qz
 		dist = math.sqrt(xx**2 + yy**2 + zz**2)
-		self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))		
+		if self.marker1[1] and self.marker1[1]:
+			self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))
+		else:
+			self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)	
 
 	def screenshotAction(self):
 		filters = "*.png;;*.bmp;;*.jpg;;*.*";
