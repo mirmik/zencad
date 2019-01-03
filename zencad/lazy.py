@@ -5,7 +5,7 @@ from evalcache.lazyfile import LazyFile
 import hashlib
 import os
 
-lazy = evalcache.Lazy(cache = evalcache.DirCache(os.path.expanduser("~/.zencad-cache")), algo = hashlib.sha256)
+lazy = evalcache.Lazy(cache = evalcache.DirCache(os.path.expanduser("~/.zencad-cache")), algo = hashlib.sha512)
 lazyfile = LazyFile()
 
 def disable_cache():
