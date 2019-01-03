@@ -25,7 +25,7 @@ git clone https://github.com/mirmik/zencad
 HelloWorld
 ----------
 ```python
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 #coding: utf-8
 
 from zencad import *
