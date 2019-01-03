@@ -340,6 +340,7 @@ class MainWidget(QMainWindow):
 			
 			if self.marker1[1]:
 				self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+				print("Q: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
 			else:
 				self.marker1Label.setText(QMARKER_MESSAGE)	
 			self.updateDistLabel()
@@ -359,6 +360,7 @@ class MainWidget(QMainWindow):
 
 			if self.marker2[1]:
 				self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+				print("W: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
 			else:
 				self.marker2Label.setText(WMARKER_MESSAGE)	
 			self.updateDistLabel()
