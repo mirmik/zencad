@@ -92,6 +92,10 @@ def pipe(prof, path):
 def pipe_shell(prof, path, frenet = False):
 	return pyservoce.make_pipe_shell(prof, path, frenet)
 
+@lazy
+def loft(arr):
+	return pyservoce.loft(arr)
+
 #face
 @lazy
 def circle(r, angle=None, wire=False):
@@ -114,20 +118,20 @@ def ellipse(r1, r2, angle=None, wire=False):
 		return pyservoce.ellipse(r1, r2, wire=wire)
 
 @lazy
-def ngon(r, n):
-	return pyservoce.ngon(r, n)
+def ngon(r, n, wire=False):
+	return pyservoce.ngon(r, n, wire)
 
 @lazy
 def polygon(pnts):
 	return pyservoce.polygon(points(pnts))
 
 @lazy
-def square(a, center = False):
-	return pyservoce.square(a, center)
+def square(a, center = False, wire=False):
+	return pyservoce.square(a, center, wire)
 
 @lazy
-def rectangle(a, b, center = False):
-	return pyservoce.rectangle(a, b, center)
+def rectangle(a, b, center = False, wire=False):
+	return pyservoce.rectangle(a, b, center, wire)
 
 @lazy
 def textshape(*args, **kwargs):
