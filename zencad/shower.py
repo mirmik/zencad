@@ -249,7 +249,9 @@ class MainWidget(QMainWindow):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
 			self.tr("<h2>Shower</h2>"
 			"<p>Author: mirmik(mirmikns@yandex.ru) 2018"
-			"<p>Widget for display zencad geometry."));
+			"<p>Widget for display zencad geometry."
+			"<p>"
+			"<p>Based on OPENCASCADE geometric core."));
 
 	def keyPressEvent (self, event):
 		if event.key() == Qt.Key_Q:
