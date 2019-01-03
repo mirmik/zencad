@@ -129,6 +129,10 @@ def square(a, center = False):
 def rectangle(a, b, center = False):
 	return pyservoce.rectangle(a, b, center)
 
+@lazy
+def textshape(*args, **kwargs):
+	return pyservoce.textshape(*args, **kwargs)
+
 #wire
 @lazy
 def segment(pnt0, pnt1):
