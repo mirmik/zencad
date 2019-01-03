@@ -274,6 +274,7 @@ class MainWidget(QMainWindow):
 
 		msgBox = QMessageBox(self)
 		msgBox.setWindowTitle("Cache Info")
+		msgBox.setWindowModality(Qt.WindowModal);
 		msgBox.setInformativeText(
 			"Path: {}"
 			"<p>Hashing algorithm: {}"
