@@ -30,7 +30,7 @@ onplace = None
 
 QMARKER_MESSAGE = "Press 'Q' to set marker"
 WMARKER_MESSAGE = "Press 'W' to set marker"
-DISTANCE_DEFAULT_MESSAGE = "Distance"
+DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 
 def disable_lazy():
 	global ensave, desave, onplace
@@ -234,7 +234,7 @@ class MainWidget(QMainWindow):
 		wx,wy,wz = self.marker2[0].x, self.marker2[0].y, self.marker2[0].z
 		xx,yy,zz = wx-qx, wy-qy, wz-qz
 		dist = math.sqrt(xx**2 + yy**2 + zz**2)
-		if self.marker1[1] and self.marker1[1]:
+		if self.marker1[1] or self.marker2[1]:
 			self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))
 		else:
 			self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)	
@@ -278,7 +278,11 @@ class MainWidget(QMainWindow):
 			x = self.marker1[0].x
 			y = self.marker1[0].y
 			z = self.marker1[0].z
-			self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			
+			if self.marker1[1]:
+				self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			else:
+				self.marker1Label.setText(QMARKER_MESSAGE)	
 			self.updateDistLabel()
 
 			if self.dispw.showmarkers:
@@ -293,7 +297,11 @@ class MainWidget(QMainWindow):
 			x = self.marker2[0].x
 			y = self.marker2[0].y
 			z = self.marker2[0].z
-			self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+
+			if self.marker2[1]:
+				self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+			else:
+				self.marker2Label.setText(WMARKER_MESSAGE)	
 			self.updateDistLabel()
 		
 			if self.dispw.showmarkers:
