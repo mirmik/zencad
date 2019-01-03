@@ -56,24 +56,24 @@ class MainWidget(QMainWindow):
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
 
-		self.poslbl = QLabel("PosLbl")
+		self.poslbl = QLabel("Tracking disabled")
 		self.poslbl.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.poslbl.setAlignment(Qt.AlignCenter)
 
 		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
 		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
 
-		self.marker1Label = QLabel("MarkerQ")
+		self.marker1Label = QLabel("Press 'Q' to set marker")
 		self.marker1Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker1Label.setStyleSheet("QLabel { background-color : rgb(100,0,0); color : white; }");
 		self.marker1Label.setAlignment(Qt.AlignCenter)
 
-		self.marker2Label = QLabel("MarkerW")
+		self.marker2Label = QLabel("Press 'W' to set marker")
 		self.marker2Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker2Label.setStyleSheet("QLabel { background-color : rgb(0,100,0); color : white; }");
 		self.marker2Label.setAlignment(Qt.AlignCenter)
 
-		self.markerDistLabel = QLabel("Dist")
+		self.markerDistLabel = QLabel("Distance")
 		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.markerDistLabel.setAlignment(Qt.AlignCenter)
 
@@ -95,7 +95,6 @@ class MainWidget(QMainWindow):
 		self.dispw.intersectPointSignal.connect(self.poslblSlot)
 
 	def poslblSlot(self, obj):
-		#print(obj)
 		if obj[1]:
 			self.poslbl.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
 		else:
@@ -144,6 +143,11 @@ class MainWidget(QMainWindow):
 		self.mOrient2.setStatusTip(self.tr("Orient2"))
 		self.mOrient2.triggered.connect(self.orient2)
 
+		self.mTracking = QAction(self.tr("Tracking"), self)
+		self.mTracking.setStatusTip(self.tr("Tracking"))
+		self.mTracking.setCheckable(True)
+		self.mTracking.toggled.connect(self.trackingAction)
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mStlExport)
@@ -158,6 +162,7 @@ class MainWidget(QMainWindow):
 		self.mNavigationMenu.addAction(self.mAutoscale)
 		self.mNavigationMenu.addAction(self.mOrient1)
 		self.mNavigationMenu.addAction(self.mOrient2)
+		self.mNavigationMenu.addAction(self.mTracking)
 	
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
@@ -184,6 +189,13 @@ class MainWidget(QMainWindow):
 		path = path[0]
 
 		pyservoce.make_stl(self.dispw.scene[0].shape(), path, d)
+
+	def trackingAction(self, en):
+		if en:
+			self.dispw.nointersect = False
+		else:
+			self.dispw.nointersect = True
+			self.poslbl.setText("Tracking disabled")
 
 	def exportBrepAction(self):
 		filters = "*.brep;;*.*";
@@ -218,7 +230,7 @@ class MainWidget(QMainWindow):
 		wx,wy,wz = self.marker2[0].x, self.marker2[0].y, self.marker2[0].z
 		xx,yy,zz = wx-qx, wy-qy, wz-qz
 		dist = math.sqrt(xx**2 + yy**2 + zz**2)
-		self.markerDistLabel.setText("{}".format(dist))		
+		self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))		
 
 	def screenshotAction(self):
 		filters = "*.png;;*.bmp;;*.jpg;;*.*";
