@@ -5,7 +5,7 @@ from pyservoce import Scene, Viewer
 
 from PIL import Image
 
-from zencad.lazy import lazyfile
+from zencad.lazifier import lazyfile
 
 def doscreen(model, path, size=(800,600)):
 	viewer = Viewer(scn)

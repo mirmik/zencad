@@ -1,6 +1,6 @@
 import pyservoce
 from zencad.util import deg, point3
-from zencad.lazy import lazy
+from zencad.lazifier import lazy
 from zencad.boolean import *
 
 import numpy as np
