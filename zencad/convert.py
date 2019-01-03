@@ -15,9 +15,14 @@ def to_brep(model, path):
 	pyservoce.brep_write(model, path)
 
 def from_brep(path):
-	def impl(path):
-		return pyservoce.brep_read(path)
-	f = lazy(impl, hint = str(os.path.getmtime(path)))
+	"""Загрузить объект из файла его brep представления
+
+	Политика хеширования в данном случае требует учета возможности изменения
+	файла. Поэтому в хэш загружаемого объекта подмешивается дата модификации
+	файла. Объект не кешируется, потому что такая операция дублировала бы
+	загрузку из файла.
+	"""
+	f = lazy(lambda p: pyservoce.brep_read(p), hint = str(os.path.getmtime(path)))
 	obj = f(path)
 	evalcache.nocache(obj)
 	return obj
