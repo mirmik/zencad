@@ -1,5 +1,5 @@
 import pyservoce
-from zencad.lazy import lazy
+from zencad.lazifier import lazy
 
 @lazy
 def union(arr): 
