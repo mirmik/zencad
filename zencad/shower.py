@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import zencad
-import zencad.lazy
+import zencad.lazifier 
 import pyservoce
 
 import sys
@@ -257,8 +257,34 @@ class MainWidget(QMainWindow):
 		print("Invalidate cache: %d files removed" % len(files))
 
 	def cacheInfoAction(self):
-		pass
+		def get_size(start_path = '.'):
+			total_size = 0
+			for dirpath, dirnames, filenames in os.walk(start_path):
+				for f in filenames:
+					fp = os.path.join(dirpath, f)
+					total_size += os.path.getsize(fp)
+			return total_size
 
+		def sizeof_fmt(num, suffix='B'):
+		    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+		        if abs(num) < 1024.0:
+		            return "%3.1f%s%s" % (num, unit, suffix)
+		        num /= 1024.0
+		    return "%.1f%s%s" % (num, 'Yi', suffix)
+
+		msgBox = QMessageBox(self)
+		msgBox.setWindowTitle("Cache Info")
+		msgBox.setInformativeText(
+			"Path: {}"
+			"<p>Files: {}"
+			"<p>Size: {}".format(
+				zencad.lazifier.cachepath, 
+				len(zencad.lazy.cache.keys()),
+				sizeof_fmt(get_size(zencad.lazifier.cachepath))
+			))
+		msgBox.exec();
+
+	
 	def updateDistLabel(self):
 		qx,qy,qz = self.marker1[0].x, self.marker1[0].y, self.marker1[0].z
 		wx,wy,wz = self.marker2[0].x, self.marker2[0].y, self.marker2[0].z

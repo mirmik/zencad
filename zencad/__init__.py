@@ -7,9 +7,9 @@ from pyservoce import Scene, View, Viewer, Color
 from zencad.visual import screen
 from zencad.transform import *
 
-from zencad.lazy import lazy 
-from zencad.lazy import lazyfile
-from zencad.lazy import disable_cache, test_mode
+from zencad.lazifier import lazy 
+from zencad.lazifier import lazyfile
+from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
 from zencad.util import deg, angle_pair, points, vectors
