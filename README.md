@@ -1,6 +1,8 @@
 # zencad
 CAD system for righteous zen programmers
 
+![/docs/images/logo.jpeg](/docs/images/logo.jpeg)
+
 What is it?
 -----------
 ZenCad - it's a system for use oce geometry core in openscad's script style.
@@ -38,6 +40,3 @@ m = box(10,10,10) + sphere(5).translate(5,5,10)
 display(m)
 show()
 ```
-
-![/docs/images/result.jpeg](/docs/images/result.jpeg)
-
