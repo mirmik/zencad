@@ -276,9 +276,11 @@ class MainWidget(QMainWindow):
 		msgBox.setWindowTitle("Cache Info")
 		msgBox.setInformativeText(
 			"Path: {}"
+			"<p>Hashing algorithm: {}"
 			"<p>Files: {}"
 			"<p>Size: {}".format(
-				zencad.lazifier.cachepath, 
+				zencad.lazifier.cachepath,
+				zencad.lazy.algo().name,
 				len(zencad.lazy.cache.keys()),
 				sizeof_fmt(get_size(zencad.lazifier.cachepath))
 			))
