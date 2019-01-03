@@ -14,8 +14,6 @@ import os
 import zencad
 import pyservoce
 import evalcache
-from zencad.lazifier import lazyfile
-from zencad.lazifier import lazyhash
 from zencad.lazifier import lazy
 
 @lazy.lazyfile("path")

@@ -8,7 +8,6 @@ from zencad.visual import screen
 from zencad.transform import *
 
 from zencad.lazifier import lazy 
-from zencad.lazifier import lazyfile
 from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
