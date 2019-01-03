@@ -52,6 +52,7 @@ class MainWidget(QMainWindow):
 		self.cw = QWidget()
 		self.dispw = dispw
 		self.layout = QVBoxLayout()
+		self.cpannellay = QHBoxLayout()
 		self.infolay = QHBoxLayout()
 
 		self.setWindowTitle("zenwidget");
@@ -59,6 +60,10 @@ class MainWidget(QMainWindow):
 
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
+
+		#self.cp = QLabel("Cpannel test")
+		#self.cp.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed);
+		#self.cp.setAlignment(Qt.AlignCenter)
 
 		self.poslbl = QLabel("Tracking disabled")
 		self.poslbl.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
@@ -86,6 +91,9 @@ class MainWidget(QMainWindow):
 		self.infolay.addWidget(self.marker2Label)
 		self.infolay.addWidget(self.markerDistLabel)
 
+		#self.cpannellay.addWidget(self.cp)
+
+		self.layout.addLayout(self.cpannellay)
 		self.layout.addWidget(self.dispw)
 		self.layout.addLayout(self.infolay)
 		self.cw.setLayout(self.layout)
@@ -152,6 +160,10 @@ class MainWidget(QMainWindow):
 		self.mTracking.setCheckable(True)
 		self.mTracking.toggled.connect(self.trackingAction)
 
+		self.mInvalidateCacheAction = QAction(self.tr("Invalidate cache"), self)
+		self.mInvalidateCacheAction.setStatusTip(self.tr("Invalidate cache"))
+		self.mInvalidateCacheAction.triggered.connect(self.invalidateCacheAction)
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mStlExport)
@@ -170,6 +182,9 @@ class MainWidget(QMainWindow):
 	
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
+
+		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
+		self.mUtilityMenu.addAction(self.mInvalidateCacheAction)
 		
 	def createToolbars(self):
 		#self.btoolbar = QToolBar()
@@ -228,6 +243,12 @@ class MainWidget(QMainWindow):
 	def resetAction(self):
 		self.dispw.view.reset_orientation()
 		self.dispw.view.autoscale()
+
+	def invalidateCacheAction(self):
+		files = zencad.lazy.cache.keys()
+		for f in zencad.lazy.cache.keys():
+			del zencad.lazy.cache[f]
+		print("Invalidate cache: %d files removed" % len(files))
 
 	def updateDistLabel(self):
 		qx,qy,qz = self.marker1[0].x, self.marker1[0].y, self.marker1[0].z
