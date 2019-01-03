@@ -1,7 +1,7 @@
 # zencad
 CAD system for righteous zen programmers
 
-![/docs/images/logo.jpeg](/docs/images/logo.jpeg)
+![/docs/images/logo.png](/docs/images/logo.png)
 
 What is it?
 -----------
