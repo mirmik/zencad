@@ -2,6 +2,7 @@
 #coding: utf-8
 
 from zencad import *
+lazy.diag = True
 
 base = box(100,100,100,center=True)
 
