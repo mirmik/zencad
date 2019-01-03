@@ -19,8 +19,7 @@ def from_brep(path):
 		return pyservoce.brep_read(path)
 	f = lazy(impl, hint = str(os.path.getmtime(path)))
 	obj = f(path)
-	evalcache.encache(obj, False)
-	evalcache.decache(obj, False)
+	evalcache.nocache(obj)
 	return obj
 
 
