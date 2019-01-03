@@ -538,11 +538,11 @@ class DisplayWidget(QWidget):
 		self.view.zoom(x, y, x + factor, y + factor)
 
 class update_loop(QThread):
-	def __init__(self, parent, updater_function, wdg, update_time):
+	def __init__(self, parent, updater_function, wdg, pause_time=0.01):
 		QThread.__init__(self, parent)
 		self.updater_function = updater_function 
 		self.wdg = wdg
-		self.update_time = update_time
+		self.pause_time = pause_time
 
 	def run(self):
 		while 1:
@@ -557,10 +557,10 @@ class update_loop(QThread):
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
 				zencad.lazy.decache = desave
-				time.sleep(0.01)
+				time.sleep(self.pause_time)
 		
 
-def show(scene, animate = None, update_time = 50, nointersect=True, showmarkers=True):
+def show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
 	app = QApplication(sys.argv)
 	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
@@ -579,7 +579,7 @@ def show(scene, animate = None, update_time = 50, nointersect=True, showmarkers=
 	mw.resize(800,600)
 
 	if animate != None:
-		thr = update_loop(mw, animate, disp, update_time)
+		thr = update_loop(mw, animate, disp, pause_time)
 		thr.start()
 		#thr = QThread(update_loop, animate, disp, update_time)
 		#thr.start()
