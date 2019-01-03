@@ -13,6 +13,7 @@ from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
 from zencad.util import deg, angle_pair, points, vectors
+from zencad.convert import *
 
 __version__ = '0.11.3'
 
@@ -175,12 +176,3 @@ def gr(grad):
 
 def enable_cache_diagnostic():
 	evalcache.diagnostic = True
-
-#CONVERT
-@lazyfile("path")
-def to_stl(model, path, delta):
-	pyservoce.make_stl(model, path, delta)
-
-@lazyfile("path")
-def brep_write(model, path):
-	pyservoce.brep_write(model, path)
