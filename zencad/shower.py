@@ -557,7 +557,7 @@ class update_loop(QThread):
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
 				zencad.lazy.decache = desave
-				#time.sleep(50/1000)
+				time.sleep(0.01)
 		
 
 def show(scene, animate = None, update_time = 50, nointersect=True, showmarkers=True):
