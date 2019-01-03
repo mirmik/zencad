@@ -467,7 +467,7 @@ class update_loop(QThread):
 				#time.sleep(50/1000)
 		
 
-def show(scene, animate = None, update_time = 50, nointersect=False, showmarkers=True):
+def show(scene, animate = None, update_time = 50, nointersect=True, showmarkers=True):
 	app = QApplication(sys.argv)
 	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
