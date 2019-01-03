@@ -26,6 +26,8 @@ setup(
 	author = 'Sorokin Nikolay',
 	author_email = 'mirmikns@yandex.ru',
 	url = 'https://mirmik.github.io/zencad/',
+	long_description=open("README.md", "r").read(),
+	long_description_content_type='text/markdown',
 	keywords = ['testing', 'cad'],
 	classifiers = [],
 
