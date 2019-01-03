@@ -24,6 +24,24 @@ import signal
 
 import math
 
+ensave = None
+desave = None
+onplace = None
+
+def disable_lazy():
+	global ensave, desave, onplace
+	ensave = zencad.lazy.encache 
+	desave = zencad.lazy.decache
+	onplace = zencad.lazy.onplace
+	zencad.lazy.encache = False
+	zencad.lazy.decache = False
+	zencad.lazy.onplace = True
+
+def restore_lazy():
+	zencad.lazy.onplace = onplace
+	zencad.lazy.encache = ensave
+	zencad.lazy.decache = desave
+
 class MainWidget(QMainWindow):
 	def __init__(self, dispw):
 		QMainWindow.__init__(self)
@@ -245,6 +263,14 @@ class MainWidget(QMainWindow):
 			z = self.marker1[0].z
 			self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
 			self.updateDistLabel()
+
+			if self.dispw.showmarkers:
+				disable_lazy()
+				self.dispw.MarkerQController.set_location(zencad.translate(x,y,z))
+				restore_lazy()
+				self.dispw.MarkerQController.hide(not self.marker1[1])
+				self.dispw.view.redraw()
+		
 		if event.key() == Qt.Key_W:
 			self.marker2 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
 			x = self.marker2[0].x
@@ -252,6 +278,14 @@ class MainWidget(QMainWindow):
 			z = self.marker2[0].z
 			self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
 			self.updateDistLabel()
+		
+			if self.dispw.showmarkers:
+				disable_lazy()
+				self.dispw.MarkerWController.set_location(zencad.translate(x,y,z))
+				restore_lazy()
+				self.dispw.MarkerWController.hide(not self.marker2[1])
+				self.dispw.view.redraw()
+		
 		if event.key() == Qt.Key_PageDown:
 			self.dispw.pageDownKeyHandler()
 		elif event.key() == Qt.Key_PageUp:
@@ -260,7 +294,7 @@ class MainWidget(QMainWindow):
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
 
-	def __init__(self, arg, nointersect):
+	def __init__(self, arg, nointersect, showmarkers):
 		QWidget.__init__(self)
 	
 		self.orient = 1
@@ -268,6 +302,7 @@ class DisplayWidget(QWidget):
 		self.inited = False
 		self.painted = False
 		self.nointersect = nointersect
+		self.showmarkers = showmarkers
 
 		self.scene = arg
 		self.temporary1 = QPoint()	
@@ -306,6 +341,11 @@ class DisplayWidget(QWidget):
 
 	def showEvent(self, ev):
 #		print("showEvent")
+		if self.showmarkers:
+			self.msphere = zencad.sphere(1)
+			self.MarkerQController = self.scene.add(self.msphere.unlazy(), zencad.Color(1,0,0))
+			self.MarkerWController = self.scene.add(self.msphere.unlazy(), zencad.Color(0,1,0))
+
 		self.viewer = zencad.Viewer(self.scene)
 		self.view = self.viewer.create_view()
 		self.view.set_window(self.winId())
@@ -315,6 +355,9 @@ class DisplayWidget(QWidget):
 		self.view.set_triedron()
 		self.viewer.set_triedron_axes()
 
+		if self.showmarkers:
+			self.MarkerQController.hide(True)
+			self.MarkerWController.hide(True)
 
 		self.inited = True
 
@@ -428,7 +471,7 @@ class update_loop(QThread):
 				#time.sleep(50/1000)
 		
 
-def show(scene, animate = None, update_time = 50, nointersect=False):
+def show(scene, animate = None, update_time = 50, nointersect=False, showmarkers=True):
 	app = QApplication(sys.argv)
 	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
@@ -442,7 +485,7 @@ def show(scene, animate = None, update_time = 50, nointersect=False):
 	fmt.setProfile(QSurfaceFormat.CoreProfile)
 	QSurfaceFormat.setDefaultFormat(fmt)
 
-	disp = DisplayWidget(scene, nointersect)
+	disp = DisplayWidget(scene, nointersect, showmarkers)
 	mw = MainWidget(disp);	
 	mw.resize(800,600)
 
