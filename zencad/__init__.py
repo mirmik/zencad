@@ -14,7 +14,7 @@ import evalcache
 
 from zencad.util import deg, angle_pair, points, vectors
 
-__version__ = '0.9.1'
+__version__ = '0.10.0'
 
 ##display
 default_scene = Scene()
