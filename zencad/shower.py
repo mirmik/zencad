@@ -308,6 +308,7 @@ class DisplayWidget(QWidget):
 		QWidget.__init__(self)
 	
 		self.orient = 1
+		self.mousedown = False
 
 		self.inited = False
 		self.painted = False
@@ -409,7 +410,7 @@ class DisplayWidget(QWidget):
 
 		self.lastPosition = thePoint
 
-		if not self.nointersect:
+		if not self.nointersect and not self.mousedown:
 			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
 			self.intersectPointSignal.emit(ip)
 
@@ -436,7 +437,11 @@ class DisplayWidget(QWidget):
 	def mouseMoveEvent(self, e):
 		self.onMouseMove(e.buttons(), e.pos());
 
+	def mouseReleaseEvent(self, e):
+		self.mousedown = False
+
 	def mousePressEvent(self, e):
+		self.mousedown = True
 		if e.button() == Qt.LeftButton:
 			self.onLButtonDown((e.buttons() | e.modifiers()), e.pos())
 		
@@ -505,15 +510,10 @@ def show(scene, animate = None, update_time = 50, nointersect=True, showmarkers=
 		#thr = QThread(update_loop, animate, disp, update_time)
 		#thr.start()
 
-#	def sigint_handler(*args):
-#		"""Handler for the SIGINT signal."""
-#		sys.stderr.write('\r')
-#		if QMessageBox.question(None, '', "Are you sure you want to quit?",
-#								QMessageBox.Yes | QMessageBox.No,
-#								QMessageBox.No) == QMessageBox.Yes:
-#			QApplication.quit()
-#	
-#	signal.signal(signal.SIGINT, sigint_handler)
+	#def sigint_handler(*args):
+	#	sys.exit(-1)
+	
+	#signal.signal(signal.SIGINT, sigint_handler)
 
 #	print("show")
 	mw.show()
