@@ -24,6 +24,7 @@ import signal
 
 import math
 
+diag = None
 ensave = None
 desave = None
 onplace = None
@@ -36,7 +37,9 @@ def disable_lazy():
 	global ensave, desave, onplace
 	ensave = zencad.lazy.encache 
 	desave = zencad.lazy.decache
+	diag = zencad.lazy.diag
 	onplace = zencad.lazy.onplace
+	zencad.lazy.diag = False
 	zencad.lazy.encache = False
 	zencad.lazy.decache = False
 	zencad.lazy.onplace = True
@@ -45,6 +48,7 @@ def restore_lazy():
 	zencad.lazy.onplace = onplace
 	zencad.lazy.encache = ensave
 	zencad.lazy.decache = desave
+	zencad.lazy.diag = diag
 
 class MainWidget(QMainWindow):
 	def __init__(self, dispw):
@@ -429,9 +433,11 @@ class DisplayWidget(QWidget):
 	def showEvent(self, ev):
 #		print("showEvent")
 		if self.showmarkers:
+			disable_lazy()
 			self.msphere = zencad.sphere(1)
-			self.MarkerQController = self.scene.add(self.msphere.unlazy(), zencad.Color(1,0,0))
-			self.MarkerWController = self.scene.add(self.msphere.unlazy(), zencad.Color(0,1,0))
+			self.MarkerQController = self.scene.add(self.msphere, zencad.Color(1,0,0))
+			self.MarkerWController = self.scene.add(self.msphere, zencad.Color(0,1,0))
+			restore_lazy()
 
 		self.viewer = zencad.Viewer(self.scene)
 		self.view = self.viewer.create_view()
@@ -551,14 +557,17 @@ class update_loop(QThread):
 			ensave = zencad.lazy.encache 
 			desave = zencad.lazy.decache
 			onplace = zencad.lazy.onplace
+			diag = zencad.lazy.diag
 			if self.wdg.inited:
 				zencad.lazy.encache = False
 				zencad.lazy.decache = False
 				zencad.lazy.onplace = True
+				zencad.lazy.diag = False
 				self.updater_function(self.wdg.viewer)
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
 				zencad.lazy.decache = desave
+				zencad.lazy.diag = diag
 				time.sleep(self.pause_time)
 		
 
