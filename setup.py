@@ -30,6 +30,7 @@ setup(
 	long_description_content_type='text/markdown',
 	keywords = ['testing', 'cad'],
 	classifiers = [],
+	scripts = ["routine/zencad"],
 
     include_package_data=True,
 	install_requires=[
