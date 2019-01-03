@@ -74,7 +74,6 @@ scn.add(base.unlazy())
 scn.add(m.unlazy(), Color(1,1,1))
 scn.add(m2.unlazy(), Color(1,1,1))
 scn.add(m3.unlazy(), Color(1,1,1))
-#scn.add(nut.unlazy())
-#scn.add(nut2.unlazy())
+
 
 show(scn)
