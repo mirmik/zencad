@@ -45,10 +45,6 @@ display(m1.back(ystep))
 display(m2.left(xstep).back(ystep))
 display(m3.right(xstep).back(ystep))
 
-display(m1.back(ystep))
-display(m2.left(xstep).back(ystep))
-display(m3.right(xstep).back(ystep))
-
 display(t1.back(ystep).up(70))
 display(t2.left(xstep).back(ystep).up(70))
 display(t3.right(xstep).back(ystep).up(70))
