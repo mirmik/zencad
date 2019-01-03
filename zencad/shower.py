@@ -164,6 +164,10 @@ class MainWidget(QMainWindow):
 		self.mInvalidateCacheAction.setStatusTip(self.tr("Invalidate cache"))
 		self.mInvalidateCacheAction.triggered.connect(self.invalidateCacheAction)
 
+		self.mCacheInfoAction = QAction(self.tr("Cache info"), self)
+		self.mCacheInfoAction.setStatusTip(self.tr("Cache info"))
+		self.mCacheInfoAction.triggered.connect(self.cacheInfoAction)
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mStlExport)
@@ -184,6 +188,8 @@ class MainWidget(QMainWindow):
 		self.mHelpMenu.addAction(self.mAboutAction)
 
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
+		self.mUtilityMenu.addAction(self.mCacheInfoAction)
+		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mInvalidateCacheAction)
 		
 	def createToolbars(self):
@@ -249,6 +255,9 @@ class MainWidget(QMainWindow):
 		for f in zencad.lazy.cache.keys():
 			del zencad.lazy.cache[f]
 		print("Invalidate cache: %d files removed" % len(files))
+
+	def cacheInfoAction(self):
+		pass
 
 	def updateDistLabel(self):
 		qx,qy,qz = self.marker1[0].x, self.marker1[0].y, self.marker1[0].z
