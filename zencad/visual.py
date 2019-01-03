@@ -7,10 +7,7 @@ from PIL import Image
 
 from zencad.lazy import lazyfile
 
-@lazyfile("path")
-def screen(model, path, size=(800,600)):
-	scn = Scene()
-	scn.add(model)
+def doscreen(model, path, size=(800,600)):
 	viewer = Viewer(scn)
 	view = viewer.create_view()
 	view.set_virtual_window(size[0], size[1])
@@ -27,6 +24,10 @@ def screen(model, path, size=(800,600)):
 	image.putdata(pixels)
 
 	image.save(path)
+
+@lazyfile("path")
+def screen(model, path, size=(800,600)):
+	return doscreen(model, path, size)
 
 def screen_debug(model, size=(800,600)):
 	scn = Scene()

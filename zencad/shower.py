@@ -233,12 +233,8 @@ class MainWidget(QMainWindow):
 		w = self.dispw.width()
 		h = self.dispw.height()
 
-		raw = self.dispw.view.rawarray()
-		print (raw)
-
-		return
-
-		npixels = np.reshape(np.asarray(raw), (w,h,3))
+		raw = self.dispw.view.rawarray(w,h)
+		npixels = np.reshape(np.asarray(raw), (h,w,3))
 		nnnpixels = np.flip(npixels, 0).reshape((w * h * 3))
 
 		rawiter = iter(nnnpixels)
