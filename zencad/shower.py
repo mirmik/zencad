@@ -64,6 +64,8 @@ def show_label(lbl, en):
 
 
 class MainWidget(QMainWindow):
+	external_rerun_signal = pyqtSignal()
+
 	def __init__(self, dispw):
 		QMainWindow.__init__(self)
 		self.cw = QWidget()
@@ -153,6 +155,11 @@ class MainWidget(QMainWindow):
 			self.update()
 
 	def createActions(self):
+		self.mOpenAction = QAction(self.tr("Open"), self)
+		self.mOpenAction.setShortcut(self.tr("Ctrl+O"))
+		self.mOpenAction.setStatusTip(self.tr("Open"))
+		self.mOpenAction.triggered.connect(self.openAction)
+
 		self.mExitAction = QAction(self.tr("Exit"), self)
 		self.mExitAction.setShortcut(self.tr("Ctrl+Q"))
 		self.mExitAction.setStatusTip(self.tr("Exit the application"))
@@ -213,6 +220,7 @@ class MainWidget(QMainWindow):
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
+		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
 		self.mFileMenu.addAction(self.mScreen)
@@ -383,6 +391,21 @@ class MainWidget(QMainWindow):
 		image.putdata(pixels)
 
 		image.save(path)
+
+	def openAction(self):
+		global started_by
+		filters = "*.py;;*.*";
+		defaultFilter = "*.py";
+
+		path = QFileDialog.getOpenFileName(self, "Open File", 
+			QDir.currentPath(),
+			filters, defaultFilter)
+
+		if path[1] == False:
+			return
+
+		started_by = path[0]
+		self.external_rerun_signal.emit()
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
@@ -644,22 +667,39 @@ class update_loop(QThread):
 class rerun_notify_thread(QThread):
 	rerun_label_on_signal = pyqtSignal()
 	rerun_label_off_signal = pyqtSignal()
+	external_autoscale_signal = pyqtSignal()
 
 	def __init__(self, parent):
 		QThread.__init__(self, parent)
 
-	def run(self):
-		notifier = inotify.adapters.Inotify()
-		notifier.add_watch(started_by)
+	def init_notifier(self, path):
+		self.notifier = inotify.adapters.Inotify()
+		self.notifier.add_watch(path)
 
-		for event in notifier.event_gen():
-			if event is not None:
-				if 'IN_CLOSE_WRITE' in event[1]:
-					print("started_by was rewrited. try use rerun")
-					self.rerun()
+	def run(self):
+		self.restart = False
+		self.init_notifier(started_by)
+
+		while 1:
+			for event in self.notifier.event_gen():
+				if event is not None:
+					if 'IN_CLOSE_WRITE' in event[1]:
+						print("started_by was rewrited. try use rerun")
+						self.rerun()
+				if self.restart:
+					self.restart = False
+					break
+
+
 		
 		print("Warning: Rerun thread was finished")
 			
+	def externalRerun(self):
+		self.init_notifier(started_by)
+		self.restart=True
+		self.rerun()
+		self.external_autoscale_signal.emit()
+		
 	def rerun(self):
 		global default_scene
 		zencad.shower.show_impl = zencad.shower.update_show
@@ -737,6 +777,8 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 #	print("show")
 	thr_notify.rerun_label_off_signal.connect(main_window.rerun_label_off_slot)
 	thr_notify.rerun_label_on_signal.connect(main_window.rerun_label_on_slot)
+	thr_notify.external_autoscale_signal.connect(main_window.autoscaleAction)
+	main_window.external_rerun_signal.connect(thr_notify.externalRerun)
 
 	main_window.show()
 
