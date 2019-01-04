@@ -10,7 +10,7 @@ f1 = ngon(r = 35, n = 3).down(50)
 f2 = ngon(r = 35, n = 5).rotateY(deg(90)).left(50)
 f3 = circle(35).rotateX(deg(90)).back(50)
 
-s1 = linear_extrude(f1, (0,0,100))
+s1 = linear_extrude(f1, (0,0,100)).rotateZ(deg(180))
 s2 = linear_extrude(f2, (100,0,0))
 s3 = linear_extrude(f3, (0,100,0))
 
@@ -48,5 +48,9 @@ display(m3.right(xstep).back(ystep))
 display(t1.back(ystep).up(70))
 display(t2.left(xstep).back(ystep).up(70))
 display(t3.right(xstep).back(ystep).up(70))
+
+disp(s1.left(xstep).back(ystep), Color(0.5,0,0,0.95))
+disp(s2.left(xstep).back(ystep), Color(0.5,0,0,0.95))
+disp(s3.left(xstep).back(ystep), Color(0.5,0,0,0.95))
 
 show()
