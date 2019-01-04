@@ -331,10 +331,12 @@ class MainWidget(QMainWindow):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
 			self.tr("<h2>Shower</h2>"
 			"<p>Widget for display zencad geometry."
-			"<p>Based on OPENCASCADE geometric core."
+			"<h3>About ZenCad</h3>"
+			"<p>CAD system for righteous zen programmers."
+			"<p>Based on OpenCascade geometric core."
 			"<p><h3>Feedback</h3>"
-			"<p>\temail: mirmikns@yandex.ru"
-			"<p>\tgithub: https://github.com/mirmik/zencad"
+			"<p>email: mirmikns@yandex.ru"
+			"<p>github: https://github.com/mirmik/zencad"
 			"<p>2018-2019"));
 
 	def keyPressEvent (self, event):
