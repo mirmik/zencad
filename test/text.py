@@ -2,7 +2,7 @@
 #coding: utf-8
 
 from zencad import *
-#lazy.diag = True
+lazy.diag = True
 #lazy.diag_values = True
 #lazy.print_invokes = True
 
@@ -59,9 +59,6 @@ base = base + nut1.forw(5+h/2+5)
 m3 = m.forw(h*1.5)
 m=(m-base)
 m2 = m.rotateX(deg(180)).up(20)
-
-import sys
-print(sys.modules[box.__module__].__file__)
 
 #nut = nut.rotateX(deg(90)).forw(65.3/2).rotateZ(deg(50))
 #nut = nut + nut.rotateZ(deg(-100))
