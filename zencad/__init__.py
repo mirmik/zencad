@@ -16,6 +16,22 @@ from zencad.convert import *
 
 __version__ = '0.11.3'
 
+class NoCachedShapeGenerator(evalcache.LazyObject):
+	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
+	def __call__(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, self, args, kwargs, encache=False, decache=False, cls=LazyObjectShape)
+
+class CachedShapeGenerator(evalcache.LazyObject):
+	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
+	def __call__(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, self, args, kwargs, cls=LazyObjectShape)
+
+class LazyObjectShape(evalcache.LazyObject):
+	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
+	def translate(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, pyservoce.Shape.translate, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
+
+evalcache.lazy.hashfuncs[LazyObjectShape] = evalcache.lazy.updatehash_LazyObject
+evalcache.lazy.hashfuncs[CachedShapeGenerator] = evalcache.lazy.updatehash_LazyObject
+evalcache.lazy.hashfuncs[NoCachedShapeGenerator] = evalcache.lazy.updatehash_LazyObject
+
 ##display
 default_scene = Scene()
 
@@ -35,7 +51,7 @@ def show(scene=default_scene, *args, **kwargs):
 	zencad.shower.show(scene, *args, **kwargs)
 
 ##prim3d
-@lazy
+@lazy.lazy(cls=NoCachedShapeGenerator)
 def box(size, arg2 = None, arg3 = None, center = False):
 	if arg3 == None:
 		if hasattr(size, '__getitem__'):
@@ -45,11 +61,11 @@ def box(size, arg2 = None, arg3 = None, center = False):
 	else:
 		return pyservoce.box(size, arg2, arg3, center)
 
-@lazy
+@lazy.lazy(cls=NoCachedShapeGenerator)
 def sphere(r): 
 	return pyservoce.sphere(r)
 
-@lazy
+@lazy.lazy(cls=NoCachedShapeGenerator)
 def cylinder(r, h, center=False, angle=None): 
 	if angle is None:
 		return pyservoce.cylinder(r,h,center)
@@ -57,7 +73,7 @@ def cylinder(r, h, center=False, angle=None):
 		ap = angle_pair(angle)
 		return pyservoce.cylinder(r, h, ap[0], ap[1], center)
 
-@lazy
+@lazy.lazy(cls=NoCachedShapeGenerator)
 def cone(r1, r2, h, center = False, angle=None): 
 	if angle is None:
 		return pyservoce.cone(r1,r2,h,center)
@@ -65,7 +81,7 @@ def cone(r1, r2, h, center = False, angle=None):
 		ap = angle_pair(angle)
 		return pyservoce.cone(r1,r2,h,ap[0],ap[1],center)
 
-@lazy
+@lazy.lazy(cls=NoCachedShapeGenerator)
 def torus(r1, r2, uangle=None, vangle=None): 
 	if vangle is not None:
 		vangle = angle_pair(vangle)
@@ -81,23 +97,23 @@ def torus(r1, r2, uangle=None, vangle=None):
 
 	return pyservoce.torus(r1,r2)
 
-@lazy
+@lazy.lazy(cls=NoCachedShapeGenerator)
 def halfspace(): 
 	return pyservoce.halfspace()
 
-@lazy
+@lazy.lazy(cls=CachedShapeGenerator)
 def linear_extrude(*args, **kwargs):
 	return pyservoce.make_linear_extrude(*args, **kwargs)
 
-@lazy
+@lazy.lazy(cls=CachedShapeGenerator)
 def pipe(prof, path):
 	return pyservoce.make_pipe(prof, path)
 
-@lazy
+@lazy.lazy(cls=CachedShapeGenerator)
 def pipe_shell(prof, path, frenet = False):
 	return pyservoce.make_pipe_shell(prof, path, frenet)
 
-@lazy
+@lazy.lazy(cls=CachedShapeGenerator)
 def loft(arr):
 	return pyservoce.loft(arr)
 
