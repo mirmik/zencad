@@ -696,8 +696,8 @@ class rerun_notify_thread(QThread):
 		self.restart = False
 		
 		try:
-			self.init_notifier(started_by)
 			while 1:
+				self.init_notifier(started_by)
 				for event in self.notifier.event_gen():
 					if event is not None:
 						if 'IN_CLOSE_WRITE' in event[1]:
