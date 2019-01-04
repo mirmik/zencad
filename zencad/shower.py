@@ -196,6 +196,7 @@ class MainWidget(QMainWindow):
 		self.mCentering.triggered.connect(self.centeringAction)
 
 		self.mAutoscale = QAction(self.tr("Autoscale"), self)
+		self.mAutoscale.setShortcut(self.tr("Ctrl+A"))
 		self.mAutoscale.setStatusTip(self.tr("Autoscale"))
 		self.mAutoscale.triggered.connect(self.autoscaleAction)
 	
@@ -719,17 +720,19 @@ class rerun_notify_thread(QThread):
 		zencad.shower.show_impl = zencad.shower.update_show
 		default_scene=Scene()
 		
-		#glbls = globals().copy()
-		#glbls["__file__"] = started_by
+		path = os.path.abspath(started_by)
+		syspath = os.path.dirname(path)
+		sys.path.insert(0, syspath)
 
 		self.rerun_label_on_signal.emit()
 		try:
 			#exec(open(started_by).read(), glbls)
-			file_globals = runpy.run_path(started_by, run_name="__main__")
+			file_globals = runpy.run_path(path, run_name="__main__")
 			print("Rerun finished correctly")
 		except Exception as e:
 			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-			
+
+		sys.path.remove(syspath)
 		self.rerun_label_off_signal.emit()
 
 
