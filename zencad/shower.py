@@ -28,6 +28,7 @@ import runpy
 import inotify.adapters
 import math
 
+text_editor = "subl"
 main_window = None
 started_by = None
 diag = None
@@ -160,6 +161,11 @@ class MainWidget(QMainWindow):
 		self.mOpenAction.setStatusTip(self.tr("Open"))
 		self.mOpenAction.triggered.connect(self.openAction)
 
+		self.mTEAction = QAction(self.tr("Open in Editor"), self)
+		self.mTEAction.setShortcut(self.tr("Ctrl+T"))
+		self.mTEAction.setStatusTip(self.tr("Editor"))
+		self.mTEAction.triggered.connect(self.externalTextEditorOpen)
+
 		self.mExitAction = QAction(self.tr("Exit"), self)
 		self.mExitAction.setShortcut(self.tr("Ctrl+Q"))
 		self.mExitAction.setStatusTip(self.tr("Exit the application"))
@@ -221,6 +227,7 @@ class MainWidget(QMainWindow):
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mOpenAction)
+		self.mFileMenu.addAction(self.mTEAction)
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
 		self.mFileMenu.addAction(self.mScreen)
@@ -275,6 +282,9 @@ class MainWidget(QMainWindow):
 		else:
 			self.dispw.nointersect = True
 			self.poslbl.setText("Tracking disabled")
+
+	def externalTextEditorOpen(self):
+		os.system(text_editor + " " + started_by)
 
 	def testAction(self):
 		global default_scene
@@ -680,24 +690,22 @@ class rerun_notify_thread(QThread):
 
 	def run(self):
 		self.restart = False
-		self.init_notifier(started_by)
-
-		while 1:
-			for event in self.notifier.event_gen():
-				if event is not None:
-					if 'IN_CLOSE_WRITE' in event[1]:
-						print("started_by was rewrited. try use rerun")
-						self.rerun()
-				if self.restart:
-					self.restart = False
-					break
-
-
 		
-		print("Warning: Rerun thread was finished")
+		try:
+			self.init_notifier(started_by)
+			while 1:
+				for event in self.notifier.event_gen():
+					if event is not None:
+						if 'IN_CLOSE_WRITE' in event[1]:
+							print("started_by was rewrited. try use rerun")
+							self.rerun()
+					if self.restart:
+						self.restart = False
+						break
+		except Exception as e:
+			print("Warning: Rerun thread was finished:", e)
 			
 	def externalRerun(self):
-		self.init_notifier(started_by)
 		self.restart=True
 		self.rerun()
 		self.external_autoscale_signal.emit()
