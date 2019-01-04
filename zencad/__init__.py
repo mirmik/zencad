@@ -19,11 +19,16 @@ __version__ = '0.11.3'
 ##display
 default_scene = Scene()
 
-def display(shp):
+def display(shp, color = Color(0.6, 0.6, 0.8)):
 	if isinstance(shp, evalcache.LazyObject):
-		default_scene.add(evalcache.unlazy(shp))
+		return default_scene.add(evalcache.unlazy(shp), color)
 	else:
-		default_scene.add(shp)
+		return default_scene.add(shp, color)
+
+def disp(*args,**kwargs): display(*args, **kwargs)
+
+def highlight(m): return display(m, Color(0.5, 0, 0, 0.5))
+def hl(m) : return highlight(m)
 
 def show(scene=default_scene, *args, **kwargs):
 	import zencad.shower
