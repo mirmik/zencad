@@ -26,6 +26,7 @@ ystep = 240
 xstep = 240
 
 fontpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fonts/testfont.ttf")
+print(fontpath)
 
 t1 = textshape("difference", fontpath, 40)
 t1c = t1.center()

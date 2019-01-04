@@ -3,6 +3,8 @@
 import zencad
 import zencad.lazifier 
 import pyservoce
+import evalcache
+from pyservoce import Scene, View, Viewer, Color
 
 import sys
 import os
@@ -17,13 +19,17 @@ import numpy as np
 import time
 import threading
 import signal
+import runpy
 
 #from OpenGL.GL import *
 #from OpenGL.GLUT import *
 #from OpenGL.GLU import *
 
+import inotify.adapters
 import math
 
+main_window = None
+started_by = None
 diag = None
 ensave = None
 desave = None
@@ -49,6 +55,13 @@ def restore_lazy():
 	zencad.lazy.encache = ensave
 	zencad.lazy.decache = desave
 	zencad.lazy.diag = diag
+
+def show_label(lbl, en):
+	if (en):
+		lbl.setHidden(False)
+	else:
+  		lbl.setHidden(True)
+
 
 class MainWidget(QMainWindow):
 	def __init__(self, dispw):
@@ -90,10 +103,16 @@ class MainWidget(QMainWindow):
 		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.markerDistLabel.setAlignment(Qt.AlignCenter)
 
+		self.infoLabel = QLabel("")
+		self.infoLabel.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
+		self.infoLabel.setAlignment(Qt.AlignCenter)
+		show_label(self.infoLabel, False)
+
 		self.infolay.addWidget(self.poslbl)
 		self.infolay.addWidget(self.marker1Label)
 		self.infolay.addWidget(self.marker2Label)
 		self.infolay.addWidget(self.markerDistLabel)
+		self.infolay.addWidget(self.infoLabel)
 
 		#self.cpannellay.addWidget(self.cp)
 
@@ -103,6 +122,7 @@ class MainWidget(QMainWindow):
 		self.cw.setLayout(self.layout)
 
 		self.setCentralWidget(self.cw)
+		#self.overlay = Overlay(self.dispw)
 
 		self.createActions();
 		self.createMenus();
@@ -110,6 +130,21 @@ class MainWidget(QMainWindow):
 
 		self.dispw.intersectPointSignal.connect(self.poslblSlot)
 
+	def rerun_label_on_slot(self):
+		self.infoLabel.setText("Please wait... Мы тут работаем, понимаешь.")
+		show_label(self.marker1Label,False)
+		show_label(self.marker2Label,False)
+		show_label(self.markerDistLabel,False)
+		show_label(self.poslbl,False)
+		show_label(self.infoLabel,True)
+		
+	def rerun_label_off_slot(self):
+		show_label(self.marker1Label,True)
+		show_label(self.marker2Label,True)
+		show_label(self.markerDistLabel,True)
+		show_label(self.poslbl,True)
+		show_label(self.infoLabel,False)
+		
 	def poslblSlot(self, obj):
 		if obj[1]:
 			self.poslbl.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(obj[0].x, obj[0].y, obj[0].z))
@@ -164,6 +199,10 @@ class MainWidget(QMainWindow):
 		self.mTracking.setCheckable(True)
 		self.mTracking.toggled.connect(self.trackingAction)
 
+		self.mTestAction = QAction(self.tr("TestAction"), self)
+		self.mTestAction.setStatusTip(self.tr("TestAction"))
+		self.mTestAction.triggered.connect(self.testAction)
+
 		self.mInvalidateCacheAction = QAction(self.tr("Invalidate cache"), self)
 		self.mInvalidateCacheAction.setStatusTip(self.tr("Invalidate cache"))
 		self.mInvalidateCacheAction.triggered.connect(self.invalidateCacheAction)
@@ -195,6 +234,9 @@ class MainWidget(QMainWindow):
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
+
+#		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
+#		self.mHelpMenu.addAction(self.mTestAction)
 	
 	def createToolbars(self):
 		#self.btoolbar = QToolBar()
@@ -225,6 +267,21 @@ class MainWidget(QMainWindow):
 		else:
 			self.dispw.nointersect = True
 			self.poslbl.setText("Tracking disabled")
+
+	def testAction(self):
+		global default_scene
+		print("TestAction was invoked")
+		print(started_by)
+
+		print("replace show function")
+		zencad.shower.show_impl = zencad.shower.update_show
+		default_scene=Scene()
+
+		print("****************************\n\n\n\n\n\n\n********RERUN**********")
+		print("try rerun script")
+		exec(open(started_by).read(), globals())
+		print("return from rerun")
+
 
 	def exportBrepAction(self):
 		filters = "*.brep;;*.*";
@@ -270,11 +327,11 @@ class MainWidget(QMainWindow):
 			return total_size
 
 		def sizeof_fmt(num, suffix='B'):
-		    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-		        if abs(num) < 1024.0:
-		            return "%3.1f%s%s" % (num, unit, suffix)
-		        num /= 1024.0
-		    return "%.1f%s%s" % (num, 'Yi', suffix)
+			for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+				if abs(num) < 1024.0:
+					return "%3.1f%s%s" % (num, unit, suffix)
+				num /= 1024.0
+			return "%.1f%s%s" % (num, 'Yi', suffix)
 
 		msgBox = QMessageBox(self)
 		msgBox.setWindowTitle("Cache Info")
@@ -338,6 +395,16 @@ class MainWidget(QMainWindow):
 			"<p>email: mirmikns@yandex.ru"
 			"<p>github: https://github.com/mirmik/zencad"
 			"<p>2018-2019"));
+
+	def rerun_context(self, scn):
+		#old_central_widget = self.dispw
+		#old_central_widget.deleteLater()
+		#self.dispw = DisplayWidget(scn, True, True)
+		#self.setCentralWidget(self.dispw)
+		self.dispw.viewer.clean_context()
+		self.dispw.viewer.set_triedron_axes()
+		self.dispw.viewer.add_scene(scn)
+		self.dispw.view.redraw()
 
 	def keyPressEvent (self, event):
 		if event.key() == Qt.Key_Q:
@@ -573,9 +640,68 @@ class update_loop(QThread):
 				zencad.lazy.decache = desave
 				zencad.lazy.diag = diag
 				time.sleep(self.pause_time)
-		
 
-def show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
+class rerun_notify_thread(QThread):
+	rerun_label_on_signal = pyqtSignal()
+	rerun_label_off_signal = pyqtSignal()
+
+	def __init__(self, parent):
+		QThread.__init__(self, parent)
+
+	def run(self):
+		notifier = inotify.adapters.Inotify()
+		notifier.add_watch(started_by)
+
+		for event in notifier.event_gen():
+			if event is not None:
+				if 'IN_CLOSE_WRITE' in event[1]:
+					print("started_by was rewrited. try use rerun")
+					self.rerun()
+		
+		print("Warning: Rerun thread was finished")
+			
+	def rerun(self):
+		global default_scene
+		zencad.shower.show_impl = zencad.shower.update_show
+		default_scene=Scene()
+		
+		#glbls = globals().copy()
+		#glbls["__file__"] = started_by
+
+		self.rerun_label_on_signal.emit()
+		try:
+			#exec(open(started_by).read(), glbls)
+			file_globals = runpy.run_path(started_by, run_name="__main__")
+			print("Rerun finished correctly")
+		except Exception as e:
+			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+			
+		self.rerun_label_off_signal.emit()
+
+
+##display
+default_scene = Scene()
+
+def display(shp, color = Color(0.6, 0.6, 0.8)):
+	if isinstance(shp, evalcache.LazyObject):
+		return default_scene.add(evalcache.unlazy(shp), color)
+	else:
+		return default_scene.add(shp, color)
+
+def disp(*args,**kwargs): display(*args, **kwargs)
+
+def highlight(m): return display(m, Color(0.5, 0, 0, 0.5))
+def hl(m) : return highlight(m)
+
+def show(scene=None, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
+	if scene is None: scene = default_scene
+	return show_impl(scene, animate, pause_time, nointersect, showmarkers)
+
+def show_impl(scene, animate, pause_time, nointersect, showmarkers):
+	global started_by
+	global main_window
+	started_by = sys.argv[0]
+
 	app = QApplication(sys.argv)
 	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
@@ -590,14 +716,18 @@ def show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers
 	QSurfaceFormat.setDefaultFormat(fmt)
 
 	disp = DisplayWidget(scene, nointersect, showmarkers)
-	mw = MainWidget(disp);	
-	mw.resize(800,600)
+	main_window = MainWidget(disp);	
+	main_window.resize(800,600)
 
 	if animate != None:
-		thr = update_loop(mw, animate, disp, pause_time)
+		thr = update_loop(main_window, animate, disp, pause_time)
 		thr.start()
 		#thr = QThread(update_loop, animate, disp, update_time)
 		#thr.start()
+
+	thr_notify = rerun_notify_thread(main_window)
+	thr_notify.start()
+	
 
 	#def sigint_handler(*args):
 	#	sys.exit(-1)
@@ -605,6 +735,12 @@ def show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers
 	#signal.signal(signal.SIGINT, sigint_handler)
 
 #	print("show")
-	mw.show()
+	thr_notify.rerun_label_off_signal.connect(main_window.rerun_label_off_slot)
+	thr_notify.rerun_label_on_signal.connect(main_window.rerun_label_on_slot)
+
+	main_window.show()
 
 	return app.exec()
+
+def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
+	main_window.rerun_context(scene)

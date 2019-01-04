@@ -37,7 +37,7 @@ evalcache.lazy.hashfuncs[LazyObjectShape] = evalcache.lazy.updatehash_LazyObject
 evalcache.lazy.hashfuncs[shape_generator] = evalcache.lazy.updatehash_LazyObject
 evalcache.lazy.hashfuncs[nocached_shape_generator] = evalcache.lazy.updatehash_LazyObject
 
-cachepath = os.path.expanduser("~/.zencad-cache")
+cachepath = os.path.expanduser("~/.zencadcache")
 algo = hashlib.sha512
 
 lazy = evalcache.Lazy(cache = evalcache.dircache_v2.DirCache_v2(cachepath), algo = algo)
