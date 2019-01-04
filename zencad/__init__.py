@@ -29,6 +29,7 @@ def box(size, arg2 = None, arg3 = None, center = False):
 			return pyservoce.box(size, size, size, center)
 	else:
 		return pyservoce.box(size, arg2, arg3, center)
+def cube(*args, **kwargs): return box(*args, **kwargs)
 
 @lazy.lazy(cls=nocached_shape_generator)
 def sphere(r): 
