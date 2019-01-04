@@ -6,7 +6,7 @@ from evalcache.lazyfile import LazyFile
 import hashlib
 import os
 
-cachepath = os.path.expanduser("~/.zencad-cache2")
+cachepath = os.path.expanduser("~/.zencad-cache")
 algo = hashlib.sha512
 
 lazy = evalcache.Lazy(cache = evalcache.dircache_v2.DirCache_v2(cachepath), algo = algo)
