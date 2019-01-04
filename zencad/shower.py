@@ -188,14 +188,14 @@ class MainWidget(QMainWindow):
 		self.mNavigationMenu.addAction(self.mOrient2)
 		self.mNavigationMenu.addAction(self.mTracking)
 	
-		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
-		self.mHelpMenu.addAction(self.mAboutAction)
-
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
 		self.mUtilityMenu.addAction(self.mCacheInfoAction)
 		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mInvalidateCacheAction)
-		
+
+		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
+		self.mHelpMenu.addAction(self.mAboutAction)
+	
 	def createToolbars(self):
 		#self.btoolbar = QToolBar()
 		#self.lbl = QLabel("HelloWorld")
@@ -330,10 +330,12 @@ class MainWidget(QMainWindow):
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
 			self.tr("<h2>Shower</h2>"
-			"<p>Author: mirmik(mirmikns@yandex.ru) 2018"
 			"<p>Widget for display zencad geometry."
-			"<p>"
-			"<p>Based on OPENCASCADE geometric core."));
+			"<p>Based on OPENCASCADE geometric core."
+			"<p><h3>Feedback</h3>"
+			"<p>\temail: mirmikns@yandex.ru"
+			"<p>\tgithub: https://github.com/mirmik/zencad"
+			"<p>2018-2019"));
 
 	def keyPressEvent (self, event):
 		if event.key() == Qt.Key_Q:
