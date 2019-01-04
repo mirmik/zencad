@@ -34,7 +34,7 @@ nut = metric_nut(8, 1.25, 50)
 nut = nut.up(15.3) + cylinder(r=8/2, h=10).up(5.3) + linear_extrude(ngon(r = 7.1, n=6),(0,0,5.3))
 
 
-fontpath = "/home/mirmik/project/privdocs/bujin/poster/fonts/mandarinc.ttf"
+fontpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fonts/mandarinc.ttf")
 m = textshape("ZenCad", fontpath, 20)
 
 w = 64.68

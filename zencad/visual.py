@@ -28,7 +28,7 @@ def doscreen(model, path, size=(800,600)):
 
 	image.save(path)
 
-@lazy.lazyfile("path")
+@lazy.file_creator(pathfield="path")
 def screen(model, path, size=(800,600)):
 	return doscreen(model, path, size)
 

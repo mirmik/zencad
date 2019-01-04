@@ -16,11 +16,11 @@ import pyservoce
 import evalcache
 from zencad.lazifier import lazy
 
-@lazy.lazyfile("path")
+@lazy.file_creator(pathfield="path")
 def to_stl(model, path, delta):
 	pyservoce.make_stl(model, path, delta)
 
-@lazy.lazyfile("path")
+@lazy.file_creator(pathfield="path")
 def to_brep(model, path):
 	pyservoce.brep_write(model, path)
 
