@@ -18,15 +18,15 @@ __version__ = '0.11.3'
 
 class NoCachedShapeGenerator(evalcache.LazyObject):
 	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
-	def __call__(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, self, args, kwargs, encache=False, decache=False, cls=LazyObjectShape)
+	def __call__(self, *args, **kwargs): return self.lazyinvoke(self, args, kwargs, encache=False, decache=False, cls=LazyObjectShape)
 
 class CachedShapeGenerator(evalcache.LazyObject):
 	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
-	def __call__(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, self, args, kwargs, cls=LazyObjectShape)
+	def __call__(self, *args, **kwargs): return self.lazyinvoke(self, args, kwargs, cls=LazyObjectShape)
 
 class LazyObjectShape(evalcache.LazyObject):
 	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
-	def translate(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, pyservoce.Shape.translate, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
+	def translate(self, *args, **kwargs): return self.lazyinvoke(pyservoce.Shape.translate, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
 
 evalcache.lazy.hashfuncs[LazyObjectShape] = evalcache.lazy.updatehash_LazyObject
 evalcache.lazy.hashfuncs[CachedShapeGenerator] = evalcache.lazy.updatehash_LazyObject
