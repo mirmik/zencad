@@ -224,6 +224,10 @@ class MainWidget(QMainWindow):
 		self.mCacheInfoAction.setStatusTip(self.tr("Cache info"))
 		self.mCacheInfoAction.triggered.connect(self.cacheInfoAction)
 
+		self.mDebugInfoAction = QAction(self.tr("Debug info"), self)
+		self.mDebugInfoAction.setStatusTip(self.tr("Debug info"))
+		self.mDebugInfoAction.triggered.connect(self.debugInfoAction)
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mOpenAction)
@@ -250,8 +254,9 @@ class MainWidget(QMainWindow):
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
 
-#		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
-#		self.mHelpMenu.addAction(self.mTestAction)
+		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
+		self.mHelpMenu.addAction(self.mTestAction)
+		self.mHelpMenu.addAction(self.mDebugInfoAction)
 	
 	def createToolbars(self):
 		#self.btoolbar = QToolBar()
@@ -287,19 +292,18 @@ class MainWidget(QMainWindow):
 		os.system(text_editor + " " + started_by)
 
 	def testAction(self):
-		global default_scene
-		print("TestAction was invoked")
-		print(started_by)
+		pass
 
-		print("replace show function")
-		zencad.shower.show_impl = zencad.shower.update_show
-		default_scene=Scene()
-
-		print("****************************\n\n\n\n\n\n\n********RERUN**********")
-		print("try rerun script")
-		exec(open(started_by).read(), globals())
-		print("return from rerun")
-
+	def debugInfoAction(self):
+		msgBox = QMessageBox(self)
+		msgBox.setWindowTitle("Debug Info")
+		msgBox.setWindowModality(Qt.WindowModal);
+		msgBox.setInformativeText(
+			"start_by: {}"
+			.format(
+				started_by
+			))
+		msgBox.exec();
 
 	def exportBrepAction(self):
 		filters = "*.brep;;*.*";
