@@ -316,6 +316,8 @@ class MainWidget(QMainWindow):
 		self.dispw.reset_orient2()
 
 	def resetAction(self):
+		self.psi =   math.cos(math.pi / 4)
+		self.phi = - math.cos(math.pi / 4)
 		self.dispw.view.reset_orientation()
 		self.dispw.view.autoscale()
 
@@ -777,7 +779,7 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 #	print("show")
 	thr_notify.rerun_label_off_signal.connect(main_window.rerun_label_off_slot)
 	thr_notify.rerun_label_on_signal.connect(main_window.rerun_label_on_slot)
-	thr_notify.external_autoscale_signal.connect(main_window.autoscaleAction)
+	thr_notify.external_autoscale_signal.connect(main_window.resetAction)
 	main_window.external_rerun_signal.connect(thr_notify.externalRerun)
 
 	main_window.show()
