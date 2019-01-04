@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #coding: utf-8
 
+import evalcache
 from zencad import *
 lazy.diag = True
 
@@ -58,22 +59,11 @@ m3 = m.forw(h*1.5)
 m=(m-base)
 m2 = m.rotateX(deg(180)).up(20)
 
-#nut = nut.rotateX(deg(90)).forw(65.3/2).rotateZ(deg(50))
-#nut = nut + nut.rotateZ(deg(-100))
-
-#nuttrans = translate(10,35,5) * rotateZ(deg(50)) * rotateX(deg(90))
-#nuttrans2 = translate(10+65,35,5) * rotateZ(deg(-50)) * rotateX(deg(90))
-#nut1 = nut.transform(nuttrans) - base
-#nut2 = nut.transform(nuttrans2) - base
-#nut = nut1 + nut2
-#nut = nut.translate(w/2+5, h/2+5, 5) - base
-
 scn = Scene()
 
 scn.add(base.unlazy())
 scn.add(m.unlazy(), Color(1,1,1))
 scn.add(m2.unlazy(), Color(1,1,1))
 scn.add(m3.unlazy(), Color(1,1,1))
-
 
 show(scn)

@@ -1,12 +1,12 @@
 import pyservoce
-from zencad.lazifier import lazy
+from zencad.lazifier import lazy, shape_generator
 
-@lazy
+@lazy.lazy(cls=shape_generator)
 def union(arr): 
 	return pyservoce.union(arr)
 
-@lazy
+@lazy.lazy(cls=shape_generator)
 def difference(arr): return pyservoce.difference(arr)
 
-@lazy
+@lazy.lazy(cls=shape_generator)
 def intersect(arr): return pyservoce.intersect(arr)

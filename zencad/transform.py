@@ -2,7 +2,7 @@ import pyservoce
 import evalcache
 
 from zencad.util import deg, point3
-from zencad.lazifier import lazy
+from zencad.lazifier import lazy, LazyObjectShape
 from zencad.boolean import *
 
 import sys
@@ -16,9 +16,8 @@ class LazyObjectTransformGenerator(evalcache.LazyObject):
 class LazyObjectTransform(evalcache.LazyObject):
 	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
 	def __mul__(self, oth): return evalcache.lazy.lazyinvoke(self, operator.__mul__, (self, oth), encache=False, decache=False, cls=LazyObjectTransform)
-	def __call__(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, self, args, kwargs, encache=False, decache=False)
+	def __call__(self, *args, **kwargs): return evalcache.lazy.lazyinvoke(self, self, args, kwargs, encache=False, decache=False, cls=LazyObjectShape)
 	
-
 evalcache.lazy.hashfuncs[LazyObjectTransform] = evalcache.lazy.updatehash_LazyObject
 evalcache.lazy.hashfuncs[LazyObjectTransformGenerator] = evalcache.lazy.updatehash_LazyObject
 
