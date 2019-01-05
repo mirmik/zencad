@@ -339,10 +339,12 @@ class MainWidget(QMainWindow):
 		self.dispw.reset_orient2()
 
 	def resetAction(self):
-		self.psi =   math.cos(math.pi / 4)
-		self.phi = - math.cos(math.pi / 4)
-		self.dispw.view.reset_orientation()
+		self.dispw.psi =   math.cos(math.pi / 4)
+		self.dispw.phi = - math.cos(math.pi / 4)
 		self.dispw.view.autoscale()
+		self.orient1()
+		self.dispw.set_orient1()
+		self.dispw.view.redraw()
 
 	def invalidateCacheAction(self):
 		files = zencad.lazy.cache.keys()
