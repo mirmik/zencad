@@ -36,7 +36,7 @@ setup(
 
 	include_package_data=True,
 	install_requires=[
-		'evalcache==1.7.0',
+		'evalcache==1.8.0',
 		'pyservoce==1.8.0',
 		'numpy',
 		'pillow',
