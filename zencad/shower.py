@@ -212,7 +212,7 @@ class MainWidget(QMainWindow):
 	def _init_example_menu(self, menu, directory):
 		files = os.listdir(directory)
 		scripts = [f for f in files if os.path.splitext(f)[1] == ".py"]
-		dirs = [f for f in files if os.path.isdir(os.path.join(directory, f)) and f != "__pycache__"]
+		dirs = [f for f in files if os.path.isdir(os.path.join(directory, f)) and f != "__pycache__" and f != "fonts"]
 		
 		for f in sorted(scripts):
 			self._add_open_action(menu, f, os.path.join(directory, f))
