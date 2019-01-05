@@ -237,7 +237,10 @@ class MainWidget(QMainWindow):
 		cb = QApplication.clipboard()
 		cb.clear(mode=cb.Clipboard )
 		cb.setText('import Part; export = Part.Shape(); export.read("{}"); Part.show(export); Gui.activeDocument().activeView().viewAxonometric(); Gui.SendMsgToActiveView("ViewFit")'.format(tmpfl), mode=cb.Clipboard)
-		pyservoce.brep_write(self.dispw.scene[0].shape(), tmpfl)		
+		pyservoce.brep_write(self.dispw.scene[0].shape(), tmpfl)
+		QMessageBox.information(self, self.tr("ToFreeCad"),
+			self.tr("Script copied to clipboard"));		
+
 
 	def exportStlAction(self):
 		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.01, 0, 10, 10)
