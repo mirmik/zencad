@@ -49,3 +49,11 @@ def disable_cache():
 def test_mode():
 	disable_cache()
 	lazy.diag = True
+
+def restore_default_lazyopts():
+	lazy.encache = True
+	lazy.decache = True
+	lazy.diag = False
+	lazy.diag_values = False
+	lazy.print_invokes = False
+
