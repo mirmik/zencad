@@ -39,7 +39,7 @@ desave = None
 onplace = None
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
-BANER_TEXT = (#"\n"
+BANNER_TEXT = (#"\n"
 			"███████╗███████╗███╗   ██╗ ██████╗ █████╗ ██████╗ \n"
 			"╚══███╔╝██╔════╝████╗  ██║██╔════╝██╔══██╗██╔══██╗\n"
 			"  ███╔╝ █████╗  ██╔██╗ ██║██║     ███████║██║  ██║\n"
@@ -459,7 +459,7 @@ class MainWidget(QMainWindow):
 			"<p><h3>Feedback</h3>"
 			"<pre>email: mirmikns@yandex.ru\n"
 			"github: https://github.com/mirmik/zencad\n"
-			"2018-2019<pre/>".format(BANER_TEXT, ABOUT_TEXT)));
+			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context(self, scn):
 		#old_central_widget = self.dispw
