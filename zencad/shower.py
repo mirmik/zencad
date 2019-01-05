@@ -156,79 +156,39 @@ class MainWidget(QMainWindow):
 			self.poslbl.setText("")
 			self.update()
 
+	def create_action(self, text, action, tip, shortcut = None, checkbox = False):
+		act = QAction(self.tr(text), self)
+		act.setStatusTip(self.tr(tip))
+		
+		if shortcut is not None: 
+			act.setShortcut(self.tr(shortcut))
+		
+		if not checkbox:
+			act.triggered.connect(action)
+		else:
+			act.setCheckable(True)
+			act.toggled.connect(action)
+		
+		return act
+
 	def createActions(self):
-		self.mOpenAction = QAction(self.tr("Open"), self)
-		self.mOpenAction.setShortcut(self.tr("Ctrl+O"))
-		self.mOpenAction.setStatusTip(self.tr("Open"))
-		self.mOpenAction.triggered.connect(self.openAction)
-
-		self.mTEAction = QAction(self.tr("Open in Editor"), self)
-		self.mTEAction.setShortcut(self.tr("Ctrl+T"))
-		self.mTEAction.setStatusTip(self.tr("Editor"))
-		self.mTEAction.triggered.connect(self.externalTextEditorOpen)
-
-		self.mExitAction = QAction(self.tr("Exit"), self)
-		self.mExitAction.setShortcut(self.tr("Ctrl+Q"))
-		self.mExitAction.setStatusTip(self.tr("Exit the application"))
-		self.mExitAction.triggered.connect(self.close)
-	
-		self.mStlExport = QAction(self.tr("Export STL..."), self)
-		self.mStlExport.setStatusTip(self.tr("Export file with external STL-Mesh format"))
-		self.mStlExport.triggered.connect(self.exportStlAction);
-
-		self.mBrepExport = QAction(self.tr("Export BREP..."), self)
-		self.mBrepExport.setStatusTip(self.tr("Export file in BREP format"))
-		self.mBrepExport.triggered.connect(self.exportBrepAction);
-	
-		self.mScreen = QAction(self.tr("Screenshot..."), self)
-		self.mScreen.setStatusTip(self.tr("Do screen"))
-		self.mScreen.triggered.connect(self.screenshotAction)
-	
-		self.mAboutAction = QAction(self.tr("About"), self)
-		self.mAboutAction.setStatusTip(self.tr("About the application"))
-		self.mAboutAction.triggered.connect(self.aboutAction)
-	
-		self.mReset = QAction(self.tr("Reset"), self)
-		self.mReset.setStatusTip(self.tr("Reset"))
-		self.mReset.triggered.connect(self.resetAction)
-
-		self.mCentering = QAction(self.tr("Centering"), self)
-		self.mCentering.setStatusTip(self.tr("Centering"))
-		self.mCentering.triggered.connect(self.centeringAction)
-
-		self.mAutoscale = QAction(self.tr("Autoscale"), self)
-		self.mAutoscale.setShortcut(self.tr("Ctrl+A"))
-		self.mAutoscale.setStatusTip(self.tr("Autoscale"))
-		self.mAutoscale.triggered.connect(self.autoscaleAction)
-	
-		self.mOrient1 = QAction(self.tr("Orient1"), self)
-		self.mOrient1.setStatusTip(self.tr("Orient1"))
-		self.mOrient1.triggered.connect(self.orient1)
-	
-		self.mOrient2 = QAction(self.tr("Orient2"), self)
-		self.mOrient2.setStatusTip(self.tr("Orient2"))
-		self.mOrient2.triggered.connect(self.orient2)
-
-		self.mTracking = QAction(self.tr("Tracking"), self)
-		self.mTracking.setStatusTip(self.tr("Tracking"))
-		self.mTracking.setCheckable(True)
-		self.mTracking.toggled.connect(self.trackingAction)
-
-		self.mTestAction = QAction(self.tr("TestAction"), self)
-		self.mTestAction.setStatusTip(self.tr("TestAction"))
-		self.mTestAction.triggered.connect(self.testAction)
-
-		self.mInvalidateCacheAction = QAction(self.tr("Invalidate cache"), self)
-		self.mInvalidateCacheAction.setStatusTip(self.tr("Invalidate cache"))
-		self.mInvalidateCacheAction.triggered.connect(self.invalidateCacheAction)
-
-		self.mCacheInfoAction = QAction(self.tr("Cache info"), self)
-		self.mCacheInfoAction.setStatusTip(self.tr("Cache info"))
-		self.mCacheInfoAction.triggered.connect(self.cacheInfoAction)
-
-		self.mDebugInfoAction = QAction(self.tr("Debug info"), self)
-		self.mDebugInfoAction.setStatusTip(self.tr("Debug info"))
-		self.mDebugInfoAction.triggered.connect(self.debugInfoAction)
+		self.mOpenAction = 	self.create_action("Open", 				self.openAction, 				"Open", 										"Ctrl+O")
+		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+T")
+		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
+		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
+		self.mBrepExport = 	self.create_action("Export BREP...", 	self.exportBrepAction, 			"Export file in BREP format")
+		self.mScreen = 		self.create_action("Screenshot...", 	self.screenshotAction, 			"Do screen...")
+		self.mAboutAction = self.create_action("About", 			self.aboutAction, 				"About the application")
+		self.mReset = 		self.create_action("Reset", 			self.resetAction, 				"Reset")
+		self.mCentering = 	self.create_action("Centering", 		self.centeringAction, 			"Centering")
+		self.mAutoscale = 	self.create_action("Autoscale", 		self.autoscaleAction, 			"Autoscale", 									"Ctrl+A")
+		self.mOrient1 = 	self.create_action("Orient1", 			self.orient1, 					"Orient1")
+		self.mOrient2 = 	self.create_action("Orient2", 			self.orient2, 					"Orient2")
+		self.mTracking = 	self.create_action("Tracking", 			self.trackingAction, 			"Tracking",				checkbox=True)
+		self.mTestAction = 	self.create_action("TestAction", 		self.testAction, 				"TestAction")
+		self.mInvalCache = 	self.create_action("Invalidate cache", 	self.invalidateCacheAction, 	"Invalidate cache")
+		self.mCacheInfo = 	self.create_action("Cache info", 		self.cacheInfoAction, 			"Cache info")
+		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -249,16 +209,16 @@ class MainWidget(QMainWindow):
 		self.mNavigationMenu.addAction(self.mTracking)
 	
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
-		self.mUtilityMenu.addAction(self.mCacheInfoAction)
+		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addSeparator()
-		self.mUtilityMenu.addAction(self.mInvalidateCacheAction)
+		self.mUtilityMenu.addAction(self.mInvalCache)
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
 		self.mHelpMenu.addAction(self.mTestAction)
-		self.mHelpMenu.addAction(self.mDebugInfoAction)
+		self.mHelpMenu.addAction(self.mDebugInfo)
 	
 	def createToolbars(self):
 		#self.btoolbar = QToolBar()
