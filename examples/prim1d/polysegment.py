@@ -16,9 +16,13 @@ pnts = points(
 m0 = polysegment( pnts )
 m1 = polysegment( pnts, closed=True )
 m2 = polysegment( pnts, closed=True ).fill()
+m3 = polysegment( pnts + [(0,0,0)] )
+m4 = polysegment( pnts + [(0,0,0)] ).fill()
 
 display(m0)
 display(m1.left(20))
 display(m2.left(40))
+display(m3.left(20).forw(30))
+display(m4.left(40).forw(30))
 
 show()
