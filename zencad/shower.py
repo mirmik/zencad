@@ -75,6 +75,7 @@ class MainWidget(QMainWindow):
 		self.cpannellay = QHBoxLayout()
 		self.infolay = QHBoxLayout()
 
+		self.lastopened = None
 		self.setWindowTitle("zenwidget");
 		#self.setWindowIcon(QIcon(":/industrial-robot.svg"));
 
@@ -414,13 +415,16 @@ class MainWidget(QMainWindow):
 		filters = "*.py;;*.*";
 		defaultFilter = "*.py";
 
+		startpath = QDir.currentPath() if self.lastopened == None else os.path.dirname(self.lastopened)
+
 		path = QFileDialog.getOpenFileName(self, "Open File", 
-			QDir.currentPath(),
+			startpath,
 			filters, defaultFilter)
 
 		if path[1] == False:
 			return
 
+		self.lastopened = path[0]
 		started_by = path[0]
 		self.external_rerun_signal.emit()
 
