@@ -202,16 +202,39 @@ class MainWidget(QMainWindow):
 		self.mCacheInfo = 	self.create_action("Cache info", 		self.cacheInfoAction, 			"Cache info")
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 
+	def _add_open_action(self, menu, name, path):
+		def callback():
+			print(path)
+			self._open_routine(path)
+
+		menu.addAction(self.create_action(name, callback, path))
+
+	def _init_example_menu(self, menu, directory):
+		files = os.listdir(directory)
+		scripts = [f for f in files if os.path.splitext(f)[1] == ".py"]
+		dirs = [f for f in files if os.path.isdir(os.path.join(directory, f)) and f != "__pycache__"]
+		
+		for f in scripts:
+			self._add_open_action(menu, f, os.path.join(directory, f))
+
+		for d in dirs:
+			m = menu.addMenu(d)
+			self._init_example_menu(m, os.path.join(directory, d))	
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mTEAction)
+		self.exampleMenu = self.mFileMenu.addMenu("Examples")
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
 		self.mFileMenu.addAction(self.mToFreeCad)
 		self.mFileMenu.addAction(self.mScreen)
 		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mExitAction)
+
+		moduledir = os.path.dirname(__file__)
+		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "examples"))
 	
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
 		self.mNavigationMenu.addAction(self.mReset)
@@ -394,8 +417,25 @@ class MainWidget(QMainWindow):
 
 		image.save(path)
 
-	def openAction(self):
+	def _open_routine(self, path):
+		#Проверяем, чтобы в файле был хоть намек на zencad...
+		#А то чего его открывать.
 		global started_by
+		filetext = open(path).read()
+		repattern1 = re.compile(r"import *zencad|from *zencad *import")
+		
+		zencad_search = repattern1.search(filetext)
+		if zencad_search is None:
+			print("no zencad import here... hm...")
+			ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
+				self.tr("I can not find any zencad import here"))
+			return
+
+		self.lastopened = path
+		started_by = path
+		self.external_rerun_signal.emit()
+
+	def openAction(self):
 		filters = "*.py;;*.*";
 		defaultFilter = "*.py";
 
@@ -408,21 +448,7 @@ class MainWidget(QMainWindow):
 		if path[1] == False:
 			return
 
-		#Проверяем, чтобы в файле был хоть намек на zencad...
-		#А то чего его открывать.
-		filetext = open(path[0]).read()
-		repattern1 = re.compile(r"import *zencad|from *zencad *import")
-		
-		zencad_search = repattern1.search(filetext)
-		if zencad_search is None:
-			print("no zencad import here... hm...")
-			ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
-				self.tr("I can not find any zencad import here"))
-			return
-
-		self.lastopened = path[0]
-		started_by = path[0]
-		self.external_rerun_signal.emit()
+		self._open_routine(path[0])
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),

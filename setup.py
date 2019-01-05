@@ -38,6 +38,7 @@ setup(
 	]},
 
 	data_files = [
+		("zencad/examples/fonts", [file for file in glob.glob("examples/fonts/*")]),
 		("zencad/examples", [file for file in glob.glob("examples/*.py")]),
 		("zencad/examples/openscad_like", [file for file in glob.glob("examples/openscad_like/*.py")]),
 		("zencad/examples/storage", [file for file in glob.glob("examples/storage/*.py")]),
