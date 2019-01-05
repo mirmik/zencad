@@ -2,6 +2,7 @@
 #coding: utf-8
 
 from zencad import *
+test_mode()
 
 def section(w, h, l, t, d, d2):
 	return (
