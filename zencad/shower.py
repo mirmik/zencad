@@ -16,6 +16,7 @@ from PyQt5.QtGui import *
 from PIL import Image
 import numpy as np
 
+import re
 import time
 import threading
 import signal
@@ -382,6 +383,18 @@ class MainWidget(QMainWindow):
 			filters, defaultFilter)
 
 		if path[1] == False:
+			return
+
+		#Проверяем, чтобы в файле был хоть намек на zencad...
+		#А то чего его открывать.
+		filetext = open(path[0]).read()
+		repattern1 = re.compile(r"import *zencad|from *zencad *import")
+		
+		zencad_search = repattern1.search(filetext)
+		if zencad_search is None:
+			print("no zencad import here... hm...")
+			ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
+                self.tr("I can not find any zencad import here"))
 			return
 
 		self.lastopened = path[0]
