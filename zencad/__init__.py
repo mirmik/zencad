@@ -16,6 +16,7 @@ from zencad.convert import *
 import types
 
 __version__ = '0.12.0'
+moduledir = os.path.dirname(__file__)
 
 from zencad.shower import show, display, disp, hl, highlight 
 
