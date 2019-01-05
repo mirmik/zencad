@@ -13,7 +13,7 @@ import os
 setup(
 	name = 'zencad',
 	packages = ['zencad'],
-	version = zencad.__version__,
+	version = '0.13.1',
 	license='MIT',
 	description = 'CAD system for righteous zen programmers ',
 	author = 'Sorokin Nikolay',
@@ -25,14 +25,14 @@ setup(
 	classifiers = [],
 	scripts = ["routine/zencad"],
 
-	package_data={'zencad': [
-		'industrial-robot.svg',
-	]},
+	package_data={
+		'zencad': [ 'industrial-robot.svg', "examples/*", "examples/**/*"],
+	},
 
-	data_files = [
-		("zencad/examples", [file for file in glob.glob("examples/*.py")]),
-		*[("zencad/examples/"+d, [file for file in glob.glob("examples/"+d+"/*")]) for d in os.listdir("examples") if os.path.isdir(os.path.join("examples", d)) and d != "__pycache__"]
-	],
+	#data_files = [
+	#	("zencad/examples", [file for file in glob.glob("examples/*.py")]),
+	#	*[("zencad/examples/"+d, [file for file in glob.glob("examples/"+d+"/*")]) for d in os.listdir("examples") if os.path.isdir(os.path.join("examples", d)) and d != "__pycache__"]
+	#],
 
 	include_package_data=True,
 	install_requires=[
