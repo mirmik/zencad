@@ -799,7 +799,7 @@ def show(scene=None, animate = None, pause_time = 0.01, nointersect=True, showma
 def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	global started_by
 	global main_window
-	started_by = sys.argv[0]
+	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
 
 	app = QApplication(sys.argv)
 	#app.lastWindowClosed.connect(app.quit)
