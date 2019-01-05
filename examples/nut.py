@@ -2,7 +2,7 @@
 #coding: utf-8
 
 from zencad import *
-import sys
+lazy.diag = True
 
 @lazy
 def instrument_metric_nut(drad, step, h):
