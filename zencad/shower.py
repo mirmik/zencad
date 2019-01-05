@@ -9,6 +9,7 @@ from pyservoce import Scene, View, Viewer, Color
 import tempfile
 import sys
 import os
+#import dill
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -21,7 +22,7 @@ import re
 import time
 import threading
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import signal
 import runpy
 
@@ -651,7 +652,6 @@ class DisplayWidget(QWidget):
 		else:
 			self.alt_pressed = False
 			
-
 		if not self.nointersect and not self.mousedown:
 			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
 			self.intersectPointSignal.emit(ip)
@@ -730,6 +730,26 @@ class update_loop(QThread):
 				zencad.lazy.diag = diag
 				time.sleep(self.pause_time)
 
+
+def rerun_routine(path):
+	import zencad
+	zencad.shower.show_impl = zencad.shower.update_show
+
+	syspath = os.path.dirname(path)
+	sys.path.insert(0, syspath)
+
+	globals()["ZENCAD_return_scene"] = 0
+
+	try:
+		zencad.lazifier.restore_default_lazyopts()
+		runpy.run_path(path, run_name="__main__")
+		print("Rerun finished correctly")
+	except Exception as e:
+		print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+
+	sys.path.remove(syspath)
+	return globals()["ZENCAD_return_scene"]
+
 class rerun_notify_thread(QThread):
 	rerun_label_on_signal = pyqtSignal()
 	rerun_label_off_signal = pyqtSignal()
@@ -772,40 +792,26 @@ class rerun_notify_thread(QThread):
 		
 		path = os.path.abspath(started_by)
 		
-		#syspath = os.path.dirname(path)
-		#sys.path.insert(0, syspath)
-		#try:
-		#	zencad.lazifier.restore_default_lazyopts()
-		#	#exec(open(started_by).read(), glbls)
-		#	file_globals = runpy.run_path(path, run_name="__main__")
-		#	print("Rerun finished correctly")
-		#except Exception as e:
-		#	print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+		syspath = os.path.dirname(path)
+		sys.path.insert(0, syspath)
+		try:
+			zencad.lazifier.restore_default_lazyopts()
+			#exec(open(started_by).read(), glbls)
+			runpy.run_path(path, run_name="__main__")
+			print("Rerun finished correctly")
+		except Exception as e:
+			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
 	
-		#sys.path.remove(syspath)
-		#self.rerun_label_off_signal.emit()
-
-		def routine(arg):
-			print("rarg",arg)
-			syspath = os.path.dirname(path)
-			sys.path.insert(0, syspath)
-		
-			try:
-				#self.rerun_label_on_signal.emit()
-				zencad.lazifier.restore_default_lazyopts()
-				#exec(open(started_by).read(), glbls)
-				file_globals = runpy.run_path(path, run_name="__main__")
-				print("Rerun finished correctly")
-			except Exception as e:
-				print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-		
-			sys.path.remove(syspath)
-			return ZENCAD_return_scene
-			
-		pool = ProcessPoolExecutor(1)		 
-		future = pool.submit(routine, ())
-		main_window.rerun_context(future.result())
+		sys.path.remove(syspath)
 		self.rerun_label_off_signal.emit()
+			
+		#pool = ProcessPoolExecutor(1)		 
+		#future = pool.submit(rerun_routine, path)
+		
+		#result = future.result()
+		#print(result[0])
+		#main_window.rerun_context(future.result())
+		#self.rerun_label_off_signal.emit()
 
 ##display
 default_scene = Scene()
@@ -873,7 +879,5 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	return app.exec()
 
 def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
-	global ZENCAD_return_scene 
-	ZENCAD_return_scene = scene
-	pass
-	#main_window.rerun_context(scene)
+	#globals()["ZENCAD_return_scene"] = scene
+	main_window.rerun_context(scene)
