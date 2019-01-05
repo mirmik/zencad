@@ -20,6 +20,8 @@ import numpy as np
 import re
 import time
 import threading
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 import signal
 import runpy
 
@@ -770,43 +772,40 @@ class rerun_notify_thread(QThread):
 		
 		path = os.path.abspath(started_by)
 		
-		syspath = os.path.dirname(path)
-		sys.path.insert(0, syspath)
+		#syspath = os.path.dirname(path)
+		#sys.path.insert(0, syspath)
+		#try:
+		#	zencad.lazifier.restore_default_lazyopts()
+		#	#exec(open(started_by).read(), glbls)
+		#	file_globals = runpy.run_path(path, run_name="__main__")
+		#	print("Rerun finished correctly")
+		#except Exception as e:
+		#	print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+	
+		#sys.path.remove(syspath)
+		#self.rerun_label_off_signal.emit()
 
-		try:
-			#self.rerun_label_on_signal.emit()
-			zencad.lazifier.restore_default_lazyopts()
-			#exec(open(started_by).read(), glbls)
-			file_globals = runpy.run_path(path, run_name="__main__")
-			print("Rerun finished correctly")
-		except Exception as e:
-			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-
-		sys.path.remove(syspath)
+		def routine(arg):
+			print("rarg",arg)
+			syspath = os.path.dirname(path)
+			sys.path.insert(0, syspath)
+		
+			try:
+				#self.rerun_label_on_signal.emit()
+				zencad.lazifier.restore_default_lazyopts()
+				#exec(open(started_by).read(), glbls)
+				file_globals = runpy.run_path(path, run_name="__main__")
+				print("Rerun finished correctly")
+			except Exception as e:
+				print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+		
+			sys.path.remove(syspath)
+			return ZENCAD_return_scene
+			
+		pool = ProcessPoolExecutor(1)		 
+		future = pool.submit(routine, ())
+		main_window.rerun_context(future.result())
 		self.rerun_label_off_signal.emit()
-
-#class routine(QThread):			
-#	def __init__(self, parent):
-#		QThread.__init__(self, parent)
-
-#	def run(self):
-#		syspath = os.path.dirname(path)
-#		sys.path.insert(0, syspath)
-#
-#		try:
-#			#self.rerun_label_on_signal.emit()
-#			zencad.lazifier.restore_default_lazyopts()
-#			#exec(open(started_by).read(), glbls)
-#			file_globals = runpy.run_path(path, run_name="__main__")
-#			print("Rerun finished correctly")
-#		except Exception as e:
-#			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-#
-#		sys.path.remove(syspath)
-#		self.parent().rerun_label_off_signal.emit()
-
-#do = routine(self)
-#do.start()
 
 ##display
 default_scene = Scene()
@@ -874,4 +873,7 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	return app.exec()
 
 def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
-	main_window.rerun_context(scene)
+	global ZENCAD_return_scene 
+	ZENCAD_return_scene = scene
+	pass
+	#main_window.rerun_context(scene)
