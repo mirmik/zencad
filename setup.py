@@ -6,6 +6,7 @@ from distutils.util import get_platform
 
 import zencad
 
+import glob
 import sys
 
 #try:
@@ -32,13 +33,23 @@ setup(
 	classifiers = [],
 	scripts = ["routine/zencad"],
 
-    include_package_data=True,
+	#package_data={'zencad': [
+	#	'examples/*.py',
+	#]},
+
+	data_files = [
+		("zencad/examples", [file for file in glob.glob("examples/*.py")]),
+		("zencad/examples/openscad_like", [file for file in glob.glob("examples/openscad_like/*.py")]),
+		("zencad/examples/storage", [file for file in glob.glob("examples/storage/*.py")]),
+	],
+
+	include_package_data=True,
 	install_requires=[
-        'evalcache==1.7.0',
-        'pyservoce==1.7.0',
-        'numpy',
-        'pillow',
-        'inotify',
-        'PyQt5',
-    ],
+		'evalcache==1.7.0',
+		'pyservoce==1.7.0',
+		'numpy',
+		'pillow',
+		'inotify',
+		'PyQt5',
+	],
 )

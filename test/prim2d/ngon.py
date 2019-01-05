@@ -3,7 +3,10 @@
 
 import zencad
 
-m = zencad.ngon(r = 10, n = 6)
-zencad.display(m)
+NMin = 3
+NMax = 12
+
+marr = [zencad.ngon(r = 10, n = i) for i in range(NMin, NMax+1)]
+for i in range(0, len(marr)): zencad.display(marr[i].right(i*30))
 
 zencad.show()
