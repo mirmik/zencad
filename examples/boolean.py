@@ -49,9 +49,9 @@ display(m1.back(ystep))
 display(m2.left(xstep).back(ystep))
 display(m3.right(xstep).back(ystep))
 
-display(t1.back(ystep).up(c3))
-display(t2.left(xstep).back(ystep).up(c3))
-display(t3.right(xstep).back(ystep).up(c3))
+display(t1.back(ystep).up(c3), Color(1,1,0))
+display(t2.left(xstep).back(ystep).up(c3), Color(1,1,0))
+display(t3.right(xstep).back(ystep).up(c3), Color(1,1,0))
 
 disp(s1.left(xstep).back(ystep), Color(0.5,0,0,0.95))
 disp(s2.left(xstep).back(ystep), Color(0.5,0,0,0.95))
