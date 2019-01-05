@@ -8,15 +8,7 @@ import zencad
 
 import glob
 import sys
-
-#try:
-#	import PyQt5
-#except Exception(e):
-#	print(e)
-#	print("PyQt5 needed.")
-#	print("try:")
-#	print("apt-get install python3-pyqt5")
-#	sys.exit()
+import os
 
 setup(
 	name = 'zencad',
@@ -38,10 +30,8 @@ setup(
 	]},
 
 	data_files = [
-		("zencad/examples/fonts", [file for file in glob.glob("examples/fonts/*")]),
 		("zencad/examples", [file for file in glob.glob("examples/*.py")]),
-		("zencad/examples/openscad_like", [file for file in glob.glob("examples/openscad_like/*.py")]),
-		("zencad/examples/storage", [file for file in glob.glob("examples/storage/*.py")]),
+		*[("zencad/examples/"+d, [file for file in glob.glob("examples/"+d+"/*")]) for d in os.listdir("examples") if os.path.isdir(os.path.join("examples", d)) and d != "__pycache__"]
 	],
 
 	include_package_data=True,
