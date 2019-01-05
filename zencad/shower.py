@@ -577,27 +577,31 @@ class DisplayWidget(QWidget):
 
 	def showEvent(self, ev):
 #		print("showEvent")
-		if self.showmarkers:
-			disable_lazy()
-			self.msphere = zencad.sphere(1)
-			self.MarkerQController = self.scene.add(self.msphere, zencad.Color(1,0,0))
-			self.MarkerWController = self.scene.add(self.msphere, zencad.Color(0,1,0))
-			restore_lazy()
-
-		self.viewer = zencad.Viewer(self.scene)
-		self.view = self.viewer.create_view()
-		self.view.set_window(self.winId())
-		self.view.set_gradient()
+		if self.inited != True:
 		
-		self.set_orient1()
-		self.view.set_triedron()
-		self.viewer.set_triedron_axes()
+			if self.showmarkers:
+				disable_lazy()
+				self.msphere = zencad.sphere(1)
+				self.MarkerQController = self.scene.add(self.msphere, zencad.Color(1,0,0))
+				self.MarkerWController = self.scene.add(self.msphere, zencad.Color(0,1,0))
+				restore_lazy()
 
-		if self.showmarkers:
-			self.MarkerQController.hide(True)
-			self.MarkerWController.hide(True)
-
-		self.inited = True
+			self.viewer = zencad.Viewer(self.scene)
+			self.view = self.viewer.create_view()
+			self.view.set_window(self.winId())
+			self.view.set_gradient()
+			
+			self.set_orient1()
+			self.view.set_triedron()
+			self.viewer.set_triedron_axes()
+	
+			if self.showmarkers:
+				self.MarkerQController.hide(True)
+				self.MarkerWController.hide(True)
+	
+			self.inited = True
+		else:
+			self.update()
 
 	def resizeEvent(self, ev):
 		if self.inited:
