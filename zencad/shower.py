@@ -6,6 +6,7 @@ import pyservoce
 import evalcache
 from pyservoce import Scene, View, Viewer, Color
 
+import tempfile
 import sys
 import os
 
@@ -62,7 +63,7 @@ def show_label(lbl, en):
 	if (en):
 		lbl.setHidden(False)
 	else:
-  		lbl.setHidden(True)
+		lbl.setHidden(True)
 
 
 class MainWidget(QMainWindow):
@@ -177,14 +178,15 @@ class MainWidget(QMainWindow):
 		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+T")
 		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
 		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
+		self.mToFreeCad= 	self.create_action("To FreeCad", 		self.to_freecad_action, 		"Save temporary BRep representation and save FreeCad script to clipboard to load it")
 		self.mBrepExport = 	self.create_action("Export BREP...", 	self.exportBrepAction, 			"Export file in BREP format")
 		self.mScreen = 		self.create_action("Screenshot...", 	self.screenshotAction, 			"Do screen...")
 		self.mAboutAction = self.create_action("About", 			self.aboutAction, 				"About the application")
 		self.mReset = 		self.create_action("Reset", 			self.resetAction, 				"Reset")
 		self.mCentering = 	self.create_action("Centering", 		self.centeringAction, 			"Centering")
 		self.mAutoscale = 	self.create_action("Autoscale", 		self.autoscaleAction, 			"Autoscale", 									"Ctrl+A")
-		self.mOrient1 = 	self.create_action("Orient1", 			self.orient1, 					"Orient1")
-		self.mOrient2 = 	self.create_action("Orient2", 			self.orient2, 					"Orient2")
+		self.mOrient1 = 	self.create_action("Axinometric view", 	self.orient1, 					"Orient1")
+		self.mOrient2 = 	self.create_action("Free rotation view",self.orient2, 					"Orient2")
 		self.mTracking = 	self.create_action("Tracking", 			self.trackingAction, 			"Tracking",				checkbox=True)
 		self.mTestAction = 	self.create_action("TestAction", 		self.testAction, 				"TestAction")
 		self.mInvalCache = 	self.create_action("Invalidate cache", 	self.invalidateCacheAction, 	"Invalidate cache")
@@ -197,6 +199,7 @@ class MainWidget(QMainWindow):
 		self.mFileMenu.addAction(self.mTEAction)
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
+		self.mFileMenu.addAction(self.mToFreeCad)
 		self.mFileMenu.addAction(self.mScreen)
 		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mExitAction)
@@ -227,6 +230,14 @@ class MainWidget(QMainWindow):
 		#self.btoolbar.addWidget(self.lbl)
 		#self.addToolBar(Qt.BottomToolBarArea, self.btoolbar)
 		pass
+
+	def to_freecad_action(self):
+		tmpfl = tempfile.mktemp(".brep")
+		print(tmpfl)
+		cb = QApplication.clipboard()
+		cb.clear(mode=cb.Clipboard )
+		cb.setText('import Part; export = Part.Shape(); export.read("{}"); Part.show(export); Gui.activeDocument().activeView().viewAxonometric(); Gui.SendMsgToActiveView("ViewFit")'.format(tmpfl), mode=cb.Clipboard)
+		pyservoce.brep_write(self.dispw.scene[0].shape(), tmpfl)		
 
 	def exportStlAction(self):
 		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.01, 0, 10, 10)
@@ -394,7 +405,7 @@ class MainWidget(QMainWindow):
 		if zencad_search is None:
 			print("no zencad import here... hm...")
 			ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
-                self.tr("I can not find any zencad import here"))
+				self.tr("I can not find any zencad import here"))
 			return
 
 		self.lastopened = path[0]
@@ -421,6 +432,7 @@ class MainWidget(QMainWindow):
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(scn)
+		self.dispw.scene = scn
 		self.dispw.view.redraw()
 
 	def keyPressEvent (self, event):
