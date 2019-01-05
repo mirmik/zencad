@@ -33,9 +33,9 @@ setup(
 	classifiers = [],
 	scripts = ["routine/zencad"],
 
-	#package_data={'zencad': [
-	#	'examples/*.py',
-	#]},
+	package_data={'zencad': [
+		'industrial-robot.svg',
+	]},
 
 	data_files = [
 		("zencad/examples", [file for file in glob.glob("examples/*.py")]),
