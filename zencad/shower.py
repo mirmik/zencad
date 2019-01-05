@@ -38,6 +38,15 @@ ensave = None
 desave = None
 onplace = None
 
+ABOUT_TEXT = "CAD system for righteous zen programmers."
+BANER_TEXT = (#"\n"
+			"███████╗███████╗███╗   ██╗ ██████╗ █████╗ ██████╗ \n"
+			"╚══███╔╝██╔════╝████╗  ██║██╔════╝██╔══██╗██╔══██╗\n"
+			"  ███╔╝ █████╗  ██╔██╗ ██║██║     ███████║██║  ██║\n"
+			" ███╔╝  ██╔══╝  ██║╚██╗██║██║     ██╔══██║██║  ██║\n"
+			"███████╗███████╗██║ ╚████║╚██████╗██║  ██║██████╔╝\n"
+			"╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═════╝ ")
+
 QMARKER_MESSAGE = "Press 'Q' to set marker"
 WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
@@ -417,15 +426,14 @@ class MainWidget(QMainWindow):
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
-			self.tr("<h2>Shower</h2>"
-			"<p>Widget for display zencad geometry."
-			"<h3>About ZenCad</h3>"
-			"<p>CAD system for righteous zen programmers."
-			"<p>Based on OpenCascade geometric core."
+			("<p>Widget for display zencad geometry."
+			"<pre>{}\n"
+			"{}\n"
+			"Based on OpenCascade geometric core.<pre/>"
 			"<p><h3>Feedback</h3>"
-			"<p>email: mirmikns@yandex.ru"
-			"<p>github: https://github.com/mirmik/zencad"
-			"<p>2018-2019"));
+			"<pre>email: mirmikns@yandex.ru\n"
+			"github: https://github.com/mirmik/zencad\n"
+			"2018-2019<pre/>".format(BANER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context(self, scn):
 		#old_central_widget = self.dispw
@@ -595,11 +603,27 @@ class DisplayWidget(QWidget):
 
 		self.lastPosition = thePoint
 
+		modifiers = QApplication.keyboardModifiers()
+		
+		if modifiers == Qt.ShiftModifier:
+			self.shift_pressed = True			
+		else:
+			self.shift_pressed = False
+
+
+		if modifiers == Qt.AltModifier:
+			if not self.alt_pressed:
+				self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
+			self.alt_pressed = True			
+		else:
+			self.alt_pressed = False
+			
+
 		if not self.nointersect and not self.mousedown:
 			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
 			self.intersectPointSignal.emit(ip)
 
-		if theFlags & Qt.LeftButton: 
+		if theFlags & Qt.LeftButton or self.alt_pressed: 
 			if self.orient == 1:  
 				self.phi -= mv.x() * 0.01;
 				self.psi += mv.y() * 0.01;
@@ -610,7 +634,7 @@ class DisplayWidget(QWidget):
 			if self.orient == 2:
 					self.view.rotation(thePoint.x(), thePoint.y());
 		
-		if theFlags & Qt.RightButton:
+		if theFlags & Qt.RightButton or self.shift_pressed:
 			self.view.pan(mv.x(), -mv.y())
 	
 	def wheelEvent(self, e):
