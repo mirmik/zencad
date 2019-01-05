@@ -15,7 +15,7 @@ from zencad.util import deg, angle_pair, points, vectors
 from zencad.convert import *
 import types
 
-__version__ = '0.13.0'
+#__version__ = 
 moduledir = os.path.dirname(__file__)
 
 from zencad.shower import show, display, disp, hl, highlight 
