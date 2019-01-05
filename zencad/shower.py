@@ -206,7 +206,6 @@ class MainWidget(QMainWindow):
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
-			print(path)
 			self._open_routine(path)
 
 		menu.addAction(self.create_action(name, callback, path))
