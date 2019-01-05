@@ -2,11 +2,4 @@
 #coding:utf-8
 
 import zencad
-
-def banner(): print(zencad.shower.BANNER_TEXT)
-def about(): print(zencad.shower.ABOUT_TEXT)
-
-#banner()
-#about()
-
-zencad.show()
+import zencad.__main__
