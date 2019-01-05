@@ -769,20 +769,25 @@ class rerun_notify_thread(QThread):
 		default_scene=Scene()
 		
 		path = os.path.abspath(started_by)
-		syspath = os.path.dirname(path)
-		sys.path.insert(0, syspath)
+		
+		def routine():
+			syspath = os.path.dirname(path)
+			sys.path.insert(0, syspath)
+	
+			try:
+				#self.rerun_label_on_signal.emit()
+				zencad.lazifier.restore_default_lazyopts()
+				#exec(open(started_by).read(), glbls)
+				file_globals = runpy.run_path(path, run_name="__main__")
+				print("Rerun finished correctly")
+			except Exception as e:
+				print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+	
+			sys.path.remove(syspath)
+			self.rerun_label_off_signal.emit()
 
-		try:
-			#self.rerun_label_on_signal.emit()
-			zencad.lazifier.restore_default_lazyopts()
-			#exec(open(started_by).read(), glbls)
-			file_globals = runpy.run_path(path, run_name="__main__")
-			print("Rerun finished correctly")
-		except Exception as e:
-			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-
-		sys.path.remove(syspath)
-		self.rerun_label_off_signal.emit()
+		do = QThread(routine)
+		do.start()
 
 ##display
 default_scene = Scene()
