@@ -770,6 +770,7 @@ class rerun_notify_thread(QThread):
 
 		self.rerun_label_on_signal.emit()
 		try:
+			zencad.lazifier.restore_default_lazyopts()
 			#exec(open(started_by).read(), glbls)
 			file_globals = runpy.run_path(path, run_name="__main__")
 			print("Rerun finished correctly")
