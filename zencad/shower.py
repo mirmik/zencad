@@ -152,6 +152,7 @@ class MainWidget(QMainWindow):
 		show_label(self.markerDistLabel,False)
 		show_label(self.poslbl,False)
 		show_label(self.infoLabel,True)
+		self.repaint()
 		
 	def rerun_label_off_slot(self):
 		show_label(self.marker1Label,True)
@@ -159,6 +160,7 @@ class MainWidget(QMainWindow):
 		show_label(self.markerDistLabel,True)
 		show_label(self.poslbl,True)
 		show_label(self.infoLabel,False)
+		self.update()
 		
 	def poslblSlot(self, obj):
 		if obj[1]:
@@ -433,6 +435,8 @@ class MainWidget(QMainWindow):
 				self.tr("I can not find any zencad import here"))
 			return
 
+		print("rerun_label_on_slot()")
+		self.rerun_label_on_slot()
 		self.lastopened = path
 		started_by = path
 		self.external_rerun_signal.emit()
@@ -747,6 +751,7 @@ class rerun_notify_thread(QThread):
 					if event is not None:
 						if 'IN_CLOSE_WRITE' in event[1]:
 							print("started_by was rewrited. try use rerun")
+							self.rerun_label_on_signal.emit()
 							self.rerun()
 					if self.restart:
 						self.restart = False
@@ -768,8 +773,8 @@ class rerun_notify_thread(QThread):
 		syspath = os.path.dirname(path)
 		sys.path.insert(0, syspath)
 
-		self.rerun_label_on_signal.emit()
 		try:
+			#self.rerun_label_on_signal.emit()
 			zencad.lazifier.restore_default_lazyopts()
 			#exec(open(started_by).read(), glbls)
 			file_globals = runpy.run_path(path, run_name="__main__")
@@ -779,7 +784,6 @@ class rerun_notify_thread(QThread):
 
 		sys.path.remove(syspath)
 		self.rerun_label_off_signal.emit()
-
 
 ##display
 default_scene = Scene()
