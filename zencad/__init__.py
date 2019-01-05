@@ -87,6 +87,10 @@ def pipe_shell(prof, path, frenet = False):
 def loft(arr):
 	return pyservoce.loft(arr)
 
+@lazy.lazy(cls=shape_generator)
+def revol(shp, angle=0.0):
+	return pyservoce.revol(shp, angle)
+
 #face
 @lazy.lazy(cls=nocached_shape_generator)
 def circle(r, angle=None, wire=False):
