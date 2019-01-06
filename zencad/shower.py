@@ -918,7 +918,7 @@ def rerun_routine(arg):
 	syspath = os.path.dirname(path)
 	sys.path.insert(0, syspath)
 
-	globals()["ZENCAD_return_scene"] = 0
+	globals()["ZENCAD_return_scene"] = Exception("Result was not been rewriten in script. show???")
 
 	cvar = threading.Event()
 
@@ -944,6 +944,10 @@ def rerun_routine(arg):
 
 	if error_store.error is not None:
 		globals()["ZENCAD_return_scene"] = error_store.error
+
+	if isinstance(globals()["ZENCAD_return_scene"], Exception):
+		e = globals()["ZENCAD_return_scene"]
+		print("subprocess: logic exception: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
 
 	sys.path.remove(syspath)
 	return globals()["ZENCAD_return_scene"]
@@ -1051,7 +1055,7 @@ class rerun_notify_thread(QThread):
 				return
 			
 			if result is not None and not isinstance(result, Exception):
-				print("widget: update scene", result)
+				print("widget: update scene")
 				scn = Scene()
 				for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 				main_window.rerun_context(scn)
