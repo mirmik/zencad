@@ -973,7 +973,7 @@ class rerun_notify_thread(QThread):
 				for event in self.notifier.event_gen():
 					if event is not None:
 						if 'IN_CLOSE_WRITE' in event[1]:
-							print("widget: {} was rewriten. try rerun.".format(started_by))
+							print("widget: {} was rewriten. rerun initial.".format(started_by))
 							self.rerun_label_on_signal.emit()
 							self.rerun()
 					if self.restart:
