@@ -33,9 +33,12 @@ import runpy
 import inotify.adapters
 import math
 
+from zencad.highlighter import PythonHighlighter
+
 text_editor = "subl"
 main_window = None
 started_by = None
+edited = None
 diag = None
 ensave = None
 desave = None
@@ -77,12 +80,28 @@ def show_label(lbl, en):
 	else:
 		lbl.setHidden(True)
 
+class TextEditor(QPlainTextEdit):
+	def __init__(self):
+		QPlainTextEdit.__init__(self)
+
+	def save(self):
+		f = open(edited, "w")
+		f.write(self.toPlainText())
+		f.close()
+
+	def keyPressEvent(self, event):
+		if event.key() == Qt.Key_S and QApplication.keyboardModifiers() == Qt.ControlModifier:
+			self.save()
+
+		QPlainTextEdit.keyPressEvent(self, event)
 
 class MainWidget(QMainWindow):
 	external_rerun_signal = pyqtSignal()
 
 	def __init__(self, dispw):
 		QMainWindow.__init__(self)
+		self.setMouseTracking(True)
+
 		self.cw = QWidget()
 		self.dispw = dispw
 		self.layout = QVBoxLayout()
@@ -95,6 +114,32 @@ class MainWidget(QMainWindow):
 
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
+
+		self.texteditor = TextEditor()    
+		pallete = self.texteditor.palette();
+		pallete.setColor(QPalette.Base, QColor(40,41,35));
+		pallete.setColor(QPalette.Text, QColor(255,255,255));
+		self.texteditor.setPalette(pallete);
+		
+		font = QFont();
+		font.setFamily("Courier New")
+		font.setPointSize(11)
+		font.setStyleHint(QFont.Monospace)
+		self.texteditor.setFont(font)
+
+		self.dispw.sizePolicy().setHorizontalStretch(1)
+		self.texteditor.sizePolicy().setHorizontalStretch(1) 
+
+		metrics = QFontMetrics(font);
+		self.texteditor.setTabStopWidth(metrics.width("    "))
+		#self.texteditor.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
+		#self.dispw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
+
+		self.highliter = PythonHighlighter(self.texteditor.document())
+		self.hsplitter = QSplitter(Qt.Horizontal)
+		self.hsplitter.addWidget(self.texteditor)
+		self.hsplitter.addWidget(self.dispw)
+		#self.hsplitter.setStretchFactor(1, 1);
 
 		#self.cp = QLabel("Cpannel test")
 		#self.cp.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed);
@@ -135,7 +180,7 @@ class MainWidget(QMainWindow):
 		#self.cpannellay.addWidget(self.cp)
 
 		self.layout.addLayout(self.cpannellay)
-		self.layout.addWidget(self.dispw)
+		self.layout.addWidget(self.hsplitter)
 		self.layout.addLayout(self.infolay)
 		self.cw.setLayout(self.layout)
 
@@ -206,6 +251,8 @@ class MainWidget(QMainWindow):
 		self.mInvalCache = 	self.create_action("Invalidate cache", 	self.invalidateCacheAction, 	"Invalidate cache")
 		self.mCacheInfo = 	self.create_action("Cache info", 		self.cacheInfoAction, 			"Cache info")
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
+		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
+		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
@@ -253,6 +300,10 @@ class MainWidget(QMainWindow):
 		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mInvalCache)
 
+		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
+		self.mViewMenu.addAction(self.mHideEditor)
+		self.mViewMenu.addAction(self.mHideConsole)
+
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
 
@@ -277,6 +328,12 @@ class MainWidget(QMainWindow):
 		QMessageBox.information(self, self.tr("ToFreeCad"),
 			self.tr("Script copied to clipboard"));		
 
+
+	def hideConsole(self, en):
+		pass
+
+	def hideEditor(self, en):
+		self.texteditor.setHidden(en)
 
 	def exportStlAction(self):
 		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.01, 0, 10, 10)
@@ -426,22 +483,26 @@ class MainWidget(QMainWindow):
 	def _open_routine(self, path):
 		#Проверяем, чтобы в файле был хоть намек на zencad...
 		#А то чего его открывать.
-		global started_by
+		global started_by, edited
 		filetext = open(path).read()
 		repattern1 = re.compile(r"import *zencad|from *zencad *import")
 		
 		zencad_search = repattern1.search(filetext)
-		if zencad_search is None:
-			print("no zencad import here... hm...")
-			ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
-				self.tr("I can not find any zencad import here"))
-			return
+		#if zencad_search is None:
+		#	print("no zencad import here... hm...")
+		#	ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
+		#		self.tr("I can not find any zencad import here"))
+		#	return
 
-		print("rerun_label_on_slot()")
-		self.rerun_label_on_slot()
-		self.lastopened = path
-		started_by = path
-		self.external_rerun_signal.emit()
+		edited = path
+		if zencad_search is not None:
+			self.rerun_label_on_slot()
+			self.lastopened = path
+			started_by = path
+			self.external_rerun_signal.emit()
+
+		self.texteditor.setPlainText(filetext)
+		
 
 	def openAction(self):
 		filters = "*.py;;*.*";
@@ -453,7 +514,7 @@ class MainWidget(QMainWindow):
 			startpath,
 			filters, defaultFilter)
 
-		if path[1] == False:
+		if path[0] == '':
 			return
 
 		self._open_routine(path[0])
@@ -478,60 +539,12 @@ class MainWidget(QMainWindow):
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(scn)
 		self.dispw.scene = scn
-		self.dispw.view.redraw()
-
-	def keyPressEvent (self, event):
-		if event.key() == Qt.Key_Q:
-			self.marker1 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
-			x = self.marker1[0].x
-			y = self.marker1[0].y
-			z = self.marker1[0].z
-			
-			if self.marker1[1]:
-				self.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
-				print("Q: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
-			else:
-				self.marker1Label.setText(QMARKER_MESSAGE)	
-			self.updateDistLabel()
-
-			if self.dispw.showmarkers:
-				disable_lazy()
-				self.dispw.MarkerQController.set_location(zencad.translate(x,y,z))
-				restore_lazy()
-				self.dispw.MarkerQController.hide(not self.marker1[1])
-				self.dispw.view.redraw()
-		
-		if event.key() == Qt.Key_W:
-			self.marker2 = self.dispw.view.intersect_point(self.dispw.lastPosition.x(), self.dispw.lastPosition.y())
-			x = self.marker2[0].x
-			y = self.marker2[0].y
-			z = self.marker2[0].z
-
-			if self.marker2[1]:
-				self.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
-				print("W: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
-			else:
-				self.marker2Label.setText(WMARKER_MESSAGE)	
-			self.updateDistLabel()
-		
-			if self.dispw.showmarkers:
-				disable_lazy()
-				self.dispw.MarkerWController.set_location(zencad.translate(x,y,z))
-				restore_lazy()
-				self.dispw.MarkerWController.hide(not self.marker2[1])
-				self.dispw.view.redraw()
-		
-		if event.key() == Qt.Key_PageDown:
-			self.dispw.pageDownKeyHandler()
-		elif event.key() == Qt.Key_PageUp:
-			self.dispw.pageUpKeyHandler()
 
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
 
 	def __init__(self, arg, nointersect, showmarkers):
-		QWidget.__init__(self)
-	
+		QWidget.__init__(self)	
 		self.orient = 1
 		self.mousedown = False
 
@@ -636,6 +649,7 @@ class DisplayWidget(QWidget):
 		self.view.zoom(thePoint.x(), thePoint.y(), aX, aY)
 
 	def onMouseMove(self, theFlags, thePoint):
+		self.setFocus()
 		mv = thePoint - self.temporary1
 		self.temporary1 = thePoint
 
@@ -709,6 +723,54 @@ class DisplayWidget(QWidget):
 		factor = 16
 		self.view.zoom(x, y, x + factor, y + factor)
 
+	def keyPressEvent (self, event):
+		if event.key() == Qt.Key_Q:
+			self.marker1 = self.view.intersect_point(self.lastPosition.x(), self.lastPosition.y())
+			x = self.marker1[0].x
+			y = self.marker1[0].y
+			z = self.marker1[0].z
+			
+			if self.marker1[1]:
+				self.mw.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+				print("Q: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
+			else:
+				self.mw.marker1Label.setText(QMARKER_MESSAGE)	
+			self.mw.updateDistLabel()
+
+			if self.showmarkers:
+				disable_lazy()
+				self.MarkerQController.set_location(zencad.translate(x,y,z))
+				restore_lazy()
+				self.MarkerQController.hide(not self.marker1[1])
+				self.view.redraw()
+		
+		if event.key() == Qt.Key_W:
+			self.marker2 = self.view.intersect_point(self.lastPosition.x(), self.lastPosition.y())
+			x = self.marker2[0].x
+			y = self.marker2[0].y
+			z = self.marker2[0].z
+
+			if self.marker2[1]:
+				self.mw.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
+				print("W: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
+			else:
+				self.mw.marker2Label.setText(WMARKER_MESSAGE)	
+			self.mw.updateDistLabel()
+		
+			if self.showmarkers:
+				disable_lazy()
+				self.MarkerWController.set_location(zencad.translate(x,y,z))
+				restore_lazy()
+				self.MarkerWController.hide(not self.marker2[1])
+				self.view.redraw()
+		
+		if event.key() == Qt.Key_PageDown:
+			self.pageDownKeyHandler()
+		elif event.key() == Qt.Key_PageUp:
+			self.pageUpKeyHandler()
+
+
+
 class update_loop(QThread):
 	def __init__(self, parent, updater_function, wdg, pause_time=0.01):
 		QThread.__init__(self, parent)
@@ -735,8 +797,21 @@ class update_loop(QThread):
 				time.sleep(self.pause_time)
 
 
-def rerun_routine(path):
+def rerun_routine(arg):
 	import zencad
+	print("Start forked process")
+
+	path = arg[0]
+	w = arg[1]
+
+	class forkstdout:
+		def write(self, arg):
+			globals()["oldstdout"].write(arg)
+			os.write(w, arg.encode("utf-8"))
+
+	globals()["oldstdout"] = sys.stdout
+	sys.stdout = forkstdout()
+
 	zencad.shower.show_impl = zencad.shower.update_show
 
 	syspath = os.path.dirname(path)
@@ -787,7 +862,6 @@ class rerun_notify_thread(QThread):
 	def externalRerun(self):
 		self.restart=True
 		self.rerun()
-		self.external_autoscale_signal.emit()
 		
 	def rerun(self):
 		global default_scene
@@ -798,24 +872,43 @@ class rerun_notify_thread(QThread):
 		
 		syspath = os.path.dirname(path)
 		sys.path.insert(0, syspath)
-		try:
-			zencad.lazifier.restore_default_lazyopts()
-			#exec(open(started_by).read(), glbls)
-			runpy.run_path(path, run_name="__main__")
-			print("Rerun finished correctly")
-		except Exception as e:
-			print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-	
-		sys.path.remove(syspath)
-		self.rerun_label_off_signal.emit()
-			
-		#pool = ProcessPoolExecutor(1)		 
-		#future = pool.submit(rerun_routine, path)
-		
-		#result = future.result()
-		#print(result[0])
-		#main_window.rerun_context(future.result())
+		#try:
+		#	zencad.lazifier.restore_default_lazyopts()
+		#	#exec(open(started_by).read(), glbls)
+		#	runpy.run_path(path, run_name="__main__")
+		#	print("Rerun finished correctly")
+		#except Exception as e:
+		#	print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+	#
+		#sys.path.remove(syspath)
 		#self.rerun_label_off_signal.emit()
+			
+		r, w = os.pipe()
+
+		pool = ProcessPoolExecutor(1)		 
+		future = pool.submit(rerun_routine, (path, w))
+
+		def reader(r):
+			try:
+				while 1:
+					ret = os.read(r, 512)
+					stdout.write("Reader: ", ret.decode("utf-8"))
+			except:
+				print("reader finished by closed descriptor")
+
+		def waittask():
+			result = future.result()
+			scn = Scene()
+			for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
+			main_window.rerun_context(scn)
+			main_window.dispw.view.autoscale()
+			self.rerun_label_off_signal.emit()
+			os.close(r)
+			os.close(w)
+
+		threading.Thread(target = waittask, args=()).start()
+		threading.Thread(target = reader, args=(r,)).start()
+
 
 ##display
 default_scene = Scene()
@@ -835,12 +928,39 @@ def show(scene=None, animate = None, pause_time = 0.01, nointersect=True, showma
 	if scene is None: scene = default_scene
 	return show_impl(scene, animate, pause_time, nointersect, showmarkers)
 
+class doppelganger(QThread):
+	def __init__(self, r, w):
+		QThread.__init__(self)
+		self.r = r
+		self.w = w
+
+	def run(self):
+		readed = os.read(self.r, 512)
+		os.write(self.w, readed)
+		os.write(self.w, "Dopel: ".encode("utf-8") + readed)
+
+dopel = None
+def phantom_stdout_init():
+	global dopel
+
+	r,w = os.pipe()
+	d = os.dup(1)
+	os.close(1)
+	os.dup2(w, 1)
+
+	dopel = doppelganger(r, d)
+	dopel.start()
+
 def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	global started_by
 	global main_window
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
 
 	app = QApplication(sys.argv)
+	#phantom_stdout_init()
+
+	print("phantom_stdout_init")
+
 	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
 
@@ -855,7 +975,9 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 
 	disp = DisplayWidget(scene, nointersect, showmarkers)
 	main_window = MainWidget(disp);	
+	disp.mw = main_window
 	main_window.resize(800,600)
+	main_window.hsplitter.setSizes([400,500])
 
 	if animate != None:
 		thr = update_loop(main_window, animate, disp, pause_time)
@@ -883,5 +1005,6 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	return app.exec()
 
 def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
-	#globals()["ZENCAD_return_scene"] = scene
-	main_window.rerun_context(scene)
+	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
+	#main_window.rerun_context(scene)
+	pass
