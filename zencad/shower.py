@@ -185,6 +185,8 @@ class MainWidget(QMainWindow):
 		self.rescale_on_finish=False
 		#self.setStyleSheet("QMainWindow {background: ;}");
 
+		self.full_screen_mode = False
+
 		self.cw = QWidget()
 		self.dispw = dispw
 		self.layout = QVBoxLayout()
@@ -346,7 +348,8 @@ class MainWidget(QMainWindow):
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
-
+		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
+		
 	def set_hide(self, showeditor, showconsole):
 		self.texteditor.setHidden(not showeditor)
 		self.console.setHidden(not showconsole)
@@ -402,6 +405,7 @@ class MainWidget(QMainWindow):
 		self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
+		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
 
@@ -516,6 +520,14 @@ class MainWidget(QMainWindow):
 		for f in zencad.lazy.cache.keys():
 			del zencad.lazy.cache[f]
 		print("Invalidate cache: %d files removed" % len(files))
+
+	def fullScreen(self):
+		if self.isFullScreen():
+			#self.infolay.setHidden(False)
+			self.showNormal()
+		else:
+			#self.infolay.setHidden(True)
+			self.showFullScreen()
 
 	def cacheInfoAction(self):
 		def get_size(start_path = '.'):
