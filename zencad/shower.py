@@ -731,9 +731,11 @@ class DisplayWidget(QWidget):
 				self.MarkerQController.hide(True)
 				self.MarkerWController.hide(True)
 	
+			self.view.redraw()
 			self.inited = True
 		else:
 			self.update()
+			self.view.redraw()
 
 	def resizeEvent(self, ev):
 		if self.inited:
