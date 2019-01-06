@@ -184,7 +184,6 @@ class MainWidget(QMainWindow):
 		self.layout.setContentsMargins(0,0,0,0)
 
 		self.texteditor = TextEditor()
-		self.texteditor.setHidden(not showeditor)
 		pallete = self.texteditor.palette();
 		pallete.setColor(QPalette.Base, QColor(40,41,35));
 		pallete.setColor(QPalette.Text, QColor(255,255,255));
@@ -205,7 +204,6 @@ class MainWidget(QMainWindow):
 		#self.dispw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
 	
 		self.console = ConsoleWidget()
-		self.console.setHidden(not showconsole)
 		cfont = QFont();
 		cfont.setFamily("Courier New")
 		cfont.setPointSize(10)
@@ -333,6 +331,10 @@ class MainWidget(QMainWindow):
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
+
+	def set_hide(self, showeditor, showconsole):
+		self.texteditor.setHidden(not showeditor)
+		self.console.setHidden(not showconsole)
 		self.mHideConsole.setChecked(self.console.isHidden())
 		self.mHideEditor.setChecked(self.texteditor.isHidden())
 
@@ -1129,6 +1131,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 	main_window.texteditor.update_text_field()
 	main_window.show()
+	main_window.set_hide(showconsole, showeditor)
 
 	return app.exec()
 
