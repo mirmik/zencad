@@ -24,6 +24,7 @@ import time
 import threading
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+import concurrent
 import signal
 import runpy
 
@@ -59,11 +60,7 @@ WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 RAWSTDOUT = None
 FUTURE = None
-FUTURE_CONTROL = None
-MAINTHREADPID = None
-NOTIFYTHREADPID = None
 SUBPROCESPID = None
-POOL = None
 
 def kill_subprocess():
 	#def kill_child_processes(parent_pid, sig=signal.SIGTERM):
@@ -1018,20 +1015,7 @@ class rerun_notify_thread(QThread):
 		
 		syspath = os.path.dirname(path)
 		sys.path.insert(0, syspath)
-		#try:
-		#	zencad.lazifier.restore_default_lazyopts()
-		#	#exec(open(started_by).read(), glbls)
-		#	runpy.run_path(path, run_name="__main__")
-		#	print("Rerun finished correctly")
-		#except Exception as e:
-		#	print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
-	#
-		#sys.path.remove(syspath)
-		#self.rerun_label_off_signal.emit()
-			
-		#d = os.dup(1)
 
-		#control_w, control_r = os.pipe()
 		r,w = os.pipe()
 		control_r,control_w = os.pipe()
 
@@ -1150,19 +1134,9 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	if animate != None:
 		thr = update_loop(main_window, animate, disp, pause_time)
 		thr.start()
-		#thr = QThread(update_loop, animate, disp, update_time)
-		#thr.start()
 
 	thr_notify = rerun_notify_thread(main_window)
 	thr_notify.start()
-	
-
-	#def sigint_handler(*args):
-	#	sys.exit(-1)
-	
-	#signal.signal(signal.SIGINT, sigint_handler)
-
-#	print("show")
 	thr_notify.rerun_label_off_signal.connect(main_window.rerun_label_off_slot)
 	thr_notify.rerun_label_on_signal.connect(main_window.rerun_label_on_slot)
 	thr_notify.external_autoscale_signal.connect(main_window.resetAction)
@@ -1172,8 +1146,6 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 
-	MAINTHREADPID = os.getpid()
-	print("MAINTHREADPID", MAINTHREADPID)
 	return app.exec()
 
 def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
