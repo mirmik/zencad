@@ -831,7 +831,8 @@ def rerun_routine(arg):
 		runpy.run_path(path, run_name="__main__")
 		print("Rerun finished correctly")
 	except Exception as e:
-		print("Error: Exception catched in rerun: type:{} text:{}".format(e.__class__.__name__, e))
+		print("exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
+		raise(e)
 
 	sys.path.remove(syspath)
 	return globals()["ZENCAD_return_scene"]
@@ -903,7 +904,12 @@ class rerun_notify_thread(QThread):
 				pass
 
 		def waittask():
-			result = future.result()
+			try:
+				result = future.result()
+			except Exception as e:
+				print("Rerun failed")
+				return
+
 			scn = Scene()
 			for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 			main_window.rerun_context(scn)
