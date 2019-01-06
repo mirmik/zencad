@@ -963,8 +963,7 @@ def rerun_routine(arg):
 
 	if error_store.error is not None:
 		globals()["ZENCAD_return_scene"] = error_store.error
-
-	if isinstance(globals()["ZENCAD_return_scene"], Exception):
+	elif isinstance(globals()["ZENCAD_return_scene"], Exception):
 		e = globals()["ZENCAD_return_scene"]
 		print("subprocess: logic exception: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
 
@@ -1157,7 +1156,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
 	if animate != None:
-		raise Exception("Animate is not supported in subprocess. You need execute this script from terminal.") 
+		raise Exception("Animate is not supported in subprocess. You should execute this script from terminal.") 
 
 	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
 	#main_window.rerun_context(scene)
