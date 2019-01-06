@@ -3,7 +3,6 @@
 
 import evalcache
 from zencad import *
-lazy.diag = True
 
 print("Attention: The calculation of this model can take considerable time.")
 
