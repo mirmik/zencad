@@ -922,32 +922,28 @@ def rerun_routine(arg):
 
 	cvar = threading.Event()
 
-	error = None
-	control_exit = None
+	class error_store:
+		def __init__(self):
+			self.error = None
+	error_store = error_store()
 
-	def runthread():
+	def runthread(error_store):
 		try:
 			zencad.lazifier.restore_default_lazyopts()
 			runpy.run_path(path, run_name="__main__")
 			print("subprocess: finished correctly")
 			cvar.set()
 		except Exception as e:
-			error = e
+			error_store.error = e
 			print("subprocess: exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
 			cvar.set()
 
-	def controlthread():
-		recved = os.read(control, 512)
-		control_exit = True
-		cvar.set()
-
-	threading.Thread(target = runthread, args=()).start()
-	threading.Thread(target = controlthread, args=()).start()
+	threading.Thread(target = runthread, args=(error_store,)).start()
 
 	cvar.wait()
 
-	if control_exit:
-		globals()["ZENCAD_return_scene"] = None
+	if error_store.error is not None:
+		globals()["ZENCAD_return_scene"] = error_store.error
 
 	sys.path.remove(syspath)
 	return globals()["ZENCAD_return_scene"]
@@ -1054,8 +1050,8 @@ class rerun_notify_thread(QThread):
 				print("Rerun failed", e)
 				return
 			
-			if result is not None:
-				print("widget: update scene")
+			if result is not None and not isinstance(result, Exception):
+				print("widget: update scene", result)
 				scn = Scene()
 				for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 				main_window.rerun_context(scn)
