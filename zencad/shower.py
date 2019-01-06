@@ -108,6 +108,10 @@ class TextEditor(QPlainTextEdit):
 		f.write(self.toPlainText())
 		f.close()
 
+	def update_text_field(self):
+		filetext = open(started_by).read()
+		self.setPlainText(filetext)
+
 	def keyPressEvent(self, event):
 		if event.key() == Qt.Key_S and QApplication.keyboardModifiers() == Qt.ControlModifier:
 			self.save()
@@ -324,8 +328,8 @@ class MainWidget(QMainWindow):
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
-		self.mHideConsole.setCheck(self.console.hidden())
-		self.mHideEditor.setCheck(self.texteditor.hidden())
+		self.mHideConsole.setChecked(self.console.isHidden())
+		self.mHideEditor.setChecked(self.texteditor.isHidden())
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
@@ -971,6 +975,9 @@ class rerun_notify_thread(QThread):
 		
 	def rerun(self):
 		global default_scene, POOL
+		global FUTURE
+		global FUTURE_CONTROL
+
 		zencad.shower.show_impl = zencad.shower.update_show
 		default_scene=Scene()
 		
@@ -1023,9 +1030,6 @@ class rerun_notify_thread(QThread):
 		rdr.newdata.connect(main_window.console.append)
 		rdr.start()
 
-		global FUTURE
-		global FUTURE_CONTROL
-
 		FUTURE = future
 		FUTURE_CONTROL = control_w
 
@@ -1065,9 +1069,10 @@ def show(scene=None, *args, **kwargs):
 
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
-	global started_by
+	global started_by, edited
 	global main_window
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
+	edited = started_by
 
 	app = QApplication(sys.argv)
 	app.lastWindowClosed.connect(sys.exit)
@@ -1108,6 +1113,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	thr_notify.external_autoscale_signal.connect(main_window.resetAction)
 	main_window.external_rerun_signal.connect(thr_notify.externalRerun)
 
+	main_window.texteditor.update_text_field()
 	main_window.show()
 
 	return app.exec()
