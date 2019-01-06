@@ -13,7 +13,7 @@ import os
 setup(
 	name = 'zencad',
 	packages = ['zencad'],
-	version = '0.14.1',
+	version = '0.14.2',
 	license='MIT',
 	description = 'CAD system for righteous zen programmers ',
 	author = 'Sorokin Nikolay',
@@ -37,7 +37,7 @@ setup(
 	include_package_data=True,
 	install_requires=[
 		'evalcache==1.8.0',
-		'pyservoce==1.8.2',
+		'pyservoce==1.8.3',
 		'numpy',
 		'pillow',
 		'inotify',
