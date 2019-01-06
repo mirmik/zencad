@@ -5,6 +5,8 @@ import evalcache
 from zencad import *
 lazy.diag = True
 
+print("Attention: The calculation of this model can take considerable time.")
+
 @lazy
 def instrument_metric_nut(drad, step, h):
 	H = step * math.tan(deg(60))
@@ -35,7 +37,6 @@ nut = metric_nut(8, 1.25, 50)
 nut = nut.up(15.3) + cylinder(r=8/2, h=10).up(5.3) + linear_extrude(ngon(r = 7.1, n=6),(0,0,5.3))
 
 fontpath = os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf")
-print(fontpath)
 m = textshape("ZenCad", fontpath, 20)
 
 w = 64.68
