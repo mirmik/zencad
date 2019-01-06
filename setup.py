@@ -13,7 +13,7 @@ import os
 setup(
 	name = 'zencad',
 	packages = ['zencad'],
-	version = '0.13.4',
+	version = '0.14.0',
 	license='MIT',
 	description = 'CAD system for righteous zen programmers ',
 	author = 'Sorokin Nikolay',
