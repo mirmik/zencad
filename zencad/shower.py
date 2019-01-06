@@ -60,27 +60,38 @@ DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 RAWSTDOUT = None
 FUTURE = None
 FUTURE_CONTROL = None
+MAINTHREADPID = None
+NOTIFYTHREADPID = None
+SUBPROCESPID = None
 POOL = None
 
 def kill_subprocess():
-	def kill_child_processes(parent_pid, sig=signal.SIGTERM):
-		terminated = 0
-		try:
-			parent = psutil.Process(parent_pid)
-		except psutil.NoSuchProcess:
-			print("widget: wrong parent pid")
-			return
-		children = parent.children(recursive=True)
-		for process in children:
-			if (process.name().startswith("rerun_notify")):
-				continue
-			print("widget: send sigterm to subprocess({})".format(children))
-			process.send_signal(sig)
-			terminated += 1
-		if terminated == 0: 
-			print("widget: subprocess not found")
-			
-	kill_child_processes(os.getpid())
+	#def kill_child_processes(parent_pid, sig=signal.SIGTERM):
+	#	global NOTIFYTHREADPID
+	#	terminated = 0
+	#	try:
+	#		parent = psutil.Process(parent_pid)
+	#	except psutil.NoSuchProcess:
+	#		print("widget: wrong parent pid")
+	#		return
+	#	children = parent.children(recursive=True)
+	#	print(children)
+	#	for process in children:
+	#		if (process.name().startswith("rerun_notify")):
+	#			if NOTIFYTHREADPID is None:
+	#				NOTIFYTHREADPID = process.pid
+	#			continue
+	#		print("widget: send sigterm to subprocess({})".format(children))
+	#		process.send_signal(sig)
+	#		terminated += 1
+	#	#if terminated == 0: 
+	#	#	print("widget: subprocess not found")
+	#	return terminated
+	#		
+	#terminated = 0
+	#terminated += kill_child_processes(MAINTHREADPID)
+	#terminated += kill_child_processes(NOTIFYTHREADPID)
+	os.kill(SUBPROCESPID, signal.SIGTERM)
 		
 
 def disable_lazy():
@@ -915,10 +926,12 @@ def rerun_routine(arg):
 
 	path = arg[0]
 	w = arg[1]
-	control = arg[2]
+	control_w = arg[2]
 	os.close(1)
 	os.dup2(w, 1)
 #	w = arg[1]
+
+	os.write(control_w, str(os.getpid()).encode("utf-8"))
 
 	zencad.shower.show_impl = zencad.shower.update_show
 
@@ -1023,13 +1036,15 @@ class rerun_notify_thread(QThread):
 		control_r,control_w = os.pipe()
 
 		if FUTURE is not None:
+			print("widget: need kill old subprocess")
 			kill_subprocess()
-			while FUTURE is not None:
+			while 1:
+				if FUTURE is None: break
 				time.sleep(0)
 
 		pool = ProcessPoolExecutor(1)		 
 		POOL = pool
-		future = pool.submit(rerun_routine, (path, w, control_r))
+		future = pool.submit(rerun_routine, (path, w, control_w))
 
 		class retransler(QThread):
 			newdata = pyqtSignal(str)
@@ -1052,17 +1067,27 @@ class rerun_notify_thread(QThread):
 		rdr.start()
 
 		FUTURE = future
-		FUTURE_CONTROL = control_w
+		#FUTURE_CONTROL = control_w
+
+		def listpid():
+			global SUBPROCESPID
+			SUBPROCESPID = int(os.read(control_r, 512).decode("utf-8"))
+			print("widget: subprocess pid -", SUBPROCESPID)
 
 		def waittask():
-			global FUTURE
+			global FUTURE			
 			fff = rdr				
+			
 			try:
 				result = future.result()
-			except Exception as e:
+			except concurrent.futures.process.BrokenProcessPool as e:
 				print("widget: subprocess was aborted")
 				FUTURE = None
 				return
+			except Exception as e:
+				print("widget: subprocess was aborted unnormal", e)
+				FUTURE = None
+				return				
 			
 			if result is not None and not isinstance(result, Exception):
 				sys.stdout.write("widget: update scene")
@@ -1077,6 +1102,7 @@ class rerun_notify_thread(QThread):
 			FUTURE = None
 
 		threading.Thread(target = waittask, args=()).start()
+		threading.Thread(target = listpid, args=()).start()
 
 ##display
 default_scene = Scene()
@@ -1099,7 +1125,7 @@ def show(scene=None, *args, **kwargs):
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
 	global started_by, edited
-	global main_window
+	global main_window, MAINTHREADPID
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
 	edited = started_by
 
@@ -1146,6 +1172,8 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 
+	MAINTHREADPID = os.getpid()
+	print("MAINTHREADPID", MAINTHREADPID)
 	return app.exec()
 
 def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
