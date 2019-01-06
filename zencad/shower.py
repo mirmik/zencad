@@ -167,6 +167,7 @@ class MainWidget(QMainWindow):
 	def __init__(self, dispw, showconsole, showeditor):
 		QMainWindow.__init__(self)
 		self.setMouseTracking(True)
+		self.rescale_on_finish=False
 		#self.setStyleSheet("QMainWindow {background: ;}");
 
 		self.cw = QWidget()
@@ -311,6 +312,7 @@ class MainWidget(QMainWindow):
 
 	def createActions(self):
 		self.mOpenAction = 	self.create_action("Open", 				self.openAction, 				"Open", 										"Ctrl+O")
+		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Open", 										)#TODO:CTRL+S
 		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+E")
 		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
 		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
@@ -356,6 +358,7 @@ class MainWidget(QMainWindow):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mTEAction)
+		self.mFileMenu.addAction(self.mSaveAction)
 		self.exampleMenu = self.mFileMenu.addMenu("Examples")
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
@@ -578,6 +581,8 @@ class MainWidget(QMainWindow):
 		#		self.tr("I can not find any zencad import here"))
 		#	return
 
+		print("widget: try open {}".format(path))
+
 		edited = path
 		if zencad_search is not None:
 			self.rerun_label_on_slot()
@@ -604,6 +609,10 @@ class MainWidget(QMainWindow):
 			return
 
 		self._open_routine(path[0])
+
+
+	def saveAction(self):
+		self.texteditor.save()
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
@@ -893,7 +902,7 @@ class update_loop(QThread):
 def rerun_routine(arg):
 	import zencad
 	import threading
-	print("Start forked process")
+	print("subprocess: start execution")
 
 	path = arg[0]
 	w = arg[1]
@@ -918,13 +927,12 @@ def rerun_routine(arg):
 		try:
 			zencad.lazifier.restore_default_lazyopts()
 			runpy.run_path(path, run_name="__main__")
-			print("Rerun finished correctly")
+			print("subprocess: finished correctly")
 			cvar.set()
 		except Exception as e:
 			error = e
-			print("exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
+			print("subprocess: exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
 			cvar.set()
-			#raise(e)
 
 	def controlthread():
 		recved = os.read(control, 512)
@@ -963,7 +971,7 @@ class rerun_notify_thread(QThread):
 				for event in self.notifier.event_gen():
 					if event is not None:
 						if 'IN_CLOSE_WRITE' in event[1]:
-							print("started_by was rewrited. try use rerun")
+							print("widget: {} was rewriten. try rerun.".format(started_by))
 							self.rerun_label_on_signal.emit()
 							self.rerun()
 					if self.restart:
@@ -1043,11 +1051,14 @@ class rerun_notify_thread(QThread):
 			except Exception as e:
 				print("Rerun failed", e)
 				return
-			print("result was received")
-
-			scn = Scene()
-			for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
-			main_window.rerun_context(scn)
+			
+			if result is not None:
+				print("widget: update scene")
+				scn = Scene()
+				for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
+				main_window.rerun_context(scn)
+			else:
+				print("widget: do nothing")
 			self.rerun_label_off_signal.emit()
 
 		threading.Thread(target = waittask, args=()).start()
