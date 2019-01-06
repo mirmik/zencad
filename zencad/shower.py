@@ -973,6 +973,7 @@ class rerun_notify_thread(QThread):
 	rerun_label_on_signal = pyqtSignal()
 	rerun_label_off_signal = pyqtSignal()
 	external_autoscale_signal = pyqtSignal()
+	current_file_was_updated = pyqtSignal()	
 
 	def __init__(self, parent):
 		QThread.__init__(self, parent)
@@ -992,6 +993,8 @@ class rerun_notify_thread(QThread):
 						if 'IN_CLOSE_WRITE' in event[1]:
 							print("widget: {} was rewriten. rerun initial.".format(started_by))
 							self.rerun_label_on_signal.emit()
+							#main_window.texteditor.update_text_field()
+							self.current_file_was_updated.emit()
 							self.rerun()
 					if self.restart:
 						self.restart = False
@@ -1140,6 +1143,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	thr_notify.rerun_label_off_signal.connect(main_window.rerun_label_off_slot)
 	thr_notify.rerun_label_on_signal.connect(main_window.rerun_label_on_slot)
 	thr_notify.external_autoscale_signal.connect(main_window.resetAction)
+	thr_notify.current_file_was_updated.connect(main_window.texteditor.update_text_field)
 	main_window.external_rerun_signal.connect(thr_notify.externalRerun)
 
 	main_window.texteditor.update_text_field()
