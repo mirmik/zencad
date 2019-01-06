@@ -157,7 +157,7 @@ class ConsoleWidget(QTextEdit):
 class MainWidget(QMainWindow):
 	external_rerun_signal = pyqtSignal()
 
-	def __init__(self, dispw):
+	def __init__(self, dispw, showconsole, showeditor):
 		QMainWindow.__init__(self)
 		self.setMouseTracking(True)
 		#self.setStyleSheet("QMainWindow {background: ;}");
@@ -176,6 +176,7 @@ class MainWidget(QMainWindow):
 		self.layout.setContentsMargins(0,0,0,0)
 
 		self.texteditor = TextEditor()
+		self.texteditor.setHidden(not showeditor)
 		pallete = self.texteditor.palette();
 		pallete.setColor(QPalette.Base, QColor(40,41,35));
 		pallete.setColor(QPalette.Text, QColor(255,255,255));
@@ -196,6 +197,7 @@ class MainWidget(QMainWindow):
 		#self.dispw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
 	
 		self.console = ConsoleWidget()
+		self.console.setHidden(not showconsole)
 		cfont = QFont();
 		cfont.setFamily("Courier New")
 		cfont.setPointSize(10)
@@ -322,6 +324,8 @@ class MainWidget(QMainWindow):
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
+		self.mHideConsole.setCheck(self.console.hidden())
+		self.mHideEditor.setCheck(self.texteditor.hidden())
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
@@ -1055,12 +1059,12 @@ def disp(*args,**kwargs): display(*args, **kwargs)
 def highlight(m): return display(m, Color(0.5, 0, 0, 0.5))
 def hl(m) : return highlight(m)
 
-def show(scene=None, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
+def show(scene=None, *args, **kwargs):
 	if scene is None: scene = default_scene
-	return show_impl(scene, animate, pause_time, nointersect, showmarkers)
+	return show_impl(scene, *args, **kwargs)
 
 
-def show_impl(scene, animate, pause_time, nointersect, showmarkers):
+def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
 	global started_by
 	global main_window
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
@@ -1078,7 +1082,7 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	QSurfaceFormat.setDefaultFormat(fmt)
 
 	disp = DisplayWidget(scene, nointersect, showmarkers)
-	main_window = MainWidget(disp);	
+	main_window = MainWidget(disp, showconsole=showconsole, showeditor=showeditor);	
 	disp.mw = main_window
 	main_window.resize(800,600)
 	main_window.hsplitter.setSizes([400,500])
@@ -1108,7 +1112,10 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 
 	return app.exec()
 
-def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True):
+def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
+	if animate != None:
+		raise Exception("Animate is not supported in subprocess. You need execute this script from terminal.") 
+
 	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
 	#main_window.rerun_context(scene)
 	pass
