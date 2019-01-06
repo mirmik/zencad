@@ -1074,7 +1074,6 @@ class rerun_notify_thread(QThread):
 		def listpid():
 			global SUBPROCESPID
 			SUBPROCESPID = int(os.read(control_r, 512).decode("utf-8"))
-			print("widget: subprocess pid -", SUBPROCESPID)
 
 		def waittask():
 			global FUTURE			
