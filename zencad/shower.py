@@ -1149,6 +1149,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.external_rerun_signal.connect(thr_notify.externalRerun)
 
 	main_window.texteditor.update_text_field()
+	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 
