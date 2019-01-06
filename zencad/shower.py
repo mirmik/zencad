@@ -497,6 +497,8 @@ class MainWidget(QMainWindow):
 		edited = path
 		if zencad_search is not None:
 			self.rerun_label_on_slot()
+			if self.lastopened != path:
+				self.rescale_on_finish = True
 			self.lastopened = path
 			started_by = path
 			self.external_rerun_signal.emit()
@@ -539,6 +541,11 @@ class MainWidget(QMainWindow):
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(scn)
 		self.dispw.scene = scn
+		if self.rescale_on_finish:
+			self.rescale_on_finish = False
+			self.resetAction()
+		else:
+			self.dispw.view.redraw()
 
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
@@ -884,7 +891,7 @@ class rerun_notify_thread(QThread):
 		#self.rerun_label_off_signal.emit()
 			
 		r, w = os.pipe()
-
+		
 		pool = ProcessPoolExecutor(1)		 
 		future = pool.submit(rerun_routine, (path, w))
 
@@ -892,16 +899,14 @@ class rerun_notify_thread(QThread):
 			try:
 				while 1:
 					ret = os.read(r, 512)
-					stdout.write("Reader: ", ret.decode("utf-8"))
-			except:
-				print("reader finished by closed descriptor")
+			except Exception as e:
+				pass
 
 		def waittask():
 			result = future.result()
 			scn = Scene()
 			for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 			main_window.rerun_context(scn)
-			main_window.dispw.view.autoscale()
 			self.rerun_label_off_signal.emit()
 			os.close(r)
 			os.close(w)
