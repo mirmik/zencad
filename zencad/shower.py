@@ -149,9 +149,6 @@ class MainWidget(QMainWindow):
 		self.poslbl.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.poslbl.setAlignment(Qt.AlignCenter)
 
-		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
-		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
-
 		self.marker1Label = QLabel(QMARKER_MESSAGE)
 		self.marker1Label.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
 		self.marker1Label.setStyleSheet("QLabel { background-color : rgb(100,0,0); color : white; }");
@@ -446,11 +443,11 @@ class MainWidget(QMainWindow):
 
 	
 	def updateDistLabel(self):
-		qx,qy,qz = self.marker1[0].x, self.marker1[0].y, self.marker1[0].z
-		wx,wy,wz = self.marker2[0].x, self.marker2[0].y, self.marker2[0].z
+		qx,qy,qz = self.dispw.marker1[0].x, self.dispw.marker1[0].y, self.dispw.marker1[0].z
+		wx,wy,wz = self.dispw.marker2[0].x, self.dispw.marker2[0].y, self.dispw.marker2[0].z
 		xx,yy,zz = wx-qx, wy-qy, wz-qz
 		dist = math.sqrt(xx**2 + yy**2 + zz**2)
-		if self.marker1[1] or self.marker2[1]:
+		if self.dispw.marker1[1] or self.dispw.marker2[1]:
 			self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))
 		else:
 			self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)	
@@ -554,6 +551,8 @@ class DisplayWidget(QWidget):
 		QWidget.__init__(self)	
 		self.orient = 1
 		self.mousedown = False
+		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
+		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
 
 		self.inited = False
 		self.painted = False
@@ -968,11 +967,6 @@ def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
 
 	app = QApplication(sys.argv)
-	#phantom_stdout_init()
-
-	print("phantom_stdout_init")
-
-	#app.lastWindowClosed.connect(app.quit)
 	app.lastWindowClosed.connect(sys.exit)
 
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
