@@ -64,15 +64,21 @@ POOL = None
 
 def kill_subprocess():
 	def kill_child_processes(parent_pid, sig=signal.SIGTERM):
+		terminated = 0
 		try:
 			parent = psutil.Process(parent_pid)
 		except psutil.NoSuchProcess:
-			print("widget: we dont have any subprocess")
+			print("widget: wrong parent pid")
 			return
 		children = parent.children(recursive=True)
 		for process in children:
-			print("widget: send sigterm to subprocess")
+			if (process.name().startswith("rerun_notify")):
+				continue
+			print("widget: send sigterm to subprocess({})".format(children))
 			process.send_signal(sig)
+			terminated += 1
+		if terminated == 0: 
+			print("widget: subprocess not found")
 			
 	kill_child_processes(os.getpid())
 		
@@ -1056,10 +1062,12 @@ class rerun_notify_thread(QThread):
 				return
 			
 			if result is not None and not isinstance(result, Exception):
-				print("widget: update scene")
+				sys.stdout.write("widget: update scene")
+				sys.stdout.flush()
 				scn = Scene()
 				for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 				main_window.rerun_context(scn)
+				print("...ok")
 			else:
 				print("widget: do nothing")
 			self.rerun_label_off_signal.emit()
