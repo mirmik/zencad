@@ -1024,7 +1024,8 @@ class rerun_notify_thread(QThread):
 
 		if FUTURE is not None:
 			kill_subprocess()
-			FUTURE=None
+			while FUTURE is not None:
+				time.sleep(0)
 
 		pool = ProcessPoolExecutor(1)		 
 		POOL = pool
@@ -1054,11 +1055,13 @@ class rerun_notify_thread(QThread):
 		FUTURE_CONTROL = control_w
 
 		def waittask():
+			global FUTURE
 			fff = rdr				
 			try:
 				result = future.result()
 			except Exception as e:
 				print("widget: subprocess was aborted")
+				FUTURE = None
 				return
 			
 			if result is not None and not isinstance(result, Exception):
@@ -1071,6 +1074,7 @@ class rerun_notify_thread(QThread):
 			else:
 				print("widget: do nothing")
 			self.rerun_label_off_signal.emit()
+			FUTURE = None
 
 		threading.Thread(target = waittask, args=()).start()
 
