@@ -525,9 +525,11 @@ class MainWidget(QMainWindow):
 		if self.isFullScreen():
 			#self.infolay.setHidden(False)
 			self.showNormal()
+			self.dispw.view.redraw()
 		else:
 			#self.infolay.setHidden(True)
 			self.showFullScreen()
+			self.dispw.view.redraw()
 
 	def cacheInfoAction(self):
 		def get_size(start_path = '.'):
