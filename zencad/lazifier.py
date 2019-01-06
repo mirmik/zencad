@@ -51,6 +51,7 @@ def test_mode():
 	lazy.diag = True
 
 def restore_default_lazyopts():
+	lazy.cache = evalcache.dircache_v2.DirCache_v2(cachepath)
 	lazy.encache = True
 	lazy.decache = True
 	lazy.diag = False
