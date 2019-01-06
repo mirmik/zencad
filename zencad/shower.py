@@ -9,6 +9,7 @@ from pyservoce import Scene, View, Viewer, Color
 import tempfile
 import sys
 import os
+import psutil
 #import dill
 
 from PyQt5.QtWidgets import *
@@ -56,6 +57,24 @@ BANNER_TEXT = (#"\n"
 QMARKER_MESSAGE = "Press 'Q' to set marker"
 WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
+RAWSTDOUT = None
+FUTURE = None
+FUTURE_CONTROL = None
+POOL = None
+
+def kill_subprocess():
+	def kill_child_processes(parent_pid, sig=signal.SIGTERM):
+		try:
+			parent = psutil.Process(parent_pid)
+		except psutil.NoSuchProcess:
+			return
+		children = parent.children(recursive=True)
+		for process in children:
+			process.send_signal(sig)
+			#POOL.shutdown(wait=False)
+
+	kill_child_processes(os.getpid())
+		
 
 def disable_lazy():
 	global ensave, desave, onplace
@@ -95,12 +114,53 @@ class TextEditor(QPlainTextEdit):
 
 		QPlainTextEdit.keyPressEvent(self, event)
 
+class ConsoleWidget(QTextEdit):
+	def __init__(self):
+		class forker(QThread):
+			newdata=pyqtSignal(str)
+			def __init__(self, console):
+				QObject.__init__(self)
+				self.console = console
+				r,w = os.pipe()
+				d = os.dup(1)
+				os.close(1)
+				os.dup2(w, 1)
+				self.d = d
+				self.r = r
+
+				global RAWSTDOUT
+				RAWSTDOUT = d
+
+			def run(self):
+				while 1:
+					readed = os.read(self.r, 512)
+					os.write(self.d, readed)
+					self.newdata.emit(readed.decode("utf-8"))
+
+		QTextEdit.__init__(self)
+		pallete = self.palette();
+		pallete.setColor(QPalette.Base, QColor(30,30,30));
+		pallete.setColor(QPalette.Text, QColor(255,255,255));
+		self.setPalette(pallete);
+
+		self.cursor = self.textCursor();
+		self.setReadOnly(True)
+		self.fork = forker(self)
+		self.fork.start()
+		self.fork.newdata.connect(self.append)
+
+	def append(self, data):
+		self.cursor.insertText(data)
+		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+		#QTextEdit.append(self, data)
+
 class MainWidget(QMainWindow):
 	external_rerun_signal = pyqtSignal()
 
 	def __init__(self, dispw):
 		QMainWindow.__init__(self)
 		self.setMouseTracking(True)
+		#self.setStyleSheet("QMainWindow {background: ;}");
 
 		self.cw = QWidget()
 		self.dispw = dispw
@@ -115,7 +175,7 @@ class MainWidget(QMainWindow):
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
 
-		self.texteditor = TextEditor()    
+		self.texteditor = TextEditor()
 		pallete = self.texteditor.palette();
 		pallete.setColor(QPalette.Base, QColor(40,41,35));
 		pallete.setColor(QPalette.Text, QColor(255,255,255));
@@ -134,11 +194,22 @@ class MainWidget(QMainWindow):
 		self.texteditor.setTabStopWidth(metrics.width("    "))
 		#self.texteditor.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
 		#self.dispw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
+	
+		self.console = ConsoleWidget()
+		cfont = QFont();
+		cfont.setFamily("Courier New")
+		cfont.setPointSize(10)
+		cfont.setStyleHint(QFont.Monospace)
+		self.console.setFont(cfont)
+		
 
 		self.highliter = PythonHighlighter(self.texteditor.document())
 		self.hsplitter = QSplitter(Qt.Horizontal)
+		self.vsplitter = QSplitter(Qt.Vertical)
 		self.hsplitter.addWidget(self.texteditor)
-		self.hsplitter.addWidget(self.dispw)
+		self.vsplitter.addWidget(self.dispw)
+		self.vsplitter.addWidget(self.console)
+		self.hsplitter.addWidget(self.vsplitter)
 		#self.hsplitter.setStretchFactor(1, 1);
 
 		#self.cp = QLabel("Cpannel test")
@@ -247,6 +318,7 @@ class MainWidget(QMainWindow):
 		self.mTestAction = 	self.create_action("TestAction", 		self.testAction, 				"TestAction")
 		self.mInvalCache = 	self.create_action("Invalidate cache", 	self.invalidateCacheAction, 	"Invalidate cache")
 		self.mCacheInfo = 	self.create_action("Cache info", 		self.cacheInfoAction, 			"Cache info")
+		self.mFinishSub = 	self.create_action("Finish subprocess", self.finishSubProcess, 			"Finish subprocess")
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
@@ -296,6 +368,7 @@ class MainWidget(QMainWindow):
 		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mInvalCache)
+		self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
 		self.mViewMenu.addAction(self.mHideEditor)
@@ -327,7 +400,7 @@ class MainWidget(QMainWindow):
 
 
 	def hideConsole(self, en):
-		pass
+		self.console.setHidden(en)
 
 	def hideEditor(self, en):
 		self.texteditor.setHidden(en)
@@ -357,6 +430,9 @@ class MainWidget(QMainWindow):
 
 	def externalTextEditorOpen(self):
 		os.system(text_editor + " " + started_by)
+
+	def finishSubProcess(self):
+		kill_subprocess()
 
 	def testAction(self):
 		pass
@@ -805,18 +881,15 @@ class update_loop(QThread):
 
 def rerun_routine(arg):
 	import zencad
+	import threading
 	print("Start forked process")
 
 	path = arg[0]
 	w = arg[1]
-
-	class forkstdout:
-		def write(self, arg):
-			globals()["oldstdout"].write(arg)
-			os.write(w, arg.encode("utf-8"))
-
-	globals()["oldstdout"] = sys.stdout
-	sys.stdout = forkstdout()
+	control = arg[2]
+	os.close(1)
+	os.dup2(w, 1)
+#	w = arg[1]
 
 	zencad.shower.show_impl = zencad.shower.update_show
 
@@ -825,13 +898,35 @@ def rerun_routine(arg):
 
 	globals()["ZENCAD_return_scene"] = 0
 
-	try:
-		zencad.lazifier.restore_default_lazyopts()
-		runpy.run_path(path, run_name="__main__")
-		print("Rerun finished correctly")
-	except Exception as e:
-		print("exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
-		raise(e)
+	cvar = threading.Event()
+
+	error = None
+	control_exit = None
+
+	def runthread():
+		try:
+			zencad.lazifier.restore_default_lazyopts()
+			runpy.run_path(path, run_name="__main__")
+			print("Rerun finished correctly")
+			cvar.set()
+		except Exception as e:
+			error = e
+			print("exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
+			cvar.set()
+			#raise(e)
+
+	def controlthread():
+		recved = os.read(control, 512)
+		control_exit = True
+		cvar.set()
+
+	threading.Thread(target = runthread, args=()).start()
+	threading.Thread(target = controlthread, args=()).start()
+
+	cvar.wait()
+
+	if control_exit:
+		globals()["ZENCAD_return_scene"] = None
 
 	sys.path.remove(syspath)
 	return globals()["ZENCAD_return_scene"]
@@ -871,7 +966,7 @@ class rerun_notify_thread(QThread):
 		self.rerun()
 		
 	def rerun(self):
-		global default_scene
+		global default_scene, POOL
 		zencad.shower.show_impl = zencad.shower.update_show
 		default_scene=Scene()
 		
@@ -890,35 +985,61 @@ class rerun_notify_thread(QThread):
 		#sys.path.remove(syspath)
 		#self.rerun_label_off_signal.emit()
 			
-		r, w = os.pipe()
-		
-		pool = ProcessPoolExecutor(1)		 
-		future = pool.submit(rerun_routine, (path, w))
+		#d = os.dup(1)
 
-		def reader(r):
-			try:
-				while 1:
-					ret = os.read(r, 512)
-			except Exception as e:
-				pass
+		#control_w, control_r = os.pipe()
+		r,w = os.pipe()
+		control_r,control_w = os.pipe()
+
+		if FUTURE is not None:
+			kill_subprocess()
+			FUTURE=None
+
+		pool = ProcessPoolExecutor(1)		 
+		POOL = pool
+		future = pool.submit(rerun_routine, (path, w, control_r))
+
+		class retransler(QThread):
+			newdata = pyqtSignal(str)
+			def __init__(self, r):
+				QThread.__init__(self)
+				self.r = r
+
+			def run(self):
+				try:
+					while 1:
+						ret = os.read(r, 512)
+						os.write(RAWSTDOUT, ret)
+						self.newdata.emit(ret.decode("utf-8"))
+				except Exception as e:
+					#print("reader was finished with", e)
+					pass
+
+		rdr = retransler(r)
+		rdr.newdata.connect(main_window.console.append)
+		rdr.start()
+
+		global FUTURE
+		global FUTURE_CONTROL
+
+		FUTURE = future
+		FUTURE_CONTROL = control_w
 
 		def waittask():
+			fff = rdr				
 			try:
 				result = future.result()
 			except Exception as e:
-				print("Rerun failed")
+				print("Rerun failed", e)
 				return
+			print("result was received")
 
 			scn = Scene()
 			for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 			main_window.rerun_context(scn)
 			self.rerun_label_off_signal.emit()
-			os.close(r)
-			os.close(w)
 
 		threading.Thread(target = waittask, args=()).start()
-		threading.Thread(target = reader, args=(r,)).start()
-
 
 ##display
 default_scene = Scene()
@@ -938,28 +1059,6 @@ def show(scene=None, animate = None, pause_time = 0.01, nointersect=True, showma
 	if scene is None: scene = default_scene
 	return show_impl(scene, animate, pause_time, nointersect, showmarkers)
 
-class doppelganger(QThread):
-	def __init__(self, r, w):
-		QThread.__init__(self)
-		self.r = r
-		self.w = w
-
-	def run(self):
-		readed = os.read(self.r, 512)
-		os.write(self.w, readed)
-		os.write(self.w, "Dopel: ".encode("utf-8") + readed)
-
-dopel = None
-def phantom_stdout_init():
-	global dopel
-
-	r,w = os.pipe()
-	d = os.dup(1)
-	os.close(1)
-	os.dup2(w, 1)
-
-	dopel = doppelganger(r, d)
-	dopel.start()
 
 def show_impl(scene, animate, pause_time, nointersect, showmarkers):
 	global started_by
