@@ -67,12 +67,13 @@ def kill_subprocess():
 		try:
 			parent = psutil.Process(parent_pid)
 		except psutil.NoSuchProcess:
+			print("widget: we dont have any subprocess")
 			return
 		children = parent.children(recursive=True)
 		for process in children:
+			print("widget: send sigterm to subprocess")
 			process.send_signal(sig)
-			#POOL.shutdown(wait=False)
-
+			
 	kill_child_processes(os.getpid())
 		
 
@@ -1051,7 +1052,7 @@ class rerun_notify_thread(QThread):
 			try:
 				result = future.result()
 			except Exception as e:
-				print("Rerun failed", e)
+				print("widget: subprocess was aborted")
 				return
 			
 			if result is not None and not isinstance(result, Exception):
