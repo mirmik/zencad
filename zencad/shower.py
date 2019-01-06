@@ -104,7 +104,10 @@ class TextEditor(QPlainTextEdit):
 		QPlainTextEdit.__init__(self)
 
 	def save(self):
-		f = open(edited, "w")
+		try:
+			f = open(edited, "w")
+		except IOError as e:
+			print("cannot open {} for write: {}".format(edited, e))
 		f.write(self.toPlainText())
 		f.close()
 
