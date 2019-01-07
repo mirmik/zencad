@@ -133,6 +133,10 @@ def rectangle(a, b, center = False, wire=False):
 def textshape(*args, **kwargs):
 	return pyservoce.textshape(*args, **kwargs)
 
+@lazy.lazy(cls=shape_generator)
+def fill(*args, **kwargs):
+	return pyservoce.fill(*args, **kwargs)
+
 #wire
 @lazy.lazy(cls=nocached_shape_generator)
 def segment(pnt0, pnt1):
@@ -152,8 +156,8 @@ def interpolate(pnts, tangs=[], closed=False):
 	return pyservoce.interpolate(points(pnts), vectors(tangs), closed)
 
 @lazy.lazy(cls=shape_generator)
-def complex_wire(*args, **kwargs):
-	return pyservoce.complex_wire(*args, **kwargs)
+def sew(*args, **kwargs):
+	return pyservoce.sew(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
 def sweep(prof, path):
