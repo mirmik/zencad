@@ -174,6 +174,7 @@ class ConsoleWidget(QTextEdit):
 	def append(self, data):
 		self.cursor.insertText(data)
 		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+		#self.repaint()
 		#QTextEdit.append(self, data)
 
 class MainWidget(QMainWindow):
@@ -621,6 +622,7 @@ class MainWidget(QMainWindow):
 				self.rescale_on_finish = True
 			self.lastopened = path
 			started_by = path
+			os.chdir(os.path.dirname(path))
 			self.external_rerun_signal.emit()
 
 		self.texteditor.setPlainText(filetext)
@@ -1093,6 +1095,7 @@ class rerun_notify_thread(QThread):
 			if result is not None and not isinstance(result, Exception):
 				sys.stdout.write("widget: update scene")
 				sys.stdout.flush()
+				time.sleep(0.001)
 				scn = Scene()
 				for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
 				main_window.rerun_context(scn)

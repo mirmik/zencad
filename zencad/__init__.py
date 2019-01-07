@@ -1,9 +1,11 @@
 import math
+import lazy_import
 
 import pyservoce
 from pyservoce import point3, vector3
 from pyservoce import Scene, View, Viewer, Color
 
+#zencad_visual = lazy_import.lazy_module("zencad.visual")
 from zencad.visual import screen
 from zencad.transform import *
 
@@ -175,3 +177,6 @@ def gr(grad):
 
 def enable_cache_diagnostic():
 	evalcache.diagnostic = True
+
+#def screen(*args, **kwargs):
+#	return zencad_visual.screen(*args, **kwargs)
