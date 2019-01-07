@@ -721,12 +721,26 @@ class DisplayWidget(QWidget):
 			math.sin(self.psi)
 		);
 
+	def update_orient1_from_view(self):
+		x,y,z = self.view.proj()
+		self.psi = math.asin(z)
+		x = x / math.cos(self.psi)
+		y = y / math.cos(self.psi)
+		self.phi = math.atan2(y,x)
+
 	def paintEvent(self, ev):
 #		print("paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()
 			self.painted = True
+
+	def eye(self):
+		return self.view.eye()
+
+	def set_eye(self, pnt):
+		self.view.set_eye(pnt)
+		self.update_orient1_from_view()
 
 	def showEvent(self, ev):
 #		print("showEvent")
@@ -931,7 +945,7 @@ class update_loop(QThread):
 				zencad.lazy.decache = False
 				zencad.lazy.onplace = True
 				zencad.lazy.diag = False
-				self.updater_function(self.wdg.viewer)
+				self.updater_function(self.wdg)
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
 				zencad.lazy.decache = desave
