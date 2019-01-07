@@ -186,6 +186,11 @@ class MainWidget(QMainWindow):
 		self.rescale_on_finish=False
 		#self.setStyleSheet("QMainWindow {background: ;}");
 
+		#pallete = self.menuBar().palette();
+		#pallete.setColor(QPalette.Base, QColor(40,41,35));
+#		pallete.setColor(QPalette.Text, QColor(255,255,255));
+		#self.menuBar().setPalette(pallete);
+
 		self.full_screen_mode = False
 
 		self.cw = QWidget()
@@ -1134,6 +1139,10 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	edited = started_by
 
 	app = QApplication(sys.argv)
+	pal = app.palette();
+	pal.setColor(QPalette.Window, QColor(160,161,165));
+	app.setPalette(pal);
+	
 	app.lastWindowClosed.connect(sys.exit)
 
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
