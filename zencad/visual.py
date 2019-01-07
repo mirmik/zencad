@@ -51,3 +51,18 @@ def screen_debug(model, size=(800,600)):
 	image.putdata(pixels)
 
 	image.show()
+
+def screen_view(view, path, size): #TODO:SIZE FROM VIEW
+	raw = view.rawarray()
+	npixels = np.reshape(np.asarray(raw), (size[1],size[0],3))
+	nnnpixels = np.flip(npixels, 0).reshape((size[0] * size[1] * 3))
+
+	rawiter = iter(nnnpixels)
+	pixels = list(zip(rawiter, rawiter, rawiter))
+		
+	image = Image.new("RGB", (size[0], size[1]))
+	image.putdata(pixels)
+
+	image.save(path)
+
+	
