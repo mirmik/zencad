@@ -89,6 +89,9 @@ class MainWindow(QMainWindow):
 		cc = QWidget.createWindowContainer(container);
 		self.vsplitter.insertWidget(0,cc)
 
+	def broadcast_send(self, msg, args=()):
+		for ev in self.evaluators:
+			ev.ctransler.send(msg, args)
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -100,8 +103,8 @@ class MainWindow(QMainWindow):
 #		self.mFileMenu.addAction(self.mBrepExport)
 #		self.mFileMenu.addAction(self.mToFreeCad)
 		self.mFileMenu.addAction(self.mScreen)
-#		self.mFileMenu.addSeparator()
-#		self.mFileMenu.addAction(self.mExitAction)
+		self.mFileMenu.addSeparator()
+		self.mFileMenu.addAction(self.mExitAction)
 #
 #		moduledir = os.path.dirname(__file__)
 #		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "examples"))
@@ -152,7 +155,7 @@ class MainWindow(QMainWindow):
 #		self.mOpenAction = 	self.create_action("Open", 				self.openAction, 				"Open", 										"Ctrl+O")
 #		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Open", 										)#TODO:CTRL+S
 #		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+E")
-#		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
+		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
 #		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
 #		self.mToFreeCad= 	self.create_action("To FreeCad", 		self.to_freecad_action, 		"Save temporary BRep representation and save FreeCad script to clipboard to load it")
 #		self.mBrepExport = 	self.create_action("Export BREP...", 	self.exportBrepAction, 			"Export file in BREP format")

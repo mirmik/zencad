@@ -27,11 +27,6 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import concurrent
 import signal
 import runpy
-
-#from OpenGL.GL import *
-#from OpenGL.GLUT import *
-#from OpenGL.GLU import *
-
 import inotify.adapters
 import math
 
@@ -63,34 +58,8 @@ FUTURE = None
 SUBPROCESPID = None
 
 def kill_subprocess():
-	#def kill_child_processes(parent_pid, sig=signal.SIGTERM):
-	#	global NOTIFYTHREADPID
-	#	terminated = 0
-	#	try:
-	#		parent = psutil.Process(parent_pid)
-	#	except psutil.NoSuchProcess:
-	#		print("widget: wrong parent pid")
-	#		return
-	#	children = parent.children(recursive=True)
-	#	print(children)
-	#	for process in children:
-	#		if (process.name().startswith("rerun_notify")):
-	#			if NOTIFYTHREADPID is None:
-	#				NOTIFYTHREADPID = process.pid
-	#			continue
-	#		print("widget: send sigterm to subprocess({})".format(children))
-	#		process.send_signal(sig)
-	#		terminated += 1
-	#	#if terminated == 0: 
-	#	#	print("widget: subprocess not found")
-	#	return terminated
-	#		
-	#terminated = 0
-	#terminated += kill_child_processes(MAINTHREADPID)
-	#terminated += kill_child_processes(NOTIFYTHREADPID)
 	os.kill(SUBPROCESPID, signal.SIGTERM)
 		
-
 def disable_lazy():
 	global ensave, desave, onplace
 	ensave = zencad.lazy.encache 
@@ -174,8 +143,6 @@ class ConsoleWidget(QTextEdit):
 	def append(self, data):
 		self.cursor.insertText(data)
 		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-		#self.repaint()
-		#QTextEdit.append(self, data)
 
 class MainWidget(QMainWindow):
 	external_rerun_signal = pyqtSignal()
@@ -184,12 +151,6 @@ class MainWidget(QMainWindow):
 		QMainWindow.__init__(self)
 		self.setMouseTracking(True)
 		self.rescale_on_finish=False
-		#self.setStyleSheet("QMainWindow {background: ;}");
-
-		#pallete = self.menuBar().palette();
-		#pallete.setColor(QPalette.Base, QColor(40,41,35));
-#		pallete.setColor(QPalette.Text, QColor(255,255,255));
-		#self.menuBar().setPalette(pallete);
 
 		self.full_screen_mode = False
 
@@ -223,8 +184,6 @@ class MainWidget(QMainWindow):
 
 		metrics = QFontMetrics(font);
 		self.texteditor.setTabStopWidth(metrics.width("    "))
-		#self.texteditor.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
-		#self.dispw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding);
 	
 		self.console = ConsoleWidget()
 		cfont = QFont();
@@ -233,7 +192,6 @@ class MainWidget(QMainWindow):
 		cfont.setStyleHint(QFont.Monospace)
 		self.console.setFont(cfont)
 		
-
 		self.highliter = PythonHighlighter(self.texteditor.document())
 		self.hsplitter = QSplitter(Qt.Horizontal)
 		self.vsplitter = QSplitter(Qt.Vertical)
@@ -241,11 +199,6 @@ class MainWidget(QMainWindow):
 		self.vsplitter.addWidget(self.dispw)
 		self.vsplitter.addWidget(self.console)
 		self.hsplitter.addWidget(self.vsplitter)
-		#self.hsplitter.setStretchFactor(1, 1);
-
-		#self.cp = QLabel("Cpannel test")
-		#self.cp.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed);
-		#self.cp.setAlignment(Qt.AlignCenter)
 
 		self.poslbl = QLabel("Tracking disabled")
 		self.poslbl.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);
@@ -276,15 +229,12 @@ class MainWidget(QMainWindow):
 		self.infolay.addWidget(self.markerDistLabel)
 		self.infolay.addWidget(self.infoLabel)
 
-		#self.cpannellay.addWidget(self.cp)
-
 		self.layout.addLayout(self.cpannellay)
 		self.layout.addWidget(self.hsplitter)
 		self.layout.addLayout(self.infolay)
 		self.cw.setLayout(self.layout)
 
 		self.setCentralWidget(self.cw)
-		#self.overlay = Overlay(self.dispw)
 
 		self.createActions();
 		self.createMenus();
@@ -423,10 +373,6 @@ class MainWidget(QMainWindow):
 		self.mHelpMenu.addAction(self.mDebugInfo)
 	
 	def createToolbars(self):
-		#self.btoolbar = QToolBar()
-		#self.lbl = QLabel("HelloWorld")
-		#self.btoolbar.addWidget(self.lbl)
-		#self.addToolBar(Qt.BottomToolBarArea, self.btoolbar)
 		pass
 
 	def to_freecad_action(self):
@@ -438,7 +384,6 @@ class MainWidget(QMainWindow):
 		pyservoce.brep_write(self.dispw.scene[0].shape(), tmpfl)
 		QMessageBox.information(self, self.tr("ToFreeCad"),
 			self.tr("Script copied to clipboard"));		
-
 
 	def hideConsole(self, en):
 		self.console.setHidden(en)
@@ -529,11 +474,9 @@ class MainWidget(QMainWindow):
 
 	def fullScreen(self):
 		if self.isFullScreen():
-			#self.infolay.setHidden(False)
 			self.showNormal()
 			self.dispw.view.redraw()
 		else:
-			#self.infolay.setHidden(True)
 			self.showFullScreen()
 			self.dispw.view.redraw()
 
@@ -612,12 +555,6 @@ class MainWidget(QMainWindow):
 		repattern1 = re.compile(r"import *zencad|from *zencad *import")
 		
 		zencad_search = repattern1.search(filetext)
-		#if zencad_search is None:
-		#	print("no zencad import here... hm...")
-		#	ret = QMessageBox.warning(self, self.tr("ZenCad file?"),
-		#		self.tr("I can not find any zencad import here"))
-		#	return
-
 		print("widget: try open {}".format(path))
 
 		edited = path
@@ -664,10 +601,6 @@ class MainWidget(QMainWindow):
 			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context(self, scn):
-		#old_central_widget = self.dispw
-		#old_central_widget.deleteLater()
-		#self.dispw = DisplayWidget(scn, True, True)
-		#self.setCentralWidget(self.dispw)
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(scn)
@@ -710,9 +643,7 @@ class DisplayWidget(QWidget):
 		self.view.autoscale()
 
 	def reset_orient2(self):		
-		self.orient = 2
-		#self.view.reset_orientation()
-		
+		self.orient = 2		
 
 	def set_orient1(self):
 		self.view.set_projection(
@@ -963,8 +894,6 @@ def rerun_routine(arg):
 	control_w = arg[2]
 	os.close(1)
 	os.dup2(w, 1)
-#	w = arg[1]
-
 	os.write(control_w, str(os.getpid()).encode("utf-8"))
 
 	zencad.shower.show_impl = zencad.shower.update_show
@@ -1029,7 +958,6 @@ class rerun_notify_thread(QThread):
 						if 'IN_CLOSE_WRITE' in event[1]:
 							print("widget: {} was rewriten. rerun initial.".format(started_by))
 							self.rerun_label_on_signal.emit()
-							#main_window.texteditor.update_text_field()
 							self.current_file_was_updated.emit()
 							self.rerun()
 					if self.restart:
@@ -1082,7 +1010,6 @@ class rerun_notify_thread(QThread):
 						os.write(RAWSTDOUT, ret)
 						self.newdata.emit(ret.decode("utf-8"))
 				except Exception as e:
-					#print("reader was finished with", e)
 					pass
 
 		rdr = retransler(r)
@@ -1090,7 +1017,6 @@ class rerun_notify_thread(QThread):
 		rdr.start()
 
 		FUTURE = future
-		#FUTURE_CONTROL = control_w
 
 		def listpid():
 			global SUBPROCESPID
@@ -1126,25 +1052,6 @@ class rerun_notify_thread(QThread):
 
 		threading.Thread(target = waittask, args=()).start()
 		threading.Thread(target = listpid, args=()).start()
-
-##display
-default_scene = Scene()
-
-def display(shp, color = Color(0.6, 0.6, 0.8)):
-	if isinstance(shp, evalcache.LazyObject):
-		return default_scene.add(evalcache.unlazy(shp), color)
-	else:
-		return default_scene.add(shp, color)
-
-def disp(*args,**kwargs): display(*args, **kwargs)
-
-def highlight(m): return display(m, Color(0.5, 0, 0, 0.5))
-def hl(m) : return highlight(m)
-
-def show(scene=None, *args, **kwargs):
-	if scene is None: scene = default_scene
-	return show_impl(scene, *args, **kwargs)
-
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
 	global started_by, edited
