@@ -11,17 +11,27 @@ from zencad.viewadaptor import GeometryWidget
 import zencad.opengl
 import zencad.rpc
 
+import zencad.spawn
+
 from PyQt5.QtWidgets import QApplication
 
 def application_starter(pid, r_id, w_sync, tpl):
 	from zencad.application import MainWindow
 
+	#init noqt context
+	cr1, cw1 = os.pipe()
+	cr2, cw2 = os.pipe()
+	zencad.spawn.make_clean_spawner(cr1, cw2)
+	clean_spawner_ctransler = zencad.rpc.NoQtTransler(cr2, cw1)
+
+	#get winid from creator thread 
 	winid = int(os.read(r_id, 512).decode("utf-8"))
 	os.close(r_id)
 
 	app = QApplication([])
 	ctransler = zencad.rpc.ApplicationNode(*tpl)
 	mw = MainWindow()
+	mw.clean_spawner_ctransler = clean_spawner_ctransler 
 	
 	def stopworld():
 		mw.broadcast_send("stopworld")
@@ -64,6 +74,10 @@ def start_unbound(scn):
 
 	ctransler.screenCommandSignal.connect(disp.doscreen)
 	ctransler.stopWorldSignal.connect(stopworld)
+
+	ctransler.actionCenteringSignal.connect(disp.action_centering)
+	ctransler.actionAutoscaleSignal.connect(disp.action_autoscale)
+	ctransler.actionResetSignal.connect(disp.action_reset)
 
 	disp.show()
 	app.exec()
