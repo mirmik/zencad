@@ -1,5 +1,5 @@
 import math
-import lazy_import
+#import lazy_import
 
 import pyservoce
 from pyservoce import point3, vector3
@@ -20,7 +20,7 @@ import types
 #__version__ = 
 moduledir = os.path.dirname(__file__)
 
-from zencad.shower import show, display, disp, hl, highlight 
+from zencad.showapi import show, display, disp, hl, highlight 
 
 ##prim3d
 @lazy.lazy(cls=nocached_shape_generator)
