@@ -12,4 +12,5 @@ scn = zencad.Scene()
 
 scn.add(zencad.box(20,20,20).unlazy())
 
+#zencad.unbound.start_self(scn)
 zencad.unbound.start_unbound(scn)
