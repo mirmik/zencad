@@ -58,3 +58,24 @@ def restore_default_lazyopts():
 	lazy.diag_values = False
 	lazy.print_invokes = False
 
+diag = None
+ensave = None
+desave = None
+onplace = None
+
+def disable_lazy():
+	global ensave, desave, onplace
+	ensave = zencad.lazy.encache 
+	desave = zencad.lazy.decache
+	diag = zencad.lazy.diag
+	onplace = zencad.lazy.onplace
+	zencad.lazy.diag = False
+	zencad.lazy.encache = False
+	zencad.lazy.decache = False
+	zencad.lazy.onplace = True
+
+def restore_lazy():
+	zencad.lazy.onplace = onplace
+	zencad.lazy.encache = ensave
+	zencad.lazy.decache = desave
+	zencad.lazy.diag = diag

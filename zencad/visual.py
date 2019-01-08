@@ -53,7 +53,7 @@ def screen_debug(model, size=(800,600)):
 	image.show()
 
 def screen_view(view, path, size): #TODO:SIZE FROM VIEW
-	raw = view.rawarray()
+	raw = view.rawarray(size[0], size[1])
 	npixels = np.reshape(np.asarray(raw), (size[1],size[0],3))
 	nnnpixels = np.flip(npixels, 0).reshape((size[0] * size[1] * 3))
 
