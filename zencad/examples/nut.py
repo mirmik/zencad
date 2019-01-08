@@ -29,7 +29,7 @@ def metric_nut(d, step, h):
 
 	return ret
 
-nut = metric_nut(8, 1.25, 30)
+nut = metric_nut(8, 1.25, 40)
 
 m = nut.up(25.3) + cylinder(r=8/2, h=20).up(5.3) + linear_extrude(ngon(r = 7.1, n=6),(0,0,5.3))
 

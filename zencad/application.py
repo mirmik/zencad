@@ -1,7 +1,9 @@
 import os
+import re
 
 import zencad
 import zencad.lazifier
+import zencad.spawn
 from zencad.texteditor import TextEditor
 
 from PyQt5.QtWidgets import *
@@ -58,13 +60,12 @@ class ConsoleWidget(QTextEdit):
 
 class MainWindow(QMainWindow):
 	class evaluator: 
-		def __init__(self, wid, ctransler, pid):
-			self.wid = wid
-			self.pid = pid
+		def __init__(self, ctransler):
 			self.ctransler = ctransler
 
 	def __init__(self):
 		QMainWindow.__init__(self)
+		self.lastopened_directory = None
 		self.evaluators = []
 		self.setMouseTracking(True)
 		self.console = ConsoleWidget()
@@ -85,16 +86,19 @@ class MainWindow(QMainWindow):
 		self.createMenus()
 
 	def add_view_by_id(self, wid, cmd, pid):
-		self.evaluators.append(self.evaluator(wid, cmd, pid))
+		self.evaluators.append(self.evaluator(cmd))
 		container = QWindow.fromWinId(wid)
 		cc = QWidget.createWindowContainer(container);
 		#cc.setAttribute(Qt.WA_TransparentForMouseEvents); 
 		self.vsplitter.insertWidget(0,cc)
 
+	def broadcast_send(self, msg, args=()):
+		for ev in self.evaluators:
+			ev.ctransler.send(msg, args)
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
-#		self.mFileMenu.addAction(self.mOpenAction)
+		self.mFileMenu.addAction(self.mOpenAction)
 #		self.mFileMenu.addAction(self.mTEAction)
 #		self.mFileMenu.addAction(self.mSaveAction)
 #		self.exampleMenu = self.mFileMenu.addMenu("Examples")
@@ -102,16 +106,16 @@ class MainWindow(QMainWindow):
 #		self.mFileMenu.addAction(self.mBrepExport)
 #		self.mFileMenu.addAction(self.mToFreeCad)
 		self.mFileMenu.addAction(self.mScreen)
-#		self.mFileMenu.addSeparator()
-#		self.mFileMenu.addAction(self.mExitAction)
+		self.mFileMenu.addSeparator()
+		self.mFileMenu.addAction(self.mExitAction)
 #
 #		moduledir = os.path.dirname(__file__)
 #		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "examples"))
 #	
-#		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
-#		self.mNavigationMenu.addAction(self.mReset)
-#		self.mNavigationMenu.addAction(self.mCentering)
-#		self.mNavigationMenu.addAction(self.mAutoscale)
+		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
+		self.mNavigationMenu.addAction(self.mReset)
+		self.mNavigationMenu.addAction(self.mCentering)
+		self.mNavigationMenu.addAction(self.mAutoscale)
 #		self.mNavigationMenu.addAction(self.mOrient1)
 #		self.mNavigationMenu.addAction(self.mOrient2)
 #		self.mNavigationMenu.addAction(self.mTracking)
@@ -151,18 +155,18 @@ class MainWindow(QMainWindow):
 		return act
 
 	def createActions(self):
-#		self.mOpenAction = 	self.create_action("Open", 				self.openAction, 				"Open", 										"Ctrl+O")
+		self.mOpenAction = 	self.create_action("Open", 				self.openAction, 				"Open", 										"Ctrl+O")
 #		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Open", 										)#TODO:CTRL+S
 #		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+E")
-#		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
+		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
 #		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
 #		self.mToFreeCad= 	self.create_action("To FreeCad", 		self.to_freecad_action, 		"Save temporary BRep representation and save FreeCad script to clipboard to load it")
 #		self.mBrepExport = 	self.create_action("Export BREP...", 	self.exportBrepAction, 			"Export file in BREP format")
 		self.mScreen = 		self.create_action("Screenshot...", 	self.screenshotAction, 			"Do screen...")
 		self.mAboutAction = self.create_action("About", 			self.aboutAction, 				"About the application")
-#		self.mReset = 		self.create_action("Reset", 			self.resetAction, 				"Reset")
-#		self.mCentering = 	self.create_action("Centering", 		self.centeringAction, 			"Centering")
-#		self.mAutoscale = 	self.create_action("Autoscale", 		self.autoscaleAction, 			"Autoscale", 									"Ctrl+A")
+		self.mReset = 		self.create_action("Reset", 			self.resetAction, 				"Reset")
+		self.mCentering = 	self.create_action("Centering", 		self.centeringAction, 			"Centering")
+		self.mAutoscale = 	self.create_action("Autoscale", 		self.autoscaleAction, 			"Autoscale", 									"Ctrl+A")
 #		self.mOrient1 = 	self.create_action("Axinometric view", 	self.orient1, 					"Orient1")
 #		self.mOrient2 = 	self.create_action("Free rotation view",self.orient2, 					"Orient2")
 #		self.mTracking = 	self.create_action("Tracking", 			self.trackingAction, 			"Tracking",				checkbox=True)
@@ -239,25 +243,54 @@ class MainWindow(QMainWindow):
 
 		path = path[0]
 		
-		self.evaluators[0].ctransler.send({"cmd":"screen", "args":[path]})
+		self.evaluators[0].ctransler.send("screen", [path])
 
-		#w = self.dispw.width()
-		#h = self.dispw.height()
-#
-		#raw = self.dispw.view.rawarray(w,h)
-		#npixels = np.reshape(np.asarray(raw), (h,w,3))
-		#nnnpixels = np.flip(npixels, 0).reshape((w * h * 3))
-#
-		#rawiter = iter(nnnpixels)
-		#pixels = list(zip(rawiter, rawiter, rawiter))
-		#
-		#image = Image.new("RGB", (w, h))
-		#image.putdata(pixels)
-#
-		#image.save(path)
+	def centeringAction(self):
+		self.evaluators[0].ctransler.send("centering", [])
 
-	def mousePressEvent(self, e):
-		print("MousePress")
+	def autoscaleAction(self):
+		self.evaluators[0].ctransler.send("autoscale", [])
+	
+	def resetAction(self):
+		self.evaluators[0].ctransler.send("resetview", [])
 
-	def mouseMoveEvent(self, e):
-		print("MouseMove")
+	def open_routine(self, path):
+		#global started_by, edited
+		filetext = open(path).read()
+		repattern1 = re.compile(r"import *zencad|from *zencad *import")
+		
+		zencad_search = repattern1.search(filetext)
+		print("widget: try open {}".format(path))
+
+		if zencad_search is not None:
+			ctransler = zencad.spawn.spawn_child_process(path, self.clean_spawner_ctransler)
+			self.evaluators.append(self.evaluator(ctransler))
+		#	self.rerun_label_on_slot()
+		#	if self.lastopened != path:
+		#		self.rescale_on_finish = True
+		#	self.lastopened = path
+		#	started_by = path
+		#	os.chdir(os.path.dirname(path))
+		#	self.external_rerun_signal.emit()
+
+		#ctransler = self.evaluators[0].ctransler
+		#ctransler.send("stopworld", [])
+
+		#self.texteditor.setPlainText(filetext)
+		
+
+	def openAction(self):
+		filters = "*.py;;*.*";
+		defaultFilter = "*.py";
+
+		startpath = QDir.currentPath() if self.lastopened_directory is None else self.lastopened_directory
+
+		path = QFileDialog.getOpenFileName(self, "Open File", 
+			startpath,
+			filters, defaultFilter)
+
+		if path[0] == '':
+			return
+
+		self.lastopened_directory = os.path.dirname(path[0])
+		self.open_routine(path[0])
