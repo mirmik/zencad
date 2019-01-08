@@ -34,6 +34,7 @@ class GeometryWidget(QWidget):
 			math.cos(self.psi) * math.sin(self.phi), 
 			math.sin(self.psi)
 		)
+		self.view.redraw()
 
 	def update_orient1_from_view(self):
 		x,y,z = self.view.proj()
@@ -90,12 +91,13 @@ class GeometryWidget(QWidget):
 
 
 	def paintEvent(self, ev):
-		self.view.redraw()
+		print("UnboundWidget::paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()
 			self.painted = True
-
+		self.view.redraw()
+		
 	def resizeEvent(self, ev):
 		if self.inited:
 			self.view.must_be_resized()
@@ -129,7 +131,8 @@ class GeometryWidget(QWidget):
 		self.view.zoom(thePoint.x(), thePoint.y(), aX, aY)
 
 	def onMouseMove(self, theFlags, thePoint):
-		self.setFocus()
+		#print("UnboundWidget::onMouseMove")
+		#self.setFocus()
 		mv = thePoint - self.temporary1
 		self.temporary1 = thePoint
 
@@ -164,10 +167,10 @@ class GeometryWidget(QWidget):
 		
 			if self.orient_mode == 2:
 					self.view.rotation(thePoint.x(), thePoint.y());
-		
-		if theFlags & Qt.RightButton or self.shift_pressed:
+			
+		elif theFlags & Qt.RightButton or self.shift_pressed:
 			self.view.pan(mv.x(), -mv.y())
-	
+			
 	def wheelEvent(self, e):
 		self.onMouseWheel(e.buttons(), e.angleDelta(), e.pos());
 

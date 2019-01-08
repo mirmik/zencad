@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 		self.evaluators = []
+		self.setMouseTracking(True)
 		self.console = ConsoleWidget()
 		self.texteditor = TextEditor()
 
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow):
 		self.evaluators.append(self.evaluator(wid, cmd, pid))
 		container = QWindow.fromWinId(wid)
 		cc = QWidget.createWindowContainer(container);
+		#cc.setAttribute(Qt.WA_TransparentForMouseEvents); 
 		self.vsplitter.insertWidget(0,cc)
 
 
@@ -253,3 +255,9 @@ class MainWindow(QMainWindow):
 		#image.putdata(pixels)
 #
 		#image.save(path)
+
+	def mousePressEvent(self, e):
+		print("MousePress")
+
+	def mouseMoveEvent(self, e):
+		print("MouseMove")

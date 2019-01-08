@@ -66,4 +66,7 @@ scn.add(m.unlazy(), Color(1,1,1))
 scn.add(m2.unlazy(), Color(1,1,1))
 scn.add(m3.unlazy(), Color(1,1,1))
 
-show(scn)
+
+import zencad.unbound
+zencad.unbound.start_unbound(scn)
+#show(scn)
