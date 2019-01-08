@@ -56,11 +56,28 @@ class GeometryWidget(QWidget):
 		else:
 			raise Exception("unregistred orient mode")
 
+		pass
+
+	def action_reset(self):
+		self.psi =   math.cos(math.pi / 4)
+		self.phi = - math.cos(math.pi / 4)
+		self.orient_mode = 1
+		self.view.set_orthogonal()
+		self.set_orient1()
+		self.action_autoscale()
+		self.view.redraw()
+
+	def action_autoscale(self):
+		self.view.fit_all()
+
+	def action_centering(self):
+		self.view.centering()
+		self.set_orient1()
+
 	def set_axonometric_projection(self):
 		self.view.set_orthogonal()
 	
 	def showEvent(self, ev):
-		print("UnboundWidget::showEvent")
 		if self.inited != True:
 			#if self.showmarkers:
 			#	disable_lazy()
@@ -75,6 +92,7 @@ class GeometryWidget(QWidget):
 			self.view.set_gradient()
 			
 			#self.set_orient1()
+			self.view.fit_all()
 			self.view.set_triedron()
 			self.viewer.set_triedron_axes()
 	
@@ -262,7 +280,6 @@ class GeometryWidget(QWidget):
 				self.orient_mode_changed_signal.emit(1)
 
 		#elif event.key() == Qt.Key_F11:
-		#	print("Qt.Key_F11")
 		#	if self.isFullScreen():
 		#		self.showNormal()
 		#	else:

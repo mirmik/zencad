@@ -11,32 +11,42 @@ from zencad.viewadaptor import GeometryWidget
 import zencad.opengl
 import zencad.rpc
 
+import zencad.spawn
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 
 def application_starter(pid, r_id, w_sync, tpl):
 	from zencad.application import MainWindow
 
-	print("application_starter")
+	#init noqt context
+	cr1, cw1 = os.pipe()
+	cr2, cw2 = os.pipe()
+	zencad.spawn.make_clean_spawner(cr1, cw2)
+	clean_spawner_ctransler = zencad.rpc.NoQtTransler(cr2, cw1)
 
+	#get winid from creator thread 
 	winid = int(os.read(r_id, 512).decode("utf-8"))
 	os.close(r_id)
 
-	def kill_parent():
-		os.kill(pid, SIGTERM)
-
 	app = QApplication([])
-	app.lastWindowClosed.connect(kill_parent)
-
 	ctransler = zencad.rpc.ApplicationNode(*tpl)
 	print("create mainwindow")
 	mw = MainWindow()
+	mw.clean_spawner_ctransler = clean_spawner_ctransler 
+	
+	def stopworld():
+		mw.broadcast_send("stopworld")
+		ctransler.stop()
+		app.quit()
+
 	mw.add_view_by_id(winid, ctransler, pid)
 	mw.show()
 	os.write(w_sync, "sync".encode("utf-8"))
 	os.close(w_sync)
 
 	print("app.exec()")
+	app.lastWindowClosed.connect(stopworld)
 	app.exec()
 
 
@@ -90,7 +100,14 @@ def start_unbound(scn, animate=None):
 	os.read(r_sync, 512)
 	os.close(r_sync)
 
-	ctransler.screenCommandSignal.connect(disp.doscreen)
+	def stopworld():
+		ctransler.stop()
+		app.quit()
+
+	ctransler.stopWorldSignal.connect(stopworld)
+	ctransler.actionCenteringSignal.connect(disp.action_centering)
+	ctransler.actionAutoscaleSignal.connect(disp.action_autoscale)
+	ctransler.actionResetSignal.connect(disp.action_reset)
 	
 	if animate != None:
 		thr = update_loop(disp, animate, disp)
@@ -107,6 +124,14 @@ def start_unbound(scn, animate=None):
 def start_self(scn):
 	app = QApplication([])
 	#zencad.opengl.init_opengl()
+	disp = GeometryWidget(scn)
+	disp.show()
+	app.exec()
+
+
+def start_self(scn):
+	app = QApplication([])
+	zencad.opengl.init_opengl()
 	disp = GeometryWidget(scn)
 	disp.show()
 	app.exec()
