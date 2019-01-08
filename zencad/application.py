@@ -58,8 +58,9 @@ class ConsoleWidget(QTextEdit):
 
 class MainWindow(QMainWindow):
 	class evaluator: 
-		def __init__(self, wid, ctransler):
+		def __init__(self, wid, ctransler, pid):
 			self.wid = wid
+			self.pid = pid
 			self.ctransler = ctransler
 
 	def __init__(self):
@@ -82,8 +83,8 @@ class MainWindow(QMainWindow):
 		self.createActions()
 		self.createMenus()
 
-	def add_view_by_id(self, wid, cmd):
-		self.evaluators.append(self.evaluator(wid, cmd))
+	def add_view_by_id(self, wid, cmd, pid):
+		self.evaluators.append(self.evaluator(wid, cmd, pid))
 		container = QWindow.fromWinId(wid)
 		cc = QWidget.createWindowContainer(container);
 		self.vsplitter.insertWidget(0,cc)
