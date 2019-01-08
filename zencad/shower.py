@@ -35,7 +35,7 @@ import runpy
 import inotify.adapters
 import math
 
-from zencad.highlighter import PythonHighlighter
+from zencad.texteditor import PythonHighlighter
 
 text_editor = "subl"
 main_window = None
