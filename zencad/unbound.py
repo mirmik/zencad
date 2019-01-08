@@ -27,7 +27,7 @@ def application_starter(pid, r_id, w_sync, tpl):
 
 	ctransler = zencad.rpc.ApplicationNode(*tpl)
 	mw = MainWindow()
-	mw.add_view_by_id(winid, ctransler)
+	mw.add_view_by_id(winid, ctransler, pid)
 	mw.show()
 	os.write(w_sync, "sync".encode("utf-8"))
 	os.close(w_sync)
