@@ -59,7 +59,6 @@ class GeometryWidget(QWidget):
 		self.view.set_orthogonal()
 	
 	def showEvent(self, ev):
-		print("UnboundWidget::showEvent")
 		if self.inited != True:
 			#if self.showmarkers:
 			#	disable_lazy()
@@ -74,6 +73,7 @@ class GeometryWidget(QWidget):
 			self.view.set_gradient()
 			
 			#self.set_orient1()
+			self.view.fit_all()
 			self.view.set_triedron()
 			self.viewer.set_triedron_axes()
 	

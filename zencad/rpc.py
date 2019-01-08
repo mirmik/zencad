@@ -27,8 +27,11 @@ class CommandTranslator(QObject):
 		self.listener = self.Listener(self, self.r)
 		self.listener.start()
 
-	def send(self, dct):
-		os.write(self.w, pickle.dumps(dct))
+	def send(self, cmd, args):
+		os.write(self.w, pickle.dumps({"cmd":cmd, "args":args}))
+
+	def stop(self):
+		self.listener.quit()
 
 class ApplicationNode(CommandTranslator):
 	def __init__(self, r, w):
@@ -41,12 +44,14 @@ class ApplicationNode(CommandTranslator):
 
 class EvaluatorNode(CommandTranslator):
 	screenCommandSignal = pyqtSignal(str)
+	stopWorldSignal = pyqtSignal()
 
 	def __init__(self, r, w):
 		CommandTranslator.__init__(self, r, w)
 		self.listener.newdata.connect(self.parse)
 		self.hashtable = {
 			"screen": self.screenCommandSignal, 
+			"stopworld": self.stopWorldSignal, 
 		}
 
 	def parse(self, data):

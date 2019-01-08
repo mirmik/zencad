@@ -19,19 +19,21 @@ def application_starter(pid, r_id, w_sync, tpl):
 	winid = int(os.read(r_id, 512).decode("utf-8"))
 	os.close(r_id)
 
-	def kill_parent():
-		os.kill(pid, SIGTERM)
-
 	app = QApplication([])
-	app.lastWindowClosed.connect(kill_parent)
-
 	ctransler = zencad.rpc.ApplicationNode(*tpl)
 	mw = MainWindow()
+	
+	def stopworld():
+		mw.broadcast_send("stopworld")
+		ctransler.stop()
+		app.quit()
+
 	mw.add_view_by_id(winid, ctransler, pid)
 	mw.show()
 	os.write(w_sync, "sync".encode("utf-8"))
 	os.close(w_sync)
 
+	app.lastWindowClosed.connect(stopworld)
 	app.exec()
 
 
@@ -56,7 +58,20 @@ def start_unbound(scn):
 	os.read(r_sync, 512)
 	os.close(r_sync)
 
-	ctransler.screenCommandSignal.connect(disp.doscreen)
+	def stopworld():
+		ctransler.stop()
+		app.quit()
 
+	ctransler.screenCommandSignal.connect(disp.doscreen)
+	ctransler.stopWorldSignal.connect(stopworld)
+
+	disp.show()
+	app.exec()
+
+
+def start_self(scn):
+	app = QApplication([])
+	zencad.opengl.init_opengl()
+	disp = GeometryWidget(scn)
 	disp.show()
 	app.exec()
