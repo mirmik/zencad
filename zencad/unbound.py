@@ -36,7 +36,7 @@ def start_unbound(scn, animate=None):
 	thr.start()
 	
 	def stopworld():
-		wdg.ctransler.stop()
+		wdg.stop()
 		app.quit()
 
 	wdg.ctransler.stopworld_signal.connect(stopworld)
@@ -73,16 +73,33 @@ def start_viewadapter_unbounded(path, apino):
 
 	wdg = zencad.viewadapter.start_viewadapter(None, connect=apino)
 	
+	globals()["__SYNCVAR__"] = None
+	def setsyncvar():
+		print("setsyncvar")
+		globals()["__SYNCVAR__"] = True
+
 	def stopworld():
-		wdg.ctransler.stop()
+		wdg.stop()
 		app.quit()
 
+	wdg.ctransler.sync_signal.connect(setsyncvar)
 	wdg.ctransler.stopworld_signal.connect(stopworld)
-	
+
+	globals()["__WIDGET__"] = wdg
+
 	runner = runner()
 	runner.start()
 	app.exec()
 
+def unbound_show_adapter(scn):
+	wdg = globals()["__WIDGET__"]
+	wdg.scene = scn
+	wdg.ctransler.send("readytoshow", args=(int(wdg.winId()),))
+
+	while globals()["__SYNCVAR__"] == None:
+		time.sleep(0.01)
+
+	wdg.show()
 
 #def application_starter(pid, r_id, w_sync, tpl):
 #	from zencad.application import MainWindow

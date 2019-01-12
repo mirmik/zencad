@@ -26,7 +26,8 @@ def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs
 			zencad.viewadapter.start_self(scene, *args, **kwargs)
 			
 		elif mode == "viewadapter":
-			pass
+			import zencad.unbound
+			zencad.unbound.unbound_show_adapter(scene, *args, **kwargs)
 
 		return
 
