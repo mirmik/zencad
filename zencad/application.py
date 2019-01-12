@@ -267,7 +267,11 @@ class MainWindow(QMainWindow):
 
 		if zencad_search is not None:
 			ctransler = zencad.unbound.start_viewadapter_unbound(self, path)
-			self.evaluators.append(self.evaluator(ctransler))
+			neval = self.evaluator(ctransler)
+			self.evaluators.append(neval)
+			neval.ctransler.log_signal.connect(self.console.append)
+
+			self.texteditor.open(path)
 
 			def readytoshow(wid):
 				self.vsplitter

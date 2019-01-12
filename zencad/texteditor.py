@@ -188,15 +188,20 @@ class TextEditor(QPlainTextEdit):
 		self.highlighter = PythonHighlighter(self.document())
 
 	def save(self):
+		print("TextEditor::save")
 		try:
-			f = open(edited, "w")
+			f = open(self.edited, "w")
 		except IOError as e:
-			print("cannot open {} for write: {}".format(edited, e))
+			print("cannot open {} for write: {}".format(self.edited, e))
 		f.write(self.toPlainText())
 		f.close()
 
+	def open(self, path):
+		self.edited = path
+		self.update_text_field()
+
 	def update_text_field(self):
-		filetext = open(started_by).read()
+		filetext = open(self.edited).read()
 		self.setPlainText(filetext)
 
 	def keyPressEvent(self, event):
