@@ -4,6 +4,7 @@ import evalcache
 import sys
 
 default_scene = Scene()
+mode = None
 
 def display(shp, color = Color(0.6, 0.6, 0.8)):
 	if isinstance(shp, evalcache.LazyObject):
@@ -19,6 +20,12 @@ def hl(m) : return highlight(m)
 def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs):
 	if scene is None: scene = default_scene
 
+	if mode is not None:
+		if mode == "view":
+			import zencad.unbound
+			zencad.unbound.start_self(scene, *args, **kwargs)
+			return
+
 	parser = argparse.ArgumentParser(description='zen')
 	parser.add_argument("--v1", action='store_true')
 	parser.add_argument("--view", action='store_true')
@@ -26,15 +33,12 @@ def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs
 	sargv = parser.parse_args(sargv)	
 
 	if sargv.v1:
-		import zencad.unbound
-		zencad.unbound.start_unbound(scene, *args, **kwargs)
+		shower = "app_v1"
 
 	elif sargv.view:
-		import zencad.unbound
-		zencad.unbound.start_self(scene, *args, **kwargs)
-
+		shower = "viewonly"
 	
-	elif shower == "app_prototype":
+	if shower == "app_prototype":
 		import zencad.shower
 		return zencad.shower.show_impl(scene, *args, **kwargs)
 
