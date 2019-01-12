@@ -29,10 +29,10 @@ def start_unbound(scn, animate=None):
 
 	module_path = zencad.moduledir
 	thr = threading.Thread(target=lambda: os.system(
-		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
+		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {} --path {}"
 		.format(
 			os.path.join(module_path, "__main__.py"),
-			apino, wid, os.getpid())))
+			apino, wid, os.getpid(), sys.argv[0])))
 	thr.start()
 	
 	def stopworld():
@@ -128,11 +128,13 @@ def unbound_show_adapter(scn):
 	wdg.init_viewer()
 	#print("ok")
 
-	wdg.ctransler.send("readytoshow", args=(int(wdg.winId()),))
+	def showready():
+		wdg.ctransler.send("readytoshow", args=(int(wdg.winId()),))
 
-	while globals()["__SYNCVAR__"] == None:
-		time.sleep(0.01)
+		while globals()["__SYNCVAR__"] == None:
+			time.sleep(0.01)
 
+	wdg.showready_signal.connect(showready)
 	wdg.show()
 
 #def application_starter(pid, r_id, w_sync, tpl):

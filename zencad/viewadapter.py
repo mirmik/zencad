@@ -12,6 +12,8 @@ from PyQt5.QtGui import *
 
 class GeometryWidget(QWidget):
 	orient_mode_changed_signal = pyqtSignal(int)
+	showready_signal = pyqtSignal()
+
 
 	def __init__(self, scene, connect=None):
 		QWidget.__init__(self)
@@ -122,6 +124,7 @@ class GeometryWidget(QWidget):
 	
 			#self.view.must_be_resized()
 			self.view.redraw()
+			self.showready_signal.emit()
 			self.inited = True
 		else:
 			pass

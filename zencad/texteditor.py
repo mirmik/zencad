@@ -186,17 +186,22 @@ class TextEditor(QPlainTextEdit):
 		pallete.setColor(QPalette.Text, QColor(255,255,255));
 		self.setPalette(pallete);
 		self.highlighter = PythonHighlighter(self.document())
+		self.rewrite = None
+		self.edited = None
 
 	def save(self):
-		print("TextEditor::save")
 		try:
 			f = open(self.edited, "w")
+			self.rewrite = self.edited
 		except IOError as e:
 			print("cannot open {} for write: {}".format(self.edited, e))
 		f.write(self.toPlainText())
 		f.close()
 
 	def open(self, path):
+		if path == self.edited and path == self.rewrite:
+			self.rewrite = None
+			return
 		self.edited = path
 		self.update_text_field()
 
