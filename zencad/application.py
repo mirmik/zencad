@@ -275,6 +275,18 @@ class MainWindow(QMainWindow):
 		if zencad_search is not None:
 			ctransler = zencad.unbound.start_viewadapter_unbound(self, path)
 			self.evaluators.append(self.evaluator(ctransler))
+
+			def readytoshow(wid):
+				self.vsplitter
+				container = QWindow.fromWinId(wid)
+				cc = QWidget.createWindowContainer(container);
+				oldw = self.vsplitter.replaceWidget(0, cc)
+				self.evaluators[1].ctransler.send("sync", args=())
+				self.evaluators[0].ctransler.send("stopworld", args=())
+				del self.evaluators[0]
+				QTimer.singleShot(200, lambda: oldw.deleteLater())
+
+			ctransler.readytoshow_signal.connect(readytoshow)
 		#	self.rerun_label_on_slot()
 		#	if self.lastopened != path:
 		#		self.rescale_on_finish = True
