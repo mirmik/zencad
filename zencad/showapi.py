@@ -23,8 +23,12 @@ def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs
 	if mode is not None:
 		if mode == "view":
 			import zencad.unbound
-			zencad.unbound.start_self(scene, *args, **kwargs)
-			return
+			zencad.viewadapter.start_self(scene, *args, **kwargs)
+			
+		elif mode == "viewadapter":
+			pass
+
+		return
 
 	parser = argparse.ArgumentParser(description='zen')
 	parser.add_argument("--v1", action='store_true')
@@ -48,4 +52,4 @@ def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs
 
 	elif shower == "viewonly":
 		import zencad.unbound
-		zencad.unbound.start_self(scene, *args, **kwargs)
+		zencad.viewadapter.start_self(scene, *args, **kwargs)
