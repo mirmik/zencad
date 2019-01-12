@@ -48,7 +48,7 @@ def start_viewadapter_unbound(self, path):
 	ctransler = zencad.rpc.ServerTransler(self)
 
 	module_path = zencad.moduledir
-	cmd = "python3 {} --viewadapter --bound-apino {} --path {}".format(
+	cmd = "python3 {} --viewadapter --bound-apino {} --path {} > /dev/null".format(
 			os.path.join(module_path, "__main__.py"),
 			ctransler.get_apino(), path)
 	thr = threading.Thread(target=lambda: os.system(cmd))
@@ -90,7 +90,7 @@ def start_viewadapter_unbounded(path, apino):
 			self.wdg = wdg
 
 		def write(self, data):
-			self.stdout.write(data)
+			#self.stdout.write(data)
 			self.wdg.ctransler.log(data)
 
 		def flush(self):
