@@ -43,6 +43,9 @@ class ConsoleWidget(QTextEdit):
 					os.write(self.d, readed)
 					self.newdata.emit(readed.decode("utf-8"))
 
+			def write_native(self, data):
+				os.write(self.d, data.encode("utf-8"))
+
 		QTextEdit.__init__(self)
 		pallete = self.palette();
 		pallete.setColor(QPalette.Base, QColor(30,30,30));
@@ -51,9 +54,13 @@ class ConsoleWidget(QTextEdit):
 
 		self.cursor = self.textCursor();
 		self.setReadOnly(True)
-		#self.fork = forker(self)
-		#self.fork.start()
-		#self.fork.newdata.connect(self.append)
+		self.fork = forker(self)
+		self.fork.start()
+		self.fork.newdata.connect(self.append)
+
+	def print(self, data):
+		self.append(data)
+		self.fork.write_native(data)
 
 	def append(self, data):
 		self.cursor.insertText(data)
@@ -269,7 +276,7 @@ class MainWindow(QMainWindow):
 			ctransler = zencad.unbound.start_viewadapter_unbound(self, path)
 			neval = self.evaluator(ctransler)
 			self.evaluators.append(neval)
-			neval.ctransler.log_signal.connect(self.console.append)
+			neval.ctransler.log_signal.connect(self.console.print)
 
 			self.texteditor.open(path)
 
