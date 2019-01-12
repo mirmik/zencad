@@ -86,8 +86,14 @@ class GeometryWidget(QWidget):
 
 	def set_axonometric_projection(self):
 		self.view.set_orthogonal()
+
+	def stop(self):
+		self.setHidden(True)
+		self.ctransler.stop()
+		self.viewer.close()
 	
 	def showEvent(self, ev):
+		print("UnboundWidget::showEvent")
 		if self.inited != True:
 			#if self.showmarkers:
 			#	disable_lazy()
@@ -111,15 +117,15 @@ class GeometryWidget(QWidget):
 			#	self.MarkerWController.hide(True)
 	
 			#self.view.must_be_resized()
-			#self.view.redraw()
+			self.view.redraw()
 			self.inited = True
 		else:
 			pass
-			#self.view.redraw()
+			self.view.redraw()
 
 
 	def paintEvent(self, ev):
-		#print("UnboundWidget::paintEvent")
+		print("UnboundWidget::paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()

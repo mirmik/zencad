@@ -69,6 +69,7 @@ class Transler(QObject):
 		if not cmd in self.callbacks:
 			print("unregistred command", cmd)
 		else:
+			print("emit callbacks", cmd)
 			self.callbacks[cmd](*dct["args"])
 
 	def stop(self):
@@ -77,16 +78,22 @@ class Transler(QObject):
 		self.listener.quit()
 
 class ClientTransler(Transler):
+	sync_signal = 		pyqtSignal()
 	screen_signal = 	pyqtSignal(str)
-	stopworld_signal = 		pyqtSignal()
-	centering_signal = pyqtSignal()
-	autoscale_signal = pyqtSignal()
-	reset_signal = 	pyqtSignal()
+	stopworld_signal = 	pyqtSignal()
+	centering_signal = 	pyqtSignal()
+	autoscale_signal = 	pyqtSignal()
+	reset_signal = 		pyqtSignal()
 
 	def __init__(self, parent, oposite=None):
 		Transler.__init__(self, parent, oposite)
 
 		self.callbacks["stopworld"] = lambda: self.stopworld_signal.emit()
+		self.callbacks["sync"] = lambda: self.sync_signal.emit()
 
 class ServerTransler(Transler):
-	pass		
+	readytoshow_signal = 	pyqtSignal(int)
+
+	def __init__(self, parent, oposite=None):
+		Transler.__init__(self, parent, oposite)
+		self.callbacks["readytoshow"] = lambda winid: self.readytoshow_signal.emit(winid)
