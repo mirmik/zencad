@@ -4,6 +4,7 @@ import pyservoce
 import math
 
 from zencad.lazifier import disable_lazy, restore_lazy # for markers
+from zencad.rpc import ClientTransler
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -27,6 +28,14 @@ class GeometryWidget(QWidget):
 		self.setMouseTracking(True)
 		self.setBackgroundRole( QPalette.NoRole )
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
+
+		self.ctransler = ClientTransler(self)
+
+	def get_apino(self):
+		return self.ctransler.get_apino()
+
+	def get_wid(self):
+		return int(self.winId())
 
 	def set_orient1(self):
 		self.view.set_projection(
@@ -109,7 +118,7 @@ class GeometryWidget(QWidget):
 
 
 	def paintEvent(self, ev):
-		print("UnboundWidget::paintEvent")
+		#print("UnboundWidget::paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()
@@ -290,3 +299,10 @@ class GeometryWidget(QWidget):
 		q=self.size()
 		x,y = q.width(), q.height()
 		zencad.visual.screen_view(self.view, path, (x,y))
+
+
+def start_viewadapter(scn, animate=None):
+	print("start_viewadapter")
+
+	wdg = GeometryWidget(scn)	
+	return wdg
