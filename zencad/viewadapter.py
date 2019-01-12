@@ -111,6 +111,8 @@ class GeometryWidget(QWidget):
 			if self.viewer_inited == False:
 				self.init_viewer()
 
+			self.setWidth(800)
+			self.setWidth(600)
 			self.view.set_window(self.winId())
 			self.view.set_gradient()
 			
