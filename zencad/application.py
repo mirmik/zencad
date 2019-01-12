@@ -333,6 +333,7 @@ class MainWindow(QMainWindow):
 				self.evaluators[0].ctransler.send("stopworld", args=())
 				del self.evaluators[0]
 				QTimer.singleShot(200, lambda: oldw.deleteLater())
+				print("widget: scene was updated")
 
 			ctransler.readytoshow_signal.connect(readytoshow)
 		#	self.rerun_label_on_slot()

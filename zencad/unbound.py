@@ -124,9 +124,9 @@ def unbound_show_adapter(scn):
 	wdg = globals()["__WIDGET__"]
 	wdg.scene = scn
 
-	#sys.stdout.write("render scene...")
+	sys.stdout.write("render scene...")
 	wdg.init_viewer()
-	#print("ok")
+	print("ok")
 
 	def showready():
 		wdg.ctransler.send("readytoshow", args=(int(wdg.winId()),))
