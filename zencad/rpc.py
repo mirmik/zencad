@@ -56,7 +56,10 @@ class Transler(QObject):
 		return self.raddress
 
 	def send(self, cmd, args):
-		self.wsock.send(pickle.dumps({"cmd":cmd, "args":args}))
+		try:
+			self.wsock.send(pickle.dumps({"cmd":cmd, "args":args}))
+		except:
+			pass
 
 	def parse(self, data):
 		dct = pickle.loads(data)
