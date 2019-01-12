@@ -95,15 +95,8 @@ class MainWindow(QMainWindow):
 		self.vsplitter.insertWidget(0,cc)
 
 	def broadcast_send(self, msg, args=()):
-		print("broadcast_send", len(self.evaluators))
 		for ev in self.evaluators:
-			print("sendto {}", ev.ctransler.get_apino())
 			ev.ctransler.send(msg, args)
-
-	def broadcast_kill(self):
-		print("broadcast_kill", len(self.evaluators_pid))
-		for pid in self.evaluators_pid:
-			os.kill(pid, signal.SIGINT)
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))

@@ -51,7 +51,6 @@ def start_viewadapter_unbound(self, path):
 	cmd = "python3 {} --viewadapter --bound-apino {} --path {}".format(
 			os.path.join(module_path, "__main__.py"),
 			ctransler.get_apino(), path)
-	print(cmd)
 	thr = threading.Thread(target=lambda: os.system(cmd))
 	thr.start()
 
@@ -61,7 +60,6 @@ def start_viewadapter_unbound(self, path):
 def start_viewadapter_unbounded(path, apino):
 	import zencad.viewadapter
 	import runpy
-	print("start_viewadapter_unbounded")
 
 	class runner(QThread):
 		def run(self):
@@ -75,7 +73,6 @@ def start_viewadapter_unbounded(path, apino):
 	
 	globals()["__SYNCVAR__"] = None
 	def setsyncvar():
-		print("setsyncvar")
 		globals()["__SYNCVAR__"] = True
 
 	def stopworld():
@@ -94,6 +91,7 @@ def start_viewadapter_unbounded(path, apino):
 def unbound_show_adapter(scn):
 	wdg = globals()["__WIDGET__"]
 	wdg.scene = scn
+	wdg.init_viewer()
 	wdg.ctransler.send("readytoshow", args=(int(wdg.winId()),))
 
 	while globals()["__SYNCVAR__"] == None:
