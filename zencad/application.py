@@ -1,5 +1,6 @@
 import os
 import re
+import signal
 
 import zencad
 import zencad.lazifier
@@ -67,6 +68,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.__init__(self)
 		self.lastopened_directory = None
 		self.evaluators = []
+		self.evaluators_pid = []
 		self.setMouseTracking(True)
 		self.console = ConsoleWidget()
 		self.texteditor = TextEditor()
@@ -93,8 +95,14 @@ class MainWindow(QMainWindow):
 		self.vsplitter.insertWidget(0,cc)
 
 	def broadcast_send(self, msg, args=()):
+		print("broadcast_send", len(self.evaluators))
 		for ev in self.evaluators:
 			ev.ctransler.send(msg, args)
+
+	def broadcast_kill(self):
+		print("broadcast_kill", len(self.evaluators_pid))
+		for pid in self.evaluators_pid:
+			os.kill(pid, signal.SIGINT)
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -294,3 +302,38 @@ class MainWindow(QMainWindow):
 
 		self.lastopened_directory = os.path.dirname(path[0])
 		self.open_routine(path[0])
+
+	def bound(self, bound):
+		apino = bound[1]
+		wid = int(bound[0])
+		pid = int(bound[2])
+		self.evaluators_pid.append(pid)
+		container = QWindow.fromWinId(wid)
+		cc = QWidget.createWindowContainer(container);
+		self.vsplitter.insertWidget(0,cc)
+
+
+def start_application(bound=None):
+	app = QApplication([])
+	mw = MainWindow()
+	if bound is not None:
+		mw.bound(bound)
+	mw.show()
+
+	def stopworld():
+		mw.broadcast_send("stopworld")
+		app.quit()
+
+	app.lastWindowClosed.connect(stopworld)
+	app.exec()
+
+def start_application_unbound(connect):
+	import threading
+	module_path = zencad.moduledir
+	thr = threading.Thread(target=lambda: os.system(
+		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
+		.format(
+			os.path.join(module_path, "__main__.py"),
+			*connect)))
+	thr.start()
+	
