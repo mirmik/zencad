@@ -8,8 +8,6 @@ import zencad.showapi
 import zencad.unbound
 import runpy
 
-print("zencad main file")
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--application", action='store_true')
 parser.add_argument("--view", action='store_true')

@@ -14,10 +14,10 @@ class GeometryWidget(QWidget):
 	orient_mode_changed_signal = pyqtSignal(int)
 
 	def __init__(self, scene, connect=None):
-		print("GeometryWidget::__init__", connect)
 		QWidget.__init__(self)
 		self.scene = scene
 		self.inited = False
+		self.viewer_inited = False
 		self.painted = False
 		self.orient_mode = 1
 		self.mousedown = False
@@ -92,8 +92,13 @@ class GeometryWidget(QWidget):
 		self.ctransler.stop()
 		self.viewer.close()
 	
+	def init_viewer(self):
+		self.viewer = pyservoce.Viewer(self.scene)
+		self.view = self.viewer.create_view()
+		self.viewer.set_triedron_axes()
+		self.viewer_inited=True
+
 	def showEvent(self, ev):
-		print("UnboundWidget::showEvent")
 		if self.inited != True:
 			#if self.showmarkers:
 			#	disable_lazy()
@@ -101,16 +106,15 @@ class GeometryWidget(QWidget):
 			#	self.MarkerQController = self.scene.add(self.msphere, zencad.Color(1,0,0))
 			#	self.MarkerWController = self.scene.add(self.msphere, zencad.Color(0,1,0))
 			#	restore_lazy()
+			if self.viewer_inited == False:
+				self.init_viewer()
 
-			self.viewer = pyservoce.Viewer(self.scene)
-			self.view = self.viewer.create_view()
 			self.view.set_window(self.winId())
 			self.view.set_gradient()
 			
 			#self.set_orient1()
 			self.view.fit_all()
 			self.view.set_triedron()
-			self.viewer.set_triedron_axes()
 	
 			#if self.showmarkers:
 			#	self.MarkerQController.hide(True)
@@ -125,7 +129,6 @@ class GeometryWidget(QWidget):
 
 
 	def paintEvent(self, ev):
-		print("UnboundWidget::paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()
@@ -309,7 +312,6 @@ class GeometryWidget(QWidget):
 
 
 def start_viewadapter(scn, connect=None):
-	print("start_viewadapter")
 	wdg = GeometryWidget(scn, connect=connect)	
 	return wdg
 

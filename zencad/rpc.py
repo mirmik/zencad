@@ -23,13 +23,11 @@ class Transler(QObject):
 			try:
 				while 1:
 					data = self.lsock.recv(512)
-					print("data recved", data)
 					self.newdata.emit(data)
 			except Exception as e:
-				self.parent().print_error("clossed pipe detected", e)
+				print(e)
 
 	def __init__(self, parent, oposite=None):
-		print("Transler::__init__", oposite)
 		QObject.__init__(self, parent)
 		
 		self.rsock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -37,13 +35,11 @@ class Transler(QObject):
 		self.callbacks = { "setoposite": self.setoposite }
 
 		self.raddress = "/tmp/zencad-socket-" + str(random.randint(0, 9223372036854775807))
-		print("create connection point", self.raddress)
 		self.rsock.bind(self.raddress)
 		
 		if oposite is None:
 			pass		
 		else:
-			print("connect to oposite", oposite)
 			self.waddress=oposite
 			self.wsock.connect(oposite) 
 			self.send("setoposite", (self.raddress,))
@@ -60,16 +56,14 @@ class Transler(QObject):
 		return self.raddress
 
 	def send(self, cmd, args):
-		print("send", cmd, args)
 		self.wsock.send(pickle.dumps({"cmd":cmd, "args":args}))
 
 	def parse(self, data):
 		dct = pickle.loads(data)
 		cmd = dct["cmd"]
 		if not cmd in self.callbacks:
-			print("unregistred command", cmd)
+			print("WARNING: unregistred command", cmd)
 		else:
-			print("emit callbacks", cmd)
 			self.callbacks[cmd](*dct["args"])
 
 	def stop(self):
