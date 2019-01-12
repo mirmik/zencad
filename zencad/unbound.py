@@ -14,7 +14,7 @@ import zencad.rpc
 import zencad.spawn
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 
 def start_unbound(scn, animate=None):
 	import zencad.application
@@ -60,16 +60,48 @@ def start_viewadapter_unbound(self, path):
 def start_viewadapter_unbounded(path, apino):
 	import zencad.viewadapter
 	import runpy
+	os.chdir(os.path.dirname(path))
+	sys.path.insert(0, os.path.dirname(path))
 
 	class runner(QThread):
 		def run(self):
 			runpy.run_path(path, run_name="__main__")
-		
+
+	#class console_retransler(QThread):
+	#	ctransler_send = pyqtSignal(str)
+	#	def __init__(self):
+	#		QThread.__init__(self)
+	#		r,w = os.pipe()
+	#		d = os.dup(1)
+	#		os.close(1)
+	#		os.dup2(w, 1)
+	#		self.d = d
+	#		self.r = r
+#
+	#	def run(self):
+	#		while 1:
+	#			data = os.read(self.r, 512)
+	#			os.write(self.d, data)
+	#			self.ctransler_send.emit(data.decode("utf-8"))
+
+	class stdout_proxy:
+		def __init__(self, stdout, wdg):
+			self.stdout = stdout
+			self.wdg = wdg
+
+		def write(self, data):
+			self.stdout.write(data)
+			self.wdg.ctransler.log(data)
+
+		def flush(self):
+			self.stdout.flush()
+
 	app = QApplication([])
 	zencad.opengl.init_opengl()
 	zencad.showapi.mode = "viewadapter"
 
 	wdg = zencad.viewadapter.start_viewadapter(None, connect=apino)
+	sys.stdout = stdout_proxy(sys.stdout, wdg)
 	
 	globals()["__SYNCVAR__"] = None
 	def setsyncvar():
@@ -91,7 +123,11 @@ def start_viewadapter_unbounded(path, apino):
 def unbound_show_adapter(scn):
 	wdg = globals()["__WIDGET__"]
 	wdg.scene = scn
+
+	#sys.stdout.write("render scene...")
 	wdg.init_viewer()
+	#print("ok")
+
 	wdg.ctransler.send("readytoshow", args=(int(wdg.winId()),))
 
 	while globals()["__SYNCVAR__"] == None:

@@ -66,6 +66,9 @@ class Transler(QObject):
 		else:
 			self.callbacks[cmd](*dct["args"])
 
+	def log(self, data):
+		self.send("log", args=(data,))
+
 	def stop(self):
 		self.rsock.close()
 		self.wsock.close()
@@ -87,7 +90,9 @@ class ClientTransler(Transler):
 
 class ServerTransler(Transler):
 	readytoshow_signal = 	pyqtSignal(int)
+	log_signal = 	pyqtSignal(str)
 
 	def __init__(self, parent, oposite=None):
 		Transler.__init__(self, parent, oposite)
 		self.callbacks["readytoshow"] = lambda winid: self.readytoshow_signal.emit(winid)
+		self.callbacks["log"] = lambda data: self.log_signal.emit(data)
