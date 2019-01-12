@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import multiprocessing
+import threading
 import os
 import sys
 import time
@@ -26,10 +26,63 @@ def start_unbound(scn, animate=None):
 	wdg = zencad.viewadapter.start_viewadapter(scn, animate)
 	apino 		= wdg.get_apino()
 	wid 		= wdg.get_wid()
-	zencad.application.start_application_unbound(connect = (wid, apino, os.getpid()))
 
+	module_path = zencad.moduledir
+	thr = threading.Thread(target=lambda: os.system(
+		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
+		.format(
+			os.path.join(module_path, "__main__.py"),
+			apino, wid, os.getpid())))
+	thr.start()
+	
+	def stopworld():
+		wdg.ctransler.stop()
+		app.quit()
+
+	wdg.ctransler.stopworld_signal.connect(stopworld)
 	wdg.show()
 	return app.exec()
+
+
+def start_viewadapter_unbound(self, path):
+	ctransler = zencad.rpc.ServerTransler(self)
+
+	module_path = zencad.moduledir
+	cmd = "python3 {} --viewadapter --bound-apino {} --path {}".format(
+			os.path.join(module_path, "__main__.py"),
+			ctransler.get_apino(), path)
+	print(cmd)
+	thr = threading.Thread(target=lambda: os.system(cmd))
+	thr.start()
+
+	return ctransler
+
+
+def start_viewadapter_unbounded(path, apino):
+	import zencad.viewadapter
+	import runpy
+	print("start_viewadapter_unbounded")
+
+	class runner(QThread):
+		def run(self):
+			runpy.run_path(path, run_name="__main__")
+		
+	app = QApplication([])
+	zencad.opengl.init_opengl()
+	zencad.showapi.mode = "viewadapter"
+
+	wdg = zencad.viewadapter.start_viewadapter(None, connect=apino)
+	
+	def stopworld():
+		wdg.ctransler.stop()
+		app.quit()
+
+	wdg.ctransler.stopworld_signal.connect(stopworld)
+	
+	runner = runner()
+	runner.start()
+	app.exec()
+
 
 #def application_starter(pid, r_id, w_sync, tpl):
 #	from zencad.application import MainWindow

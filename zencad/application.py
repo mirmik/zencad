@@ -97,6 +97,7 @@ class MainWindow(QMainWindow):
 	def broadcast_send(self, msg, args=()):
 		print("broadcast_send", len(self.evaluators))
 		for ev in self.evaluators:
+			print("sendto {}", ev.ctransler.get_apino())
 			ev.ctransler.send(msg, args)
 
 	def broadcast_kill(self):
@@ -263,6 +264,7 @@ class MainWindow(QMainWindow):
 		self.evaluators[0].ctransler.send("resetview", [])
 
 	def open_routine(self, path):
+		import zencad.unbound
 		#global started_by, edited
 		filetext = open(path).read()
 		repattern1 = re.compile(r"import *zencad|from *zencad *import")
@@ -271,7 +273,7 @@ class MainWindow(QMainWindow):
 		print("widget: try open {}".format(path))
 
 		if zencad_search is not None:
-			ctransler = zencad.spawn.spawn_child_process(path, self.clean_spawner_ctransler)
+			ctransler = zencad.unbound.start_viewadapter_unbound(self, path)
 			self.evaluators.append(self.evaluator(ctransler))
 		#	self.rerun_label_on_slot()
 		#	if self.lastopened != path:
@@ -304,9 +306,10 @@ class MainWindow(QMainWindow):
 		self.open_routine(path[0])
 
 	def bound(self, bound):
-		apino = bound[1]
-		wid = int(bound[0])
+		apino = bound[0]
+		wid = int(bound[1])
 		pid = int(bound[2])
+		self.evaluators.append(self.evaluator(zencad.rpc.ServerTransler(self, apino)))
 		self.evaluators_pid.append(pid)
 		container = QWindow.fromWinId(wid)
 		cc = QWidget.createWindowContainer(container);
@@ -315,6 +318,10 @@ class MainWindow(QMainWindow):
 
 def start_application(bound=None):
 	app = QApplication([])
+	pal = app.palette();
+	pal.setColor(QPalette.Window, QColor(160,161,165));
+	app.setPalette(pal);
+
 	mw = MainWindow()
 	if bound is not None:
 		mw.bound(bound)
@@ -326,14 +333,3 @@ def start_application(bound=None):
 
 	app.lastWindowClosed.connect(stopworld)
 	app.exec()
-
-def start_application_unbound(connect):
-	import threading
-	module_path = zencad.moduledir
-	thr = threading.Thread(target=lambda: os.system(
-		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
-		.format(
-			os.path.join(module_path, "__main__.py"),
-			*connect)))
-	thr.start()
-	
