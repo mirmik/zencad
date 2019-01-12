@@ -19,7 +19,7 @@ parser.add_argument("--path")
 pargs = parser.parse_args()
 
 if pargs.application:
-	zencad.application.start_application(bound = (pargs.bound_apino, pargs.bound_wid, pargs.bound_pid))
+	zencad.application.start_application(bound = (pargs.bound_apino, pargs.bound_wid, pargs.bound_pid, pargs.path))
 
 elif pargs.viewadapter:
 	zencad.unbound.start_viewadapter_unbounded(apino=pargs.bound_apino, path=pargs.path)

@@ -79,6 +79,9 @@ class InotifyThread(QThread):
 		self.path = path
 		self.restart = True
 
+		if not self.isRunning():
+			self.start()
+
 	def run(self):
 		self.restart = False
 		
@@ -320,8 +323,6 @@ class MainWindow(QMainWindow):
 
 			self.texteditor.open(path)
 			self.inotify_thr.init_notifier(path)
-			if not self.inotify_thr.isRunning():
-				self.inotify_thr.start()
 
 			def readytoshow(wid):
 				self.vsplitter
@@ -368,11 +369,15 @@ class MainWindow(QMainWindow):
 		apino = bound[0]
 		wid = int(bound[1])
 		pid = int(bound[2])
+		path = bound[3]
 		self.evaluators.append(self.evaluator(zencad.rpc.ServerTransler(self, apino)))
 		self.evaluators_pid.append(pid)
 		container = QWindow.fromWinId(wid)
 		cc = QWidget.createWindowContainer(container);
 		self.vsplitter.insertWidget(0,cc)
+
+		self.texteditor.open(path)
+		self.inotify_thr.init_notifier(path)
 
 
 def start_application(bound=None):
