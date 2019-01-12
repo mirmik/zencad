@@ -1,6 +1,7 @@
 import os
 import re
 import signal
+import inotify
 
 import zencad
 import zencad.lazifier
@@ -66,6 +67,37 @@ class ConsoleWidget(QTextEdit):
 		self.cursor.insertText(data)
 		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
+class InotifyThread(QThread):
+	filechanged = pyqtSignal(str)
+
+	def __init__(self, parent):
+		QThread.__init__(self, parent)
+
+	def init_notifier(self, path):
+		self.notifier = inotify.adapters.Inotify()
+		self.notifier.add_watch(path)
+		self.path = path
+		self.restart = True
+
+	def run(self):
+		self.restart = False
+		
+		try:
+			while 1:
+				for event in self.notifier.event_gen():
+					if event is not None:
+						if 'IN_CLOSE_WRITE' in event[1]:
+							print("widget: {} was rewriten. rerun initial.".format(self.path))
+							self.rerun()
+					if self.restart:
+						self.restart = False
+						break
+		except Exception as e:
+			print("Warning: Rerun thread was finished:", e)
+
+	def rerun(self):
+		self.filechanged.emit(self.path)
+
 class MainWindow(QMainWindow):
 	class evaluator: 
 		def __init__(self, ctransler):
@@ -85,6 +117,9 @@ class MainWindow(QMainWindow):
 		self.vsplitter.addWidget(self.console)
 		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
+
+		self.inotify_thr = InotifyThread(self)
+		self.inotify_thr.filechanged.connect(self.open_routine)
 		
 		self.setCentralWidget(self.hsplitter)
 		self.resize(800,600)
@@ -273,12 +308,20 @@ class MainWindow(QMainWindow):
 		print("widget: try open {}".format(path))
 
 		if zencad_search is not None:
+			if len(self.evaluators) > 1:
+				self.evaluators[1].ctransler.send("stopworld", args=())
+				self.evaluators[1].ctransler.stop()
+				del self.evaluators[1]
+			
 			ctransler = zencad.unbound.start_viewadapter_unbound(self, path)
 			neval = self.evaluator(ctransler)
 			self.evaluators.append(neval)
 			neval.ctransler.log_signal.connect(self.console.print)
 
 			self.texteditor.open(path)
+			self.inotify_thr.init_notifier(path)
+			if not self.inotify_thr.isRunning():
+				self.inotify_thr.start()
 
 			def readytoshow(wid):
 				self.vsplitter
