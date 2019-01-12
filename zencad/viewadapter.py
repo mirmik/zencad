@@ -13,7 +13,8 @@ from PyQt5.QtGui import *
 class GeometryWidget(QWidget):
 	orient_mode_changed_signal = pyqtSignal(int)
 
-	def __init__(self, scene):
+	def __init__(self, scene, connect=None):
+		print("GeometryWidget::__init__", connect)
 		QWidget.__init__(self)
 		self.scene = scene
 		self.inited = False
@@ -29,7 +30,7 @@ class GeometryWidget(QWidget):
 		self.setBackgroundRole( QPalette.NoRole )
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
 
-		self.ctransler = ClientTransler(self)
+		self.ctransler = ClientTransler(self, oposite=connect)
 
 	def get_apino(self):
 		return self.ctransler.get_apino()
@@ -301,8 +302,28 @@ class GeometryWidget(QWidget):
 		zencad.visual.screen_view(self.view, path, (x,y))
 
 
-def start_viewadapter(scn, animate=None):
+def start_viewadapter(scn, connect=None):
 	print("start_viewadapter")
-
-	wdg = GeometryWidget(scn)	
+	wdg = GeometryWidget(scn, connect=connect)	
 	return wdg
+
+
+def start_viewadaptor_unbound(connect):
+	import threading
+	module_path = zencad.moduledir
+	thr = threading.Thread(target=lambda: os.system(
+		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
+		.format(
+			os.path.join(module_path, "__main__.py"),
+			*connect)))
+	thr.start()
+	
+
+def start_self(scn):
+	import zencad
+	import zencad.opengl
+	app = QApplication([])
+	zencad.opengl.init_opengl()
+	disp = GeometryWidget(scn)
+	disp.show()
+	app.exec()
