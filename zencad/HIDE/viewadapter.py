@@ -4,7 +4,6 @@ import pyservoce
 import math
 
 from zencad.lazifier import disable_lazy, restore_lazy # for markers
-from zencad.rpc import ClientTransler
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -31,11 +30,6 @@ class GeometryWidget(QWidget):
 		self.setMouseTracking(True)
 		self.setBackgroundRole( QPalette.NoRole )
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
-
-		self.ctransler = ClientTransler(self, oposite=connect)
-
-	def get_apino(self):
-		return self.ctransler.get_apino()
 
 	def get_wid(self):
 		return int(self.winId())
@@ -314,27 +308,30 @@ class GeometryWidget(QWidget):
 		zencad.visual.screen_view(self.view, path, (x,y))
 
 
-def start_viewadapter(scn, connect=None):
-	wdg = GeometryWidget(scn, connect=connect)	
+#def start_viewadapter(scn, connect=None):
+#	wdg = GeometryWidget(scn, connect=connect)	
+#	return wdg
+
+def start_widget(scn):
+	wdg = GeometryWidget(scn)	
 	return wdg
 
-
-def start_viewadaptor_unbound(connect):
-	import threading
-	module_path = zencad.moduledir
-	thr = threading.Thread(target=lambda: os.system(
-		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
-		.format(
-			os.path.join(module_path, "__main__.py"),
-			*connect)))
-	thr.start()
-	
-
-def start_self(scn):
-	import zencad
-	import zencad.opengl
-	app = QApplication([])
-	zencad.opengl.init_opengl()
-	disp = GeometryWidget(scn)
-	disp.show()
-	app.exec()
+#def start_viewadaptor_unbound(connect):
+#	import threading
+#	module_path = zencad.moduledir
+#	thr = threading.Thread(target=lambda: os.system(
+#		"python3 {} --application --bound-apino {} --bound-wid {} --bound-pid {}"
+#		.format(
+#			os.path.join(module_path, "__main__.py"),
+#			*connect)))
+#	thr.start()
+#	
+#
+#def start_self(scn):
+#	import zencad
+#	import zencad.opengl
+#	app = QApplication([])
+#	zencad.opengl.init_opengl()
+#	disp = GeometryWidget(scn)
+#	disp.show()
+#	app.exec()

@@ -9,6 +9,7 @@ from pyservoce import Scene, View, Viewer, Color
 import tempfile
 import sys
 import os
+import signal
 import psutil
 #import dill
 
@@ -22,15 +23,16 @@ import numpy as np
 import re
 import time
 import threading
-import multiprocessing
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import concurrent
-import signal
+import zencad.opengl
+#import multiprocessing
+#from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+#import concurrent
+#import signal
 import runpy
 import inotify.adapters
 import math
 
-from zencad.texteditor import PythonHighlighter
+import zencad.texteditor
 
 text_editor = "subl"
 main_window = None
@@ -56,6 +58,7 @@ DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 RAWSTDOUT = None
 FUTURE = None
 SUBPROCESPID = None
+__INVOKER__ = None
 
 def kill_subprocess():
 	os.kill(SUBPROCESPID, signal.SIGTERM)
@@ -83,50 +86,33 @@ def show_label(lbl, en):
 	else:
 		lbl.setHidden(True)
 
-class TextEditor(QPlainTextEdit):
-	def __init__(self):
-		QPlainTextEdit.__init__(self)
-
-	def save(self):
-		try:
-			f = open(edited, "w")
-		except IOError as e:
-			print("cannot open {} for write: {}".format(edited, e))
-		f.write(self.toPlainText())
-		f.close()
-
-	def update_text_field(self):
-		filetext = open(started_by).read()
-		self.setPlainText(filetext)
-
-	def keyPressEvent(self, event):
-		if event.key() == Qt.Key_S and QApplication.keyboardModifiers() == Qt.ControlModifier:
-			self.save()
-
-		QPlainTextEdit.keyPressEvent(self, event)
+#class TextEditor(QPlainTextEdit):
+#	def __init__(self):
+#		QPlainTextEdit.__init__(self)
+#
+#	def save(self):
+#		try:
+#			f = open(edited, "w")
+#		except IOError as e:
+#			print("cannot open {} for write: {}".format(edited, e))
+#		f.write(self.toPlainText())
+#		f.close()
+#
+#	def update_text_field(self):
+#		filetext = open(started_by).read()
+#		self.setPlainText(filetext)
+#
+#	def keyPressEvent(self, event):
+#		if event.key() == Qt.Key_S and QApplication.keyboardModifiers() == Qt.ControlModifier:
+#			self.save()
+#
+#		QPlainTextEdit.keyPressEvent(self, event)
 
 class ConsoleWidget(QTextEdit):
+	append_signal = pyqtSignal(str)
 	def __init__(self):
-		class forker(QThread):
-			newdata=pyqtSignal(str)
-			def __init__(self, console):
-				QObject.__init__(self)
-				self.console = console
-				r,w = os.pipe()
-				d = os.dup(1)
-				os.close(1)
-				os.dup2(w, 1)
-				self.d = d
-				self.r = r
-
-				global RAWSTDOUT
-				RAWSTDOUT = d
-
-			def run(self):
-				while 1:
-					readed = os.read(self.r, 512)
-					os.write(self.d, readed)
-					self.newdata.emit(readed.decode("utf-8"))
+		self.stdout = sys.stdout
+		sys.stdout = self
 
 		QTextEdit.__init__(self)
 		pallete = self.palette();
@@ -136,22 +122,78 @@ class ConsoleWidget(QTextEdit):
 
 		self.cursor = self.textCursor();
 		self.setReadOnly(True)
-		self.fork = forker(self)
-		self.fork.start()
-		self.fork.newdata.connect(self.append)
+		#self.fork.newdata.connect(self.append)
+		
+		font = QFont();
+		font.setFamily("Monospace")
+		font.setPointSize(10)
+		font.setStyleHint(QFont.Monospace)
+		self.setFont(font)
+
+		metrics = QFontMetrics(font);
+		self.setTabStopWidth(metrics.width("    "))
+
+		self.append_signal.connect(self.append, Qt.QueuedConnection)
+
+	def write_native(self, data):
+		self.stdout.write(data)
+		self.stdout.flush()
+			
+	def flush(self):
+		self.stdout.flush()
+
+	def write(self, data):
+		self.append_signal.emit(data)
+		self.write_native(data)
 
 	def append(self, data):
 		self.cursor.insertText(data)
 		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
+
+class InotifyThread(QThread):
+	filechanged = pyqtSignal(str)
+
+	def __init__(self, parent):
+		QThread.__init__(self, parent)
+
+	def init_notifier(self, path):
+		self.notifier = inotify.adapters.Inotify()
+		self.notifier.add_watch(path)
+		self.path = path
+		self.restart = True
+
+		if not self.isRunning():
+			self.start()
+
+	def run(self):
+		self.restart = False
+		
+		try:
+			while 1:
+				for event in self.notifier.event_gen():
+					if event is not None:
+						if 'IN_CLOSE_WRITE' in event[1]:
+							print("widget: {} was rewriten. rerun initial.".format(self.path))
+							self.rerun()
+					if self.restart:
+						self.restart = False
+						break
+		except Exception as e:
+			print("Warning: Rerun thread was finished:", e)
+
+	def rerun(self):
+		self.filechanged.emit(self.path)
+
 class MainWidget(QMainWindow):
+	internal_rerun_signal = pyqtSignal()
 	external_rerun_signal = pyqtSignal()
 
 	def __init__(self, dispw, showconsole, showeditor):
 		QMainWindow.__init__(self)
 		self.setMouseTracking(True)
 		self.rescale_on_finish=False
-
+		self.thr=None
 		self.full_screen_mode = False
 
 		self.cw = QWidget()
@@ -167,24 +209,11 @@ class MainWidget(QMainWindow):
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
 
-		self.texteditor = TextEditor()
-		pallete = self.texteditor.palette();
-		pallete.setColor(QPalette.Base, QColor(40,41,35));
-		pallete.setColor(QPalette.Text, QColor(255,255,255));
-		self.texteditor.setPalette(pallete);
+		self.texteditor = zencad.texteditor.TextEditor()
 		
-		font = QFont();
-		font.setFamily("Courier New")
-		font.setPointSize(11)
-		font.setStyleHint(QFont.Monospace)
-		self.texteditor.setFont(font)
-
 		self.dispw.sizePolicy().setHorizontalStretch(1)
 		self.texteditor.sizePolicy().setHorizontalStretch(1) 
 
-		metrics = QFontMetrics(font);
-		self.texteditor.setTabStopWidth(metrics.width("    "))
-	
 		self.console = ConsoleWidget()
 		cfont = QFont();
 		cfont.setFamily("Courier New")
@@ -192,7 +221,6 @@ class MainWidget(QMainWindow):
 		cfont.setStyleHint(QFont.Monospace)
 		self.console.setFont(cfont)
 		
-		self.highliter = PythonHighlighter(self.texteditor.document())
 		self.hsplitter = QSplitter(Qt.Horizontal)
 		self.vsplitter = QSplitter(Qt.Vertical)
 		self.hsplitter.addWidget(self.texteditor)
@@ -240,7 +268,11 @@ class MainWidget(QMainWindow):
 		self.createMenus();
 		self.createToolbars();
 
+		self.inotifier = InotifyThread(self)
+		self.inotifier.filechanged.connect(self.rerun_current)
+
 		self.dispw.intersectPointSignal.connect(self.poslblSlot)
+		self.internal_rerun_signal.connect(self.rerun_context_invoke)
 
 	def rerun_label_on_slot(self):
 		self.infoLabel.setText("Please wait... Мы тут работаем, понимаешь.")
@@ -550,25 +582,48 @@ class MainWidget(QMainWindow):
 	def _open_routine(self, path):
 		#Проверяем, чтобы в файле был хоть намек на zencad...
 		#А то чего его открывать.
-		global started_by, edited
+		global started_by
 		filetext = open(path).read()
 		repattern1 = re.compile(r"import *zencad|from *zencad *import")
 		
 		zencad_search = repattern1.search(filetext)
 		print("widget: try open {}".format(path))
 
-		edited = path
+		#edited = path
 		if zencad_search is not None:
-			self.rerun_label_on_slot()
+		#	self.rerun_label_on_slot()
+		#	if self.lastopened != path:
+		#		self.rescale_on_finish = True
 			if self.lastopened != path:
-				self.rescale_on_finish = True
-			self.lastopened = path
-			started_by = path
-			os.chdir(os.path.dirname(path))
-			self.external_rerun_signal.emit()
+				self.rescale_on_finish=True
 
-		self.texteditor.setPlainText(filetext)
-		
+			self.lastopened = path
+			self.inotifier.init_notifier(path)
+			started_by = path
+		#	os.chdir(os.path.dirname(path))
+		#	self.external_rerun_signal.emit()
+
+		zencad.showapi.mode = "update_shower"
+		class runner(QThread):
+			def run(self):
+				print("subthread: run")
+				zencad.lazifier.restore_default_lazyopts()
+				zencad.showapi.default_scene = Scene()
+				runpy.run_path(path, run_name="__main__")
+				print("subthread: finish")
+
+		if self.thr is not None and self.thr.isRunning():
+			print("subthread: interrupt")
+			self.thr.terminate()
+
+		self.thr = runner()
+		self.thr.start()
+
+		self.texteditor.open(path)
+
+
+	def rerun_current(self):
+		self._open_routine(started_by)
 
 	def openAction(self):
 		filters = "*.py;;*.*";
@@ -600,16 +655,23 @@ class MainWidget(QMainWindow):
 			"github: https://github.com/mirmik/zencad\n"
 			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
-	def rerun_context(self, scn):
+	def rerun_context_invoke(self):
+		#main_window.console.write("widget: update scene...")
+		#time.sleep(0.001)
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
-		self.dispw.viewer.add_scene(scn)
-		self.dispw.scene = scn
+		self.dispw.viewer.add_scene(self.rerun_scene)
+		self.dispw.scene = self.rerun_scene
 		if self.rescale_on_finish:
 			self.rescale_on_finish = False
 			self.resetAction()
 		else:
 			self.dispw.view.redraw()
+		#print("ok")
+		
+	def rerun_context(self, scn):
+		self.rerun_scene = scn
+		self.internal_rerun_signal.emit()
 
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
@@ -660,7 +722,6 @@ class DisplayWidget(QWidget):
 		self.phi = math.atan2(y,x)
 
 	def paintEvent(self, ev):
-#		print("paintEvent")
 		if self.inited and not self.painted:
 			self.view.fit_all()
 			self.view.must_be_resized()
@@ -674,7 +735,6 @@ class DisplayWidget(QWidget):
 		self.update_orient1_from_view()
 
 	def showEvent(self, ev):
-#		print("showEvent")
 		if self.inited != True:
 		
 			if self.showmarkers:
@@ -883,179 +943,9 @@ class update_loop(QThread):
 				zencad.lazy.diag = diag
 				time.sleep(self.pause_time)
 
-
-def rerun_routine(arg):
-	import zencad
-	import threading
-	print("subprocess: start execution")
-
-	path = arg[0]
-	w = arg[1]
-	control_w = arg[2]
-	os.close(1)
-	os.dup2(w, 1)
-	os.write(control_w, str(os.getpid()).encode("utf-8"))
-
-	zencad.shower.show_impl = zencad.shower.update_show
-
-	syspath = os.path.dirname(path)
-	sys.path.insert(0, syspath)
-
-	globals()["ZENCAD_return_scene"] = Exception("Result was not been rewriten in script. show???")
-
-	cvar = threading.Event()
-
-	class error_store:
-		def __init__(self):
-			self.error = None
-	error_store = error_store()
-
-	def runthread(error_store):
-		try:
-			zencad.lazifier.restore_default_lazyopts()
-			runpy.run_path(path, run_name="__main__")
-			print("subprocess: finished correctly")
-			cvar.set()
-		except Exception as e:
-			error_store.error = e
-			print("subprocess: exception raised in executable script: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
-			cvar.set()
-
-	threading.Thread(target = runthread, args=(error_store,)).start()
-
-	cvar.wait()
-
-	if error_store.error is not None:
-		globals()["ZENCAD_return_scene"] = error_store.error
-	elif isinstance(globals()["ZENCAD_return_scene"], Exception):
-		e = globals()["ZENCAD_return_scene"]
-		print("subprocess: logic exception: \ntype:{} \ntext:{}".format(e.__class__.__name__, e))
-
-	sys.path.remove(syspath)
-	return globals()["ZENCAD_return_scene"]
-
-class rerun_notify_thread(QThread):
-	rerun_label_on_signal = pyqtSignal()
-	rerun_label_off_signal = pyqtSignal()
-	external_autoscale_signal = pyqtSignal()
-	current_file_was_updated = pyqtSignal()	
-
-	def __init__(self, parent):
-		QThread.__init__(self, parent)
-
-	def init_notifier(self, path):
-		self.notifier = inotify.adapters.Inotify()
-		self.notifier.add_watch(path)
-
-	def run(self):
-		self.restart = False
-		
-		try:
-			while 1:
-				self.init_notifier(started_by)
-				for event in self.notifier.event_gen():
-					if event is not None:
-						if 'IN_CLOSE_WRITE' in event[1]:
-							print("widget: {} was rewriten. rerun initial.".format(started_by))
-							self.rerun_label_on_signal.emit()
-							self.current_file_was_updated.emit()
-							self.rerun()
-					if self.restart:
-						self.restart = False
-						break
-		except Exception as e:
-			print("Warning: Rerun thread was finished:", e)
-			
-	def externalRerun(self):
-		self.restart=True
-		self.rerun()
-		
-	def rerun(self):
-		global default_scene, POOL
-		global FUTURE
-		global FUTURE_CONTROL
-
-		zencad.shower.show_impl = zencad.shower.update_show
-		default_scene=Scene()
-		
-		path = os.path.abspath(started_by)
-		
-		syspath = os.path.dirname(path)
-		sys.path.insert(0, syspath)
-
-		r,w = os.pipe()
-		control_r,control_w = os.pipe()
-
-		if FUTURE is not None:
-			print("widget: need kill old subprocess")
-			kill_subprocess()
-			while 1:
-				if FUTURE is None: break
-				time.sleep(0)
-
-		pool = ProcessPoolExecutor(1)		 
-		POOL = pool
-		future = pool.submit(rerun_routine, (path, w, control_w))
-
-		class retransler(QThread):
-			newdata = pyqtSignal(str)
-			def __init__(self, r):
-				QThread.__init__(self)
-				self.r = r
-
-			def run(self):
-				try:
-					while 1:
-						ret = os.read(r, 512)
-						os.write(RAWSTDOUT, ret)
-						self.newdata.emit(ret.decode("utf-8"))
-				except Exception as e:
-					pass
-
-		rdr = retransler(r)
-		rdr.newdata.connect(main_window.console.append)
-		rdr.start()
-
-		FUTURE = future
-
-		def listpid():
-			global SUBPROCESPID
-			SUBPROCESPID = int(os.read(control_r, 512).decode("utf-8"))
-
-		def waittask():
-			global FUTURE			
-			fff = rdr				
-			
-			try:
-				result = future.result()
-			except concurrent.futures.process.BrokenProcessPool as e:
-				print("widget: subprocess was aborted")
-				FUTURE = None
-				return
-			except Exception as e:
-				print("widget: subprocess was aborted unnormal", e)
-				FUTURE = None
-				return				
-			
-			if result is not None and not isinstance(result, Exception):
-				sys.stdout.write("widget: update scene")
-				sys.stdout.flush()
-				time.sleep(0.001)
-				scn = Scene()
-				for i in range(0,len(result[0])): scn.add(result[0][i], result[1][i])
-				main_window.rerun_context(scn)
-				print("...ok")
-			else:
-				print("widget: do nothing")
-			self.rerun_label_off_signal.emit()
-			FUTURE = None
-
-		threading.Thread(target = waittask, args=()).start()
-		threading.Thread(target = listpid, args=()).start()
-
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
 	global started_by, edited
-	global main_window, MAINTHREADPID
+	global main_window
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
 	edited = started_by
 
@@ -1068,12 +958,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + '/industrial-robot.svg'))
 
-	fmt = QSurfaceFormat()
-	fmt.setDepthBufferSize(24)
-	fmt.setStencilBufferSize(8)
-	fmt.setVersion(3, 2)
-	fmt.setProfile(QSurfaceFormat.CoreProfile)
-	QSurfaceFormat.setDefaultFormat(fmt)
+	zencad.opengl.init_opengl()
 
 	disp = DisplayWidget(scene, nointersect, showmarkers)
 	main_window = MainWidget(disp, showconsole=showconsole, showeditor=showeditor);	
@@ -1085,15 +970,8 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 		thr = update_loop(main_window, animate, disp, pause_time)
 		thr.start()
 
-	thr_notify = rerun_notify_thread(main_window)
-	thr_notify.start()
-	thr_notify.rerun_label_off_signal.connect(main_window.rerun_label_off_slot)
-	thr_notify.rerun_label_on_signal.connect(main_window.rerun_label_on_slot)
-	thr_notify.external_autoscale_signal.connect(main_window.resetAction)
-	thr_notify.current_file_was_updated.connect(main_window.texteditor.update_text_field)
-	main_window.external_rerun_signal.connect(thr_notify.externalRerun)
-
-	main_window.texteditor.update_text_field()
+	main_window.texteditor.open(edited)
+	main_window.inotifier.init_notifier(started_by)
 	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
@@ -1107,3 +985,7 @@ def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, show
 	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
 	#main_window.rerun_context(scene)
 	pass
+
+def update_scene(scene, *args, **kwargs):
+	#time.sleep(0.001)
+	main_window.rerun_context(scene)
