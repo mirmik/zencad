@@ -97,6 +97,10 @@ def loft(arr):
 def revol(shp, angle=0.0):
 	return pyservoce.revol(shp, angle)
 
+@lazy.lazy(cls=shape_generator)
+def thicksolid(shp, pnt, t):
+	return pyservoce.thicksolid(shp, pnt, t)
+
 #face
 @lazy.lazy(cls=nocached_shape_generator)
 def circle(r, angle=None, wire=False):

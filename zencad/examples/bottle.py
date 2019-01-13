@@ -2,6 +2,8 @@
 #coding: utf-8
 
 from zencad import *
+import zencad.surface as surface
+import zencad.curve2 as curve2
 
 height = 70
 width = 50
@@ -22,9 +24,24 @@ profile = sew([wire, wire.mirrorX()])
 
 body = profile.fill().extrude(height).fillet(thickness/12)
 
-neck = cylinder(r=thickness/4, h=height/10).up(height)
+neck_radius = thickness/4.;
+neck_height = height/10;
+
+neck = cylinder(r=neck_radius, h=neck_height).up(height)
 
 body = body + neck
+body = thicksolid(body, point(0,0,height+height/10), -thickness / 50)
+
+cylsurf1 = surface.cylinder(neck_radius * 0.99)
+cylsurf2 = surface.cylinder(neck_radius * 1.05)
+
+major = 2 * math.pi;
+minor = neck_height / 10;
+
+ellipse1 = curve2.ellipse(major, minor)
+ellipse2 = curve2.ellipse(major, minor)
+
+arc1 = curve2.trimmed_curve2(ellipse1, 0, math.pi)
 
 display(body)
 show()
