@@ -5,7 +5,8 @@ import inotify
 
 import zencad
 import zencad.lazifier
-import zencad.spawn
+import zencad.viewadapter
+import zencad.opengl
 from zencad.texteditor import TextEditor
 
 from PyQt5.QtWidgets import *
@@ -115,7 +116,7 @@ class MainWindow(QMainWindow):
 		def __init__(self, ctransler):
 			self.ctransler = ctransler
 
-	def __init__(self):
+	def __init__(self, scene=None):
 		QMainWindow.__init__(self)
 		self.lastopened_directory = None
 		self.evaluators = []
@@ -130,8 +131,12 @@ class MainWindow(QMainWindow):
 		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
 
-		self.inotify_thr = InotifyThread(self)
-		self.inotify_thr.filechanged.connect(self.open_routine)
+		if scene is not None:
+			self.wdg = zencad.viewadapter.start_widget(scene)
+			self.vsplitter.insertWidget(0, self.wdg)
+
+		#self.inotify_thr = InotifyThread(self)
+		#self.inotify_thr.filechanged.connect(self.open_routine)
 		
 		self.setCentralWidget(self.hsplitter)
 		self.resize(800,600)
@@ -408,20 +413,38 @@ class MainWindow(QMainWindow):
 		self.inotify_thr.init_notifier(path)
 
 
-def start_application(bound=None):
+#def start_application(bound=None):
+#	app = QApplication([])
+#	pal = app.palette();
+#	pal.setColor(QPalette.Window, QColor(160,161,165));
+#	app.setPalette(pal);
+#
+#	mw = MainWindow()
+#	if bound is not None:
+#		mw.bound(bound)
+#	mw.show()
+#
+#	def stopworld():
+#		mw.broadcast_send("stopworld")
+#		app.quit()
+#
+#	app.lastWindowClosed.connect(stopworld)
+#	app.exec()
+
+def start(scene, *args, **kwargs):
 	app = QApplication([])
+	zencad.opengl.init_opengl()
+
 	pal = app.palette();
 	pal.setColor(QPalette.Window, QColor(160,161,165));
 	app.setPalette(pal);
-
-	mw = MainWindow()
-	if bound is not None:
-		mw.bound(bound)
-	mw.show()
-
+	
+	mw = MainWindow(scene)
+	
 	def stopworld():
-		mw.broadcast_send("stopworld")
+		mw.stop()
 		app.quit()
-
 	app.lastWindowClosed.connect(stopworld)
+	
+	mw.show()
 	app.exec()
