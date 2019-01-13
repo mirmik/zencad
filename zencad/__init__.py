@@ -4,6 +4,8 @@ import math
 import pyservoce
 from pyservoce import point3, vector3
 from pyservoce import Scene, View, Viewer, Color
+from pyservoce import point3 as point
+from pyservoce import vector3 as vector
 
 #zencad_visual = lazy_import.lazy_module("zencad.visual")
 from zencad.visual import screen
@@ -153,6 +155,10 @@ def polysegment(lst, closed = False):
 def wcircle(*args, **kwargs):
 	print("def wcircle(*args, **kwargs): deprecated")
 	return pyservoce.make_wcircle(*args, *kwargs)
+
+@lazy.lazy(cls=nocached_shape_generator)
+def circle_arc(p1, p2, p3):
+	return pyservoce.circle_arc(p1, p2, p3)
 
 @lazy.lazy(cls=shape_generator)
 def interpolate(pnts, tangs=[], closed=False):
