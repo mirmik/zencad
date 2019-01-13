@@ -199,11 +199,6 @@ class MainWidget(QMainWindow):
 		self.texteditor.sizePolicy().setHorizontalStretch(1) 
 
 		self.console = ConsoleWidget()
-		cfont = QFont();
-		cfont.setFamily("Courier New")
-		cfont.setPointSize(10)
-		cfont.setStyleHint(QFont.Monospace)
-		self.console.setFont(cfont)
 		
 		self.hsplitter = QSplitter(Qt.Horizontal)
 		self.vsplitter = QSplitter(Qt.Vertical)
