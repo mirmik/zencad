@@ -5,6 +5,11 @@ from zencad import *
 import zencad.surface as surface
 import zencad.curve2 as curve2
 
+lazy.diag=True
+lazy.fastdo=True
+lazy.encache=False#False
+lazy.decache=False
+
 height = 70
 width = 50
 thickness = 30
@@ -38,10 +43,12 @@ cylsurf2 = surface.cylinder(neck_radius * 1.05)
 major = 2 * math.pi;
 minor = neck_height / 10;
 
-ellipse1 = curve2.ellipse(major, minor)
-ellipse2 = curve2.ellipse(major, minor)
+ellipse1 = curve2.ellipse(major, minor).rotate(deg(20))
+#ellipse2 = curve2.ellipse(major, minor/4)
+#arc1 = curve2.trimmed_curve2(ellipse1, 0, math.pi)
+#segment = curve2.segment(ellipse1.value(0), ellipse1.value(math.pi))
 
-arc1 = curve2.trimmed_curve2(ellipse1, 0, math.pi)
+m = cylsurf1.map(ellipse1)
 
-display(body)
+display(m)
 show()
