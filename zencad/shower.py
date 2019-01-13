@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import zencad
+import zencad.viewadaptor
 import zencad.lazifier 
 import pyservoce
 import evalcache
@@ -52,8 +53,8 @@ BANNER_TEXT = (#"\n"
 			"███████╗███████╗██║ ╚████║╚██████╗██║  ██║██████╔╝\n"
 			"╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═════╝ ")
 
-QMARKER_MESSAGE = "Press 'Q' to set marker"
-WMARKER_MESSAGE = "Press 'W' to set marker"
+QMARKER_MESSAGE = "Press 'F1' to set marker"
+WMARKER_MESSAGE = "Press 'F2' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 RAWSTDOUT = None
 FUTURE = None
@@ -62,23 +63,6 @@ __INVOKER__ = None
 
 def kill_subprocess():
 	os.kill(SUBPROCESPID, signal.SIGTERM)
-		
-def disable_lazy():
-	global ensave, desave, onplace
-	ensave = zencad.lazy.encache 
-	desave = zencad.lazy.decache
-	diag = zencad.lazy.diag
-	onplace = zencad.lazy.onplace
-	zencad.lazy.diag = False
-	zencad.lazy.encache = False
-	zencad.lazy.decache = False
-	zencad.lazy.onplace = True
-
-def restore_lazy():
-	zencad.lazy.onplace = onplace
-	zencad.lazy.encache = ensave
-	zencad.lazy.decache = desave
-	zencad.lazy.diag = diag
 
 def show_label(lbl, en):
 	if (en):
@@ -191,7 +175,7 @@ class MainWidget(QMainWindow):
 
 	def __init__(self, dispw, showconsole, showeditor):
 		QMainWindow.__init__(self)
-		self.setMouseTracking(True)
+		#self.setMouseTracking(True)
 		self.rescale_on_finish=False
 		self.thr=None
 		self.full_screen_mode = False
@@ -605,10 +589,15 @@ class MainWidget(QMainWindow):
 
 		zencad.showapi.mode = "update_shower"
 		class runner(QThread):
+			rerun_signal = pyqtSignal()
 			def run(self):
+				globals()["__THREAD__"] = self
 				print("subthread: run")
 				zencad.lazifier.restore_default_lazyopts()
 				zencad.showapi.default_scene = Scene()
+				zencad.showapi.mode = "update_scene"
+				os.chdir(os.path.dirname(path))
+				sys.path.insert(0, os.path.dirname(path))
 				runpy.run_path(path, run_name="__main__")
 				print("subthread: finish")
 
@@ -617,6 +606,7 @@ class MainWidget(QMainWindow):
 			self.thr.terminate()
 
 		self.thr = runner()
+		self.thr.rerun_signal.connect(self.rerun_context_invoke)
 		self.thr.start()
 
 		self.texteditor.open(path)
@@ -656,8 +646,6 @@ class MainWidget(QMainWindow):
 			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context_invoke(self):
-		#main_window.console.write("widget: update scene...")
-		#time.sleep(0.001)
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(self.rerun_scene)
@@ -667,255 +655,20 @@ class MainWidget(QMainWindow):
 			self.resetAction()
 		else:
 			self.dispw.view.redraw()
-		#print("ok")
 		
 	def rerun_context(self, scn):
 		self.rerun_scene = scn
 		self.internal_rerun_signal.emit()
 
-class DisplayWidget(QWidget):
-	intersectPointSignal = pyqtSignal(tuple)
-
-	def __init__(self, arg, nointersect, showmarkers):
-		QWidget.__init__(self)	
-		self.orient = 1
-		self.mousedown = False
-		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
-		self.marker2=(zencad.pyservoce.point3(0,0,0),False)
-
-		self.inited = False
-		self.painted = False
-		self.nointersect = nointersect
-		self.showmarkers = showmarkers
-
-		self.scene = arg
-		self.temporary1 = QPoint()	
-		self.psi =   math.cos(math.pi / 4)
-		self.phi = - math.cos(math.pi / 4)
-
-		self.setBackgroundRole( QPalette.NoRole )
-		self.setAttribute(Qt.WA_PaintOnScreen, True) 
-		self.setMouseTracking(True)
-
-	def reset_orient1(self):		
-		self.orient = 1
-		self.psi =   math.cos(math.pi / 4)
-		self.phi = - math.cos(math.pi / 4)
-		self.view.reset_orientation()
-		self.view.autoscale()
-
-	def reset_orient2(self):		
-		self.orient = 2		
-
-	def set_orient1(self):
-		self.view.set_projection(
-			math.cos(self.psi) * math.cos(self.phi), 
-			math.cos(self.psi) * math.sin(self.phi), 
-			math.sin(self.psi)
-		);
-
-	def update_orient1_from_view(self):
-		x,y,z = self.view.proj()
-		self.psi = math.asin(z)
-		x = x / math.cos(self.psi)
-		y = y / math.cos(self.psi)
-		self.phi = math.atan2(y,x)
-
-	def paintEvent(self, ev):
-		if self.inited and not self.painted:
-			self.view.fit_all()
-			self.view.must_be_resized()
-			self.painted = True
-
-	def eye(self):
-		return self.view.eye()
-
-	def set_eye(self, pnt):
-		self.view.set_eye(pnt)
-		self.update_orient1_from_view()
-
-	def showEvent(self, ev):
-		if self.inited != True:
-		
-			if self.showmarkers:
-				disable_lazy()
-				self.msphere = zencad.sphere(1)
-				self.MarkerQController = self.scene.add(self.msphere, zencad.Color(1,0,0))
-				self.MarkerWController = self.scene.add(self.msphere, zencad.Color(0,1,0))
-				restore_lazy()
-
-			self.viewer = zencad.Viewer(self.scene)
-			self.view = self.viewer.create_view()
-			self.view.set_window(self.winId())
-			self.view.set_gradient()
-			
-			self.set_orient1()
-			self.view.set_triedron()
-			self.viewer.set_triedron_axes()
-	
-			if self.showmarkers:
-				self.MarkerQController.hide(True)
-				self.MarkerWController.hide(True)
-	
-			self.view.redraw()
-			self.inited = True
-		else:
-			self.update()
-			self.view.redraw()
-
-	def resizeEvent(self, ev):
-		if self.inited:
-			self.view.must_be_resized()
-
-	def paintEngine(self):
-		return None
-
-	def onLButtonDown(self, theFlags, thePoint):
-		self.temporary1 = thePoint;
-		self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
-
-	def onRButtonDown(self, theFlags, thePoint):
-		self.temporary1 = thePoint;
-
-	def onMButtonDown(self, theFlags, thePoint):
-		self.temporary1 = thePoint;
-
-	def onMouseWheel(self, theFlags, theDelta, thePoint):
-		aFactor = 16
-	
-		aX = thePoint.x()
-		aY = thePoint.y()
-	
-		if (theDelta.y() > 0):
-			aX += aFactor
-			aY += aFactor
-		else:
-			aX -= aFactor
-			aY -= aFactor
-		
-		self.view.zoom(thePoint.x(), thePoint.y(), aX, aY)
-
-	def onMouseMove(self, theFlags, thePoint):
-		self.setFocus()
-		mv = thePoint - self.temporary1
-		self.temporary1 = thePoint
-
-		self.lastPosition = thePoint
-
-		modifiers = QApplication.keyboardModifiers()
-		
-		if modifiers == Qt.ShiftModifier:
-			self.shift_pressed = True			
-		else:
-			self.shift_pressed = False
-
-
-		if modifiers == Qt.AltModifier:
-			if not self.alt_pressed:
-				self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
-			self.alt_pressed = True			
-		else:
-			self.alt_pressed = False
-			
-		if not self.nointersect and not self.mousedown:
-			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
-			self.intersectPointSignal.emit(ip)
-
-		if theFlags & Qt.LeftButton or self.alt_pressed: 
-			if self.orient == 1:  
-				self.phi -= mv.x() * 0.01;
-				self.psi += mv.y() * 0.01;
-				if self.psi > math.pi*0.4999: self.psi = math.pi*0.4999
-				if self.psi < -math.pi*0.4999: self.psi = -math.pi*0.4999
-				self.set_orient1()
-		
-			if self.orient == 2:
-					self.view.rotation(thePoint.x(), thePoint.y());
-		
-		if theFlags & Qt.RightButton or self.shift_pressed:
-			self.view.pan(mv.x(), -mv.y())
-	
-	def wheelEvent(self, e):
-		self.onMouseWheel(e.buttons(), e.angleDelta(), e.pos());
-
-	def mouseReleaseEvent(self, e):
-		pass
-
-	def mouseMoveEvent(self, e):
-		self.onMouseMove(e.buttons(), e.pos());
-
-	def mouseReleaseEvent(self, e):
-		self.mousedown = False
-
-	def mousePressEvent(self, e):
-		self.mousedown = True
-		if e.button() == Qt.LeftButton:
-			self.onLButtonDown((e.buttons() | e.modifiers()), e.pos())
-		
-		elif e.button() == Qt.MidButton:
-			self.onMButtonDown((e.buttons() | e.modifiers()), e.pos())
-		
-		elif e.button() == Qt.RightButton:
-			self.onRButtonDown((e.buttons() | e.modifiers()), e.pos())
-
-	def pageDownKeyHandler(self):
-		x = self.width()/2
-		y = self.height()/2
-		factor = 16
-		self.view.zoom(x, y, x - factor, y - factor)
-
-	def pageUpKeyHandler(self):
-		x = self.width()/2
-		y = self.height()/2
-		factor = 16
-		self.view.zoom(x, y, x + factor, y + factor)
-
-	def keyPressEvent (self, event):
-		if event.key() == Qt.Key_Q:
-			self.marker1 = self.view.intersect_point(self.lastPosition.x(), self.lastPosition.y())
-			x = self.marker1[0].x
-			y = self.marker1[0].y
-			z = self.marker1[0].z
-			
-			if self.marker1[1]:
-				self.mw.marker1Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
-				print("Q: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
-			else:
-				self.mw.marker1Label.setText(QMARKER_MESSAGE)	
-			self.mw.updateDistLabel()
-
-			if self.showmarkers:
-				disable_lazy()
-				self.MarkerQController.set_location(zencad.translate(x,y,z))
-				restore_lazy()
-				self.MarkerQController.hide(not self.marker1[1])
-				self.view.redraw()
-		
-		if event.key() == Qt.Key_W:
-			self.marker2 = self.view.intersect_point(self.lastPosition.x(), self.lastPosition.y())
-			x = self.marker2[0].x
-			y = self.marker2[0].y
-			z = self.marker2[0].z
-
-			if self.marker2[1]:
-				self.mw.marker2Label.setText("x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x,y,z))
-				print("W: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(x,y,z))
-			else:
-				self.mw.marker2Label.setText(WMARKER_MESSAGE)	
-			self.mw.updateDistLabel()
-		
-			if self.showmarkers:
-				disable_lazy()
-				self.MarkerWController.set_location(zencad.translate(x,y,z))
-				restore_lazy()
-				self.MarkerWController.hide(not self.marker2[1])
-				self.view.redraw()
-		
-		if event.key() == Qt.Key_PageDown:
-			self.pageDownKeyHandler()
-		elif event.key() == Qt.Key_PageUp:
-			self.pageUpKeyHandler()
-
+	def keyPressEvent(self, event):
+		if event.key() == Qt.Key_F1:
+			self.dispw.markerQPressed()
+		if event.key() == Qt.Key_F2:
+			self.dispw.markerWPressed()
+		if event.key() == Qt.Key_F3:
+			self.dispw.zoom_up()
+		if event.key() == Qt.Key_F4:
+			self.dispw.zoom_down()
 
 
 class update_loop(QThread):
@@ -960,7 +713,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 	zencad.opengl.init_opengl()
 
-	disp = DisplayWidget(scene, nointersect, showmarkers)
+	disp = zencad.viewadaptor.DisplayWidget(scene, nointersect, showmarkers)
 	main_window = MainWidget(disp, showconsole=showconsole, showeditor=showeditor);	
 	disp.mw = main_window
 	main_window.resize(800,600)
@@ -978,14 +731,13 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 	return app.exec()
 
-def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
-	if animate != None:
-		raise Exception("Animate is not supported in subprocess. You should execute this script from terminal.") 
-
-	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
+#def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
+#	if animate != None:
+#		raise Exception("Animate is not supported in subprocess. You should execute this script from terminal.") 
+#	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
 	#main_window.rerun_context(scene)
-	pass
+#	pass
 
 def update_scene(scene, *args, **kwargs):
-	#time.sleep(0.001)
-	main_window.rerun_context(scene)
+	main_window.rerun_scene = scene
+	globals()["__THREAD__"].rerun_signal.emit()
