@@ -29,6 +29,10 @@ def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs
 			import zencad.unbound
 			zencad.unbound.unbound_show_adapter(scene, *args, **kwargs)
 
+		elif mode == "appv1":
+			import zencad.unbound
+			zencad.unbound.start_unbound(scene, *args, **kwargs)
+
 		return
 
 	parser = argparse.ArgumentParser(description='zen')

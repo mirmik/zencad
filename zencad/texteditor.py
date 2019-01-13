@@ -30,7 +30,7 @@ STYLES = {
 	'operator': format('red'),
 	'brace': QColor(255,255,255),
 	'defclass': QColor(120,255,0),
-	'string': QColor(255,255,0),
+	'string': QColor(231,219,116),
 	'string2': format('darkMagenta'),
 	'comment': QColor(80,80,80),
 	'self': QColor(255,120,0),
@@ -188,6 +188,15 @@ class TextEditor(QPlainTextEdit):
 		self.highlighter = PythonHighlighter(self.document())
 		self.rewrite = None
 		self.edited = None
+
+		font = QFont();
+		font.setFamily("Monospace")
+		font.setPointSize(10)
+		font.setStyleHint(QFont.Monospace)
+		self.setFont(font)
+
+		metrics = QFontMetrics(font);
+		self.setTabStopWidth(metrics.width("    "))
 
 	def save(self):
 		try:

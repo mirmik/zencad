@@ -19,6 +19,7 @@ import types
 
 #__version__ = 
 moduledir = os.path.dirname(__file__)
+exampledir = os.path.join(os.path.dirname(__file__), "examples")
 
 from zencad.showapi import show, display, disp, hl, highlight 
 

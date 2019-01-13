@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 #coding:utf-8
 
+import os
+import sys
 import argparse
 import zencad
 import zencad.application
@@ -24,7 +26,9 @@ if pargs.application:
 elif pargs.viewadapter:
 	zencad.unbound.start_viewadapter_unbounded(apino=pargs.bound_apino, path=pargs.path)
 
-elif pargs.view:
-	path = pargs.view
-	zencad.showapi.mode = "view"
+else:
+	zencad.showapi.mode = "appv1"
+	path = os.path.join(zencad.exampledir, "helloworld.py")
+	os.chdir(zencad.exampledir)
+	sys.path.append(zencad.exampledir)
 	runpy.run_path(path, run_name="__main__")
