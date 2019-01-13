@@ -4,11 +4,13 @@
 import os
 import sys
 import zencad
+import zencad.showapi
 import runpy
 
 path = os.path.join(zencad.exampledir, "helloworld.py")
 os.chdir(zencad.exampledir)
 sys.path.append(zencad.exampledir)
+zencad.showapi.mode = "app_fullview"
 runpy.run_path(path, run_name="__main__")
 
 #parser = argparse.ArgumentParser()
