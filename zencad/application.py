@@ -58,6 +58,15 @@ class ConsoleWidget(QTextEdit):
 		self.fork = forker(self)
 		self.fork.start()
 		self.fork.newdata.connect(self.append)
+		
+		font = QFont();
+		font.setFamily("Monospace")
+		font.setPointSize(10)
+		font.setStyleHint(QFont.Monospace)
+		self.setFont(font)
+
+		metrics = QFontMetrics(font);
+		self.setTabStopWidth(metrics.width("    "))
 
 	def print(self, data):
 		self.append(data)
@@ -143,21 +152,39 @@ class MainWindow(QMainWindow):
 		for ev in self.evaluators:
 			ev.ctransler.send(msg, args)
 
+	def _add_open_action(self, menu, name, path):
+		def callback():
+			self.open_routine(path)
+
+		menu.addAction(self.create_action(name, callback, path))
+
+	def _init_example_menu(self, menu, directory):
+		files = os.listdir(directory)
+		scripts = [f for f in files if os.path.splitext(f)[1] == ".py"]
+		dirs = [f for f in files if os.path.isdir(os.path.join(directory, f)) and f != "__pycache__" and f != "fonts"]
+		
+		for f in sorted(scripts):
+			self._add_open_action(menu, f, os.path.join(directory, f))
+
+		for d in sorted(dirs):
+			m = menu.addMenu(d)
+			self._init_example_menu(m, os.path.join(directory, d))	
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mOpenAction)
 #		self.mFileMenu.addAction(self.mTEAction)
 #		self.mFileMenu.addAction(self.mSaveAction)
-#		self.exampleMenu = self.mFileMenu.addMenu("Examples")
+		self.exampleMenu = self.mFileMenu.addMenu("Examples")
 #		self.mFileMenu.addAction(self.mStlExport)
 #		self.mFileMenu.addAction(self.mBrepExport)
 #		self.mFileMenu.addAction(self.mToFreeCad)
 		self.mFileMenu.addAction(self.mScreen)
 		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mExitAction)
-#
-#		moduledir = os.path.dirname(__file__)
-#		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "examples"))
+
+		moduledir = os.path.dirname(__file__)
+		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "examples"))
 #	
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
 		self.mNavigationMenu.addAction(self.mReset)
