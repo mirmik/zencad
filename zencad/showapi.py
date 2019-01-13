@@ -20,41 +20,36 @@ def hl(m) : return highlight(m)
 def show(scene=None, shower="app_prototype", sargv=sys.argv[1:], *args, **kwargs):
 	if scene is None: scene = default_scene
 
-	if mode is not None:
-		if mode == "view":
-			import zencad.unbound
-			zencad.viewadapter.start_self(scene, *args, **kwargs)
-			
-		elif mode == "viewadapter":
-			import zencad.unbound
-			zencad.unbound.unbound_show_adapter(scene, *args, **kwargs)
+	if mode is not None:		
+		if mode == "nothing":
+			pass
 
-		elif mode == "appv1":
-			import zencad.unbound
-			zencad.unbound.start_unbound(scene, *args, **kwargs)
+		elif mode == "update_shower":
+			import zencad.shower
+			zencad.shower.update_scene(scene, *args, **kwargs)
 
 		return
 
-	parser = argparse.ArgumentParser(description='zen')
-	parser.add_argument("--v1", action='store_true')
-	parser.add_argument("--view", action='store_true')
-
-	sargv = parser.parse_args(sargv)	
-
-	if sargv.v1:
-		shower = "app_v1"
-
-	elif sargv.view:
-		shower = "viewonly"
-	
+	#parser = argparse.ArgumentParser(description='zen')
+	#parser.add_argument("--v1", action='store_true')
+	#parser.add_argument("--view", action='store_true')
+#
+	#sargv = parser.parse_args(sargv)	
+#
+	#if sargv.v1:
+	#	shower = "app_v1"
+#
+	#elif sargv.view:
+	#	shower = "viewonly"
+	#
 	if shower == "app_prototype":
 		import zencad.shower
 		return zencad.shower.show_impl(scene, *args, **kwargs)
-
-	elif shower == "app_v1":
-		import zencad.unbound
-		zencad.unbound.start_unbound(scene, *args, **kwargs)
-
-	elif shower == "viewonly":
-		import zencad.unbound
-		zencad.viewadapter.start_self(scene, *args, **kwargs)
+#
+	#elif shower == "app_v1":
+	#	import zencad.unbound
+	#	zencad.unbound.start_unbound(scene, *args, **kwargs)
+#
+	#elif shower == "viewonly":
+	#	import zencad.unbound
+	#	zencad.viewadapter.start_self(scene, *args, **kwargs)#
