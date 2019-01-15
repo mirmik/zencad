@@ -650,6 +650,9 @@ class MainWidget(QMainWindow):
 			self.resetAction()
 		else:
 			self.dispw.view.redraw()
+
+		if self.rerun_animate != None:
+			start_animate_thread(self.rerun_animate)
 		
 	def rerun_context(self, scn):
 		self.rerun_scene = scn
@@ -667,10 +670,10 @@ class MainWidget(QMainWindow):
 
 
 class update_loop(QThread):
-	def __init__(self, parent, updater_function, wdg, pause_time=0.01):
+	def __init__(self, parent, updater_function, pause_time=0.01):
 		QThread.__init__(self, parent)
 		self.updater_function = updater_function 
-		self.wdg = wdg
+		self.wdg = parent.dispw
 		self.pause_time = pause_time
 
 	def run(self):
@@ -714,16 +717,15 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.resize(800,600)
 	main_window.hsplitter.setSizes([400,500])
 
-	if animate != None:
-		thr = update_loop(main_window, animate, disp, pause_time)
-		thr.start()
-
 	main_window.texteditor.open(edited)
 	main_window.inotifier.init_notifier(started_by)
 	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 
+	if animate != None:
+		start_animate_thread(animate)
+		
 	return app.exec()
 
 #def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
@@ -733,6 +735,12 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	#main_window.rerun_context(scene)
 #	pass
 
-def update_scene(scene, *args, **kwargs):
+def start_animate_thread(animate):
+	thr = update_loop(main_window, animate)
+	thr.start()
+
+
+def update_scene(scene, animate=None, *args, **kwargs):
 	main_window.rerun_scene = scene
+	main_window.rerun_animate = animate
 	globals()["__THREAD__"].rerun_signal.emit()
