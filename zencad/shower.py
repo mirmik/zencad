@@ -489,7 +489,7 @@ class MainWidget(QMainWindow):
 		if mw == False and self.isFullScreen():
 			self.showNormal()
 		if wd == False and self.isFullScreen():
-			self.vsplitter.insertWidget(0, self.dispw)
+			#self.vsplitter.insertWidget(0, self.dispw)
 			self.setCentralWidget(self.cw)
 			self.showNormal()
 		if mw == True:
