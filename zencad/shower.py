@@ -486,9 +486,10 @@ class MainWidget(QMainWindow):
 		print("Invalidate cache: %d files removed" % len(files))
 
 	def implFullScreen(self, mw, wd):
-		if mw == False:
+		if mw == False and self.isFullScreen():
 			self.showNormal()
-		if wd == False:
+		if wd == False and self.isFullScreen():
+			self.vsplitter.insertWidget(0, self.dispw)
 			self.setCentralWidget(self.cw)
 			self.showNormal()
 		if mw == True:
@@ -505,7 +506,7 @@ class MainWidget(QMainWindow):
 
 	def displayFullScreen(self):
 		#pass
-		self.implFullScreen(False, True)
+		self.implFullScreen(False, not self.isFullScreen())
 
 	def cacheInfoAction(self):
 		def get_size(start_path = '.'):
