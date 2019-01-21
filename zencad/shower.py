@@ -316,6 +316,7 @@ class MainWidget(QMainWindow):
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
+		self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
 		
 	def set_hide(self, showeditor, showconsole):
 		self.texteditor.setHidden(not showeditor)
@@ -372,6 +373,7 @@ class MainWidget(QMainWindow):
 		self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
+		self.mViewMenu.addAction(self.mDisplayFullScreen)
 		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
@@ -483,13 +485,27 @@ class MainWidget(QMainWindow):
 			del zencad.lazy.cache[f]
 		print("Invalidate cache: %d files removed" % len(files))
 
-	def fullScreen(self):
-		if self.isFullScreen():
+	def implFullScreen(self, mw, wd):
+		if mw == False:
 			self.showNormal()
-			self.dispw.view.redraw()
-		else:
+		#if wd == False:
+		#	self.dispw.setParent(self)
+		#	self.dispw.showNormal()
+		if mw == True:
 			self.showFullScreen()
-			self.dispw.view.redraw()
+		#if wd == True:
+			#self.dispw.setParent(None)
+		#	self.dispw.showFullScreen()
+
+		self.dispw.view.redraw()
+		
+
+	def fullScreen(self):
+		self.implFullScreen(not self.isFullScreen(), False)
+
+	def displayFullScreen(self):
+		pass
+		#self.implFullScreen(False, not self.dispw.isFullScreen())
 
 	def cacheInfoAction(self):
 		def get_size(start_path = '.'):
