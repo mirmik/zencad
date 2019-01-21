@@ -488,14 +488,14 @@ class MainWidget(QMainWindow):
 	def implFullScreen(self, mw, wd):
 		if mw == False:
 			self.showNormal()
-		#if wd == False:
-		#	self.dispw.setParent(self)
-		#	self.dispw.showNormal()
+		if wd == False:
+			self.setCentralWidget(self.cw)
+			self.showNormal()
 		if mw == True:
 			self.showFullScreen()
-		#if wd == True:
-			#self.dispw.setParent(None)
-		#	self.dispw.showFullScreen()
+		if wd == True:
+			self.setCentralWidget(self.dispw)
+			self.showFullScreen()
 
 		self.dispw.view.redraw()
 		
@@ -504,8 +504,8 @@ class MainWidget(QMainWindow):
 		self.implFullScreen(not self.isFullScreen(), False)
 
 	def displayFullScreen(self):
-		pass
-		#self.implFullScreen(False, not self.dispw.isFullScreen())
+		#pass
+		self.implFullScreen(False, True)
 
 	def cacheInfoAction(self):
 		def get_size(start_path = '.'):
