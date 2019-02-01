@@ -262,9 +262,9 @@ class DisplayWidget(QWidget):
 		if self.mw.eventdebug:
 			print("keyPressEvent", event.key())
 
-		if event.nativeVirtualKey() == Qt.Key_Q:
+		if event.key() == Qt.Key_Q:
 			self.markerQPressed()
-		if event.nativeVirtualKey() == Qt.Key_W:
+		if event.key() == Qt.Key_W:
 			self.markerWPressed()
 		if event.key() == Qt.Key_F3 or event.key() == Qt.Key_PageUp:
 			self.zoom_up()
