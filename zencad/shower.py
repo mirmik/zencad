@@ -379,9 +379,9 @@ class MainWidget(QMainWindow):
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
 
-		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
-		self.mHelpMenu.addAction(self.mTestAction)
-		self.mHelpMenu.addAction(self.mDebugInfo)
+		#self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
+		#self.mHelpMenu.addAction(self.mTestAction)
+		#self.mHelpMenu.addAction(self.mDebugInfo)
 	
 	def createToolbars(self):
 		pass
