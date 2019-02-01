@@ -4,8 +4,17 @@
 import os
 import sys
 import zencad
+import zencad.shower
 import zencad.showapi
 import runpy
+
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--eventdebug", action='store_true')
+pargs = parser.parse_args()
+
+zencad.shower.__ZENCAD_EVENT_DEBUG__ = pargs.eventdebug
 
 path = os.path.join(zencad.exampledir, "helloworld.py")
 os.chdir(zencad.exampledir)
