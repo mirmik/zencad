@@ -12,7 +12,6 @@ import sys
 import os
 import signal
 import psutil
-#import dill
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -25,10 +24,7 @@ import re
 import time
 import threading
 import zencad.opengl
-#import multiprocessing
-#from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-#import concurrent
-#import signal
+
 import runpy
 import inotify.adapters
 import math
@@ -53,13 +49,14 @@ BANNER_TEXT = (#"\n"
 			"███████╗███████╗██║ ╚████║╚██████╗██║  ██║██████╔╝\n"
 			"╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═════╝ ")
 
-QMARKER_MESSAGE = "Press 'F1' to set marker"
-WMARKER_MESSAGE = "Press 'F2' to set marker"
+QMARKER_MESSAGE = "Press 'Q' to set marker"
+WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 RAWSTDOUT = None
 FUTURE = None
 SUBPROCESPID = None
 __INVOKER__ = None
+__ZENCAD_EVENT_DEBUG__ = False
 
 def kill_subprocess():
 	os.kill(SUBPROCESPID, signal.SIGTERM)
@@ -173,8 +170,9 @@ class MainWidget(QMainWindow):
 	internal_rerun_signal = pyqtSignal()
 	external_rerun_signal = pyqtSignal()
 
-	def __init__(self, dispw, showconsole, showeditor):
+	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
 		QMainWindow.__init__(self)
+		self.eventdebug = eventdebug
 		#self.setMouseTracking(True)
 		self.rescale_on_finish=False
 		self.thr=None
@@ -253,6 +251,9 @@ class MainWidget(QMainWindow):
 		self.dispw.intersectPointSignal.connect(self.poslblSlot)
 		self.internal_rerun_signal.connect(self.rerun_context_invoke)
 
+		if showeditor == False:
+			self.disableEditor()
+
 	def rerun_label_on_slot(self):
 		self.infoLabel.setText("Please wait... Мы тут работаем, понимаешь.")
 		show_label(self.marker1Label,False)
@@ -269,6 +270,12 @@ class MainWidget(QMainWindow):
 		show_label(self.poslbl,True)
 		show_label(self.infoLabel,False)
 		self.update()
+
+	def enableEditor(self):
+		self.texteditor.setEnabled(False)
+
+	def disableEditor(self):
+		self.texteditor.setEnabled(False)
 		
 	def poslblSlot(self, obj):
 		if obj[1]:
@@ -402,6 +409,7 @@ class MainWidget(QMainWindow):
 		self.console.setHidden(en)
 
 	def hideEditor(self, en):
+		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
 
 	def exportStlAction(self):
@@ -602,6 +610,7 @@ class MainWidget(QMainWindow):
 		zencad.showapi.mode = "update_shower"
 		class runner(QThread):
 			rerun_signal = pyqtSignal()
+			rerun_finish_signal = pyqtSignal()
 			def run(self):
 				globals()["__THREAD__"] = self
 				print("subthread: run")
@@ -610,8 +619,15 @@ class MainWidget(QMainWindow):
 				zencad.showapi.mode = "update_scene"
 				os.chdir(os.path.dirname(path))
 				sys.path.insert(0, os.path.dirname(path))
-				runpy.run_path(path, run_name="__main__")
+
+				try:
+					runpy.run_path(path, run_name="__main__")
+				except Exception as e:
+					print("subthread: failed with exception")
+					print(e) 
+
 				print("subthread: finish")
+				self.rerun_finish_signal.emit()
 
 		if self.thr is not None and self.thr.isRunning():
 			print("subthread: interrupt")
@@ -619,6 +635,9 @@ class MainWidget(QMainWindow):
 
 		self.thr = runner()
 		self.thr.rerun_signal.connect(self.rerun_context_invoke)
+		self.thr.rerun_finish_signal.connect(self.rerun_label_off_slot)
+
+		self.rerun_label_on_slot()
 		self.thr.start()
 
 		self.texteditor.open(path)
@@ -675,16 +694,6 @@ class MainWidget(QMainWindow):
 		self.rerun_scene = scn
 		self.internal_rerun_signal.emit()
 
-	def keyPressEvent(self, event):
-		if event.key() == Qt.Key_F1:
-			self.dispw.markerQPressed()
-		if event.key() == Qt.Key_F2:
-			self.dispw.markerWPressed()
-		if event.key() == Qt.Key_F3:
-			self.dispw.zoom_up()
-		if event.key() == Qt.Key_F4:
-			self.dispw.zoom_down()
-
 
 class update_loop(QThread):
 	def __init__(self, parent, updater_function, pause_time=0.01):
@@ -729,7 +738,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	zencad.opengl.init_opengl()
 
 	disp = zencad.viewadaptor.DisplayWidget(scene, nointersect, showmarkers)
-	main_window = MainWidget(disp, showconsole=showconsole, showeditor=showeditor);	
+	main_window = MainWidget(disp, showconsole=showconsole, showeditor=showeditor, eventdebug=__ZENCAD_EVENT_DEBUG__);	
 	disp.mw = main_window
 	main_window.resize(800,600)
 	main_window.hsplitter.setSizes([400,500])
