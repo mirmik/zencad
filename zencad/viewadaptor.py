@@ -12,6 +12,7 @@ class DisplayWidget(QWidget):
 
 	def __init__(self, arg, nointersect, showmarkers=True):
 		QWidget.__init__(self)	
+		self.setFocusPolicy(Qt.StrongFocus)
 		self.orient = 1
 		self.mousedown = False
 		self.marker1=(zencad.pyservoce.point3(0,0,0),False)
@@ -256,9 +257,16 @@ class DisplayWidget(QWidget):
 		factor = 16
 		self.view.zoom(x, y, x + factor, y + factor)
 
-	def keyPressEvent (self, event):
-		print("keyPressedEvent")		
-		if event.key() == Qt.Key_PageDown:
-			self.pageDownKeyHandler()
-		elif event.key() == Qt.Key_PageUp:
-			self.pageUpKeyHandler()
+	
+	def keyPressEvent(self, event):
+		if self.mw.eventdebug:
+			print("keyPressEvent", event.key())
+
+		if event.key() == Qt.Key_Q:
+			self.markerQPressed()
+		if event.key() == Qt.Key_W:
+			self.markerWPressed()
+		if event.key() == Qt.Key_F3 or event.key() == Qt.Key_PageUp:
+			self.zoom_up()
+		if event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
+			self.zoom_down()
