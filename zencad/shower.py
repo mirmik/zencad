@@ -316,6 +316,7 @@ class MainWidget(QMainWindow):
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
+		self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
 		
 	def set_hide(self, showeditor, showconsole):
 		self.texteditor.setHidden(not showeditor)
@@ -372,6 +373,7 @@ class MainWidget(QMainWindow):
 		self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
+		self.mViewMenu.addAction(self.mDisplayFullScreen)
 		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
@@ -483,13 +485,28 @@ class MainWidget(QMainWindow):
 			del zencad.lazy.cache[f]
 		print("Invalidate cache: %d files removed" % len(files))
 
-	def fullScreen(self):
-		if self.isFullScreen():
+	def implFullScreen(self, mw, wd):
+		if mw == False and self.isFullScreen():
 			self.showNormal()
-			self.dispw.view.redraw()
-		else:
+		if wd == False and self.isFullScreen():
+			#self.vsplitter.insertWidget(0, self.dispw)
+			self.setCentralWidget(self.cw)
+			self.showNormal()
+		if mw == True:
 			self.showFullScreen()
-			self.dispw.view.redraw()
+		if wd == True:
+			self.setCentralWidget(self.dispw)
+			self.showFullScreen()
+
+		self.dispw.view.redraw()
+		
+
+	def fullScreen(self):
+		self.implFullScreen(not self.isFullScreen(), False)
+
+	def displayFullScreen(self):
+		#pass
+		self.implFullScreen(False, not self.isFullScreen())
 
 	def cacheInfoAction(self):
 		def get_size(start_path = '.'):
@@ -650,6 +667,9 @@ class MainWidget(QMainWindow):
 			self.resetAction()
 		else:
 			self.dispw.view.redraw()
+
+		if self.rerun_animate != None:
+			start_animate_thread(self.rerun_animate)
 		
 	def rerun_context(self, scn):
 		self.rerun_scene = scn
@@ -667,10 +687,10 @@ class MainWidget(QMainWindow):
 
 
 class update_loop(QThread):
-	def __init__(self, parent, updater_function, wdg, pause_time=0.01):
+	def __init__(self, parent, updater_function, pause_time=0.01):
 		QThread.__init__(self, parent)
 		self.updater_function = updater_function 
-		self.wdg = wdg
+		self.wdg = parent.dispw
 		self.pause_time = pause_time
 
 	def run(self):
@@ -714,16 +734,15 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.resize(800,600)
 	main_window.hsplitter.setSizes([400,500])
 
-	if animate != None:
-		thr = update_loop(main_window, animate, disp, pause_time)
-		thr.start()
-
 	main_window.texteditor.open(edited)
 	main_window.inotifier.init_notifier(started_by)
 	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 
+	if animate != None:
+		start_animate_thread(animate)
+		
 	return app.exec()
 
 #def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
@@ -733,6 +752,12 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	#main_window.rerun_context(scene)
 #	pass
 
-def update_scene(scene, *args, **kwargs):
+def start_animate_thread(animate):
+	thr = update_loop(main_window, animate)
+	thr.start()
+
+
+def update_scene(scene, animate=None, *args, **kwargs):
 	main_window.rerun_scene = scene
+	main_window.rerun_animate = animate
 	globals()["__THREAD__"].rerun_signal.emit()

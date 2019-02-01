@@ -43,12 +43,22 @@ cylsurf2 = surface.cylinder(neck_radius * 1.05)
 major = 2 * math.pi;
 minor = neck_height / 10;
 
-ellipse1 = curve2.ellipse(major, minor).rotate(deg(20))
-#ellipse2 = curve2.ellipse(major, minor/4)
-#arc1 = curve2.trimmed_curve2(ellipse1, 0, math.pi)
-#segment = curve2.segment(ellipse1.value(0), ellipse1.value(math.pi))
+ellipse1 = 	curve2.ellipse(major, minor).rotate(deg(20))
+arc1 = 		cylsurf1.map(curve2.trimmed_curve2(ellipse1, 0, math.pi))
+segment1 = 	cylsurf1.map(curve2.segment(ellipse1.value(0), ellipse1.value(math.pi)))
 
-m = cylsurf1.map(ellipse1)
+ellipse2 = 	curve2.ellipse(major, minor/4).rotate(deg(20))
+arc2 = 		cylsurf2.map(curve2.trimmed_curve2(ellipse2, 0, math.pi))
+segment2 = 	cylsurf2.map(curve2.segment(ellipse2.value(0), ellipse2.value(math.pi)))
 
+m1 = sew([arc1, segment1])
+m2 = sew([arc2, segment2])
+
+m = loft([m1, m2]).up(height)
+display(m)
+display(body)
+
+#display(m1)
+#display(m2)
 display(m)
 show()
