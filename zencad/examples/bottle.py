@@ -11,11 +11,11 @@ width = 50
 thickness = 30
 
 #BASE
-pnt1 = point(-width/2.,0,0);
-pnt2 = point(-width/2.,-thickness/4.,0);
-pnt3 = point(0,-thickness/2.,0);
-pnt4 = point(width/2,-thickness/4.,0);
-pnt5 = point(width/2.,0,0);
+pnt1 = point(-width/2,0,0);
+pnt2 = point(-width/2,-thickness/4,0);
+pnt3 = point(0,-thickness/2,0);
+pnt4 = point(width/2,-thickness/4,0);
+pnt5 = point(width/2,0,0);
 
 edge1 = segment(pnt1, pnt2)
 edge2 = circle_arc(pnt2, pnt3, pnt4)
