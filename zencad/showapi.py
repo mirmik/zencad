@@ -12,7 +12,7 @@ def display(shp, color = Color(0.6, 0.6, 0.8)):
 	else:
 		return default_scene.add(shp, color)
 
-def disp(*args,**kwargs): display(*args, **kwargs)
+def disp(*args,**kwargs): return display(*args, **kwargs)
 
 def highlight(m): return display(m, Color(0.5, 0, 0, 0.5))
 def hl(m) : return highlight(m)
