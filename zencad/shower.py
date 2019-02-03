@@ -169,10 +169,12 @@ class InotifyThread(QThread):
 class MainWidget(QMainWindow):
 	internal_rerun_signal = pyqtSignal()
 	external_rerun_signal = pyqtSignal()
+	animate_finish = pyqtSignal()
 
 	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
 		QMainWindow.__init__(self)
 		self.eventdebug = eventdebug
+		self.laststartpath=None
 		self.animate_thread = None
 		#self.setMouseTracking(True)
 		self.rescale_on_finish=False
@@ -634,6 +636,13 @@ class MainWidget(QMainWindow):
 			print("subthread: interrupt")
 			self.thr.terminate()
 
+
+		if self.animate_thread is not None: 
+			print("info: animate_thread terminate")
+			self.animate_finish.emit()
+			time.sleep(0.01)
+			self.animate_thread = None
+
 		self.thr = runner()
 		self.thr.rerun_signal.connect(self.rerun_context_invoke)
 		self.thr.rerun_finish_signal.connect(self.rerun_label_off_slot)
@@ -652,6 +661,11 @@ class MainWidget(QMainWindow):
 		defaultFilter = "*.py";
 
 		startpath = QDir.currentPath() if self.lastopened == None else os.path.dirname(self.lastopened)
+		
+		if self.lastopened is not None and os.path.normpath(zencad.exampledir) in os.path.normpath(self.lastopened):
+			startpath = self.laststartpath
+		else:
+			self.laststartpath = startpath
 
 		path = QFileDialog.getOpenFileName(self, "Open File", 
 			startpath,
@@ -678,9 +692,10 @@ class MainWidget(QMainWindow):
 			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context_invoke(self):
-		if self.animate_thread is not None: 
-			self.animate_thread.terminate()
-			self.animate_thread = None
+
+		#print("HERE")
+		#time.sleep(1)
+
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(self.rerun_scene)
@@ -709,6 +724,11 @@ class update_loop(QThread):
 		self.parent.animate_thread = self
 		self.wdg = parent.dispw
 		self.pause_time = pause_time
+		self.cancelled = False
+
+	def finish(self):
+		print("update_loop finish")
+		self.cancelled = True
 
 	def run(self):
 		while 1:
@@ -722,19 +742,23 @@ class update_loop(QThread):
 				zencad.lazy.onplace = True
 				zencad.lazy.diag = False
 				self.updater_function(self.wdg)
-				#main_window.dispw.view.redraw()
-				#main_window.dispw.update()
-				mutex = QMutex()
-				mutex.lock()
-				self.after_update_signal.emit()
-				self.wdg.animate_updated.wait(mutex)
-				mutex.unlock()
-
-				
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
 				zencad.lazy.decache = desave
 				zencad.lazy.diag = diag
+
+				mutex = QMutex()
+				self.wdg.animate_updated.clear()
+				self.after_update_signal.emit()
+				if self.cancelled:
+					mutex.unlock()
+					return				
+				self.wdg.animate_updated.wait()
+				mutex.unlock()
+				
+				if self.cancelled:
+					return
+
 				time.sleep(0.01)
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
@@ -765,7 +789,8 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
-
+	main_window.laststartpath=QDir.currentPath()
+	
 	if animate != None:
 		start_animate_thread(animate)
 		
@@ -780,6 +805,8 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 def start_animate_thread(animate):
 	thr = update_loop(main_window, animate)
+	main_window.animate_thread = thr
+	main_window.animate_finish.connect(thr.finish)
 	thr.after_update_signal.connect(main_window.dispw.redraw)
 	thr.start()
 

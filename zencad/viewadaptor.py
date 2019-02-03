@@ -7,6 +7,7 @@ from PyQt5.QtGui import *
 
 import time
 import math
+import threading
 
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
@@ -34,18 +35,11 @@ class DisplayWidget(QWidget):
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
 		self.setMouseTracking(True)
 
-		self.animate_updated = QWaitCondition()
+		self.animate_updated = threading.Event()
 
 	def redraw(self):
-		#now = time.time()
-		#need = now - self.last_redraw >= 0.01
-
-		#if need:
-		#	self.last_redraw = now
 		self.view.redraw()
-		self.animate_updated.wakeAll()
-
-
+		self.animate_updated.set()
 
 	def reset_orient1(self):		
 		self.orient = 1
