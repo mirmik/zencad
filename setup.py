@@ -23,7 +23,6 @@ setup(
 	long_description_content_type='text/markdown',
 	keywords = ['testing', 'cad'],
 	classifiers = [],
-	scripts = ["routine/zencad"],
 
 	package_data={
 		'zencad': [ 'industrial-robot.svg', "examples/*", "examples/**/*"],
@@ -42,5 +41,6 @@ setup(
 		'pillow',
 		'inotify',
 		'PyQt5',
+		'zencad-cli',
 	],
 )
