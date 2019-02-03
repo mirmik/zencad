@@ -326,6 +326,7 @@ class MainWidget(QMainWindow):
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
+		self.mWebManual = 	self.create_action("Manual online", 	self.openWebManual, 			"Open manual online")
 		#self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
 		
 	def set_hide(self, showeditor, showconsole):
@@ -390,6 +391,7 @@ class MainWidget(QMainWindow):
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
+		self.mHelpMenu.addAction(self.mWebManual)
 
 		#self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
 		#self.mHelpMenu.addAction(self.mTestAction)
@@ -414,6 +416,9 @@ class MainWidget(QMainWindow):
 	def hideEditor(self, en):
 		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
+
+	def openWebManual(self):
+		QDesktopServices.openUrl(QUrl("https://mirmik.github.io/zencad", QUrl.TolerantMode));
 
 	def exportStlAction(self):
 		d, okPressed = QInputDialog.getDouble(self, "Get double","Value:", 0.01, 0, 10, 10)
@@ -782,7 +787,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window = MainWidget(disp, showconsole=showconsole, showeditor=showeditor, eventdebug=__ZENCAD_EVENT_DEBUG__);	
 	disp.mw = main_window
 	main_window.resize(800,600)
-	main_window.hsplitter.setSizes([400,500])
+	main_window.hsplitter.setSizes([370,500])
 
 	main_window.texteditor.open(edited)
 	main_window.inotifier.init_notifier(started_by)
