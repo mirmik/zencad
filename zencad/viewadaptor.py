@@ -67,7 +67,7 @@ class DisplayWidget(QWidget):
 
 	def paintEvent(self, ev):
 		if self.inited and not self.painted:
-			self.view.fit_all()
+			self.view.fit_all(0.2)
 			self.view.must_be_resized()
 			self.painted = True
 
