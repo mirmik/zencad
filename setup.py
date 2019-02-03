@@ -37,7 +37,7 @@ setup(
 	include_package_data=True,
 	install_requires=[
 		'evalcache==1.8.0',
-		'pyservoce==1.8.3',
+		'pyservoce==1.9.0',
 		'numpy',
 		'pillow',
 		'inotify',
