@@ -16,7 +16,7 @@ setup(
 	version = '0.15.1',
 	license='MIT',
 	description = 'CAD system for righteous zen programmers ',
-	author = 'Sorokin Nikolay',
+	author = 'mirmik',
 	author_email = 'mirmikns@yandex.ru',
 	url = 'https://mirmik.github.io/zencad/',
 	long_description=open("README.md", "r").read(),
