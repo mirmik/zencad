@@ -326,7 +326,7 @@ class MainWidget(QMainWindow):
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
-		self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
+		#self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
 		
 	def set_hide(self, showeditor, showconsole):
 		self.texteditor.setHidden(not showeditor)
@@ -355,7 +355,6 @@ class MainWidget(QMainWindow):
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mOpenAction)
-		self.mFileMenu.addAction(self.mTEAction)
 		self.mFileMenu.addAction(self.mSaveAction)
 		self.exampleMenu = self.mFileMenu.addMenu("Examples")
 		self.mFileMenu.addAction(self.mStlExport)
@@ -377,13 +376,14 @@ class MainWidget(QMainWindow):
 		self.mNavigationMenu.addAction(self.mTracking)
 	
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
+		self.mUtilityMenu.addAction(self.mTEAction)
 		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mInvalCache)
 		self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
-		self.mViewMenu.addAction(self.mDisplayFullScreen)
+		#self.mViewMenu.addAction(self.mDisplayFullScreen)
 		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
@@ -471,7 +471,7 @@ class MainWidget(QMainWindow):
 		pyservoce.brep_write(self.dispw.scene[0].shape(), path)
 
 	def autoscaleAction(self):
-		self.dispw.view.fit_all()
+		self.dispw.view.fit_all(0.2)
 
 	def centeringAction(self):
 		self.dispw.view.centering()
@@ -790,6 +790,8 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 	main_window.laststartpath=QDir.currentPath()
+
+	main_window.lastopened=started_by
 	
 	if animate != None:
 		start_animate_thread(animate)
