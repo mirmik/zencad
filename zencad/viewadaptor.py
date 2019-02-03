@@ -27,8 +27,10 @@ class DisplayWidget(QWidget):
 
 		self.scene = arg
 		self.temporary1 = QPoint()	
-		self.psi =   math.cos(math.pi / 4)
-		self.phi = - math.cos(math.pi / 4)
+		self.started_yaw = 		math.pi * 2.8/4
+		self.started_pitch = 	math.pi * -0.15
+		self.yaw = self.started_yaw
+		self.pitch = self.started_pitch
 		self.last_redraw = time.time()
 
 		self.setBackgroundRole( QPalette.NoRole )
@@ -43,8 +45,8 @@ class DisplayWidget(QWidget):
 
 	def reset_orient1(self):		
 		self.orient = 1
-		self.psi =   math.cos(math.pi / 4)
-		self.phi = - math.cos(math.pi / 4)
+		self.yaw = self.started_yaw
+		self.pitch = self.started_pitch
 		self.view.reset_orientation()
 		self.view.autoscale()
 
@@ -52,18 +54,21 @@ class DisplayWidget(QWidget):
 		self.orient = 2		
 
 	def set_orient1(self):
-		self.view.set_projection(
-			math.cos(self.psi) * math.cos(self.phi), 
-			math.cos(self.psi) * math.sin(self.phi), 
-			math.sin(self.psi)
+		#self.view.set_orthogonal()
+		self.view.set_direction(
+			math.cos(self.pitch) * math.cos(self.yaw), 
+			math.cos(self.pitch) * math.sin(self.yaw), 
+			math.sin(self.pitch)
 		);
+		self.view.set_orthogonal()
 
 	def update_orient1_from_view(self):
-		x,y,z = self.view.proj()
-		self.psi = math.asin(z)
-		x = x / math.cos(self.psi)
-		y = y / math.cos(self.psi)
-		self.phi = math.atan2(y,x)
+		"""Read actual camera orientation data from view"""
+		x,y,z = self.view.direction()
+		self.pitch = math.asin(z)
+		x = x / math.cos(self.pitch)
+		y = y / math.cos(self.pitch)
+		self.yaw = math.atan2(y,x)
 
 	def paintEvent(self, ev):
 		if self.inited and not self.painted:
@@ -74,8 +79,12 @@ class DisplayWidget(QWidget):
 	def eye(self):
 		return self.view.eye()
 
-	def set_eye(self, pnt):
+	def set_eye(self, pnt, orthogonal):
 		self.view.set_eye(pnt)
+
+		if orthogonal:
+			self.view.set_orthogonal()
+
 		self.update_orient1_from_view()
 
 	def showEvent(self, ev):
@@ -116,7 +125,8 @@ class DisplayWidget(QWidget):
 
 	def onLButtonDown(self, theFlags, thePoint):
 		self.temporary1 = thePoint;
-		self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
+		if self.orient == 2:
+			self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
 
 	def onRButtonDown(self, theFlags, thePoint):
 		self.temporary1 = thePoint;
@@ -156,7 +166,8 @@ class DisplayWidget(QWidget):
 
 		if modifiers == Qt.AltModifier:
 			if not self.alt_pressed:
-				self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
+				if self.orient == 2:
+					self.view.start_rotation(thePoint.x(), thePoint.y(), 1)
 			self.alt_pressed = True			
 		else:
 			self.alt_pressed = False
@@ -167,11 +178,12 @@ class DisplayWidget(QWidget):
 
 		if theFlags & Qt.LeftButton or self.alt_pressed: 
 			if self.orient == 1:  
-				self.phi -= mv.x() * 0.01;
-				self.psi += mv.y() * 0.01;
-				if self.psi > math.pi*0.4999: self.psi = math.pi*0.4999
-				if self.psi < -math.pi*0.4999: self.psi = -math.pi*0.4999
+				self.yaw -= mv.x() * 0.01;
+				self.pitch -= mv.y() * 0.01;
+				if self.pitch > math.pi*0.4999: self.pitch = math.pi*0.4999
+				if self.pitch < -math.pi*0.4999: self.pitch = -math.pi*0.4999
 				self.set_orient1()
+				self.view.redraw()
 		
 			if self.orient == 2:
 					self.view.rotation(thePoint.x(), thePoint.y());

@@ -74,8 +74,7 @@ def buildpair():
 
 def animate(wdg):
 	if not wdg.mousedown:
-		wdg.set_eye(zencad.rotateZ(zencad.deg(-0.8))(wdg.eye()))
-	wdg.view.redraw()
+		wdg.set_eye(zencad.rotateZ(zencad.deg(-0.8))(wdg.eye()), orthogonal=True)
 
 if __name__ == "__main__":
 	mechanicus, base = buildpair()
