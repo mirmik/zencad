@@ -173,6 +173,7 @@ class MainWidget(QMainWindow):
 	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
 		QMainWindow.__init__(self)
 		self.eventdebug = eventdebug
+		self.animate_thread = None
 		#self.setMouseTracking(True)
 		self.rescale_on_finish=False
 		self.thr=None
@@ -677,6 +678,9 @@ class MainWidget(QMainWindow):
 			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context_invoke(self):
+		if self.animate_thread is not None: 
+			self.animate_thread.terminate()
+			self.animate_thread = None
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(self.rerun_scene)
@@ -696,9 +700,13 @@ class MainWidget(QMainWindow):
 
 
 class update_loop(QThread):
+	after_update_signal = pyqtSignal()
+
 	def __init__(self, parent, updater_function, pause_time=0.01):
 		QThread.__init__(self, parent)
 		self.updater_function = updater_function 
+		self.parent = parent
+		self.parent.animate_thread = self
 		self.wdg = parent.dispw
 		self.pause_time = pause_time
 
@@ -714,11 +722,20 @@ class update_loop(QThread):
 				zencad.lazy.onplace = True
 				zencad.lazy.diag = False
 				self.updater_function(self.wdg)
+				#main_window.dispw.view.redraw()
+				#main_window.dispw.update()
+				mutex = QMutex()
+				mutex.lock()
+				self.after_update_signal.emit()
+				self.wdg.animate_updated.wait(mutex)
+				mutex.unlock()
+
+				
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
 				zencad.lazy.decache = desave
 				zencad.lazy.diag = diag
-				time.sleep(self.pause_time)
+				time.sleep(0.01)
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
 	global started_by, edited
@@ -763,6 +780,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 
 def start_animate_thread(animate):
 	thr = update_loop(main_window, animate)
+	thr.after_update_signal.connect(main_window.dispw.redraw)
 	thr.start()
 
 

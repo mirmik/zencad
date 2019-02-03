@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import time
 import math
 
 class DisplayWidget(QWidget):
@@ -27,10 +28,24 @@ class DisplayWidget(QWidget):
 		self.temporary1 = QPoint()	
 		self.psi =   math.cos(math.pi / 4)
 		self.phi = - math.cos(math.pi / 4)
+		self.last_redraw = time.time()
 
 		self.setBackgroundRole( QPalette.NoRole )
 		self.setAttribute(Qt.WA_PaintOnScreen, True) 
 		self.setMouseTracking(True)
+
+		self.animate_updated = QWaitCondition()
+
+	def redraw(self):
+		#now = time.time()
+		#need = now - self.last_redraw >= 0.01
+
+		#if need:
+		#	self.last_redraw = now
+		self.view.redraw()
+		self.animate_updated.wakeAll()
+
+
 
 	def reset_orient1(self):		
 		self.orient = 1
@@ -261,6 +276,10 @@ class DisplayWidget(QWidget):
 	def keyPressEvent(self, event):
 		if self.mw.eventdebug:
 			print("keyPressEvent", event.key())
+			print(event.nativeVirtualKey())
+
+		#print(event.key())
+		#print(event.nativeVirtualKey())
 
 		if event.key() == Qt.Key_Q:
 			self.markerQPressed()
