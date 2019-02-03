@@ -732,7 +732,6 @@ class update_loop(QThread):
 		self.cancelled = False
 
 	def finish(self):
-		print("update_loop finish")
 		self.cancelled = True
 
 	def run(self):
