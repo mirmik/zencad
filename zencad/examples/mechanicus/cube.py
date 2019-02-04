@@ -10,6 +10,7 @@ import math
 import zencad
 
 zencad.lazy.diag = True
+zencad.lazy.fastdo = True
 
 from zencad import *
 import mech
@@ -38,7 +39,6 @@ def animate(wdg):
 	base[4].set_location(rotateY(deg(90)) * trans)
 	mech[5].set_location(rotateY(deg(90)) * rotateX(deg(180)) * trans)
 	base[5].set_location(rotateY(deg(90)) * rotateX(deg(180)) * trans)
-	wdg.view.redraw()
 
 display(cube, Color(0.3, 0.2, 0.2))
 show(animate = animate)
