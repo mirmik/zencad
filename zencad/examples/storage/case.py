@@ -2,7 +2,7 @@
 #coding: utf-8
 
 from zencad import *
-test_mode()
+lazy.diag = True
 
 def case(w,h,l,t,r,z,s):
 	w = w*s;
