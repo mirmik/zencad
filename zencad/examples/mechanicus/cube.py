@@ -6,6 +6,7 @@ import sys
 from skimage import measure, io
 from itertools import chain
 
+import time
 import math
 import zencad
 
@@ -22,11 +23,9 @@ cube = box(1000, center=True)
 mech = [display(mechanicus, zencad.Color(1,1,1)) for i in range(0,6)]
 base = [display(base, zencad.Color(0.2,0.2,0.2)) for i in range(0,6)]
 
-i = 0
 def animate(wdg):
-	global i
-	i += 0.01
-	trans = rotateZ(i) * translate(0,0,500)
+	t = time.time()
+	trans = rotateZ(t) * translate(0,0,500)
 	mech[0].set_location(trans)
 	base[0].set_location(trans)
 	mech[1].set_location(rotateX(deg(180)) * trans)
