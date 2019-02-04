@@ -98,8 +98,8 @@ def revol(shp, angle=0.0):
 	return pyservoce.revol(shp, angle)
 
 @lazy.lazy(cls=shape_generator)
-def thicksolid(shp, pnt, t):
-	return pyservoce.thicksolid(shp, pnt, t)
+def thicksolid(shp, pnts, t):
+	return pyservoce.thicksolid(shp, points(pnts), t)
 
 #face
 @lazy.lazy(cls=nocached_shape_generator)
@@ -191,3 +191,30 @@ def enable_cache_diagnostic():
 
 #def screen(*args, **kwargs):
 #	return zencad_visual.screen(*args, **kwargs)
+
+
+@lazy.lazy(cls=shape_generator)
+def near_edge(*args, **kwargs): return pyservoce.near_edge(*args, **kwargs)
+
+@lazy.lazy(cls=shape_generator)
+def near_face(*args, **kwargs): return pyservoce.near_face(*args, **kwargs)
+
+@lazy.lazy(cls=shape_generator)
+def near_vertex(*args, **kwargs): return pyservoce.near_vertex(*args, **kwargs)
+
+@lazy.lazy(cls=shape_generator)
+def fillet(shp, r, refs=None): 
+	if refs is None:
+		return pyservoce.fillet(shp, r)
+	else:
+		return pyservoce.fillet(shp, r, points(refs))
+
+@lazy.lazy(cls=shape_generator)
+def chamfer(shp, r, refs=None): 
+	if refs is None:
+		return pyservoce.chamfer(shp, r)
+	else:
+		return pyservoce.chamfer(shp, r, points(refs))
+
+
+pyservoce.Shape.fillet = fillet

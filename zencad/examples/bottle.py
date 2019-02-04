@@ -23,7 +23,8 @@ edge3 = segment(pnt4, pnt5)
 
 wire = sew([edge1, edge2, edge3])
 profile = sew([wire, wire.mirrorX()])
-body = profile.fill().extrude(height).fillet(thickness/12)
+body = profile.fill().extrude(height)
+body = fillet(body, thickness/12)
 hl(body.forw(140))
 
 #NECK
@@ -34,7 +35,7 @@ body = body + neck
 hl(body.forw(100))
 
 #THICK
-body = thicksolid(body, point(0,0,height+height/10), -thickness / 50)
+body = thicksolid(body, [point(0,0,height+height/10)], -thickness / 50)
 hl(body.forw(60))
 
 #THREAD

@@ -7,6 +7,13 @@ import pyservoce
 import hashlib
 import os
 
+from zencad.util import points
+
+cachepath = os.path.expanduser("~/.zencadcache")
+algo = hashlib.sha512
+
+lazy = evalcache.Lazy(cache = evalcache.dircache_v2.DirCache_v2(cachepath), algo = algo)
+
 class LazyObjectShape(evalcache.LazyObject):
 	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
 	def translate 	(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.translate, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
@@ -36,11 +43,6 @@ class shape_generator(evalcache.LazyObject):
 evalcache.lazy.hashfuncs[LazyObjectShape] = evalcache.lazy.updatehash_LazyObject
 evalcache.lazy.hashfuncs[shape_generator] = evalcache.lazy.updatehash_LazyObject
 evalcache.lazy.hashfuncs[nocached_shape_generator] = evalcache.lazy.updatehash_LazyObject
-
-cachepath = os.path.expanduser("~/.zencadcache")
-algo = hashlib.sha512
-
-lazy = evalcache.Lazy(cache = evalcache.dircache_v2.DirCache_v2(cachepath), algo = algo)
 
 def disable_cache():
 	lazy.encache = False
