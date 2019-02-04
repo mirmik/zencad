@@ -2,6 +2,7 @@
 #coding: utf-8
 
 from zencad import *
+lazy.diag = True
 
 thikness = 2.5
 height = 90
@@ -26,12 +27,16 @@ tang = vectors([
 	(0,0),
 ]) 
 
-spine = interpolate(pnts, tang).rotateX(deg(90))
-profile = circle(handle_radius).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
-
 base = cylinder(r = radius, h = height)
 hole = cylinder(r = radius - thikness, h = height - thikness).up(thikness)
+
+spine = interpolate(pnts, tang).rotateX(deg(90))
+profile = circle(handle_radius).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
 handle = pipe(path = spine, prof = profile)
+
+hl(spine.right(100).up(17).forw(20))
+hl(profile.right(100).up(17).forw(20))
+hl(handle.right(100).up(17).back(20))
 
 cup = (base + handle.right(40).up(17) - hole)
 
