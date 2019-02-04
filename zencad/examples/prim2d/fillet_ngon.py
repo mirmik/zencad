@@ -4,8 +4,10 @@
 from zencad import *
 test_mode()
 
-m1 = ngon(r = 10, n = 6).fillet(3, (3,4,5))
-m2 = ngon(r = 10, n = 6).fillet(3, (0,1,2))
+ng = ngon(r = 10, n = 6) 
+vtxs = ng.vertices()
+m1 = ng.fillet(3, vtxs[0:3])
+m2 = ng.fillet(3, vtxs[3:6])
 m3 = ngon(r = 10, n = 6).fillet(3)
 
 display(m1)
