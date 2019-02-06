@@ -27,7 +27,7 @@ class DisplayWidget(QWidget):
 
 		self.scene = arg
 		self.temporary1 = QPoint()	
-		self.started_yaw = 		math.pi * 2.8/4
+		self.started_yaw = 		math.pi * (7/16)
 		self.started_pitch = 	math.pi * -0.15
 		self.yaw = self.started_yaw
 		self.pitch = self.started_pitch
