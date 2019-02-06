@@ -25,7 +25,7 @@ setup(
 	classifiers = [],
 
 	package_data={
-		'zencad': [ 'industrial-robot.svg', "examples/*", "examples/**/*"],
+		'zencad': [ 'industrial-robot.svg', "examples/*", "examples/**/*", "examples/**/**/*"],
 	},
 
 	#data_files = [

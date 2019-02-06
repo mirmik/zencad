@@ -4,7 +4,7 @@
 from zencad import *
 test_mode()
 
-m = sphere(10) - halfspace().rotateX(deg(30))
+m = sphere(10) - halfspace().rotateY(deg(120))
 
 display(m)
 
