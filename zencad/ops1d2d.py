@@ -1,6 +1,8 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 
+from zencad.util import points, vectors
+
 
 @lazy.lazy(cls=shape_generator)
 def fill(*args, **kwargs):

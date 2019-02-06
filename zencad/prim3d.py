@@ -18,7 +18,10 @@ def cube(*args, **kwargs): return box(*args, **kwargs)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def sphere(r): 
+def sphere(r, an1=None, an2=None, an3=None): 
+	if an3 is not None: return pyservoce.sphere(r, an1, an2, an3)
+	if an2 is not None:	return pyservoce.sphere(r, an1, an2)
+	if an1 is not None: return pyservoce.sphere(r, an1)
 	return pyservoce.sphere(r)
 
 
