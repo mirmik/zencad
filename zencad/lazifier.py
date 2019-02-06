@@ -12,7 +12,7 @@ from zencad.util import points
 cachepath = os.path.expanduser("~/.zencadcache")
 algo = hashlib.sha512
 
-lazy = evalcache.Lazy(cache = evalcache.dircache_v2.DirCache_v2(cachepath), algo = algo)
+lazy = evalcache.Lazy(cache = evalcache.dircache_v2.DirCache_v2(cachepath), algo = algo, onbool=True)
 
 class LazyObjectShape(evalcache.LazyObject):
 	def __init__(self, *args, **kwargs): evalcache.LazyObject.__init__(self, *args, **kwargs)
