@@ -47,12 +47,20 @@ class DisplayWidget(QWidget):
 		self.orient = 1
 		self.yaw = self.started_yaw
 		self.pitch = self.started_pitch
-		self.view.set_orthogonal()
+		self.set_orient1()
 		self.update_orient1_from_view()
 		self.view.redraw()
 
 	def reset_orient2(self):		
 		self.orient = 2		
+
+	def autoscale(self):
+		self.view.fit_all(0.2)
+
+	def reset_orient(self):
+		self.reset_orient1()
+		self.autoscale()
+		self.view.redraw()
 
 	def set_orient1(self):
 		#self.view.set_orthogonal()

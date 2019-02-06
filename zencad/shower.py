@@ -483,7 +483,7 @@ class MainWidget(QMainWindow):
 		pyservoce.brep_write(self.dispw.scene[0].shape(), path)
 
 	def autoscaleAction(self):
-		self.dispw.view.fit_all(0.2)
+		self.dispw.autoscale()
 
 	def centeringAction(self):
 		self.dispw.view.centering()
@@ -495,12 +495,7 @@ class MainWidget(QMainWindow):
 		self.dispw.reset_orient2()
 
 	def resetAction(self):
-		self.dispw.psi =   math.cos(math.pi / 4)
-		self.dispw.phi = - math.cos(math.pi / 4)
-		self.dispw.view.autoscale()
-		self.orient1()
-		self.dispw.set_orient1()
-		self.dispw.view.redraw()
+		self.dispw.reset_orient()
 
 	def invalidateCacheAction(self):
 		files = zencad.lazy.cache.keys()
