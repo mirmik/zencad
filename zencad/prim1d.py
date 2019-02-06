@@ -1,6 +1,8 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 
+from zencad.util import points
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def segment(pnt0, pnt1):

@@ -1,9 +1,13 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 
+from zencad.util import points
+
 @lazy.lazy(cls=shape_generator)
 def linear_extrude(*args, **kwargs):
 	return pyservoce.make_linear_extrude(*args, **kwargs)
+
+def extrude(*args, **kwargs): return linear_extrude(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
 def pipe(prof, path):
