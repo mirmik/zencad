@@ -11,10 +11,7 @@ import zencad
 
 zencad.lazy.diag = True
 
-def buildpair():
-	# Construct some test data
-	#x, y = np.ogrid[-np.pi:np.pi:100j, -np.pi:np.pi:100j]
-	#r = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
+def build():
 	r = io.imread("image.png", as_gray=True)
 	
 	# Find contours at a constant value of 0.8
@@ -70,14 +67,16 @@ def buildpair():
 	
 	base = zencad.circle(r=500).extrude(20)
 
-	return mechanicus, base
-
-def animate(wdg):
-	if not wdg.mousedown:
-		wdg.set_eye(zencad.rotateZ(zencad.deg(-0.8))(wdg.eye()), orthogonal=True)
+	return mechanicus, base, zcountours
 
 if __name__ == "__main__":
-	mechanicus, base = buildpair()
-	zencad.display(mechanicus, zencad.Color(1,1,1))
-	zencad.display(base, zencad.Color(0.2,0.2,0.2))
-	zencad.show(animate = animate)
+	mechanicus, base, zcountours = build()
+	for z in zcountours:
+		if z.is_closed():
+			zencad.display(z.left(760/2).back(768/2).forw(760 + 200), zencad.color(0,1,0))
+		else:	
+			zencad.display(z.left(760/2).back(768/2).forw(760 + 200), zencad.color(1,0,0))
+		
+	zencad.display(mechanicus, zencad.color(1,1,1))
+	zencad.display(base, zencad.color(0.2,0.2,0.2))
+	zencad.show()

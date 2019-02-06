@@ -2,7 +2,6 @@
 #coding: utf-8
 
 from zencad import *
-lazy.diag=True
 
 box = box(200, 200, 200, center = True)
 sphere1 = sphere(120)
