@@ -22,8 +22,8 @@ def buildpair():
 	
 	zcountours = [zencad.interpolate([zencad.point3(t[0], t[1]) for t in contour]) for contour in contours]
 	
-	gons = [z.fill() for z in zcountours if z.is_closed().unlazy()]
-	ncls = [z for z in zcountours if not z.is_closed().unlazy()]
+	gons = [z.fill() for z in zcountours if z.is_closed()]
+	ncls = [z for z in zcountours if not z.is_closed()]
 	
 	ints = []
 	for i in range(0, len(gons)):
