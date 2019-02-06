@@ -29,7 +29,7 @@ print("m3:")
 m3 = ng.fillet(radius, lazy(lambda: [v for v in ng.vertices() if v.y < 0])())
 m3.unlazy()
 
-# Each one syntax variant (and inaccuracy of float when comparing)
+# One more syntax variant (and inaccuracy of float when comparing)
 print("m4:")
 m4 = ng.fillet(radius, evalcache.select(ng.vertices(), lambda v: abs(v.y) < 0.001))
 m4.unlazy()
