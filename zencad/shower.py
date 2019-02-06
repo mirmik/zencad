@@ -173,6 +173,7 @@ class MainWidget(QMainWindow):
 
 	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
 		QMainWindow.__init__(self)
+		self.coords_difference_mode = False
 		self.eventdebug = eventdebug
 		self.laststartpath=None
 		self.animate_thread = None
@@ -327,6 +328,7 @@ class MainWidget(QMainWindow):
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
 		self.mWebManual = 	self.create_action("Manual online", 	self.openWebManual, 			"Open manual online")
+		self.mCoordsDiff = 	self.create_action("Coords difference", self.coordsDifferenceMode,		"Coords difference mode",				checkbox=True)
 		#self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
 		
 	def set_hide(self, showeditor, showconsole):
@@ -385,6 +387,7 @@ class MainWidget(QMainWindow):
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
 		#self.mViewMenu.addAction(self.mDisplayFullScreen)
+		self.mViewMenu.addAction(self.mCoordsDiff)
 		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
@@ -397,6 +400,10 @@ class MainWidget(QMainWindow):
 		#self.mHelpMenu.addAction(self.mTestAction)
 		#self.mHelpMenu.addAction(self.mDebugInfo)
 	
+	def coordsDifferenceMode(self, en):
+		self.coords_difference_mode = en
+		self.updateDistLabel()
+
 	def createToolbars(self):
 		pass
 
@@ -562,9 +569,15 @@ class MainWidget(QMainWindow):
 		xx,yy,zz = wx-qx, wy-qy, wz-qz
 		dist = math.sqrt(xx**2 + yy**2 + zz**2)
 		if self.dispw.marker1[1] or self.dispw.marker2[1]:
-			self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))
+			if self.coords_difference_mode:
+				self.markerDistLabel.setText("x:{:8.3f} y:{:8.3f} z:{:8.3f}".format(qx-wx, qy-wy, qz-wz))
+			else:
+				self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))
 		else:
-			self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)	
+			if self.coords_difference_mode:
+				self.markerDistLabel.setText("Coords differences")	
+			else:
+				self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)	
 
 	def screenshotAction(self):
 		filters = "*.png;;*.bmp;;*.jpg;;*.*";
