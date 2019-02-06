@@ -4,6 +4,7 @@ import math
 import pyservoce
 from pyservoce import point3, vector3
 from pyservoce import Scene, View, Viewer, Color
+from pyservoce import Color as color
 from pyservoce import point3 as point
 from pyservoce import vector3 as vector
 
