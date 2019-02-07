@@ -304,8 +304,9 @@ class MainWidget(QMainWindow):
 		return act
 
 	def createActions(self):
-		self.mOpenAction = 	self.create_action("Open", 				self.openAction, 				"Open", 										"Ctrl+O")
-		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Open", 										)#TODO:CTRL+S
+		self.mCreateAction = self.create_action("CreateNew...", 	self.createNewAction, 			"Create", 										"Ctrl+N")
+		self.mOpenAction = 	self.create_action("Open...",			self.openAction, 				"Open", 										"Ctrl+O")
+		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Save", 										)#TODO:CTRL+S
 		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+E")
 		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
 		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
@@ -355,8 +356,26 @@ class MainWidget(QMainWindow):
 			m = menu.addMenu(d)
 			self._init_example_menu(m, os.path.join(directory, d))	
 
+	def createNewAction(self):
+		filters = "*.py;;*.*";
+		defaultFilter = "*.py";
+
+		path = QFileDialog.getSaveFileName(self, "Create New File", 
+			self.laststartpath,
+			filters, defaultFilter)
+
+		print(path)
+
+		f = open(path[0], "w")
+
+		f.write("#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nshow()\n")
+		f.close()
+
+		self._open_routine(path[0])
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
+		self.mFileMenu.addAction(self.mCreateAction)
 		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mSaveAction)
 		self.exampleMenu = self.mFileMenu.addMenu("Examples")
