@@ -23,28 +23,24 @@ tor_u=deg(135)
 tor_v1=deg(-90)
 tor_v2=deg(180)
 m20 = torus(r1=tor_r1, r2=tor_r2)
-m21 = torus(r1=tor_r1, r2=tor_r2, uangle=tor_u)
-m22 = torus(r1=tor_r1, r2=tor_r2, vangle=(tor_v1,tor_v2))
-m23 = torus(r1=tor_r1, r2=tor_r2, vangle=(tor_v1,tor_v2), uangle=tor_u)
+m21 = torus(r1=tor_r1, r2=tor_r2, yaw=tor_u)
+m22 = torus(r1=tor_r1, r2=tor_r2, pitch=(tor_v1,tor_v2))
+m23 = torus(r1=tor_r1, r2=tor_r2, pitch=(tor_v1,tor_v2), yaw=tor_u)
 
 cyl_r=5
 cyl_h=10 
 m30 = cylinder(r=cyl_r, h=cyl_h)
-m31 = cylinder(r=cyl_r, h=cyl_h, angle=deg(90))
-m32 = cylinder(r=cyl_r, h=cyl_h, angle=(deg(45),deg(90)))
+m31 = cylinder(r=cyl_r, h=cyl_h, yaw=deg(90))
 m30c = cylinder(r=cyl_r, h=cyl_h, center=True)
-m31c = cylinder(r=cyl_r, h=cyl_h, angle=deg(90), center=True)
-m32c = cylinder(r=cyl_r, h=cyl_h, angle=(deg(45),deg(90)), center=True)
+m31c = cylinder(r=cyl_r, h=cyl_h, yaw=deg(90), center=True)
 
 cone_r1=6
 cone_r2=4
 cone_h=10
 m40 = cone(r1=cone_r1, r2=cone_r2, h=cone_h)
-m41 = cone(r1=cone_r1, r2=cone_r2, h=cone_h, angle=deg(90))
-m42 = cone(r1=cone_r1, r2=cone_r2, h=cone_h, angle=(deg(45),deg(90)))
+m41 = cone(r1=cone_r1, r2=cone_r2, h=cone_h, yaw=deg(90))
 m40c = cone(r1=cone_r1, r2=cone_r2, h=cone_h, center=True)
-m41c = cone(r1=cone_r1, r2=cone_r2, h=cone_h, angle=deg(90), center=True)
-m42c = cone(r1=cone_r1, r2=cone_r2, h=cone_h, angle=(deg(45),deg(90)), center=True)
+m41c = cone(r1=cone_r1, r2=cone_r2, h=cone_h, yaw=deg(90), center=True)
 
 display(m01)
 display(m02.forw(20))
@@ -62,16 +58,12 @@ display(m23.right(40).forw(60))
 
 display(m30.right(60))
 display(m31.right(60).forw(20))
-display(m32.right(60).forw(40))
 display(m30c.right(60).forw(60))
 display(m31c.right(60).forw(80))
-display(m31c.right(60).forw(100))
 
 display(m40.right(80))
 display(m41.right(80).forw(20))
-display(m42.right(80).forw(40))
 display(m40c.right(80).forw(60))
 display(m41c.right(80).forw(80))
-display(m41c.right(80).forw(100))
 
 show()

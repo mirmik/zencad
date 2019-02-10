@@ -8,7 +8,7 @@ import zencad.visual
 
 #lazy.diag = True
 
-wsize = (400, 300)
+wsize = (300, 200)
 
 if not os.path.exists("generic"):
     os.makedirs("generic")
