@@ -1,7 +1,7 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 
-from zencad.util import points
+from zencad.util import points, point3
 
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -17,7 +17,7 @@ def polysegment(lst, closed = False):
 @lazy.lazy(cls=nocached_shape_generator)
 def circle_arc(p1, p2, p3):
 	"""Построение дуги круга по трем точкам"""
-	return pyservoce.circle_arc(p1, p2, p3)
+	return pyservoce.circle_arc(point3(p1), point3(p2), point3(p3))
 
 
 @lazy.lazy(cls=shape_generator)

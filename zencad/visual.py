@@ -9,7 +9,11 @@ from zencad.lazifier import lazy
 
 def doscreen(model, path, size=(800,600)):
 	scn = Scene()
-	scn.add(model)
+	try:
+		scn.add(model)
+	except:
+		for m in model:
+			scn.add(m)
 
 	viewer = Viewer(scn)
 	view = viewer.create_view()
