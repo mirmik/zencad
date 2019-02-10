@@ -43,7 +43,55 @@
 <li>Библиотеки</li>
 </ul>
 </nav>
-      <article class="article"><p></p>
+      <article class="article"><h2>helloworld.py</h2>
+
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+<h2>Что происходит:</h2>
+
+<p>Данный пример демонстрирует базовый подход при работе с zencad.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
+</code></pre></div>
+
+<p>Здесь мы импортируем в текущее пространство пространство имён zencad. В данном случае, мы нас интересуют функции <code>box</code>, <code>sphere</code>, <code>display</code>, <code>show</code>.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+</code></pre></div>
+
+<p>В этом куске кода мы подгатавливаем примитивы. Создаётся объект box с размерами 200x200x200 и смещением геометрического центра в начало координат. Также создаются две сферы радиусом 120 и 60.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+</code></pre></div>
+
+<p>Вычисляем модель с применением булевых операций. Сперва из куба будет вычтена большая сфера. Потом добавлена малая. Порядок слагаемых в данном случае важен.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Передаём данный объект геометрии в сцену, которая будет отображена следующей операцией.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Отображаем сцену в приложении - визуализаторе.</p>
+
+<h2>Что должно быть увидено:</h2>
+
+<p><img src="images/helloworld.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
