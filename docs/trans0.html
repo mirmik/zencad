@@ -19,7 +19,7 @@
 <li>Основные концепции.
 <ul>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
-<li><a href="caching.html">Кеширование</a></li>
+<li><a href="caching.html">Кэширование</a></li>
 </ul></li>
 <li>Базовые примитивы и операции.
 <ul>
@@ -44,6 +44,83 @@
       <article class="article"><h1>Преобразования</h1>
 
 <p>Парадигма zencad предполагает, что большая часть объектов появляется в точке начала координат, после чего перемещается к месту своего назначения с помощью механизма преобразований. </p>
+
+<hr />
+
+<h2>Трансляция</h2>
+
+<p>Паралельный перенос тела на вектор (x,y,z).</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1">#basic:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">))</span> <span class="c1">#alternate</span>
+<span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)(</span><span class="n">model</span><span class="p">)</span> <span class="c1">#alternate</span>
+
+<span class="c1">#additional:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>   <span class="c1">#translate(-a,0,0)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>  <span class="c1">#translate(a,0,0)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>   <span class="c1">#translate(0,-a,0)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">forw</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>   <span class="c1">#translate(0,a,0)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>     <span class="c1">#translate(0,0,-a)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>   <span class="c1">#translate(0,0,a)</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Поворот</h2>
+
+<p>Поворот тела вокруг оси axis, проходящей через начало координат на угол angle.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1">#basic:</span>
+<span class="c1">#model.rotate(angle=angle, axis=(x,y,z))</span>
+<span class="c1">#model.transform(rotate(angle=angle, axis=(x,y,z)) #alternate</span>
+<span class="c1">#rotate(angle=angle, axis=(x,y,z))(model) #alternate</span>
+<span class="n">TODO</span>
+
+<span class="c1">#additional:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>    <span class="c1">#rotate(angle, axis=(1,0,0)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">rotateY</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>    <span class="c1">#rotate(angle, axis=(0,1,0)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>    <span class="c1">#rotate(angle, axis=(0,0,1)</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Масштабирование</h2>
+
+<p>Изменение размера тела на коэффициент a. Может выполняться в направлении заданной оси или изотропно.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1">#basic:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+<span class="c1">#additional:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">scaleX</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">scaleY</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">scaleZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Отражение</h2>
+
+<p>Операция отражения геометрии относительно заданного объекта (ось или плоскость).</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1">#basic:</span>
+<span class="n">TODO</span>
+
+<span class="c1">#additional:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mirrorX</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mirrorY</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mirrorZ</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mirrorXY</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mirrorYZ</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mirrorXZ</span><span class="p">()</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Преобразование общего вида</h2>
+
+<p>TODO</p>
 </article>
     </div>
     <div id="footer"></div>
