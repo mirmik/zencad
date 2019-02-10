@@ -90,3 +90,22 @@ doscreen(model=helix(r=10, h=20, step=1, angle=-deg(10)), path="helix3.png", siz
 doscreen(model=sphere(r=10) + cylinder(r=5, h=30, center=True) + ngon(r=5, n=5).extrude(30, center=True).rotateX(deg(90)), path="union.png", size=wsize)
 doscreen(model=sphere(r=10) - cylinder(r=5, h=30, center=True) - ngon(r=5, n=5).extrude(30, center=True).rotateX(deg(90)), path="difference.png", size=wsize)
 doscreen(model=sphere(r=10) ^ cylinder(r=5, h=30, center=True) ^ ngon(r=5, n=5).extrude(30, center=True).rotateX(deg(90)), path="intersect.png", size=wsize)
+
+#pnts = [(-5,-5), (0,0), (27,40), (25,50), (5,60), (-5,60)]
+#tangs = [(1,1), (1,1), (0,0), (0,0), (0,0), (0,0)]
+pnts = [(0,0), (0,10), (10,20)]
+tangs = [(0,0), (0,0), (1,0)]
+doscreen(model=[*points(pnts), interpolate(pnts)], path="interpolate0.png", size=wsize)
+doscreen(model=[*points(pnts), interpolate(pnts, tangs=tangs)], path="interpolate1.png", size=wsize)
+doscreen(model=[*points(pnts), interpolate(pnts, closed=True)], path="interpolate2.png", size=wsize)
+doscreen(model=[*points(pnts), interpolate(pnts, tangs=tangs, closed=True)], path="interpolate3.png", size=wsize)
+
+wire = sew([
+	segment((0,0,0), (0,10,0)), 
+	circle_arc((0,10,0),(10,15,0),(20,10,0)), 
+	segment((20,0,0), (20,10,0)),
+	segment((20,0,0), (0,0,0))
+])
+
+doscreen(model=wire, path="fill0.png", size=wsize)
+doscreen(model=wire.fill(), path="fill1.png", size=wsize)
