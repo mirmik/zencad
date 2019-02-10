@@ -3,11 +3,11 @@
 
 from zencad import *
 
-box = box(200, 200, 200, center = True)
-sphere1 = sphere(120)
-sphere2 = sphere(60)
+a = box(200, 200, 200, center = True)
+b = sphere(120)
+c = sphere(60)
 
-model = box - sphere1 + sphere2
+model = a - b + c
 
 display(model)
 
