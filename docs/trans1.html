@@ -29,7 +29,9 @@
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
 <li><a href="prim1d.html">Создание линий</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="ops3d.html">Операции конструктивной геометрии</a>  </li>
+<li><a href="lincycle.html">Линии и циклы</a>  </li>
+<li><a href="fillet.html">Фаски, скругления</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
 </ul></li>
 <li>Преобразования.
 <ul>
@@ -48,7 +50,54 @@
 <li>Библиотеки</li>
 </ul>
 </nav>
-      <article class="article"><p></p>
+      <article class="article"><h1>Комбинации преобразований</h1>
+
+<p>Кроме базовых преобразований, рассмотренных в прошлом разделе, есть дополнительные возможности.</p>
+
+<hr />
+
+<h2>Сложное преобразование</h2>
+
+<p>Преобразования могут комбинироваться друг с другом согласно правилу умножения линейных операторов.
+Следует учесть, что эти преобразования не коммутативны.</p>
+
+<p>Следующие операции эквивалентны:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">30</span><span class="p">))</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="p">(</span><span class="n">up</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">30</span><span class="p">)))(</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Здесь <code>up(10) * rotateX(deg(30))</code> выступает в роли сложного преобразования.
+С помощью оператора умножения можно комбинировать любые гомогенные преобразования.</p>
+
+<hr />
+
+<h2>Единичное преобразование</h2>
+
+<p>Специальное преобразование, никак не изменяющее объект.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">nulltrans</span><span class="p">()</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Множественное преобразование</h2>
+
+<p>Оператор множественного преобразования создаёт объединение преобразований объекта прототипа.
+transes - массив преобразований.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">extrans</span><span class="p">():</span> <span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span> 
+    <span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)),</span>
+    <span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)),</span>
+    <span class="n">translate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">180</span><span class="p">)),</span>
+    <span class="n">nulltrans</span><span class="p">()</span>
+<span class="p">])</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>

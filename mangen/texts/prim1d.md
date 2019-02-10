@@ -19,6 +19,18 @@ polysegment(pnts, closed=True/False)
 ![](images/generic/polysegment1.png)
 
 ---
+## Interpolate
+Инструмент для построения bspline по набору точек `pnts`. Также можно указать тангенсы `tangs` линии в каждой точке (нулевой мектор соответствует неуказанному тангенсу). Установка флага `closed` добавляет замыкающий участок кривой.
+```python
+interpolate(pnts, tangs=[], closed=False):
+```
+![](images/generic/interpolate0.png)
+![](images/generic/interpolate1.png)
+![](images/generic/interpolate2.png)
+![](images/generic/interpolate3.png)
+
+
+---
 ## Circle Arc
 Данный метод представляет альтернативный к `circle` (см. [Плоские примитивы](prim2d.html)) метод генерации дуги окружности по трем точкам.
 ```python
