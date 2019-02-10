@@ -11,7 +11,7 @@ segment(pnt1, pnt2)
 
 ---
 ## Polysegment
-Полисегмент - ломанная линия. Задаётся масивом точек. Установка флага closed добавляет сегмент полилинии, идущий от точки конца к точке начала. `pnts` - массив точек.
+Полисегмент - ломанная линия. Задаётся масивом точек. Установка флага `closed` добавляет сегмент полилинии, идущий от точки конца к точке начала. `pnts` - массив точек.
 ```python
 polysegment(pnts, closed=True/False)
 ```
@@ -19,3 +19,22 @@ polysegment(pnts, closed=True/False)
 ![](images/generic/polysegment1.png)
 
 ---
+## Circle Arc
+Данный метод представляет альтернативный к `circle` (см. [Плоские примитивы](prim2d.html)) метод генерации дуги окружности по трем точкам.
+```python
+circle_arc(p1, p2, p3) 
+```
+![](images/generic/circle_arc0.png)
+
+---
+## Helix
+Восходящая спираль. Задается радиусом, высотой и шагом витка. При установке опции `left`, меняет правую навивку на левую. При установке angle, радиус линейно меняется со сменой высоты.
+
+```python
+helix(r, h, step, left=True/False):
+helix(r, h, step, angle=angle, left=True/False):
+```
+![](images/generic/helix0.png)
+![](images/generic/helix1.png)
+![](images/generic/helix2.png)
+![](images/generic/helix3.png)

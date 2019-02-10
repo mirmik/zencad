@@ -17,6 +17,8 @@ def doscreen(model, path, size):
 	print("screen (path:{0}, size:{1})".format(path, size))
 	screen(model, "generic/"+path, size)
 
+doscreen(model=box(200, 200, 200, center = True) - sphere(120) + sphere(60), path="zencad-logo.png", size=(500,400))
+
 #prim3d
 doscreen(model=box(10,20,30), path="box.png", size=wsize)
 
@@ -72,7 +74,19 @@ doscreen(model=ngon(r=20, n=8, wire=True), path="ngon5.png", size=wsize)
 doscreen(model=textshape(text="TextShape", fontpath="../../zencad/examples/fonts/testfont.ttf", size=100), path="textshape0.png", size=wsize)
 doscreen(model=textshape(text="TextShape", fontpath="../../zencad/examples/fonts/mandarinc.ttf", size=100), path="textshape1.png", size=wsize)
 
-doscreen(model=segment((10,10,10),(20,10,10)), path="segment0.png", size=wsize)
+doscreen(model=[segment((10,10,10),(20,10,10)), point3(10,10,10), point3(20,10,10)], path="segment0.png", size=wsize)
 
-doscreen(model=polysegment([(0,0,0),(0,10,10),(0,10,20),(0,-10,20),(0,-10,10)]), path="polysegment0.png", size=wsize)
-doscreen(model=polysegment([(0,0,0),(0,10,10),(0,10,20),(0,-10,20),(0,-10,10)], closed=True), path="polysegment1.png", size=wsize)
+doscreen(model=[polysegment([(0,0,0),(0,10,10),(0,10,20),(0,-10,20),(0,-10,10)]), point3(0,0,0),point3(0,10,10),point3(0,10,20),point3(0,-10,20),point3(0,-10,10)], path="polysegment0.png", size=wsize)
+doscreen(model=[polysegment([(0,0,0),(0,10,10),(0,10,20),(0,-10,20),(0,-10,10)], closed=True),point3(0,0,0),point3(0,10,10),point3(0,10,20),point3(0,-10,20),point3(0,-10,10)], path="polysegment1.png", size=wsize)
+
+doscreen(model=[circle_arc((0,0,0), (0,10,10), (0,10,20)), point3(0,0,0), point3(0,10,10), point3(0,10,20)], path="circle_arc0.png", size=wsize)
+
+doscreen(model=helix(r=10, h=20, step=1), path="helix0.png", size=wsize)
+doscreen(model=helix(r=10, h=20, step=1, left=True), path="helix1.png", size=wsize)
+doscreen(model=helix(r=10, h=20, step=1, angle=deg(10)), path="helix2.png", size=wsize)
+doscreen(model=helix(r=10, h=20, step=1, angle=-deg(10)), path="helix3.png", size=wsize)
+
+
+doscreen(model=sphere(r=10) + cylinder(r=5, h=30, center=True) + ngon(r=5, n=5).extrude(30, center=True).rotateX(deg(90)), path="union.png", size=wsize)
+doscreen(model=sphere(r=10) - cylinder(r=5, h=30, center=True) - ngon(r=5, n=5).extrude(30, center=True).rotateX(deg(90)), path="difference.png", size=wsize)
+doscreen(model=sphere(r=10) ^ cylinder(r=5, h=30, center=True) ^ ngon(r=5, n=5).extrude(30, center=True).rotateX(deg(90)), path="intersect.png", size=wsize)
