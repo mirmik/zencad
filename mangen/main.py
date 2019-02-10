@@ -41,3 +41,5 @@ for f in os.listdir("texts"):
 writer.copy_tree(dst=".", src="images")
 writer.copy_file("main.css", "main.css")
 writer.remove_file("images/imagen.py")
+
+os.system("cp -rf build ../docs")
