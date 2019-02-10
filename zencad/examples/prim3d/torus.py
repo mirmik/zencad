@@ -11,9 +11,9 @@ tor_v1=deg(-90)
 tor_v2=deg(180)
 
 m0 = torus(r1=tor_r1, r2=tor_r2)
-m1 = torus(r1=tor_r1, r2=tor_r2, uangle=tor_u)
-m2 = torus(r1=tor_r1, r2=tor_r2, vangle=(tor_v1,tor_v2))
-m3 = torus(r1=tor_r1, r2=tor_r2, vangle=(tor_v1,tor_v2), uangle=tor_u)
+m1 = torus(r1=tor_r1, r2=tor_r2, yaw=tor_u)
+m2 = torus(r1=tor_r1, r2=tor_r2, pitch=(tor_v1,tor_v2))
+m3 = torus(r1=tor_r1, r2=tor_r2, pitch=(tor_v1,tor_v2), yaw=tor_u)
 
 display(m0.right(20*0))
 display(m1.right(20*1))

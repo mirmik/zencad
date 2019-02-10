@@ -1,6 +1,18 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
-from zencad.util import angle_pair
+from zencad.util import angle_pair, points
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def rectangle(a, b=None, center = False, wire=False):
+	if b is None:
+		return pyservoce.square(a, center, wire)
+	return pyservoce.rectangle(a, b, center, wire)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def square(a, center = False, wire=False):
+	return pyservoce.square(a, center, wire)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -36,16 +48,6 @@ def polygon(pnts, wire=False):
 		return pyservoce.polysegment(points(pnts), True)
 	else:
 		return pyservoce.polygon(points(pnts))
-
-
-@lazy.lazy(cls=nocached_shape_generator)
-def square(a, center = False, wire=False):
-	return pyservoce.square(a, center, wire)
-
-
-@lazy.lazy(cls=nocached_shape_generator)
-def rectangle(a, b, center = False, wire=False):
-	return pyservoce.rectangle(a, b, center, wire)
 
 
 @lazy.lazy(cls=shape_generator)

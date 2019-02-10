@@ -5,9 +5,9 @@ from zencad import *
 test_mode()
 
 m1 = sphere(r=10)
-m2 = sphere(r=10, an1=deg(135))
-m3 = sphere(r=10, an1=deg(10), an2=deg(40))
-m4 = sphere(r=10, an1=deg(10), an2=deg(40), an3=deg(135))
+m2 = sphere(r=10, yaw=deg(135))
+m3 = sphere(r=10, pitch=(deg(20), deg(60)))
+m4 = sphere(r=10, yaw=deg(135), pitch=(deg(10), deg(45)))
 
 display(m1)
 display(m2.right(30))
