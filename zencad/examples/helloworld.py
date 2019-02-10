@@ -7,8 +7,8 @@ box = box(200, 200, 200, center = True)
 sphere1 = sphere(120)
 sphere2 = sphere(60)
 
-union = box - sphere1 + sphere2
+model = box - sphere1 + sphere2
 
-display(union)
+display(model)
 
 show()
