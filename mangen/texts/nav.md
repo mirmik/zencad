@@ -2,6 +2,7 @@
 	* [Главная страница](index.html)
 	* [Скриптовый CAD](scriptcad.html)
 	* [Кэширование](caching.html)
+	* [Разбор HelloWorld](helloworld.html)
 * Базовые примитивы и операции.
     * [Объёмные примитивы](prim3d.html)  
     * [Плоские примитивы](prim2d.html)  
