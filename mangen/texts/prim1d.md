@@ -16,7 +16,7 @@ segment(pnt1, pnt2)
 polysegment(pnts, closed=True/False)
 ```
 ![](images/generic/polysegment0.png)
-![](images/generic/polysegment1.png)
+![](images/generic/polysegment1.png)  
 
 ---
 ## Interpolate
@@ -25,9 +25,9 @@ polysegment(pnts, closed=True/False)
 interpolate(pnts, tangs=[], closed=False):
 ```
 ![](images/generic/interpolate0.png)
-![](images/generic/interpolate1.png)
+![](images/generic/interpolate1.png)  
 ![](images/generic/interpolate2.png)
-![](images/generic/interpolate3.png)
+![](images/generic/interpolate3.png)  
 
 
 ---
@@ -47,6 +47,6 @@ helix(r, h, step, left=True/False):
 helix(r, h, step, angle=angle, left=True/False):
 ```
 ![](images/generic/helix0.png)
-![](images/generic/helix1.png)
+![](images/generic/helix1.png)  
 ![](images/generic/helix2.png)
-![](images/generic/helix3.png)
+![](images/generic/helix3.png)  

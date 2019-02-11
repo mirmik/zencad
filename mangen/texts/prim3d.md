@@ -23,9 +23,9 @@ sphere(r=radius, pitch=(minPitch, maxPitch))
 sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch))
 ```
 ![](images/generic/sphere0.png)
-![](images/generic/sphere1.png)
+![](images/generic/sphere1.png)  
 ![](images/generic/sphere2.png)
-![](images/generic/sphere3.png)
+![](images/generic/sphere3.png)  
 
 ---
 ## Cylinder  
@@ -37,7 +37,7 @@ cylinder(r=radius, h=height, yaw=yaw, center = True/False)
 ```
 
 ![](images/generic/cylinder0.png)
-![](images/generic/cylinder1.png)
+![](images/generic/cylinder1.png)  
 
 ---
 ## Cone  
@@ -50,9 +50,9 @@ cone(r1=botRadius, r2=0, h=height, center=True/False);
 ```
 
 ![](images/generic/cone0.png)
-![](images/generic/cone1.png)
+![](images/generic/cone1.png)  
 ![](images/generic/cone2.png)
-![](images/generic/cone3.png)
+![](images/generic/cone3.png)  
 
 ---
 ## Torus 
@@ -64,11 +64,11 @@ torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch));
 torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch));
 ```
 ![](images/generic/torus0.png)
-![](images/generic/torus1.png)
+![](images/generic/torus1.png)  
 ![](images/generic/torus2.png)
-![](images/generic/torus3.png)
+![](images/generic/torus3.png)  
 ![](images/generic/torus4.png)
-![](images/generic/torus5.png)
+![](images/generic/torus5.png)  
 
 ---
 ## Halfspace
@@ -78,4 +78,4 @@ sphere(r=10) - halfspace().rotateX(deg(150))
 sphere(r=10) ^ halfspace().rotateX(deg(150))
 ```
 ![](images/generic/halfspace0.png)
-![](images/generic/halfspace1.png)
+![](images/generic/halfspace1.png)  
