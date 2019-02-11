@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZenCad</title>
+    <link href="../main.css" rel="stylesheet">
+  </head>
+  <body>
+    <meta charset="utf-8">
+    <div class="header" id="header">
+      <h1>
+        <a class="header_ref" href="index.html">ZenCad</a>
+      </h1>
+      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
+        <span class="icon"></span>
+      </a>
+      <p>
+        <a href="ru/ops3d.html">Ru</a>
+        <a href="en/ru/ops3d.html">En</a>
+      </p>
+    </div>
+    <div id="content">
+      <nav class="nav"><ul>
+<li>Основные концепции
+<ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="caching.html">Кэширование</a></li>
+<li><a href="helloworld.html">Разбор HelloWorld</a></li>
+</ul></li>
+<li>Базовые примитивы и операции
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
+<li><a href="prim2d.html">Плоские примитивы</a>  </li>
+<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="lincycle.html">Линии и циклы</a>  </li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
+</ul></li>
+<li>Преобразования
+<ul>
+<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
+<li><a href="trans1.html">Комбинации преобразований</a>  </li>
+<li><a href="bool.html">Булевы операции</a></li>
+</ul></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li>Графический интерфейс
+<ul>
+<li><a href="gui.html">Вводные моменты</a></li>
+<li><a href="navigation.html">Навигация</a></li>
+<li><a href="markers.html">Маркеры</a></li>
+</ul></li>
+<li><a href="animate.html">Анимация</a></li>
+<li>Библиотеки</li>
+</ul>
+</nav>
+      <article class="article"><h1>Ссылочная геометрия</h1>
+
+<h2>Linear extrude</h2>
+
+<p>Операция линейной экструзии. Самый часто используемый метод придания объёма плоскому объекту.
+Задаётся плоским объектом <code>face</code> и вектором <code>vec</code> вдоль которого будет выполнено растяжение. Если вместо вектора указать одну координату, модель будет вытянута в положительном направлении оси Z.
+При указании опции center, после выполнения операции модель будет транслирована в направлении обратном vec на его половинную длину.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">linear_extrude</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">linear_extrude</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span> <span class="c1">#equal: vec=(0,0,z)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/extrude0.png" alt="" />
+<img src="../images/generic/extrude1.png" alt="" /> <br />
+<img src="../images/generic/extrude2.png" alt="" />
+<img src="../images/generic/extrude3.png" alt="" />  </p>
+
+<hr />
+
+<h2>Loft</h2>
+
+<p>Операция натягивает 3д поверхность на масив каркасных линий <code>wires</code>. <br />
+TODO: Добавить больше параметров в алгоритм сглаживания.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">wires</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/loft0.png" alt="" />
+<img src="../images/generic/loft1.png" alt="" /> <br />
+<img src="../images/generic/loft2.png" alt="" />
+<img src="../images/generic/loft3.png" alt="" /> <br />
+<img src="../images/generic/loft4.png" alt="" />
+<img src="../images/generic/loft5.png" alt="" />  </p>
+
+<hr />
+
+<h2>Sweep</h2>
+
+<p>Операция выдавливания тела <code>shp</code> по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь <code>traj</code> задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории. Эту опцию рекомендуется устанавливать для спирального свипа (см. <a href="https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas">https://en.wikipedia.org/wiki/Frenet-Serret_formulas</a>).  </p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sweep</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span> <span class="n">traj</span><span class="o">=</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/sweep0.png" alt="" />
+<img src="../images/generic/sweep1.png" alt="" /> <br />
+<img src="../images/generic/sweep2.png" alt="" />
+<img src="../images/generic/sweep3.png" alt="" /> <br />
+<img src="../images/generic/sweep4.png" alt="" /></p>
+
+<hr />
+
+<h2>Revol</h2>
+
+<p>Операция создания тела вращения. Задаётся с указанием вращаемого тела. При необходимости создания сектора задаётся угол.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+<span class="n">revol</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/revol0.png" alt="" />
+<img src="../images/generic/revol1.png" alt="" /> <br />
+<img src="../images/generic/revol2.png" alt="" />
+<img src="../images/generic/revol3.png" alt="" />  </p>
+</article>
+    </div>
+    <div id="footer"></div>
+  </body>
+</html>

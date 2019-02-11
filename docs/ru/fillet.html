@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZenCad</title>
+    <link href="../main.css" rel="stylesheet">
+  </head>
+  <body>
+    <meta charset="utf-8">
+    <div class="header" id="header">
+      <h1>
+        <a class="header_ref" href="index.html">ZenCad</a>
+      </h1>
+      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
+        <span class="icon"></span>
+      </a>
+      <p>
+        <a href="ru/fillet.html">Ru</a>
+        <a href="en/ru/fillet.html">En</a>
+      </p>
+    </div>
+    <div id="content">
+      <nav class="nav"><ul>
+<li>Основные концепции
+<ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="caching.html">Кэширование</a></li>
+<li><a href="helloworld.html">Разбор HelloWorld</a></li>
+</ul></li>
+<li>Базовые примитивы и операции
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
+<li><a href="prim2d.html">Плоские примитивы</a>  </li>
+<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="lincycle.html">Линии и циклы</a>  </li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
+</ul></li>
+<li>Преобразования
+<ul>
+<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
+<li><a href="trans1.html">Комбинации преобразований</a>  </li>
+<li><a href="bool.html">Булевы операции</a></li>
+</ul></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li>Графический интерфейс
+<ul>
+<li><a href="gui.html">Вводные моменты</a></li>
+<li><a href="navigation.html">Навигация</a></li>
+<li><a href="markers.html">Маркеры</a></li>
+</ul></li>
+<li><a href="animate.html">Анимация</a></li>
+<li>Библиотеки</li>
+</ul>
+</nav>
+      <article class="article"><h1>Топологически зависимые преобразования</h1>
+
+<p>Существует класс операций, требующий в качестве параметра выбрать элемент топологии модели. В интерактивных CAD мы можем, используя указатель мыши, выделить такой элемент и указать в качестве параметра. Этот метод недоступен в скриптовом CAD. Общий подход ZenCad состоит в том, что такой элемент задаётся методом "ближайшей точки". При задании аргумента, вместо элемента топологии задаётся точка. Выбранным считается элемент, растояние до которого от элемента топологии будет минимальным. </p>
+
+<hr />
+
+<h2>Fillet</h2>
+
+<p>Операция скругления тела. 
+Если тело объёмное - модификации подвергаются ребра. Если плоское - вершины.
+Скругления задаются радиусом <code>r</code> и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+<span class="n">fillet</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/fillet0.png" alt="" />
+<img src="../images/generic/fillet1.png" alt="" /> <br />
+<img src="../images/generic/fillet2.png" alt="" />
+<img src="../images/generic/fillet3.png" alt="" /> <br />
+<img src="../images/generic/fillet4.png" alt="" />
+<img src="../images/generic/fillet5.png" alt="" />  </p>
+
+<hr />
+
+<h2>Chamfer</h2>
+
+<p>Операция взятия фаски тела. В отличие от скругления применяется только к объёмным телам.
+Фаска задаётся расстоянием <code>r</code>, взятым от ребра до линии фаски и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
+
+<p>TODO: несиметричная фаска. </p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/chamfer0.png" alt="" />
+<img src="../images/generic/chamfer1.png" alt="" /> <br />
+<img src="../images/generic/chamfer2.png" alt="" />
+<img src="../images/generic/chamfer3.png" alt="" />  </p>
+
+<hr />
+
+<h2>Thicksolid</h2>
+
+<p>Операция создания тонкостенного объёмного тела.
+Задаётся прототипной моделью <code>shp</code> и массивом точек, ближайших к удаляемым граням <code>refs</code>.
+Также задаётся толщина стенок <code>t</code>. Если толщина стенок положительная, стенки наращиваются наружу. Если отрицательная - внутрь.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/thicksolid0.png" alt="" />
+<img src="../images/generic/thicksolid1.png" alt="" />  </p>
+</article>
+    </div>
+    <div id="footer"></div>
+  </body>
+</html>
