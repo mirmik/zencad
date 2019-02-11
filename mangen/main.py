@@ -6,7 +6,7 @@ import markdown2
 import writer
 import os
 
-def page_generate(path, title, mdpath):
+def page_generate(path, title, mdpath, navpath):
 	page = dominate.document(title = title)
 	with page: dominate.tags.meta(charset=u'utf-8')
 	
@@ -18,25 +18,32 @@ def page_generate(path, title, mdpath):
 	article = content.add(dominate.tags.article(cls="article"))
 	
 	with page.head:
-		dominate.tags.link(rel='stylesheet', href='main.css')
+		dominate.tags.link(rel='stylesheet', href='../main.css')
 	
 	with header:
 		with dominate.tags.h1():
 			dominate.tags.a("ZenCad", href="index.html", cls="header_ref")
 		with dominate.tags.a("View on GitHub", href="https://github.com/mirmik/zencad", cls="btn btn-github"):
 			dominate.tags.span(cls='icon')
+		with dominate.tags.p():
+			dominate.tags.a("Ru", href=path)
+			dominate.tags.a("En", href="en/" + path)
 		
 	with nav:
-		dominate.util.raw(markdown2.markdown(open("texts/nav.md").read()))
+		dominate.util.raw(markdown2.markdown(open(navpath).read()))
 	
 	with article:
 		dominate.util.raw(markdown2.markdown(open(mdpath).read(), extras=["fenced-code-blocks"]))
 
 	writer.build_file(path, page)
 
-for f in os.listdir("texts"):
+for f in os.listdir("ru"):
 	target = os.path.splitext(f)[0]+".html"
-	page_generate(target, "ZenCad", os.path.join("texts", f))
+	page_generate("ru/"+target, "ZenCad", os.path.join("ru", f), "ru/nav.md")
+
+for f in os.listdir("en"):
+	target = os.path.splitext(f)[0]+".html"
+	page_generate("en/"+target, "ZenCad", os.path.join("en", f), "en/nav.md")
 
 writer.copy_tree(dst=".", src="images")
 writer.copy_file("main.css", "main.css")
