@@ -26,8 +26,8 @@ def revol(shp, angle=0.0):
 	return pyservoce.revol(shp, angle)
 
 @lazy.lazy(cls=shape_generator)
-def thicksolid(shp, pnts, t):
-	return pyservoce.thicksolid(shp, points(pnts), t)
+def thicksolid(shp, t, refs):
+	return pyservoce.thicksolid(shp, points(refs), t)
 
 @lazy.lazy(cls=shape_generator)
 def fillet(shp, r, refs=None): 
