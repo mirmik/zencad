@@ -29,4 +29,4 @@ fill(wire)
 wire.fill() #alternate
 ```
 ![](images/generic/fill0.png)
-![](images/generic/fill1.png)
+![](images/generic/fill1.png)  
