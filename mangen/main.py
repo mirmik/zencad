@@ -26,8 +26,8 @@ def page_generate(path, title, mdpath, navpath):
 		with dominate.tags.a("View on GitHub", href="https://github.com/mirmik/zencad", cls="btn btn-github"):
 			dominate.tags.span(cls='icon')
 		with dominate.tags.p():
-			dominate.tags.a("Ru", href=path)
-			dominate.tags.a("En", href="en/" + path)
+			dominate.tags.a("Ru", href="../ru/" + path.split('/')[1])
+			dominate.tags.a("En", href="../en/" + path.split('/')[1])
 		
 	with nav:
 		dominate.util.raw(markdown2.markdown(open(navpath).read()))
@@ -44,6 +44,13 @@ for f in os.listdir("ru"):
 for f in os.listdir("en"):
 	target = os.path.splitext(f)[0]+".html"
 	page_generate("en/"+target, "ZenCad", os.path.join("en", f), "en/nav.md")
+
+redirect_page = dominate.document()
+redirect_page.add(dominate.util.raw("""
+<script type="text/javascript" language="JavaScript">
+    window.location = 'en/index.html'
+</script>"""))
+writer.build_file("index.html", redirect_page)
 
 writer.copy_tree(dst=".", src="images")
 writer.copy_file("main.css", "main.css")
