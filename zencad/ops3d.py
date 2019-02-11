@@ -1,13 +1,15 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 
-from zencad.util import points
+from zencad.util import points, vector3
 
 @lazy.lazy(cls=shape_generator)
-def linear_extrude(*args, **kwargs):
-	return pyservoce.make_linear_extrude(*args, **kwargs)
+def linear_extrude(shp, vec, center=False):
+	if isinstance(vec, (int, float)):
+		vec = vector3(0,0,vec)
+	return pyservoce.make_linear_extrude(shp, vector3(vec), center)
 
-def extrude(*args, **kwargs): return linear_extrude(*args, **kwargs)
+def extrude(vec): return linear_extrude(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
 def pipe(prof, path):
@@ -18,12 +20,16 @@ def pipe_shell(prof, path, frenet = False):
 	return pyservoce.make_pipe_shell(prof, path, frenet)
 
 @lazy.lazy(cls=shape_generator)
-def loft(arr):
-	return pyservoce.loft(arr)
+def sweep(shp, traj, frenet = False):
+	return pyservoce.make_pipe_shell(shp, path, frenet)
 
 @lazy.lazy(cls=shape_generator)
-def revol(shp, angle=0.0):
-	return pyservoce.revol(shp, angle)
+def loft(arr, smooth=False):
+	return pyservoce.loft(arr, smooth=smooth)
+
+@lazy.lazy(cls=shape_generator)
+def revol(shp, yaw=0.0):
+	return pyservoce.revol(shp, yaw)
 
 @lazy.lazy(cls=shape_generator)
 def thicksolid(shp, t, refs):
@@ -44,5 +50,6 @@ def chamfer(shp, r, refs=None):
 		return pyservoce.chamfer(shp, r, points(refs))
 
 
+pyservoce.Shape.extrude = linear_extrude
 pyservoce.Shape.fillet = fillet
 pyservoce.Shape.chamfer = chamfer
