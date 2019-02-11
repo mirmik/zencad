@@ -14,8 +14,8 @@
         <span class="icon"></span>
       </a>
       <p>
-        <a href="en/index.html">Ru</a>
-        <a href="en/en/index.html">En</a>
+        <a href="../ru/index.html">Ru</a>
+        <a href="../en/index.html">En</a>
       </p>
     </div>
     <div id="content">
@@ -54,7 +54,41 @@
 <li>Библиотеки</li>
 </ul>
 </nav>
-      <article class="article"><p></p>
+      <article class="article"><h1>ZenCad</h1>
+
+<p><img src="../images/generic/zencad-logo.png" alt="" /> <br />
+CAD для праведных дзэн-программеров.</p>
+
+<h2>Что это?</h2>
+
+<p>ZenCad - это библиотека для создания 3д моделей. ZenCad исповедует идею создания 3д модели методом генерации скрипта и ноги его растут из системы OpenScad. В отличие от OpenScad, ZenCad использует геометрическое ядро граничного представления OpenCascade и язык общего назначения Python.</p>
+
+<h2>Установка</h2>
+
+<div class="codehilite"><pre><span></span><code>python3 -m pip install zencad
+</code></pre></div>
+
+<h2>HelloWorld</h2>
+
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">#coding: utf-8</span>
+
+<span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">sphere1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">sphere2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">box</span> <span class="o">-</span> <span class="n">sphere1</span> <span class="o">+</span> <span class="n">sphere2</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+<h2>Ссылки</h2>
+
+<p>github: <a href="https://github.com/mirmik/zencad">https://github.com/mirmik/zencad</a> <br />
+pypi: <a href="https://pypi.org/project/zencad">https://pypi.org/project/zencad</a>  </p>
 </article>
     </div>
     <div id="footer"></div>
