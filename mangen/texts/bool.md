@@ -19,6 +19,9 @@ union([
 ])
 ```
 ![](images/generic/union.png)
+![](images/generic/union0.png)
+![](images/generic/union1.png)
+![](images/generic/union2.png)
 
 ---
 ## Difference
@@ -34,6 +37,9 @@ difference([
 ])
 ```
 ![](images/generic/difference.png)
+![](images/generic/difference0.png)
+![](images/generic/difference1.png)
+![](images/generic/difference2.png)
 
 ---
 ## Intersect
@@ -49,6 +55,9 @@ intersect([
 ])
 ```
 ![](images/generic/intersect.png)
+![](images/generic/intersect0.png)
+![](images/generic/intersect1.png)
+![](images/generic/intersect2.png)
 
 ---
 ## Example
