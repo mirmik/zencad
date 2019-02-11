@@ -15,11 +15,11 @@ model.fillet(radius, referencedPoints)
 model.fillet(radius)
 ```
 ![](images/generic/fillet0.png)
-![](images/generic/fillet1.png)
+![](images/generic/fillet1.png)  
 ![](images/generic/fillet2.png)
-![](images/generic/fillet3.png)
+![](images/generic/fillet3.png)  
 ![](images/generic/fillet4.png)
-![](images/generic/fillet5.png)
+![](images/generic/fillet5.png)  
 
 ---
 ## Chamfer
@@ -32,9 +32,9 @@ TODO: несиметричная фаска.
 chamfer(shp=model, r=radius, refs=referencedPoints)
 ```
 ![](images/generic/chamfer0.png)
-![](images/generic/chamfer1.png)
+![](images/generic/chamfer1.png)  
 ![](images/generic/chamfer2.png)
-![](images/generic/chamfer3.png)
+![](images/generic/chamfer3.png)  
 
 
 
@@ -49,4 +49,4 @@ thicksolid(shp=model, t=thickness, refs=referencedPoints)
 ```
 
 ![](images/generic/thicksolid0.png)
-![](images/generic/thicksolid1.png)
+![](images/generic/thicksolid1.png)  

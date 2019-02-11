@@ -12,9 +12,9 @@ model.extrude(vec=(x,y,z), center=True/False)
 model.extrude(vec=z, center=True/False)
 ```
 ![](images/generic/extrude0.png)
-![](images/generic/extrude1.png)
+![](images/generic/extrude1.png)  
 ![](images/generic/extrude2.png)
-![](images/generic/extrude3.png)
+![](images/generic/extrude3.png)  
 
 ---
 ## Loft
@@ -25,22 +25,22 @@ TODO: Добавить больше параметров в алгоритм с�
 loft(wires)
 ```
 ![](images/generic/loft0.png)
-![](images/generic/loft1.png)
+![](images/generic/loft1.png)  
 ![](images/generic/loft2.png)
-![](images/generic/loft3.png)
+![](images/generic/loft3.png)  
 ![](images/generic/loft4.png)
-![](images/generic/loft5.png)
+![](images/generic/loft5.png)  
 
 ---
 ## Sweep
-Операция выдавливания тела `shp` по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь `traj` задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории (см. [https://en.wikipedia.org/wiki/Frenet-Serret_formulas](https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas)).  
+Операция выдавливания тела `shp` по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь `traj` задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории. Эту опцию рекомендуется устанавливать для спирального свипа (см. [https://en.wikipedia.org/wiki/Frenet-Serret_formulas](https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas)).  
 ```python
 sweep(shp=profile, traj=trajectory, frenet=True/False)
 ```
 ![](images/generic/sweep0.png)
-![](images/generic/sweep1.png)
+![](images/generic/sweep1.png)  
 ![](images/generic/sweep2.png)
-![](images/generic/sweep3.png)
+![](images/generic/sweep3.png)  
 ![](images/generic/sweep4.png)
 
 ---
@@ -51,6 +51,6 @@ revol(shp=model, yaw=angle)
 revol(shp=model)
 ```
 ![](images/generic/revol0.png)
-![](images/generic/revol1.png)
+![](images/generic/revol1.png)  
 ![](images/generic/revol2.png)
-![](images/generic/revol3.png)
+![](images/generic/revol3.png)  

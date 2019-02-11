@@ -11,9 +11,9 @@ rectangle(a, center=True/False, wire=True/False)
 square(a, center=True/False, wire=True/False) #alternate
 ```
 ![](images/generic/rectangle0.png)
-![](images/generic/rectangle1.png)
+![](images/generic/rectangle1.png)  
 ![](images/generic/rectangle2.png)
-![](images/generic/rectangle3.png)
+![](images/generic/rectangle3.png)  
 
 ---
 ## Circle
@@ -26,9 +26,9 @@ circle(r=radius, angle=angle, wire=True/False)
 circle(r=radius, angle=(start, stop), wire=True/False)
 ```
 ![](images/generic/circle0.png)
-![](images/generic/circle1.png)
+![](images/generic/circle1.png)  
 ![](images/generic/circle2.png)
-![](images/generic/circle3.png)
+![](images/generic/circle3.png)  
 
 ---
 ## Ellipse
@@ -41,9 +41,9 @@ ellipse(r1=major, r2=minor, angle=angle, wire=True/False)
 ellipse(r1=major, r2=minor, angle=(start, stop), wire=True/False)
 ```
 ![](images/generic/ellipse0.png)
-![](images/generic/ellipse1.png)
+![](images/generic/ellipse1.png)  
 ![](images/generic/ellipse2.png)
-![](images/generic/ellipse3.png)
+![](images/generic/ellipse3.png)  
 
 ---
 ## Polygon
@@ -56,7 +56,7 @@ polygon(pnts=pnts, wire=True/False)
 polygon(pnts=[(0,0), (0,10), (10,0)], wire=True/False)
 ```
 ![](images/generic/polygon0.png)
-![](images/generic/polygon1.png)
+![](images/generic/polygon1.png)  
 
 ---
 ## Ngon
@@ -67,11 +67,11 @@ polygon(pnts=[(0,0), (0,10), (10,0)], wire=True/False)
 ngon(r=radius, n=vertexCount, wire=True/False)
 ```
 ![](images/generic/ngon0.png)
-![](images/generic/ngon1.png)
+![](images/generic/ngon1.png)  
 ![](images/generic/ngon2.png)
-![](images/generic/ngon3.png)
+![](images/generic/ngon3.png)  
 ![](images/generic/ngon4.png)
-![](images/generic/ngon5.png)
+![](images/generic/ngon5.png)  
 
 ---
 ## Textshape
@@ -81,5 +81,5 @@ ngon(r=radius, n=vertexCount, wire=True/False)
 textshape(text=textString, fontpath=pathToFont, size=fontSize)
 ```
 ![](images/generic/textshape0.png)
-![](images/generic/textshape1.png)
+![](images/generic/textshape1.png)  
 
