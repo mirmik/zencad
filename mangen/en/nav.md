@@ -1,6 +1,6 @@
 * Основные концепции
-	* [Главная страница](index.html)
-	* [Скриптовый CAD](scriptcad.html)
+	* [Main page](index.html)
+	* [Script CAD](scriptcad.html)
 	* [Кэширование](caching.html)
 	* [Разбор HelloWorld](helloworld.html)
 * Базовые примитивы и операции
