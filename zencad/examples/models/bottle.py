@@ -35,7 +35,7 @@ body = body + neck
 hl(body.forw(100))
 
 #THICK
-body = thicksolid(body, [point(0,0,height+height/10)], -thickness / 50)
+body = thicksolid(body, -thickness / 50, [point(0,0,height+height/10)])
 hl(body.forw(60))
 
 #THREAD
