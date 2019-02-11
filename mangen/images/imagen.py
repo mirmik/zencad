@@ -194,3 +194,76 @@ pnts = points([(5,2.5,2.5)])
 doscreen(model=[thicksolid(cube(5), t=0.5, refs=pnts), *pnts], path="thicksolid0.png", size=wsize)
 pnts = points([(5,2.5,2.5), (2.5,2.5,5)])
 doscreen(model=[thicksolid(cube(5), t=0.5, refs=pnts), *pnts], path="thicksolid1.png", size=wsize)
+
+yaw = 	math.pi * (7/16)
+pitch = math.pi * -0.25
+
+doscreen(model=ngon(r=10, n=10), path="extrude0.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=ngon(r=10, n=10).extrude(4), path="extrude1.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=ngon(r=10, n=10).extrude((1,0,4)), path="extrude2.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=textshape(text="TextShape", fontpath="../../zencad/examples/fonts/mandarinc.ttf", size=100).extrude(20), path="extrude3.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+
+r=8
+n=3
+doscreen(model=ngon(r=r, n=n), path="revol0.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=ngon(r=r, n=n).rotateX(deg(90)).right(30), path="revol1.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=revol(ngon(r=r, n=n).rotateX(deg(90)).right(30)), path="revol2.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=revol(ngon(r=r, n=n).rotateX(deg(90)).right(30), yaw=deg(120)), path="revol3.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+
+
+
+pitch = math.pi * -0.10
+wires = [
+	circle(10, wire=True).up(30),
+	circle(10, wire=True).up(20),
+	circle(20, wire=True).up(10),
+	circle(20, wire=True)
+]
+
+wires2 = [
+	circle(10, wire=True).up(30),
+	circle(10, wire=True).up(20),
+	square(30, center=True, wire=True).up(10),
+	square(30, center=True, wire=True)
+]
+
+doscreen(model=wires, path="loft0.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=loft(wires, smooth=False), path="loft1.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=loft(wires, smooth=True), path="loft2.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=wires2, path="loft3.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=loft(wires2, smooth=False), path="loft4.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=loft(wires2, smooth=True), path="loft5.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+
+
+
+pnts = points([
+	(-5,-5),
+	(0,0),
+	(27,40),
+	(25,50),
+	(5,60),
+	(-5,60),
+])
+
+tang = vectors([
+	(1,1),
+	(1,1),
+	(0,0),
+	(0,0),
+	(0,0),
+	(0,0),
+]) 
+
+ps = [ (20,0,0), (20,0,10), (30,0,5) ]
+
+spine = interpolate(pnts, tang).rotateX(deg(90))
+profile = circle(3, wire=True).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
+handle = pipe(path = spine, prof = profile)
+
+pitch = math.pi * -0.20
+yaw = 	math.pi * (7/16) + math.pi*3/8
+doscreen(model=[spine, profile], path="sweep0.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=sweep(profile, spine), path="sweep1.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=[polysegment(ps, closed=True), helix(h=100, r=20, step=30)], path="sweep2.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=sweep(polysegment(ps, closed=True), helix(h=100, r=20, step=30), frenet=False), path="sweep3.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
+doscreen(model=sweep(polysegment(ps, closed=True), helix(h=100, r=20, step=30), frenet=True), path="sweep4.png", size=wsize, triedron = True, yaw=yaw, pitch=pitch)
