@@ -56,7 +56,9 @@ def doscreen(model, path, size, yaw=None, pitch=None, triedron=False):
 	print("screen (path:{0}, size:{1})".format(path, size))
 	doscreen_impl(model, "generic/"+path, size, yaw=yaw, pitch=pitch, triedron=triedron)
 
-doscreen(model=box(200, 200, 200, center = True) - sphere(120) + sphere(60), path="zencad-logo.png", size=(500,400))
+yaw = 	math.pi * (7/16)
+pitch = math.pi * -0.20
+doscreen(model=box(200, 200, 200, center = True) - sphere(120) + sphere(60).rotateX(deg(90)).rotateZ(deg(90)), path="zencad-logo.png", size=(500,400), yaw=yaw , pitch=pitch)
 
 #prim3d
 doscreen(model=box(10,20,30), path="box.png", size=wsize)
