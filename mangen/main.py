@@ -48,7 +48,7 @@ for f in os.listdir("en"):
 redirect_page = dominate.document()
 redirect_page.add(dominate.util.raw("""
 <script type="text/javascript" language="JavaScript">
-    window.location = 'en/index.html'
+    window.location = 'ru/index.html'
 </script>"""))
 writer.build_file("index.html", redirect_page)
 
