@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+	<head>
+		<style>
+			div {
+					width: 100%;
+			}
+			
+			header, footer {
+				padding: 1em;
+				color: white;
+				background-color: black;
+				clear: left;
+				text-align: center;
+
+			}
+
+			header {
+			}
+			
+
+			footer {
+  			}
+
+			footer a {
+
+					background: #ffc;
+   					border-radius: 3px;
+   					padding: 2px;
+			}
+			
+			nav {
+					float: left;
+					max-width: 240px;
+					margin: 0;
+					padding: 1em;
+			  		font-family: Helvetica, Arial, sans-serif;
+			  		font-size: 13px;
+			}
+			
+			nav ul {
+					list-style-type: none;
+					padding: 0;
+			}
+				 
+			nav ul a {
+					text-decoration: none;
+			}
+			
+			article {
+					padding: 1em;
+					overflow: hidden;
+
+    				margin-left: auto;
+    				margin-right: auto;
+    				max-width: 50em;
+    				
+			}
+
+			/* Buttons
+			*/
+			.btn {
+			  display: inline-block;
+			  background: -webkit-linear-gradient(top, rgba(40, 40, 40, 0.3), rgba(35, 35, 35, 0.3) 50%, rgba(10,			 10, 10, 0.3) 50%, rgba(0, 0, 0, 0.3));
+			  padding: 8px 18px;
+			  border-radius: 50px;
+			  border: 2px solid rgba(0, 0, 0, 0.7);
+			  border-bottom: 2px solid rgba(0, 0, 0, 0.7);
+			  border-top: 2px solid black;
+			  color: rgba(255, 255, 255, 0.8);
+			  font-family: Helvetica, Arial, sans-serif;
+			  font-weight: bold;
+			  font-size: 13px;
+			  text-decoration: none;
+			  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);
+			  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+			
+			.btn:hover {
+			  background: -webkit-linear-gradient(top, rgba(40, 40, 40, 0.6), rgba(35, 35, 35, 0.6) 50%, rgba(10,			 10, 10, 0.8) 50%, rgba(0, 0, 0, 0.8)); }
+			
+			.btn .icon {
+			  display: inline-block;
+			  width: 16px;
+			  height: 16px;
+			  margin: 1px 8px 0 0;
+			  float: left; }
+			
+			.btn-github .icon {
+			  opacity: 0.6;
+			  background: url("/zencad/images/blacktocat.png") 0 0 no-repeat; }
+		</style>
+	</head>
+	<body>
+		<div>
+			<header>
+				<h1>ZenCad</h1>
+          		<a href="https://github.com/mirmik/zencad" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+			</header>
+				
+			<nav>
+          		<a href="/index.html">Главная</a></p>
+          		<a href="/texts/base.html">Основные понятия.</a></p>
+          		<a href="/texts/prim3d.html">Объёмные примитивы.</a></p>
+          		<a href="/texts/prim2d.html">Плоские примитивы.</a></p>
+          		
+          		Линии.<p>
+
+          		Афинные преобразования<p>
+          		<a href="/texts/boolops_example.html">Булевы операции.</a></p>
+          		
+          		Рефлексия<p>
+          		
+          		<a href="/texts/trajops.html">Траекторные операции</a></p>
+          		
+          		Операции сглаживания<p>
+          		<a href="/texts/cache.html">Кэширование</a></p>
+          		
+          		Экспорт/импорт<p>
+
+          		----------------------<p>
+          		Библиотеки:<p>
+          		<a href="/texts/nut.html">Резьбовые соединения</a></p>
+          		Шестерни<p>
+
+          		----------------------<p>
+          		Примеры:<p>
+          		<a href="/texts/storage.html">Модель: Органайзер</a></p>
+          		<a href="/texts/cup_example.html">Модель: Кружка</a></p>
+
+			</nav>
+			
+			<article>
+				<link rel="stylesheet" href="/css/main.css">
+				<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env python3.5
+#coding: utf-8
+</span><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">enable_cache</span><span class="p">(</span><span class="s">".cache"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">section</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d2</span><span class="p">):</span>
+	<span class="k">return</span> <span class="p">(</span>
+		  <span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="o">+</span><span class="n">w</span><span class="p">,</span> <span class="n">t</span><span class="o">+</span><span class="n">l</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="o">+</span><span class="n">h</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">h</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="o">+</span><span class="n">d</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">l</span><span class="o">+</span><span class="n">t</span><span class="p">,</span><span class="n">h</span><span class="o">-</span><span class="n">d2</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">d2</span><span class="o">+</span><span class="n">t</span><span class="p">)</span>
+	<span class="p">)</span>
+
+<span class="c1">#n, m - параметры матрицы.
+#w,h,l - параметры нишы.
+#t - толщина стенок.
+#d - выступ поддержки.
+#d2 - высота заднего бампера.
+</span><span class="k">def</span> <span class="nf">storage</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d2</span><span class="p">):</span>
+	<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">d2</span><span class="p">)</span>
+	<span class="n">line</span> <span class="o">=</span> <span class="n">union</span><span class="p">([</span><span class="n">sect</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">w</span><span class="o">+</span><span class="n">t</span><span class="p">),</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="p">)])</span>
+
+	<span class="n">arr</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+		<span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="p">(</span><span class="n">h</span><span class="o">+</span><span class="n">t</span><span class="p">)))</span>
+
+	<span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">*</span><span class="n">m</span><span class="o">+</span><span class="n">t</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">l</span><span class="o">+</span><span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+	<span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">*</span><span class="n">m</span><span class="o">+</span><span class="n">t</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">l</span><span class="o">+</span><span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="p">(</span><span class="n">h</span><span class="o">+</span><span class="n">t</span><span class="p">)))</span>
+
+	<span class="k">return</span> <span class="n">union</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">storage</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">27</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+<p><img src="../images/storage.png" alt="sphere.png" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env python3.5
+#coding: utf-8
+</span>
+<span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">case</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
+	<span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">*</span><span class="n">s</span><span class="p">;</span>
+	<span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="o">*</span><span class="mf">0.95</span><span class="p">;</span>
+	
+	<span class="k">return</span> <span class="p">(</span>
+		  <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">h</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="p">,</span> <span class="n">l</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="p">,</span><span class="n">h</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">t</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">gr</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">w</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">t</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span><span class="n">h</span><span class="p">)</span>
+
+		<span class="o">+</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="p">,</span> <span class="n">z</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">h</span><span class="o">-</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="o">-</span><span class="n">z</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">h</span><span class="o">-</span><span class="n">r</span><span class="o">-</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="o">+</span><span class="n">z</span><span class="p">,</span><span class="o">-</span><span class="n">z</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+		<span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">h</span><span class="o">-</span><span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">t</span><span class="o">+</span><span class="n">z</span><span class="o">*</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>
+	<span class="p">)</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">case</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">27</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">l</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span><span class="n">r</span><span class="o">=</span><span class="mi">27</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mf">0.965</span><span class="p">);</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+<p><img src="../images/case.png" alt="sphere.png" /></p>
+
+			</article>
+			
+			<footer>
+				by <a href="https://mirmik.github.io">mirmik</a></p>
+			</footer>
+	
+		</div>
+	</body>
+</html>
