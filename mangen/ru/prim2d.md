@@ -53,7 +53,6 @@ ellipse(r1=major, r2=minor, angle=(start, stop), wire=True/False)
 
 ```python
 polygon(pnts=pnts, wire=True/False)
-polygon(pnts=[(0,0), (0,10), (10,0)], wire=True/False)
 ```
 ![](../images/generic/polygon0.png)
 ![](../images/generic/polygon1.png)  
