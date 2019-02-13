@@ -12,13 +12,19 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--eventdebug", action='store_true')
+parser.add_argument('paths', type=str, nargs='*', help='runned file')
 pargs = parser.parse_args()
 
 zencad.shower.__ZENCAD_EVENT_DEBUG__ = pargs.eventdebug
 
-path = os.path.join(zencad.exampledir, "helloworld.py")
-os.chdir(zencad.exampledir)
-sys.path.append(zencad.exampledir)
+if len(pargs.paths) == 0:
+	path = os.path.join(zencad.exampledir, "helloworld.py") 
+else:
+	path = os.path.join(os.getcwd(), pargs.paths[0])
+
+directory = os.path.dirname(path)11
+os.chdir(directory)
+sys.path.append(directory)
 zencad.showapi.mode = "app_fullview"
 runpy.run_path(path, run_name="__main__")
 
