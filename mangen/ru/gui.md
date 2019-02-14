@@ -26,3 +26,5 @@ ZenCad также ретранслирует вывод терминала на 
 Вращение: MouseLeftClick/Alt + MouseMove
 Смещение: MouseRightClick/Shift + MouseMove
 Масштабирование: PgUp/PgDown/MouseWheel
+
+Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - `Navigation/'Axionometric view'`, `Navigation/'Free rotation view'`
