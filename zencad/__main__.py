@@ -22,7 +22,7 @@ if len(pargs.paths) == 0:
 else:
 	path = os.path.join(os.getcwd(), pargs.paths[0])
 
-directory = os.path.dirname(path)11
+directory = os.path.dirname(path)
 os.chdir(directory)
 sys.path.append(directory)
 zencad.showapi.mode = "app_fullview"

@@ -304,7 +304,8 @@ class MainWidget(QMainWindow):
 		return act
 
 	def createActions(self):
-		self.mCreateAction = self.create_action("CreateNew...", 	self.createNewAction, 			"Create", 										"Ctrl+N")
+		self.mCreateAction =self.create_action("CreateNew...", 		self.createNewAction, 			"Create")
+		self.mCreateTemp =	self.create_action("NewTemporary", 		self.createNewTemporary, 		"CreateTemporary", 								"Ctrl+N")
 		self.mOpenAction = 	self.create_action("Open...",			self.openAction, 				"Open", 										"Ctrl+O")
 		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Save", 										)#TODO:CTRL+S
 		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+E")
@@ -356,6 +357,15 @@ class MainWidget(QMainWindow):
 			m = menu.addMenu(d)
 			self._init_example_menu(m, os.path.join(directory, d))	
 
+	def create_new_do(self, path):
+		f = open(path, "w")
+
+		f.write("#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\nm=box(10)\ndisp(m)\n\nshow()\n")
+		f.close()
+
+		self._open_routine(path)
+
+
 	def createNewAction(self):
 		filters = "*.py;;*.*";
 		defaultFilter = "*.py";
@@ -364,17 +374,18 @@ class MainWidget(QMainWindow):
 			self.laststartpath,
 			filters, defaultFilter)
 
-		print(path)
+		if path[0]=='':
+			return
 
-		f = open(path[0], "w")
+		self.create_new_do(path[0])
 
-		f.write("#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nshow()\n")
-		f.close()
-
-		self._open_routine(path[0])
+	def createNewTemporary(self):
+		tmpfl = tempfile.mktemp(".py")
+		self.create_new_do(tmpfl)
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
+		self.mFileMenu.addAction(self.mCreateTemp)
 		self.mFileMenu.addAction(self.mCreateAction)
 		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mSaveAction)
@@ -620,7 +631,7 @@ class MainWidget(QMainWindow):
 
 	def _open_routine(self, path):
 		#Проверяем, чтобы в файле был хоть намек на zencad...
-		#А то чего его открывать.
+		#А то чего его отрисовывать.
 		global started_by
 		filetext = open(path).read()
 		repattern1 = re.compile(r"import *zencad|from *zencad *import")
@@ -628,19 +639,15 @@ class MainWidget(QMainWindow):
 		zencad_search = repattern1.search(filetext)
 		print("widget: try open {}".format(path))
 
-		#edited = path
+		self.laststartpath = path
+
 		if zencad_search is not None:
-		#	self.rerun_label_on_slot()
-		#	if self.lastopened != path:
-		#		self.rescale_on_finish = True
 			if self.lastopened != path:
 				self.rescale_on_finish=True
 
 			self.lastopened = path
 			self.inotifier.init_notifier(path)
 			started_by = path
-		#	os.chdir(os.path.dirname(path))
-		#	self.external_rerun_signal.emit()
 
 		zencad.showapi.mode = "update_shower"
 		class runner(QThread):
