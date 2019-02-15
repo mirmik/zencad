@@ -175,14 +175,20 @@ class InotifyThread(QThread):
 class MainWidget(QMainWindow):
 	internal_rerun_signal = pyqtSignal()
 	external_rerun_signal = pyqtSignal()
+	kill_subprocess_signal = pyqtSignal()
 	animate_finish = pyqtSignal()
 
 	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
 		QMainWindow.__init__(self)
 		self.coords_difference_mode = False
+		self.openlock = threading.Lock()
+		self.updatelock = threading.Lock()
+		self.updatelock2 = threading.Lock()
+		self.reopen_after_finish = False
 		self.eventdebug = eventdebug
 		self.laststartpath=None
 		self.animate_thread = None
+		globals()["__THREAD__"] = None
 		#self.setMouseTracking(True)
 		self.rescale_on_finish=False
 		self.thr=None
@@ -195,8 +201,7 @@ class MainWidget(QMainWindow):
 		self.infolay = QHBoxLayout()
 
 		self.lastopened = None
-		self.setWindowTitle("zenwidget");
-		#self.setWindowIcon(QIcon(":/industrial-robot.svg"));
+		self.setWindowTitle(os.path.basename(started_by))
 
 		self.layout.setSpacing(0)
 		self.layout.setContentsMargins(0,0,0,0)
@@ -367,7 +372,7 @@ class MainWidget(QMainWindow):
 	def create_new_do(self, path):
 		f = open(path, "w")
 
-		f.write("#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\nm=box(10)\ndisp(m)\n\nshow()\n")
+		f.write("#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nm=box(10)\ndisp(m)\n\nshow()\n")
 		f.close()
 
 		self._open_routine(path)
@@ -637,16 +642,28 @@ class MainWidget(QMainWindow):
 
 		image.save(path)
 
-	def _open_routine(self, path):
+	def reopen_if_need(self):
+		if self.reopen_after_finish:
+			self.reopen_after_finish = False
+			self._open_routine(started_by, initupdate=True)
+
+	def _open_routine(self, path, initupdate=True):
 		#Проверяем, чтобы в файле был хоть намек на zencad...
 		#А то чего его отрисовывать.
+
+		print("_open_routine")
+
 		global started_by
+		
+		self.openlock.acquire()
+
 		filetext = open(path).read()
 		repattern1 = re.compile(r"import *zencad|from *zencad *import")
-		
+
 		zencad_search = repattern1.search(filetext)
 		print("widget: try open {}".format(path))
 
+		self.setWindowTitle(os.path.basename(path))
 		self.laststartpath = path
 
 		if zencad_search is not None:
@@ -657,50 +674,71 @@ class MainWidget(QMainWindow):
 			self.inotifier.init_notifier(path)
 			started_by = path
 
-		zencad.showapi.mode = "update_shower"
-		class runner(QThread):
-			rerun_signal = pyqtSignal()
-			rerun_finish_signal = pyqtSignal()
-			def run(self):
-				globals()["__THREAD__"] = self
-				print("subthread: run")
-				zencad.lazifier.restore_default_lazyopts()
-				zencad.showapi.default_scene = Scene()
-				zencad.showapi.mode = "update_scene"
-				os.chdir(os.path.dirname(path))
-				sys.path.insert(0, os.path.dirname(path))
-
-				try:
-					runpy.run_path(path, run_name="__main__")
-				except Exception as e:
-					print("subthread: failed with exception")
-					print(e) 
-
-				print("subthread: finish")
-				self.rerun_finish_signal.emit()
-
-		if self.thr is not None and self.thr.isRunning():
-			print("subthread: interrupt")
-			self.thr.terminate()
-
-
-		if self.animate_thread is not None: 
-			print("info: animate_thread terminate")
-			self.animate_finish.emit()
-			time.sleep(0.01)
-			self.animate_thread = None
-
-		self.thr = runner()
-		self.thr.rerun_signal.connect(self.rerun_context_invoke)
-		self.thr.rerun_finish_signal.connect(self.rerun_label_off_slot)
-
-		self.rerun_label_on_slot()
-		self.thr.start()
-
 		self.texteditor.open(path)
+		
+		if initupdate:
+			if globals()["__THREAD__"] is not None and globals()["__THREAD__"].isRunning():
+				self.openlock.release()
+				self.reopen_after_finish=True
+				return
+
+			zencad.showapi.mode = "update_shower"
+			class runner(QThread):
+				rerun_signal = pyqtSignal()
+				rerun_finish_signal = pyqtSignal()
+				def run(self):
+					globals()["__THREAD__"] = self
+					print("subthread: run")
+					self.setTerminationEnabled(True)
+					zencad.lazifier.restore_default_lazyopts()
+					zencad.showapi.default_scene = Scene()
+					zencad.showapi.mode = "update_scene"
+					os.chdir(os.path.dirname(path))
+					sys.path.insert(0, os.path.dirname(path))
+	
+					try:
+						runpy.run_path(path, run_name="__main__")
+					except Exception as e:
+						print("subthread: failed with exception")
+						print(e) 
+	
+					print("subthread: finish")
+					self.rerun_finish_signal.emit()
+	
+			#if self.thr is not None and self.thr.isRunning():
+			#	print("subthread: terminate")
+			#	self.thr.quit()
+			#	self.updatelock.acquire()
+			#	#self.thr.terminate()
+			#	#os.kill(globals()["__PID__"], signal.SIGTERM)
+			#	#self.kill_subprocess_signal.emit()
+			#	self.thr.wait()
+			#	print("subthread: terminate finish")
+			#	self.updatelock.release()
+	
+			if self.animate_thread is not None: 
+				print("animate_thread: terminate")
+				self.animate_finish.emit()
+				while not self.animate_thread.isFinished():
+					pass
+				print("animate_thread: terminate finish")
+				self.animate_thread = None
+	
+			self.thr = runner()
+			#self.kill_subprocess_signal.connect(self.thr.quit)
+			self.thr.rerun_signal.connect(self.rerun_context_invoke)
+			self.thr.rerun_finish_signal.connect(self.rerun_label_off_slot)
+			self.thr.rerun_finish_signal.connect(self.reopen_if_need)
+	
+			self.rerun_label_on_slot()
+			self.thr.start()
+
+		self.openlock.release()
+		print("_open_routine...ok")
 
 
 	def rerun_current(self):
+		print("rerun_current")
 		self._open_routine(started_by)
 
 	def openAction(self):
@@ -742,9 +780,8 @@ class MainWidget(QMainWindow):
 		if path[0] == '':
 			return
 
-		started_by = path[0]
 		self.texteditor.save_as(path[0])
-		self.inotifier.init_notifier(path[0])
+		self._open_routine(path[0], initupdate = False)
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
@@ -761,7 +798,6 @@ class MainWidget(QMainWindow):
 
 		#print("HERE")
 		#time.sleep(1)
-
 		self.dispw.viewer.clean_context()
 		self.dispw.viewer.set_triedron_axes()
 		self.dispw.viewer.add_scene(self.rerun_scene)
@@ -774,6 +810,8 @@ class MainWidget(QMainWindow):
 
 		if self.rerun_animate != None:
 			start_animate_thread(self.rerun_animate)
+		
+		self.updatelock2.release()
 		
 	def rerun_context(self, scn):
 		self.rerun_scene = scn
@@ -879,6 +917,10 @@ def start_animate_thread(animate):
 
 
 def update_scene(scene, animate=None, *args, **kwargs):
+	globals()["__THREAD__"].setTerminationEnabled(False)
+	main_window.updatelock.acquire()
+	main_window.updatelock2.acquire()
 	main_window.rerun_scene = scene
 	main_window.rerun_animate = animate
 	globals()["__THREAD__"].rerun_signal.emit()
+	main_window.updatelock.release()
