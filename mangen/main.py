@@ -47,12 +47,9 @@ for f in os.listdir("en"):
 
 redirect_page = dominate.document()
 with redirect_page: dominate.tags.meta(charset=u'utf-8')
-redirect_page.add(dominate.util.raw("""
-<script type="text/javascript" language="JavaScript">
-    window.location = 'ru/index.html'
-</script>"""))
+redirect_page.add(dominate.util.raw("""<meta http-equiv="refresh" content="0; url=ru/index.html" />"""))
 with redirect_page:
-	dominate.tags.p("Если ваш браузер не поддерживает JS, перейдите по ссылке:")
+	dominate.tags.p("Если ваш браузер не поддерживает redirect, перейдите по ссылке:")
 	with dominate.tags.p(): dominate.tags.a("ZenCad/ru", href="ru/index.html")
 	with dominate.tags.p(): dominate.tags.a("ZenCad/en", href="en/index.html")
 writer.build_file("index.html", redirect_page)
