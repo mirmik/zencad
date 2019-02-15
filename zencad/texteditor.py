@@ -205,6 +205,18 @@ class TextEditor(QPlainTextEdit):
 			self.rewrite = self.edited
 		except IOError as e:
 			print("cannot open {} for write: {}".format(self.edited, e))
+			return
+		f.write(self.toPlainText())
+		f.close()
+
+	def save_as(self, path):
+		try:
+			f = open(path, "w")
+			self.rewrite = path
+			self.edited = path
+		except IOError as e:
+			print("cannot open {} for write: {}".format(self.edited, e))
+			return
 		f.write(self.toPlainText())
 		f.close()
 

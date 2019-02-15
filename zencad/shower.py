@@ -137,10 +137,16 @@ class InotifyThread(QThread):
 
 	def __init__(self, parent):
 		QThread.__init__(self, parent)
+		self.notifier = None
+		self.watching = None
 
 	def init_notifier(self, path):
+		if self.notifier is not None:
+			self.notifier.remove_watch(self.watching)
+
 		self.notifier = inotify.adapters.Inotify()
 		self.notifier.add_watch(path)
+		self.watching = path
 		self.path = path
 		self.restart = True
 
@@ -307,7 +313,8 @@ class MainWidget(QMainWindow):
 		self.mCreateAction =self.create_action("CreateNew...", 		self.createNewAction, 			"Create")
 		self.mCreateTemp =	self.create_action("NewTemporary", 		self.createNewTemporary, 		"CreateTemporary", 								"Ctrl+N")
 		self.mOpenAction = 	self.create_action("Open...",			self.openAction, 				"Open", 										"Ctrl+O")
-		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Save", 										)#TODO:CTRL+S
+		self.mSaveAction = 	self.create_action("Save", 				self.saveAction, 				"Save", 										)
+		self.mSaveAs	 = 	self.create_action("SaveAs...",			self.saveAsAction, 				"SaveAs...", 									)
 		self.mTEAction = 	self.create_action("Open in Editor", 	self.externalTextEditorOpen, 	"Editor", 										"Ctrl+E")
 		self.mExitAction = 	self.create_action("Exit", 				self.close, 					"Exit", 										"Ctrl+Q")
 		self.mStlExport = 	self.create_action("Export STL...", 	self.exportStlAction, 			"Export file with external STL-Mesh format")
@@ -389,6 +396,7 @@ class MainWidget(QMainWindow):
 		self.mFileMenu.addAction(self.mCreateAction)
 		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mSaveAction)
+		self.mFileMenu.addAction(self.mSaveAs)
 		self.exampleMenu = self.mFileMenu.addMenu("Examples")
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
@@ -718,6 +726,25 @@ class MainWidget(QMainWindow):
 
 	def saveAction(self):
 		self.texteditor.save()
+
+	def saveAsAction(self):
+		global started_by
+
+		filters = "*.py;;*.*";
+		defaultFilter = "*.py";
+
+		startpath = QDir.currentPath() if self.lastopened == None else os.path.dirname(self.lastopened)
+
+		path = QFileDialog.getSaveFileName(self, "Open File", 
+			startpath,
+			filters, defaultFilter)
+
+		if path[0] == '':
+			return
+
+		started_by = path[0]
+		self.texteditor.save_as(path[0])
+		self.inotifier.init_notifier(path[0])
 
 	def aboutAction(self):
 		QMessageBox.about(self, self.tr("About ZenCad Shower"),
