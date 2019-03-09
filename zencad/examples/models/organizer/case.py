@@ -18,7 +18,8 @@ def case(w,h,l,t,r,z,s):
 		- box(w-2*t-6*z, z, h-r-2*z).translate(t+z*3,-2*z,2*z)
 	)
 
-m = case(w=27,h=20,l=64,t=1.5,r=27/2-4,z=1,s=0.965);
+if __name__ == "__main__":
+	m = case(w=27,h=20,l=64,t=1.5,r=27/2-4,z=1,s=0.965);
 
-display(m)
-show()
+	display(m)
+	show()

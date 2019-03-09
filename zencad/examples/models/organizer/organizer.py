@@ -17,7 +17,7 @@ def section(w, h, l, t, d, d2):
 #t - толщина стенок.
 #d - выступ поддержки.
 #d2 - высота заднего бампера.
-def storage(m, n, w, h, l, t, d, d2):
+def organizer(m, n, w, h, l, t, d, d2):
 	sect = section(w,h,l,t,d,d2)
 	line = union([sect.translate(j*(w+t),0,0) for j in range(0, m)])
 
@@ -30,7 +30,9 @@ def storage(m, n, w, h, l, t, d, d2):
 
 	return union(arr)
 
-m = storage(3,5,27,20,64,1.5,5,5)
 
-display(m)
-show()
+if __name__ == "__main__":
+	m = storage(3,5,27,20,64,1.5,5,5)
+
+	display(m)
+	show()
