@@ -32,7 +32,7 @@ def organizer(m, n, w, h, l, t, d, d2):
 
 
 if __name__ == "__main__":
-	m = storage(3,5,27,20,64,1.5,5,5)
+	m = organizer(3,5,27,20,64,1.5,5,5)
 
 	display(m)
 	show()

@@ -52,21 +52,31 @@
 </nav>
       <article class="article"><h1>Экспорт/Импорт</h1>
 
-<p>Операции экспорта реализованы с применением evalcache.lazyfile,
-что позволяет избежать множественных загрухок крайней ноды.</p>
-
-<p>Политика хеширования в случае импорта требует учета возможности изменения
-файла. Поэтому в хэш загружаемого объекта подмешивается дата его модификации. 
-Объект не кешируется, потому как операция восстановления из кэша
-ничем не отличается от загрузки из файла.</p>
+<p>Операции экспорта/импорта отличаются от большинства операций библиотеки zencad тем, что производятся не только над объектами в памяти программы, но и над файлами. Для работы с файлами библиотека кэширования evalcache использует специальный механизм. Благодаря ему операции импорта учитывают изменения содержимого файлов, а операции экспорта не выполняются без необходимости.</p>
 
 <hr />
 
 <h2>STL</h2>
 
+<p>Создать файл мешсети формата STL, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>. 
+Параметр <code>delta</code> определяет степень детализации. Чем меньше <code>delta</code>, тем меньше размер полигонов.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">to_stl</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+</code></pre></div>
+
 <hr />
 
 <h2>BREP</h2>
+
+<p>Создать файл brep представления формата BREP, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>. </p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">to_brep</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Считать файл brep представления формата BREP, находящийся по пути <code>path</code>. Вернуть полученную модель.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">from_brep</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>

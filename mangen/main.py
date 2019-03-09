@@ -6,7 +6,7 @@ import markdown2
 import writer
 import os
 
-def page_generate(path, title, mdpath, navpath):
+def page_generate(path, title, mdpath, navpath, comming=False):
 	page = dominate.document(title = title)
 	with page: dominate.tags.meta(charset=u'utf-8')
 	
@@ -33,6 +33,7 @@ def page_generate(path, title, mdpath, navpath):
 		dominate.util.raw(markdown2.markdown(open(navpath).read()))
 	
 	with article:
+		if comming: article.add("English version in preparation. COMMING SOON.")
 		dominate.util.raw(markdown2.markdown(open(mdpath).read(), extras=["fenced-code-blocks"]))
 
 	writer.build_file(path, page)
@@ -43,7 +44,7 @@ for f in os.listdir("ru"):
 
 for f in os.listdir("en"):
 	target = os.path.splitext(f)[0]+".html"
-	page_generate("en/"+target, "ZenCad", os.path.join("en", f), "en/nav.md")
+	page_generate("en/"+target, "ZenCad", os.path.join("en", f), "en/nav.md", comming=True)
 
 redirect_page = dominate.document()
 with redirect_page: dominate.tags.meta(charset=u'utf-8')
