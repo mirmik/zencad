@@ -21,7 +21,7 @@ def pipe_shell(prof, path, frenet = False):
 
 @lazy.lazy(cls=shape_generator)
 def sweep(shp, traj, frenet = False):
-	return pyservoce.make_pipe_shell(shp, path, frenet)
+	return pyservoce.make_pipe_shell(shp, traj, frenet)
 
 @lazy.lazy(cls=shape_generator)
 def loft(arr, smooth=False):
