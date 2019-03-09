@@ -21,7 +21,7 @@ n=5
 st = organizer.organizer(m,n,w,h,l,t,d,d2)
 cs = case.case(w,h,l,t,r,z,s)
 
-ucs = union([cs.translate(t+(w+t)*i, 0, t+(h+t)*j) for i in range(0, m) for j in range(0,n)])
+ucs = union([cs.translate(t*1.5+(w+t)*i, 0, t+(h+t)*j) for i in range(0, m) for j in range(0,n)])
 
 disp(ucs)
 disp(st, color(1,1,1))
