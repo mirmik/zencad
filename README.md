@@ -35,3 +35,7 @@ m = box(10,10,10) + sphere(5).translate(5,5,10)
 display(m)
 show()
 ```
+
+Articles
+--------
+habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
