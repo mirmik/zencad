@@ -2,6 +2,9 @@
 #coding: utf-8
 
 from zencad import *
+lazy.encache = False
+lazy.decache = False
+lazy.fastdo = True
 lazy.diag = True
 
 c1 = 100
