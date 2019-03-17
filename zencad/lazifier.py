@@ -7,7 +7,7 @@ import pyservoce
 import hashlib
 import os
 
-from zencad.util import points
+from zencad.util import points, vector3, point3
 
 cachepath = os.path.expanduser("~/.zencadcache")
 algo = hashlib.sha512
@@ -22,6 +22,7 @@ class LazyObjectShape(evalcache.LazyObject):
 	def left 		(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.left 	, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
 	def right 		(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.right 	, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
 	def back 		(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.back 	, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
+	def rotate		(self, ax, angle): 			return self.lazyinvoke(pyservoce.Shape.rotate 	, (self, vector3(ax), angle), {}, encache=False, decache=False, cls=LazyObjectShape)
 	def rotateX		(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.rotateX 	, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
 	def rotateY		(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.rotateY 	, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
 	def rotateZ		(self, *args, **kwargs): 	return self.lazyinvoke(pyservoce.Shape.rotateZ 	, (self, *args), kwargs, encache=False, decache=False, cls=LazyObjectShape)
