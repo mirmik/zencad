@@ -10,6 +10,7 @@ import zencad
 import prim1d_test
 import prim2d_test
 import prim3d_test
+import math_test
 	
 def execute_test(test):
 	print()
@@ -20,3 +21,4 @@ if __name__ == '__main__':
 	execute_test(prim1d_test)
 	execute_test(prim2d_test)
 	execute_test(prim3d_test)
+	execute_test(math_test)
