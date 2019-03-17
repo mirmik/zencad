@@ -16,6 +16,8 @@ class Prim3dProbber(unittest.TestCase):
 			point3(10.000000,20.000000,30.000000)
 		]
 
+		print(m.vertices().unlazy())
+
 		self.assertEqual(m.vertices().unlazy(), test)
 
 	def test_cylinder(self):
