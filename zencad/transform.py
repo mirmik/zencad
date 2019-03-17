@@ -1,7 +1,7 @@
 import pyservoce
 import evalcache
 
-from zencad.util import deg, point3
+from zencad.util import deg, point3, vector3
 from zencad.lazifier import lazy, LazyObjectShape
 from zencad.boolean import *
 
@@ -52,6 +52,9 @@ def forw(*args, **kwargs): return pyservoce.forw(*args, **kwargs)
 
 @lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)
 def back(*args, **kwargs): return pyservoce.back(*args, **kwargs)
+
+@lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)
+def rotate(ax, angle): return pyservoce.rotate(vector3(ax), angle)
 
 @lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)
 def rotateX(*args, **kwargs): return pyservoce.rotateX(*args, **kwargs)
