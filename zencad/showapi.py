@@ -8,9 +8,9 @@ mode = None
 
 def display(shp, color = Color(0.6, 0.6, 0.8)):
 	if isinstance(shp, evalcache.LazyObject):
-		return default_scene.add(evalcache.unlazy(shp), color)
-	else:
-		return default_scene.add(shp, color)
+		shp = evalcache.unlazy(shp)
+
+	return default_scene.add(shp, color)
 
 def disp(*args,**kwargs): return display(*args, **kwargs)
 
