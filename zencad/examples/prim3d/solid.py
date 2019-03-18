@@ -2,7 +2,8 @@
 #coding: utf-8
 
 from zencad import *
-test_mode()
+zencad.lazy.fastdo = True
+zencad.lazy.decache = False
 
 box_a=10
 box_b=10
