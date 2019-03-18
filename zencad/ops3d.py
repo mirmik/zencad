@@ -7,21 +7,21 @@ from zencad.util import points, vector3
 def linear_extrude(shp, vec, center=False):
 	if isinstance(vec, (int, float)):
 		vec = vector3(0,0,vec)
-	return pyservoce.make_linear_extrude(shp, vector3(vec), center)
+	return pyservoce.linear_extrude(shp, vector3(vec), center)
 
 def extrude(vec): return linear_extrude(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
 def pipe(prof, path):
-	return pyservoce.make_pipe(prof, path)
+	return pyservoce.pipe(prof, path)
 
 @lazy.lazy(cls=shape_generator)
 def pipe_shell(prof, path, frenet = False):
-	return pyservoce.make_pipe_shell(prof, path, frenet)
+	return pyservoce.pipe_shell(prof, path, frenet)
 
 @lazy.lazy(cls=shape_generator)
 def sweep(shp, traj, frenet = False):
-	return pyservoce.make_pipe_shell(shp, traj, frenet)
+	return pyservoce.pipe_shell(shp, traj, frenet)
 
 @lazy.lazy(cls=shape_generator)
 def loft(arr, smooth=False):

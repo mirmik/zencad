@@ -64,10 +64,7 @@ def cylinder(r, h, center=False, yaw=None):
 
 @lazy.lazy(cls=nocached_shape_generator)
 def cone(r1, r2, h, center = False, yaw=None): 
-	if yaw is None:
-		return pyservoce.cone(r1,r2,h,center)
-	else:
-		return pyservoce.cone(r1,r2,h,0,yaw,center)
+	return pyservoce.cone(r1=r1, r2=r2, h=h, yaw=yaw, center=center)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
