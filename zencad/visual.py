@@ -1,7 +1,7 @@
 import zencad
 import zencad.shower
 import numpy as np
-from pyservoce import Scene, Viewer
+from pyservoce import Scene
 
 from PIL import Image
 

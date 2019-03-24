@@ -5,7 +5,7 @@ import zencad.viewadaptor
 import zencad.lazifier 
 import pyservoce
 import evalcache
-from pyservoce import Scene, View, Viewer, Color
+from pyservoce import Scene, View, Color
 
 import tempfile
 import sys
@@ -57,6 +57,8 @@ FUTURE = None
 SUBPROCESPID = None
 __INVOKER__ = None
 __ZENCAD_EVENT_DEBUG__ = False
+
+ANIMATE_THREAD = None
 
 def kill_subprocess():
 	os.kill(SUBPROCESPID, signal.SIGTERM)
@@ -834,6 +836,7 @@ class update_loop(QThread):
 		self.cancelled = True
 
 	def run(self):
+		time.sleep(0.1)
 		while 1:
 			ensave = zencad.lazy.encache 
 			desave = zencad.lazy.decache
@@ -850,14 +853,14 @@ class update_loop(QThread):
 				zencad.lazy.decache = desave
 				zencad.lazy.diag = diag
 
-				mutex = QMutex()
+				#mutex = QMutex()
 				self.wdg.animate_updated.clear()
 				self.after_update_signal.emit()
-				if self.cancelled:
-					mutex.unlock()
-					return				
+				#if self.cancelled:
+				#	mutex.unlock()
+				#	return				
 				self.wdg.animate_updated.wait()
-				mutex.unlock()
+				#mutex.unlock()
 				
 				if self.cancelled:
 					return
@@ -909,11 +912,14 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 #	pass
 
 def start_animate_thread(animate):
+	global ANIMATE_THREAD
 	thr = update_loop(main_window, animate)
+	ANIMATE_THREAD = thr
 	main_window.animate_thread = thr
 	main_window.animate_finish.connect(thr.finish)
-	thr.after_update_signal.connect(main_window.dispw.redraw)
+	thr.after_update_signal.connect(main_window.dispw.continuous_redraw)
 	thr.start()
+
 
 
 def update_scene(scene, animate=None, *args, **kwargs):
