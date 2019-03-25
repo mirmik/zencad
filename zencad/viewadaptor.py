@@ -310,3 +310,18 @@ class DisplayWidget(QWidget):
 			self.zoom_up()
 		if event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
 			self.zoom_down()
+
+	def change_scene(self, newscene):
+		oldscene = self.scene
+		oldviewer = self.viewer
+		oldview = self.view
+
+		self.scene = newscene
+		self.viewer = self.scene.viewer
+		self.view = self.viewer.create_view()
+		self.view.set_window(self.winId())
+
+		self.view.set_gradient()
+		self.set_orient1()
+		self.view.set_triedron()
+		self.viewer.set_triedron_axes()
