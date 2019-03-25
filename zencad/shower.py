@@ -800,9 +800,11 @@ class MainWidget(QMainWindow):
 
 		#print("HERE")
 		#time.sleep(1)
-		self.dispw.viewer.clean_context()
-		self.dispw.viewer.set_triedron_axes()
-		self.dispw.viewer.add_scene(self.rerun_scene)
+		#self.dispw.viewer.clean_context()
+		#self.dispw.viewer.set_triedron_axes()
+		#self.dispw.viewer.add_scene(self.rerun_scene)
+		self.dispw.change_scene(self.rerun_scene)
+
 		self.dispw.scene = self.rerun_scene
 		if self.rescale_on_finish:
 			self.rescale_on_finish = False
