@@ -31,15 +31,6 @@ import math
 
 import zencad.texteditor
 
-text_editor = "subl"
-main_window = None
-started_by = None
-edited = None
-diag = None
-ensave = None
-desave = None
-onplace = None
-
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (#"\n"
 			"███████╗███████╗███╗   ██╗ ██████╗ █████╗ ██████╗ \n"
@@ -52,44 +43,14 @@ BANNER_TEXT = (#"\n"
 QMARKER_MESSAGE = "Press 'Q' to set marker"
 WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
-RAWSTDOUT = None
-FUTURE = None
-SUBPROCESPID = None
-__INVOKER__ = None
 __ZENCAD_EVENT_DEBUG__ = False
-
 ANIMATE_THREAD = None
-
-def kill_subprocess():
-	os.kill(SUBPROCESPID, signal.SIGTERM)
 
 def show_label(lbl, en):
 	if (en):
 		lbl.setHidden(False)
 	else:
 		lbl.setHidden(True)
-
-#class TextEditor(QPlainTextEdit):
-#	def __init__(self):
-#		QPlainTextEdit.__init__(self)
-#
-#	def save(self):
-#		try:
-#			f = open(edited, "w")
-#		except IOError as e:
-#			print("cannot open {} for write: {}".format(edited, e))
-#		f.write(self.toPlainText())
-#		f.close()
-#
-#	def update_text_field(self):
-#		filetext = open(started_by).read()
-#		self.setPlainText(filetext)
-#
-#	def keyPressEvent(self, event):
-#		if event.key() == Qt.Key_S and QApplication.keyboardModifiers() == Qt.ControlModifier:
-#			self.save()
-#
-#		QPlainTextEdit.keyPressEvent(self, event)
 
 class ConsoleWidget(QTextEdit):
 	append_signal = pyqtSignal(str)
@@ -105,7 +66,6 @@ class ConsoleWidget(QTextEdit):
 
 		self.cursor = self.textCursor();
 		self.setReadOnly(True)
-		#self.fork.newdata.connect(self.append)
 		
 		font = QFont();
 		font.setFamily("Monospace")
@@ -338,7 +298,7 @@ class MainWidget(QMainWindow):
 		self.mTestAction = 	self.create_action("TestAction", 		self.testAction, 				"TestAction")
 		self.mInvalCache = 	self.create_action("Invalidate cache", 	self.invalidateCacheAction, 	"Invalidate cache")
 		self.mCacheInfo = 	self.create_action("Cache info", 		self.cacheInfoAction, 			"Cache info")
-		self.mFinishSub = 	self.create_action("Finish subprocess", self.finishSubProcess, 			"Finish subprocess")
+		#self.mFinishSub = 	self.create_action("Finish subprocess", self.finishSubProcess, 			"Finish subprocess")
 		self.mDebugInfo = 	self.create_action("Debug info", 		self.debugInfoAction, 			"Debug info")
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
@@ -428,7 +388,7 @@ class MainWidget(QMainWindow):
 		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mInvalCache)
-		self.mUtilityMenu.addAction(self.mFinishSub)
+		#self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
 		#self.mViewMenu.addAction(self.mDisplayFullScreen)
@@ -440,10 +400,6 @@ class MainWidget(QMainWindow):
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
 		self.mHelpMenu.addAction(self.mWebManual)
-
-		#self.mHelpMenu = self.menuBar().addMenu(self.tr("&Devel"))
-		#self.mHelpMenu.addAction(self.mTestAction)
-		#self.mHelpMenu.addAction(self.mDebugInfo)
 	
 	def coordsDifferenceMode(self, en):
 		self.coords_difference_mode = en
@@ -497,9 +453,6 @@ class MainWidget(QMainWindow):
 
 	def externalTextEditorOpen(self):
 		os.system(text_editor + " " + started_by)
-
-	def finishSubProcess(self):
-		kill_subprocess()
 
 	def testAction(self):
 		pass
@@ -707,17 +660,6 @@ class MainWidget(QMainWindow):
 					print("subthread: finish")
 					self.rerun_finish_signal.emit()
 	
-			#if self.thr is not None and self.thr.isRunning():
-			#	print("subthread: terminate")
-			#	self.thr.quit()
-			#	self.updatelock.acquire()
-			#	#self.thr.terminate()
-			#	#os.kill(globals()["__PID__"], signal.SIGTERM)
-			#	#self.kill_subprocess_signal.emit()
-			#	self.thr.wait()
-			#	print("subthread: terminate finish")
-			#	self.updatelock.release()
-	
 			if self.animate_thread is not None: 
 				print("animate_thread: terminate")
 				self.animate_finish.emit()
@@ -727,7 +669,6 @@ class MainWidget(QMainWindow):
 				self.animate_thread = None
 	
 			self.thr = runner()
-			#self.kill_subprocess_signal.connect(self.thr.quit)
 			self.thr.rerun_signal.connect(self.rerun_context_invoke)
 			self.thr.rerun_finish_signal.connect(self.rerun_label_off_slot)
 			self.thr.rerun_finish_signal.connect(self.reopen_if_need)
@@ -797,12 +738,6 @@ class MainWidget(QMainWindow):
 			"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)));
 
 	def rerun_context_invoke(self):
-
-		#print("HERE")
-		#time.sleep(1)
-		#self.dispw.viewer.clean_context()
-		#self.dispw.viewer.set_triedron_axes()
-		#self.dispw.viewer.add_scene(self.rerun_scene)
 		self.dispw.change_scene(self.rerun_scene)
 
 		self.dispw.scene = self.rerun_scene
@@ -836,6 +771,8 @@ class update_loop(QThread):
 
 	def finish(self):
 		self.cancelled = True
+		self.wdg.animate_updated.set()
+		print("self.cancelled was set")
 
 	def run(self):
 		time.sleep(0.1)
@@ -855,14 +792,12 @@ class update_loop(QThread):
 				zencad.lazy.decache = desave
 				zencad.lazy.diag = diag
 
-				#mutex = QMutex()
 				self.wdg.animate_updated.clear()
+				if self.cancelled:
+					return
+
 				self.after_update_signal.emit()
-				#if self.cancelled:
-				#	mutex.unlock()
-				#	return				
 				self.wdg.animate_updated.wait()
-				#mutex.unlock()
 				
 				if self.cancelled:
 					return
@@ -906,12 +841,6 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 		
 	return app.exec()
 
-#def update_show(scene, animate = None, pause_time = 0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
-#	if animate != None:
-#		raise Exception("Animate is not supported in subprocess. You should execute this script from terminal.") 
-#	globals()["ZENCAD_return_scene"] = (scene.shapes_array(), scene.color_array())
-	#main_window.rerun_context(scene)
-#	pass
 
 def start_animate_thread(animate):
 	global ANIMATE_THREAD
@@ -921,7 +850,6 @@ def start_animate_thread(animate):
 	main_window.animate_finish.connect(thr.finish)
 	thr.after_update_signal.connect(main_window.dispw.continuous_redraw)
 	thr.start()
-
 
 
 def update_scene(scene, animate=None, *args, **kwargs):

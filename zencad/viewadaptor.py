@@ -47,7 +47,11 @@ class DisplayWidget(QWidget):
 
 	def continuous_redraw(self):
 		if time.time() - self.last_redraw > 0.01:
+			print("redraw")
 			self.redraw()
+		else:
+			print("skip redraw")
+			self.animate_updated.set()
 
 	def reset_orient1(self):		
 		self.orient = 1
