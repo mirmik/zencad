@@ -34,7 +34,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
 			else:
 				scn.add(mod)
 
-	viewer = Viewer(scn)
+	viewer = scn.viewer
 	if triedron:
 		viewer.set_triedron_axes()
 	view = viewer.create_view()
