@@ -31,7 +31,7 @@ def vector3(*arg):
 	return pyservoce.vector3(*arg)
 
 def points(tpls):
-	return [ point3(t) for t in tpls ]
+	return [ point3(*t) for t in tpls ]
 
 def vectors(tpls):
-	return [ vector3(t) for t in tpls ]
+	return [ vector3(*t) for t in tpls ]
