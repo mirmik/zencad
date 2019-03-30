@@ -40,8 +40,16 @@ class DisplayWidget(QWidget):
 		self.animate_updated = threading.Event()
 
 	def redraw(self):
+		self.animate_updated.clear()
 		self.view.redraw()
+		self.last_redraw = time.time()
 		self.animate_updated.set()
+
+	def continuous_redraw(self):
+		if time.time() - self.last_redraw > 0.01:
+			self.redraw()
+		else:
+			self.animate_updated.set()
 
 	def reset_orient1(self):		
 		self.orient = 1
@@ -106,7 +114,7 @@ class DisplayWidget(QWidget):
 				self.MarkerWController = self.scene.add(self.msphere, zencad.Color(0,1,0))
 				zencad.lazifier.restore_lazy()
 
-			self.viewer = zencad.Viewer(self.scene)
+			self.viewer = self.scene.viewer
 			self.view = self.viewer.create_view()
 			self.view.set_window(self.winId())
 			self.view.set_gradient()
@@ -304,3 +312,18 @@ class DisplayWidget(QWidget):
 			self.zoom_up()
 		if event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
 			self.zoom_down()
+
+	def change_scene(self, newscene):
+		oldscene = self.scene
+		oldviewer = self.viewer
+		oldview = self.view
+
+		self.scene = newscene
+		self.viewer = self.scene.viewer
+		self.view = self.viewer.create_view()
+		self.view.set_window(self.winId())
+
+		self.view.set_gradient()
+		self.set_orient1()
+		self.view.set_triedron()
+		self.viewer.set_triedron_axes()
