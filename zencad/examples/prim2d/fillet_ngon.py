@@ -16,23 +16,19 @@ print(ng.vertices().unlazy())
 
 # Fillter all vertices
 print("m1:")
-m1 = ngon(r = 10, n = 6).fillet(radius)
-m1.unlazy()
+m1 = ngon(r = 10, n = 6).fillet2d(radius)
 
 # Generator can be used for array filtering
 print("m2:")
-m2 = ng.fillet(radius, [v for v in ng.vertices() if v.x < 0])
-m2.unlazy()
+m2 = ng.fillet2d(radius, [v for v in ng.vertices() if v.x < 0])
 
 # We can use lazy lambda for improve caching algorithm
 print("m3:")
-m3 = ng.fillet(radius, lazy(lambda: [v for v in ng.vertices() if v.y < 0])())
-m3.unlazy()
+m3 = ng.fillet2d(radius, lazy(lambda: [v for v in ng.vertices() if v.y < 0])())
 
 # One more syntax variant (and inaccuracy of float when comparing)
 print("m4:")
-m4 = ng.fillet(radius, evalcache.select(ng.vertices(), lambda v: abs(v.y) < 0.001))
-m4.unlazy()
+m4 = ng.fillet2d(radius, evalcache.select(ng.vertices(), lambda v: abs(v.y) < 0.001))
 
 # Advanced version with indexing of sorted array of points
 print("m5:")
@@ -47,8 +43,8 @@ def comparator(a,b):
 	return 0
 
 vtxs = sorted(ng.vertices(), key=functools.cmp_to_key(comparator))
-m5 = fillet(ng, radius, [vtxs[0], vtxs[3], vtxs[4]])
-m5 = fillet(m5, radius2, [vtxs[1], vtxs[2], vtxs[5]])
+m5 = fillet2d(ng, radius, [vtxs[0], vtxs[3], vtxs[4]])
+m5 = fillet2d(m5, radius2, [vtxs[1], vtxs[2], vtxs[5]])
 
 print("display:")
 display(m1)
