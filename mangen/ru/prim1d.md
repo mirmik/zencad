@@ -22,7 +22,7 @@ polysegment(pnts, closed=True/False)
 ## Interpolate
 Инструмент для построения bspline по набору точек `pnts`. Также можно указать тангенсы `tangs` линии в каждой точке (нулевой мектор соответствует неуказанному тангенсу). Установка флага `closed` добавляет замыкающий участок кривой.
 ```python
-interpolate(pnts, tangs=[], closed=False):
+interpolate(pnts, tangs=[], closed=False)
 ```
 ![](../images/generic/interpolate0.png)
 ![](../images/generic/interpolate1.png)  
@@ -43,8 +43,8 @@ circle_arc(p1, p2, p3)
 Восходящая спираль. Задается радиусом, высотой и шагом витка. При установке опции `left`, меняет правую навивку на левую. При установке angle, радиус линейно меняется со сменой высоты.
 
 ```python
-helix(r, h, step, left=True/False):
-helix(r, h, step, angle=angle, left=True/False):
+helix(r, h, step, left=True/False)
+helix(r, h, step, angle=angle, left=True/False)
 ```
 ![](../images/generic/helix0.png)
 ![](../images/generic/helix1.png)  

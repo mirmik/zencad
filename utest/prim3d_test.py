@@ -1,11 +1,7 @@
 import unittest
 import zencad
 
-zencad.lazy.encache=False
-zencad.lazy.decache=False
-zencad.lazy.fastdo=True
-
-class Prim3dProbber(unittest.TestCase):
+class Prim3dprobe(unittest.TestCase):
 	def setUp(self):
 		zencad.lazy.encache=False
 		zencad.lazy.decache=False
@@ -39,7 +35,7 @@ class Prim3dProbber(unittest.TestCase):
 
 		self.assertEqual(m.vertices().unlazy(), test)
 
-	def test_box_probber(self):
+	def test_box_probe(self):
 		a=zencad.box(10,10,10).unlazy()
 		b=zencad.box(size=(10,10,10)).unlazy()
 		c=zencad.box(10).unlazy()
@@ -52,7 +48,7 @@ class Prim3dProbber(unittest.TestCase):
 		self.assertEqual(a.vertices(), b.vertices())
 		self.assertEqual(c.vertices(), b.vertices())
 
-	def test_sphere_probber(self):
+	def test_sphere_probe(self):
 		radius = 20
 		minPitch = zencad.deg(-10) 
 		maxPitch = zencad.deg(20)
@@ -63,7 +59,7 @@ class Prim3dProbber(unittest.TestCase):
 		zencad.sphere(r=radius, pitch=(minPitch, maxPitch)).unlazy()
 		zencad.sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
 
-	def test_cylinder_probber(self):
+	def test_cylinder_probe(self):
 		radius = 20
 		height = 30
 		yaw = zencad.deg(130)
@@ -72,7 +68,7 @@ class Prim3dProbber(unittest.TestCase):
 		zencad.cylinder(r=radius, h=height, center=False).unlazy()
 		zencad.cylinder(r=radius, h=height, yaw=yaw, center=False).unlazy()
 
-	def test_cone_probber(self):
+	def test_cone_probe(self):
 		topRadius=20
 		botRadius=10
 		height=30
@@ -88,7 +84,7 @@ class Prim3dProbber(unittest.TestCase):
 		zencad.cone(r1=0, r2=topRadius, h=height, center=False).unlazy()
 		zencad.cone(r1=botRadius, r2=0, h=height, center=False).unlazy()
 
-	def test_torus_probber(self):
+	def test_torus_probe(self):
 		centralRadius = 20
 		localRadius = 3
 		yaw=zencad.deg(130)
@@ -101,11 +97,11 @@ class Prim3dProbber(unittest.TestCase):
 		zencad.torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch)).unlazy()
 		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
 
-	def test_halfspace_probber(self):
+	def test_halfspace_probe(self):
 		(zencad.sphere(r=10) - zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
 		(zencad.sphere(r=10) ^ zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
 
-	def test_union_probber(self):
+	def test_union_probe(self):
 		a = zencad.box(10)
 		b = zencad.sphere(10)
 		c = zencad.cone(5,2,h=20)
@@ -119,7 +115,7 @@ class Prim3dProbber(unittest.TestCase):
 		self.assertEqual(f1.vertices().unlazy(), f3.vertices().unlazy())
 		self.assertEqual(f1.vertices().unlazy(), f4.vertices().unlazy())
 
-	def test_intersect_probber(self):
+	def test_intersect_probe(self):
 		a = zencad.box(10)
 		b = zencad.sphere(10)
 		c = zencad.cone(5,2,h=20)
@@ -134,7 +130,7 @@ class Prim3dProbber(unittest.TestCase):
 		self.assertEqual(f1.vertices().unlazy(), f4.vertices().unlazy())
 
 
-	def test_difference_probber(self):
+	def test_difference_probe(self):
 		a = zencad.box(10)
 		b = zencad.sphere(10)
 		c = zencad.cone(5,2,h=20)
