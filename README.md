@@ -1,7 +1,7 @@
 # zencad
 CAD system for righteous zen programmers
 
-![https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/logo.png](https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/logo.png)
+![https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/logo.png](https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/car.png)
 
 What is it?
 -----------
