@@ -2,6 +2,7 @@ import math
 #import lazy_import
 
 import pyservoce
+from pyservoce import unify
 from pyservoce import point3, vector3
 from pyservoce import Scene, View, Color
 from pyservoce import Color as color
@@ -67,4 +68,5 @@ def near_face(*args, **kwargs): return pyservoce.near_face(*args, **kwargs)
 @lazy.lazy(cls=shape_generator)
 def near_vertex(*args, **kwargs): return pyservoce.near_vertex(*args, **kwargs)
 
-
+@lazy.lazy(cls=shape_generator)
+def unify(shp): return pyservoce.unify(shp)
