@@ -83,7 +83,7 @@
 
 <p>Инструмент для построения bspline по набору точек <code>pnts</code>. Также можно указать тангенсы <code>tangs</code> линии в каждой точке (нулевой мектор соответствует неуказанному тангенсу). Установка флага <code>closed</code> добавляет замыкающий участок кривой.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[],</span> <span class="n">closed</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[],</span> <span class="n">closed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/interpolate0.png" alt="" />
@@ -108,8 +108,8 @@
 
 <p>Восходящая спираль. Задается радиусом, высотой и шагом витка. При установке опции <code>left</code>, меняет правую навивку на левую. При установке angle, радиус линейно меняется со сменой высоты.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">):</span>
-<span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/helix0.png" alt="" />
