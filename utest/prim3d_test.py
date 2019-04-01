@@ -1,19 +1,28 @@
 import unittest
-from zencad import *
+import zencad
+
+zencad.lazy.encache=False
+zencad.lazy.decache=False
+zencad.lazy.fastdo=True
 
 class Prim3dProbber(unittest.TestCase):
+	def setUp(self):
+		zencad.lazy.encache=False
+		zencad.lazy.decache=False
+		zencad.lazy.fastdo=True
+
 	def test_box(self):
-		m = box(10,20,30)
+		m = zencad.box(10,20,30)
 
 		test = set([
-			point3(0.000000,0.000000,0.000000), 
-			point3(0.000000,0.000000,30.000000), 
-			point3(0.000000,20.000000,0.000000), 
-			point3(0.000000,20.000000,30.000000), 
-			point3(10.000000,0.000000,0.000000), 
-			point3(10.000000,0.000000,30.000000), 
-			point3(10.000000,20.000000,0.000000), 
-			point3(10.000000,20.000000,30.000000)
+			zencad.point3(0.000000,0.000000,0.000000), 
+			zencad.point3(0.000000,0.000000,30.000000), 
+			zencad.point3(0.000000,20.000000,0.000000), 
+			zencad.point3(0.000000,20.000000,30.000000), 
+			zencad.point3(10.000000,0.000000,0.000000), 
+			zencad.point3(10.000000,0.000000,30.000000), 
+			zencad.point3(10.000000,20.000000,0.000000), 
+			zencad.point3(10.000000,20.000000,30.000000)
 		])
 
 		vertices = m.vertices().unlazy()
@@ -21,11 +30,120 @@ class Prim3dProbber(unittest.TestCase):
 		self.assertEqual(set(test), set(vertices))		
 
 	def test_cylinder(self):
-		m = cylinder(r = 10, h = 20)
+		m = zencad.cylinder(r = 10, h = 20)
 
 		test = [
-			point3(10.000000,-0.000000, 0.000000), 
-			point3(10.000000,-0.000000, 20.000000)
+			zencad.point3(10.000000,-0.000000, 0.000000), 
+			zencad.point3(10.000000,-0.000000, 20.000000)
 		]
 
 		self.assertEqual(m.vertices().unlazy(), test)
+
+	def test_box_probber(self):
+		a=zencad.box(10,10,10).unlazy()
+		b=zencad.box(size=(10,10,10)).unlazy()
+		c=zencad.box(10).unlazy()
+		self.assertEqual(a.vertices(), b.vertices())
+		self.assertEqual(c.vertices(), b.vertices())
+		
+		a=zencad.box(10,10,10, center=True).unlazy()
+		b=zencad.box(size=(10,10,10), center=True).unlazy()
+		c=zencad.box(10, center=True).unlazy()
+		self.assertEqual(a.vertices(), b.vertices())
+		self.assertEqual(c.vertices(), b.vertices())
+
+	def test_sphere_probber(self):
+		radius = 20
+		minPitch = zencad.deg(-10) 
+		maxPitch = zencad.deg(20)
+		yaw = zencad.deg(130)
+
+		zencad.sphere(r=radius).unlazy()
+		zencad.sphere(r=radius, yaw=yaw).unlazy()
+		zencad.sphere(r=radius, pitch=(minPitch, maxPitch)).unlazy()
+		zencad.sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
+
+	def test_cylinder_probber(self):
+		radius = 20
+		height = 30
+		yaw = zencad.deg(130)
+		zencad.cylinder(r=radius, h=height, center=True).unlazy()
+		zencad.cylinder(r=radius, h=height, yaw=yaw, center=True).unlazy()
+		zencad.cylinder(r=radius, h=height, center=False).unlazy()
+		zencad.cylinder(r=radius, h=height, yaw=yaw, center=False).unlazy()
+
+	def test_cone_probber(self):
+		topRadius=20
+		botRadius=10
+		height=30
+		yaw=zencad.deg(130)
+
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, center=True).unlazy()
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=True).unlazy()
+		zencad.cone(r1=0, r2=topRadius, h=height, center=True).unlazy()
+		zencad.cone(r1=botRadius, r2=0, h=height, center=True).unlazy()
+
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, center=False).unlazy()
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=False).unlazy()
+		zencad.cone(r1=0, r2=topRadius, h=height, center=False).unlazy()
+		zencad.cone(r1=botRadius, r2=0, h=height, center=False).unlazy()
+
+	def test_torus_probber(self):
+		centralRadius = 20
+		localRadius = 3
+		yaw=zencad.deg(130)
+
+		minPitch = zencad.deg(-10) 
+		maxPitch = zencad.deg(20)
+
+		zencad.torus(r1=centralRadius, r2=localRadius).unlazy()
+		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw).unlazy()
+		zencad.torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch)).unlazy()
+		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
+
+	def test_halfspace_probber(self):
+		(zencad.sphere(r=10) - zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
+		(zencad.sphere(r=10) ^ zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
+
+	def test_union_probber(self):
+		a = zencad.box(10)
+		b = zencad.sphere(10)
+		c = zencad.cone(5,2,h=20)
+
+		f1 = zencad.union([a,b,c])
+		f2 = (a + b + c)
+		f3 = zencad.union([c,a,b])
+		f4 = (c + a + b)
+
+		self.assertEqual(f1.vertices().unlazy(), f2.vertices().unlazy())
+		self.assertEqual(f1.vertices().unlazy(), f3.vertices().unlazy())
+		self.assertEqual(f1.vertices().unlazy(), f4.vertices().unlazy())
+
+	def test_intersect_probber(self):
+		a = zencad.box(10)
+		b = zencad.sphere(10)
+		c = zencad.cone(5,2,h=20)
+
+		f1 = zencad.intersect([a,b,c])
+		f2 = (a ^ b ^ c)
+		f3 = zencad.intersect([c,a,b])
+		f4 = (c ^ a ^ b)
+
+		self.assertEqual(f1.vertices().unlazy(), f2.vertices().unlazy())
+		self.assertEqual(f1.vertices().unlazy(), f3.vertices().unlazy())
+		self.assertEqual(f1.vertices().unlazy(), f4.vertices().unlazy())
+
+
+	def test_difference_probber(self):
+		a = zencad.box(10)
+		b = zencad.sphere(10)
+		c = zencad.cone(5,2,h=20)
+
+		f1 = zencad.difference([a,b,c])
+		f2 = (a - b - c)
+		f3 = zencad.difference([c,a,b])
+		f4 = (c - a - b)
+
+		self.assertEqual(f1.vertices().unlazy(), f2.vertices().unlazy())
+		self.assertEqual(f3.vertices().unlazy(), f4.vertices().unlazy())
+
