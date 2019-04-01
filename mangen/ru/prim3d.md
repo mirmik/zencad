@@ -7,9 +7,9 @@
 
 Варианты использования.
 ```python
-box(x, y, z, center=True/False);
-box(size=(x,y,z), center=True/False);
-box(size=x, center=True/False);
+box(x, y, z, center=True/False)
+box(size=(x,y,z), center=True/False)
+box(size=x, center=True/False)
 ```
 ![box.png](../images/generic/box.png)
 
@@ -43,10 +43,10 @@ cylinder(r=radius, h=height, yaw=yaw, center = True/False)
 ## Cone  
 Объёмное тело - конус. Задаётся с указанием нижнего радиуса, верхнего радиуса и высоты. Возможно построение сектора цилиндра с использованием параметра yaw. Установка опции center совмещает геометрический центр тела с началом координат.
 ```python
-cone(r1=botRadius, r2=topRadius, h=height, center=True/False);
-cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=True/False);
-cone(r1=0, r2=topRadius, h=height, center=True/False);
-cone(r1=botRadius, r2=0, h=height, center=True/False);
+cone(r1=botRadius, r2=topRadius, h=height, center=True/False)
+cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=True/False)
+cone(r1=0, r2=topRadius, h=height, center=True/False)
+cone(r1=botRadius, r2=0, h=height, center=True/False)
 ```
 
 ![](../images/generic/cone0.png)
@@ -58,10 +58,10 @@ cone(r1=botRadius, r2=0, h=height, center=True/False);
 ## Torus 
 Объёмное тело - тор. Задаётся с указанием нижнего радиуса, верхнего радиуса и высоты. Возможно построение сектора цилиндра с использованием параметра yaw. 
 ```python
-torus(r1=centralRadius, r2=localRadius);
-torus(r1=centralRadius, r2=localRadius, yaw=yaw);
-torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch));
-torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch));
+torus(r1=centralRadius, r2=localRadius)
+torus(r1=centralRadius, r2=localRadius, yaw=yaw)
+torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch))
+torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch))
 ```
 ![](../images/generic/torus0.png)
 ![](../images/generic/torus1.png)  
