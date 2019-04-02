@@ -46,6 +46,12 @@ DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 __ZENCAD_EVENT_DEBUG__ = False
 ANIMATE_THREAD = None
 
+__TRACE__ = False
+
+def trace(s):
+	if __TRACE__:
+		print("TRACE:", s)
+
 def show_label(lbl, en):
 	if (en):
 		lbl.setHidden(False)
@@ -141,6 +147,8 @@ class MainWidget(QMainWindow):
 	animate_finish = pyqtSignal()
 
 	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
+		trace("construct MainWidget")
+
 		QMainWindow.__init__(self)
 		self.coords_difference_mode = False
 		self.openlock = threading.Lock()
@@ -786,6 +794,7 @@ class update_loop(QThread):
 				zencad.lazy.decache = False
 				zencad.lazy.onplace = True
 				zencad.lazy.diag = False
+				trace("updater_function")
 				self.updater_function(self.wdg)
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
@@ -805,6 +814,8 @@ class update_loop(QThread):
 				time.sleep(0.01)
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
+	trace("show implementation")
+
 	global started_by, edited
 	global main_window
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
@@ -830,6 +841,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.texteditor.open(edited)
 	main_window.inotifier.init_notifier(started_by)
 	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
+	trace("main window show")
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 	main_window.laststartpath=QDir.currentPath()
@@ -837,8 +849,10 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.lastopened=started_by
 	
 	if animate != None:
+		trace("start animate thread")
 		start_animate_thread(animate)
 		
+	trace("start qt application")
 	return app.exec()
 
 
