@@ -9,10 +9,17 @@ import time
 import math
 import threading
 
+__TRACE__ = False
+
+def trace(s):
+	if __TRACE__:
+		print("TRACE:", s)
+
 class DisplayWidget(QWidget):
 	intersectPointSignal = pyqtSignal(tuple)
 
 	def __init__(self, arg, nointersect, showmarkers=True):
+		trace("construct DisplayWidget")		
 		QWidget.__init__(self)	
 		self.setFocusPolicy(Qt.StrongFocus)
 		self.orient = 1
@@ -105,8 +112,10 @@ class DisplayWidget(QWidget):
 		self.update_orient1_from_view()
 
 	def showEvent(self, ev):
-		if self.inited != True:
-		
+		trace("DisplayWidget::showEvent")	
+		if self.inited != True:		
+			trace("DisplayWidget::showEvent: init")
+
 			if self.showmarkers:
 				zencad.lazifier.disable_lazy()
 				self.msphere = zencad.sphere(1)
