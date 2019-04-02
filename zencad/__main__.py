@@ -6,16 +6,22 @@ import sys
 import zencad
 import zencad.shower
 import zencad.showapi
+import zencad.viewadaptor
+import pyservoce.trace
 import runpy
 
 import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--eventdebug", action='store_true')
+parser.add_argument("--trace", action='store_true')
 parser.add_argument('paths', type=str, nargs='*', help='runned file')
 pargs = parser.parse_args()
 
 zencad.shower.__ZENCAD_EVENT_DEBUG__ = pargs.eventdebug
+pyservoce.trace.__TRACE__ = pargs.trace
+zencad.shower.__TRACE__ = pargs.trace
+zencad.viewadaptor.__TRACE__ = pargs.trace
 
 if len(pargs.paths) == 0:
 	path = os.path.join(zencad.exampledir, "helloworld.py") 
