@@ -9,8 +9,8 @@
 Скругления задаются радиусом `r` и масивом ближайших точек `refs`. Если `refs == None`, выбранными считаются все элементы топологии. 
 
 ```python
-fillet(shp=model, r=radius, refs=referencedPoints)
-fillet(shp=model, r=radius)
+fillet(proto=model, r=radius, refs=referencedPoints)
+fillet(proto=model, r=radius)
 model.fillet(radius, referencedPoints)
 model.fillet(radius)
 ```
@@ -29,14 +29,12 @@ model.fillet(radius)
 TODO: несиметричная фаска. 
 
 ```python
-chamfer(shp=model, r=radius, refs=referencedPoints)
+chamfer(proto=model, r=radius, refs=referencedPoints)
 ```
 ![](../images/generic/chamfer0.png)
 ![](../images/generic/chamfer1.png)  
 ![](../images/generic/chamfer2.png)
 ![](../images/generic/chamfer3.png)  
-
-
 
 ---
 ## Thicksolid
@@ -45,7 +43,7 @@ chamfer(shp=model, r=radius, refs=referencedPoints)
 Также задаётся толщина стенок `t`. Если толщина стенок положительная, стенки наращиваются наружу. Если отрицательная - внутрь.
 
 ```python
-thicksolid(shp=model, t=thickness, refs=referencedPoints)
+thicksolid(proto=model, t=thickness, refs=referencedPoints)
 ```
 
 ![](../images/generic/thicksolid0.png)
