@@ -16,7 +16,7 @@ Install
 Install zencad from pypi:  
 ```python3 -m pip install zencad ```
 
-Maybe need install qt5-default, becouse pyqt5 has trouble with xcb plugin.  
+Maybe need install qt5-default, because pyqt5 has trouble with xcb plugin.  
 ```apt install qt5-default ```
 
 
