@@ -16,7 +16,7 @@ def instrument(drad, step, h):
 		(drad+H/2, 0, -step)
 	]),closed=True)
 	path = helix(radius = drad, height = h, step = step)
-	base = pipe_shell(path = path, prof = pseg, frenet = True)
+	base = pipe_shell(path = path, proto = pseg, frenet = True)
 	return base
 
 def metric_nut(d, step, h):
