@@ -23,7 +23,6 @@ def circle(r, angle=None, wire=False):
 	else:
 		return pyservoce.circle(r, wire=wire)
 
-
 @lazy.lazy(cls=nocached_shape_generator)
 def ellipse(r1, r2, angle=None, wire=False):
 	if r1 < r2:
