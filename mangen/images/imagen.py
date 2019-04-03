@@ -53,7 +53,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
 	zencad.visual.screen_view(view, path, size)
 
 def doscreen(model, path, size, yaw=None, pitch=None, triedron=False):
-	print("screen (path:{0}, size:{1})".format(path, size))
+	print("screen (path:{0}, size:{1}, model:{2})".format(path, size, model))
 	doscreen_impl(model, "generic/"+path, size, yaw=yaw, pitch=pitch, triedron=triedron)
 
 yaw = 	math.pi * (7/16)
