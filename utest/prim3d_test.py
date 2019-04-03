@@ -14,12 +14,16 @@ class Prim3dprobe(unittest.TestCase):
 		self.assertEqual(a.vertices(), b.vertices())
 		self.assertEqual(c.vertices(), b.vertices())
 		
-		a=zencad.box(10,10,10,True).unlazy()
 		a=zencad.box(10,10,10, center=True).unlazy()
 		b=zencad.box(size=(10,10,10), center=True).unlazy()
 		c=zencad.box(10, center=True).unlazy()
 		self.assertEqual(a.vertices(), b.vertices())
 		self.assertEqual(c.vertices(), b.vertices())
+
+		a=zencad.cube(10,10,10,True).unlazy()
+		b=zencad.cube(10,10,10, center=True).unlazy()
+		c=zencad.cube(size=(10,10,10), center=True).unlazy()
+		d=zencad.cube(10, center=True).unlazy()
 
 	def test_sphere_probe(self):
 		radius = 20

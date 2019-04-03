@@ -45,12 +45,7 @@ def sphere(r, yaw=None, pitch=None):
 		if pitch is not None:
 			return pyservoce.sphere(r=r, pitch0=pitch[0], pitch1=pitch[1])
 		else:
-			return pyservoce.sphere(r=r)
-
-	#if an3 is not None: return pyservoce.sphere(r, an1, an2, an3)
-	#if an2 is not None:	return pyservoce.sphere(r, an1, an2)
-	#if an1 is not None: return pyservoce.sphere(r, an1)
-	
+			return pyservoce.sphere(r=r)	
 
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -87,3 +82,4 @@ def torus(r1, r2, yaw=None, pitch=None):
 @lazy.lazy(cls=nocached_shape_generator)
 def halfspace(): 
 	return pyservoce.halfspace()
+	
