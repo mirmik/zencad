@@ -41,6 +41,6 @@ setup(
 		'pillow',
 		'inotify',
 		'PyQt5',
-		'zencad-cli',
+		'zencad-cli'
 	],
 )
