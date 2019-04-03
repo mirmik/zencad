@@ -18,7 +18,7 @@ setup(
 	description = 'CAD system for righteous zen programmers ',
 	author = 'mirmik',
 	author_email = 'mirmikns@yandex.ru',
-	url = 'https://mirmik.github.io/zencad/',
+	url = 'https://github.com/mirmik/zencad',
 	long_description=open("README.md", "r").read(),
 	long_description_content_type='text/markdown',
 	keywords = ['testing', 'cad'],
