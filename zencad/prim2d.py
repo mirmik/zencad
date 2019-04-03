@@ -19,19 +19,20 @@ def square(a, center = False, wire=False):
 def circle(r, angle=None, wire=False):
 	if angle is not None:
 		angle = angle_pair(angle)
-
-	return pyservoce.circle(r, angle, wire=wire)
-
+		return pyservoce.circle(r, angle[0], angle[1], wire=wire)
+	else:
+		return pyservoce.circle(r, wire=wire)
 
 @lazy.lazy(cls=nocached_shape_generator)
 def ellipse(r1, r2, angle=None, wire=False):
-	if angle is not None:
-		angle = angle_pair(angle)
-
 	if r1 < r2:
 		raise ValueError("In ellipse r1 must be greater then r2")
 
-	return pyservoce.ellipse(r1, r2, angle, wire=wire)
+	if angle is not None:
+		angle = angle_pair(angle)
+		return pyservoce.ellipse(r1, r2, angle[0], angle[1], wire=wire)
+	else:
+		return pyservoce.ellipse(r1, r2, wire=wire)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
