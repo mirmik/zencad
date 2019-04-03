@@ -38,15 +38,15 @@ def sphere(r, yaw=None, pitch=None):
 
 	if yaw is not None:
 		if pitch is not None:
-			return pyservoce.sphere(r, pitch[0], pitch[1], yaw)
+			return pyservoce.sphere(r=r, pitch0=pitch[0], pitch1=pitch[1], yaw=yaw)
 		else:
-			return pyservoce.sphere(r, yaw)
+			return pyservoce.sphere(r=r, yaw=yaw)
 
 	else:
 		if pitch is not None:
-			return pyservoce.sphere(r, pitch[0], pitch[1])
+			return pyservoce.sphere(r=r, pitch0=pitch[0], pitch1=pitch[1])
 		else:
-			return pyservoce.sphere(r)
+			return pyservoce.sphere(r=r)
 
 	#if an3 is not None: return pyservoce.sphere(r, an1, an2, an3)
 	#if an2 is not None:	return pyservoce.sphere(r, an1, an2)
@@ -57,28 +57,31 @@ def sphere(r, yaw=None, pitch=None):
 @lazy.lazy(cls=nocached_shape_generator)
 def cylinder(r, h, center=False, yaw=None): 
 	if yaw is None:
-		return pyservoce.cylinder(r,h,center)
+		return pyservoce.cylinder(r=r, h=h, center=center)
 	else:
-		return pyservoce.cylinder(r, h, 0, yaw, center)
+		return pyservoce.cylinder(r=r, h=h, yaw=yaw, center=center)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
 def cone(r1, r2, h, center = False, yaw=None): 
-	return pyservoce.cone(r1=r1, r2=r2, h=h, yaw=yaw, center=center)
+	if yaw is None:
+		return pyservoce.cone(r1=r1, r2=r2, h=h, center=center)
+	else:
+		return pyservoce.cone(r1=r1, r2=r2, h=h, yaw=yaw, center=center)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
 def torus(r1, r2, yaw=None, pitch=None): 
 	if yaw is not None and pitch is not None:
-		return pyservoce.torus(r1,r2,pitch[0],pitch[1],yaw)
+		return pyservoce.torus(r1=r1, r2= r2, pitch0=pitch[0], pitch1=pitch[1], yaw=yaw)
 
 	if yaw is not None:
-		return pyservoce.torus(r1,r2,yaw)
+		return pyservoce.torus(r1=r1, r2=r2, yaw=yaw)
 
 	if pitch is not None:
-		return pyservoce.torus(r1,r2,pitch[0],pitch[1])
+		return pyservoce.torus(r1=r1, r2=r2, pitch0=pitch[0], pitch1=pitch[1])
 
-	return pyservoce.torus(r1,r2)
+	return pyservoce.torus(r1=r1,r2=r2)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
