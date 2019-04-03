@@ -4,50 +4,50 @@ from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.util import points, vector3
 
 @lazy.lazy(cls=shape_generator)
-def linear_extrude(shp, vec, center=False):
+def linear_extrude(proto, vec, center=False):
 	if isinstance(vec, (int, float)):
 		vec = vector3(0,0,vec)
-	return pyservoce.linear_extrude(shp, vector3(vec), center)
+	return pyservoce.linear_extrude(proto, vector3(vec), center)
 
 def extrude(vec): return linear_extrude(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
-def pipe(prof, path):
-	return pyservoce.pipe(prof, path)
+def pipe(proto, path):
+	return pyservoce.pipe(proto, path)
 
 @lazy.lazy(cls=shape_generator)
-def pipe_shell(prof, path, frenet = False):
-	return pyservoce.pipe_shell(prof, path, frenet)
+def pipe_shell(proto, path, frenet = False):
+	return pyservoce.pipe_shell(proto, path, frenet)
 
 @lazy.lazy(cls=shape_generator)
-def sweep(shp, traj, frenet = False):
-	return pyservoce.pipe_shell(shp, traj, frenet)
+def sweep(proto, path, frenet = False):
+	return pyservoce.pipe_shell(proto, path, frenet)
 
 @lazy.lazy(cls=shape_generator)
 def loft(arr, smooth=False):
 	return pyservoce.loft(arr, smooth=smooth)
 
 @lazy.lazy(cls=shape_generator)
-def revol(shp, yaw=0.0):
-	return pyservoce.revol(shp, yaw)
+def revol(proto, yaw=0.0):
+	return pyservoce.revol(proto, yaw)
 
 @lazy.lazy(cls=shape_generator)
-def thicksolid(shp, t, refs):
-	return pyservoce.thicksolid(shp, points(refs), t)
+def thicksolid(proto, t, refs):
+	return pyservoce.thicksolid(proto, points(refs), t)
 
 @lazy.lazy(cls=shape_generator)
-def fillet(shp, r, refs=None): 
+def fillet(proto, r, refs=None): 
 	if refs is None:
-		return pyservoce.fillet(shp, r)
+		return pyservoce.fillet(proto, r)
 	else:
-		return pyservoce.fillet(shp, r, points(refs))
+		return pyservoce.fillet(proto, r, points(refs))
 
 @lazy.lazy(cls=shape_generator)
-def chamfer(shp, r, refs=None): 
+def chamfer(proto, r, refs=None): 
 	if refs is None:
-		return pyservoce.chamfer(shp, r)
+		return pyservoce.chamfer(proto, r)
 	else:
-		return pyservoce.chamfer(shp, r, points(refs))
+		return pyservoce.chamfer(proto, r, points(refs))
 
 
 pyservoce.Shape.extrude = linear_extrude
