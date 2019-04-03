@@ -8,22 +8,22 @@ class Prim3dprobe(unittest.TestCase):
 		zencad.lazy.fastdo=True
 
 	def test_box_probe(self):
-		a=zencad.box(10,10,10).unlazy()
-		b=zencad.box(size=(10,10,10)).unlazy()
-		c=zencad.box(10).unlazy()
+		a=zencad.box(10,10,10)
+		b=zencad.box(size=(10,10,10))
+		c=zencad.box(10)
 		self.assertEqual(a.vertices(), b.vertices())
 		self.assertEqual(c.vertices(), b.vertices())
 		
-		a=zencad.box(10,10,10, center=True).unlazy()
-		b=zencad.box(size=(10,10,10), center=True).unlazy()
-		c=zencad.box(10, center=True).unlazy()
+		a=zencad.box(10,10,10, center=True)
+		b=zencad.box(size=(10,10,10), center=True)
+		c=zencad.box(10, center=True)
 		self.assertEqual(a.vertices(), b.vertices())
 		self.assertEqual(c.vertices(), b.vertices())
 
-		a=zencad.cube(10,10,10,True).unlazy()
-		b=zencad.cube(10,10,10, center=True).unlazy()
-		c=zencad.cube(size=(10,10,10), center=True).unlazy()
-		d=zencad.cube(10, center=True).unlazy()
+		a=zencad.cube(10,10,10,True)
+		b=zencad.cube(10,10,10, center=True)
+		c=zencad.cube(size=(10,10,10), center=True)
+		d=zencad.cube(10, center=True)
 
 	def test_sphere_probe(self):
 		radius = 20
@@ -31,20 +31,20 @@ class Prim3dprobe(unittest.TestCase):
 		maxPitch = zencad.deg(20)
 		yaw = zencad.deg(130)
 
-		zencad.sphere(r=radius).unlazy()
-		zencad.sphere(r=radius, yaw=yaw).unlazy()
-		zencad.sphere(r=radius, pitch=(minPitch, maxPitch)).unlazy()
-		zencad.sphere(r=radius, yaw=yaw, pitch=maxPitch).unlazy()
-		zencad.sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
+		zencad.sphere(r=radius)
+		zencad.sphere(r=radius, yaw=yaw)
+		zencad.sphere(r=radius, pitch=(minPitch, maxPitch))
+		zencad.sphere(r=radius, yaw=yaw, pitch=maxPitch)
+		zencad.sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch))
 
 	def test_cylinder_probe(self):
 		radius = 20
 		height = 30
 		yaw = zencad.deg(130)
-		zencad.cylinder(r=radius, h=height, center=True).unlazy()
-		zencad.cylinder(r=radius, h=height, yaw=yaw, center=True).unlazy()
-		zencad.cylinder(r=radius, h=height, center=False).unlazy()
-		zencad.cylinder(r=radius, h=height, yaw=yaw, center=False).unlazy()
+		zencad.cylinder(r=radius, h=height, center=True)
+		zencad.cylinder(r=radius, h=height, yaw=yaw, center=True)
+		zencad.cylinder(r=radius, h=height, center=False)
+		zencad.cylinder(r=radius, h=height, yaw=yaw, center=False)
 
 	def test_cone_probe(self):
 		topRadius=20
@@ -52,15 +52,15 @@ class Prim3dprobe(unittest.TestCase):
 		height=30
 		yaw=zencad.deg(130)
 
-		zencad.cone(r1=botRadius, r2=topRadius, h=height, center=True).unlazy()
-		zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=True).unlazy()
-		zencad.cone(r1=0, r2=topRadius, h=height, center=True).unlazy()
-		zencad.cone(r1=botRadius, r2=0, h=height, center=True).unlazy()
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, center=True)
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=True)
+		zencad.cone(r1=0, r2=topRadius, h=height, center=True)
+		zencad.cone(r1=botRadius, r2=0, h=height, center=True)
 
-		zencad.cone(r1=botRadius, r2=topRadius, h=height, center=False).unlazy()
-		zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=False).unlazy()
-		zencad.cone(r1=0, r2=topRadius, h=height, center=False).unlazy()
-		zencad.cone(r1=botRadius, r2=0, h=height, center=False).unlazy()
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, center=False)
+		zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=False)
+		zencad.cone(r1=0, r2=topRadius, h=height, center=False)
+		zencad.cone(r1=botRadius, r2=0, h=height, center=False)
 
 	def test_torus_probe(self):
 		centralRadius = 20
@@ -70,12 +70,12 @@ class Prim3dprobe(unittest.TestCase):
 		minPitch = zencad.deg(-10) 
 		maxPitch = zencad.deg(20)
 
-		zencad.torus(r1=centralRadius, r2=localRadius).unlazy()
-		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw).unlazy()
-		zencad.torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch)).unlazy()
-		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
-		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=maxPitch).unlazy()
+		zencad.torus(r1=centralRadius, r2=localRadius)
+		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw)
+		zencad.torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch))
+		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch))
+		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=maxPitch)
 
 	def test_halfspace_probe(self):
-		(zencad.sphere(r=10) - zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
-		(zencad.sphere(r=10) ^ zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
+		(zencad.sphere(r=10) - zencad.halfspace().rotateX(zencad.deg(150)))
+		(zencad.sphere(r=10) ^ zencad.halfspace().rotateX(zencad.deg(150)))
