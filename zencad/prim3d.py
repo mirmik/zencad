@@ -24,8 +24,7 @@ def sphere(r, yaw=None, pitch=None):
 			raise Exception("Wrong parametr `yaw`. yaw defined in [0, 2*pi]")
 
 	if pitch is not None:
-		if not hasattr(pitch, "__getitem__"):
-			raise Exception("Wrong parametr `pitch`. Must be tuple.")
+		pitch = angle_pair(pitch)
 
 		if pitch[0] > pitch[1]:
 			raise Exception("Wrong parametr `pitch`. pitch[0] should be less then pitch[1]")
@@ -72,16 +71,17 @@ def cone(r1, r2, h, center = False, yaw=None):
 
 @lazy.lazy(cls=nocached_shape_generator)
 def torus(r1, r2, yaw=None, pitch=None): 
-	if yaw is not None and pitch is not None:
-		return pyservoce.torus(r1=r1, r2= r2, pitch0=pitch[0], pitch1=pitch[1], yaw=yaw)
-
-	if yaw is not None:
-		return pyservoce.torus(r1=r1, r2=r2, yaw=yaw)
-
 	if pitch is not None:
-		return pyservoce.torus(r1=r1, r2=r2, pitch0=pitch[0], pitch1=pitch[1])
-
-	return pyservoce.torus(r1=r1,r2=r2)
+		pitch = angle_pair(pitch)
+		if yaw is not None:
+			return pyservoce.torus(r1=r1, r2= r2, pitch0=pitch[0], pitch1=pitch[1], yaw=yaw)
+		else:
+			return pyservoce.torus(r1=r1, r2=r2, pitch0=pitch[0], pitch1=pitch[1])
+	else:
+		if yaw is not None:
+			return pyservoce.torus(r1=r1, r2=r2, yaw=yaw)
+		else:
+			return pyservoce.torus(r1=r1,r2=r2)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
