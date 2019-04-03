@@ -45,6 +45,8 @@ model = box(200, center = True) - sphere(120) + sphere(60)
 display(m)
 show()
 ```
+Result:
+![result.png](https://mirmik.github.io/zencad/images/generic/zencad-logo.png)
 
 Articles
 --------
