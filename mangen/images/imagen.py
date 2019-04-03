@@ -260,7 +260,7 @@ ps = [ (20,0,0), (20,0,10), (30,0,5) ]
 
 spine = interpolate(pnts, tang).rotateX(deg(90))
 profile = circle(3, wire=True).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
-handle = pipe(path = spine, prof = profile)
+handle = pipe(path = spine, proto = profile)
 
 pitch = math.pi * -0.20
 yaw = 	math.pi * (7/16) + math.pi*3/8
