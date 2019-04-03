@@ -14,6 +14,7 @@ class Prim3dprobe(unittest.TestCase):
 		self.assertEqual(a.vertices(), b.vertices())
 		self.assertEqual(c.vertices(), b.vertices())
 		
+		a=zencad.box(10,10,10,True).unlazy()
 		a=zencad.box(10,10,10, center=True).unlazy()
 		b=zencad.box(size=(10,10,10), center=True).unlazy()
 		c=zencad.box(10, center=True).unlazy()
@@ -29,6 +30,7 @@ class Prim3dprobe(unittest.TestCase):
 		zencad.sphere(r=radius).unlazy()
 		zencad.sphere(r=radius, yaw=yaw).unlazy()
 		zencad.sphere(r=radius, pitch=(minPitch, maxPitch)).unlazy()
+		zencad.sphere(r=radius, yaw=yaw, pitch=maxPitch).unlazy()
 		zencad.sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
 
 	def test_cylinder_probe(self):
@@ -68,6 +70,7 @@ class Prim3dprobe(unittest.TestCase):
 		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw).unlazy()
 		zencad.torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch)).unlazy()
 		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch)).unlazy()
+		zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=maxPitch).unlazy()
 
 	def test_halfspace_probe(self):
 		(zencad.sphere(r=10) - zencad.halfspace().rotateX(zencad.deg(150))).unlazy()
