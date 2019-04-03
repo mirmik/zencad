@@ -37,10 +37,11 @@ setup(
 	install_requires=[
 		'evalcache==1.10.0',
 		'pyservoce==1.9.4',
+		'psutil',
 		'numpy',
 		'pillow',
 		'inotify',
 		'PyQt5',
-		'zencad-cli',
+		'zencad-cli'
 	],
 )
