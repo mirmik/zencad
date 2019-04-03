@@ -10,17 +10,29 @@ So, it's  openscad idea, python language and opencascade power in one.
 
 Manual
 ------
-[Мануал читать тут](https://mirmik.github.io/zencad/)
+You can find manual [here](https://mirmik.github.io/zencad/). Now only russian version.
 
 Install
 -------  
+Install zencad from pypi:
 ```python3 -m pip install zencad ```
+
+Maybe need install qt5-default, becouse pyqt5 has trouble with xcb plugin.
+```apt install qt5-default ```
+
 
 Get source code
 ---------------
 ```sh
 git clone https://github.com/mirmik/zencad
 ```
+
+Other repos of this project
+---------------------------
+[](https://github.com/mirmik/zencad)
+[](https://github.com/mirmik/servoce)
+[](https://github.com/mirmik/zencad-cli)
+[](https://github.com/mirmik/evalcache)
 
 HelloWorld
 ----------
@@ -30,7 +42,7 @@ HelloWorld
 
 from zencad import *
 
-m = box(10,10,10) + sphere(5).translate(5,5,10)
+model = box(200, center = True) - sphere(120) + sphere(60)
 
 display(m)
 show()
