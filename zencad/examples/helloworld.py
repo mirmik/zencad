@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-#coding: utf-8
+# coding: utf-8
 
 from zencad import *
 
-a = box(200, 200, 200, center = True)
+a = box(200, 200, 200, center=True)
 b = sphere(120)
 c = sphere(60)
 

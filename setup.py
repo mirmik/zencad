@@ -11,36 +11,38 @@ import sys
 import os
 
 setup(
-	name = 'zencad',
-	packages = ['zencad'],
-	version = '0.16.2',
-	license='MIT',
-	description = 'CAD system for righteous zen programmers ',
-	author = 'mirmik',
-	author_email = 'mirmikns@yandex.ru',
-	url = 'https://github.com/mirmik/zencad',
-	long_description=open("README.md", "r").read(),
-	long_description_content_type='text/markdown',
-	keywords = ['testing', 'cad'],
-	classifiers = [],
-
-	package_data={
-		'zencad': [ 'industrial-robot.svg', "examples/*", "examples/**/*", "examples/**/**/*"],
-	},
-
-	#data_files = [
-	#	("zencad/examples", [file for file in glob.glob("examples/*.py")]),
-	#	*[("zencad/examples/"+d, [file for file in glob.glob("examples/"+d+"/*")]) for d in os.listdir("examples") if os.path.isdir(os.path.join("examples", d)) and d != "__pycache__"]
-	#],
-
-	include_package_data=True,
-	install_requires=[
-		'evalcache==1.10.0',
-		'pyservoce==1.9.5',
-		'numpy',
-		'pillow',
-		'inotify',
-		'PyQt5',
-		'zencad-cli'
-	],
+    name="zencad",
+    packages=["zencad"],
+    version="0.16.2",
+    license="MIT",
+    description="CAD system for righteous zen programmers ",
+    author="mirmik",
+    author_email="mirmikns@yandex.ru",
+    url="https://github.com/mirmik/zencad",
+    long_description=open("README.md", "r").read(),
+    long_description_content_type="text/markdown",
+    keywords=["testing", "cad"],
+    classifiers=[],
+    package_data={
+        "zencad": [
+            "industrial-robot.svg",
+            "examples/*",
+            "examples/**/*",
+            "examples/**/**/*",
+        ]
+    },
+    # data_files = [
+    # 	("zencad/examples", [file for file in glob.glob("examples/*.py")]),
+    # 	*[("zencad/examples/"+d, [file for file in glob.glob("examples/"+d+"/*")]) for d in os.listdir("examples") if os.path.isdir(os.path.join("examples", d)) and d != "__pycache__"]
+    # ],
+    include_package_data=True,
+    install_requires=[
+        "evalcache==1.10.0",
+        "pyservoce==1.9.5",
+        "numpy",
+        "pillow",
+        "inotify",
+        "PyQt5",
+        "zencad-cli",
+    ],
 )
