@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-#coding: utf-8
+# coding: utf-8
 
 from zencad import *
+
 test_mode()
 
 el_r1 = 7

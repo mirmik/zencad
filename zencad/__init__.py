@@ -22,7 +22,7 @@ import types
 moduledir = os.path.dirname(__file__)
 exampledir = os.path.join(os.path.dirname(__file__), "examples")
 
-from zencad.showapi import show, display, disp, hl, highlight 
+from zencad.showapi import show, display, disp, hl, highlight
 
 from zencad.prim3d import *
 from zencad.prim2d import *
@@ -31,21 +31,31 @@ from zencad.prim1d import *
 from zencad.ops3d import *
 from zencad.ops1d2d import *
 
-def gr(grad): 
-	print("'gr' function is deprecated. Use 'deg' instead")
-	return float(grad) / 180.0 * math.pi
+
+def gr(grad):
+    print("'gr' function is deprecated. Use 'deg' instead")
+    return float(grad) / 180.0 * math.pi
+
 
 def enable_cache_diagnostic():
-	evalcache.diagnostic = True
+    evalcache.diagnostic = True
+
 
 @lazy.lazy(cls=shape_generator)
-def near_edge(*args, **kwargs): return pyservoce.near_edge(*args, **kwargs)
+def near_edge(*args, **kwargs):
+    return pyservoce.near_edge(*args, **kwargs)
+
 
 @lazy.lazy(cls=shape_generator)
-def near_face(*args, **kwargs): return pyservoce.near_face(*args, **kwargs)
+def near_face(*args, **kwargs):
+    return pyservoce.near_face(*args, **kwargs)
+
 
 @lazy.lazy(cls=shape_generator)
-def near_vertex(*args, **kwargs): return pyservoce.near_vertex(*args, **kwargs)
+def near_vertex(*args, **kwargs):
+    return pyservoce.near_vertex(*args, **kwargs)
+
 
 @lazy.lazy(cls=shape_generator)
-def unify(shp): return pyservoce.unify(shp)
+def unify(shp):
+    return pyservoce.unify(shp)
