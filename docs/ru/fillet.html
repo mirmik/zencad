@@ -62,8 +62,8 @@
 Если тело объёмное - модификации подвергаются ребра. Если плоское - вершины.
 Скругления задаются радиусом <code>r</code> и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
-<span class="n">fillet</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+<span class="n">fillet</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
 </code></pre></div>
@@ -84,7 +84,7 @@
 
 <p>TODO: несиметричная фаска. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/chamfer0.png" alt="" />
@@ -100,7 +100,7 @@
 Задаётся прототипной моделью <code>shp</code> и массивом точек, ближайших к удаляемым граням <code>refs</code>.
 Также задаётся толщина стенок <code>t</code>. Если толщина стенок положительная, стенки наращиваются наружу. Если отрицательная - внутрь.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/thicksolid0.png" alt="" />
