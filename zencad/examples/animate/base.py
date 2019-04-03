@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#coding: utf-8
+# coding: utf-8
 
 from zencad import *
 import time
@@ -9,8 +9,11 @@ controller = disp(s)
 
 
 nulltime = time.time()
-def animate(widget):
-	trans = rotateZ(time.time() - nulltime) * right(30)
-	controller.set_location(trans)
 
-show(animate=animate) 
+
+def animate(widget):
+    trans = rotateZ(time.time() - nulltime) * right(30)
+    controller.set_location(trans)
+
+
+show(animate=animate)
