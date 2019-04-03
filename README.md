@@ -1,7 +1,6 @@
-# zencad
+ZenCad
+======
 CAD system for righteous zen programmers
-
-![https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/logo.png](https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/car.png)
 
 What is it?
 -----------
@@ -51,3 +50,5 @@ show()
 Articles
 --------
 habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
+
+![https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/logo.png](https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/car.png)
