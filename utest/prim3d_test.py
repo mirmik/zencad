@@ -7,34 +7,6 @@ class Prim3dprobe(unittest.TestCase):
 		zencad.lazy.decache=False
 		zencad.lazy.fastdo=True
 
-	def test_box(self):
-		m = zencad.box(10,20,30)
-
-		test = set([
-			zencad.point3(0.000000,0.000000,0.000000), 
-			zencad.point3(0.000000,0.000000,30.000000), 
-			zencad.point3(0.000000,20.000000,0.000000), 
-			zencad.point3(0.000000,20.000000,30.000000), 
-			zencad.point3(10.000000,0.000000,0.000000), 
-			zencad.point3(10.000000,0.000000,30.000000), 
-			zencad.point3(10.000000,20.000000,0.000000), 
-			zencad.point3(10.000000,20.000000,30.000000)
-		])
-
-		vertices = m.vertices().unlazy()
-
-		self.assertEqual(set(test), set(vertices))		
-
-	def test_cylinder(self):
-		m = zencad.cylinder(r = 10, h = 20)
-
-		test = [
-			zencad.point3(10.000000,-0.000000, 0.000000), 
-			zencad.point3(10.000000,-0.000000, 20.000000)
-		]
-
-		self.assertEqual(m.vertices().unlazy(), test)
-
 	def test_box_probe(self):
 		a=zencad.box(10,10,10).unlazy()
 		b=zencad.box(size=(10,10,10)).unlazy()
