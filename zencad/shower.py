@@ -31,6 +31,10 @@ import math
 
 import zencad.texteditor
 
+SETTINGS = {
+	"external_text_editor": "subl"
+}
+
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (#"\n"
 			"███████╗███████╗███╗   ██╗ ██████╗ █████╗ ██████╗ \n"
@@ -452,7 +456,7 @@ class MainWidget(QMainWindow):
 			self.poslbl.setText("Tracking disabled")
 
 	def externalTextEditorOpen(self):
-		os.system(text_editor + " " + started_by)
+		os.system(SETTINGS["external_text_editor"] + " " + started_by)
 
 	def testAction(self):
 		pass
