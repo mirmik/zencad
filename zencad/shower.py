@@ -3,33 +3,28 @@
 import zencad
 import zencad.viewadaptor
 import zencad.lazifier 
+import zencad.opengl
+import zencad.texteditor
+
 import pyservoce
 import evalcache
-from pyservoce import Scene, View, Color
-
-import tempfile
-import sys
-import os
-import signal
-import psutil
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-from PIL import Image
-import numpy as np
-
+import os
 import re
+import sys
 import time
-import threading
-import zencad.opengl
-
-import runpy
-import inotify.adapters
 import math
+import runpy
+import tempfile
+import threading
+import inotify.adapters
 
-import zencad.texteditor
+import numpy as np
+from PIL import Image
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (#"\n"
@@ -654,7 +649,7 @@ class MainWidget(QMainWindow):
 					print("subthread: run")
 					self.setTerminationEnabled(True)
 					zencad.lazifier.restore_default_lazyopts()
-					zencad.showapi.default_scene = Scene()
+					zencad.showapi.default_scene = pyservoce.Scene()
 					zencad.showapi.mode = "update_scene"
 					os.chdir(os.path.dirname(path))
 					sys.path.insert(0, os.path.dirname(path))
