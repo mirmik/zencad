@@ -345,7 +345,7 @@ class DisplayWidget(QWidget):
 		self.view.set_triedron()
 
 		w, h = oldview.size()
-		oldview.destroy()
+		#oldview.destroy()
 
 		#Tricks for preredraw view buffer
 		self.view.set_virtual_window(w,h)
