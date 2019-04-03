@@ -116,11 +116,12 @@ class DisplayWidget(QWidget):
 
 			self.viewer = self.scene.viewer
 			self.view = self.viewer.create_view()
-			self.view.set_window(self.winId())
-			self.view.set_gradient()
 			
+			self.view.set_gradient()
 			self.set_orient1()
 			self.view.set_triedron()
+
+			self.view.set_window(self.winId())
 			self.viewer.set_triedron_axes()
 	
 			if self.showmarkers:
@@ -295,7 +296,6 @@ class DisplayWidget(QWidget):
 		factor = 16
 		self.view.zoom(x, y, x + factor, y + factor)
 
-	
 	def keyPressEvent(self, event):
 		if self.mw.eventdebug:
 			print("keyPressEvent", event.key())
@@ -317,13 +317,29 @@ class DisplayWidget(QWidget):
 		oldscene = self.scene
 		oldviewer = self.viewer
 		oldview = self.view
+		
+		scale_save = self.view.scale()
+		eye_save = self.view.eye()
+		center_save = self.view.center()
 
 		self.scene = newscene
 		self.viewer = self.scene.viewer
-		self.view = self.viewer.create_view()
-		self.view.set_window(self.winId())
 
+		self.view = self.viewer.create_view()
 		self.view.set_gradient()
+
+		self.view.set_scale(scale_save)
+		self.view.set_eye(eye_save)
+		self.view.set_center(center_save)
 		self.set_orient1()
+		
 		self.view.set_triedron()
+
+		w, h = oldview.size()
+		oldview.destroy()
+
+		#Tricks for preredraw view buffer
+		self.view.set_virtual_window(w,h)
+
+		self.view.set_window(self.winId())
 		self.viewer.set_triedron_axes()
