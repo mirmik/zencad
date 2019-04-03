@@ -310,7 +310,7 @@ class MainWidget(QMainWindow):
 		self.mHideConsole =	self.create_action("Hide console", 		self.hideConsole, 				"Hide console",				checkbox=True)
 		self.mHideEditor = 	self.create_action("Hide editor", 		self.hideEditor, 				"Hide editor",				checkbox=True)
 		self.mFullScreen = 	self.create_action("Full screen", 		self.fullScreen, 				"Full screen",									"F11")
-		self.mWebManual = 	self.create_action("Manual online", 	self.openWebManual, 			"Open manual online")
+		self.mWebManual = 	self.create_action("Online manual", 	self.openWebManual, 			"Open online manual in browser")
 		self.mCoordsDiff = 	self.create_action("Coords difference", self.coordsDifferenceMode,		"Coords difference mode",				checkbox=True)
 		#self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
 		
