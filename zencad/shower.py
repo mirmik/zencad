@@ -3,33 +3,28 @@
 import zencad
 import zencad.viewadaptor
 import zencad.lazifier 
+import zencad.opengl
+import zencad.texteditor
+
 import pyservoce
 import evalcache
-from pyservoce import Scene, View, Color
-
-import tempfile
-import sys
-import os
-import signal
-import psutil
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-from PIL import Image
-import numpy as np
-
+import os
 import re
+import sys
 import time
-import threading
-import zencad.opengl
-
-import runpy
-import inotify.adapters
 import math
+import runpy
+import tempfile
+import threading
+import inotify.adapters
 
-import zencad.texteditor
+import numpy as np
+from PIL import Image
 
 SETTINGS = {
 	"external_text_editor": "subl"
@@ -49,6 +44,12 @@ WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 __ZENCAD_EVENT_DEBUG__ = False
 ANIMATE_THREAD = None
+
+__TRACE__ = False
+
+def trace(s):
+	if __TRACE__:
+		print("TRACE:", s)
 
 def show_label(lbl, en):
 	if (en):
@@ -145,6 +146,8 @@ class MainWidget(QMainWindow):
 	animate_finish = pyqtSignal()
 
 	def __init__(self, dispw, showconsole, showeditor, eventdebug = False):
+		trace("construct MainWidget")
+
 		QMainWindow.__init__(self)
 		self.coords_difference_mode = False
 		self.openlock = threading.Lock()
@@ -650,7 +653,7 @@ class MainWidget(QMainWindow):
 					print("subthread: run")
 					self.setTerminationEnabled(True)
 					zencad.lazifier.restore_default_lazyopts()
-					zencad.showapi.default_scene = Scene()
+					zencad.showapi.default_scene = pyservoce.Scene()
 					zencad.showapi.mode = "update_scene"
 					os.chdir(os.path.dirname(path))
 					sys.path.insert(0, os.path.dirname(path))
@@ -790,6 +793,7 @@ class update_loop(QThread):
 				zencad.lazy.decache = False
 				zencad.lazy.onplace = True
 				zencad.lazy.diag = False
+				trace("updater_function")
 				self.updater_function(self.wdg)
 				zencad.lazy.onplace = onplace
 				zencad.lazy.encache = ensave
@@ -809,6 +813,8 @@ class update_loop(QThread):
 				time.sleep(0.01)
 
 def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarkers=True, showconsole=False, showeditor=False):
+	trace("show implementation")
+
 	global started_by, edited
 	global main_window
 	started_by = sys.argv[0] if os.path.basename(sys.argv[0]) != "zencad" else os.path.join(zencad.moduledir, "__main__.py")
@@ -834,6 +840,7 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.texteditor.open(edited)
 	main_window.inotifier.init_notifier(started_by)
 	main_window.move(QApplication.desktop().screen().rect().center() - main_window.rect().center())
+	trace("main window show")
 	main_window.show()
 	main_window.set_hide(showconsole, showeditor)
 	main_window.laststartpath=QDir.currentPath()
@@ -841,8 +848,10 @@ def show_impl(scene, animate=None, pause_time=0.01, nointersect=True, showmarker
 	main_window.lastopened=started_by
 	
 	if animate != None:
+		trace("start animate thread")
 		start_animate_thread(animate)
 		
+	trace("start qt application")
 	return app.exec()
 
 
