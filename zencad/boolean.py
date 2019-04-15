@@ -15,3 +15,8 @@ def difference(arr):
 @lazy.lazy(cls=shape_generator)
 def intersect(arr):
     return pyservoce.intersect(arr)
+
+
+@lazy.lazy(cls=shape_generator)
+def section(*args, **kwargs): 
+	return pyservoce.section(*args, **kwargs)
