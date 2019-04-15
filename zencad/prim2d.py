@@ -52,3 +52,8 @@ def polygon(pnts, wire=False):
 @lazy.lazy(cls=shape_generator)
 def textshape(*args, **kwargs):
     return pyservoce.textshape(*args, **kwargs)
+
+@lazy.lazy(cls=shape_generator)
+def infplane(*args, **kwargs):
+    return pyservoce.infplane(*args, **kwargs)
+
