@@ -111,11 +111,7 @@ class InotifyThread(QThread):
         self.watching = None
 
     def init_notifier(self, path):
-        if self.notifier is not None:
-            self.notifier.remove_watch(self.watching)
-
-        self.notifier = inotify.adapters.Inotify()
-        self.notifier.add_watch(path)
+        self.notifier = inotify.adapters.InotifyTree(os.path.dirname(path))
         self.watching = path
         self.path = path
         self.restart = True
@@ -129,17 +125,22 @@ class InotifyThread(QThread):
         try:
             while 1:
                 for event in self.notifier.event_gen():
-                    if event is not None:
-                        if "IN_CLOSE_WRITE" in event[1]:
+                    if self.restart:
+                        self.restart = False
+                        break
+
+                    if not event:
+                        continue
+
+                    _, types, path, filename = event
+                    if self.watching == os.path.join(path, filename):
+                        if 'IN_CLOSE_WRITE' in types:
                             print(
                                 "widget: {} was rewriten. rerun initial.".format(
                                     self.path
                                 )
                             )
                             self.rerun()
-                    if self.restart:
-                        self.restart = False
-                        break
         except Exception as e:
             print("Warning: Rerun thread was finished:", e)
 
@@ -355,7 +356,7 @@ class MainWidget(QMainWindow):
         self.mCacheInfo = self.create_action(
             "Cache info", self.cacheInfoAction, "Cache info"
         )
-        # self.mFinishSub = 	self.create_action("Finish subprocess", self.finishSubProcess, 			"Finish subprocess")
+        # self.mFinishSub =     self.create_action("Finish subprocess", self.finishSubProcess,          "Finish subprocess")
         self.mDebugInfo = self.create_action(
             "Debug info", self.debugInfoAction, "Debug info"
         )
@@ -377,7 +378,7 @@ class MainWidget(QMainWindow):
             "Coords difference mode",
             checkbox=True,
         )
-        # self.mDisplayFullScreen = 	self.create_action("Display full screen",self.displayFullScreen, 				"Display full screen",									"F12")
+        # self.mDisplayFullScreen =     self.create_action("Display full screen",self.displayFullScreen,                "Display full screen",                                  "F12")
 
     def set_hide(self, showeditor, showconsole):
         self.texteditor.setHidden(not showeditor)
