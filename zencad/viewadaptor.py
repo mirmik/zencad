@@ -113,21 +113,25 @@ class DisplayWidget(QWidget):
 
         self.update_orient1_from_view()
 
+    def create_qwmarkers(self):
+        if self.showmarkers:
+            zencad.lazifier.disable_lazy()
+            self.msphere = zencad.sphere(1)
+            self.MarkerQController = self.scene.add(
+                self.msphere, zencad.Color(1, 0, 0)
+            )
+            self.MarkerWController = self.scene.add(
+                self.msphere, zencad.Color(0, 1, 0)
+            )
+            zencad.lazifier.restore_lazy()
+
+            self.MarkerQController.hide(True)
+            self.MarkerWController.hide(True)
+
     def showEvent(self, ev):
         trace("DisplayWidget::showEvent")
         if self.inited != True:
             trace("DisplayWidget::showEvent: init")
-
-            if self.showmarkers:
-                zencad.lazifier.disable_lazy()
-                self.msphere = zencad.sphere(1)
-                self.MarkerQController = self.scene.add(
-                    self.msphere, zencad.Color(1, 0, 0)
-                )
-                self.MarkerWController = self.scene.add(
-                    self.msphere, zencad.Color(0, 1, 0)
-                )
-                zencad.lazifier.restore_lazy()
 
             self.viewer = self.scene.viewer
             self.view = self.viewer.create_view()
@@ -139,9 +143,7 @@ class DisplayWidget(QWidget):
             self.view.set_window(self.winId())
             self.viewer.set_triedron_axes()
 
-            if self.showmarkers:
-                self.MarkerQController.hide(True)
-                self.MarkerWController.hide(True)
+            self.create_qwmarkers()
 
             self.view.redraw()
             self.inited = True
@@ -369,6 +371,8 @@ class DisplayWidget(QWidget):
 
         w, h = oldview.size()
         # oldview.destroy()
+
+        self.create_qwmarkers()
 
         # Tricks for preredraw view buffer
         self.view.set_virtual_window(w, h)
