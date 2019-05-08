@@ -90,7 +90,9 @@ def torus(r1, r2, yaw=None, pitch=None):
         if yaw is not None:
             return pyservoce.torus(r1=r1, r2=r2, yaw=yaw)
         else:
-            return pyservoce.torus(r1=r1, r2=r2)
+            #return pyservoce.torus(r1=r1, r2=r2)
+            return (pyservoce.torus(r1=r1, r2=r2, yaw=deg(180)) 
+                + pyservoce.torus(r1=r1, r2=r2, yaw=deg(180)).rotateZ(deg(180)))
 
 
 @lazy.lazy(cls=nocached_shape_generator)
