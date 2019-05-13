@@ -216,7 +216,7 @@ def nulltrans():
 
 
 def sqrtrans():
-    return multitransform([nulltrans(), rotateZ(deg(90)), rotateZ(deg(180)), rotateZ(deg(270))])
+    return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()])
 
 
 def rotate_array(n):
