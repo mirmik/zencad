@@ -374,8 +374,9 @@ class DisplayWidget(QWidget):
 
         self.create_qwmarkers()
 
-        # Tricks for preredraw view buffer
-        self.view.set_virtual_window(w, h)
+        if os.name == "posix":
+            # Tricks for preredraw view buffer
+            self.view.set_virtual_window(w, h)
 
         self.view.set_window(self.winId())
         self.viewer.set_triedron_axes()
