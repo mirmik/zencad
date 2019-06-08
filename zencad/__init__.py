@@ -31,6 +31,8 @@ from zencad.prim1d import *
 from zencad.ops3d import *
 from zencad.ops1d2d import *
 
+import zencad.controllers
+
 
 def gr(grad):
     print("'gr' function is deprecated. Use 'deg' instead")
