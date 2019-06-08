@@ -103,47 +103,26 @@ class ConsoleWidget(QTextEdit):
 
 
 class InotifyThread(QThread):
-    filechanged = pyqtSignal(str)
+    filechanged = pyqtSignal()
 
     def __init__(self, parent):
         QThread.__init__(self, parent)
-        self.notifier = None
-        self.watching = None
 
     def init_notifier(self, path):
-        pass
-        #if self.notifier is not None:
-        #    self.notifier.remove_watch(self.watching)
+        self.path = path
+        self.restart = True
+        self.last_mtime = os.stat(self.path).st_mtime
 
-        #self.notifier = inotify.adapters.Inotify()
-        #self.notifier.add_watch(path)
-        #self.watching = path
-        #self.path = path
-        #self.restart = True
-
-        #if not self.isRunning():
-        #    self.start()
+        if not self.isRunning():
+            self.start()
 
     def run(self):
-        #self.restart = False
+        self.restart = False
         while 1:
-            pass
-        #try:
-        #    while 1:
-        #        for event in self.notifier.event_gen():
-        #            if event is not None:
-        #                if "IN_CLOSE_WRITE" in event[1]:
-        #                    print(
-        #                        "widget: {} was rewriten. rerun initial.".format(
-        #                            self.path
-        #                        )
-        #                    )
-        #                    self.rerun()
-        #            if self.restart:
-        #                self.restart = False
-        #                break
-        #except Exception as e:
-        #    print("Warning: Rerun thread was finished:", e)
+            if (os.stat(self.path).st_mtime != self.last_mtime):
+                self.last_mtime = os.stat(self.path).st_mtime
+                self.filechanged.emit()
+            time.sleep(0.0001)
 
     def rerun(self):
         self.filechanged.emit(self.path)
