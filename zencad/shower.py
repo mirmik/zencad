@@ -21,7 +21,7 @@ import math
 import runpy
 import tempfile
 import threading
-import inotify.adapters
+#import inotify.adapters
 
 import numpy as np
 from PIL import Image
@@ -111,37 +111,39 @@ class InotifyThread(QThread):
         self.watching = None
 
     def init_notifier(self, path):
-        if self.notifier is not None:
-            self.notifier.remove_watch(self.watching)
+        pass
+        #if self.notifier is not None:
+        #    self.notifier.remove_watch(self.watching)
 
-        self.notifier = inotify.adapters.Inotify()
-        self.notifier.add_watch(path)
-        self.watching = path
-        self.path = path
-        self.restart = True
+        #self.notifier = inotify.adapters.Inotify()
+        #self.notifier.add_watch(path)
+        #self.watching = path
+        #self.path = path
+        #self.restart = True
 
-        if not self.isRunning():
-            self.start()
+        #if not self.isRunning():
+        #    self.start()
 
     def run(self):
-        self.restart = False
-
-        try:
-            while 1:
-                for event in self.notifier.event_gen():
-                    if event is not None:
-                        if "IN_CLOSE_WRITE" in event[1]:
-                            print(
-                                "widget: {} was rewriten. rerun initial.".format(
-                                    self.path
-                                )
-                            )
-                            self.rerun()
-                    if self.restart:
-                        self.restart = False
-                        break
-        except Exception as e:
-            print("Warning: Rerun thread was finished:", e)
+        #self.restart = False
+        while 1:
+            pass
+        #try:
+        #    while 1:
+        #        for event in self.notifier.event_gen():
+        #            if event is not None:
+        #                if "IN_CLOSE_WRITE" in event[1]:
+        #                    print(
+        #                        "widget: {} was rewriten. rerun initial.".format(
+        #                            self.path
+        #                        )
+        #                    )
+        #                    self.rerun()
+        #            if self.restart:
+        #                self.restart = False
+        #                break
+        #except Exception as e:
+        #    print("Warning: Rerun thread was finished:", e)
 
     def rerun(self):
         self.filechanged.emit(self.path)
