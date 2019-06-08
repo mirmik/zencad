@@ -181,6 +181,8 @@ def mirrorZ(*args, **kwargs):
 
 @lazy.lazy(cls=LazyObjectTransformGeneratorCached)
 def scale(factor, center):
+    if factor is list or factor is tuple:
+        return pyservoce.scaleXYZ(factor[0], factor[1], factor[2])
     return pyservoce.scale(factor, point3(center).to_servoce())
 
 
@@ -197,6 +199,25 @@ def scaleY(factor):
 @lazy.lazy(cls=LazyObjectTransformGeneratorCached)
 def scaleZ(factor):
     return pyservoce.scaleZ(factor)
+
+
+@lazy.lazy(cls=LazyObjectTransformGeneratorCached)
+def scaleXY(x,y):
+    return pyservoce.scaleXY(x,y)
+
+
+@lazy.lazy(cls=LazyObjectTransformGeneratorCached)
+def scaleYZ(y,z):
+    return pyservoce.scaleYZ(y,z)
+
+
+@lazy.lazy(cls=LazyObjectTransformGeneratorCached)
+def scaleXZ(x,z):
+    return pyservoce.scaleXZ(x,z)
+
+@lazy.lazy(cls=LazyObjectTransformGeneratorCached)
+def scaleXYZ(x,y,z):
+    return pyservoce.scaleXYZ(x,y,z)
 
 
 class multitransform:
