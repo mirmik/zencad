@@ -16,6 +16,10 @@ lazy = evalcache.Lazy(
     cache=evalcache.dircache_v2.DirCache_v2(cachepath), algo=algo, onbool=True
 )
 
+def _scale_do(self, factor, center=pyservoce.libservoce.point3(0,0,0)):
+    if isinstance(factor, (list, tuple)):
+        return pyservoce.Shape.scaleXYZ(self, factor[0], factor[1], factor[2])
+    return pyservoce.Shape.scale(self, factor, point3(center))
 
 class LazyObjectShape(evalcache.LazyObject):
     def __init__(self, *args, **kwargs):
@@ -181,6 +185,85 @@ class LazyObjectShape(evalcache.LazyObject):
             cls=LazyObjectShape,
         )
 
+    def scale(self, *args, **kwargs):
+        return self.lazyinvoke(
+            _scale_do,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShape,
+        )
+
+    def scaleX(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleX,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
+
+    def scaleY(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleY,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
+
+    def scaleZ(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleZ,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
+
+    def scaleXY(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleXY,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
+
+    def scaleYZ(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleYZ,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
+
+    def scaleXZ(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleXZ,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
+
+    def scaleXYZ(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.scaleXYZ,
+            (self, *args),
+            kwargs,
+            encache=True,
+            decache=True,
+            cls=LazyObjectShape,
+        )
 
 class nocached_shape_generator(evalcache.LazyObject):
     def __init__(self, *args, **kwargs):
