@@ -42,3 +42,23 @@ def points(tpls):
 
 def vectors(tpls):
     return [vector3(*t) for t in tpls]
+
+def circle_tangent_points(center, radius, point):
+    c_x = center[0]
+    c_y = center[1]
+    a_x = point[0] - c_x
+    a_y = point[1] - c_y
+    R = radius
+
+    b1x = R*(R*a_x - a_y*math.sqrt(-R**2 + a_x**2 + a_y**2))/(a_x**2 + a_y**2)
+    b1y = R*(R*a_y + a_x*math.sqrt(-R**2 + a_x**2 + a_y**2))/(a_x**2 + a_y**2)
+    
+    b2x = R*(R*a_x + a_y*math.sqrt(-R**2 + a_x**2 + a_y**2))/(a_x**2 + a_y**2)
+    b2y = R*(R*a_y - a_x*math.sqrt(-R**2 + a_x**2 + a_y**2))/(a_x**2 + a_y**2)
+    
+    b1x += c_x
+    b1y += c_y 
+    b2x += c_x
+    b2y += c_y 
+    
+    return [ point3(b1x,b1y), point3(b2x,b2y) ]
