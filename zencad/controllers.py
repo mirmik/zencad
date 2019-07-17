@@ -51,12 +51,15 @@ class Unit:
 		else:
 			self.global_location = self.parent.global_location * self.location
 
-	def relocate(self, location, deep=False):
+	def relocate(self, location, deep=False, view=True):
 		self.location = evalcache.unlazy(location)
 		if deep:
 			self.location_update_deep()
 		else:
 			self.location_update()
+
+		if view:
+			self.apply_view_location()
 
 	def location_update_deep(self):
 		self.location_update()
