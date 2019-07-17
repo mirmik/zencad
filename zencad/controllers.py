@@ -1,6 +1,16 @@
 import pyservoce
 import evalcache
 
+class ShapeView:
+	def __init__(self, sctrl):
+		self.sctrl = sctrl
+
+	def set_location(self, trans):
+		self.sctrl.set_location(trans)
+
+	def hide(self, en):
+		self.sctrl.hide(en)
+
 class Unit:
 	"""Базовый класс для использования в кинематических цепях и сборках
 
@@ -8,15 +18,6 @@ class Unit:
 	Держит список наследников, позиция которых считается относительно него.    
 	"""
 
-	class ShapeView:
-		def __init__(self, sctrl):
-			self.sctrl = sctrl
-
-		def set_location(self, trans):
-			self.sctrl.set_location(trans)
-
-		def hide(self, en):
-			self.sctrl.hide(en)
 
 
 	def __init__(self, 
@@ -44,28 +45,26 @@ class Unit:
 	def link(self, child):
 		self.add_child(child)
 
-	def location_update(self):
+	def location_update(self, deep=False, view=False):
 		if self.parent is None:
 			self.global_location = self.location
 
 		else:
 			self.global_location = self.parent.global_location * self.location
 
-	def relocate(self, location, deep=False, view=True):
-		self.location = evalcache.unlazy(location)
 		if deep:
-			self.location_update_deep()
-		else:
-			self.location_update()
+			for c in self.childs:
+				c.location_update(deep=True)
 
 		if view:
-			self.apply_view_location()
+			self.apply_view_location(deep)
 
-	def location_update_deep(self):
-		self.location_update()
+	def relocate(self, location, deep=False, view=False):
+		self.location = evalcache.unlazy_if_need(location)
+		self.location_update(deep)
 
-		for c in self.childs:
-			c.location_update_deep()
+		if view:
+			self.apply_view_location(deep)
 
 	def set_shape(self, shape):
 		self.shape = shape
@@ -90,10 +89,14 @@ class Unit:
 
 		return str((n,h))
 
-	def apply_view_location(self):
+	def apply_view_location(self, deep):
 		for v in self.views:
 			v.set_location(self.global_location)
 
+		if deep:
+			for c in self.childs:
+				c.apply_view_location(deep)
+		
 	def bind_scene(self, scene, color=(1,1,1)):
 		if self.shape is None:
 			return
@@ -107,13 +110,13 @@ class Unit:
 #		if not isinstance(color, pyservoce.libservoce.Color):
 #			color = pyservoce.libservoce.Color(*color)
 
-		shape_view = self.ShapeView(scene.add(
-			evalcache.unlazy(self.shape), 
+		shape_view = ShapeView(scene.add(
+			evalcache.unlazy_if_need(self.shape), 
 			color))
 		scene.viewer.display(shape_view.sctrl)
 		self.views.add(shape_view)
 
-		self.apply_view_location()
+		self.apply_view_location(False)
 
 	def bind_scene_deep(self, scene):
 		self.bind_scene(scene)
@@ -160,6 +163,21 @@ class CynematicUnit(Unit):
 	def link(self, arg):
 		self.output.link(arg)
 
-class RotateConnector(Unit):
-	def __init__(self, **kwargs):
+class CynematicRotator(CynematicUnit):
+	def __init__(self, ax, mul=1, **kwargs):
 		super().__init__(**kwargs)
+		self.ax = ax
+		self.mul = mul
+
+	def set_coord(self, coord, **kwargs):
+		self.output.relocate(pyservoce.rotate(pyservoce.vector3(self.ax), coord * self.mul), **kwargs)
+
+
+class CynematicActuator(CynematicUnit):
+	def __init__(self, ax, mul=1, **kwargs):
+		super().__init__(**kwargs)
+		self.ax = ax
+		self.mul = mul
+
+	def set_coord(self, coord, **kwargs):
+		self.output.relocate(pyservoce.translate(pyservoce.vector3(self.ax), coord * self.mul), **kwargs)

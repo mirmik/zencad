@@ -41,6 +41,7 @@ BANNER_TEXT = (  # "\n"
 QMARKER_MESSAGE = "Press 'Q' to set marker"
 WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
+DISPLAY_WIDGET = None
 __ZENCAD_EVENT_DEBUG__ = False
 ANIMATE_THREAD = None
 
@@ -912,6 +913,8 @@ def show_impl(
 
     global started_by, edited
     global main_window
+    global DISPLAY_WIDGET
+
     started_by = (
         sys.argv[0]
         if os.path.basename(sys.argv[0]) != "zencad"
@@ -931,6 +934,7 @@ def show_impl(
     zencad.opengl.init_opengl()
 
     disp = zencad.viewadaptor.DisplayWidget(scene, nointersect, showmarkers)
+    DISPLAY_WIDGET = disp
     main_window = MainWidget(
         disp,
         showconsole=showconsole,
