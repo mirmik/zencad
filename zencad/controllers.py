@@ -1,5 +1,6 @@
 import pyservoce
 import evalcache
+import numpy
 
 class ShapeView:
 	def __init__(self, sctrl):
@@ -17,8 +18,6 @@ class Unit:
 	Вычисляет свою текущую позицию исходя из дерева построения.
 	Держит список наследников, позиция которых считается относительно него.    
 	"""
-
-
 
 	def __init__(self, 
 				parent=None,
@@ -159,6 +158,7 @@ class CynematicUnit(Unit):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.output = Unit(parent=self)
+		self.coord = 0
 
 	def link(self, arg):
 		self.output.link(arg)
@@ -170,8 +170,8 @@ class CynematicRotator(CynematicUnit):
 		self.mul = mul
 
 	def set_coord(self, coord, **kwargs):
+		self.coord = coord
 		self.output.relocate(pyservoce.rotate(pyservoce.vector3(self.ax), coord * self.mul), **kwargs)
-
 
 class CynematicActuator(CynematicUnit):
 	def __init__(self, ax, mul=1, **kwargs):
@@ -180,4 +180,5 @@ class CynematicActuator(CynematicUnit):
 		self.mul = mul
 
 	def set_coord(self, coord, **kwargs):
+		self.coord = coord
 		self.output.relocate(pyservoce.translate(pyservoce.vector3(self.ax), coord * self.mul), **kwargs)
