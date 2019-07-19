@@ -12,7 +12,7 @@ class ShapeView:
 	def hide(self, en):
 		self.sctrl.hide(en)
 
-class Unit:
+class unit:
 	"""Базовый класс для использования в кинематических цепях и сборках
 
 	Вычисляет свою текущую позицию исходя из дерева построения.
@@ -100,15 +100,6 @@ class Unit:
 		if self.shape is None:
 			return
 
-#		if color is None and self.color is None:
-#			color = pyservoce.defs.DEFAULT_COLOR
-
-#		if self.color is not None:
-#			color = self.color
-
-#		if not isinstance(color, pyservoce.libservoce.Color):
-#			color = pyservoce.libservoce.Color(*color)
-
 		shape_view = ShapeView(scene.add(
 			evalcache.unlazy_if_need(self.shape), 
 			color))
@@ -122,63 +113,3 @@ class Unit:
 		for c in self.childs:
 			c.bind_scene_deep(scene)
 
-
-	#ef update_global_location(self):
-	#   if self.local_location is None:
-	#       if self.parent is None:
-	#           self.global_location = pyservoce.libservoce.nulltrans()
-	#       else:
-	#           self.global_location = self.parent.global_location
-	#       return
-
-	#   if self.parent is None:
-	#       self.global_location = self.local_location
-	#   else:
-	#       self.global_location = self.parent.global_location * self.local_location
-
-	#ef eval_location(self, location):
-	#   trace("eval_location")
-	#   if location is None:
-	#       self.local_location = None
-	#   else:
-	#       self.local_location = (
-	#           location.unlazy() if isinstance(location, LazyObject) else location
-	#       )
-	#   self.update_global_location()
-
-	#ef set_location(self, location):
-	#   trace("set_location")
-	#   self.eval_location(location)
-	#   self.apply_location()
-
-	#ef apply_location(self):
-	#   raise NotImplementedError()
-
-class CynematicUnit(Unit):
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-		self.output = Unit(parent=self)
-		self.coord = 0
-
-	def link(self, arg):
-		self.output.link(arg)
-
-class CynematicRotator(CynematicUnit):
-	def __init__(self, ax, mul=1, **kwargs):
-		super().__init__(**kwargs)
-		self.ax = ax
-		self.mul = mul
-
-	def set_coord(self, coord, **kwargs):
-		self.coord = coord
-		self.output.relocate(pyservoce.rotate(pyservoce.vector3(self.ax), coord * self.mul), **kwargs)
-
-class CynematicActuator(CynematicUnit):
-	def __init__(self, ax, mul=1, **kwargs):
-		super().__init__(**kwargs)
-		self.ax = ax
-		self.mul = mul
-
-	def set_coord(self, coord, **kwargs):
-		self.coord = coord
-		self.output.relocate(pyservoce.translate(pyservoce.vector3(self.ax), coord * self.mul), **kwargs)
