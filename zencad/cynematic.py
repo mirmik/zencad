@@ -103,6 +103,9 @@ class planemover(cynematic_unit):
 
 
 class cynematic_chain:
+	"""Объект-алгоритм управления участком кинематической чепи от точки
+	входа, до точки выхода."""
+
 	def __init__(self, finallink, startlink = None):
 		self.chain = self.collect_chain(finallink, startlink)
 		self.chain = self.simplify_chain(self.chain)
