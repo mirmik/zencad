@@ -36,6 +36,7 @@ class cynematic_unit(ABC, zencad.assemble.unit):
 
 		self.output.link(arg)
 
+
 class cynematic_unit_one_axis(cynematic_unit):
 	"""Кинематическое звено специального вида,
 	взаимное положение СК которого может быть описано одним 3вектором
@@ -54,31 +55,42 @@ class cynematic_unit_one_axis(cynematic_unit):
 
 	#override
 	def senses(self):
-		return (sensivity(),)
+		return (self.sensivity(),)
 
 	#override
 	def set_coords(self, coords, **kwargs):
 		self.set_coord(coords[0], **kwargs)
 
+	@abstractmethod
+	def sensivity(self):
+		raise NotImplementedError
+
+	@abstractmethod
+	def set_coord(self, coord, **kwargs):
+		raise NotImplementedError
+
+
 class rotator(cynematic_unit_one_axis):
 	def sensivity(self):
 		"""Возвращает тензор производной по положению
 		в собственной системе координат в формате (w, v)"""
-		return (pyservoce.vector3(), axmul)
+		return (self.axmul, pyservoce.vector3())
 
-	def set_coord(self, coord):
+	def set_coord(self, coord, **kwargs):
 		self.coord = coord
 		self.output.relocate(pyservoce.rotate(self.ax, coord * self.mul), **kwargs)
+
 
 class actuator(cynematic_unit_one_axis):
 	def sensivity(self):
 		"""Возвращает тензор производной по положению
 		в собственной системе координат в формате (w, v)"""
-		return (axmul, pyservoce.vector3())
+		return (pyservoce.vector3(), self.axmul)
 
-	def set_coord(self, coord):
+	def set_coord(self, coord, **kwargs):
 		self.coord = coord
 		self.output.relocate(pyservoce.translate(self.ax, coord * self.mul), **kwargs)
+
 
 class planemover(cynematic_unit):
 	"""Кинематическое звено с двумя степенями свободы для перемещения
@@ -115,21 +127,21 @@ class cynematic_chain:
 
 	def __init__(self, finallink, startlink = None):
 		self.chain = self.collect_chain(finallink, startlink)
-		self.chain = self.simplify_chain(self.chain)
-		self.parametered_links = self.collect_parametered()
+		self.simplified_chain = self.simplify_chain(self.chain)
+		self.cynematic_pairs = self.collect_cynematic_pairs()
 
-	def collect_parametered(self):
-		ret = []
+	def collect_cynematic_pairs(self):
+		par = []
 		for l in self.chain:
 			if isinstance(l, cynematic_unit):
-				ret.append(l)
-		return ret
+				par.append(l)
+		return par
 
-	def collect_coords(self):
-		arr = []
-		for l in self.parametered_links:
-			arr.append(l.coord)
-		return arr
+	#def collect_coords(self):
+	#	arr = []
+	#	for l in self.parametered_links:
+	#		arr.append(l.coord)
+	#	return arr
 
 	@staticmethod
 	def collect_chain(finallink, startlink = None):
@@ -151,12 +163,13 @@ class cynematic_chain:
 			if isinstance(l, cynematic_unit):
 				if tmp is not None:
 					ret.append(tmp)
+					tmp = None
 				ret.append(l)
 			else:
 				if tmp is None:
 					tmp = l.location
 				else:
-					tmp = l.location * tmp
+					tmp = tmp * l.location
 
 		if tmp is not None:
 			ret.append(tmp)
@@ -166,29 +179,70 @@ class cynematic_chain:
 	def getchain(self):
 		return self.chain
 
-	def sensivity(self):
+	def sensivity(self, basis=None):
 		"""Вернуть массив тензоров производных положения выходного
 		звена по вектору координат в виде [(w_i, v_i) ...]"""
 
 		trsf = pyservoce.nulltrans()
 		senses = []
 
-		for link in self.chain:
-			if isinstance(link, pyservoce.libservoce.transformation):
-				trsf = link * trsf
-			
-			else:
-				senses = link.senses()
-				radius = trsf.translation()
+		outtrans = self.chain[0].global_location
 
-				for sens in senses.reversed():
+		"""Два разных алгоритма получения масива тензоров чувствительности.
+		Первый - проход по цепи с аккумулированием тензора трансформации.
+		Второй - по глобальным объектам трансформации
+
+		Возможно следует использовать второй и сразу же перегонять в btrsf вместо outtrans"""
+
+		if False:
+			for link in self.simplified_chain:
+				if isinstance(link, pyservoce.libservoce.transformation):
+					trsf = link * trsf
+				
+				else:
+					lsenses = link.senses()
+					radius = trsf.translation()
+				
+					for sens in reversed(lsenses):
+						
+						wsens = sens[0]
+						vsens = wsens.cross(radius) + sens[1]
+				
+						itrsf = trsf.inverse()
+				
+						senses.append((
+							itrsf(wsens), 
+							itrsf(vsens)
+						))
+				
+					trsf = link.location * trsf
+
+		else:
+			for link in self.cynematic_pairs:
+				lsenses = link.senses()
+				
+				linktrans = link.output.global_location
+				trsf = linktrans.inverse() * outtrans
+			
+				radius = trsf.translation()
+			
+				for sens in reversed(lsenses):
 					
 					wsens = sens[0]
 					vsens = wsens.cross(radius) + sens[1]
-
+				
+					itrsf = trsf.inverse()
+				
 					senses.append((
-						trsf.transform_vector(wsens), 
-						trsf.transform_vector(vsens)
+						itrsf(wsens), 
+						itrsf(vsens)
 					))
 
-				trsf = link.location * trsf
+		"""Для удобства интерпретации удобно перегнать выход в интуитивный базис."""
+		if basis is not None:
+			btrsf = basis.global_location
+			trsf =  btrsf * outtrans.inverse()
+
+			senses = [ (trsf(w), trsf(v)) for w, v in senses ]
+
+		return list(reversed(senses))
