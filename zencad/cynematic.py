@@ -104,7 +104,14 @@ class planemover(cynematic_unit):
 
 class cynematic_chain:
 	"""Объект-алгоритм управления участком кинематической чепи от точки
-	входа, до точки выхода."""
+	выхода, до точки входа.
+
+	Порядок следования обратный, потому что звено может иметь одного родителя,
+	но много потомков. Цепочка собирается по родителю.
+
+	finallink - конечное звено.
+	startlink - начальное звено. 
+		Если не указано, алгоритм проходит до абсолютной СК"""
 
 	def __init__(self, finallink, startlink = None):
 		self.chain = self.collect_chain(finallink, startlink)
@@ -151,36 +158,37 @@ class cynematic_chain:
 				else:
 					tmp = l.location * tmp
 
+		if tmp is not None:
+			ret.append(tmp)
+
 		return ret
 
 	def getchain(self):
 		return self.chain
 
-	def sensivity(self, coords=None):
-		#if coords:
-		#	coords = coords.reversed()
-		#else:
-		#	coords = self.collect_coords()
-		
+	def sensivity(self):
+		"""Вернуть массив тензоров производных положения выходного
+		звена по вектору координат в виде [(w_i, v_i) ...]"""
+
 		trsf = pyservoce.nulltrans()
 		senses = []
 
-		i = 0
-		lit = iter(self.chain)
-
-		while True:
-			link = lit.current()
+		for link in self.chain:
 			if isinstance(link, pyservoce.libservoce.transformation):
 				trsf = link * trsf
+			
 			else:
-				sens = link.sensivity()
-
+				senses = link.senses()
 				radius = trsf.translation()
-				wsens = sens[0]
-				vsens = (radius, wsens) + sens[1]
 
-				senses.append((wsens, vsens))
+				for sens in senses.reversed():
+					
+					wsens = sens[0]
+					vsens = wsens.cross(radius) + sens[1]
+
+					senses.append((
+						trsf.transform_vector(wsens), 
+						trsf.transform_vector(vsens)
+					))
 
 				trsf = link.location * trsf
-
-			i+=1
