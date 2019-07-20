@@ -152,6 +152,9 @@ class cynematic_chain:
 			chain.append(link)
 			link = link.parent
 
+		if startlink is not None:
+			chain.append(startlink)
+
 		return chain
 
 	@staticmethod
@@ -241,7 +244,11 @@ class cynematic_chain:
 		"""Для удобства интерпретации удобно перегнать выход в интуитивный базис."""
 		if basis is not None:
 			btrsf = basis.global_location
-			trsf =  btrsf * outtrans.inverse()
+			#trsf =  btrsf * outtrans.inverse()
+			#trsf =  outtrans * btrsf.inverse() #ok
+			trsf =  btrsf.inverse() * outtrans #ok
+			#trsf =  outtrans.inverse() * btrsf
+			#trsf =  trsf.inverse()
 
 			senses = [ (trsf(w), trsf(v)) for w, v in senses ]
 
