@@ -89,7 +89,7 @@ class actuator(cynematic_unit_one_axis):
 
 	def set_coord(self, coord, **kwargs):
 		self.coord = coord
-		self.output.relocate(pyservoce.translate(self.ax, coord * self.mul), **kwargs)
+		self.output.relocate(pyservoce.translate(self.ax * coord * self.mul), **kwargs)
 
 
 class planemover(cynematic_unit):

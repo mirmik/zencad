@@ -897,7 +897,7 @@ class update_loop(QThread):
                 if self.cancelled:
                     return
 
-                time.sleep(0.01)
+                time.sleep(0.0001)
 
 
 def show_impl(
