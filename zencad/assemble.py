@@ -68,6 +68,9 @@ class unit:
 	def set_shape(self, shape):
 		self.shape = shape
 
+	def set_color(self, *args, **kwargs):
+		self.color = pyservoce.color(*args, **kwargs)
+
 	def print_tree(self, tr=0):
 		s = "\t" * tr + str(self) 
 		print(s)
@@ -96,9 +99,12 @@ class unit:
 			for c in self.childs:
 				c.apply_view_location(deep)
 		
-	def bind_scene(self, scene, color=(1,1,1)):
+	def bind_scene(self, scene, color=pyservoce.default_color):
 		if self.shape is None:
 			return
+
+		if self.color is not None:
+			color = self.color
 
 		shape_view = ShapeView(scene.add(
 			evalcache.unlazy_if_need(self.shape), 
