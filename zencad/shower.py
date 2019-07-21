@@ -854,13 +854,13 @@ class MainWidget(QMainWindow):
 class update_loop(QThread):
     after_update_signal = pyqtSignal()
 
-    def __init__(self, parent, updater_function, pause_time=0.01):
+    def __init__(self, parent, updater_function, animate_step=0.01):
         QThread.__init__(self, parent)
         self.updater_function = updater_function
         self.parent = parent
         self.parent.animate_thread = self
         self.wdg = parent.dispw
-        self.pause_time = pause_time
+        self.animate_step = animate_step
         self.cancelled = False
 
     def finish(self):
@@ -870,7 +870,16 @@ class update_loop(QThread):
 
     def run(self):
         time.sleep(0.1)
+        lasttime = time.time() - self.animate_step
         while 1:
+            curtime = time.time()
+            deltatime = curtime - lasttime
+
+            if deltatime < self.animate_step:
+                time.sleep(self.animate_step - deltatime)
+
+            lasttime = time.time()
+
             ensave = zencad.lazy.encache
             desave = zencad.lazy.decache
             onplace = zencad.lazy.onplace
@@ -897,13 +906,10 @@ class update_loop(QThread):
                 if self.cancelled:
                     return
 
-                time.sleep(0.0001)
-
-
 def show_impl(
     scene,
     animate=None,
-    pause_time=0.01,
+    animate_step=0.01,
     nointersect=True,
     showmarkers=True,
     showconsole=False,
@@ -959,15 +965,15 @@ def show_impl(
 
     if animate != None:
         trace("start animate thread")
-        start_animate_thread(animate)
+        start_animate_thread(animate, animate_step)
 
     trace("start qt application")
     return app.exec()
 
 
-def start_animate_thread(animate):
+def start_animate_thread(animate, animate_step = 0.01):
     global ANIMATE_THREAD
-    thr = update_loop(main_window, animate)
+    thr = update_loop(main_window, animate, animate_step = animate_step)
     ANIMATE_THREAD = thr
     main_window.animate_thread = thr
     main_window.animate_finish.connect(thr.finish)
