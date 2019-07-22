@@ -908,6 +908,7 @@ class update_loop(QThread):
 
 def show_impl(
     scene,
+    view = None,
     animate=None,
     animate_step=0.01,
     nointersect=True,
@@ -939,7 +940,12 @@ def show_impl(
 
     zencad.opengl.init_opengl()
 
-    disp = zencad.viewadaptor.DisplayWidget(scene, nointersect, showmarkers)
+    disp = zencad.viewadaptor.DisplayWidget(
+        scene=scene, 
+        view=view,
+        nointersect=nointersect, 
+        showmarkers=showmarkers)
+    
     DISPLAY_WIDGET = disp
     main_window = MainWidget(
         disp,
