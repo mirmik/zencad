@@ -21,7 +21,7 @@ def trace(s):
 class DisplayWidget(QWidget):
     intersectPointSignal = pyqtSignal(tuple)
 
-    def __init__(self, arg, nointersect, showmarkers=True):
+    def __init__(self, scene, nointersect=True, view=None, showmarkers=True):
         trace("construct DisplayWidget")
         QWidget.__init__(self)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -35,7 +35,9 @@ class DisplayWidget(QWidget):
         self.nointersect = nointersect
         self.showmarkers = showmarkers
 
-        self.scene = arg
+        self.scene = scene
+        self.view = view
+ 
         self.temporary1 = QPoint()
         self.started_yaw = math.pi * (7 / 16)
         self.started_pitch = math.pi * -0.15
@@ -135,15 +137,13 @@ class DisplayWidget(QWidget):
             trace("DisplayWidget::showEvent: init")
 
             self.viewer = self.scene.viewer
-            self.view = self.viewer.create_view()
+    
+            if self.view is None:
+                self.view = self.viewer.create_view()
 
-            self.view.set_gradient()
             self.set_orient1()
-            self.view.set_triedron()
-
             self.view.set_window(self.winId())
-            self.viewer.set_triedron_axes()
-
+            
             self.create_qwmarkers()
 
             self.view.redraw()

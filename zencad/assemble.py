@@ -30,6 +30,7 @@ class unit:
 		self.global_location = self.location
 		self.name = name
 		self.color = None
+		self.dispobjects = []
 
 		self.views = set()
 		self.childs = set()
@@ -64,6 +65,22 @@ class unit:
 
 		if view:
 			self.apply_view_location(deep)
+
+	def set_objects(self, objects):
+		self.dispobjects = objects
+
+	def add_object(self, d):
+		self.dispobjects.append(d)
+
+	def add_triedron(self, length=10, width=1, arrlen=1,
+			xcolor=pyservoce.red, ycolor=pyservoce.green, zcolor=pyservoce.blue):
+		self.xaxis = pyservoce.draw_arrow(pyservoce.point3(0,0,0), pyservoce.vector3(length,0,0), clr=xcolor, arrlen=arrlen, width=width)
+		self.yaxis = pyservoce.draw_arrow(pyservoce.point3(0,0,0), pyservoce.vector3(0,length,0), clr=ycolor, arrlen=arrlen, width=width)
+		self.zaxis = pyservoce.draw_arrow(pyservoce.point3(0,0,0), pyservoce.vector3(0,0,length), clr=zcolor, arrlen=arrlen, width=width)
+
+		self.dispobjects.append(self.xaxis)
+		self.dispobjects.append(self.yaxis)
+		self.dispobjects.append(self.zaxis)
 
 	def set_shape(self, shape):
 		self.shape = shape
@@ -100,17 +117,19 @@ class unit:
 				c.apply_view_location(deep)
 		
 	def bind_scene(self, scene, color=pyservoce.default_color):
-		if self.shape is None:
-			return
+		for d in self.dispobjects:
+			scene.viewer.display(d)
+			self.views.add(ShapeView(d))
 
-		if self.color is not None:
-			color = self.color
-
-		shape_view = ShapeView(scene.add(
-			evalcache.unlazy_if_need(self.shape), 
-			color))
-		scene.viewer.display(shape_view.sctrl)
-		self.views.add(shape_view)
+		if self.shape is not None:
+			if self.color is not None:
+				color = self.color
+	
+			shape_view = ShapeView(scene.add(
+				evalcache.unlazy_if_need(self.shape), 
+				color))
+			scene.viewer.display(shape_view.sctrl)
+			self.views.add(shape_view)
 
 		self.apply_view_location(False)
 
