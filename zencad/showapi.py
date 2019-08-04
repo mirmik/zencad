@@ -3,13 +3,18 @@ import argparse
 import evalcache
 import sys
 
+import zencad.assemble
+
 default_scene = Scene()
 mode = None
 
 
-def display(shp, color=Color(0.6, 0.6, 0.8)):
+def display(shp, color=Color(0.6, 0.6, 0.8), deep=False):
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
+
+    if isinstance(shp, zencad.assemble.unit):
+        return shp.bind_scene(default_scene, color=color, deep=deep)
 
     return default_scene.add(shp, color)
 
