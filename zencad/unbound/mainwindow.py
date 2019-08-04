@@ -2,12 +2,14 @@
 
 import zencad
 import zencad.console
+import zencad.texteditor
 import zencad.viewadaptor
 import zencad.lazifier
 import zencad.opengl
 import zencad.texteditor
 
 import zencad.unbound.communicator
+import zencad.unbound.actions
 
 import pyservoce
 import evalcache
@@ -24,25 +26,30 @@ import pickle
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 	def __init__(self, client_communicator):
 		super().__init__()
 		self.console = zencad.console.ConsoleWidget()
+		self.texteditor = zencad.texteditor.TextEditor()
 
 		self.client_communicator = client_communicator
-		print("connect")
 		self.client_communicator.newdata.connect(self.new_worker_message)
 		self.client_communicator.start_listen()
 
 		self.hsplitter = QSplitter(Qt.Horizontal)
 		self.vsplitter = QSplitter(Qt.Vertical)
 
+		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
 		self.vsplitter.addWidget(QWidget())
 		self.vsplitter.addWidget(self.console)
 
 		self.resize(800,600)
 		self.setCentralWidget(self.hsplitter)
+
+		self.createActions()
+		self.createMenus()
+		self.createToolbars()
 
 	def new_worker_message(self, data):
 		data = pickle.loads(data)
@@ -57,10 +64,13 @@ class MainWindow(QMainWindow):
 		container = QWindow.fromWinId(winid)
 		cc = QWidget.createWindowContainer(container)
 		self.vsplitter.replaceWidget(0, cc)
+	
 
 def start_application(ipipe, opipe):
 	app = QApplication([])
+	
 	zencad.opengl.init_opengl()
+	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 
 	#pal = app.palette()
 	#pal.setColor(QPalette.Window, QColor(160, 161, 165))
@@ -92,6 +102,7 @@ def start_application_unbound(scene):
 	MAIN_COMMUNICATOR.start_listen()
 
 	app = QApplication([])
+	zencad.opengl.init_opengl()
 
 	def receiver(data):
 		data = pickle.loads(data)
