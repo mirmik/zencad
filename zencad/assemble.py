@@ -31,6 +31,7 @@ class unit:
 		self.name = name
 		self.color = None
 		self.dispobjects = []
+		self.shapes_holder = []
 
 		self.views = set()
 		self.childs = set()
@@ -54,10 +55,10 @@ class unit:
 
 		if deep:
 			for c in self.childs:
-				c.location_update(deep=True)
+				c.location_update(deep=True, view=view)
 
 		if view:
-			self.apply_view_location(deep)
+			self.apply_view_location(False)
 
 	def relocate(self, location, deep=False, view=False):
 		self.location = evalcache.unlazy_if_need(location)
@@ -71,6 +72,13 @@ class unit:
 
 	def add_object(self, d):
 		self.dispobjects.append(d)
+
+	def add_shape(self, shp):
+		shp = evalcache.unlazy_if_need(shp)
+		controller = pyservoce.interactive_object(shp)
+		self.dispobjects.append(controller)
+		self.shapes_holder.append(shp)
+		return controller
 
 	def add_triedron(self, length=10, width=1, arrlen=1,
 			xcolor=pyservoce.red, ycolor=pyservoce.green, zcolor=pyservoce.blue):
@@ -116,7 +124,7 @@ class unit:
 			for c in self.childs:
 				c.apply_view_location(deep)
 		
-	def bind_scene(self, scene, color=pyservoce.default_color):
+	def bind_scene(self, scene, color=pyservoce.default_color, deep=False):
 		for d in self.dispobjects:
 			scene.viewer.display(d)
 			self.views.add(ShapeView(d))
@@ -131,10 +139,9 @@ class unit:
 			scene.viewer.display(shape_view.sctrl)
 			self.views.add(shape_view)
 
-		self.apply_view_location(False)
+		self.apply_view_location(deep=False)
 
-	def bind_scene_deep(self, scene):
-		self.bind_scene(scene)
-		for c in self.childs:
-			c.bind_scene_deep(scene)
+		if deep:
+			for c in self.childs:
+				c.bind_scene(scene, color=color, deep=True)
 

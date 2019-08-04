@@ -361,7 +361,6 @@ class DisplayWidget(QWidget):
         self.viewer = self.scene.viewer
 
         self.view = self.viewer.create_view()
-        self.view.set_gradient()
 
         self.view.set_scale(scale_save)
         self.view.set_eye(eye_save)
