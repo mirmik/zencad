@@ -114,6 +114,35 @@ class planemover(cynematic_unit):
 			pyservoce.translate(pyservoce.vector3(self.x, self.y, 0)), **kwargs)
 
 
+class spherical_rotator(cynematic_unit):
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self._yaw = 0
+		self._pitch = 0
+
+	def senses(self):
+		raise NotImplementedError
+		#return (
+		#	(pyservoce.vector3(1,0,0), pyservoce.vector3()),
+		#	(pyservoce.vector3(0,1,0), pyservoce.vector3())
+		#)
+
+	def set_yaw(self, angle, **kwargs):
+		self._yaw = angle
+		self.update_position(**kwargs)
+
+	def set_pitch(self, angle, **kwargs):
+		self._pitch = angle
+		self.update_position(**kwargs)
+
+	def set_coords(self, coords, **kwargs):
+		self._yaw = coord[0]
+		self._pitch = coord[1]
+		self.update_position(**kwargs)
+
+	def update_position(self, **kwargs):
+		self.output.relocate(pyservoce.rotateZ(self._yaw) * pyservoce.rotateY(self._pitch))
+
 class cynematic_chain:
 	"""Объект-алгоритм управления участком кинематической чепи от точки
 	выхода, до точки входа.
