@@ -31,7 +31,7 @@ else:
 directory = os.path.dirname(path)
 os.chdir(directory)
 sys.path.append(directory)
-zencad.showapi.mode = "app_fullview"
+zencad.showapi.MODE = "makeapp"
 runpy.run_path(path, run_name="__main__")
 
 # parser = argparse.ArgumentParser()
