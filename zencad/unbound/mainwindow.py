@@ -19,9 +19,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import multiprocessing
+import threading
 import os
 import pickle
-
+import sys
 
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
@@ -29,6 +30,7 @@ DISPLAY_WINID = None
 class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 	def __init__(self, client_communicator):
 		super().__init__()
+		self.openlock = threading.Lock()
 		self.console = zencad.console.ConsoleWidget()
 		self.texteditor = zencad.texteditor.TextEditor()
 		self.current_opened = None
@@ -52,6 +54,8 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 		self.createMenus()
 		self.createToolbars()
 
+		self.set_start_file_as_current_opened()
+
 	def new_worker_message(self, data):
 		data = pickle.loads(data)
 		cmd = data["cmd"]
@@ -67,61 +71,9 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 		cc = QWidget.createWindowContainer(container)
 		self.vsplitter.replaceWidget(0, cc)
 
-	def set_current_openned(self, path):
+	def set_current_opened(self, path):
 		self.current_opened = path
 		self.texteditor.open(path)
 	
-
-def start_application(ipipe, opipe):
-	app = QApplication([])
-	
-	zencad.opengl.init_opengl()
-	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
-
-	#pal = app.palette()
-	#pal.setColor(QPalette.Window, QColor(160, 161, 165))
-	#app.setPalette(pal)
-	client = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
-
-	mw = MainWindow(client_communicator=client)
-	mw.show()
-
-	app.aboutToQuit.connect(lambda: client.send({"cmd":"stopworld"}))
-
-	app.exec()
-
-
-def start_application_unbound(scene):
-	global MAIN_COMMUNICATOR
-	global DISPLAY_WINID
-
-	ipipe = os.pipe()
-	opipe = os.pipe()
-
-	proc = multiprocessing.Process(target = start_application, args=(opipe[0], ipipe[1]))
-	proc.start()
-
-	#os.close(ipipe[1])
-	#os.close(opipe[0])
-
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe[0], opipe=opipe[1])
-	MAIN_COMMUNICATOR.start_listen()
-
-	app = QApplication([])
-	zencad.opengl.init_opengl()
-
-	def receiver(data):
-		data = pickle.loads(data)
-		print("client:", data)
-		if data["cmd"] == "stopworld": app.quit()
-
-	MAIN_COMMUNICATOR.newdata.connect(receiver)
-
-	DISPLAY_WINID=zencad.viewadaptor.DisplayWidget(scene, view=scene.viewer.create_view())
-
-	MAIN_COMMUNICATOR.send({"cmd":"hello"})
-	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
-
-	DISPLAY_WINID.show()
-
-	app.exec()
+	def set_start_file_as_current_opened(self):
+		self.set_current_opened(sys.argv[0])
