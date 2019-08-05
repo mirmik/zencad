@@ -15,6 +15,8 @@ BANNER_TEXT = (  # "\n"
 	"╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═════╝ "
 )
 
+SETTINGS = {"external_text_editor": "subl"}
+
 class mixin():
 	def create_action(self, text, action, tip, shortcut=None, checkbox=False):
 		act = QAction(self.tr(text), self)
@@ -78,7 +80,30 @@ class mixin():
 		self.create_new_do(tmpfl)
 
 	def openAction(self):
-		raise NotImplementedError
+		filters = "*.py;;*.*"
+		defaultFilter = "*.py"
+
+		startpath = (
+			QDir.currentPath()
+			if self.lastopened == None
+			else os.path.dirname(self.lastopened)
+		)
+
+		if self.lastopened is not None and os.path.normpath(
+			zencad.exampledir
+		) in os.path.normpath(self.lastopened):
+			startpath = self.laststartpath
+		else:
+			self.laststartpath = startpath
+
+		path = QFileDialog.getOpenFileName(
+			self, "Open File", startpath, filters, defaultFilter
+		)
+
+		if path[0] == "":
+			return
+
+		self._open_routine(path[0])
 
 	def saveAction(self):
 		raise NotImplementedError
@@ -93,34 +118,37 @@ class mixin():
 		raise NotImplementedError
 
 	def externalTextEditorOpen(self):
-		raise NotImplementedError
+		os.system(SETTINGS["external_text_editor"] + " " + started_by)
 
 	def to_freecad_action(self):
-		raise NotImplementedError
+		self.communicator.send({"cmd": "to_freecad"})
 
 	def screenshotAction(self):
 		raise NotImplementedError
 
 	def resetAction(self):
-		raise NotImplementedError
+		self.communicator.send({"cmd": "resetview"})
 
 	def centeringAction(self):
-		raise NotImplementedError
+		self.communicator.send({"cmd": "centering"})
 
 	def autoscaleAction(self):
-		raise NotImplementedError
+		self.communicator.send({"cmd": "autoscale"})
 
-	def trackingAction(self):
-		raise NotImplementedError
+	def trackingAction(self, en):
+		self.communicator.send({"cmd": "tracking", "en": en})
 
 	def orient1(self):
-		raise NotImplementedError
+		self.communicator.send({"cmd": "orient1"})
 
 	def orient2(self):
-		raise NotImplementedError
+		self.communicator.send({"cmd": "orient2"})
 
 	def invalidateCacheAction(self):
-		raise NotImplementedError
+		files = zencad.lazy.cache.keys()
+		for f in zencad.lazy.cache.keys():
+			del zencad.lazy.cache[f]
+		print("Invalidate cache: %d files removed" % len(files))
 
 	def hideConsole(self, en):
 		self.console.setHidden(en)
@@ -141,8 +169,9 @@ class mixin():
 	def fullScreen(self):
 		raise NotImplementedError
 
-	def coordsDifferenceMode(self):
-		raise NotImplementedError
+	def coordsDifferenceMode(self, en):
+		self.coords_difference_mode = en
+		self.updateDistLabel()
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
