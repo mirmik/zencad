@@ -6,8 +6,7 @@ import sys
 import zencad.assemble
 
 default_scene = Scene()
-mode = None
-
+SHOWMODE = "makeapp"
 
 def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
     if isinstance(shp, evalcache.LazyObject):
@@ -35,23 +34,32 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
     if scene is None:
         scene = default_scene
 
-    if mode is not None:
-        if mode == "nothing":
-            pass
+    if SHOWMODE == "makeapp":
+        zencad.unbound.application.start_unbound_application(scene)
 
-        elif mode == "update_scene":
-            import zencad.shower
+    elif SHOWMODE == "widget":
+        zencad.viewadaptor.standalone(scene)
 
-            return zencad.shower.update_scene(scene, *args, **kwargs)
+    elif SHOWMODE == "updapp":
+        zencad.unbound.application.update_unbound_application(scene)
 
-        elif mode == "app_fullview":
-            import zencad.shower
-
-            return zencad.shower.show_impl(
-                scene, *args, showeditor=True, showconsole=True, **kwargs
-            )
-
-    else:
-        import zencad.shower
-
-        return zencad.shower.show_impl(scene, *args, **kwargs)
+    #if mode is not None:
+    #   if mode == "nothing":
+    #        pass
+#
+    #    elif mode == "update_scene":
+    #        import zencad.shower
+#
+    #        return zencad.shower.update_scene(scene, *args, **kwargs)
+#
+    #    elif mode == "app_fullview":
+    #        import zencad.shower
+#
+    #        return zencad.shower.show_impl(
+    #            scene, *args, showeditor=True, showconsole=True, **kwargs
+    #        )
+#
+    #else:
+    #    import zencad.shower
+#
+    #    return zencad.shower.show_impl(scene, *args, **kwargs)
