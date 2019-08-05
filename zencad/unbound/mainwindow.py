@@ -31,6 +31,7 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 		super().__init__()
 		self.console = zencad.console.ConsoleWidget()
 		self.texteditor = zencad.texteditor.TextEditor()
+		self.current_opened = None
 
 		self.client_communicator = client_communicator
 		self.client_communicator.newdata.connect(self.new_worker_message)
@@ -59,11 +60,16 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 
 		if cmd == "hello": print("HelloWorld")
 		if cmd == 'bindwin': self.bind_window(winid=data['id'])
+		if cmd == 'setopened': self.set_current_opened(path=data['path'])
 
 	def bind_window(self, winid):
 		container = QWindow.fromWinId(winid)
 		cc = QWidget.createWindowContainer(container)
 		self.vsplitter.replaceWidget(0, cc)
+
+	def set_current_openned(self, path):
+		self.current_opened = path
+		self.texteditor.open(path)
 	
 
 def start_application(ipipe, opipe):
