@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import os
+import tempfile
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -51,11 +52,30 @@ class mixin():
 			),
 		)
 
+	def create_new_do(self, path):
+		f = open(path, "w")
+		f.write(
+			"#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nm=box(10)\ndisp(m)\n\nshow()\n"
+		)
+		f.close()
+		self._open_routine(path)
+
 	def createNewAction(self):
-		raise NotImplementedError
+		filters = "*.py;;*.*"
+		defaultFilter = "*.py"
+
+		path = QFileDialog.getSaveFileName(
+			self, "Create New File", self.laststartpath, filters, defaultFilter
+		)
+
+		if path[0] == "":
+			return
+
+		self.create_new_do(path[0])
 
 	def createNewTemporary(self):
-		raise NotImplementedError
+		tmpfl = tempfile.mktemp(".py")
+		self.create_new_do(tmpfl)
 
 	def openAction(self):
 		raise NotImplementedError
@@ -275,3 +295,89 @@ class mixin():
 
 	def createToolbars(self):
 		pass
+
+
+
+
+
+		def _open_routine(self, path, initupdate=True):
+		# Проверяем, чтобы в файле был хоть намек на zencad...
+		# А то чего его отрисовывать.
+
+		print("_open_routine")
+
+		global started_by
+
+		self.openlock.acquire()
+
+		filetext = open(path).read()
+		repattern1 = re.compile(r"import *zencad|from *zencad *import")
+
+		zencad_search = repattern1.search(filetext)
+		print("widget: try open {}".format(path))
+
+		self.setWindowTitle(os.path.basename(path))
+		self.laststartpath = path
+
+		if zencad_search is not None:
+			if self.lastopened != path:
+				self.rescale_on_finish = True
+
+			self.lastopened = path
+			self.inotifier.init_notifier(path)
+			started_by = path
+
+		self.texteditor.open(path)
+
+		if initupdate:
+			if (
+				globals()["__THREAD__"] is not None
+				and globals()["__THREAD__"].isRunning()
+			):
+				self.openlock.release()
+				self.reopen_after_finish = True
+				return
+
+			zencad.showapi.mode = "update_shower"
+
+			class runner(QThread):
+				rerun_signal = pyqtSignal()
+				rerun_finish_signal = pyqtSignal()
+
+				def run(self):
+					globals()["__THREAD__"] = self
+					print("subthread: run")
+					self.setTerminationEnabled(True)
+					zencad.lazifier.restore_default_lazyopts()
+					zencad.showapi.default_scene = pyservoce.Scene()
+					zencad.showapi.mode = "update_scene"
+					os.chdir(os.path.dirname(path))
+					sys.path.insert(0, os.path.dirname(path))
+
+					try:
+						runpy.run_path(path, run_name="__main__")
+					except Exception as e:
+						print("subthread: failed with exception")
+						print(e)
+
+					print("subthread: finish")
+					self.rerun_finish_signal.emit()
+
+			if self.animate_thread is not None:
+				print("animate_thread: terminate")
+				self.animate_finish.emit()
+				while not self.animate_thread.isFinished():
+					pass
+				print("animate_thread: terminate finish")
+				self.animate_thread = None
+
+			self.thr = runner()
+			self.thr.rerun_signal.connect(self.rerun_context_invoke)
+			self.thr.rerun_finish_signal.connect(self.rerun_label_off_slot)
+			self.thr.rerun_finish_signal.connect(self.reopen_if_need)
+
+			self.rerun_label_on_slot()
+			self.thr.start()
+
+		self.openlock.release()
+		print("_open_routine...ok")
