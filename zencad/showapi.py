@@ -4,6 +4,7 @@ import evalcache
 import sys
 
 import zencad.assemble
+import zencad.unbound.application
 
 default_scene = Scene()
 SHOWMODE = "makeapp"
@@ -37,10 +38,13 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
     if SHOWMODE == "makeapp":
         zencad.unbound.application.start_unbound_application(scene)
 
+    if SHOWMODE == "mainonly":
+        zencad.unbound.application.start_main_application()
+
     elif SHOWMODE == "widget":
         zencad.viewadaptor.standalone(scene)
 
-    elif SHOWMODE == "updapp":
+    elif SHOWMODE == "replace":
         zencad.unbound.application.update_unbound_application(scene)
 
     #if mode is not None:

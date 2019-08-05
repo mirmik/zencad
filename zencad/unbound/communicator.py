@@ -11,9 +11,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 class Communicator(QObject):
-	oposite_clossed = pyqtSignal()
 
 	class Listener(QThread):
+		oposite_clossed = pyqtSignal()
 		newdata = pyqtSignal(bytes)
 		def __init__(self, ipipe):
 			super().__init__()
@@ -39,9 +39,14 @@ class Communicator(QObject):
 		self.opipe = opipe
 		self.listener_thr = self.Listener(ipipe)
 		self.newdata = self.listener_thr.newdata
+		self.oposite_clossed = self.listener_thr.oposite_clossed
 
 	def start_listen(self):
 		self.listener_thr.start()
+
+	def stop_listen(self):
+		os.close(self.ipipe)
+		os.close(self.opipe)
 
 	def send(self, obj):
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')

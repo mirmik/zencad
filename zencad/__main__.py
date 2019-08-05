@@ -12,27 +12,44 @@ import runpy
 
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--eventdebug", action="store_true")
-parser.add_argument("--trace", action="store_true")
-parser.add_argument("paths", type=str, nargs="*", help="runned file")
-pargs = parser.parse_args()
+def main():
+	print("__MAIN__", sys.argv)
 
-zencad.shower.__ZENCAD_EVENT_DEBUG__ = pargs.eventdebug
-pyservoce.trace.__TRACE__ = pargs.trace
-zencad.shower.__TRACE__ = pargs.trace
-zencad.viewadaptor.__TRACE__ = pargs.trace
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--eventdebug", action="store_true")
+	parser.add_argument("--trace", action="store_true")
+	parser.add_argument("--mainonly", action="store_true")
+	parser.add_argument("paths", type=str, nargs="*", help="runned file")
+	pargs = parser.parse_args()
+	
+	zencad.shower.__ZENCAD_EVENT_DEBUG__ = pargs.eventdebug
+	pyservoce.trace.__TRACE__ = pargs.trace
+	zencad.shower.__TRACE__ = pargs.trace
+	zencad.viewadaptor.__TRACE__ = pargs.trace
+	
+	if len(pargs.paths) == 0:
+	    path = os.path.join(zencad.exampledir, "helloworld.py")
+	else:
+	    path = os.path.join(os.getcwd(), pargs.paths[0])
+	
+	directory = os.path.dirname(path)
+	os.chdir(directory)
+	sys.path.append(directory)
+	
+	zencad.showapi.SHOWMODE = "makeapp"
 
-if len(pargs.paths) == 0:
-    path = os.path.join(zencad.exampledir, "helloworld.py")
-else:
-    path = os.path.join(os.getcwd(), pargs.paths[0])
+	if "ZENCAD_MODE" in os.environ:
+		if os.environ["ZENCAD_MODE"] == "MAINONLY":
+			zencad.showapi.SHOWMODE = "mainonly"
+			return zencad.showapi.show()
 
-directory = os.path.dirname(path)
-os.chdir(directory)
-sys.path.append(directory)
-zencad.showapi.MODE = "makeapp"
-runpy.run_path(path, run_name="__main__")
+		elif os.environ["ZENCAD_MODE"] == "REPLACE_WINDOW":
+			zencad.showapi.SHOWMODE = "replace"
+
+	runpy.run_path(path, run_name="__main__")
+
+if __name__ == "__main__":
+	main()
 
 # parser = argparse.ArgumentParser()
 # parser.add_argument("--application", action='store_true')
