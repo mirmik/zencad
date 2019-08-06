@@ -23,7 +23,12 @@ class Communicator(QObject):
 		def run(self):
 			readFile = os.fdopen(self.ipipe)
 			while(True):
-				inputdata = readFile.readline()
+				try:
+					inputdata = readFile.readline()
+				except:
+					self.oposite_clossed.emit()
+					return
+	
 				print("inputdata:", inputdata)
 
 				if len(inputdata) == 0:
@@ -45,9 +50,16 @@ class Communicator(QObject):
 		self.listener_thr.start()
 
 	def stop_listen(self):
-		os.close(self.ipipe)
-		os.close(self.opipe)
+		try:
+			os.close(self.ipipe)
+		except:
+			print("Warn: os.close(self.ipipe) is fault")
 
+		try:
+			os.close(self.opipe)
+		except:
+			print("Warn: os.close(self.ipipe) is fault")
+			
 	def send(self, obj):
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		os.write(self.opipe, sendstr)

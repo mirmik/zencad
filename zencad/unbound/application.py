@@ -32,9 +32,10 @@ def start_main_application():
 	zencad.opengl.init_opengl()
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 	
-	#pal = app.palette()
-	#pal.setColor(QPalette.Window, QColor(160, 161, 165))
-	#app.setPalette(pal)
+	pal = app.palette()
+	pal.setColor(QPalette.Window, QColor(160, 161, 165))
+	app.setPalette(pal)
+	
 	client = zencad.unbound.communicator.Communicator(ipipe=3, opipe=4)
 	
 	mw = MainWindow(client_communicator=client)
@@ -46,8 +47,10 @@ def start_main_application():
 
 
 def start_application(ipipe, opipe):
-	os.dup2(ipipe, 3)
-	os.dup2(opipe, 4)
+	i=os.dup(ipipe)
+	o=os.dup(opipe)
+	os.dup2(i, 3)
+	os.dup2(o, 4)
 
 	os.environ["ZENCAD_MODE"] = "MAINONLY"
 
@@ -91,8 +94,10 @@ def start_unbound_application(scene):
 
 
 def start_worker(ipipe, opipe, path):
-	os.dup2(ipipe, 3)
-	os.dup2(opipe, 4)
+	i=os.dup(ipipe)
+	o=os.dup(opipe)
+	print("dup2:", os.dup2(i, 3))
+	print("dup2:", os.dup2(o, 4))
 
 	os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
 
@@ -118,6 +123,9 @@ def update_unbound_application(scene):
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
 
+	print("stat:", os.stat(3))
+	print("stat:", os.stat(4))
+
 	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=3, opipe=4)
 	MAIN_COMMUNICATOR.start_listen()
 
@@ -133,7 +141,7 @@ def update_unbound_application(scene):
 
 	DISPLAY_WINID=zencad.viewadaptor.DisplayWidget(scene, view=scene.viewer.create_view())
 
-	MAIN_COMMUNICATOR.send({"cmd":"hello"})
+	#MAIN_COMMUNICATOR.send({"cmd":"hello"})
 	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
 
 	DISPLAY_WINID.show()
