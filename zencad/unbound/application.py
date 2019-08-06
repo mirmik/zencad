@@ -41,7 +41,7 @@ def start_main_application():
 	mw = MainWindow(client_communicator=client)
 	mw.show()
 	
-	app.aboutToQuit.connect(lambda: client.send({"cmd":"stopworld"}))
+	#app.aboutToQuit.connect(lambda: client.send({"cmd":"stopworld"}))
 	
 	app.exec()
 
@@ -61,6 +61,8 @@ def start_unbound_application(scene):
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
 
+	print("START_UNBOUND_APPLICATION")
+
 	ipipe = os.pipe()
 	opipe = os.pipe()
 
@@ -70,34 +72,14 @@ def start_unbound_application(scene):
 	os.close(ipipe[1])
 	os.close(opipe[0])
 
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe[0], opipe=opipe[1])
-	MAIN_COMMUNICATOR.start_listen()
-
-	app = QApplication([])
-	zencad.opengl.init_opengl()
-
-	def receiver(data):
-		data = pickle.loads(data)
-		print("client:", data)
-		if data["cmd"] == "stopworld": app.quit()
-
-	MAIN_COMMUNICATOR.newdata.connect(receiver)
-
-	DISPLAY_WINID=zencad.viewadaptor.DisplayWidget(scene, view=scene.viewer.create_view())
-
-	MAIN_COMMUNICATOR.send({"cmd":"hello"})
-	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
-
-	DISPLAY_WINID.show()
-
-	app.exec()
+	common_unbouded_proc(ipipe[0], opipe[1], scene)
 
 
 def start_worker(ipipe, opipe, path):
 	i=os.dup(ipipe)
 	o=os.dup(opipe)
-	print("dup2:", os.dup2(i, 3))
-	print("dup2:", os.dup2(o, 4))
+	print("dup2:", os.dup2(i, 5))
+	print("dup2:", os.dup2(o, 6))
 
 	os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
 
@@ -110,8 +92,8 @@ def start_unbounded_worker(path):
 	proc = multiprocessing.Process(target = start_worker, args=(opipe[0], ipipe[1], path))
 	proc.start()
 
-	os.close(ipipe[1])
-	os.close(opipe[0])
+#	os.close(ipipe[1])
+#	os.close(opipe[0])
 
 	communicator = zencad.unbound.communicator.Communicator(ipipe=ipipe[0], opipe=opipe[1])
 
@@ -119,14 +101,15 @@ def start_unbounded_worker(path):
 
 def update_unbound_application(scene):
 	print("UPDATE_UNBOUND_APPLICATION")
+	common_unbouded_proc(5, 6, scene)
 
+
+def common_unbouded_proc(ipipe, opipe, scene):
+	print("COMMON_UNBOUNDED_PROC")
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
 
-	print("stat:", os.stat(3))
-	print("stat:", os.stat(4))
-
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=3, opipe=4)
+	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.start_listen()
 
 	app = QApplication([])
@@ -143,6 +126,8 @@ def update_unbound_application(scene):
 
 	#MAIN_COMMUNICATOR.send({"cmd":"hello"})
 	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
+	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
+	MAIN_COMMUNICATOR.wait()
 
 	DISPLAY_WINID.show()
 
