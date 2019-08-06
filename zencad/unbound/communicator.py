@@ -28,7 +28,12 @@ class Communicator(QObject):
 			self.event.set()
 
 		def run(self):
-			readFile = os.fdopen(self.ipipe)
+			try:
+				readFile = os.fdopen(self.ipipe)
+			except Exception as ex:
+				print("rdopen error: ", ex, self.ipipe)
+				exit(0)
+			
 			while(True):
 				try:
 					inputdata = readFile.readline()
