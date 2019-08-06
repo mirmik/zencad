@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 
 import os
 import tempfile
+import signal
 import threading
 
 import zencad.unbound.application
@@ -372,9 +373,10 @@ class mixin():
 		#		self.reopen_after_finish = True
 		#		return
 
-		self.client_communicator.send({"cmd": "stopworld"})
+		#self.client_communicator.send({"cmd": "stopworld"})
+		os.kill(self.clientpid, signal.SIGKILL)
 		self.client_communicator.stop_listen()
-
+		
 		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path)
 		self.client_communicator.start_listen()
 #

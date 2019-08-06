@@ -23,6 +23,7 @@ import threading
 import os
 import pickle
 import sys
+import signal
 
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
@@ -63,13 +64,15 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 		print("MainWindow:communicator:", data)
 
 		if cmd == "hello": print("HelloWorld")
-		if cmd == 'bindwin': self.bind_window(winid=data['id'])
-		if cmd == 'setopened': self.set_current_opened(path=data['path'])
+		elif cmd == 'bindwin': self.bind_window(winid=data['id'])
+		elif cmd == 'setopened': self.set_current_opened(path=data['path'])
+		elif cmd == 'clientpid': self.clientpid = data['pid']
 
 	def bind_window(self, winid):
 		container = QWindow.fromWinId(winid)
 		cc = QWidget.createWindowContainer(container)
 		self.vsplitter.replaceWidget(0, cc)
+		self.client_communicator.send("unwait")
 
 	def set_current_opened(self, path):
 		self.current_opened = path
@@ -77,3 +80,7 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 	
 	def set_start_file_as_current_opened(self):
 		self.set_current_opened(sys.argv[0])
+
+	def closeEvent(self, event):
+		os.kill(self.clientpid, signal.SIGKILL)
+		#self.client_communicator.send({"cmd": "stopworld"})
