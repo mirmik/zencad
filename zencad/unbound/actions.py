@@ -378,6 +378,7 @@ class mixin():
 		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path)
 		self.client_communicator.start_listen()
 #
+		self.client_communicator.newdata.connect(self.new_worker_message)
 		#	zencad.showapi.mode = "update_shower"
 #
 		#	class runner(QThread):
