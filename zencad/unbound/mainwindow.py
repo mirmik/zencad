@@ -19,6 +19,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import multiprocessing
+import time
 import threading
 import os
 import pickle
@@ -82,5 +83,7 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 		self.set_current_opened(sys.argv[0])
 
 	def closeEvent(self, event):
-		os.kill(self.clientpid, signal.SIGKILL)
-		#self.client_communicator.send({"cmd": "stopworld"})
+		print("closeEvent")
+		#os.kill(self.clientpid, signal.SIGKILL)
+		self.client_communicator.send({"cmd": "stopworld"})
+		time.sleep(0.01)
