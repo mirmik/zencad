@@ -19,6 +19,7 @@ def main():
 	parser.add_argument("--eventdebug", action="store_true")
 	parser.add_argument("--trace", action="store_true")
 	parser.add_argument("--mainonly", action="store_true")
+	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 	
@@ -38,13 +39,15 @@ def main():
 	
 	zencad.showapi.SHOWMODE = "makeapp"
 
-	if "ZENCAD_MODE" in os.environ:
-		if os.environ["ZENCAD_MODE"] == "MAINONLY":
-			zencad.showapi.SHOWMODE = "mainonly"
-			return zencad.showapi.show()
+	#if "ZENCAD_MODE" in os.environ:
+	#if os.environ["ZENCAD_MODE"] == "MAINONLY":
+	if pargs.mainonly:
+		zencad.showapi.SHOWMODE = "mainonly"
+		return zencad.showapi.show()
 
-		elif os.environ["ZENCAD_MODE"] == "REPLACE_WINDOW":
-			zencad.showapi.SHOWMODE = "replace"
+	#if os.environ["ZENCAD_MODE"] == "REPLACE_WINDOW":
+	if pargs.replace:
+		zencad.showapi.SHOWMODE = "replace"
 
 	runpy.run_path(path, run_name="__main__")
 

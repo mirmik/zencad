@@ -52,9 +52,12 @@ def start_application(ipipe, opipe):
 	os.dup2(i, 3)
 	os.dup2(o, 4)
 
-	os.environ["ZENCAD_MODE"] = "MAINONLY"
+	#os.environ["ZENCAD_MODE"] = "MAINONLY"
 
-	os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad"], os.environ)
+	#os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad"], os.environ)
+	
+	interpreter = "/usr/bin/python3"
+	os.system("{} -m zencad --mainonly".format(interpreter))
 
 
 def start_unbound_application(scene):
@@ -76,16 +79,18 @@ def start_unbound_application(scene):
 
 
 def start_worker(ipipe, opipe, path):
-#	i=os.dup(ipipe)
-#	o=os.dup(opipe)
-	print("dup2:", os.dup2(ipipe, 3))
-	print("dup2:", os.dup2(opipe, 4))
+	i=os.dup(ipipe)
+	o=os.dup(opipe)
+	print("dup2:", os.dup2(i, 3))
+	print("dup2:", os.dup2(o, 4))
 
-	os.environ["ZENCAD_IPIPE"] = str(3)
-	os.environ["ZENCAD_OPIPE"] = str(4)
-	os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
+	#os.environ["ZENCAD_IPIPE"] = str(3)
+	#os.environ["ZENCAD_OPIPE"] = str(4)
+	#os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
 
-	os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad", path], os.environ)
+	#os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad", path], os.environ)
+	interpreter = "/usr/bin/python3"
+	os.system("{} -m zencad --replace {}".format(interpreter, path))
 
 def start_unbounded_worker(path):
 	print("START_UNBOUNDED_WORKER")
@@ -120,8 +125,8 @@ def start_unbounded_worker(path):
 def update_unbound_application(scene):
 	print("UPDATE_UNBOUND_APPLICATION")
 	
-	ipipe = int(os.environ["ZENCAD_IPIPE"])
-	opipe = int(os.environ["ZENCAD_OPIPE"])
+	ipipe = 3#int(os.environ["ZENCAD_IPIPE"])
+	opipe = 4#int(os.environ["ZENCAD_OPIPE"])
 
 	print(ipipe, opipe)
 
@@ -133,11 +138,11 @@ def common_unbouded_proc(ipipe, opipe, scene):
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
 
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
-	MAIN_COMMUNICATOR.start_listen()
-
 	app = QApplication([])
 	zencad.opengl.init_opengl()
+
+	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
+	MAIN_COMMUNICATOR.start_listen()
 
 	def receiver(data):
 		data = pickle.loads(data)

@@ -373,8 +373,8 @@ class mixin():
 		#		self.reopen_after_finish = True
 		#		return
 
-		#self.client_communicator.send({"cmd": "stopworld"})
-		oldpid = self.clientpid
+		self.client_communicator.send({"cmd": "stopworld"})
+		#oldpid = self.clientpid
 
 		self.client_communicator.stop_listen()
 		
@@ -383,7 +383,7 @@ class mixin():
 #
 		self.client_communicator.newdata.connect(self.new_worker_message)
 		
-		os.kill(oldpid, signal.SIGKILL)
+		#os.kill(oldpid, signal.SIGKILL)
 		
 		#	zencad.showapi.mode = "update_shower"
 #
