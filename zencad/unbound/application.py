@@ -78,13 +78,11 @@ def start_unbound_application(scene):
 def start_worker(ipipe, opipe, path):
 #	i=os.dup(ipipe)
 #	o=os.dup(opipe)
-#	print("dup2:", os.dup2(i, 5))
-#	print("dup2:", os.dup2(o, 6))
+	print("dup2:", os.dup2(ipipe, 3))
+	print("dup2:", os.dup2(opipe, 4))
 
-	print(ipipe, opipe)
-
-	os.environ["ZENCAD_IPIPE"] = str(ipipe)
-	os.environ["ZENCAD_OPIPE"] = str(opipe)
+	os.environ["ZENCAD_IPIPE"] = str(3)
+	os.environ["ZENCAD_OPIPE"] = str(4)
 	os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
 
 	os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad", path], os.environ)
@@ -92,19 +90,30 @@ def start_worker(ipipe, opipe, path):
 def start_unbounded_worker(path):
 	print("START_UNBOUNDED_WORKER")
 	
-	ipipe = os.pipe()
-	opipe = os.pipe()
+	apipe = os.pipe()
+	bpipe = os.pipe()
 
-	print(ipipe)
-	print(opipe)
+	apipe = (os.dup(apipe[0]), os.dup(apipe[1]))
+	bpipe = (os.dup(bpipe[0]), os.dup(bpipe[1]))
 
-	proc = multiprocessing.Process(target = start_worker, args=(opipe[0], ipipe[1], path))
+	#print(ipipe)
+	#print(opipe)
+
+	#os.dup2(ipipe[0], 3)
+	#os.dup2(ipipe[1], 5)
+	#os.dup2(opipe[0], 4)
+	#os.dup2(opipe[1], 6)
+
+	#print(ipipe)
+	#print(opipe)
+
+	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path))
 	proc.start()
 
 #	os.close(ipipe[1])
 #	os.close(opipe[0])
 
-	communicator = zencad.unbound.communicator.Communicator(ipipe=ipipe[0], opipe=opipe[1])
+	communicator = zencad.unbound.communicator.Communicator(ipipe=bpipe[0], opipe=apipe[1])
 
 	return communicator
 
