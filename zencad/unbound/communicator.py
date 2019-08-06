@@ -42,15 +42,11 @@ class Communicator(QObject):
 					self.oposite_clossed.emit()
 					return
 
-				print("HERE!!!!!")
-				print(inputdata)
-				print(self.unwait_token)
-				print("HERE!!!!!....ok")
 				if inputdata == self.unwait_token:
-					return self.unwait()
+					self.unwait()
+					continue
 
 				if len(inputdata) == 0:
-					print("len(inputdata) == 0")
 					self.oposite_clossed.emit()
 					return
 

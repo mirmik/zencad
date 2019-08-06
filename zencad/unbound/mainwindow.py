@@ -85,5 +85,7 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 	def closeEvent(self, event):
 		print("closeEvent")
 		#os.kill(self.clientpid, signal.SIGKILL)
+		print("send")
 		self.client_communicator.send({"cmd": "stopworld"})
+		print("send...ok")
 		time.sleep(0.01)

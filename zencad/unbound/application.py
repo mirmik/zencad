@@ -84,6 +84,9 @@ def start_worker(ipipe, opipe, path):
 	print("dup2:", os.dup2(i, 3))
 	print("dup2:", os.dup2(o, 4))
 
+	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
+	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
+
 	#os.environ["ZENCAD_IPIPE"] = str(3)
 	#os.environ["ZENCAD_OPIPE"] = str(4)
 	#os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
@@ -147,7 +150,9 @@ def common_unbouded_proc(ipipe, opipe, scene):
 	def receiver(data):
 		data = pickle.loads(data)
 		print("client:", data)
-		if data["cmd"] == "stopworld": app.quit()
+		if data["cmd"] == "stopworld": 
+			MAIN_COMMUNICATOR.stop_listen()
+			app.quit()
 
 	MAIN_COMMUNICATOR.newdata.connect(receiver)
 
@@ -155,7 +160,7 @@ def common_unbouded_proc(ipipe, opipe, scene):
 
 	#MAIN_COMMUNICATOR.send({"cmd":"hello"})
 	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
-	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
+	#MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	MAIN_COMMUNICATOR.wait()
 
 	DISPLAY_WINID.show()
