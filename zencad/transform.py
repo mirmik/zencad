@@ -95,7 +95,15 @@ import numpy as np
 #    LazyObjectTransformGeneratorNoCached
 #] = evalcache.lazy.updatehash_LazyObject
 
-pyservoce.transformation.__call__ = lambda self, arg: arg.transform(self)
+native_call = pyservoce.transformation.__call__
+
+def transform_call(self, arg):
+    if isinstance(arg, evalcache.LazyObject):
+        return arg.transform(self)
+
+    return native_call(self, arg)
+
+pyservoce.transformation.__call__ = transform_call
 
 
 #@lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)

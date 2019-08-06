@@ -52,6 +52,50 @@ def naive_backpack(target, vectors, maxiters=None, koeffs=None, penalty=None, al
 
 	return coords, iterations
 
+def grad_backpack(target, vectors, maxiters=None, koeffs=None, penalty=None, alpha=0.5, epsilon=0.000000001):
+	"""Наивное решение задачи поиска линейной комбинации методом покоординатного спуска"""
+
+	def sign(x):
+		if x >= 0: 
+			return 1
+		else: 
+			return -1 
+
+	target = numpy.array(target)
+	vectors = [ numpy.array(v) for v in vectors ]
+
+	current = numpy.zeros(len(target), dtype=numpy.float64)
+	coords = numpy.zeros(len(vectors), dtype=numpy.float64)
+
+	tgtnorm = numpy.linalg.norm(target)
+	vnormalized = [normalize(v) for v in vectors ]
+	vnorms = [numpy.linalg.norm(v) for v in vectors ]
+
+	iterations = 0
+	while True:
+		iterations+=1
+		delta = target - current
+
+		if numpy.linalg.norm(delta) < epsilon:
+			break
+
+		koeffs = numpy.array([ v.dot(delta) for v in vnormalized ])
+		koeffs *= 0.5
+
+		coords += koeffs / vnorms
+		
+		#print(coords)
+
+		current = numpy.zeros(len(target))
+		for i in range(len(vectors)):
+			current += vectors[i] * coords[i]
+
+
+
+	return coords, iterations
+
+
+
 def fast_backpack(target, vectors):
 	"""Наивное решение задачи поиска линейной комбинации методом покоординатного спуска"""
 
