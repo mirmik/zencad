@@ -76,18 +76,27 @@ def start_unbound_application(scene):
 
 
 def start_worker(ipipe, opipe, path):
-	i=os.dup(ipipe)
-	o=os.dup(opipe)
-	print("dup2:", os.dup2(i, 5))
-	print("dup2:", os.dup2(o, 6))
+#	i=os.dup(ipipe)
+#	o=os.dup(opipe)
+#	print("dup2:", os.dup2(i, 5))
+#	print("dup2:", os.dup2(o, 6))
 
+	print(ipipe, opipe)
+
+	os.environ["ZENCAD_IPIPE"] = str(ipipe)
+	os.environ["ZENCAD_OPIPE"] = str(opipe)
 	os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
 
 	os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad", path], os.environ)
 
 def start_unbounded_worker(path):
+	print("START_UNBOUNDED_WORKER")
+	
 	ipipe = os.pipe()
 	opipe = os.pipe()
+
+	print(ipipe)
+	print(opipe)
 
 	proc = multiprocessing.Process(target = start_worker, args=(opipe[0], ipipe[1], path))
 	proc.start()
@@ -101,7 +110,13 @@ def start_unbounded_worker(path):
 
 def update_unbound_application(scene):
 	print("UPDATE_UNBOUND_APPLICATION")
-	common_unbouded_proc(5, 6, scene)
+	
+	ipipe = int(os.environ["ZENCAD_IPIPE"])
+	opipe = int(os.environ["ZENCAD_OPIPE"])
+
+	print(ipipe, opipe)
+
+	common_unbouded_proc(ipipe, opipe, scene)
 
 
 def common_unbouded_proc(ipipe, opipe, scene):
