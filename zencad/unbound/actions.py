@@ -374,13 +374,17 @@ class mixin():
 		#		return
 
 		#self.client_communicator.send({"cmd": "stopworld"})
-		os.kill(self.clientpid, signal.SIGKILL)
+		oldpid = self.clientpid
+
 		self.client_communicator.stop_listen()
 		
 		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path)
 		self.client_communicator.start_listen()
 #
 		self.client_communicator.newdata.connect(self.new_worker_message)
+		
+		os.kill(oldpid, signal.SIGKILL)
+		
 		#	zencad.showapi.mode = "update_shower"
 #
 		#	class runner(QThread):
