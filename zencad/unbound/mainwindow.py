@@ -49,7 +49,7 @@ class MainWindow(QMainWindow, zencad.unbound.actions.mixin):
 		self.vsplitter.addWidget(QWidget())
 		self.vsplitter.addWidget(self.console)
 
-		self.resize(800,600)
+		self.resize(1000,800)
 		self.setCentralWidget(self.hsplitter)
 
 		self.createActions()
