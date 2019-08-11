@@ -73,9 +73,10 @@ class unit:
 	def add_object(self, d):
 		self.dispobjects.append(d)
 
-	def add_shape(self, shp):
+	def add_shape(self, shp, color=pyservoce.default_color):
 		shp = evalcache.unlazy_if_need(shp)
 		controller = pyservoce.interactive_object(shp)
+		controller.set_color(pyservoce.color(color))
 		self.dispobjects.append(controller)
 		self.shapes_holder.append(shp)
 		return controller
