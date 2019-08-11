@@ -4,7 +4,10 @@ import numpy
 import time
 
 def normalize(v):
-	return v / numpy.linalg.norm(v)
+	n = numpy.linalg.norm(v)
+	if n == 0:
+		return numpy.zeros(v.size)
+	return v / n
 
 def naive_backpack(target, vectors, maxiters=None, koeffs=None, penalty=None, alpha=0.5, epsilon=0.000000001):
 	"""Наивное решение задачи поиска линейной комбинации методом покоординатного спуска"""
@@ -82,7 +85,9 @@ def grad_backpack(target, vectors, maxiters=None, koeffs=None, penalty=None, alp
 		koeffs = numpy.array([ v.dot(delta) for v in vnormalized ])
 		koeffs *= 0.5
 
-		coords += koeffs / vnorms
+		for i in range(len(vectors)):
+			if vnorms[i] != 0:
+				coords[i] += koeffs[i] / vnorms[i]
 		
 		#print(coords)
 
