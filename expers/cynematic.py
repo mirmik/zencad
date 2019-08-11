@@ -77,7 +77,7 @@ def animate(wdg):
 	lintgt = diff.translation() 
 	print(linsens, lintgt)
 
-	res = zencad.malgo.grad_backpack(target = lintgt, vectors = linsens)
+	res = zencad.malgo.svd_backpack(target = lintgt, vectors = linsens)
 	res = res[0]
 	print(res)
 #	while(1): pass
