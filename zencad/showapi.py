@@ -9,7 +9,7 @@ default_scene = Scene()
 mode = None
 
 
-def display(shp, color=Color(0.6, 0.6, 0.8), deep=False):
+def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
 
