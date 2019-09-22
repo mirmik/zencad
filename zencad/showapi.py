@@ -9,6 +9,35 @@ import zencad.unbound.application
 default_scene = Scene()
 SHOWMODE = "makeapp"
 
+def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
+    """ Функция активации графической части.
+
+    Может иметь разные режимы исполнения в зависимости от текущего
+    режима. Обычно или создаёт GUI либо заменяет в виджет в уже 
+    созданном приложении.
+    """
+
+    if scene is None:
+        scene = default_scene
+
+    if SHOWMODE == "makeapp":
+        # Common application start
+        zencad.unbound.application.start_unbound_application(
+            scene, *args, **kwargs)
+
+    if SHOWMODE == "mainonly":
+        # Make mainwindow without widget
+        zencad.unbound.application.start_main_application()
+
+    elif SHOWMODE == "widget":
+        # Start widget without main programm
+        zencad.viewadaptor.standalone(scene)
+
+    elif SHOWMODE == "replace":
+        # Replace main programm widget with target id's widget
+        zencad.unbound.application.update_unbound_application(
+            scene, *args, **kwargs)
+
 def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
@@ -29,41 +58,3 @@ def highlight(m):
 
 def hl(m):
     return highlight(m)
-
-
-def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
-    if scene is None:
-        scene = default_scene
-
-    if SHOWMODE == "makeapp":
-        zencad.unbound.application.start_unbound_application(scene)
-
-    if SHOWMODE == "mainonly":
-        zencad.unbound.application.start_main_application()
-
-    elif SHOWMODE == "widget":
-        zencad.viewadaptor.standalone(scene)
-
-    elif SHOWMODE == "replace":
-        zencad.unbound.application.update_unbound_application(scene)
-
-    #if mode is not None:
-    #   if mode == "nothing":
-    #        pass
-#
-    #    elif mode == "update_scene":
-    #        import zencad.shower
-#
-    #        return zencad.shower.update_scene(scene, *args, **kwargs)
-#
-    #    elif mode == "app_fullview":
-    #        import zencad.shower
-#
-    #        return zencad.shower.show_impl(
-    #            scene, *args, showeditor=True, showconsole=True, **kwargs
-    #        )
-#
-    #else:
-    #    import zencad.shower
-#
-    #    return zencad.shower.show_impl(scene, *args, **kwargs)

@@ -20,6 +20,7 @@ def main():
 	parser.add_argument("--trace", action="store_true")
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
+	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 	
@@ -48,6 +49,9 @@ def main():
 	#if os.environ["ZENCAD_MODE"] == "REPLACE_WINDOW":
 	if pargs.replace:
 		zencad.showapi.SHOWMODE = "replace"
+
+	if pargs.widget:
+		zencad.showapi.SHOWMODE = "widget"
 
 	runpy.run_path(path, run_name="__main__")
 
