@@ -8,6 +8,7 @@ import zencad.lazifier
 import zencad.opengl
 import zencad.texteditor
 
+from zencad.animate import AnimateThread
 import zencad.unbound.communicator
 import zencad.unbound.actions
 
@@ -25,46 +26,73 @@ import runpy
 
 from zencad.unbound.mainwindow import MainWindow
 
+__TRACED__=True
+
+def trace(s):
+	if __TRACED__:
+		print("APPTRACE: {}".format(s))
+
+def traced(func):
+	def decor(*argv, **kwargs):
+		trace(func.__name__)
+	return func
+
+@traced
 def start_main_application():
-	print("START_MAIN_APPLICATION")
+	"""Запустить графический интерфейс в текущем потоке.
+
+	Используются файловые дескрипторы по умолчанию, которые длжен открыть
+	вызывающий поток."""
+
 	app = QApplication([])
 	
 	zencad.opengl.init_opengl()
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 	
+	#TODO: Настройка цветов.
 	pal = app.palette()
 	pal.setColor(QPalette.Window, QColor(160, 161, 165))
 	app.setPalette(pal)
 	
-	client = zencad.unbound.communicator.Communicator(ipipe=3, opipe=4)
-	
-	mw = MainWindow(client_communicator=client)
+	mw = MainWindow(client_communicator=
+		zencad.unbound.communicator.Communicator(ipipe=3, opipe=4))
+
 	mw.show()
-	
-	#app.aboutToQuit.connect(lambda: client.send({"cmd":"stopworld"}))
-	
 	app.exec()
+	trace("FINISH MAIN QTAPP")
 
-
+@traced
 def start_application(ipipe, opipe):
+	"""Запустить графическую оболочку в новом.
+
+	Переданный пайп используется для коммуникации с процессом родителем
+	3 и 4-ый файловые дескрипторы будут использоваться в новосозданной
+	программе, поскольку она порождена отсюда.
+
+	TODO: Следует убедиться, что файловые дескрипторы обрабатываются корректно
+	TODO: Следует убедиться, что fd обрабатыаются корректно во всех ОС
+	При необъодимости следует изменить алгоритм взаимодействия (Сокеты???)"""
+
 	i=os.dup(ipipe)
 	o=os.dup(opipe)
 	os.dup2(i, 3)
 	os.dup2(o, 4)
 
-	#os.environ["ZENCAD_MODE"] = "MAINONLY"
-
-	#os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad"], os.environ)
-	
+	# TODO Абстрактизировать вызов интерпретатора для работы
+	# в других ОС.
 	interpreter = "/usr/bin/python3"
 	os.system("{} -m zencad --mainonly".format(interpreter))
 
+@traced
+def start_unbound_application(*args, **kwargs):
+	"""Основная процедура запуска.
 
-def start_unbound_application(scene):
+	Создаёт в отдельном процессе графическую оболочку,
+	После чего создаёт в своём процессе виджет, который встраивается в GUI.
+	Для коммуникации между процессами создаётся pipe"""
+
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
-
-	print("START_UNBOUND_APPLICATION")
 
 	ipipe = os.pipe()
 	opipe = os.pipe()
@@ -75,94 +103,91 @@ def start_unbound_application(scene):
 	os.close(ipipe[1])
 	os.close(opipe[0])
 
-	common_unbouded_proc(ipipe[0], opipe[1], scene)
+	common_unbouded_proc(ipipe[0], opipe[1], *args, **kwargs)
 
-
+@traced
 def start_worker(ipipe, opipe, path):
+	"""Создать новый поток и отправить запрос на добавление
+	его вместо предыдущего ??? 
+
+	TODO: Дополнить коментарий с подробным описанием механизма."""
+
 	i=os.dup(ipipe)
 	o=os.dup(opipe)
-	print("dup2:", os.dup2(i, 3))
-	print("dup2:", os.dup2(o, 4))
+	os.dup2(i, 3)
+	os.dup2(o, 4)
 
 	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 
-	#os.environ["ZENCAD_IPIPE"] = str(3)
-	#os.environ["ZENCAD_OPIPE"] = str(4)
-	#os.environ["ZENCAD_MODE"] = "REPLACE_WINDOW"
-
-	#os.execve("/usr/bin/python3", ["/usr/bin/python3", "-m", "zencad", path], os.environ)
 	interpreter = "/usr/bin/python3"
 	os.system("{} -m zencad --replace {}".format(interpreter, path))
 
+@traced
 def start_unbounded_worker(path):
-	print("START_UNBOUNDED_WORKER")
-	
+	"""Запустить процесс, обсчитывающий файл path и 
+	вернуть его коммуникатор."""
+
 	apipe = os.pipe()
 	bpipe = os.pipe()
 
 	apipe = (os.dup(apipe[0]), os.dup(apipe[1]))
 	bpipe = (os.dup(bpipe[0]), os.dup(bpipe[1]))
 
-	#print(ipipe)
-	#print(opipe)
-
-	#os.dup2(ipipe[0], 3)
-	#os.dup2(ipipe[1], 5)
-	#os.dup2(opipe[0], 4)
-	#os.dup2(opipe[1], 6)
-
-	#print(ipipe)
-	#print(opipe)
-
 	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path))
 	proc.start()
 
-#	os.close(ipipe[1])
-#	os.close(opipe[0])
+	return zencad.unbound.communicator.Communicator(
+		ipipe=bpipe[0], opipe=apipe[1])
 
-	communicator = zencad.unbound.communicator.Communicator(ipipe=bpipe[0], opipe=apipe[1])
-
-	return communicator
-
-def update_unbound_application(scene):
-	print("UPDATE_UNBOUND_APPLICATION")
-	
+@traced
+def update_unbound_application(scene, animate=None):
 	ipipe = 3#int(os.environ["ZENCAD_IPIPE"])
 	opipe = 4#int(os.environ["ZENCAD_OPIPE"])
 
 	print(ipipe, opipe)
 
-	common_unbouded_proc(ipipe, opipe, scene)
+	common_unbouded_proc(ipipe, opipe, scene, animate=animate)
 
-
-def common_unbouded_proc(ipipe, opipe, scene):
-	print("COMMON_UNBOUNDED_PROC")
+@traced
+def common_unbouded_proc(ipipe, opipe, scene, animate=None):
+	"""Создание приложения клиента, управляющее логикой сеанса"""
+	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
 
 	app = QApplication([])
 	zencad.opengl.init_opengl()
 
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
+	widget = zencad.viewadaptor.DisplayWidget(
+		scene, view=scene.viewer.create_view())
+	DISPLAY_WINID = widget
+
+	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(
+		ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.start_listen()
+
+	zencad.viewadaptor.bind_widget_markers_signal(widget, MAIN_COMMUNICATOR)
 
 	def receiver(data):
 		data = pickle.loads(data)
-		print("client:", data)
 		if data["cmd"] == "stopworld": 
 			MAIN_COMMUNICATOR.stop_listen()
 			app.quit()
+		else:
+			widget.external_communication_command(data)
 
 	MAIN_COMMUNICATOR.newdata.connect(receiver)
-
-	DISPLAY_WINID=zencad.viewadaptor.DisplayWidget(scene, view=scene.viewer.create_view())
-
-	#MAIN_COMMUNICATOR.send({"cmd":"hello"})
 	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
-	#MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	MAIN_COMMUNICATOR.wait()
 
-	DISPLAY_WINID.show()
+	if animate:
+		ANIMATE_THREAD = AnimateThread(
+			widget=widget, 
+			updater_function=animate)  
+		ANIMATE_THREAD.start()
+
+	widget.show()
 
 	app.exec()
+	trace("FINISH UNBOUNDED QTAPP")
