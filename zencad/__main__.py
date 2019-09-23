@@ -12,8 +12,13 @@ import runpy
 
 import argparse
 
+__MAIN_TRACE__ = False
+
+def trace(*argv, **kwars):
+	if __MAIN_TRACE__: print(*argv, **kwars)
+
 def main():
-	print("__MAIN__", sys.argv)
+	trace("__MAIN__", sys.argv)
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--mainonly", action="store_true")
