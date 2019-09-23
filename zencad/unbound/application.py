@@ -27,7 +27,7 @@ import runpy
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACED__= True
+__TRACED__= False
 
 def trace(s):
 	if __TRACED__:
