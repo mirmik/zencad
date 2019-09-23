@@ -36,7 +36,8 @@ def trace(s):
 def traced(func):
 	def decor(*argv, **kwargs):
 		trace(func.__name__)
-	return func
+		return func(*argv, **kwargs)
+	return decor
 
 @traced
 def start_main_application(tgtpath):
@@ -146,13 +147,11 @@ def start_unbounded_worker(path):
 		ipipe=bpipe[0], opipe=apipe[1])
 
 @traced
-def update_unbound_application(scene, animate=None):
+def update_unbound_application(*args, **kwargs):
 	ipipe = 3#int(os.environ["ZENCAD_IPIPE"])
 	opipe = 4#int(os.environ["ZENCAD_OPIPE"])
 
-	print(ipipe, opipe)
-
-	common_unbouded_proc(pipes=(ipipe, opipe), scene=scene, animate=animate)
+	common_unbouded_proc(pipes=(ipipe, opipe), *args, **kwargs)
 
 @traced
 def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None):
@@ -189,8 +188,10 @@ def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None):
 
 				if close_handle:
 					close_handle()
-					
+
+				trace("FINISH UNBOUNDED QTAPP : app quit on receive")
 				app.quit()
+				trace("app quit on receive... after")
 			else:
 				widget.external_communication_command(data)
 
