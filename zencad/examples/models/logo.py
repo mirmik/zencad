@@ -73,10 +73,16 @@ m = m - base
 m2 = m.rotateX(deg(180)).up(20)
 
 scn = Scene()
+view = scn.viewer.create_view()
+view.set_triedron(False)
+#view.set_background(pyservoce.color(0,0,0.6))
+scn.viewer.set_triedron_axes(False)
 
 scn.add(base.unlazy())
-scn.add(m.unlazy(), Color(1, 1, 1))
-scn.add(m2.unlazy(), Color(1, 1, 1))
-scn.add(m3.unlazy(), Color(1, 1, 1))
 
-show(scn)
+alpha = 0.3
+scn.add(m.unlazy(), Color(0.6, 1, 1,alpha))
+scn.add(m2.unlazy(), Color(1, 0.6, 1,0))
+scn.add(m3.unlazy(), Color(1, 1, 1,0))
+
+show(scn, view=view)

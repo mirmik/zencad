@@ -6,6 +6,7 @@ import zencad.gui.console
 import zencad.gui.texteditor
 import zencad.gui.viewadaptor
 from zencad.gui.inotifier import InotifyThread
+from zencad.gui.infolabel import InfoWidget
 
 import zencad.lazifier
 import zencad.opengl
@@ -31,68 +32,22 @@ import signal
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
-QMARKER_MESSAGE = "Press 'Q' to set marker"
-WMARKER_MESSAGE = "Press 'W' to set marker"
-DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
-
 __TRACE_COMMUNICATION__ = False
 
-class InfoWidget(QWidget):
-	def __init__(self):
-		super().__init__()
-		self.infolay = QHBoxLayout()
-
-		self.poslbl = QLabel("Tracking disabled")
-		self.poslbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.poslbl.setAlignment(Qt.AlignCenter)
-
-		self.marker1Label = QLabel(QMARKER_MESSAGE)
-		self.marker1Label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.marker1Label.setStyleSheet(
-			"QLabel { background-color : rgb(100,0,0); color : white; }"
-		)
-		self.marker1Label.setAlignment(Qt.AlignCenter)
-
-		self.marker2Label = QLabel(WMARKER_MESSAGE)
-		self.marker2Label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.marker2Label.setStyleSheet(
-			"QLabel { background-color : rgb(0,100,0); color : white; }"
-		)
-		self.marker2Label.setAlignment(Qt.AlignCenter)
-
-		self.markerDistLabel = QLabel(DISTANCE_DEFAULT_MESSAGE)
-		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.markerDistLabel.setAlignment(Qt.AlignCenter)
-
-		self.infoLabel = QLabel("")
-		self.infoLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.infoLabel.setAlignment(Qt.AlignCenter)
-		#show_label(self.infoLabel, False)
-
-		self.infolay.addWidget(self.poslbl)
-		self.infolay.addWidget(self.marker1Label)
-		self.infolay.addWidget(self.marker2Label)
-		self.infolay.addWidget(self.markerDistLabel)
-		self.infolay.addWidget(self.infoLabel)
-
-		self.infolay.setContentsMargins(0,0,0,0)
-		self.infolay.setSpacing(0)
-
-		self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.setLayout(self.infolay)
-
-
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
-	def __init__(self, client_communicator, openned_path):
+	def __init__(self, client_communicator=None, openned_path=None, presentation=False):
 		super().__init__()
 		self.openlock = threading.Lock()
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
 
+
 		self.client_communicator = client_communicator
-		self.client_communicator.newdata.connect(self.new_worker_message)
-		self.client_communicator.start_listen()
+		
+		if self.client_communicator:
+			self.client_communicator.newdata.connect(self.new_worker_message)
+			self.client_communicator.start_listen()
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
@@ -104,9 +59,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.cw_layout.addWidget(self.info_widget)
 		self.cw.setLayout(self.cw_layout)
 		
+		if presentation:
+			lbl = self.presentation_label() 
+		else:
+			lbl = QLabel()
+			lbl.setFixedSize(700,500)
 		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
-		self.vsplitter.addWidget(QWidget())
+		self.vsplitter.addWidget(lbl)
 		self.vsplitter.addWidget(self.console)
 
 		self.resize(1000,800)
@@ -119,16 +79,63 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.createMenus()
 		self.createToolbars()
 
-		self.set_current_opened(openned_path)
+		if openned_path:
+			self.set_current_opened(openned_path)
 
 		self.notifier = InotifyThread(self)
 		self.notifier.changed.connect(self.reopen_current)
-		self.notifier.retarget(self.current_opened)
+		
+		if openned_path:
+			self.notifier.retarget(self.current_opened)
+
+		if presentation:
+			self.presentation_mode = True
+			self.texteditor.hide()
+			self.console.hide()
+		else:
+			presentation_mode = False
+		#	self.set_presentation_label()
 
 		self.fscreen_mode=False
 		self.oldopenned = self.current_opened
 		self.last_location = None
 		self.session_id=0
+		self.cc_window =None
+
+	def presentation_label(self):
+		url = os.path.join(zencad.moduledir, "zencad_logo.png")
+		img = QPixmap(url);
+
+		painter = QPainter(img)
+		painter.setPen(Qt.green)
+		font = QFont()
+		font.setPointSize(18)
+		painter.setFont(font)
+		message2 = """From the fact that you will create 3d models with scripts,\nnothing will change in your life, created with scripts but 3d models will be."""
+		message = "Cad system for righteous Zen programmers. "
+		painter.drawText(
+			QPoint(
+				20 ,
+				img.height() - 20), 
+			message)
+		
+		font = QFont()
+		font.setPointSize(12)
+		painter.setFont(font)
+		painter.setPen(Qt.yellow)
+		for i, s in enumerate(message2.splitlines()):
+			painter.drawText(
+			QPoint(
+				20 ,
+				img.height() - 25 - QFontMetrics(font).height()*(2-i)), 
+			s)
+
+		painter.end()
+
+		label = QLabel();
+		label.setPixmap(img);
+		self.preslabel = label
+		return label
 
 	def new_worker_message(self, data):
 		data = pickle.loads(data)
@@ -154,6 +161,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		print("{0}: x:{1}, y:{2}, z:{3}; point({1},{2},{3})".format(
 			idx, format(x, fmt), format(y, fmt), format(z, fmt)))
 
+		self.info_widget.set_marker_data(qw, x, y, z)
+
 	def bind_window(self, winid, pid, session_id):
 		if session_id != self.session_id:
 			return
@@ -178,13 +187,15 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
-		self.client_communicator.send({"cmd": "stopworld"})
+		if self.client_communicator:
+			self.client_communicator.send({"cmd": "stopworld"})
 		time.sleep(0.01)
 
 	def reopen_current(self):
 		self._open_routine(self.current_opened)
 
 	def _open_routine(self, path):
+		self.presentation_mode = False
 		self.openlock.acquire()
 
 		need_prescale = self.oldopenned != path
@@ -192,36 +203,30 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.set_current_opened(path)
 
-		screen = self.screen()
-		painter = QPainter(screen)
-		painter.setPen(Qt.green)
-		font = QFont()
-		font.setPointSize(12)
-		painter.setFont(font)
-		message = "Loading... please wait."
-		painter.drawText(
-			QPoint(
-				screen.width()/2 - QFontMetrics(font).width(message)/2,
-				QFontMetrics(font).height()), 
-			message)
-		painter.end()
+		if self.cc_window:
+			screen = self.screen()
+			painter = QPainter(screen)
+			painter.setPen(Qt.green)
+			font = QFont()
+			font.setPointSize(12)
+			painter.setFont(font)
+			message = "Loading... please wait."
+			painter.drawText(
+				QPoint(
+					screen.width()/2 - QFontMetrics(font).width(message)/2,
+					QFontMetrics(font).height()), 
+				message)
+			painter.end()
+	
+			self.screen_label = QLabel()
+			self.screen_label.setPixmap(screen)
 
-		self.screen_label = QLabel()
-		self.screen_label.setPixmap(screen)
+			self.replace_widget(self.screen_label)
 
-		self.replace_widget(self.screen_label)
-
-		self.client_communicator.send({"cmd": "stopworld"})
-		#os.wait(self.client_pid)
-
-
-		self.client_communicator.stop_listen()
-
-		#lbl = QLabel("Loading... Maybe it crashed... Maybe not.")
-		#lbl.setAlignment(Qt.AlignCenter)
-		#lbl.setStyleSheet("QLabel { background-color : darkBlue; color : yellow; }");
-		#self.replace_widget(lbl)
-    	
+		if self.client_communicator:
+			self.client_communicator.send({"cmd": "stopworld"})
+			self.client_communicator.stop_listen()
+	
 		self.session_id += 1
 		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path, 
 			need_prescale = need_prescale, session_id=self.session_id)
