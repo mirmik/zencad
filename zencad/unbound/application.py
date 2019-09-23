@@ -1,16 +1,17 @@
 # coding: utf-8
 
 import zencad
-import zencad.console
-import zencad.texteditor
-import zencad.viewadaptor
+
+import zencad.gui.console
+import zencad.gui.texteditor
+import zencad.gui.viewadaptor
+
 import zencad.lazifier
 import zencad.opengl
-import zencad.texteditor
 
 from zencad.animate import AnimateThread
 import zencad.unbound.communicator
-import zencad.unbound.actions
+import zencad.gui.actions
 
 import pyservoce
 import evalcache
@@ -24,7 +25,7 @@ import os
 import pickle
 import runpy
 
-from zencad.unbound.mainwindow import MainWindow
+from zencad.gui.mainwindow import MainWindow
 
 __TRACED__=True
 
@@ -152,6 +153,7 @@ def update_unbound_application(scene, animate=None):
 @traced
 def common_unbouded_proc(ipipe, opipe, scene, animate=None):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
+
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
@@ -159,7 +161,7 @@ def common_unbouded_proc(ipipe, opipe, scene, animate=None):
 	app = QApplication([])
 	zencad.opengl.init_opengl()
 
-	widget = zencad.viewadaptor.DisplayWidget(
+	widget = zencad.gui.viewadaptor.DisplayWidget(
 		scene, view=scene.viewer.create_view())
 	DISPLAY_WINID = widget
 
@@ -167,7 +169,8 @@ def common_unbouded_proc(ipipe, opipe, scene, animate=None):
 		ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.start_listen()
 
-	zencad.viewadaptor.bind_widget_markers_signal(widget, MAIN_COMMUNICATOR)
+	zencad.gui.viewadaptor.bind_widget_markers_signal(
+		widget, MAIN_COMMUNICATOR)
 
 	def receiver(data):
 		data = pickle.loads(data)

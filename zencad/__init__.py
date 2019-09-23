@@ -24,12 +24,12 @@ exampledir = os.path.join(os.path.dirname(__file__), "examples")
 
 from zencad.showapi import show, display, disp, hl, highlight
 
-from zencad.prim3d import *
-from zencad.prim2d import *
-from zencad.prim1d import *
+from zencad.geom.prim3d import *
+from zencad.geom.prim2d import *
+from zencad.geom.prim1d import *
 
-from zencad.ops3d import *
-from zencad.ops1d2d import *
+from zencad.geom.ops3d import *
+from zencad.geom.ops1d2d import *
 
 def gr(grad):
     print("'gr' function is deprecated. Use 'deg' instead")
