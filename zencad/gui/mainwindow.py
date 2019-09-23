@@ -83,7 +83,7 @@ class InfoWidget(QWidget):
 
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
-	def __init__(self, client_communicator):
+	def __init__(self, client_communicator, openned_path):
 		super().__init__()
 		self.openlock = threading.Lock()
 		self.console = zencad.console.ConsoleWidget()
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.createMenus()
 		self.createToolbars()
 
-		self.set_start_file_as_current_opened()
+		self.set_current_opened(openned_path)
 
 		self.notifier = InotifyThread(self)
 		self.notifier.changed.connect(self.reopen_current)
@@ -159,9 +159,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def set_current_opened(self, path):
 		self.current_opened = path
 		self.texteditor.open(path)
-	
-	def set_start_file_as_current_opened(self):
-		self.set_current_opened(sys.argv[0])
 
 	def closeEvent(self, event):
 		self.client_communicator.send({"cmd": "stopworld"})

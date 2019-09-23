@@ -27,7 +27,7 @@ import runpy
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACED__=True
+__TRACED__= True
 
 def trace(s):
 	if __TRACED__:
@@ -39,7 +39,7 @@ def traced(func):
 	return func
 
 @traced
-def start_main_application():
+def start_main_application(tgtpath):
 	"""Запустить графический интерфейс в текущем потоке.
 
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
@@ -55,15 +55,17 @@ def start_main_application():
 	pal.setColor(QPalette.Window, QColor(160, 161, 165))
 	app.setPalette(pal)
 	
-	mw = MainWindow(client_communicator=
-		zencad.unbound.communicator.Communicator(ipipe=3, opipe=4))
+	mw = MainWindow(
+		client_communicator=
+			zencad.unbound.communicator.Communicator(ipipe=3, opipe=4),
+		openned_path=tgtpath)
 
 	mw.show()
 	app.exec()
 	trace("FINISH MAIN QTAPP")
 
 @traced
-def start_application(ipipe, opipe):
+def start_application(ipipe, opipe, tgtpath):
 	"""Запустить графическую оболочку в новом.
 
 	Переданный пайп используется для коммуникации с процессом родителем
@@ -82,10 +84,10 @@ def start_application(ipipe, opipe):
 	# TODO Абстрактизировать вызов интерпретатора для работы
 	# в других ОС.
 	interpreter = "/usr/bin/python3"
-	os.system("{} -m zencad --mainonly".format(interpreter))
+	os.system("{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath))
 
 @traced
-def start_unbound_application(*args, **kwargs):
+def start_unbound_application(*args, tgtpath, **kwargs):
 	"""Основная процедура запуска.
 
 	Создаёт в отдельном процессе графическую оболочку,
@@ -98,7 +100,9 @@ def start_unbound_application(*args, **kwargs):
 	ipipe = os.pipe()
 	opipe = os.pipe()
 
-	proc = multiprocessing.Process(target = start_application, args=(opipe[0], ipipe[1]))
+	proc = multiprocessing.Process(
+		target = start_application, 
+		args=(opipe[0], ipipe[1], tgtpath))
 	proc.start()
 
 	os.close(ipipe[1])
