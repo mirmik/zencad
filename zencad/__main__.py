@@ -24,7 +24,9 @@ def main():
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
+	parser.add_argument("--prescale", action="store_true")
 	parser.add_argument("--tgtpath")
+	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 
@@ -61,6 +63,8 @@ def main():
 	# Специальный режим, устанавливаемый GUI при загрузке скрипта.
 	# Делает ребинд модели в уже открытом gui.
 	if pargs.replace:
+		zencad.showapi.PRESCALE = pargs.prescale
+		zencad.showapi.SESSION_ID = int(pargs.session_id)
 		zencad.showapi.SHOWMODE = "replace"
 
 	# Режим работы для теста виджета:
@@ -74,7 +78,7 @@ def main():
 		ex_type, ex, tb = sys.exc_info()
 		traceback.print_tb(tb)
 	
-	print("AFTER RUNPY")
+	trace("AFTER RUNPY")
 
 if __name__ == "__main__":
 	main()

@@ -22,6 +22,7 @@ from PyQt5.QtGui import *
 
 import multiprocessing
 import os
+import time
 import pickle
 import runpy
 
@@ -29,13 +30,13 @@ from zencad.gui.mainwindow import MainWindow
 
 __TRACED__= False
 
-def trace(s):
+def trace(*argv):
 	if __TRACED__:
-		print("APPTRACE: {}".format(s))
+		print("APPTRACE: {}".format(str(argv)))
 
 def traced(func):
 	def decor(*argv, **kwargs):
-		trace(func.__name__)
+		trace(func.__name__, argv, kwargs)
 		return func(*argv, **kwargs)
 	return decor
 
@@ -109,10 +110,10 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	os.close(ipipe[1])
 	os.close(opipe[0])
 
-	common_unbouded_proc(pipes=(ipipe[0], opipe[1]), *args, **kwargs)
+	common_unbouded_proc(pipes=(ipipe[0], opipe[1]), need_prescale=True, *args, **kwargs)
 
 @traced
-def start_worker(ipipe, opipe, path):
+def start_worker(ipipe, opipe, path, need_prescale=False, session_id=0):
 	"""Создать новый поток и отправить запрос на добавление
 	его вместо предыдущего ??? 
 
@@ -126,11 +127,17 @@ def start_worker(ipipe, opipe, path):
 	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 
+	prescale = "--prescale" if need_prescale else ""
 	interpreter = "/usr/bin/python3"
-	os.system("{} -m zencad --replace {}".format(interpreter, path))
+
+	os.system("{interpreter} -m zencad {path} --replace {prescale} --session_id {session_id}".format(
+		interpreter=interpreter, 
+		path=path, 
+		prescale=prescale, 
+		session_id=session_id))
 
 @traced
-def start_unbounded_worker(path):
+def start_unbounded_worker(path, session_id, need_prescale=False):
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
 
@@ -140,7 +147,7 @@ def start_unbounded_worker(path):
 	apipe = (os.dup(apipe[0]), os.dup(apipe[1]))
 	bpipe = (os.dup(bpipe[0]), os.dup(bpipe[1]))
 
-	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path))
+	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, need_prescale, session_id))
 	proc.start()
 
 	return zencad.unbound.communicator.Communicator(
@@ -154,7 +161,7 @@ def update_unbound_application(*args, **kwargs):
 	common_unbouded_proc(pipes=(ipipe, opipe), *args, **kwargs)
 
 @traced
-def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None):
+def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None, need_prescale=False, session_id=0):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
 	ANIMATE_THREAD = None
@@ -165,7 +172,7 @@ def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None):
 	zencad.opengl.init_opengl()
 
 	widget = zencad.gui.viewadaptor.DisplayWidget(
-		scene, view=scene.viewer.create_view())
+		scene, view=scene.viewer.create_view(), need_prescale=need_prescale)
 	DISPLAY_WINID = widget
 
 	if pipes:
@@ -176,27 +183,36 @@ def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None):
 			ipipe=ipipe, opipe=opipe)
 		MAIN_COMMUNICATOR.start_listen()
 
-		zencad.gui.viewadaptor.bind_widget_markers_signal(
+		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
+
+		def stop_world():
+			print("stop_world")
+
+			MAIN_COMMUNICATOR.stop_listen()
+			if ANIMATE_THREAD:
+				ANIMATE_THREAD.finish()
+
+			if close_handle:
+				close_handle()
+
+			trace("FINISH UNBOUNDED QTAPP : app quit on receive")
+			app.quit()
+			trace("app quit on receive... after")
+
 
 		def receiver(data):
 			data = pickle.loads(data)
+			print(data)
 			if data["cmd"] == "stopworld": 
-				MAIN_COMMUNICATOR.stop_listen()
-				if ANIMATE_THREAD:
-					ANIMATE_THREAD.finish()
-
-				if close_handle:
-					close_handle()
-
-				trace("FINISH UNBOUNDED QTAPP : app quit on receive")
-				app.quit()
-				trace("app quit on receive... after")
+				stop_world()
 			else:
 				widget.external_communication_command(data)
 
 		MAIN_COMMUNICATOR.newdata.connect(receiver)
-		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
+		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
+		time.sleep(0.00001)
+		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
 		MAIN_COMMUNICATOR.wait()
 
 	if animate:

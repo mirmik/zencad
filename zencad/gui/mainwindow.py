@@ -125,6 +125,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.notifier.changed.connect(self.reopen_current)
 		self.notifier.retarget(self.current_opened)
 
+		self.fscreen_mode=False
+		self.oldopenned = self.current_opened
+		self.last_location = None
+		self.session_id=0
+
 	def new_worker_message(self, data):
 		data = pickle.loads(data)
 		cmd = data["cmd"]
@@ -134,11 +139,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		# TODO: Переделать в словарь
 		if cmd == "hello": print("HelloWorld")
-		elif cmd == 'bindwin': self.bind_window(winid=data['id'])
+		elif cmd == 'bindwin': self.bind_window(winid=data['id'], pid=data["pid"], session_id=data["session_id"])
 		elif cmd == 'setopened': self.set_current_opened(path=data['path'])
 		elif cmd == 'clientpid': self.clientpid = data['pid']
 		elif cmd == "qmarker": self.marker_handler("q", data)
 		elif cmd == "wmarker": self.marker_handler("w", data)
+		elif cmd == "location": self.location_update_handle(data["loc"])
+		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
 
 	def marker_handler(self, qw, data):
 		fmt='.5f'
@@ -147,11 +154,21 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		print("{0}: x:{1}, y:{2}, z:{3}; point({1},{2},{3})".format(
 			idx, format(x, fmt), format(y, fmt), format(z, fmt)))
 
-	def bind_window(self, winid):
+	def bind_window(self, winid, pid, session_id):
+		if session_id != self.session_id:
+			return
+
 		container = QWindow.fromWinId(winid)
-		cc = QWidget.createWindowContainer(container)
-		self.vsplitter.replaceWidget(0, cc)
+		self.cc = QWidget.createWindowContainer(container)
+		#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
+
+		self.cc_window = winid
+		self.vsplitter.replaceWidget(0, self.cc)
 		self.client_communicator.send("unwait")
+		self.client_pid = pid
+
+		if self.oldopenned == self.current_opened and self.last_location is not None:
+			self.client_communicator.send({"cmd":"location", "dct": self.last_location})
 
 	def replace_widget(self, wdg):
 		self.vsplitter.replaceWidget(0, wdg)
@@ -170,20 +187,67 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def _open_routine(self, path):
 		self.openlock.acquire()
 
+		need_prescale = self.oldopenned != path
+		self.oldopenned = path
+
 		self.set_current_opened(path)
 
+		screen = self.screen()
+		painter = QPainter(screen)
+		painter.setPen(Qt.green)
+		font = QFont()
+		font.setPointSize(12)
+		painter.setFont(font)
+		message = "Loading... please wait."
+		painter.drawText(
+			QPoint(
+				screen.width()/2 - QFontMetrics(font).width(message)/2,
+				QFontMetrics(font).height()), 
+			message)
+		painter.end()
+
+		self.screen_label = QLabel()
+		self.screen_label.setPixmap(screen)
+
+		self.replace_widget(self.screen_label)
+
 		self.client_communicator.send({"cmd": "stopworld"})
+		#os.wait(self.client_pid)
+
+
 		self.client_communicator.stop_listen()
 
-		lbl = QLabel("Loading... Maybe it crashed... Maybe not.")
-		lbl.setAlignment(Qt.AlignCenter)
-		lbl.setStyleSheet("QLabel { background-color : darkBlue; color : yellow; }");
-		self.replace_widget(lbl)
+		#lbl = QLabel("Loading... Maybe it crashed... Maybe not.")
+		#lbl.setAlignment(Qt.AlignCenter)
+		#lbl.setStyleSheet("QLabel { background-color : darkBlue; color : yellow; }");
+		#self.replace_widget(lbl)
     	
-		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path)
+		self.session_id += 1
+		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path, 
+			need_prescale = need_prescale, session_id=self.session_id)
+
 		self.client_communicator.start_listen()
 
 		self.client_communicator.newdata.connect(self.new_worker_message)
-		
+
 		self.notifier.retarget(path)
 		self.openlock.release()
+
+	def screen(self):
+		screen = QGuiApplication.primaryScreen()
+		p = screen.grabWindow(self.cc_window)
+		return p
+
+	def location_update_handle(self, dct):
+		scale = dct["scale"]
+		eye = dct["eye"]
+		center = dct["center"]
+
+		self.last_location = dct
+		#print("locinfo:", self.last_location)
+
+	def internal_key_pressed(self, s):
+		#print(s)
+
+		if s == "F11": self.fullScreen()
+		elif s == "F10": self.displayMode() 

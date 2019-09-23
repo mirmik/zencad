@@ -115,10 +115,10 @@ class MainWindowActionsMixin:
 		raise NotImplementedError
 
 	def exportStlAction(self):
-		raise NotImplementedError
+		self.client_communicator.send({"cmd": "exportstl"})		
 
 	def exportBrepAction(self):
-		raise NotImplementedError
+		self.client_communicator.send({"cmd": "exportbrep"})	
 
 	def externalTextEditorOpen(self):
 		os.system(SETTINGS["external_text_editor"] + " " + started_by)
@@ -160,17 +160,64 @@ class MainWindowActionsMixin:
 		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
 
-	def testAction(self):
-		raise NotImplementedError
+	#def testAction(self):
+	#	raise NotImplementedError
 
 	def cacheInfoAction(self):
-		raise NotImplementedError
+		def get_size(start_path="."):
+			total_size = 0
+			for dirpath, dirnames, filenames in os.walk(start_path):
+				for f in filenames:
+					fp = os.path.join(dirpath, f)
+					total_size += os.path.getsize(fp)
+			return total_size
+
+		def sizeof_fmt(num, suffix="B"):
+			for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
+				if abs(num) < 1024.0:
+					return "%3.1f%s%s" % (num, unit, suffix)
+				num /= 1024.0
+			return "%.1f%s%s" % (num, "Yi", suffix)
+
+		msgBox = QMessageBox(self)
+		msgBox.setWindowTitle("Cache Info")
+		msgBox.setWindowModality(Qt.WindowModal)
+		msgBox.setInformativeText(
+			"Path: {}"
+			"<p>Hashing algorithm: {}"
+			"<p>Files: {}"
+			"<p>Size: {}".format(
+				zencad.lazifier.cachepath,
+				zencad.lazy.algo().name,
+				len(zencad.lazy.cache.keys()),
+				sizeof_fmt(get_size(zencad.lazifier.cachepath)),
+			)
+		)
+		msgBox.exec()
 
 	def debugInfoAction(self):
 		raise NotImplementedError
 
 	def fullScreen(self):
-		raise NotImplementedError
+		if not self.fscreen_mode:
+			self.showFullScreen()
+			self.fscreen_mode = True
+		else:
+			self.showNormal()
+			self.fscreen_mode = False
+
+	def displayMode(self):
+		if self.texteditor.isHidden() and self.console.isHidden():
+			self.hideEditor(False)
+			self.hideConsole(False)
+			self.mHideConsole.setChecked(False)
+			self.mHideEditor.setChecked(False)			
+
+		else:
+			self.hideEditor(True)
+			self.hideConsole(True)
+			self.mHideConsole.setChecked(True)
+			self.mHideEditor.setChecked(True)
 
 	def coordsDifferenceMode(self, en):
 		self.coords_difference_mode = en
@@ -249,9 +296,9 @@ class MainWindowActionsMixin:
 		self.mTracking = self.create_action(
 			"Tracking", self.trackingAction, "Tracking", checkbox=True
 		)
-		self.mTestAction = self.create_action(
-			"TestAction", self.testAction, "TestAction"
-		)
+		#self.mTestAction = self.create_action(
+		#	"TestAction", self.testAction, "TestAction"
+		#)
 		self.mInvalCache = self.create_action(
 			"Invalidate cache", self.invalidateCacheAction, "Invalidate cache"
 		)
@@ -270,6 +317,9 @@ class MainWindowActionsMixin:
 		)
 		self.mFullScreen = self.create_action(
 			"Full screen", self.fullScreen, "Full screen", "F11"
+		)
+		self.mDisplayMode = self.create_action(
+			"Display mode", self.displayMode, "Display mode", "F10"
 		)
 		self.mWebManual = self.create_action(
 			"Online manual", self.openWebManual, "Open online manual in browser"
@@ -318,6 +368,7 @@ class MainWindowActionsMixin:
 		# self.mViewMenu.addAction(self.mDisplayFullScreen)
 		self.mViewMenu.addAction(self.mCoordsDiff)
 		self.mViewMenu.addAction(self.mFullScreen)
+		self.mViewMenu.addAction(self.mDisplayMode)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
 

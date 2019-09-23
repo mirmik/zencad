@@ -2,8 +2,8 @@
 # coding: utf-8
 
 from zencad import *
-import zencad.surface as surface
-import zencad.curve2 as curve2
+import zencad.geom.surface as surface
+import zencad.geom.curve2 as curve2
 
 lazy.diag = True
 
