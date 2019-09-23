@@ -25,7 +25,7 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
         
         # Common application start
         zencad.unbound.application.start_unbound_application(
-            scene, *args, tgtpath=tgtpath, **kwargs)
+            scene=scene, *args, tgtpath=tgtpath, **kwargs)
 
 #    if SHOWMODE == "mainonly":
         # Make mainwindow without widget
@@ -33,12 +33,12 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
 
     elif SHOWMODE == "widget":
         # Start widget without main programm
-        zencad.viewadaptor.standalone(scene)
+        zencad.gui.viewadaptor.standalone(scene=scene, *args, **kwargs)
 
     elif SHOWMODE == "replace":
         # Replace main programm widget with target id's widget
         zencad.unbound.application.update_unbound_application(
-            scene, *args, **kwargs)
+            scene=scene, *args, **kwargs)
 
 def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
     if isinstance(shp, evalcache.LazyObject):

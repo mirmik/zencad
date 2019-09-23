@@ -86,8 +86,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, client_communicator, openned_path):
 		super().__init__()
 		self.openlock = threading.Lock()
-		self.console = zencad.console.ConsoleWidget()
-		self.texteditor = zencad.texteditor.TextEditor()
+		self.console = zencad.gui.console.ConsoleWidget()
+		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
 
 		self.client_communicator = client_communicator

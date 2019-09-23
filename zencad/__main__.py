@@ -4,12 +4,12 @@
 import os
 import sys
 import zencad
-import zencad.shower
 import zencad.showapi
-import zencad.viewadaptor
+import zencad.gui.viewadaptor
 import pyservoce.trace
 import runpy
 
+import sys, traceback
 import argparse
 
 __MAIN_TRACE__ = False
@@ -41,9 +41,9 @@ def main():
 	# Открываем helloworld
 	# TODO: На самом деле нужно создавать временный файл.
 	if len(pargs.paths) == 0:
-	    path = os.path.join(zencad.exampledir, "helloworld.py")
+		path = os.path.join(zencad.exampledir, "helloworld.py")
 	else:
-	    path = os.path.join(os.getcwd(), pargs.paths[0])
+		path = os.path.join(os.getcwd(), pargs.paths[0])
 	
 	# Устанавливаем рабочей директорией дирректорию,
 	# содержащую целевой файл.
@@ -67,7 +67,14 @@ def main():
 	if pargs.widget:
 		zencad.showapi.SHOWMODE = "widget"
 
-	runpy.run_path(path, run_name="__main__")
+	try:
+		runpy.run_path(path, run_name="__main__")
+	except Exception as ex:
+		print("Exception in runned script: {}".format(ex))
+		ex_type, ex, tb = sys.exc_info()
+		traceback.print_tb(tb)
+	
+	print("AFTER RUNPY")
 
 if __name__ == "__main__":
 	main()
