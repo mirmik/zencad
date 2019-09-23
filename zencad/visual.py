@@ -1,5 +1,5 @@
 import zencad
-import zencad.shower
+#import zencad.shower
 import numpy as np
 from pyservoce import Scene
 
