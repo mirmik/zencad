@@ -26,6 +26,7 @@ setup(
     package_data={
         "zencad": [
             "industrial-robot.svg",
+            "zencad_logo.png",
             "unbound/*",
             "geom/*",
             "libs/*",

@@ -43,40 +43,45 @@ def main():
 	# Открываем helloworld
 	# TODO: На самом деле нужно создавать временный файл.
 	if len(pargs.paths) == 0:
-		path = os.path.join(zencad.exampledir, "helloworld.py")
+		#zencad.showapi.SHOWMODE = "presentation"
+		#path = os.path.join(zencad.exampledir, "helloworld.py")
+		zencad.unbound.application.start_main_application(presentation=True)
+		return
+		
 	else:
+		zencad.showapi.SHOWMODE = "makeapp"
 		path = os.path.join(os.getcwd(), pargs.paths[0])
 	
-	# Устанавливаем рабочей директорией дирректорию,
-	# содержащую целевой файл.
-	# TODO: Вероятнее всего, так делать нужно только
-	# при загрузке через GUI. Вынести флаг?
-	directory = os.path.dirname(path)
-	os.chdir(directory)
-	sys.path.append(directory)
+		# Устанавливаем рабочей директорией дирректорию,
+		# содержащую целевой файл.
+		# TODO: Вероятнее всего, так делать нужно только
+		# при загрузке через GUI. Вынести флаг?
+		directory = os.path.dirname(path)
+		os.chdir(directory)
+		sys.path.append(directory)
+		
+		# По умолчанию приложение работает в режиме,
+		# предполагающем вызов указанного скрипта. 
+		# Далее скрипт сам должен создать GUI через showapi.
+		#zencad.showapi.SHOWMODE = "makeapp"
 	
-	# По умолчанию приложение работает в режиме,
-	# предполагающем вызов указанного скрипта. 
-	# Далее скрипт сам должен создать GUI через showapi.
-	zencad.showapi.SHOWMODE = "makeapp"
+		# Специальный режим, устанавливаемый GUI при загрузке скрипта.
+		# Делает ребинд модели в уже открытом gui.
+		if pargs.replace:
+			zencad.showapi.PRESCALE = pargs.prescale
+			zencad.showapi.SESSION_ID = int(pargs.session_id)
+			zencad.showapi.SHOWMODE = "replace"
+	
+		# Режим работы для теста виджета:
+		if pargs.widget:
+			zencad.showapi.SHOWMODE = "widget"
 
-	# Специальный режим, устанавливаемый GUI при загрузке скрипта.
-	# Делает ребинд модели в уже открытом gui.
-	if pargs.replace:
-		zencad.showapi.PRESCALE = pargs.prescale
-		zencad.showapi.SESSION_ID = int(pargs.session_id)
-		zencad.showapi.SHOWMODE = "replace"
-
-	# Режим работы для теста виджета:
-	if pargs.widget:
-		zencad.showapi.SHOWMODE = "widget"
-
-	try:
-		runpy.run_path(path, run_name="__main__")
-	except Exception as ex:
-		print("Exception in runned script: {}".format(ex))
-		ex_type, ex, tb = sys.exc_info()
-		traceback.print_tb(tb)
+		try:
+			runpy.run_path(path, run_name="__main__")
+		except Exception as ex:
+			print("Exception in runned script: {}".format(ex))
+			ex_type, ex, tb = sys.exc_info()
+			traceback.print_tb(tb)
 	
 	trace("AFTER RUNPY")
 

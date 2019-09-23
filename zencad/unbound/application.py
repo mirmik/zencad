@@ -41,7 +41,7 @@ def traced(func):
 	return decor
 
 @traced
-def start_main_application(tgtpath):
+def start_main_application(tgtpath=None, presentation=False):
 	"""Запустить графический интерфейс в текущем потоке.
 
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
@@ -56,11 +56,15 @@ def start_main_application(tgtpath):
 	pal = app.palette()
 	pal.setColor(QPalette.Window, QColor(160, 161, 165))
 	app.setPalette(pal)
-	
-	mw = MainWindow(
-		client_communicator=
-			zencad.unbound.communicator.Communicator(ipipe=3, opipe=4),
-		openned_path=tgtpath)
+
+	if presentation == False:	
+		mw = MainWindow(
+			client_communicator=
+				zencad.unbound.communicator.Communicator(ipipe=3, opipe=4),
+			openned_path=tgtpath)
+
+	else:
+		mw = MainWindow(presentation=True)
 
 	mw.show()
 	app.exec()
@@ -161,7 +165,13 @@ def update_unbound_application(*args, **kwargs):
 	common_unbouded_proc(pipes=(ipipe, opipe), *args, **kwargs)
 
 @traced
-def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None, need_prescale=False, session_id=0):
+def common_unbouded_proc(scene, 
+	view=None,
+	animate=None, 
+	close_handle=None,
+	pipes=None, 
+	need_prescale=False, 
+	session_id=0):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
 	ANIMATE_THREAD = None
@@ -172,7 +182,9 @@ def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None, nee
 	zencad.opengl.init_opengl()
 
 	widget = zencad.gui.viewadaptor.DisplayWidget(
-		scene, view=scene.viewer.create_view(), need_prescale=need_prescale)
+		scene=scene, 
+		view=scene.viewer.create_view() if view is None else view, 
+		need_prescale=need_prescale)
 	DISPLAY_WINID = widget
 
 	if pipes:

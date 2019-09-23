@@ -127,7 +127,35 @@ class MainWindowActionsMixin:
 		self.client_communicator.send({"cmd": "to_freecad"})
 
 	def screenshotAction(self):
-		raise NotImplementedError
+		filters = "*.png;;*.bmp;;*.jpg;;*.*"
+		defaultFilter = "*.png"
+
+		path = QFileDialog.getSaveFileName(
+			self, "Dump image", QDir.currentPath(), filters, defaultFilter
+		)
+
+		path = path[0]
+
+		screen = self.screen()
+
+		file = QFile (path)
+		file.open(QIODevice.WriteOnly)
+		screen.save(file, "PNG")
+
+		#w = self.dispw.width()
+		#h = self.dispw.height()
+
+		#raw = self.dispw.view.rawarray(w, h)
+		#npixels = np.reshape(np.asarray(raw), (h, w, 3))
+		#nnnpixels = np.flip(npixels, 0).reshape((w * h * 3))
+
+		#rawiter = iter(nnnpixels)
+		#pixels = list(zip(rawiter, rawiter, rawiter))
+
+		#image = Image.new("RGB", (w, h))
+		#image.putdata(pixels)
+
+		#image.save(path)
 
 	def resetAction(self):
 		self.client_communicator.send({"cmd": "resetview"})
@@ -154,9 +182,11 @@ class MainWindowActionsMixin:
 		print("Invalidate cache: %d files removed" % len(files))
 
 	def hideConsole(self, en):
+		if self.presentation_mode: return
 		self.console.setHidden(en)
 
 	def hideEditor(self, en):
+		if self.presentation_mode: return
 		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
 
@@ -199,6 +229,7 @@ class MainWindowActionsMixin:
 		raise NotImplementedError
 
 	def fullScreen(self):
+		if self.presentation_mode: return
 		if not self.fscreen_mode:
 			self.showFullScreen()
 			self.fscreen_mode = True
@@ -207,6 +238,7 @@ class MainWindowActionsMixin:
 			self.fscreen_mode = False
 
 	def displayMode(self):
+		if self.presentation_mode: return
 		if self.texteditor.isHidden() and self.console.isHidden():
 			self.hideEditor(False)
 			self.hideConsole(False)
@@ -220,8 +252,8 @@ class MainWindowActionsMixin:
 			self.mHideEditor.setChecked(True)
 
 	def coordsDifferenceMode(self, en):
-		self.coords_difference_mode = en
-		self.updateDistLabel()
+		self.info_widget.coords_difference_mode = en
+		self.info_widget.update_dist()
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
