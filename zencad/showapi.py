@@ -21,13 +21,15 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
         scene = default_scene
 
     if SHOWMODE == "makeapp":
+        tgtpath = sys.argv[0]
+        
         # Common application start
         zencad.unbound.application.start_unbound_application(
-            scene, *args, **kwargs)
+            scene, *args, tgtpath=tgtpath, **kwargs)
 
-    if SHOWMODE == "mainonly":
+#    if SHOWMODE == "mainonly":
         # Make mainwindow without widget
-        zencad.unbound.application.start_main_application()
+ #       zencad.unbound.application.start_main_application()
 
     elif SHOWMODE == "widget":
         # Start widget without main programm

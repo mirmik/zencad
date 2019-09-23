@@ -24,14 +24,18 @@ def main():
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
+	parser.add_argument("--tgtpath")
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 
 	# Режим работы программы, в котором создаётся gui.
 	# Используется в том числе для внутренней работы.	
 	if pargs.mainonly:
-		zencad.showapi.SHOWMODE = "mainonly"
-		return zencad.showapi.show()
+		if pargs.tgtpath == None:
+			print("Error: mainonly mode without tgtpath")
+			exit(0)
+
+		return zencad.unbound.application.start_main_application(pargs.tgtpath)
 
 	# Если программа вызывается без указания файла, 
 	# Открываем helloworld
