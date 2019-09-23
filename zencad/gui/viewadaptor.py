@@ -9,8 +9,9 @@ import os
 import time
 import math
 import threading
+import pyservoce
 
-__TRACE__ = True
+__TRACE__ = False
 
 def trace(*argv):
 	if __TRACE__:
@@ -21,7 +22,13 @@ class DisplayWidget(QWidget):
 	markerRequestQ = pyqtSignal(tuple)
 	markerRequestW = pyqtSignal(tuple)
 
-	def __init__(self, scene, nointersect=True, view=None, showmarkers=True):
+	locationChanged = pyqtSignal(dict)
+	signal_key_pressed = pyqtSignal(str)
+
+	zoom_koeff_key = 1.3
+	zoom_koeff_mouse = 1.1
+
+	def __init__(self, scene, need_prescale=False, nointersect=True, view=None, showmarkers=True):
 		trace("construct DisplayWidget")
 		QWidget.__init__(self)
 		self.setFocusPolicy(Qt.StrongFocus)
@@ -30,6 +37,7 @@ class DisplayWidget(QWidget):
 		self.marker1 = (zencad.pyservoce.point3(0, 0, 0), False)
 		self.marker2 = (zencad.pyservoce.point3(0, 0, 0), False)
 
+		self.need_prescale = need_prescale
 		self.inited = False
 		self.painted = False
 		self.nointersect = nointersect
@@ -50,6 +58,7 @@ class DisplayWidget(QWidget):
 		self.setMouseTracking(True)
 
 		self.animate_updated = threading.Event()
+		self.count_of_helped_shapes = 0
 
 	def redraw(self):
 		self.animate_updated.clear()
@@ -102,12 +111,6 @@ class DisplayWidget(QWidget):
 		y = y / math.cos(self.pitch)
 		self.yaw = math.atan2(y, x)
 
-	def paintEvent(self, ev):
-		if self.inited and not self.painted:
-			self.view.fit_all(0.2)
-			self.view.must_be_resized()
-			self.painted = True
-
 	def eye(self):
 		return self.view.eye()
 
@@ -134,6 +137,8 @@ class DisplayWidget(QWidget):
 			self.MarkerQController.hide(True)
 			self.MarkerWController.hide(True)
 
+			self.count_of_helped_shapes += 2
+
 	def showEvent(self, ev):
 		trace("DisplayWidget::showEvent")
 		if self.inited != True:
@@ -149,11 +154,29 @@ class DisplayWidget(QWidget):
 			
 			self.create_qwmarkers()
 
-			self.view.redraw()
+			#self.view.redraw()
 			self.inited = True
 		else:
-			self.update()
-			self.view.redraw()
+			pass
+			#self.update()
+			#self.view.redraw()
+
+		#self.location_changed_handle()
+		trace("DisplayWidget::showEvent: finish")
+
+	def paintEvent(self, ev):
+		trace("DisplayWidget::paintEvent")
+		if self.inited and not self.painted:
+			if self.need_prescale:
+				self.prescale()
+			self.view.must_be_resized()
+			self.painted = True
+		trace("DisplayWidget::paintEvent: finish")
+
+	def prescale(self):
+		self.reset_orient1()
+		self.view.fit_all(0.2)
+		self.location_changed_handle()
 
 	def resizeEvent(self, ev):
 		if self.inited:
@@ -174,19 +197,21 @@ class DisplayWidget(QWidget):
 		self.temporary1 = thePoint
 
 	def onMouseWheel(self, theFlags, theDelta, thePoint):
-		aFactor = 16
+		#aFactor = 16
 
-		aX = thePoint.x()
-		aY = thePoint.y()
+		#aX = thePoint.x()
+		#aY = thePoint.y()
 
 		if theDelta.y() > 0:
-			aX += aFactor
-			aY += aFactor
+			self.zoom_up(self.zoom_koeff_mouse)
+		#	aX += aFactor
+		#	aY += aFactor
 		else:
-			aX -= aFactor
-			aY -= aFactor
+			self.zoom_down(self.zoom_koeff_mouse)
+		#	aX -= aFactor
+		#	aY -= aFactor
 
-		self.view.zoom(thePoint.x(), thePoint.y(), aX, aY)
+		#self.view.zoom(thePoint.x(), thePoint.y(), aX, aY)
 
 	def onMouseMove(self, theFlags, thePoint):
 		# self.setFocus()
@@ -223,13 +248,16 @@ class DisplayWidget(QWidget):
 				if self.pitch < -math.pi * 0.4999:
 					self.pitch = -math.pi * 0.4999
 				self.set_orient1()
+				self.location_changed_handle()
 				self.view.redraw()
 
 			if self.orient == 2:
 				self.view.rotation(thePoint.x(), thePoint.y())
+			self.location_changed_handle()
 
 		if theFlags & Qt.RightButton or self.shift_pressed:
 			self.view.pan(mv.x(), -mv.y())
+			self.location_changed_handle()
 
 	def wheelEvent(self, e):
 		self.onMouseWheel(e.buttons(), e.angleDelta(), e.pos())
@@ -253,18 +281,6 @@ class DisplayWidget(QWidget):
 
 		elif e.button() == Qt.RightButton:
 			self.onRButtonDown((e.buttons() | e.modifiers()), e.pos())
-
-	def pageDownKeyHandler(self):
-		x = self.width() / 2
-		y = self.height() / 2
-		factor = 16
-		self.view.zoom(x, y, x - factor, y - factor)
-
-	def pageUpKeyHandler(self):
-		x = self.width() / 2
-		y = self.height() / 2
-		factor = 16
-		self.view.zoom(x, y, x + factor, y + factor)
 
 	def markerQPressed(self):
 		self.marker1 = self.view.intersect_point(
@@ -328,6 +344,10 @@ class DisplayWidget(QWidget):
 		#	self.MarkerWController.hide(not self.marker2[1])
 		#	self.view.redraw()
 
+	def location_changed_handle(self):
+		#pass
+		self.locationChanged.emit(self.location())
+
 	def redraw_marker(self, qw, x, y, z):
 		if qw == "q":
 			marker = self.MarkerQController
@@ -337,17 +357,13 @@ class DisplayWidget(QWidget):
 		marker.set_location(zencad.translate(x, y, z))
 		marker.hide(False)
 
-	def zoom_down(self):
-		x = self.width() / 2
-		y = self.height() / 2
-		factor = 16
-		self.view.zoom(x, y, x - factor, y - factor)
+	def zoom_down(self, koeff):
+		self.view.set_scale(self.view.scale()*(1/koeff))
+		self.location_changed_handle()
 
-	def zoom_up(self):
-		x = self.width() / 2
-		y = self.height() / 2
-		factor = 16
-		self.view.zoom(x, y, x + factor, y + factor)
+	def zoom_up(self, koeff):
+		self.view.set_scale(self.view.scale()*koeff)
+		self.location_changed_handle()
 
 	def keyPressEvent(self, event):
 		trace("keyPressEvent", event.key())
@@ -358,30 +374,30 @@ class DisplayWidget(QWidget):
 		if event.key() == Qt.Key_W:
 			self.markerWPressed()
 		if event.key() == Qt.Key_F3 or event.key() == Qt.Key_PageUp:
-			self.zoom_up()
+			self.zoom_up(self.zoom_koeff_key)
 		if event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
-			self.zoom_down()
+			self.zoom_down(self.zoom_koeff_key)
 
 		if event.key() == Qt.Key_F11:
-			print("TODO: F11")
+			self.signal_key_pressed.emit("F11")
+
+		if event.key() == Qt.Key_F10:
+			self.signal_key_pressed.emit("F10")
 			#self.setWindowState(Qt.WindowFullScreen)
 
 	def external_communication_command(self, data):
 		cmd = data["cmd"]
 
-		print(data)
+		#print("external_command:", data)
 
-		if cmd == "autoscale": 
-			self.autoscale()
-		elif cmd == "resetview": 
-			self.reset_orient()
-		elif cmd == "orient1": 
-			self.reset_orient1()
-		elif cmd == "orient2": 
-			self.reset_orient2()
-		elif cmd == "centering": 
-			# TODO: Неправильно работает
-			self.view.centering()
+		if cmd == "autoscale": self.autoscale()
+		elif cmd == "resetview": self.reset_orient()
+		elif cmd == "orient1": self.reset_orient1()
+		elif cmd == "orient2": self.reset_orient2()
+		elif cmd == "centering": self.view.centering() # TODO: Неправильно работает
+		elif cmd == "location": self.set_location(data["dct"])
+		elif cmd == "exportstl": self.addon_exportstl()
+		elif cmd == "exportbrep": self.addon_exportbrep()
 
 		else:
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
@@ -389,6 +405,26 @@ class DisplayWidget(QWidget):
 	widget_closed = pyqtSignal()
 	def closeEvent(self, ev):
 		self.widget_closed.emit()
+
+	def set_location(self, dct):
+		scale = dct["scale"]
+		eye = dct["eye"]
+		center = dct["center"]
+
+		self.view.set_center(center)
+		self.view.set_eye(eye)
+		self.view.set_scale(scale)
+		self.view.redraw()
+
+		self.update_orient1_from_view()
+		self.location_changed_handle()
+
+	def location(self):
+		return {
+			"scale": self.view.scale(),
+			"eye": self.view.eye(),
+			"center": self.view.center()
+		}
 
 #	def change_scene(self, newscene):
 #		oldscene = self.scene
@@ -423,6 +459,51 @@ class DisplayWidget(QWidget):
 #		self.view.set_window(self.winId())
 #		self.viewer.set_triedron_axes()
 
+	def export_file_for_one_shape(self, filters, defaultFilter):
+		if self.scene.total() != 1 + self.count_of_helped_shapes: 
+			print("more/less than one shape in scene:", self.scene.total() - self.count_of_helped_shapes)
+			return False, "", None
+
+		shape = self.scene[0].shape()
+
+		path = QFileDialog.getSaveFileName(
+			self, "STL Export", QDir.currentPath(), filters, defaultFilter
+		)
+
+		path = path[0]
+		return True, path, shape
+
+	def addon_exportstl(self):
+		ok, path, shape = self.export_file_for_one_shape(
+			filters = "*.stl;;*.*",
+			defaultFilter = "*.stl")
+
+		if ok == False or path == "":
+			return
+
+		d, okPressed = QInputDialog.getDouble(
+			self, "Get double", "Value:", 0.01, 0, 10, 10
+		)
+		
+		if not okPressed:
+			return
+
+		pyservoce.make_stl(shape, path, d)
+		print("Make STL procedure finished.")
+
+	def addon_exportbrep(self):
+		ok, path, shape = self.export_file_for_one_shape(
+			filters = "*.brep;;*.*",
+			defaultFilter = "*.brep")
+
+		if ok == False or path == "":
+			return
+		
+		pyservoce.brep_write(shape, path)
+		print("Save BREP procedure finished.")
+
+
+
 def standalone(*args, **kwargs):
 	"""Запуск отдельного виджета для теста функциональности.
 	"""
@@ -437,8 +518,12 @@ def standalone(*args, **kwargs):
 	#app.exec()
 
 
-def bind_widget_markers_signal(widget, communicator):
+def bind_widget_signal(widget, communicator):
 	widget.markerRequestQ.connect(lambda arg:communicator.send({
 		"cmd":"qmarker", "x": arg[0], "y": arg[1], "z": arg[2] }))
 	widget.markerRequestW.connect(lambda arg:communicator.send({
 		"cmd":"wmarker", "x": arg[0], "y": arg[1], "z": arg[2] }))
+	widget.locationChanged.connect(lambda arg:communicator.send({
+		"cmd":"location", "loc": arg }))
+	widget.signal_key_pressed.connect(lambda arg:communicator.send({
+		"cmd":"keypressed", "key": arg }))

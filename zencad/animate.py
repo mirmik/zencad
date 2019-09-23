@@ -23,7 +23,6 @@ class AnimateThread(QThread):
 	def finish(self):
 		self.cancelled = True
 		self.wdg.animate_updated.set()
-		print("animate_thread.canceller set")
 
 	def run(self):
 		time.sleep(0.1)
