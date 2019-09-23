@@ -29,7 +29,6 @@ git clone https://github.com/mirmik/zencad
 Other repos of this project
 ---------------------------
 [https://github.com/mirmik/servoce](https://github.com/mirmik/servoce)  
-[https://github.com/mirmik/zencad-cli](https://github.com/mirmik/zencad-cli)  
 [https://github.com/mirmik/evalcache](https://github.com/mirmik/evalcache)  
 
 HelloWorld
