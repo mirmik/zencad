@@ -398,6 +398,7 @@ class DisplayWidget(QWidget):
 		elif cmd == "location": self.set_location(data["dct"])
 		elif cmd == "exportstl": self.addon_exportstl()
 		elif cmd == "exportbrep": self.addon_exportbrep()
+		elif cmd == "to_freecad": self.addon_to_freecad_action()
 
 		else:
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
@@ -501,6 +502,28 @@ class DisplayWidget(QWidget):
 		
 		pyservoce.brep_write(shape, path)
 		print("Save BREP procedure finished.")
+
+	def addon_to_freecad_action(self):
+		import tempfile
+
+		if self.scene.total() != 1 + self.count_of_helped_shapes: 
+			print("more/less than one shape in scene:", self.scene.total() - self.count_of_helped_shapes)
+			return False, "", None
+
+		tmpfl = tempfile.mktemp(".brep")
+		print(tmpfl)
+		cb = QApplication.clipboard()
+		cb.clear(mode=cb.Clipboard)
+		cb.setText(
+			'import Part; export = Part.Shape(); export.read("{}"); Part.show(export); Gui.activeDocument().activeView().viewAxonometric(); Gui.SendMsgToActiveView("ViewFit")'.format(
+				tmpfl
+			),
+			mode=cb.Clipboard,
+		)
+		pyservoce.brep_write(self.scene[0].shape(), tmpfl)
+		QMessageBox.information(
+			self, self.tr("ToFreeCad"), self.tr("Script copied to clipboard. Don't close gui before script placing.")
+		)
 
 
 
