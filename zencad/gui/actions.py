@@ -5,7 +5,6 @@ from PyQt5.QtGui import *
 import os
 import tempfile
 import signal
-import threading
 
 import zencad.unbound.application
 

@@ -10,7 +10,7 @@ import time
 import math
 import threading
 
-__TRACE__ = False
+__TRACE__ = True
 
 def trace(*argv):
 	if __TRACE__:
@@ -386,6 +386,10 @@ class DisplayWidget(QWidget):
 		else:
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
 
+	widget_closed = pyqtSignal()
+	def closeEvent(self, ev):
+		self.widget_closed.emit()
+
 #	def change_scene(self, newscene):
 #		oldscene = self.scene
 #		oldviewer = self.viewer
@@ -419,20 +423,18 @@ class DisplayWidget(QWidget):
 #		self.view.set_window(self.winId())
 #		self.viewer.set_triedron_axes()
 
-def standalone(scene):
+def standalone(*args, **kwargs):
 	"""Запуск отдельного виджета для теста функциональности.
-
-	Анимация и прочие красивости в этом режиме не поддерживаются,
-	Но их можно навесить сверху.
 	"""
 
-	app = QApplication([])
-	zencad.opengl.init_opengl()
+	zencad.unbound.application.common_unbouded_proc(*args, **kwargs)
+	#app = QApplication([])
+	#zencad.opengl.init_opengl()
 
-	wdg = DisplayWidget(scene)    
-	wdg.show()
+	#wdg = DisplayWidget(scene)    
+	#wdg.show()
 
-	app.exec()
+	#app.exec()
 
 
 def bind_widget_markers_signal(widget, communicator):
