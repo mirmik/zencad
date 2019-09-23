@@ -108,7 +108,7 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	os.close(ipipe[1])
 	os.close(opipe[0])
 
-	common_unbouded_proc(ipipe[0], opipe[1], *args, **kwargs)
+	common_unbouded_proc(pipes=(ipipe[0], opipe[1]), *args, **kwargs)
 
 @traced
 def start_worker(ipipe, opipe, path):
@@ -152,10 +152,10 @@ def update_unbound_application(scene, animate=None):
 
 	print(ipipe, opipe)
 
-	common_unbouded_proc(ipipe, opipe, scene, animate=animate)
+	common_unbouded_proc(pipes=(ipipe, opipe), scene=scene, animate=animate)
 
 @traced
-def common_unbouded_proc(ipipe, opipe, scene, animate=None):
+def common_unbouded_proc(scene, animate=None, close_handle=None, pipes=None):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
 	ANIMATE_THREAD = None
@@ -169,32 +169,49 @@ def common_unbouded_proc(ipipe, opipe, scene, animate=None):
 		scene, view=scene.viewer.create_view())
 	DISPLAY_WINID = widget
 
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(
-		ipipe=ipipe, opipe=opipe)
-	MAIN_COMMUNICATOR.start_listen()
+	if pipes:
+		ipipe = pipes[0]
+		opipe = pipes[1]
 
-	zencad.gui.viewadaptor.bind_widget_markers_signal(
-		widget, MAIN_COMMUNICATOR)
+		MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(
+			ipipe=ipipe, opipe=opipe)
+		MAIN_COMMUNICATOR.start_listen()
 
-	def receiver(data):
-		data = pickle.loads(data)
-		if data["cmd"] == "stopworld": 
-			MAIN_COMMUNICATOR.stop_listen()
-			app.quit()
-		else:
-			widget.external_communication_command(data)
+		zencad.gui.viewadaptor.bind_widget_markers_signal(
+			widget, MAIN_COMMUNICATOR)
 
-	MAIN_COMMUNICATOR.newdata.connect(receiver)
-	MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
-	MAIN_COMMUNICATOR.wait()
+		def receiver(data):
+			data = pickle.loads(data)
+			if data["cmd"] == "stopworld": 
+				MAIN_COMMUNICATOR.stop_listen()
+				if ANIMATE_THREAD:
+					ANIMATE_THREAD.finish()
+
+				if close_handle:
+					close_handle()
+					
+				app.quit()
+			else:
+				widget.external_communication_command(data)
+
+		MAIN_COMMUNICATOR.newdata.connect(receiver)
+		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId())})
+		MAIN_COMMUNICATOR.wait()
 
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
 			widget=widget, 
 			updater_function=animate)  
 		ANIMATE_THREAD.start()
+	
+		def animate_stop():
+			ANIMATE_THREAD.finish()
+		
+		widget.widget_closed.connect(animate_stop)
+		
+	if close_handle:
+		widget.widget_closed.connect(close_handle)
 
 	widget.show()
-
 	app.exec()
 	trace("FINISH UNBOUNDED QTAPP")
