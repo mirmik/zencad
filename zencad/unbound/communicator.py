@@ -75,6 +75,8 @@ class Communicator(QObject):
 		except:
 			print("Warn: os.close(self.opipe) is fault")
 
+		self.listener_thr.event.set()
+
 	def send(self, obj):
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
@@ -85,8 +87,6 @@ class Communicator(QObject):
 		#os.flush(self.opipe)
 
 	def wait(self):
-		print("wait")
 		self.listener_thr.event.wait()
 		self.listener_thr.event.clear()
-		print("wait... ok")
 		

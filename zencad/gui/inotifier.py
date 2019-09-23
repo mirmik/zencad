@@ -31,7 +31,6 @@ class InotifyThread(QThread):
 			if (os.stat(self.path).st_mtime != self.last_mtime):
 				self.last_mtime = os.stat(self.path).st_mtime
 				self.changed.emit()
-				print("inotify emit")
 
 			self.lock.release()
 			time.sleep(0.0001)
