@@ -1,17 +1,17 @@
 # coding: utf-8
 
 import zencad
-import zencad.console
-import zencad.texteditor
-import zencad.viewadaptor
+
+import zencad.gui.console
+import zencad.gui.texteditor
+import zencad.gui.viewadaptor
+from zencad.gui.inotifier import InotifyThread
+
 import zencad.lazifier
 import zencad.opengl
-import zencad.texteditor
 
 import zencad.unbound.communicator
-import zencad.unbound.actions
-
-from zencad.inotifier import InotifyThread
+import zencad.gui.actions
 
 import pyservoce
 import evalcache
@@ -82,7 +82,7 @@ class InfoWidget(QWidget):
 		self.setLayout(self.infolay)
 
 
-class MainWindow(QMainWindow, zencad.unbound.actions.MainWindowActionsMixin):
+class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, client_communicator):
 		super().__init__()
 		self.openlock = threading.Lock()

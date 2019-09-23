@@ -3,7 +3,7 @@ import evalcache
 
 from zencad.util import deg, point3, vector3
 from zencad.lazifier import lazy, LazyObjectShape
-from zencad.geom.boolean import *
+from zencad.boolean import *
 
 import sys
 import operator
