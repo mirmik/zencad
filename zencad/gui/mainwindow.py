@@ -48,7 +48,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			self.client_communicator.start_listen()
-		self.sleeped_client = zencad.unbound.application.spawn_sleeped_client(1)
+		#self.sleeped_client = zencad.unbound.application.spawn_sleeped_client(1)
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
