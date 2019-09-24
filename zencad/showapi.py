@@ -9,6 +9,7 @@ import zencad.unbound.application
 default_scene = Scene()
 SHOWMODE = "makeapp"
 PRESCALE = False
+SLEEPED = False
 SESSION_ID = 0
 
 def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
@@ -40,7 +41,7 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
     elif SHOWMODE == "replace":
         # Replace main programm widget with target id's widget
         zencad.unbound.application.update_unbound_application(
-            scene=scene, need_prescale=PRESCALE, session_id=SESSION_ID, *args, **kwargs)
+            scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, *args, **kwargs)
 
 def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
     if isinstance(shp, evalcache.LazyObject):

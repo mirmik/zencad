@@ -32,7 +32,7 @@ import signal
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
-__TRACE_COMMUNICATION__ = False
+__TRACE_COMMUNICATION__ = True
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, client_communicator=None, openned_path=None, presentation=False):
@@ -48,6 +48,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			self.client_communicator.start_listen()
+		self.sleeped_client = zencad.unbound.application.spawn_sleeped_client(1)
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
@@ -228,11 +229,21 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator.stop_listen()
 	
 		self.session_id += 1
-		self.client_communicator = zencad.unbound.application.start_unbounded_worker(path, 
-			need_prescale = need_prescale, session_id=self.session_id)
+
+		self.sleeped_client = None
+		if self.sleeped_client:
+			self.client_communicator = self.sleeped_client
+			self.client_communicator.unwait()
+			self.client_communicator.send({"path":path, "need_prescale":need_prescale})
+			time.sleep(0.1)
+			self.sleeped_client = zencad.unbound.application.spawn_sleeped_client(self.session_id + 1)
+
+		else:
+			print("START NOSLEEPED")
+			self.client_communicator = zencad.unbound.application.start_unbounded_worker(path, 
+				need_prescale = need_prescale, session_id=self.session_id)
 
 		self.client_communicator.start_listen()
-
 		self.client_communicator.newdata.connect(self.new_worker_message)
 
 		self.notifier.retarget(path)
