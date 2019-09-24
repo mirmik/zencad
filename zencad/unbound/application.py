@@ -54,9 +54,9 @@ def start_main_application(tgtpath=None, presentation=False):
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 	
 	#TODO: Настройка цветов.
-	pal = app.palette()
-	pal.setColor(QPalette.Window, QColor(160, 161, 165))
-	app.setPalette(pal)
+#	pal = app.palette()
+#	pal.setColor(QPalette.Window, QColor(160, 161, 165))
+#	app.setPalette(pal)
 
 	if presentation == False:	
 		mw = MainWindow(
