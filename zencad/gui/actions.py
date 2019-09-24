@@ -83,25 +83,7 @@ class MainWindowActionsMixin:
 		self.create_new_do(tmpfl)
 
 	def openAction(self):
-		filters = "*.py;;*.*"
-		defaultFilter = "*.py"
-
-		startpath = (
-			QDir.currentPath()
-			if self.current_opened is None
-			else os.path.dirname(self.current_opened)
-		)
-
-		#if self.current_opened is not None and os.path.normpath(
-		#	zencad.exampledir
-		#) in os.path.normpath(self.lastopened):
-		#	startpath = self.laststartpath
-		#else:
-		#	self.laststartpath = startpath
-
-		path = QFileDialog.getOpenFileName(
-			self, "Open File", startpath, filters, defaultFilter
-		)
+		path = zencad.gui.util.open_file_dialog(self)
 
 		if path[0] == "":
 			return
