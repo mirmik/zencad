@@ -35,7 +35,11 @@ DISPLAY_WINID = None
 __TRACE_COMMUNICATION__ = True
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
-	def __init__(self, client_communicator=None, openned_path=None, presentation=False):
+	def __init__(self, 
+			client_communicator=None, 
+			openned_path=None, 
+			presentation=False,
+			fastopen=None):
 		super().__init__()
 		self.openlock = threading.Lock()
 		self.console = zencad.gui.console.ConsoleWidget()
@@ -102,6 +106,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.last_location = None
 		self.session_id=0
 		self.cc_window =None
+
+		if fastopen:
+			self._open_routine(fastopen)
 
 	def presentation_label(self):
 		url = os.path.join(zencad.moduledir, "zencad_logo.png")

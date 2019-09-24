@@ -5,6 +5,7 @@ import zencad
 import zencad.gui.console
 import zencad.gui.texteditor
 import zencad.gui.viewadaptor
+import zencad.gui.startwdg
 
 import zencad.lazifier
 import zencad.opengl
@@ -63,9 +64,17 @@ def start_main_application(tgtpath=None, presentation=False):
 			client_communicator=
 				zencad.unbound.communicator.Communicator(ipipe=3, opipe=4),
 			openned_path=tgtpath)
+		mw.show()
 
 	else:
-		mw = MainWindow(presentation=True)
+		strt_dialog = zencad.gui.startwdg.StartDialog()
+		strt_dialog.exec()
+
+		print(strt_dialog.result())
+		if strt_dialog.result() == 0:
+			return
+
+		mw = MainWindow(presentation=False, fastopen=strt_dialog.openpath)
 
 	mw.show()
 	app.exec()
