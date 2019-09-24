@@ -22,13 +22,14 @@ from PyQt5.QtGui import *
 
 import multiprocessing
 import os
+import sys
 import time
 import pickle
 import runpy
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACED__= False
+__TRACED__= True
 
 def trace(*argv):
 	if __TRACED__:
@@ -117,7 +118,7 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	common_unbouded_proc(pipes=(ipipe[0], opipe[1]), need_prescale=True, *args, **kwargs)
 
 @traced
-def start_worker(ipipe, opipe, path, need_prescale=False, session_id=0):
+def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session_id=0):
 	"""Создать новый поток и отправить запрос на добавление
 	его вместо предыдущего ??? 
 
@@ -132,16 +133,34 @@ def start_worker(ipipe, opipe, path, need_prescale=False, session_id=0):
 	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 
 	prescale = "--prescale" if need_prescale else ""
+	sleeped = "--sleeped" if sleeped else ""
 	interpreter = "/usr/bin/python3"
 
-	os.system("{interpreter} -m zencad {path} --replace {prescale} --session_id {session_id}".format(
+	#cmd = "python3 /home/mirmik/.local/lib/python3.6/site-packages/zencad-0.16.2-py3.6.egg/zencad/__main__.py {path} --replace {prescale} --session_id {session_id}".format(
+	#	path=path, 
+	#	prescale=prescale, 
+	#	session_id=session_id)
+
+	os.system("{interpreter} -m zencad {path} --replace {prescale} {sleeped} --session_id {session_id}".format(
 		interpreter=interpreter, 
 		path=path, 
 		prescale=prescale, 
+		sleeped=sleeped,
 		session_id=session_id))
+	
+	#saved_argv = sys.argv
+	#sys.argv = cmd.split()
+	#print(sys.argv)
+	#runpy.run_path(path, run_name="__main__")
+	#sys.argv = saved_argv # restore sys.argv
 
 @traced
-def start_unbounded_worker(path, session_id, need_prescale=False):
+def spawn_sleeped_client(session_id):
+	return start_unbounded_worker("", session_id, False, True)
+
+
+@traced
+def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False):
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
 
@@ -151,7 +170,7 @@ def start_unbounded_worker(path, session_id, need_prescale=False):
 	apipe = (os.dup(apipe[0]), os.dup(apipe[1]))
 	bpipe = (os.dup(bpipe[0]), os.dup(bpipe[1]))
 
-	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, need_prescale, session_id))
+	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
 	proc.start()
 
 	return zencad.unbound.communicator.Communicator(
@@ -171,7 +190,8 @@ def common_unbouded_proc(scene,
 	close_handle=None,
 	pipes=None, 
 	need_prescale=False, 
-	session_id=0):
+	session_id=0,
+	sleeped = False):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
 	ANIMATE_THREAD = None
