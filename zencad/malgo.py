@@ -118,8 +118,6 @@ def fast_backpack(target, vectors):
 	return coords, 1
 
 def svd_backpack(target, vectors, koeffs=None, penalty=None):
-	"""Наивное решение задачи поиска линейной комбинации методом покоординатного спуска"""
-
 	def sign(x):
 		if x >= 0: 
 			return 1
