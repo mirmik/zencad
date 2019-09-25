@@ -23,6 +23,7 @@ class Communicator(QObject):
 			#self.lock = threading.RLock()
 			#self.condition = threading.Condition(self.lock)
 			self.event = threading.Event()
+			self.pid = os.getpid()
 			self.ipipe = ipipe
 			self.file = io.BytesIO()
 			self.unwait_token = str(base64.b64encode(pickle.dumps("unwait")), "utf-8") + "\n"
@@ -74,14 +75,21 @@ class Communicator(QObject):
 		try:
 			os.close(self.ipipe)
 		except:
-			print("Warn: os.close(self.ipipe) is fault")
+			pass
+			#print("Warn: os.close(self.ipipe) is fault")
 
 		try:
 			os.close(self.opipe)
 		except:
-			print("Warn: os.close(self.opipe) is fault")
+			pass
+			#print("Warn: os.close(self.opipe) is fault")
 
 		self.listener_thr.event.set()
+
+		#os.kill(self.listener_thr.pid, signal.SIGKILL)
+		#print("wait")
+		#self.listener_thr.wait()
+		#print("unwait")
 
 	def send(self, obj):
 		#print("send", obj)
@@ -90,7 +98,7 @@ class Communicator(QObject):
 			os.write(self.opipe, sendstr)
 		except Exception as ex:
 			self.stop_listen()
-			print("Warn: communicator send error", obj, ex)
+			#print("Warn: communicator send error", obj, ex)
 		#os.flush(self.opipe)
 
 	def wait(self):
