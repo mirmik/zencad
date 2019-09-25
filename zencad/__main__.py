@@ -118,14 +118,14 @@ def main():
 			zencad.showapi.SESSION_ID = int(pargs.session_id)
 			zencad.showapi.SHOWMODE = "replace"
 
-			zencad.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-				ipipe=ipipe, opipe=opipe)
-			zencad.application.MAIN_COMMUNICATOR.start_listen()
+			zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
+				ipipe=3, opipe=4)
+			zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 
-			o, i = os.pipe()
-			f = os.fdopen(o)
+			#o, i = os.pipe()
+			#f = os.fdopen(o)
 
-			sys.stdout = f
+			#sys.stdout = f
 	
 		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 		if pargs.widget:
