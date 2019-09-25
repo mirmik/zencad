@@ -12,6 +12,7 @@ import runpy
 import pickle
 import sys, traceback
 import argparse
+import subprocess
 
 __MAIN_TRACE__ = False
 
@@ -27,6 +28,7 @@ def main():
 	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
 	parser.add_argument("--sleeped", action="store_true")
+	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--tgtpath")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
@@ -75,7 +77,14 @@ def main():
 		# Если программа вызывается без указания файла, создаём gui. 
 		# Режим презентации указывает gui, что оно предоставлено само себе
 		# и ему следует развлечь публику самостоятельно, не ожидая бинда виджета.
-		zencad.gui.application.start_main_application(presentation=True)
+		#thr = multiprocessing.Process(target=lambda:)
+		#thr.daemon = True
+		#thr.start()
+		if pargs.nodaemon:
+			zencad.gui.application.start_main_application(presentation=True)
+		else:
+			# Windows?
+			subprocess.Popen("nohup python3 -m zencad --nodaemon > /dev/null 2>&1&", shell=True, stdout=None, stderr=None)
 		
 	else:
 		# Режим работы, когда указан файл.
