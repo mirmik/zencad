@@ -53,7 +53,8 @@ def disp(*args, **kwargs):
 
 
 def highlight(m):
-    return display(m, Color(0.5, 0, 0, 0.5))
+    display(m, Color(0.5, 0, 0, 0.5))
+    return m
 
 
 def hl(m):
