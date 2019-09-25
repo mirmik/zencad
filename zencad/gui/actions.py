@@ -6,7 +6,8 @@ import os
 import tempfile
 import signal
 
-import zencad.unbound.application
+#import zencad.lazifier
+import zencad.gui.util
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -36,11 +37,6 @@ class MainWindowActionsMixin:
 
 		return act
 
-	def openWebManual(self):
-		QDesktopServices.openUrl(
-			QUrl("https://mirmik.github.io/zencad", QUrl.TolerantMode)
-		)
-	
 	def aboutAction(self):
 		QMessageBox.about(
 			self,
@@ -336,7 +332,7 @@ class MainWindowActionsMixin:
 			"Display mode", self.displayMode, "Display mode", "F10"
 		)
 		self.mWebManual = self.create_action(
-			"Online manual", self.openWebManual, "Open online manual in browser"
+			"Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser"
 		)
 		self.mCoordsDiff = self.create_action(
 			"Coords difference",

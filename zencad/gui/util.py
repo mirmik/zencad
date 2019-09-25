@@ -4,7 +4,6 @@ from PyQt5.QtGui import *
 
 import tempfile
 
-
 def create_temporary_file(zencad_template=False):
 	path = tempfile.mktemp(".py")
 	
@@ -33,3 +32,8 @@ def open_file_dialog(parent):
 	print(path)
 
 	return path
+
+def open_online_manual():
+	QDesktopServices.openUrl(
+		QUrl("https://mirmik.github.io/zencad", QUrl.TolerantMode)
+	)

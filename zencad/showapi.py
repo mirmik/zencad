@@ -4,13 +4,14 @@ import evalcache
 import sys
 
 import zencad.assemble
-import zencad.unbound.application
+import zencad.gui.application
 
 default_scene = Scene()
 SHOWMODE = "makeapp"
 PRESCALE = False
 SLEEPED = False
 SESSION_ID = 0
+EXECPATH = ""
 
 def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
     """ Функция активации графической части.
@@ -24,15 +25,9 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
         scene = default_scene
 
     if SHOWMODE == "makeapp":
-        tgtpath = sys.argv[0]
-        
         # Common application start
-        zencad.unbound.application.start_unbound_application(
-            scene=scene, *args, tgtpath=tgtpath, **kwargs)
-
-#    if SHOWMODE == "mainonly":
-        # Make mainwindow without widget
- #       zencad.unbound.application.start_main_application()
+        zencad.gui.application.start_unbound_application(
+            scene=scene, *args, tgtpath=EXECPATH, **kwargs)
 
     elif SHOWMODE == "widget":
         # Start widget without main programm
@@ -40,7 +35,7 @@ def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
 
     elif SHOWMODE == "replace":
         # Replace main programm widget with target id's widget
-        zencad.unbound.application.update_unbound_application(
+        zencad.gui.application.update_unbound_application(
             scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, *args, **kwargs)
 
 def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):

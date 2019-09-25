@@ -11,7 +11,7 @@ from zencad.gui.infolabel import InfoWidget
 import zencad.lazifier
 import zencad.opengl
 
-import zencad.unbound.communicator
+import zencad.gui.communicator
 import zencad.gui.actions
 
 import pyservoce
@@ -32,7 +32,10 @@ import signal
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
-__TRACE_COMMUNICATION__ = True
+__TRACE_COMMUNICATION__ = False
+
+def info(*args):
+	print("I:", *args)
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, 
@@ -45,14 +48,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
-
+		self.need_prescale = True
 
 		self.client_communicator = client_communicator
 		
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			self.client_communicator.start_listen()
-		#self.sleeped_client = zencad.unbound.application.spawn_sleeped_client(1)
+		#self.sleeped_client = zencad.gui.application.spawn_sleeped_client(1)
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
@@ -184,8 +187,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_communicator.send("unwait")
 		self.client_pid = pid
 
-		if self.oldopenned == self.current_opened and self.last_location is not None:
+		info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
+		if not self.need_prescale and self.last_location is not None:
 			self.client_communicator.send({"cmd":"location", "dct": self.last_location})
+			info("restore saved eye location")
+
 
 	def replace_widget(self, wdg):
 		self.vsplitter.replaceWidget(0, wdg)
@@ -203,10 +209,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self._open_routine(self.current_opened)
 
 	def _open_routine(self, path):
+		info("open: file:{}".format(path))
+		self.setWindowTitle(path)
+
 		self.presentation_mode = False
 		self.openlock.acquire()
 
-		need_prescale = self.oldopenned != path
+		self.need_prescale = self.oldopenned != path
 		self.oldopenned = path
 
 		self.set_current_opened(path)
@@ -241,14 +250,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.sleeped_client:
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.unwait()
-			self.client_communicator.send({"path":path, "need_prescale":need_prescale})
+			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
 			time.sleep(0.1)
-			self.sleeped_client = zencad.unbound.application.spawn_sleeped_client(self.session_id + 1)
+			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
 
 		else:
-			print("START NOSLEEPED")
-			self.client_communicator = zencad.unbound.application.start_unbounded_worker(path, 
-				need_prescale = need_prescale, session_id=self.session_id)
+			self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
+				need_prescale = self.need_prescale, session_id=self.session_id)
 
 		self.client_communicator.start_listen()
 		self.client_communicator.newdata.connect(self.new_worker_message)
