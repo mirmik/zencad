@@ -28,7 +28,7 @@ class DisplayWidget(QWidget):
 	zoom_koeff_key = 1.3
 	zoom_koeff_mouse = 1.1
 
-	def __init__(self, scene, need_prescale=False, nointersect=True, view=None, showmarkers=True):
+	def __init__(self, scene, need_prescale=True, nointersect=True, view=None, showmarkers=True):
 		trace("construct DisplayWidget")
 		QWidget.__init__(self)
 		self.setFocusPolicy(Qt.StrongFocus)
