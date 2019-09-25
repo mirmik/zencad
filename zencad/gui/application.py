@@ -143,7 +143,7 @@ def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session
 
 	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
-
+	
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
 	interpreter = "/usr/bin/python3"
