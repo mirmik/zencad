@@ -23,6 +23,7 @@ from PyQt5.QtGui import *
 
 import multiprocessing
 import time
+import math
 import threading
 import os
 import pickle
@@ -43,8 +44,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			openned_path=None, 
 			presentation=False,
 			fastopen=None,
-			display_mode=False):
+			display_mode=False,
+			title = "ZenCad"):
 		super().__init__()
+		self.setWindowTitle(title)
 		self.openlock = threading.Lock()
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
@@ -72,11 +75,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			lbl = self.presentation_label() 
 		else:
 			lbl = QLabel()
-			lbl.setFixedSize(700,500)
+			#lbl.setFixedSize(700,500)
 		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
 		self.vsplitter.addWidget(lbl)
 		self.vsplitter.addWidget(self.console)
+
+		self.vsplitter.setSizes([self.height()*5/8, self.height()*3/8])
+		self.hsplitter.setSizes([self.width()*3/8, self.width()*5/8])
 
 		self.resize(1000,800)
 
@@ -110,6 +116,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.last_location = None
 		self.session_id=0
 		self.cc_window =None
+
+		self.open_in_progress = False
 
 		if fastopen:
 			self._open_routine(fastopen)
@@ -168,6 +176,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "wmarker": self.marker_handler("w", data)
 		elif cmd == "location": self.location_update_handle(data["loc"])
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
+		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
 
 	def marker_handler(self, qw, data):
 		fmt='.5f'
@@ -190,11 +199,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.vsplitter.replaceWidget(0, self.cc)
 		self.client_communicator.send("unwait")
 		self.client_pid = pid
+		self.setWindowTitle(self.current_opened)
 
 		info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
 		if not self.need_prescale and self.last_location is not None:
 			self.client_communicator.send({"cmd":"location", "dct": self.last_location})
 			info("restore saved eye location")
+
+		self.open_in_progress = False
 
 
 	def replace_widget(self, wdg):
@@ -224,7 +236,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.set_current_opened(path)
 
-		if self.cc_window:
+		if self.cc_window and self.open_in_progress is False:
 			screen = self.screen()
 			painter = QPainter(screen)
 			painter.setPen(Qt.green)
@@ -266,6 +278,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_communicator.newdata.connect(self.new_worker_message)
 
 		self.notifier.retarget(path)
+		self.open_in_progress = True
 		self.openlock.release()
 
 	def screen(self):
