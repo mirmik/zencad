@@ -236,6 +236,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.set_current_opened(path)
 
+		if self.open_in_progress is True:
+			self.client_communicator.kill()
+			self.client_communicator = None
+
 		if self.cc_window and self.open_in_progress is False:
 			screen = self.screen()
 			painter = QPainter(screen)
