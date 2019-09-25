@@ -32,6 +32,8 @@ from zencad.gui.mainwindow import MainWindow
 
 __TRACED__= False
 
+MAIN_COMMUNICATOR = None
+
 def trace(*argv):
 	if __TRACED__:
 		print("APPTRACE: {}".format(str(argv)))
@@ -225,9 +227,10 @@ def common_unbouded_proc(scene,
 		ipipe = pipes[0]
 		opipe = pipes[1]
 
-		MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-			ipipe=ipipe, opipe=opipe)
-		MAIN_COMMUNICATOR.start_listen()
+		if MAIN_COMMUNICATOR is None:
+			MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
+				ipipe=ipipe, opipe=opipe)
+			MAIN_COMMUNICATOR.start_listen()
 
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)

@@ -117,6 +117,15 @@ def main():
 			zencad.showapi.PRESCALE = pargs.prescale
 			zencad.showapi.SESSION_ID = int(pargs.session_id)
 			zencad.showapi.SHOWMODE = "replace"
+
+			zencad.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
+				ipipe=ipipe, opipe=opipe)
+			zencad.application.MAIN_COMMUNICATOR.start_listen()
+
+			o, i = os.pipe()
+			f = os.fdopen(o)
+
+			sys.stdout = f
 	
 		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 		if pargs.widget:
