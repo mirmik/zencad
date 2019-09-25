@@ -6,7 +6,6 @@ import os
 import tempfile
 import signal
 
-#import zencad.lazifier
 import zencad.gui.util
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
@@ -99,12 +98,14 @@ class MainWindowActionsMixin:
 		self.client_communicator.send({"cmd": "exportbrep"})	
 
 	def externalTextEditorOpen(self):
-		os.system(SETTINGS["external_text_editor"] + " " + started_by)
+		os.system(SETTINGS["external_text_editor"] + " " + self.current_opened)
 
 	def to_freecad_action(self):
 		self.client_communicator.send({"cmd": "to_freecad"})
 
 	def screenshotAction(self):
+		#TODO: Востановить алгоритм взятия скриншота с дампом view буффера.
+
 		filters = "*.png;;*.bmp;;*.jpg;;*.*"
 		defaultFilter = "*.png"
 
