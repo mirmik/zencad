@@ -42,7 +42,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			client_communicator=None, 
 			openned_path=None, 
 			presentation=False,
-			fastopen=None):
+			fastopen=None,
+			display_mode=False):
 		super().__init__()
 		self.openlock = threading.Lock()
 		self.console = zencad.gui.console.ConsoleWidget()
@@ -101,7 +102,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.texteditor.hide()
 			self.console.hide()
 		else:
-			presentation_mode = False
+			self.presentation_mode = False
 		#	self.set_presentation_label()
 
 		self.fscreen_mode=False
@@ -112,6 +113,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		if fastopen:
 			self._open_routine(fastopen)
+
+		if display_mode:
+			self.displayMode()
 
 	def presentation_label(self):
 		url = os.path.join(zencad.moduledir, "zencad_logo.png")
