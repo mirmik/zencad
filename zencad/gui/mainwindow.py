@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import signal
 import multiprocessing
 import time
 import math
@@ -237,7 +238,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.set_current_opened(path)
 
 		if self.open_in_progress is True:
-			self.client_communicator.kill()
+			os.kill(self.clientpid, signal.SIGKILL)
 			self.client_communicator = None
 
 		if self.cc_window and self.open_in_progress is False:
