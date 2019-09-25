@@ -511,7 +511,7 @@ class DisplayWidget(QWidget):
 			return False, "", None
 
 		tmpfl = tempfile.mktemp(".brep")
-		print(tmpfl)
+		#print(tmpfl)
 		cb = QApplication.clipboard()
 		cb.clear(mode=cb.Clipboard)
 		cb.setText(

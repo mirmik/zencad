@@ -15,20 +15,19 @@ class StartDialog(QDialog):
 		self.openpath = ""
 
 		self.h0_layout = QHBoxLayout()
-		self.button_create_new = QPushButton("New")
-		self.button_open = QPushButton("Open")
 
-		self.h0_layout.addWidget(self.button_create_new)
-		self.h0_layout.addWidget(self.button_open)
+		self.add_h0_button("New", self.handle_new)
+		self.add_h0_button("Open", self.handle_open)
+		self.add_h0_button("Help", self.handle_help)
+
 		self.setLayout(self.h0_layout)
 
-		self.init_signals()
+	def add_h0_button(self, text, handle):
+		btn = QPushButton(text)
+		btn.clicked.connect(handle)
+		self.h0_layout.addWidget(btn)
 
-	def init_signals(self):
-		self.button_create_new.clicked.connect(self.handle_create_new)
-		self.button_open.clicked.connect(self.handle_open)
-
-	def handle_create_new(self):
+	def handle_new(self):
 		self.openpath = zencad.gui.util.create_temporary_file(
 			zencad_template=True)
 		self.accept()
@@ -42,3 +41,6 @@ class StartDialog(QDialog):
 
 		self.openpath = path[0]
 		self.accept()
+
+	def handle_help(self):
+		zencad.gui.util.open_online_manual()

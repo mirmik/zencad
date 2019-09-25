@@ -13,9 +13,7 @@ import pickle
 import sys, traceback
 import argparse
 
-print(sys.argv)
-
-__MAIN_TRACE__ = True
+__MAIN_TRACE__ = False
 
 def trace(*argv, **kwars):
 	if __MAIN_TRACE__: print(*argv, **kwars)
@@ -36,14 +34,15 @@ def main():
 
 	trace(pargs)
 
-	# Режим работы программы, в котором создаётся gui.
+	# Режим работы программы, в котором создаётся gui с предоткрытым файлом.
 	# Используется в том числе для внутренней работы.	
+	# TODO: переименовать режим.
 	if pargs.mainonly:
 		if pargs.tgtpath == None:
 			print("Error: mainonly mode without tgtpath")
 			exit(0)
 
-		return zencad.unbound.application.start_main_application(pargs.tgtpath)
+		return zencad.gui.application.start_main_application(pargs.tgtpath)
 
 	if pargs.sleeped:
 		flag = False
@@ -57,7 +56,7 @@ def main():
 			flag=True
 			MAIN_COMMUNICATOR.stop_listen()
 
-		MAIN_COMMUNICATOR = zencad.unbound.communicator.NoQtCommunicator(
+		MAIN_COMMUNICATOR = zencad.gui.communicator.NoQtCommunicator(
 			ipipe=3)
 		MAIN_COMMUNICATOR.start_listen()
 		MAIN_COMMUNICATOR.naive_connect(handle)
@@ -70,22 +69,26 @@ def main():
 		print("SLEEPED_UNFLAGED")
 
 
-	# Если программа вызывается без указания файла, 
-	# Открываем helloworld
-	# TODO: На самом деле нужно создавать временный файл.
 	if len(pargs.paths) == 0 and not pargs.sleeped:
-		#zencad.showapi.SHOWMODE = "presentation"
-		#path = os.path.join(zencad.exampledir, "helloworld.py")
-		zencad.unbound.application.start_main_application(presentation=True)
-		return
-
+		# Если программа вызывается без указания файла, создаём gui. 
+		# Режим презентации указывает gui, что оно предоставлено само себе
+		# и ему следует развлечь публику самостоятельно, не ожидая бинда виджета.
+		zencad.gui.application.start_main_application(presentation=True)
+		
 	else:
-		zencad.showapi.SHOWMODE = "makeapp"
+		# Режим работы, когда указан файл.
+		# Политика такова, что начало исполняется вычисляемый 
+		# скрипт, а потом, после вызова zencad.show,
+		# применяются указанные варианты вызова.
+		# информация отсюда транслируется функции show
+		# через глобальные переменные.
+
 		path = os.path.join(os.getcwd(), pargs.paths[0])
+		zencad.showapi.EXECPATH = path
 	
 		# Устанавливаем рабочей директорией дирректорию,
 		# содержащую целевой файл.
-		# TODO: Вероятнее всего, так делать нужно только
+		# TODO: Возможно, так делать нужно только
 		# при загрузке через GUI. Вынести флаг?
 		directory = os.path.dirname(path)
 		os.chdir(directory)
@@ -94,17 +97,17 @@ def main():
 		# По умолчанию приложение работает в режиме,
 		# предполагающем вызов указанного скрипта. 
 		# Далее скрипт сам должен создать GUI через showapi.
-		#zencad.showapi.SHOWMODE = "makeapp"
-	
+		zencad.showapi.SHOWMODE = "makeapp"
+		
 		# Специальный режим, устанавливаемый GUI при загрузке скрипта.
 		# Делает ребинд модели в уже открытом gui.
+		# Информация об окне передаётся основному процессу через пайп.
 		if pargs.replace:
 			zencad.showapi.PRESCALE = pargs.prescale
-			#zencad.showapi.SLEEPED = pargs.sleeped
 			zencad.showapi.SESSION_ID = int(pargs.session_id)
 			zencad.showapi.SHOWMODE = "replace"
 	
-		# Режим работы для теста виджета:
+		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 		if pargs.widget:
 			zencad.showapi.SHOWMODE = "widget"
 
