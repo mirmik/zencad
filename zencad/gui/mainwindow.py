@@ -37,7 +37,7 @@ DISPLAY_WINID = None
 __TRACE_COMMUNICATION__ = False
 
 def info(*args):
-	print("I:", *args)
+	print("GUI:", *args)
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, 
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			self.client_communicator.start_listen()
-		#self.sleeped_client = zencad.gui.application.spawn_sleeped_client(1)
+		self.sleeped_client = zencad.gui.application.spawn_sleeped_client(1)
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
@@ -177,6 +177,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "wmarker": self.marker_handler("w", data)
 		elif cmd == "location": self.location_update_handle(data["loc"])
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
+		elif cmd == "console": self.internal_console_request(data["data"])
 		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
 
 	def marker_handler(self, qw, data):
@@ -187,6 +188,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			idx, format(x, fmt), format(y, fmt), format(z, fmt)))
 
 		self.info_widget.set_marker_data(qw, x, y, z)
+
+	def internal_console_request(self, data):
+		self.console.write(data)
 
 	def bind_window(self, winid, pid, session_id):
 		if session_id != self.session_id:
@@ -202,7 +206,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_pid = pid
 		self.setWindowTitle(self.current_opened)
 
-		info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
+		#info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
+		info("window bind success")
 		if not self.need_prescale and self.last_location is not None:
 			self.client_communicator.send({"cmd":"location", "dct": self.last_location})
 			info("restore saved eye location")
@@ -220,6 +225,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def closeEvent(self, event):
 		if self.client_communicator:
 			self.client_communicator.send({"cmd": "stopworld"})
+		if self.sleeped_client:
+			self.sleeped_client.send({"cmd":"stopworld"})
 		time.sleep(0.01)
 
 	def reopen_current(self):
@@ -238,7 +245,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.set_current_opened(path)
 
 		if self.open_in_progress is True:
-			os.kill(self.clientpid, signal.SIGKILL)
+			self.client_communicator.kill()
 			self.client_communicator = None
 
 		if self.cc_window and self.open_in_progress is False:
@@ -267,12 +274,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	
 		self.session_id += 1
 
-		self.sleeped_client = None
+		#self.sleeped_client = None
 		if self.sleeped_client:
 			self.client_communicator = self.sleeped_client
-			self.client_communicator.unwait()
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
-			time.sleep(0.1)
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
 
 		else:

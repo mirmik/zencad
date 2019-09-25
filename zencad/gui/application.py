@@ -32,6 +32,7 @@ from zencad.gui.mainwindow import MainWindow
 
 __TRACED__= False
 
+RETRANSLATE_THREAD = None
 MAIN_COMMUNICATOR = None
 
 def trace(*argv):
@@ -189,6 +190,8 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ipipe=bpipe[0], opipe=apipe[1])
+
+	communicator.procpid = proc.pid
 
 	return communicator
 

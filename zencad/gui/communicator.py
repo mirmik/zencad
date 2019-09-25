@@ -10,6 +10,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import os 
+import signal
+
 class Communicator(QObject):
 
 	class Listener(QThread):
@@ -96,7 +99,9 @@ class Communicator(QObject):
 
 	def unwait(self):
 		self.send("unwait")
-		
+	
+	def kill(self):
+		os.kill(self.procpid, signal.SIGKILL)
 
 
 
