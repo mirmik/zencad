@@ -13,6 +13,9 @@ import pickle
 import sys, traceback
 import argparse
 import subprocess
+import threading
+import multiprocessing
+import base64
 
 __MAIN_TRACE__ = False
 
@@ -47,30 +50,16 @@ def main():
 		return zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True)
 
 	if pargs.sleeped:
-		# Эксперементальная функциональность для ускорения обновления модели.
+		# Эксперементальная функциональность для ускорения обновления модели. 
+		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
+		data = os.read(3, 512)
+		data = pickle.loads(base64.decodestring(data))
 
-		flag = False
-		MAIN_COMMUNICATOR = None
-		def handle(data):
-			nonlocal flag
-			data = pickle.loads(data)
-			print("HANDLE", data)
-			pargs.prescale = data["need_prescale"]
-			pargs.paths = [data["path"]]
-			flag=True
-			MAIN_COMMUNICATOR.stop_listen()
+		if "cmd" in data and data["cmd"] == "stopworld":
+			return
 
-		MAIN_COMMUNICATOR = zencad.gui.communicator.NoQtCommunicator(
-			ipipe=3)
-		MAIN_COMMUNICATOR.start_listen()
-		MAIN_COMMUNICATOR.naive_connect(handle)
-		print("SLEEPED_ARMED")
-		MAIN_COMMUNICATOR.wait()
-		print("SLEEPED UNSLEEP")
-
-		while flag is False:
-			pass
-		print("SLEEPED_UNFLAGED")
+		pargs.prescale = data["need_prescale"]
+		pargs.paths = [data["path"]]
 
 
 	if len(pargs.paths) == 0 and not pargs.sleeped:
@@ -122,10 +111,30 @@ def main():
 				ipipe=3, opipe=4)
 			zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 
-			#o, i = os.pipe()
-			#f = os.fdopen(o)
+			class stdout_proxy:
+				def __init__(self, stdout, communicator):
+					self.stdout = stdout
+					self.communicator = communicator
+		
+				def write(self, data):
+					# self.stdout.write(data)
+					self.communicator.send({"cmd":"console", "data":data})
+		
+				def flush(self):
+					pass
+					#self.stdout.flush()
 
-			#sys.stdout = f
+			sys.stdout = stdout_proxy(sys.stdout, zencad.gui.application.MAIN_COMMUNICATOR)
+
+			#def retranslate_console(r, OLD_STDOUT):
+			#	rf = os.fdopen(r, "r")
+			#	while(1):
+			#		try:
+			#			data = rf.read()
+			#			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console", "data":data})
+			#		except:
+			#			OLD_STDOUT.write("exception\n")
+
 	
 		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 		if pargs.widget:
