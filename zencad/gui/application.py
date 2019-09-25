@@ -43,7 +43,7 @@ def traced(func):
 	return decor
 
 @traced
-def start_main_application(tgtpath=None, presentation=False):
+def start_main_application(tgtpath=None, presentation=False, display_mode=False):
 	"""Запустить графический интерфейс в текущем потоке.
 
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
@@ -63,7 +63,8 @@ def start_main_application(tgtpath=None, presentation=False):
 		mw = MainWindow(
 			client_communicator=
 				zencad.gui.communicator.Communicator(ipipe=3, opipe=4),
-			openned_path=tgtpath)
+			openned_path=tgtpath,
+			display_mode=display_mode)
 		mw.show()
 
 	else:
@@ -73,7 +74,10 @@ def start_main_application(tgtpath=None, presentation=False):
 		if strt_dialog.result() == 0:
 			return
 
-		mw = MainWindow(presentation=False, fastopen=strt_dialog.openpath)
+		mw = MainWindow(
+			presentation=False, 
+			fastopen=strt_dialog.openpath,
+			display_mode=display_mode)
 
 	mw.show()
 	app.exec()
@@ -106,7 +110,7 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	"""Основная процедура запуска.
 
 	Создаёт в отдельном процессе графическую оболочку,
-	После чего создаёт в своём процессе виджет, который встраивается в GUI.
+	После чего создаёт в своём процессе виджет, который встраивается в графическую оболочку.
 	Для коммуникации между процессами создаётся pipe"""
 
 	global MAIN_COMMUNICATOR

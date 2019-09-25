@@ -11,7 +11,7 @@ SHOWMODE = "makeapp"
 PRESCALE = False
 SLEEPED = False
 SESSION_ID = 0
-EXECPATH = ""
+EXECPATH = sys.argv[0]
 
 def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
     """ Функция активации графической части.

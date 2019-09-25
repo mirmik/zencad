@@ -42,7 +42,7 @@ def main():
 			print("Error: mainonly mode without tgtpath")
 			exit(0)
 
-		return zencad.gui.application.start_main_application(pargs.tgtpath)
+		return zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True)
 
 	if pargs.sleeped:
 		flag = False
