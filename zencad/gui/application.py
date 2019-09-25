@@ -185,8 +185,10 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
 	proc.start()
 
-	return zencad.gui.communicator.Communicator(
+	communicator = zencad.gui.communicator.Communicator(
 		ipipe=bpipe[0], opipe=apipe[1])
+
+	return communicator
 
 @traced
 def update_unbound_application(*args, **kwargs):
