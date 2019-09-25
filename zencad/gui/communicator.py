@@ -81,7 +81,7 @@ class Communicator(QObject):
 		self.listener_thr.event.set()
 
 	def send(self, obj):
-		print("send", obj)
+		#print("send", obj)
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)

@@ -6,13 +6,13 @@ import zencad.gui.console
 import zencad.gui.texteditor
 import zencad.gui.viewadaptor
 import zencad.gui.startwdg
+import zencad.gui.communicator
+import zencad.gui.actions
 
 import zencad.lazifier
 import zencad.opengl
 
 from zencad.animate import AnimateThread
-import zencad.unbound.communicator
-import zencad.gui.actions
 
 import pyservoce
 import evalcache
@@ -30,7 +30,7 @@ import runpy
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACED__= True
+__TRACED__= False
 
 def trace(*argv):
 	if __TRACED__:
@@ -62,7 +62,7 @@ def start_main_application(tgtpath=None, presentation=False):
 	if presentation == False:	
 		mw = MainWindow(
 			client_communicator=
-				zencad.unbound.communicator.Communicator(ipipe=3, opipe=4),
+				zencad.gui.communicator.Communicator(ipipe=3, opipe=4),
 			openned_path=tgtpath)
 		mw.show()
 
@@ -70,7 +70,6 @@ def start_main_application(tgtpath=None, presentation=False):
 		strt_dialog = zencad.gui.startwdg.StartDialog()
 		strt_dialog.exec()
 
-		print(strt_dialog.result())
 		if strt_dialog.result() == 0:
 			return
 
@@ -138,7 +137,7 @@ def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session
 	os.dup2(i, 3)
 	os.dup2(o, 4)
 
-	MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(ipipe=ipipe, opipe=opipe)
+	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=ipipe, opipe=opipe)
 	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 
 	prescale = "--prescale" if need_prescale else ""
@@ -182,7 +181,7 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
 	proc.start()
 
-	return zencad.unbound.communicator.Communicator(
+	return zencad.gui.communicator.Communicator(
 		ipipe=bpipe[0], opipe=apipe[1])
 
 @traced
@@ -220,7 +219,7 @@ def common_unbouded_proc(scene,
 		ipipe = pipes[0]
 		opipe = pipes[1]
 
-		MAIN_COMMUNICATOR = zencad.unbound.communicator.Communicator(
+		MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=ipipe, opipe=opipe)
 		MAIN_COMMUNICATOR.start_listen()
 
@@ -228,8 +227,6 @@ def common_unbouded_proc(scene,
 			widget, MAIN_COMMUNICATOR)
 
 		def stop_world():
-			print("stop_world")
-
 			MAIN_COMMUNICATOR.stop_listen()
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -244,7 +241,6 @@ def common_unbouded_proc(scene,
 
 		def receiver(data):
 			data = pickle.loads(data)
-			print(data)
 			if data["cmd"] == "stopworld": 
 				stop_world()
 			else:
