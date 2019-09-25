@@ -83,27 +83,27 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 	app.exec()
 	trace("FINISH MAIN QTAPP")
 
-@traced
-def start_application(ipipe, opipe, tgtpath):
-	"""Запустить графическую оболочку в новом.
-
-	Переданный пайп используется для коммуникации с процессом родителем
-	3 и 4-ый файловые дескрипторы будут использоваться в новосозданной
-	программе, поскольку она порождена отсюда.
-
-	TODO: Следует убедиться, что файловые дескрипторы обрабатываются корректно
-	TODO: Следует убедиться, что fd обрабатыаются корректно во всех ОС
-	При необъодимости следует изменить алгоритм взаимодействия (Сокеты???)"""
-
-	i=os.dup(ipipe)
-	o=os.dup(opipe)
-	os.dup2(i, 3)
-	os.dup2(o, 4)
-
-	# TODO Абстрактизировать вызов интерпретатора для работы
-	# в других ОС.
-	interpreter = "/usr/bin/python3"
-	os.system("{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath))
+#@traced
+#def start_application(ipipe, opipe, tgtpath):
+#	"""Запустить графическую оболочку в новом.
+#
+#	Переданный пайп используется для коммуникации с процессом родителем
+#	3 и 4-ый файловые дескрипторы будут использоваться в новосозданной
+#	программе, поскольку она порождена отсюда.
+#
+#	TODO: Следует убедиться, что файловые дескрипторы обрабатываются корректно
+#	TODO: Следует убедиться, что fd обрабатыаются корректно во всех ОС
+#	При необъодимости следует изменить алгоритм взаимодействия (Сокеты???)"""
+#
+#	i=os.dup(ipipe)
+#	o=os.dup(opipe)
+#	os.dup2(i, 3)
+#	os.dup2(o, 4)
+#
+#	# TODO Абстрактизировать вызов интерпретатора для работы
+#	# в других ОС.
+#	interpreter = "/usr/bin/python3"
+#	os.system("{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath))
 
 @traced
 def start_unbound_application(*args, tgtpath, **kwargs):

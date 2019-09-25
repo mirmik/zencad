@@ -45,6 +45,8 @@ def main():
 		return zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True)
 
 	if pargs.sleeped:
+		# Эксперементальная функциональность для ускорения обновления модели.
+
 		flag = False
 		MAIN_COMMUNICATOR = None
 		def handle(data):
