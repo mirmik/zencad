@@ -242,7 +242,7 @@ class TextEditor(QPlainTextEdit):
         self.setTabStopWidth(metrics.width("    "))
 
     def save(self):
-        print("{} was saved".format(self.edited))
+        #print("{} was saved".format(self.edited))
         try:
             f = open(self.edited, "w")
             self.rewrite = self.edited

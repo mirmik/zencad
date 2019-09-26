@@ -143,7 +143,7 @@ def main():
 		try:
 			runpy.run_path(path, run_name="__main__")
 		except Exception as ex:
-			print("Exception in runned script: {}".format(ex))
+			print("Error: {}".format(ex))
 			ex_type, ex, tb = sys.exc_info()
 			traceback.print_tb(tb)
 	
