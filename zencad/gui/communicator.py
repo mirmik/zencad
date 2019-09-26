@@ -59,6 +59,7 @@ class Communicator(QObject):
 
 	def __init__(self, ipipe, opipe):
 		super().__init__()
+		self.procpid = None
 		self.ipipe = ipipe
 		self.opipe = opipe
 		self.listener_thr = self.Listener(ipipe)
@@ -109,7 +110,8 @@ class Communicator(QObject):
 		self.send("unwait")
 	
 	def kill(self):
-		os.kill(self.procpid, signal.SIGKILL)
+		if self.procpid:
+			os.kill(self.procpid, signal.SIGKILL)
 
 
 

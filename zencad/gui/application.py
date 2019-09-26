@@ -53,7 +53,7 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
 	вызывающий поток."""
 
-	setproctitle.setproctitle("zencad_main")
+	setproctitle.setproctitle("zencad")
 
 	app = QApplication([])
 	
@@ -216,7 +216,7 @@ def common_unbouded_proc(scene,
 	sleeped = False):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
-	setproctitle.setproctitle("zencad_view")
+	setproctitle.setproctitle("zencad")
 
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
