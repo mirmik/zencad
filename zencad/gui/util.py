@@ -29,7 +29,6 @@ def open_file_dialog(parent):
 	path = QFileDialog.getOpenFileName(
 		parent, "Open File", "", filters, defaultFilter
 	)
-	print(path)
 
 	return path
 

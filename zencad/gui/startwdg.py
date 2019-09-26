@@ -35,7 +35,7 @@ class StartDialog(QDialog):
 	def handle_open(self):
 		path = zencad.gui.util.open_file_dialog(self)
 
-		if len(path[0]) == 0 or path[0][0] != '\\':
+		if len(path[0]) == 0:
 			self.reject()
 			return
 
