@@ -20,14 +20,18 @@ def open_file_dialog(parent):
 	filters = "*.py;;*.*"
 	defaultFilter = "*.py"
 
-	#startpath = (
-	#	QDir.currentPath()
-	#	if self.current_opened is None
-	#	else os.path.dirname(self.current_opened)
-	#)
-
 	path = QFileDialog.getOpenFileName(
 		parent, "Open File", "", filters, defaultFilter
+	)
+
+	return path
+
+def save_file_dialog(parent):
+	filters = "*.py;;*.*"
+	defaultFilter = "*.py"
+
+	path = QFileDialog.getSaveFileName(
+		parent, "Save File", "", filters, defaultFilter
 	)
 
 	return path
