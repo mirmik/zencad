@@ -184,7 +184,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "location": self.location_update_handle(data["loc"])
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
 		elif cmd == "console": self.internal_console_request(data["data"])
+		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
 		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
+		else:
+			print("Warn: unrecognized command", data)
 
 	def marker_handler(self, qw, data):
 		fmt='.5f'

@@ -147,6 +147,7 @@ class MainWindowActionsMixin:
 
 	def trackingAction(self, en):
 		self.client_communicator.send({"cmd": "tracking", "en": en})
+		self.info_widget.set_tracking_info_status(en)
 
 	def orient1(self):
 		self.client_communicator.send({"cmd": "orient1"})
