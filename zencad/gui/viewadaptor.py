@@ -18,7 +18,7 @@ def trace(*argv):
 		print("DISPTRACE:", *argv)
 
 class DisplayWidget(QWidget):
-	intersectPointSignal = pyqtSignal(tuple)
+	tracking_info_signal = pyqtSignal(tuple)
 	markerRequestQ = pyqtSignal(tuple)
 	markerRequestW = pyqtSignal(tuple)
 
@@ -28,7 +28,7 @@ class DisplayWidget(QWidget):
 	zoom_koeff_key = 1.3
 	zoom_koeff_mouse = 1.1
 
-	def __init__(self, scene, need_prescale=True, nointersect=True, view=None, showmarkers=True):
+	def __init__(self, scene, need_prescale=True, view=None, showmarkers=True):
 		trace("construct DisplayWidget")
 		QWidget.__init__(self)
 		self.setFocusPolicy(Qt.StrongFocus)
@@ -40,7 +40,8 @@ class DisplayWidget(QWidget):
 		self.need_prescale = need_prescale
 		self.inited = False
 		self.painted = False
-		self.nointersect = nointersect
+		self.tracking_mode = False
+		#self.nointersect = nointersect
 		self.showmarkers = showmarkers
 
 		self.scene = scene
@@ -235,9 +236,9 @@ class DisplayWidget(QWidget):
 		else:
 			self.alt_pressed = False
 
-		if not self.nointersect and not self.mousedown:
+		if self.tracking_mode and not self.mousedown:
 			ip = self.view.intersect_point(thePoint.x(), thePoint.y())
-			self.intersectPointSignal.emit(ip)
+			self.tracking_info_signal.emit(ip)
 
 		if theFlags & Qt.LeftButton or self.alt_pressed:
 			if self.orient == 1:
@@ -399,6 +400,7 @@ class DisplayWidget(QWidget):
 		elif cmd == "exportstl": self.addon_exportstl()
 		elif cmd == "exportbrep": self.addon_exportbrep()
 		elif cmd == "to_freecad": self.addon_to_freecad_action()
+		elif cmd == "tracking": self.tracking_mode = data["en"]
 
 		else:
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
@@ -550,3 +552,5 @@ def bind_widget_signal(widget, communicator):
 		"cmd":"location", "loc": arg }))
 	widget.signal_key_pressed.connect(lambda arg:communicator.send({
 		"cmd":"keypressed", "key": arg }))
+	widget.tracking_info_signal.connect(lambda arg:communicator.send({
+		"cmd":"trackinfo", "data": arg }))

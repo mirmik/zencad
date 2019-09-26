@@ -35,16 +35,16 @@ class InfoWidget(QWidget):
 		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 		self.markerDistLabel.setAlignment(Qt.AlignCenter)
 
-		self.infoLabel = QLabel("")
-		self.infoLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.infoLabel.setAlignment(Qt.AlignCenter)
+#		self.infoLabel = QLabel("")
+#		self.infoLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+#		self.infoLabel.setAlignment(Qt.AlignCenter)
 		#show_label(self.infoLabel, False)
 
 		self.infolay.addWidget(self.poslbl)
 		self.infolay.addWidget(self.marker1Label)
 		self.infolay.addWidget(self.marker2Label)
 		self.infolay.addWidget(self.markerDistLabel)
-		self.infolay.addWidget(self.infoLabel)
+#		self.infolay.addWidget(self.infoLabel)
 
 		self.infolay.setContentsMargins(0,0,0,0)
 		self.infolay.setSpacing(0)
@@ -96,3 +96,18 @@ class InfoWidget(QWidget):
 		#		self.markerDistLabel.setText("Coords differences")
 		#	else:
 		#		self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)
+
+	def set_tracking_info(self, data):
+		ok = data[1]
+		data = data[0]
+	
+		if ok:
+			self.poslbl.setText("x:{:8.3f} y:{:8.3f} z:{:8.3f}".format(*data))
+		else:
+			self.poslbl.setText("")
+
+	def set_tracking_info_status(self, en):
+		if en:
+			self.poslbl.setText("")
+		else:
+			self.poslbl.setText("Tracking disabled")
