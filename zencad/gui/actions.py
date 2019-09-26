@@ -86,10 +86,15 @@ class MainWindowActionsMixin:
 		self._open_routine(path[0])
 
 	def saveAction(self):
-		raise NotImplementedError
+		self.texteditor.save()
 
 	def saveAsAction(self):
-		raise NotImplementedError
+		path, template = zencad.gui.util.save_file_dialog(self)
+
+		if path == "":
+			return
+
+		self.texteditor.save_as(path)
 
 	def exportStlAction(self):
 		self.client_communicator.send({"cmd": "exportstl"})		
