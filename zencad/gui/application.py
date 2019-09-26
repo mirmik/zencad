@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import setproctitle
 import multiprocessing
 import os
 import sys
@@ -51,6 +52,8 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
 	вызывающий поток."""
+
+	setproctitle.setproctitle("zencad_main")
 
 	app = QApplication([])
 	
@@ -212,6 +215,8 @@ def common_unbouded_proc(scene,
 	session_id=0,
 	sleeped = False):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
+
+	setproctitle.setproctitle("zencad_view")
 
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
