@@ -35,10 +35,6 @@ setup(
             "examples/**/**/*",
         ]
     },
-    # data_files = [
-    # 	("zencad/examples", [file for file in glob.glob("examples/*.py")]),
-    # 	*[("zencad/examples/"+d, [file for file in glob.glob("examples/"+d+"/*")]) for d in os.listdir("examples") if os.path.isdir(os.path.join("examples", d)) and d != "__pycache__"]
-    # ],
     include_package_data=True,
     install_requires=[
         "evalcache==1.10.1",
@@ -47,7 +43,7 @@ setup(
         "pillow",
         "inotify",
         "PyQt5",
-        #"zencad-cli",
+        "setproctitle"
     ],
     entry_points={"console_scripts": ["zencad=zencad.__main__:main"]},
 )
