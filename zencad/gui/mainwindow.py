@@ -54,6 +54,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
+		self.last_reopen_time = time.time()
 		self.need_prescale = True
 
 		self.nqueue = zencad.gui.nqueue.nqueue()
@@ -199,7 +200,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 	def bind_window(self, winid, pid, session_id):
 		with self.openlock:
-			print("bind_window", session_id, self.session_id)
 			if session_id != self.session_id:
 				return
 	
@@ -234,12 +234,20 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator.send({"cmd": "stopworld"})
 		if self.sleeped_client:
 			self.sleeped_client.send({"cmd":"stopworld"})
-		time.sleep(0.01)
+		time.sleep(0.05)
+		if self.client_communicator:
+			self.client_communicator.kill()
+		if self.sleeped_client:
+			self.sleeped_client.kill()
+		
 
 	def reopen_current(self):
-		self._open_routine(self.current_opened)
+		if time.time() - self.last_reopen_time > 0.25:
+			self._open_routine(self.current_opened)
+			self.last_reopen_time = time.time()
 
 	def _open_routine(self, path):
+		print()
 		info("open: file:{}".format(path))
 		self.setWindowTitle(path)
 
@@ -286,7 +294,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	
 		self.session_id += 1
 
-		self.sleeped_client = None
+		#self.sleeped_client = None
 		if self.sleeped_client:
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
