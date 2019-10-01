@@ -20,6 +20,14 @@ class StartDialog(QDialog):
 
 		self.glayout = QGridLayout()
 
+		self.examples_tree = QTreeWidget()
+		self.examples_tree.header().hide()
+		item = QTreeWidgetItem(self.examples_tree)
+		item.setText(0,"UNDER_CONSTRUCT")
+
+		self.recent_scripts_wdg = QListWidget()
+		self.recent_scripts_wdg.addItem("UNDER_CONSTRUCT")  
+
 		#self.v0_layout = QVBoxLayout()
 		
 		self.zencad_label = QLabel("ZenCad")
@@ -41,6 +49,8 @@ class StartDialog(QDialog):
 
 		self.glayout.addWidget(self.zencad_label,0,0)
 		self.glayout.addLayout(self.h0_layout, 1,0)
+		self.glayout.addWidget(self.examples_tree, 1,1, 2,1)
+		self.glayout.addWidget(self.recent_scripts_wdg, 2,0)
 
 		self.setLayout(self.glayout)
 
