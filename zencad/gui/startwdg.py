@@ -31,15 +31,16 @@ class StartDialog(QDialog):
 		self.zencad_label.setFont(font)
 		self.zencad_label.setStyleSheet("QLabel{color: #C0BBFE}");
 		
+		self.h0_layout = QHBoxLayout()
 		self.add_h0_button("New", self.handle_new)
 		self.add_h0_button("Open", self.handle_open)
 		self.add_h0_button("Help", self.handle_help)
 
-		#self.h0_layout = QHBoxLayout()
 		#self.v0_layout.addLayout(self.h0_layout)
 		#self.v0_layout.addWidget(self.zencad_label)
 
-		self.glayout.addWidget(self.zencad,0,0)
+		self.glayout.addWidget(self.zencad_label,0,0)
+		self.glayout.addLayout(self.h0_layout, 1,0)
 
 		self.setLayout(self.glayout)
 
