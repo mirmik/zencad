@@ -52,12 +52,12 @@ class StartDialog(QDialog):
 		#self.v0_layout.addLayout(self.h0_layout)
 		#self.v0_layout.addWidget(self.zencad_label)
 
-		self.glayout.addWidget(self.zencad_label,0,0)
-		self.glayout.addLayout(self.h0_layout, 1,0)
-		self.glayout.addWidget(self.examples_tree, 1,1, 2,1)
+		self.glayout.addWidget(self.zencad_label,		0,0, 1,2)
+		self.glayout.addLayout(self.h0_layout, 			1,0)
+		self.glayout.addWidget(self.examples_tree, 		1,1, 2,1)
 		self.glayout.addWidget(self.recent_scripts_wdg, 2,0)
-		self.glayout.addWidget(self.open_recent_btn, 3,0)
-		self.glayout.addWidget(self.open_example_btn, 3,1)
+		self.glayout.addWidget(self.open_recent_btn, 	3,0)
+		self.glayout.addWidget(self.open_example_btn, 	3,1)
 
 		self.setLayout(self.glayout)
 
