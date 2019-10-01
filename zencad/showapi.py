@@ -13,13 +13,16 @@ SLEEPED = False
 SESSION_ID = 0
 EXECPATH = sys.argv[0]
 
-def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
+def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
     """ Функция активации графической части.
 
     Может иметь разные режимы исполнения в зависимости от текущего
     режима. Обычно или создаёт GUI либо заменяет в виджет в уже 
     созданном приложении.
     """
+    global SHOWMODE
+    if standalone:
+        SHOWMODE = "widget"
 
     if scene is None:
         scene = default_scene

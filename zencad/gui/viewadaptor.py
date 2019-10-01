@@ -533,7 +533,7 @@ def standalone(*args, **kwargs):
 	"""Запуск отдельного виджета для теста функциональности.
 	"""
 
-	zencad.unbound.application.common_unbouded_proc(*args, **kwargs)
+	zencad.gui.application.common_unbouded_proc(*args, **kwargs)
 	#app = QApplication([])
 	#zencad.opengl.init_opengl()
 
