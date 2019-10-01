@@ -14,6 +14,7 @@ class StartDialog(QDialog):
 	def __init__(self):
 		super().__init__()
 		self.openpath = ""
+		self.setWindowTitle("ZenCad")
 
 		#self.v1_layout = QVBoxLayout()
 		#self.h1_layout = QHBoxLayout()
