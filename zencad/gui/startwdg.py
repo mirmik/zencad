@@ -44,6 +44,9 @@ class StartDialog(QDialog):
 		self.add_h0_button("Open", self.handle_open)
 		self.add_h0_button("Help", self.handle_help)
 
+		self.open_recent_btn = QPushButton("Open Recent")
+		self.open_example_btn = QPushButton("Open Example")
+
 		#self.v0_layout.addLayout(self.h0_layout)
 		#self.v0_layout.addWidget(self.zencad_label)
 
@@ -51,6 +54,8 @@ class StartDialog(QDialog):
 		self.glayout.addLayout(self.h0_layout, 1,0)
 		self.glayout.addWidget(self.examples_tree, 1,1, 2,1)
 		self.glayout.addWidget(self.recent_scripts_wdg, 2,0)
+		self.glayout.addWidget(self.open_recent_btn, 3,0)
+		self.glayout.addWidget(self.open_example_btn, 3,1)
 
 		self.setLayout(self.glayout)
 
