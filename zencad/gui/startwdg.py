@@ -46,6 +46,8 @@ class StartDialog(QDialog):
 
 		self.open_recent_btn = QPushButton("Open Recent")
 		self.open_example_btn = QPushButton("Open Example")
+		self.open_recent_btn.setMinimumWidth(300)
+		self.open_example_btn.setMinimumWidth(300)
 
 		#self.v0_layout.addLayout(self.h0_layout)
 		#self.v0_layout.addWidget(self.zencad_label)
