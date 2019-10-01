@@ -15,10 +15,14 @@ class StartDialog(QDialog):
 		super().__init__()
 		self.openpath = ""
 
-		self.v0_layout = QVBoxLayout()
+		#self.v1_layout = QVBoxLayout()
+		#self.h1_layout = QHBoxLayout()
+
+		self.glayout = QGridLayout()
+
+		#self.v0_layout = QVBoxLayout()
 		
 		self.zencad_label = QLabel("ZenCad")
-		
 		fpath = os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf")
 		QFontDatabase.addApplicationFont(fpath)
 		font = QFont("mandarinc")
@@ -26,15 +30,18 @@ class StartDialog(QDialog):
 		font.setBold(True)
 		self.zencad_label.setFont(font)
 		self.zencad_label.setStyleSheet("QLabel{color: #C0BBFE}");
-		self.v0_layout.addWidget(self.zencad_label)
-
-		self.h0_layout = QHBoxLayout()
+		
 		self.add_h0_button("New", self.handle_new)
 		self.add_h0_button("Open", self.handle_open)
 		self.add_h0_button("Help", self.handle_help)
-		self.v0_layout.addLayout(self.h0_layout)
 
-		self.setLayout(self.v0_layout)
+		#self.h0_layout = QHBoxLayout()
+		#self.v0_layout.addLayout(self.h0_layout)
+		#self.v0_layout.addWidget(self.zencad_label)
+
+		self.glayout.addWidget(self.zencad,0,0)
+
+		self.setLayout(self.glayout)
 
 	def paintEvent(self, ev):
 		linearGrad = QLinearGradient(0, 0, self.width(), self.height())
