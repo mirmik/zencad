@@ -192,7 +192,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def marker_handler(self, qw, data):
 		fmt='.5f'
 		x = data["x"]; y = data["y"]; z = data["z"];
-		idx = "Q" if qw else "W"
+		idx = qw.upper()
 		print("{0}: x:{1}, y:{2}, z:{3}; point({1},{2},{3})".format(
 			idx, format(x, fmt), format(y, fmt), format(z, fmt)))
 
