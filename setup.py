@@ -8,6 +8,8 @@ import glob
 import sys
 import os
 
+directory = os.path.dirname(os.path.realpath(__file__))
+
 setup(
     name="zencad",
     packages=["zencad"],
@@ -17,7 +19,7 @@ setup(
     author="mirmik",
     author_email="mirmikns@yandex.ru",
     url="https://github.com/mirmik/zencad",
-    long_description=open("README.md", "r").read(),
+    long_description=open(os.path.join(directory, "README.md"), "r").read(),
     long_description_content_type="text/markdown",
     keywords=["testing", "cad"],
     classifiers=[],
