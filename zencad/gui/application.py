@@ -33,6 +33,7 @@ from zencad.gui.mainwindow import MainWindow
 
 __TRACED__= False
 
+INTERPRETER = sys.executable
 RETRANSLATE_THREAD = None
 MAIN_COMMUNICATOR = None
 
@@ -108,7 +109,7 @@ def start_application(ipipe, opipe, tgtpath):
 
 	# TODO Абстрактизировать вызов интерпретатора для работы
 	# в других ОС.
-	interpreter = "/usr/bin/python3"
+	interpreter = INTERPRETER
 	os.system("{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath))
 
 @traced
@@ -152,7 +153,7 @@ def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session
 	
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
-	interpreter = "/usr/bin/python3"
+	interpreter = INTERPRETER
 
 	#cmd = "python3 /home/mirmik/.local/lib/python3.6/site-packages/zencad-0.16.2-py3.6.egg/zencad/__main__.py {path} --replace {prescale} --session_id {session_id}".format(
 	#	path=path, 

@@ -17,7 +17,7 @@ import threading
 import multiprocessing
 import base64
 
-__MAIN_TRACE__ = False
+__MAIN_TRACE__ = True
 
 def trace(*argv, **kwars):
 	if __MAIN_TRACE__: print(*argv, **kwars)

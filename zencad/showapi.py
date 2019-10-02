@@ -13,6 +13,10 @@ SLEEPED = False
 SESSION_ID = 0
 EXECPATH = sys.argv[0]
 
+if sys.stdin.isatty():
+    print("Sorry. ZenCad Gui support interactive mode for standalone widget mode only.")  
+    SHOWMODE = "widget"
+
 def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
     """ Функция активации графической части.
 
