@@ -13,12 +13,6 @@ SLEEPED = False
 SESSION_ID = 0
 EXECPATH = sys.argv[0]
 
-if sys.stdin.isatty():
-    print("Sorry. ZenCad Gui support python interactive mode for standalone widget mode only.") 
-    print("Now I have to recommend not using interactive mode.")
-    print("Please use script or `zencad` entry point if you need normal gui.") 
-    SHOWMODE = "widget"
-
 def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
     """ Функция активации графической части.
 
@@ -27,6 +21,13 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
     созданном приложении.
     """
     global SHOWMODE
+
+    if "-c" in sys.argv:
+        print("Sorry. ZenCad Gui support python interactive mode for standalone widget mode only.") 
+        print("Now I have to recommend not using interactive mode.")
+        print("Please use script or `zencad` entry point if you need normal gui.") 
+        SHOWMODE = "widget"
+
     if standalone:
         SHOWMODE = "widget"
 
