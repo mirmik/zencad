@@ -37,6 +37,8 @@ def main():
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 
+	pargs.nodaemon = True
+
 	trace(pargs)
 
 	# Режим работы программы, в котором создаётся gui с предоткрытым файлом.

@@ -14,16 +14,21 @@ SESSION_ID = 0
 EXECPATH = sys.argv[0]
 
 if sys.stdin.isatty():
-    print("Sorry. ZenCad Gui support interactive mode for standalone widget mode only.")  
+    print("Sorry. ZenCad Gui support python interactive mode for standalone widget mode only.") 
+    print("Now I have to recommend not using interactive mode.")
+    print("Please use script or `zencad` entry point if you need normal gui.") 
     SHOWMODE = "widget"
 
-def show(scene=None, sargv=sys.argv[1:], *args, **kwargs):
+def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
     """ Функция активации графической части.
 
     Может иметь разные режимы исполнения в зависимости от текущего
     режима. Обычно или создаёт GUI либо заменяет в виджет в уже 
     созданном приложении.
     """
+    global SHOWMODE
+    if standalone:
+        SHOWMODE = "widget"
 
     if scene is None:
         scene = default_scene
