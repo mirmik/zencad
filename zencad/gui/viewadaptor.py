@@ -356,7 +356,7 @@ class DisplayWidget(QWidget):
 			marker = self.MarkerWController
 
 		marker.set_location(zencad.translate(x, y, z))
-		marker.hide(False)
+		marker.hide(x == 0 and y == 0 and z == 0)
 
 	def zoom_down(self, koeff):
 		self.view.set_scale(self.view.scale()*(1/koeff))
@@ -533,7 +533,8 @@ def standalone(*args, **kwargs):
 	"""Запуск отдельного виджета для теста функциональности.
 	"""
 
-	zencad.gui.application.common_unbouded_proc(*args, **kwargs)
+	zencad.gui.application.common_unbouded_proc(
+		*args, need_prescale=True, **kwargs)
 	#app = QApplication([])
 	#zencad.opengl.init_opengl()
 
