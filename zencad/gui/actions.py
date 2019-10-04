@@ -114,11 +114,14 @@ class MainWindowActionsMixin:
 		filters = "*.png;;*.bmp;;*.jpg;;*.*"
 		defaultFilter = "*.png"
 
-		path = QFileDialog.getSaveFileName(
+		retpath = QFileDialog.getSaveFileName(
 			self, "Dump image", QDir.currentPath(), filters, defaultFilter
 		)
 
-		path = path[0]
+		path = retpath[0]
+
+		if path == "":
+			return
 
 		screen = self.screen()
 
