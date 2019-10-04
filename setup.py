@@ -27,6 +27,7 @@ setup(
         "zencad": [
             "industrial-robot.svg",
             "zencad_logo.png",
+            "bird.jpg",
             "geom/*",
             "libs/*",
             "gui/*",

@@ -44,8 +44,27 @@ class ScreenWidget(QWidget):
 	def paintEvent(self, ev):
 		painter = QPainter(self)
 		painter.setPen(Qt.green)
-		painter.setBrush(Qt.darkGray)
+		painter.setBrush(QColor(218,216,203))
 		painter.drawRect(0,0,self.width(),self.height())
+		bird = QImage(os.path.join(zencad.moduledir, "bird.jpg"))
+		
+		bw = bird.width()
+		bh = bird.height()
+		w = self.width()
+		h = self.height()
+		kw = bw / w
+		kh = bh / h
+
+		if kh >= kw:
+			bw = bw / kh
+			cw = self.width() / 2
+			painter.drawImage(QRect(cw-bw/2,0,bw,self.height()), bird)
+		else:
+			bh = bh / kw
+			ch = self.height() / 2
+			painter.drawImage(QRect(0,ch-bh/2,self.width(),bh), bird)
+
+
 		font = QFont()
 		font.setPointSize(12)
 		painter.setFont(font)
