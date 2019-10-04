@@ -31,6 +31,7 @@ import os
 import pickle
 import sys
 import signal
+import random
 
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
@@ -42,11 +43,13 @@ class ScreenWidget(QWidget):
 		super().__init__()
 
 	def paintEvent(self, ev):
+		pathes = ["techpriest.jpg", "bird.jpg"]
+
 		painter = QPainter(self)
 		painter.setPen(QColor(137,40,151))
 		painter.setBrush(QColor(218,216,203))
 		painter.drawRect(0,0,self.width(),self.height())
-		bird = QImage(os.path.join(zencad.moduledir, "techpriest.jpg"))
+		bird = QImage(os.path.join(zencad.moduledir, random.choice(pathes)))
 		
 		bw = bird.width()
 		bh = bird.height()
