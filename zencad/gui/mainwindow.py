@@ -43,7 +43,7 @@ class ScreenWidget(QWidget):
 		super().__init__()
 
 	def paintEvent(self, ev):
-		pathes = ["techpriest.jpg", "bird.jpg"]
+		pathes = ["techpriest.jpg"]
 
 		painter = QPainter(self)
 		painter.setPen(QColor(137,40,151))
