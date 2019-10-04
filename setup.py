@@ -41,6 +41,7 @@ setup(
         "pyservoce>=1.10.0",
         "numpy",
         "pillow",
+        "pyopengl",
         "PyQt5",
         "setproctitle"
     ],

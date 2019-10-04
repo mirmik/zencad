@@ -185,6 +185,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
+		#elif cmd == "screenshot_return": self.screen_return(data["data"])
 		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
 		else:
 			print("Warn: unrecognized command", data)
@@ -317,7 +318,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def screen(self):
 		screen = QGuiApplication.primaryScreen()
 		p = screen.grabWindow(self.cc_window)
-		return p
+
+		self.client_communicator.send({"cmd":"screenshot"})
+		self.client_communicator.wait()
+
+		btes, size = self.client_communicator.rpc_buffer()		
+		return QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]
@@ -325,10 +331,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		center = dct["center"]
 
 		self.last_location = dct
-		#print("locinfo:", self.last_location)
 
 	def internal_key_pressed(self, s):
-		#print(s)
-
 		if s == "F11": self.fullScreen()
 		elif s == "F10": self.displayMode() 

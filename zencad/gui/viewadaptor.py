@@ -4,6 +4,11 @@ import zencad.lazifier
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtOpenGL import *
+
+from OpenGL.GLUT import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
 
 import os
 import time
@@ -17,13 +22,14 @@ def trace(*argv):
 	if __TRACE__:
 		print("DISPTRACE:", *argv)
 
-class DisplayWidget(QWidget):
+class DisplayWidget(QGLWidget):
 	tracking_info_signal = pyqtSignal(tuple)
 	markerRequestQ = pyqtSignal(tuple)
 	markerRequestW = pyqtSignal(tuple)
 
 	locationChanged = pyqtSignal(dict)
 	signal_key_pressed = pyqtSignal(str)
+	signal_screenshot_reply = pyqtSignal(bytes, tuple)
 
 	zoom_koeff_key = 1.3
 	zoom_koeff_mouse = 1.1
@@ -401,6 +407,7 @@ class DisplayWidget(QWidget):
 		elif cmd == "exportbrep": self.addon_exportbrep()
 		elif cmd == "to_freecad": self.addon_to_freecad_action()
 		elif cmd == "tracking": self.tracking_mode = data["en"]
+		elif cmd == "screenshot": self.addon_screenshot_upload()
 
 		else:
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
@@ -429,38 +436,19 @@ class DisplayWidget(QWidget):
 			"center": self.view.center()
 		}
 
-#	def change_scene(self, newscene):
-#		oldscene = self.scene
-#		oldviewer = self.viewer
-#		oldview = self.view
-#
-#		scale_save = self.view.scale()
-#		eye_save = self.view.eye()
-#		center_save = self.view.center()
-#
-#		self.scene = newscene
-#		self.viewer = self.scene.viewer
-#
-#		self.view = self.viewer.create_view()
-#
-#		self.view.set_scale(scale_save)
-#		self.view.set_eye(eye_save)
-#		self.view.set_center(center_save)
-#		self.set_orient1()
-#
-#		self.view.set_triedron()
-#
-#		w, h = oldview.size()
-#		# oldview.destroy()
-#
-#		self.create_qwmarkers()
-#
-#		if os.name == "posix":
-#			# Tricks for preredraw view buffer
-#			self.view.set_virtual_window(w, h)
-#
-#		self.view.set_window(self.winId())
-#		self.viewer.set_triedron_axes()
+	def raw_screen_dump(self):
+		return glReadPixels(0, 0, self.width(), self.height(), GL_RGBA, GL_UNSIGNED_BYTE)
+
+	def screen(self):
+		QPixmap.fromImage(
+			QImage(self.raw_screen_dump, self.width(), self.height(), 
+				QImage.Format.Format_RGBA8888).mirrored(False,True))
+
+	def addon_screenshot_upload(self):
+		buf = glReadPixels(0, 0, self.width(), self.height(), GL_RGBA, GL_UNSIGNED_BYTE)
+
+		arr, size = buf, (self.size().width(), self.height())
+		self.signal_screenshot_reply.emit(arr, size)
 
 	def export_file_for_one_shape(self, filters, defaultFilter):
 		if self.scene.total() != 1 + self.count_of_helped_shapes: 
@@ -543,6 +531,11 @@ def standalone(*args, **kwargs):
 
 	#app.exec()
 
+def screenshot_return_send_dec(communicator):
+	def screenshot_return_send(arg, size):
+		communicator.send({"cmd":"tobuffer", "data": (arg, size) })
+		communicator.unwait()
+	return screenshot_return_send
 
 def bind_widget_signal(widget, communicator):
 	widget.markerRequestQ.connect(lambda arg:communicator.send({
@@ -555,3 +548,4 @@ def bind_widget_signal(widget, communicator):
 		"cmd":"keypressed", "key": arg }))
 	widget.tracking_info_signal.connect(lambda arg:communicator.send({
 		"cmd":"trackinfo", "data": arg }))
+	widget.signal_screenshot_reply.connect(screenshot_return_send_dec(communicator))
