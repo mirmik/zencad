@@ -8,6 +8,19 @@ from PIL import Image
 from zencad.lazifier import lazy
 
 
+def get_view_pixels(view, wdg): 
+    size = wdg.size()
+    size = (size.width(), size.height())
+    raw = view.rawarray(size[0], size[1])
+    npixels = np.reshape(np.asarray(raw), (size[1], size[0], 3))
+    nnnpixels = np.flip(npixels, 0).reshape((size[0] * size[1] * 3))
+
+    rawiter = iter(nnnpixels)
+    pixels = list(zip(rawiter, rawiter, rawiter))
+
+    return pixels, size
+
+
 def doscreen(model, path, size=(800, 600)):
     scn = Scene()
     try:
@@ -72,3 +85,4 @@ def screen_view(view, path, size):  # TODO:SIZE FROM VIEW
     image.putdata(pixels)
 
     image.save(path)
+

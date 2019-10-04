@@ -18,6 +18,7 @@ import multiprocessing
 import base64
 
 __MAIN_TRACE__ = False
+CONSOLE_RETRANS = True
 
 def trace(*argv, **kwars):
 	if __MAIN_TRACE__: print(*argv, **kwars)
@@ -126,7 +127,8 @@ def main():
 					pass
 					#self.stdout.flush()
 
-			sys.stdout = stdout_proxy(sys.stdout, zencad.gui.application.MAIN_COMMUNICATOR)
+			if CONSOLE_RETRANS:
+				sys.stdout = stdout_proxy(sys.stdout, zencad.gui.application.MAIN_COMMUNICATOR)
 
 			#def retranslate_console(r, OLD_STDOUT):
 			#	rf = os.fdopen(r, "r")

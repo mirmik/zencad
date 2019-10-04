@@ -55,6 +55,12 @@ class Communicator(QObject):
 					return
 
 				ddd = base64.decodestring(bytes(inputdata, "utf-8"))
+
+				dddd = pickle.loads(ddd)
+				if dddd["cmd"] == "tobuffer":
+					self.buffer = dddd["data"]
+					continue
+
 				self.newdata.emit(ddd)
 
 	def __init__(self, ipipe, opipe):
@@ -108,10 +114,16 @@ class Communicator(QObject):
 
 	def unwait(self):
 		self.send("unwait")
+
+	def unwait_local(self):
+		self.listener_thr.event.unwait()
 	
 	def kill(self):
 		if self.procpid:
 			os.kill(self.procpid, signal.SIGKILL)
+
+	def rpc_buffer(self):
+		return self.listener_thr.buffer
 
 
 

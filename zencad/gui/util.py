@@ -40,3 +40,4 @@ def open_online_manual():
 	QDesktopServices.openUrl(
 		QUrl("https://mirmik.github.io/zencad", QUrl.TolerantMode)
 	)
+
