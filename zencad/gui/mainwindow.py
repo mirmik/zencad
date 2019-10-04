@@ -37,6 +37,26 @@ DISPLAY_WINID = None
 
 __TRACE_COMMUNICATION__ = False
 
+class ScreenWidget(QWidget):
+	def __init__(self):
+		super().__init__()
+
+	def paintEvent(self, ev):
+		painter = QPainter(self)
+		painter.setPen(Qt.green)
+		painter.setBrush(Qt.darkGray)
+		painter.drawRect(0,0,self.width(),self.height())
+		font = QFont()
+		font.setPointSize(12)
+		painter.setFont(font)
+		message = "Loading... please wait."
+		painter.drawText(
+			QPoint(
+				self.width()/2 - QFontMetrics(font).width(message)/2,
+				QFontMetrics(font).height()), 
+			message)
+		painter.end()
+
 def info(*args):
 	print("GUI:", *args)
 
@@ -75,11 +95,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.cw_layout.addWidget(self.info_widget)
 		self.cw.setLayout(self.cw_layout)
 		
-		if presentation:
-			lbl = self.presentation_label() 
-		else:
-			lbl = QLabel()
-			#lbl.setFixedSize(700,500)
+		self.resize(1000,800)
+
+		lbl = ScreenWidget()
+
 		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
 		self.vsplitter.addWidget(lbl)
@@ -87,8 +106,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.vsplitter.setSizes([self.height()*5/8, self.height()*3/8])
 		self.hsplitter.setSizes([self.width()*3/8, self.width()*5/8])
-
-		self.resize(1000,800)
 
 		self.cw_layout.setContentsMargins(0,0,0,0)
 		self.cw_layout.setSpacing(0)
