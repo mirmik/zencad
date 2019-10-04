@@ -21,14 +21,20 @@ disp(m0.rotateX(deg(90)).translate(0, 70, 0))
 disp(m1.translate( 0, 200,  0), color.green)
 disp(m1.rotateX(deg(90)).translate( 0, 270, 0), color.yellow)
 
+#########################Advanced Example########################################
+x = 400
+y = 100
+z = 50
+deep = 10
+
 #find the geometric center of the textshape
 m1center = m1.center()
 m2 = (
-	box(400, 100, 50) 
-	- m1.extrude(25).up(25).translate(200 - m1center.x, 50 - m1center.y, 0)
+	box(x, y, z) 
+	- m1.extrude(deep).up(z-deep).translate(x/2 - m1center.x, y/2 - m1center.y, 0)
 )
 
 disp(m2.forw(400))
-
+################################################################################
 
 show()
