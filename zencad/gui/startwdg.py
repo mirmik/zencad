@@ -85,7 +85,7 @@ class StartDialog(QDialog):
 		path = zencad.gui.util.open_file_dialog(self)
 
 		if len(path[0]) == 0:
-			self.reject()
+			#self.reject()
 			return
 
 		self.openpath = path[0]
