@@ -46,7 +46,7 @@ class ScreenWidget(QWidget):
 		painter.setPen(QColor(137,40,151))
 		painter.setBrush(QColor(218,216,203))
 		painter.drawRect(0,0,self.width(),self.height())
-		bird = QImage(os.path.join(zencad.moduledir, "bird.jpg"))
+		bird = QImage(os.path.join(zencad.moduledir, "techpriest.jpg"))
 		
 		bw = bird.width()
 		bh = bird.height()

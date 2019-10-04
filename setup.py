@@ -28,6 +28,7 @@ setup(
             "industrial-robot.svg",
             "zencad_logo.png",
             "bird.jpg",
+            "techpriest.jpg",
             "geom/*",
             "libs/*",
             "gui/*",
