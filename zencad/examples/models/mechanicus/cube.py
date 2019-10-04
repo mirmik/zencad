@@ -10,9 +10,6 @@ import time
 import math
 import zencad
 
-zencad.lazy.diag = True
-zencad.lazy.fastdo = True
-
 from zencad import *
 import mech
 

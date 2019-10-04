@@ -3,9 +3,6 @@
 
 from zencad import *
 
-disable_cache()
-lazy.diag = True
-
 m0 = cone(r1=10, r2=5, h=20)
 m1 = cone(r1=10, r2=5, h=20, yaw=deg(90))
 

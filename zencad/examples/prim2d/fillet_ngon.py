@@ -5,7 +5,6 @@ from zencad import *
 import evalcache
 import functools
 
-lazy.diag = True
 
 ng = ngon(r=10, n=6)
 radius = 4

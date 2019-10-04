@@ -4,8 +4,6 @@
 import evalcache
 from zencad import *
 
-lazy.diag = True
-
 
 @lazy
 def instrument_metric_nut(drad, step, h):
