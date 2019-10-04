@@ -58,3 +58,12 @@ def near_vertex(*args, **kwargs):
 @lazy.lazy(cls=shape_generator)
 def unify(shp):
     return pyservoce.unify(shp)
+
+
+zencad.color = pyservoce.color
+
+zencad.color.white =  zencad.color(1,1,1)
+zencad.color.red =    zencad.color(1,0,0)
+zencad.color.green =  zencad.color(0,1,0)
+zencad.color.blue =   zencad.color(0,0,1)
+zencad.color.yellow = zencad.color(1,1,0)

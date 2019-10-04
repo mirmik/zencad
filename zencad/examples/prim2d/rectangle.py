@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
-# coding: utf-8
+"""
+ZenCad API example: rectangle
+last update: 04.10.2019
+"""
+
 
 from zencad import *
 
-test_mode()
+m0 = rectangle(a=10, b=6, center=True)
+m1 = rectangle(a=10, b=6)
+m2 = rectangle(6, center=True)
+m3 = square(6)
 
-m = rectangle(a=10, b=6, center=True)
-display(m)
+display(m0, color=color.yellow)
+display(m1, color=color.green)
+display(m2.forw(10), color=color.red)
+display(m3.forw(10), color=color.white)
 
 show()
