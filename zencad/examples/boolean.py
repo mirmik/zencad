@@ -3,11 +3,6 @@
 
 from zencad import *
 
-lazy.encache = False
-lazy.decache = False
-lazy.fastdo = True
-lazy.diag = True
-
 c1 = 100
 c2 = 130
 c3 = c2 / 2 + 20

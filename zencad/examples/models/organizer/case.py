@@ -3,8 +3,6 @@
 
 from zencad import *
 
-lazy.diag = True
-
 
 def case(w, h, l, t, r, z, s):
     w = w * s

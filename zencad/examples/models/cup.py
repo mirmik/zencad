@@ -3,8 +3,6 @@
 
 from zencad import *
 
-lazy.diag = True
-
 thikness = 2.5
 height = 90
 radius = 40

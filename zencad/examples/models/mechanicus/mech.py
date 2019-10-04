@@ -9,8 +9,6 @@ from itertools import chain
 import math
 import zencad
 
-zencad.lazy.diag = True
-
 
 def build():
     r = io.imread("image.png", as_gray=True)

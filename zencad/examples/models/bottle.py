@@ -5,8 +5,6 @@ from zencad import *
 import zencad.geom.surface as surface
 import zencad.geom.curve2 as curve2
 
-lazy.diag = True
-
 height = 70
 width = 50
 thickness = 30

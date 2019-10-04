@@ -3,8 +3,6 @@
 
 from zencad import *
 
-lazy.diag = True
-
 
 def section(w, h, l, t, d, d2):
     return (

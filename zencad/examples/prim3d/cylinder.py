@@ -3,9 +3,6 @@
 
 from zencad import *
 
-disable_cache()
-lazy.diag = True
-
 m0 = cylinder(r=10, h=20)
 m1 = cylinder(r=10, h=20, yaw=deg(90))
 
