@@ -7,29 +7,44 @@ What is it?
 ZenCad - it's a system for use oce geometry core in openscad's script style.
 So, it's  openscad idea, python language and opencascade power in one.  
 
-Manual
-------
+Manual and Information
+----------------------
 You can find manual [here](https://mirmik.github.io/zencad/). Now only russian version.
+Articles:
+	habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
 
-Install
--------  
+Installation
+------------
 Install zencad from pypi:  
 ```python3 -m pip install zencad ```
 
 Maybe need install qt5-default, because pyqt5 has trouble with xcb plugin.  
 ```apt install qt5-default ```
 
+Standalone Distribution
+-----------------------
+ZenCad has standalone version for Windows. (Comming Soon)
 
-Get source code
+Source code
 ---------------
-```sh
-git clone https://github.com/mirmik/zencad
-```
+Main project repo: 
+	[https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
+Related repos:
+	[https://github.com/mirmik/servoce](https://github.com/mirmik/servoce)  
+	[https://github.com/mirmik/evalcache](https://github.com/mirmik/evalcache)  
 
-Other repos of this project
----------------------------
-[https://github.com/mirmik/servoce](https://github.com/mirmik/servoce)  
-[https://github.com/mirmik/evalcache](https://github.com/mirmik/evalcache)  
+### Source code structure:
+- ./zencad (package)
+  - examples (gui`s example scripts)
+  - gui (application and graphical interface code files)
+  - geom (main zencad api functions)
+  - . : other or not yet sorted....
+- ./docs (manual directory. GitHub pages links here)
+- ./mangen (scripts and texts for ./docs automated generation)
+- ./utest (unit tests)
+- ./tools (scripts for repository routine work)
+- ./expers (place for maintainer experiments :-) )
+
 
 HelloWorld
 ----------
@@ -46,9 +61,3 @@ show()
 ```
 Result:  
 ![result.png](https://mirmik.github.io/zencad/images/generic/zencad-logo.png)
-
-Articles
---------
-habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
-
-![https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/logo.png](https://raw.githubusercontent.com/mirmik/zencad/master/docs/images/car.png)
