@@ -9,9 +9,9 @@ So, it's  openscad idea, python language and opencascade power in one.
 
 Manual and Information
 ----------------------
-You can find manual [here](https://mirmik.github.io/zencad/). Now only russian version.  
-Articles:  
-	habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
+- Manual: You can find manual [here](https://mirmik.github.io/zencad/). Now only russian version.  
+- Articles:  
+	- habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
 
 Installation
 ------------
