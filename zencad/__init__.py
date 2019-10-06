@@ -67,3 +67,13 @@ zencad.color.red =    zencad.color(1,0,0)
 zencad.color.green =  zencad.color(0,1,0)
 zencad.color.blue =   zencad.color(0,0,1)
 zencad.color.yellow = zencad.color(1,1,0)
+
+pyservoce.Shape.move = pyservoce.Shape.translate
+pyservoce.Shape.moveX = pyservoce.Shape.right
+pyservoce.Shape.moveY = pyservoce.Shape.forw
+pyservoce.Shape.moveZ = pyservoce.Shape.up
+
+zencad.move = zencad.translate
+zencad.moveX = zencad.right
+zencad.moveY = zencad.forw
+zencad.moveZ = zencad.up
