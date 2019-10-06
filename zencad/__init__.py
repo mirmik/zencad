@@ -41,18 +41,31 @@ def enable_cache_diagnostic():
 
 
 @lazy.lazy(cls=shape_generator)
-def near_edge(*args, **kwargs):
-    return pyservoce.near_edge(*args, **kwargs)
+def near_edge(shp, pnt):
+    """Find near edge to point `pnt` in shape `shp`"""
+    return pyservoce.near_edge(shp, pnt)
 
 
 @lazy.lazy(cls=shape_generator)
-def near_face(*args, **kwargs):
-    return pyservoce.near_face(*args, **kwargs)
+def near_face(shp, pnt):
+    """Find near face to point `pnt` in shape `shp`"""
+    return pyservoce.near_face(shp, pnt)
+
+
+@lazy
+def near_vertex(shp, pnt):
+    """Find near vertex to point `pnt` in shape `shp`
+    Return vertex as point.
+    """
+    return pyservoce.near_vertex(shp, pnt).vertices()[0]
 
 
 @lazy.lazy(cls=shape_generator)
-def near_vertex(*args, **kwargs):
-    return pyservoce.near_vertex(*args, **kwargs)
+def near_vertex_shape(shp, pnt):
+    """Find near vertex to point `pnt` in shape `shp`
+    Return vertex as vertex shape.
+    """
+    return pyservoce.near_vertex(shp, pnt)
 
 
 @lazy.lazy(cls=shape_generator)
