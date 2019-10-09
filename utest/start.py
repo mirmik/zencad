@@ -16,6 +16,7 @@ import ops1d2d_test
 import boolean_test
 import math_test
 import trans_test
+import rigidity_test
 
 
 def execute_test(test):
@@ -35,3 +36,4 @@ if __name__ == "__main__":
     execute_test(boolean_test)
     execute_test(math_test)
     execute_test(trans_test)
+    execute_test(rigidity_test)

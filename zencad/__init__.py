@@ -90,3 +90,10 @@ zencad.move = zencad.translate
 zencad.moveX = zencad.right
 zencad.moveY = zencad.forw
 zencad.moveZ = zencad.up
+
+
+def to_vector(arg):
+    return zencad.util.vector3(arg)
+
+def to_point(arg):
+    return zencad.util.point3(arg)

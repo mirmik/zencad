@@ -1,30 +1,78 @@
 """Модуль для визуализации и учёта упругости в кинематических цепях."""
 
 import zencad
+import numpy
 
-class rod_model:
-	def __init__(self):
-		self.rigidity = 1
+from zencad.libs.screw import screw
 
-	def eval_deformation(force_screw, length):
-		"""Если узел задаётся конечным элементом,
-		то эта функция должна при применении схемы нагружения 
-		расчитать 6-перемещение в точке стержня. 
+class rod_finite_element_model:
+	def __init__(self, E, G, F, Jx, Jy, Jz, l):
+		self.E = E
+		self.G = G
+		self.F = F
+		self.Jx = Jx
+		self.Jy = Jy
+		self.Jz = Jz
+		self.l = l
 
-		Параметры?"""
+		self.flexibility = rod_flexibility_matrix(E, G, F, Jx, Jy, Jz, l)
+		self.rigidity = rod_rigidity_matrix(E, G, F, Jx, Jy, Jz, l)
 
-		return 0
+	def eval_deflection(self, force_screw):
+		"""расчет винта перемещения выходного звена"""
+		a = self.flexibility.dot(force_screw.to_array())
+		a = a.tolist()[0]
+		#print(a)
+		return screw.from_array(a)	
 
-	def form_coordinate_array(self):
-		"""Сформировать массив отклонений элемента 
-		для отрисовки геометрии.
-		"""
-		pass
+class force_model:
+	def __init__(self, inunit, outunit):
+		self.inunit = inunit
+		self.outunit = outunit
+		self.output_force = None
+		self.input_force = None
+		self.local_force_evaluator = None
 
-	def clean(self):
-		"""Очистить объект для следующей итерации вычислений."""
-		pass
+	def evaluate_input_force(self):
+		self.input_force = self.output_force
 
-	def output_force_screw(self):
-		"""Возвращает действующий на обратной стороне силовой фактор"""
-		pass
+		#if self.inunit.parent and self.inunit.parent.force_model:
+		#	self.inunit.parent.force_model.output_force = self.input_force
+
+	def visualize(self):
+		print("TODO Visualize")
+
+
+#def rigidity_matrix(E, G, F, Jx, Jy, Jz, l):
+#	return numpy.matrix(
+#		[
+#			[E*F/l,  0,             0,             0,       0,            0,           -E*F/l, 0,             0,             0,       0,            0           ],
+#			[0,      12*E*Jz/l**3,  0,             0,       0,            6*E*Jz/l**2, 0,      -12*E*Jz/l**3, 0,             0,       0,            6*E*Jz/l**2 ],
+#			[0,      0,             12*E*Jy/l**3,  0,       -6*E*Jy/l**2, 0,           0,      0,             -12*E*Jy/l**3, 0,       -6*E*Jy/l**2, 0           ],
+#			[0,      0,             0,             G*Jx/l,  0,            0,           0,      0,             0,             -G*Jx/l, 0,            0           ],
+#			[0,      0,             -6*E*Jy/l**2,  0,       4*E*Jy/l,     0,           0,      0,             6*E*Jy/l**2,   0,       2*E*Jy/l,     0           ],
+#			[0,      6*E*Jz/l**2,   0,             0,       0,            4*E*Jz/l,    0,      -6*E/l**2,     0,             0,       0,            2*E*Jz/l    ],
+#			[-E*F/l, 0,             0,             0,       0,            0,           E*F/l,  0,             0,             0,       0,            0           ],
+#			[0,      -12*E*Jz/l**3, 0,             0,       0,            -6*E/l**2,   0,      12*E*Jz/l**3,  0,             0,       0,            -6*E*Jz/l**2],
+#			[0,      0,             -12*E*Jy/l**3, 0,       6*E*Jy/l**2,  0,           0,      0,             12*E*Jy/l**3,  0,       6*E*Jy/l**2,  0           ],
+#			[0,      0,             0,             -G*Jx/l, 0,            0,           0,      0,             0,             G*Jx/l,  0,            0           ],
+#			[0,      0,             -6*E*Jy/l**2,  0,       2*E*Jy/l,     0,           0,      0,             6*E*Jy/l**2,   0,       4*E*Jy/l,     0           ],
+#			[0,      6*E*Jz/l**2,   0,             0,       0,            2*E*Jz/l,    0,      -6*E*Jz/l**2,  0,             0,       0,            4*E*Jz/l    ]
+#		]
+#	)
+
+
+def rod_rigidity_matrix(E, G, F, Jx, Jy, Jz, l):
+	return numpy.matrix(
+		[
+			[E*F/l,  0,             0,             0,       0,            0,          ],
+			[0,      12*E*Jz/l**3,  0,             0,       0,            6*E*Jz/l**2,],
+			[0,      0,             12*E*Jy/l**3,  0,       -6*E*Jy/l**2, 0,          ],
+			[0,      0,             0,             G*Jx/l,  0,            0,          ],
+			[0,      0,             -6*E*Jy/l**2,  0,       4*E*Jy/l,     0,          ],
+			[0,      6*E*Jz/l**2,   0,             0,       0,            4*E*Jz/l,   ],
+		]
+	)
+
+def rod_flexibility_matrix(E, G, F, Jx, Jy, Jz, l):
+	return numpy.linalg.inv(rod_rigidity_matrix(E, G, F, Jx, Jy, Jz, l))
