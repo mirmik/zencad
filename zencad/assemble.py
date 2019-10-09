@@ -46,7 +46,7 @@ class unit:
 	def link(self, child):
 		self.add_child(child)
 
-	def location_update(self, deep=False, view=False):
+	def location_update(self, deep=True, view=True):
 		if self.parent is None:
 			self.global_location = self.location
 
@@ -62,7 +62,7 @@ class unit:
 
 	def relocate(self, location, deep=False, view=False):
 		self.location = evalcache.unlazy_if_need(location)
-		self.location_update(deep)
+		self.location_update(deep, False)
 
 		if view:
 			self.apply_view_location(deep)
