@@ -71,10 +71,10 @@ r0.output.link(r1.input)
 r1.output.link(r2.input)
 r2.output.link(mass)
 
-rot.set_coord(deg(-40))
-r0.output.set_coord(deg(40))
-r1.output.set_coord(deg(-40))
-r2.output.set_coord(deg(40))
+rot.set_coord(deg(-25))
+r0.output.set_coord(deg(0))
+r1.output.set_coord(deg(0))
+r2.output.set_coord(deg(0))
 
 #els[0].relocate(rotateY(-deg(90)))
 
