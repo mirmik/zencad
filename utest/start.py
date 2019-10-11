@@ -17,6 +17,8 @@ import boolean_test
 import math_test
 import trans_test
 import rigidity_test
+import curve3_test
+import curve2_test
 
 
 def execute_test(test):
@@ -37,3 +39,5 @@ if __name__ == "__main__":
     execute_test(math_test)
     execute_test(trans_test)
     execute_test(rigidity_test)
+    execute_test(curve3_test)
+    execute_test(curve2_test)
