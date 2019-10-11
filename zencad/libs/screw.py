@@ -12,16 +12,24 @@ class screw:
 		self.ang = zencad.to_vector(ang)
 		self.lin = zencad.to_vector(lin)
 
-	def carry(self, trans):
+	def __add__(self, oth):
+		return screw(self.ang + oth.ang, self.lin + oth.lin)
+
+	def __iadd__(self, oth):
+		self.ang += oth.ang
+		self.lin += oth.lin
+		return self
+
+	def carry(self, arm):
 		"""Перенос бивектора в другую точку приложения.
 
 		Detail
 		------
 		Формула TODO
 		"""
-		
-		print("TODO carry")
-		return screw(self.ang, self.lin)
+		return screw(
+			self.ang + arm.cross(self.lin), 
+			self.lin)
 
 	def to_array(self):
 		"""Массив имеет обратный принятому в screw порядку"""
@@ -50,3 +58,9 @@ class screw:
 	def inverse_transform(self, trans):
 		trans = trans.inverse()
 		return screw(ang=trans(self.ang), lin=trans(self.lin))
+
+	def transform(self, trans):
+		return screw(ang=trans(self.ang), lin=trans(self.lin))
+
+def screw_of_vector(vec, arm):
+	return screw(lin=vec, ang=arm.cross(vec))
