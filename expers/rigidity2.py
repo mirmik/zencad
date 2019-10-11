@@ -47,6 +47,7 @@ class rod:
 				self.els[-1].connector.link(a)
 			self.els.append(a)
 
+		self.force_model = zencad.libs.rigidity.force_model_mass_point(self, 0.5)
 		self.rotator = zencad.cynematic.rotator(parent=self.els[-1].connector, ax=(0,1,0))
 
 		self.input = self.els[0]
@@ -79,9 +80,9 @@ r2.output.set_coord(deg(-20))
 
 #zencad.libs.rigidity.attach_force_model(els[0])
 base = rot
-base.input.location_update()
+base.location_update()
 
-fmodel = zencad.libs.rigidity.force_model_algorithm(base.input)
+fmodel = zencad.libs.rigidity.force_model_algorithm(base)
 fmodel.attach()
 
 #els[-1].force_model.output_force = zencad.libs.screw.screw((0,0,0), (0,0,-10))
@@ -98,8 +99,8 @@ for i in range(5):
 
 #while True:
 
-rase.input.location_update()
-disp(rase.input)
+base.location_update()
+disp(base)
 
 tmodel = mass.global_location
 
@@ -146,7 +147,7 @@ def animate(wdg):
 	r1.output.set_coord(r1.output.coord + vcoords[2] * DELTATIME)
 	r2.output.set_coord(r2.output.coord + vcoords[3] * DELTATIME)
 
-	base.input.location_update()
+	base.location_update()
 
 show(animate=animate)
 	

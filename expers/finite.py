@@ -56,17 +56,25 @@ class mass(zencad.assemble.unit):
 	def __init__(self):
 		super().__init__()
 		self.set_shape(box(12, center=True))
-		self.force_model = zencad.libs.rigidity.force_model_mass_point(self, 20)
+		self.force_model = zencad.libs.rigidity.force_model_mass_point(self, 20, vec=(-1,0,1))
 
 r0 = rod(200, 20)
 mass = mass()
 r0.output.link(mass)
-r0.input.location_update()
+
+base = zencad.assemble.unit()
+base.link(r0.input)
+
+base.relocate(rotateZ(deg(90)))
+base.location_update()
+
+
 
 fmodel = zencad.libs.rigidity.force_model_algorithm(r0.input)
 fmodel.attach()
 
 t = time.time()
+
 for i in range(5):
 	fmodel.force_evaluation()
 	fmodel.deformation_evaluation()
