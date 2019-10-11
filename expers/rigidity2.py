@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from zencad import *
+import zencad.malgo
 import zencad.cynematic
 import zencad.libs.rigidity
 from zencad.libs.screw import screw
@@ -8,20 +9,16 @@ from zencad.libs.screw import screw
 import time
 import numpy
 
-N = 20
-l = 200
-s = l / N
-
 gravity_mass = screw(ang=(0,0,0), lin=(0,0,-10))
 
 class finite_element(zencad.assemble.unit):
 	def __init__(self, h):
 		super().__init__()
 
-		E = 200000 * 10**6
-		G = 82 * 10**9
-		#E = 2000 * 10**6
+		#E = 200000 * 10**6
 		#G = 82 * 10**9
+		E = 100 * 10**6
+		G = 82 * 10**9
 		
 		F = 1
 		Jx = 1
@@ -30,7 +27,7 @@ class finite_element(zencad.assemble.unit):
 
 		r=5
 
-		self.con = moveX(s)
+		self.con = moveX(h)
 
 		self.shp = cylinder(r, h).rotateY(deg(90))
 		self.set_shape(self.shp)
@@ -50,7 +47,7 @@ class rod:
 				self.els[-1].connector.link(a)
 			self.els.append(a)
 
-		self.rotator = zencad.cynematic.rotator(parent=self.els[-1], ax=(0,1,0))
+		self.rotator = zencad.cynematic.rotator(parent=self.els[-1].connector, ax=(0,1,0))
 
 		self.input = self.els[0]
 		self.output = self.rotator
@@ -62,17 +59,18 @@ class mass(zencad.assemble.unit):
 		self.set_shape(box(12, center=True))
 		self.force_model = zencad.libs.rigidity.force_model_mass_point(self, 20)
 
-r0 = rod(4000, 10)
-r1 = rod(4000, 10)
-r2 = rod(4000, 10)
+r0 = rod(200, 20)
+r1 = rod(200, 20)
+r2 = rod(200, 20)
 
 mass = mass()
 r0.output.link(r1.input)
 r1.output.link(r2.input)
 r2.output.link(mass)
 
-r0.output.set_coord(deg(20))
-r1.output.set_coord(deg(0))
+r0.output.set_coord(deg(-20))
+r1.output.set_coord(deg(20))
+r2.output.set_coord(deg(-20))
 
 #els[0].relocate(rotateY(-deg(90)))
 
@@ -93,7 +91,29 @@ for i in range(5):
 	fmodel.force_evaluation()
 	fmodel.deformation_evaluation()
 	fmodel.apply_deformation()
-	print(mass.global_location)
+
+
+#while True:
+
+r0.input.location_update()
+disp(r0.input)
+
+
+chain = zencad.cynematic.cynematic_chain(mass)
+def animate(wdg):
+	senses = chain.sensivity()
+
+	target = (0,0,0,-1,0,0)
+	vcoords, iters = zencad.malgo.svd_backpack(target, 
+		vectors=[(*w, *v) for w, v in senses])
+
+	r0.output.set_coord(r0.output.coord + vcoords[0] * 0.2)
+	r1.output.set_coord(r1.output.coord + vcoords[1] * 0.2)
+	r2.output.set_coord(r2.output.coord + vcoords[2] * 0.2)
+
+	r0.input.location_update()
+
+show(animate=animate)
 	
 	#print(mass.global_location)
 	
