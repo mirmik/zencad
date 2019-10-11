@@ -19,11 +19,8 @@ class Rigidity(unittest.TestCase):
 		Jz = 6
 		l =7
 
-		mat = zencad.libs.rigidity.rigidity_matrix(E, G, F, Jx, Jy, Jz, l)
-		discriminant = numpy.linalg.det(mat)
+		mat = zencad.libs.rigidity.rod_rigidity_matrix(E, G, F, Jx, Jy, Jz, l)
 
-		for i in range(12):
-			for j in range(12):
+		for i in range(6):
+			for j in range(6):
 				self.assertEqual(mat[i,j], mat[j,i])
-
-		self.assertEqual(discriminant, 0)
