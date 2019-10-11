@@ -64,10 +64,13 @@ r1 = rod(200, 20)
 r2 = rod(200, 20)
 
 mass = mass()
+rot = zencad.cynematic.rotator(ax=(0,1,0))
+rot.link(r0.input)
 r0.output.link(r1.input)
 r1.output.link(r2.input)
 r2.output.link(mass)
 
+rot.set_coord(0)
 r0.output.set_coord(deg(-20))
 r1.output.set_coord(deg(20))
 r2.output.set_coord(deg(-20))
@@ -75,10 +78,10 @@ r2.output.set_coord(deg(-20))
 #els[0].relocate(rotateY(-deg(90)))
 
 #zencad.libs.rigidity.attach_force_model(els[0])
-r0.input.location_update()
+base = rot
+base.input.location_update()
 
-fmodel = zencad.libs.rigidity.force_model_algorithm(r0.input)
-
+fmodel = zencad.libs.rigidity.force_model_algorithm(base.input)
 fmodel.attach()
 
 #els[-1].force_model.output_force = zencad.libs.screw.screw((0,0,0), (0,0,-10))
@@ -95,23 +98,55 @@ for i in range(5):
 
 #while True:
 
-r0.input.location_update()
-disp(r0.input)
+rase.input.location_update()
+disp(rase.input)
 
+tmodel = mass.global_location
 
+lasttime = time.time()
 chain = zencad.cynematic.cynematic_chain(mass)
+iteration = 0
 def animate(wdg):
+	global tmodel
+	global lasttime
+	global iteration
+
+	curtime = time.time()
+	deltatime = curtime - lasttime
+	lasttime = curtime
+
+	iteration += 1
+	if iteration < 10:
+		return
+
+	fmodel.force_evaluation()
+	fmodel.deformation_evaluation()
+	fmodel.apply_deformation()
+
 	senses = chain.sensivity()
 
-	target = (0,0,0,-1,0,0)
+	DELTATIME = deltatime
+	TSPD = 40
+	K = 10
+
+	tspd = numpy.array([-TSPD,0,0])
+	tmodel = pyservoce.translate(*(tspd * DELTATIME)) * tmodel
+	current = mass.global_location	
+
+	ftrans = current.inverse() * tmodel
+	ttrans = ftrans.translation() * K
+	rtrans = ftrans.rotation().rotation_vector() * K 
+	target = (*rtrans,*ttrans + current.inverse()(pyservoce.vector3(*tspd)))
+
 	vcoords, iters = zencad.malgo.svd_backpack(target, 
 		vectors=[(*w, *v) for w, v in senses])
 
-	r0.output.set_coord(r0.output.coord + vcoords[0] * 0.2)
-	r1.output.set_coord(r1.output.coord + vcoords[1] * 0.2)
-	r2.output.set_coord(r2.output.coord + vcoords[2] * 0.2)
+	rot.set_coord(r0.output.coord + vcoords[0] * DELTATIME)
+	r0.output.set_coord(r0.output.coord + vcoords[1] * DELTATIME)
+	r1.output.set_coord(r1.output.coord + vcoords[2] * DELTATIME)
+	r2.output.set_coord(r2.output.coord + vcoords[3] * DELTATIME)
 
-	r0.input.location_update()
+	base.input.location_update()
 
 show(animate=animate)
 	
