@@ -47,9 +47,10 @@ class force_model:
 		print("TODO Visualize")
 
 class force_model_mass_point(force_model):
-	def __init__(self, unit, mass):
+	def __init__(self, unit, mass, vec = (0,0,-9.81)):
 		super().__init__(unit)
 		self.mass = mass
+		self.vec = zencad.to_vector(vec) * self.mass
 
 	#def gravity(self):
 
@@ -61,7 +62,7 @@ class force_model_mass_point(force_model):
 		gtrans = self.parent.global_location
 
 		lmove = ltrans.translation()
-		gravity = zencad.vector3(0, 0, -9.81 * self.mass)
+		gravity = zencad.vector3(self.vec)
 		gravity = gtrans.inverse()(gravity)
 
 		# гравитация приведенная к входу.
