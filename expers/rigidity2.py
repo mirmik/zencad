@@ -17,7 +17,7 @@ class finite_element(zencad.assemble.unit):
 
 		#E = 200000 * 10**6
 		#G = 82 * 10**9
-		E = 100 * 10**6
+		E = 50 * 10**6
 		G = 82 * 10**9
 		
 		F = 1
@@ -60,9 +60,9 @@ class mass(zencad.assemble.unit):
 		self.set_shape(box(12, center=True))
 		self.force_model = zencad.libs.rigidity.force_model_mass_point(self, 20)
 
-r0 = rod(200, 20)
-r1 = rod(200, 20)
-r2 = rod(200, 20)
+r0 = rod(200, 10)
+r1 = rod(200, 10)
+r2 = rod(200, 10)
 
 mass = mass()
 rot = zencad.cynematic.rotator(ax=(0,1,0))
@@ -71,10 +71,10 @@ r0.output.link(r1.input)
 r1.output.link(r2.input)
 r2.output.link(mass)
 
-rot.set_coord(0)
-r0.output.set_coord(deg(-20))
-r1.output.set_coord(deg(20))
-r2.output.set_coord(deg(-20))
+rot.set_coord(deg(-40))
+r0.output.set_coord(deg(40))
+r1.output.set_coord(deg(-40))
+r2.output.set_coord(deg(40))
 
 #els[0].relocate(rotateY(-deg(90)))
 
@@ -116,6 +116,7 @@ def animate(wdg):
 	deltatime = curtime - lasttime
 	lasttime = curtime
 
+	#return
 	iteration += 1
 	if iteration < 10:
 		return
@@ -137,12 +138,13 @@ def animate(wdg):
 	ftrans = current.inverse() * tmodel
 	ttrans = ftrans.translation() * K
 	rtrans = ftrans.rotation().rotation_vector() * K 
-	target = (*rtrans,*ttrans + current.inverse()(pyservoce.vector3(*tspd)))
+	#target = (*rtrans,*ttrans + current.inverse()(pyservoce.vector3(*tspd)))
+	target = (*ttrans + current.inverse()(pyservoce.vector3(*tspd)),)
 
 	vcoords, iters = zencad.malgo.svd_backpack(target, 
-		vectors=[(*w, *v) for w, v in senses])
+		vectors=[(*v,) for w, v in senses])
 
-	rot.set_coord(r0.output.coord + vcoords[0] * DELTATIME)
+	rot.set_coord(rot.coord + vcoords[0] * DELTATIME)
 	r0.output.set_coord(r0.output.coord + vcoords[1] * DELTATIME)
 	r1.output.set_coord(r1.output.coord + vcoords[2] * DELTATIME)
 	r2.output.set_coord(r2.output.coord + vcoords[3] * DELTATIME)
