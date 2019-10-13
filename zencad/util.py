@@ -1,7 +1,7 @@
 import runpy
 import math
 import pyservoce
-
+import os
 
 def execfile(path):
     # with open(path) as f:
@@ -62,3 +62,15 @@ def circle_tangent_points(center, radius, point):
     b2y += c_y 
     
     return [ point3(b1x,b1y), point3(b2x,b2y) ]
+
+def examples_paths():
+    import zencad
+    ret = []
+
+    root = os.path.join(zencad.moduledir, "examples")
+    for path, subdirs, files in os.walk(root):
+        for name in files:
+            if os.path.splitext(name)[1] == ".py":
+                ret.append(os.path.join(path, name))
+
+    return ret

@@ -48,6 +48,12 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
         zencad.gui.application.update_unbound_application(
             scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, *args, **kwargs)
 
+    elif SHOWMODE == "noshow":
+        return
+
+    else:
+        raise Exception("undeclared SHOWMODE")
+
 def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
