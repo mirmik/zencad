@@ -33,6 +33,7 @@ def main():
 	parser.add_argument("--prescale", action="store_true")
 	parser.add_argument("--sleeped", action="store_true")
 	parser.add_argument("--nodaemon", action="store_true")
+	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--tgtpath")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
@@ -143,6 +144,9 @@ def main():
 		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 		if pargs.widget:
 			zencad.showapi.SHOWMODE = "widget"
+
+		if pargs.disable_show:
+			zencad.showapi.SHOWMODE = "noshow"
 
 		try:
 			runpy.run_path(path, run_name="__main__")
