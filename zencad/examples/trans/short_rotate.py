@@ -65,4 +65,9 @@ for i in range(N):
 			if k < N-1: 
 				disp(zencad.draw.line(point3(i*u,j*u,k*u), point3(i*u,j*u,k*u+u)))
 
-show()
+easter_egg_ctr = [ disp(textshape("BOOM!!!!", os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf"), 20, True).rotateX(deg(90)).translate(*tgt[i]).up(15), color=color.red) for i in range(len(src)) ]
+def easter_egg(wdg):
+	for i in range(len(tgt)): 
+		easter_egg_ctr[i].hide(tgt[i] not in src)
+
+show(animate=easter_egg)
