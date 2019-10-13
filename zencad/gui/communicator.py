@@ -13,6 +13,8 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
+__TRACE__ = False
+
 class Communicator(QObject):
 
 	class Listener(QThread):
@@ -104,6 +106,8 @@ class Communicator(QObject):
 		try:
 			os.write(self.opipe, sendstr)
 		except Exception as ex:
+			if __TRACE__:
+				print("Exception on send", obj)
 			self.stop_listen()
 			#print("Warn: communicator send error", obj, ex)
 		#os.flush(self.opipe)

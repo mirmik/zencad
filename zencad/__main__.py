@@ -19,9 +19,35 @@ import base64
 
 __MAIN_TRACE__ = False
 CONSOLE_RETRANS = True
+CONSOLE_RETRANS_THREAD = None
+
+STDOUT_FILENO = zencad.gui.application.STDOUT_FILENO
+STDIN_FILENO = zencad.gui.application.STDIN_FILENO
 
 def trace(*argv, **kwars):
 	if __MAIN_TRACE__: print(*argv, **kwars)
+
+class console_retransler(threading.Thread):
+	def __init__(self, r):
+		super().__init__()
+		self.r = r
+
+	def run(self):
+		try:
+			readFile = os.fdopen(self.r)
+		except Exception as ex:
+			print("console_retransler::rdopen error: ", ex, self.ipipe)
+			exit(0)
+		
+		while(True):
+			try:
+				inputdata = readFile.readline()
+			except:
+				print("console_retransler::readFile.readline() fault")
+				self.oposite_clossed.emit()
+				return
+
+			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console","data":inputdata})
 
 def main():
 	trace("__MAIN__", sys.argv)
@@ -39,9 +65,9 @@ def main():
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 
-	pargs.nodaemon = True
-
 	trace(pargs)
+
+	pargs.nodaemon = True
 
 	# Режим работы программы, в котором создаётся gui с предоткрытым файлом.
 	# Используется в том числе для внутренней работы.	
@@ -56,7 +82,7 @@ def main():
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
-		data = os.read(3, 512)
+		data = os.read(zencad.gui.application.STDIN_FILENO, 512)
 		data = pickle.loads(base64.decodestring(data))
 
 		if "cmd" in data and data["cmd"] == "stopworld":
@@ -65,6 +91,23 @@ def main():
 		pargs.prescale = data["need_prescale"]
 		pargs.paths = [data["path"]]
 
+	if pargs.replace and CONSOLE_RETRANS:
+		# Перебиндить stdout на третий дескриптор, а вместо него подсунуть закольцованный пайп.
+		os.dup2(STDOUT_FILENO, 3)
+		r, w = os.pipe()
+		#os.close(STDOUT_FILENO)
+		#os.dup2(w, STDOUT_FILENO)
+
+		sys.stdout = os.fdopen(STDOUT_FILENO, "w")
+
+		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
+			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
+		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
+
+		# Теперь можно сделать поток для обработки данных, которые программа собирается 
+		# посылать в stdout
+		CONSOLE_RETRANS_THREAD = console_retransler(r)
+		CONSOLE_RETRANS_THREAD.start()
 
 	if len(pargs.paths) == 0 and not pargs.sleeped:
 		# Если программа вызывается без указания файла, создаём gui. 
@@ -111,25 +154,21 @@ def main():
 			zencad.showapi.SESSION_ID = int(pargs.session_id)
 			zencad.showapi.SHOWMODE = "replace"
 
-			zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-				ipipe=3, opipe=4)
-			zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
-
-			class stdout_proxy:
-				def __init__(self, stdout, communicator):
-					self.stdout = stdout
-					self.communicator = communicator
-		
-				def write(self, data):
-					# self.stdout.write(data)
-					self.communicator.send({"cmd":"console", "data":data})
-		
-				def flush(self):
-					pass
-					#self.stdout.flush()
-
-			if CONSOLE_RETRANS:
-				sys.stdout = stdout_proxy(sys.stdout, zencad.gui.application.MAIN_COMMUNICATOR)
+			#class stdout_proxy:
+			#	def __init__(self, stdout, communicator):
+			#		self.stdout = stdout
+			#		self.communicator = communicator
+		#
+			#	def write(self, data):
+			#		# self.stdout.write(data)
+			#		self.communicator.send({"cmd":"console", "data":data})
+		#
+			#	def flush(self):
+			#		pass
+			#		#self.stdout.flush()
+#
+			#if CONSOLE_RETRANS:
+			#	sys.stdout = stdout_proxy(sys.stdout, zencad.gui.application.MAIN_COMMUNICATOR)
 
 			#def retranslate_console(r, OLD_STDOUT):
 			#	rf = os.fdopen(r, "r")
