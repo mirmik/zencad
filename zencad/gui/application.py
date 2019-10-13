@@ -29,6 +29,9 @@ import time
 import pickle
 import runpy
 
+STDIN_FILENO = 0
+STDOUT_FILENO = 1
+
 from zencad.gui.mainwindow import MainWindow
 
 __TRACED__= False
@@ -107,8 +110,6 @@ def start_application(ipipe, opipe, tgtpath):
 	os.dup2(i, 3)
 	os.dup2(o, 4)
 
-	# TODO Абстрактизировать вызов интерпретатора для работы
-	# в других ОС.
 	interpreter = INTERPRETER
 	os.system("{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath))
 
@@ -143,12 +144,10 @@ def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session
 
 	TODO: Дополнить коментарий с подробным описанием механизма."""
 
-	i=os.dup(ipipe)
-	o=os.dup(opipe)
-	os.dup2(i, 3)
-	os.dup2(o, 4)
+	os.dup2(ipipe, STDIN_FILENO)
+	os.dup2(opipe, STDOUT_FILENO)
 
-	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=ipipe, opipe=opipe)
+	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=STDIN_FILENO, opipe=STDOUT_FILENO)
 	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
 	prescale = "--prescale" if need_prescale else ""
@@ -185,9 +184,6 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 
 	apipe = os.pipe()
 	bpipe = os.pipe()
-
-	apipe = (os.dup(apipe[0]), os.dup(apipe[1]))
-	bpipe = (os.dup(bpipe[0]), os.dup(bpipe[1]))
 
 	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
 	proc.start()
@@ -236,10 +232,10 @@ def common_unbouded_proc(scene,
 		ipipe = pipes[0]
 		opipe = pipes[1]
 
-		if MAIN_COMMUNICATOR is None:
-			MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-				ipipe=ipipe, opipe=opipe)
-			MAIN_COMMUNICATOR.start_listen()
+		#if MAIN_COMMUNICATOR is None:
+		#	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
+		#		ipipe=ipipe, opipe=opipe)
+		#	MAIN_COMMUNICATOR.start_listen()
 
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)

@@ -36,7 +36,8 @@ import random
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
-__TRACE_COMMUNICATION__ = False
+SLEEPED_OPTIMIZATION = True
+__TRACE_COMMUNICATION__ = True
 
 class ScreenWidget(QWidget):
 	def __init__(self):
@@ -105,7 +106,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			self.client_communicator.start_listen()
-		self.sleeped_client = zencad.gui.application.spawn_sleeped_client(1)
+
+		if SLEEPED_OPTIMIZATION:
+			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(1)
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
@@ -275,12 +278,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def closeEvent(self, event):
 		if self.client_communicator:
 			self.client_communicator.send({"cmd": "stopworld"})
-		if self.sleeped_client:
+		if SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.sleeped_client.send({"cmd":"stopworld"})
 		time.sleep(0.05)
 		if self.client_communicator:
 			self.client_communicator.kill()
-		if self.sleeped_client:
+		if SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.sleeped_client.kill()
 		
 
@@ -337,8 +340,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	
 		self.session_id += 1
 
-		#self.sleeped_client = None
-		if self.sleeped_client:
+		if SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
