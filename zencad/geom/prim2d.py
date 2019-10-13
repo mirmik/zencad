@@ -50,8 +50,12 @@ def polygon(pnts, wire=False):
 
 
 @lazy.lazy(cls=shape_generator)
-def textshape(*args, **kwargs):
-    return pyservoce.textshape(*args, **kwargs)
+def textshape(text, fontpath, size, center=False):
+    m = pyservoce.textshape(text, fontpath, size)
+    if center:
+        (x,y,z) = m.center()
+        m = m.translate(-x, -y, -z)
+    return m 
 
 @lazy.lazy(cls=shape_generator)
 def infplane(*args, **kwargs):
