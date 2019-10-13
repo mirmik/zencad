@@ -257,3 +257,7 @@ def rotate_array(n):
         rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)
     ]
     return multitrans(transes)
+
+
+def short_rotate(fromvec, tovec):
+    return pyservoce.short_rotate(vector3(fromvec), vector3(tovec))
