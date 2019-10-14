@@ -102,7 +102,10 @@ def main():
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
 		data = os.read(zencad.gui.application.STDIN_FILENO, 512)
-		data = pickle.loads(base64.decodestring(data))
+		try:
+			data = pickle.loads(base64.decodestring(data))
+		except:
+			print_to_stderr("Unpickle error", data)
 
 		if "cmd" in data and data["cmd"] == "stopworld":
 			return
