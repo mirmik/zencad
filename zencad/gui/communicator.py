@@ -15,7 +15,7 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
-__TRACE__ = True
+__TRACE__ = False
 
 class Communicator(QObject):
 
@@ -30,7 +30,7 @@ class Communicator(QObject):
 			self.pid = os.getpid()
 			self.ipipe = ipipe
 			self.file = io.BytesIO()
-			self.unwait_token = str(base64.b64encode(pickle.dumps("unwait")), "utf-8") + "\n"
+			#self.unwait_token = str(base64.b64encode(pickle.dumps("unwait")), "utf-8") + "\n"
 
 		def unwait(self):
 			self.event.set()
@@ -49,16 +49,16 @@ class Communicator(QObject):
 					print_to_stderr("readFile.readline() fault")
 					self.oposite_clossed.emit()
 					return
-
-				if inputdata == self.unwait_token:
-					self.unwait()
-					continue
-
+				
 				if len(inputdata) == 0:
 					self.oposite_clossed.emit()
 					return
 
 				ddd = base64.decodestring(bytes(inputdata, "utf-8"))
+				
+				if ddd == "unwait":
+					self.unwait()
+					continue
 
 				dddd = pickle.loads(ddd)
 				if dddd["cmd"] == "tobuffer":

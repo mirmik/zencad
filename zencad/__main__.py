@@ -20,7 +20,7 @@ import signal
 
 from zencad.util import print_to_stderr
 
-__MAIN_TRACE__ = True
+__MAIN_TRACE__ = False
 CONSOLE_RETRANS = True
 
 STDOUT_FILENO = zencad.gui.application.STDOUT_FILENO

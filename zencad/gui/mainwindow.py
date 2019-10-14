@@ -37,7 +37,7 @@ MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
 SLEEPED_OPTIMIZATION = True
-__TRACE_COMMUNICATION__ = True
+__TRACE_COMMUNICATION__ = False
 
 class ScreenWidget(QWidget):
 	def __init__(self):
@@ -252,7 +252,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			container = QWindow.fromWinId(winid)
 			self.cc = QWidget.createWindowContainer(container)
 			#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
-	
+
 			self.cc_window = winid
 			self.vsplitter.replaceWidget(0, self.cc)
 			self.client_communicator.send("unwait")
