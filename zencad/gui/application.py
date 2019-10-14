@@ -28,6 +28,7 @@ import sys
 import time
 import pickle
 import runpy
+import subprocess
 
 STDIN_FILENO = 0
 STDOUT_FILENO = 1
@@ -46,10 +47,10 @@ def trace(*argv):
 		print("APPTRACE: {}".format(str(argv)))
 
 def traced(func):
-	def decor(*argv, **kwargs):
-		trace(func.__name__, argv, kwargs)
-		return func(*argv, **kwargs)
-	return decor
+	#def decor(*argv, **kwargs):
+	#	trace(func.__name__, argv, kwargs)
+	#	return func(*argv, **kwargs)
+	return func
 
 @traced
 def start_main_application(tgtpath=None, presentation=False, display_mode=False):
@@ -139,17 +140,15 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	common_unbouded_proc(pipes=(ipipe[0], opipe[1]), need_prescale=True, *args, **kwargs)
 
 @traced
-def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session_id=0):
+def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	"""Создать новый поток и отправить запрос на добавление
 	его вместо предыдущего ??? 
 
 	TODO: Дополнить коментарий с подробным описанием механизма."""
 
-	os.dup2(ipipe, STDIN_FILENO)
-	os.dup2(opipe, STDOUT_FILENO)
+	#os.dup2(ipipe, STDIN_FILENO)
+	#os.dup2(opipe, STDOUT_FILENO)
 
-	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=STDIN_FILENO, opipe=STDOUT_FILENO)
-	MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
@@ -160,18 +159,21 @@ def start_worker(ipipe, opipe, path, sleeped=False, need_prescale=False, session
 	#	prescale=prescale, 
 	#	session_id=session_id)
 
-	os.system("{interpreter} -m zencad {path} --replace {prescale} {sleeped} --session_id {session_id}".format(
+	cmd = "{interpreter} -m zencad {path} --replace {prescale} {sleeped} --session_id {session_id}".format(
 		interpreter=interpreter, 
 		path=path, 
 		prescale=prescale, 
 		sleeped=sleeped,
-		session_id=session_id))
+		session_id=session_id)
 	
+	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+
 	#saved_argv = sys.argv
 	#sys.argv = cmd.split()
 	#print(sys.argv)
 	#runpy.run_path(path, run_name="__main__")
 	#sys.argv = saved_argv # restore sys.argv
+	return subproc
 
 @traced
 def spawn_sleeped_client(session_id):
@@ -183,16 +185,17 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
 
-	apipe = os.pipe()
-	bpipe = os.pipe()
+	#apipe = os.pipe()
+	#bpipe = os.pipe()
 
-	proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
-	proc.start()
+	#proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
+	#proc.start()
+	subproc = start_worker(path, sleeped, need_prescale, session_id)
 
 	communicator = zencad.gui.communicator.Communicator(
-		ipipe=bpipe[0], opipe=apipe[1])
+		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
 
-	communicator.procpid = proc.pid
+	communicator.subproc = subproc
 
 	return communicator
 

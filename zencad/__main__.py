@@ -127,6 +127,8 @@ def main():
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
+		zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
+	
 
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
