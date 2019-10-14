@@ -125,6 +125,7 @@ def main():
 		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 
 		os.write(1, bytes("test console retransling\r\n", "utf-8"))
+		print("test console retransling2")
 
 	if len(pargs.paths) == 0 and not pargs.sleeped:
 		# Если программа вызывается без указания файла, создаём gui. 
