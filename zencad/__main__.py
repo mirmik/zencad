@@ -54,10 +54,7 @@ class console_retransler(threading.Thread):
 					print_to_stderr("finish console retransler... ok")
 				return
 			try:
-				print_to_stderr("start_listen!!!")
 				inputdata = self.readFile.readline()
-				#inputdata = os.read(self.r, 512)
-				print_to_stderr("start_listen!!!... ok")
 			except:
 				if __MAIN_TRACE__:
 					print_to_stderr("finish console retransler... except")
@@ -68,9 +65,7 @@ class console_retransler(threading.Thread):
 	def finish(self):
 		if __MAIN_TRACE__:
 			print_to_stderr("finish console retransler... started")
-		#self.stop_token = True
-		#os.close(self.r)
-		#self.readFile.close()
+			
 		os.kill(self.pid, signal.SIGKILL)
 
 def main():
@@ -135,18 +130,10 @@ def main():
 		zencad.gui.application.CONSOLE_RETRANS_THREAD = console_retransler(r)
 		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 
-		os.write(1, bytes("test1 console retransling\r\n", "utf-8"))
-		sys.stdout.write("test0.5 console retransling\r\n")
-		print("test2 console retransling")
-		os.write(1, bytes("test3 console retransling\r\n", "utf-8"))
-
 	if len(pargs.paths) == 0 and not pargs.sleeped:
 		# Если программа вызывается без указания файла, создаём gui. 
 		# Режим презентации указывает gui, что оно предоставлено само себе
 		# и ему следует развлечь публику самостоятельно, не ожидая бинда виджета.
-		#thr = multiprocessing.Process(target=lambda:)
-		#thr.daemon = True
-		#thr.start()
 		if pargs.nodaemon:
 			zencad.gui.application.start_main_application(presentation=True)
 		else:
@@ -184,32 +171,6 @@ def main():
 			zencad.showapi.PRESCALE = pargs.prescale
 			zencad.showapi.SESSION_ID = int(pargs.session_id)
 			zencad.showapi.SHOWMODE = "replace"
-
-			#class stdout_proxy:
-			#	def __init__(self, stdout, communicator):
-			#		self.stdout = stdout
-			#		self.communicator = communicator
-		#
-			#	def write(self, data):
-			#		# self.stdout.write(data)
-			#		self.communicator.send({"cmd":"console", "data":data})
-		#
-			#	def flush(self):
-			#		pass
-			#		#self.stdout.flush()
-#
-			#if CONSOLE_RETRANS:
-			#	sys.stdout = stdout_proxy(sys.stdout, zencad.gui.application.MAIN_COMMUNICATOR)
-
-			#def retranslate_console(r, OLD_STDOUT):
-			#	rf = os.fdopen(r, "r")
-			#	while(1):
-			#		try:
-			#			data = rf.read()
-			#			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console", "data":data})
-			#		except:
-			#			OLD_STDOUT.write("exception\n")
-
 	
 		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 		if pargs.widget:
