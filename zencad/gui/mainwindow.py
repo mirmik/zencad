@@ -225,7 +225,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "wmarker": self.marker_handler("w", data)
 		elif cmd == "location": self.location_update_handle(data["loc"])
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
-		elif cmd == "console": self.internal_console_request(data["data"])
+		elif cmd == "console": self.internal_console_request(data["data"].decode("utf-8"))
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
 		#elif cmd == "screenshot_return": self.screen_return(data["data"])
 		#elif cmd == "settitle": self.setWindowTitle(data["arg"])

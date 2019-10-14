@@ -6,6 +6,8 @@ import base64
 import pickle
 import threading
 
+from zencad.util import print_to_stderr
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -37,14 +39,14 @@ class Communicator(QObject):
 			try:
 				readFile = os.fdopen(self.ipipe)
 			except Exception as ex:
-				print("rdopen error: ", ex, self.ipipe)
+				print_to_stderr("rdopen error: ", ex, self.ipipe)
 				exit(0)
 			
 			while(True):
 				try:
 					inputdata = readFile.readline()
 				except:
-					print("readFile.readline() fault")
+					print_to_stderr("readFile.readline() fault")
 					self.oposite_clossed.emit()
 					return
 
@@ -62,6 +64,9 @@ class Communicator(QObject):
 				if dddd["cmd"] == "tobuffer":
 					self.buffer = dddd["data"]
 					continue
+
+				if __TRACE__:
+					print_to_stderr("received", dddd)
 
 				self.newdata.emit(ddd)
 
@@ -101,7 +106,8 @@ class Communicator(QObject):
 		#print("unwait")
 
 	def send(self, obj):
-		#print("send", obj)
+		if __TRACE__:
+			print_to_stderr("communucator send: ", obj)
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)

@@ -39,6 +39,7 @@ __TRACED__= False
 INTERPRETER = sys.executable
 RETRANSLATE_THREAD = None
 MAIN_COMMUNICATOR = None
+CONSOLE_RETRANS_THREAD = None
 
 def trace(*argv):
 	if __TRACED__:
@@ -244,6 +245,9 @@ def common_unbouded_proc(scene,
 			MAIN_COMMUNICATOR.stop_listen()
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
+
+			if CONSOLE_RETRANS_THREAD:
+				CONSOLE_RETRANS_THREAD.finish()			
 
 			if close_handle:
 				close_handle()

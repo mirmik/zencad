@@ -17,37 +17,52 @@ import threading
 import multiprocessing
 import base64
 
-__MAIN_TRACE__ = False
+from zencad.util import print_to_stderr
+
+__MAIN_TRACE__ = True
 CONSOLE_RETRANS = True
-CONSOLE_RETRANS_THREAD = None
 
 STDOUT_FILENO = zencad.gui.application.STDOUT_FILENO
 STDIN_FILENO = zencad.gui.application.STDIN_FILENO
 
-def trace(*argv, **kwars):
-	if __MAIN_TRACE__: print(*argv, **kwars)
+def trace(*args):
+	if __MAIN_TRACE__: 
+		sys.stderr.write(str(args))
+		sys.stderr.write("\r\n")
+		sys.stderr.flush()
 
 class console_retransler(threading.Thread):
 	def __init__(self, r):
 		super().__init__()
 		self.r = r
+		self.stop_token = False
 
 	def run(self):
 		try:
 			readFile = os.fdopen(self.r)
 		except Exception as ex:
-			print("console_retransler::rdopen error: ", ex, self.ipipe)
+			sys.stderr.write("console_retransler::rdopen error: ", ex, self.ipipe)
+			sys.stderr.write("\r\n")
+			sys.stderr.flush()
 			exit(0)
 		
 		while(True):
-			try:
-				inputdata = readFile.readline()
-			except:
-				print("console_retransler::readFile.readline() fault")
-				self.oposite_clossed.emit()
+			if self.stop_token:
 				return
-
+			try:
+				print_to_stderr("start_listen!!!")
+				#inputdata = readFile.readline()
+				inputdata = os.read(self.r, 512)
+				print_to_stderr("start_listen!!!... ok")
+			except:
+				sys.stderr.write("console_retransler::readFile.readline() fault\r\n")
+				sys.stderr.flush()
+				return
+			
 			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console","data":inputdata})
+
+	def finish(self):
+		self.stop_token = True
 
 def main():
 	trace("__MAIN__", sys.argv)
@@ -96,9 +111,9 @@ def main():
 		os.dup2(STDOUT_FILENO, 3)
 		r, w = os.pipe()
 		#os.close(STDOUT_FILENO)
-		#os.dup2(w, STDOUT_FILENO)
+		os.dup2(w, STDOUT_FILENO)
 
-		sys.stdout = os.fdopen(STDOUT_FILENO, "w")
+		sys.stdout = os.fdopen(1, "w")
 
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
@@ -106,8 +121,10 @@ def main():
 
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
-		CONSOLE_RETRANS_THREAD = console_retransler(r)
-		CONSOLE_RETRANS_THREAD.start()
+		zencad.gui.application.CONSOLE_RETRANS_THREAD = console_retransler(r)
+		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
+
+		os.write(1, bytes("test console retransling\r\n", "utf-8"))
 
 	if len(pargs.paths) == 0 and not pargs.sleeped:
 		# Если программа вызывается без указания файла, создаём gui. 
