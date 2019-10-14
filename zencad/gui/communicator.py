@@ -15,7 +15,7 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
-__TRACE__ = False
+__TRACE__ = True
 
 class Communicator(QObject):
 

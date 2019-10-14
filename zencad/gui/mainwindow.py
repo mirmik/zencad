@@ -288,6 +288,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator.kill()
 		if SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.sleeped_client.kill()
+
+		#if self.client_pid:
+		#	os.kill(self.client_pid, signal.SIGKILL)
 		
 
 	def reopen_current(self):

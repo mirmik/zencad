@@ -71,10 +71,13 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 #	pal.setColor(QPalette.Window, QColor(160, 161, 165))
 #	app.setPalette(pal)
 
+	global MAIN_COMMUNICATOR
+	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=0, opipe=1)
+
 	if presentation == False:	
 		mw = MainWindow(
 			client_communicator=
-				zencad.gui.communicator.Communicator(ipipe=3, opipe=4),
+				MAIN_COMMUNICATOR,
 			openned_path=tgtpath,
 			display_mode=display_mode)
 		mw.show()
@@ -96,7 +99,7 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 	trace("FINISH MAIN QTAPP")
 
 @traced
-def start_application(ipipe, opipe, tgtpath):
+def start_application(tgtpath):
 	"""Запустить графическую оболочку в новом.
 
 	Переданный пайп используется для коммуникации с процессом родителем
@@ -107,13 +110,16 @@ def start_application(ipipe, opipe, tgtpath):
 	TODO: Следует убедиться, что fd обрабатыаются корректно во всех ОС
 	При необъодимости следует изменить алгоритм взаимодействия (Сокеты???)"""
 
-	i=os.dup(ipipe)
-	o=os.dup(opipe)
-	os.dup2(i, 3)
-	os.dup2(o, 4)
+	#i=os.dup(ipipe)
+	#o=os.dup(opipe)
+	#os.dup2(i, 3)
+	#os.dup2(o, 4)
 
 	interpreter = INTERPRETER
-	os.system("{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath))
+	cmd = "{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath)
+
+	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+	return subproc
 
 @traced
 def start_unbound_application(*args, tgtpath, **kwargs):
@@ -126,18 +132,14 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WINID
 
-	ipipe = os.pipe()
-	opipe = os.pipe()
+	subproc = start_application(tgtpath)
 
-	proc = multiprocessing.Process(
-		target = start_application, 
-		args=(opipe[0], ipipe[1], tgtpath))
-	proc.start()
+	communicator = zencad.gui.communicator.Communicator(
+		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
 
-	os.close(ipipe[1])
-	os.close(opipe[0])
+	MAIN_COMMUNICATOR = communicator
 
-	common_unbouded_proc(pipes=(ipipe[0], opipe[1]), need_prescale=True, *args, **kwargs)
+	common_unbouded_proc(pipes=True, need_prescale=True, *args, **kwargs)
 
 @traced
 def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
@@ -145,19 +147,10 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	его вместо предыдущего ??? 
 
 	TODO: Дополнить коментарий с подробным описанием механизма."""
-
-	#os.dup2(ipipe, STDIN_FILENO)
-	#os.dup2(opipe, STDOUT_FILENO)
-
 	
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
 	interpreter = INTERPRETER
-
-	#cmd = "python3 /home/mirmik/.local/lib/python3.6/site-packages/zencad-0.16.2-py3.6.egg/zencad/__main__.py {path} --replace {prescale} --session_id {session_id}".format(
-	#	path=path, 
-	#	prescale=prescale, 
-	#	session_id=session_id)
 
 	cmd = "{interpreter} -m zencad {path} --replace {prescale} {sleeped} --session_id {session_id}".format(
 		interpreter=interpreter, 
@@ -167,29 +160,17 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 		session_id=session_id)
 	
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-
-	#saved_argv = sys.argv
-	#sys.argv = cmd.split()
-	#print(sys.argv)
-	#runpy.run_path(path, run_name="__main__")
-	#sys.argv = saved_argv # restore sys.argv
 	return subproc
 
 @traced
 def spawn_sleeped_client(session_id):
 	return start_unbounded_worker("", session_id, False, True)
 
-
 @traced
 def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False):
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
 
-	#apipe = os.pipe()
-	#bpipe = os.pipe()
-
-	#proc = multiprocessing.Process(target = start_worker, args=(apipe[0], bpipe[1], path, sleeped, need_prescale, session_id))
-	#proc.start()
 	subproc = start_worker(path, sleeped, need_prescale, session_id)
 
 	communicator = zencad.gui.communicator.Communicator(
@@ -201,17 +182,14 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 
 @traced
 def update_unbound_application(*args, **kwargs):
-	ipipe = 3#int(os.environ["ZENCAD_IPIPE"])
-	opipe = 4#int(os.environ["ZENCAD_OPIPE"])
-
-	common_unbouded_proc(pipes=(ipipe, opipe), *args, **kwargs)
+	common_unbouded_proc(pipes=True, *args, **kwargs)
 
 @traced
 def common_unbouded_proc(scene, 
 	view=None,
 	animate=None, 
 	close_handle=None,
-	pipes=None, 
+	pipes=False, 
 	need_prescale=False, 
 	session_id=0,
 	sleeped = False):
@@ -233,14 +211,6 @@ def common_unbouded_proc(scene,
 	DISPLAY_WINID = widget
 
 	if pipes:
-		ipipe = pipes[0]
-		opipe = pipes[1]
-
-		#if MAIN_COMMUNICATOR is None:
-		#	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-		#		ipipe=ipipe, opipe=opipe)
-		#	MAIN_COMMUNICATOR.start_listen()
-
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
 
