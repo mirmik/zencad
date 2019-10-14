@@ -16,6 +16,7 @@ import subprocess
 import threading
 import multiprocessing
 import base64
+import signal
 
 from zencad.util import print_to_stderr
 
@@ -39,7 +40,8 @@ class console_retransler(threading.Thread):
 
 	def run(self):
 		try:
-			readFile = os.fdopen(self.r)
+			self.pid = os.getpid()
+			self.readFile = os.fdopen(self.r)
 		except Exception as ex:
 			sys.stderr.write("console_retransler::rdopen error: ", ex, self.ipipe)
 			sys.stderr.write("\r\n")
@@ -48,21 +50,28 @@ class console_retransler(threading.Thread):
 		
 		while(True):
 			if self.stop_token:
+				if __MAIN_TRACE__:
+					print_to_stderr("finish console retransler... ok")
 				return
 			try:
 				print_to_stderr("start_listen!!!")
-				inputdata = readFile.readline()
+				inputdata = self.readFile.readline()
 				#inputdata = os.read(self.r, 512)
 				print_to_stderr("start_listen!!!... ok")
 			except:
-				sys.stderr.write("console_retransler::readFile.readline() fault\r\n")
-				sys.stderr.flush()
+				if __MAIN_TRACE__:
+					print_to_stderr("finish console retransler... except")
 				return
 			
 			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console","data":inputdata})
 
 	def finish(self):
-		self.stop_token = True
+		if __MAIN_TRACE__:
+			print_to_stderr("finish console retransler... started")
+		#self.stop_token = True
+		#os.close(self.r)
+		#self.readFile.close()
+		os.kill(self.pid, signal.SIGKILL)
 
 def main():
 	trace("__MAIN__", sys.argv)
