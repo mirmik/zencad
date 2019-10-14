@@ -23,7 +23,8 @@ Maybe need install qt5-default, because pyqt5 has trouble with xcb plugin.
 
 Standalone Distribution
 -----------------------
-ZenCad has standalone version for Windows. (Comming Soon)
+ZenCad should have standalone version for Windows.
+You can find windows prerelise version [https://github.com/mirmik/zencad/releases/tag/wintest](here)
 
 Source code
 ---------------
