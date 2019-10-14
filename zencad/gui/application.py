@@ -271,7 +271,7 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
 		time.sleep(0.00001)
 		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
-		MAIN_COMMUNICATOR.wait()
+		#MAIN_COMMUNICATOR.wait()
 
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
