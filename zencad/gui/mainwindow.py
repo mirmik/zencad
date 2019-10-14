@@ -276,6 +276,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
+		if self.cc:
+			self.cc.close()
+
 		if self.client_communicator:
 			self.client_communicator.send({"cmd": "stopworld"})
 		if SLEEPED_OPTIMIZATION and self.sleeped_client:
