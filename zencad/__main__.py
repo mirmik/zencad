@@ -51,8 +51,8 @@ class console_retransler(threading.Thread):
 				return
 			try:
 				print_to_stderr("start_listen!!!")
-				#inputdata = readFile.readline()
-				inputdata = os.read(self.r, 512)
+				inputdata = readFile.readline()
+				#inputdata = os.read(self.r, 512)
 				print_to_stderr("start_listen!!!... ok")
 			except:
 				sys.stderr.write("console_retransler::readFile.readline() fault\r\n")
@@ -108,12 +108,12 @@ def main():
 
 	if pargs.replace and CONSOLE_RETRANS:
 		# Перебиндить stdout на третий дескриптор, а вместо него подсунуть закольцованный пайп.
-		os.dup2(STDOUT_FILENO, 3)
+		os.dup2(1, 3)
 		r, w = os.pipe()
-		#os.close(STDOUT_FILENO)
-		os.dup2(w, STDOUT_FILENO)
+		os.close(1)
+		os.dup2(w, 1)
 
-		sys.stdout = os.fdopen(1, "w")
+		sys.stdout = os.fdopen(1, "w", 1)
 
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
@@ -124,8 +124,10 @@ def main():
 		zencad.gui.application.CONSOLE_RETRANS_THREAD = console_retransler(r)
 		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 
-		os.write(1, bytes("test console retransling\r\n", "utf-8"))
-		print("test console retransling2")
+		os.write(1, bytes("test1 console retransling\r\n", "utf-8"))
+		sys.stdout.write("test0.5 console retransling\r\n")
+		print("test2 console retransling")
+		os.write(1, bytes("test3 console retransling\r\n", "utf-8"))
 
 	if len(pargs.paths) == 0 and not pargs.sleeped:
 		# Если программа вызывается без указания файла, создаём gui. 
