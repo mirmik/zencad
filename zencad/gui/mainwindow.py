@@ -292,14 +292,16 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.cc:
 			self.cc.close()
 
-		if self.client_communicator:
+		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
 			self.client_communicator.send({"cmd": "stopworld"})
+		else:
+			self.client_communicator.send({"cmd": "smooth_stopworld"})
 
 		if SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
 		time.sleep(0.05)
-		if self.client_communicator and self.client_communicator != zencad.gui.application.MAIN_COMMUNICATOR:
+		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
 			self.client_communicator.kill()
 
 		if SLEEPED_OPTIMIZATION and self.sleeped_client:
