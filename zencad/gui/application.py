@@ -41,6 +41,7 @@ STDOUT_FILENO = 1
 from zencad.gui.mainwindow import MainWindow
 
 __TRACE__= False
+__DEBUG_MODE__ = False
 
 INTERPRETER = sys.executable
 RETRANSLATE_THREAD = None
@@ -174,13 +175,15 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
+	debug_mode = "--debug" if __DEBUG_MODE__ else ""
 	interpreter = INTERPRETER
 
-	cmd = "{interpreter} -m zencad {path} --replace {prescale} {sleeped} --session_id {session_id}".format(
+	cmd = "{interpreter} -m zencad {path} --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}".format(
 		interpreter=interpreter, 
 		path=path, 
 		prescale=prescale, 
 		sleeped=sleeped,
+		debug_mode=debug_mode,
 		session_id=session_id)
 	
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
