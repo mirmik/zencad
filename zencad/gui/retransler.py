@@ -6,7 +6,7 @@ import signal
 
 from zencad.util import print_to_stderr
 
-__RETRANSLER_TRACE__ = True
+__RETRANSLER_TRACE__ = False
 
 class console_retransler(threading.Thread):
 	def __init__(self):
