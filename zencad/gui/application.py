@@ -302,13 +302,15 @@ def common_unbouded_proc(scene,
 
 	trace("Wait childs ...")
 
-	print("list of threads: ", threading.enumerate())
+	if __TRACE__:
+		print_to_stderr("list of threads: ", threading.enumerate())
 	
 	def on_terminate(proc):
 		trace("process {} finished with exit code {}".format(proc, proc.returncode))
 
 	procs = psutil.Process().children()
-	print(procs)
+	if __TRACE__:
+		print_to_stderr(procs)
 	psutil.wait_procs(procs, callback=on_terminate)
 	#for p in procs:
 	#    p.terminate()
