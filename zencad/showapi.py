@@ -13,7 +13,7 @@ SLEEPED = False
 SESSION_ID = 0
 EXECPATH = sys.argv[0]
 
-def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
+def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, **kwargs):
     """ Функция активации графической части.
 
     Может иметь разные режимы исполнения в зависимости от текущего
@@ -37,7 +37,7 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
     if SHOWMODE == "makeapp":
         # Common application start
         zencad.gui.application.start_unbound_application(
-            scene=scene, *args, tgtpath=EXECPATH, **kwargs)
+            scene=scene, *args, tgtpath=EXECPATH, debug=debug, **kwargs)
 
     elif SHOWMODE == "widget":
         # Start widget without main programm

@@ -123,7 +123,7 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 		zencad.gui.application.MAIN_COMMUNICATOR.stop_listen()
 
 @traced
-def start_application(tgtpath):
+def start_application(tgtpath, debug):
 	"""Запустить графическую оболочку в новом.
 
 	Переданный пайп используется для коммуникации с процессом родителем
@@ -139,14 +139,15 @@ def start_application(tgtpath):
 	#os.dup2(i, 3)
 	#os.dup2(o, 4)
 
+	debugstr = "--debug" if debug or __DEBUG_MODE__ else "" 
 	interpreter = INTERPRETER
-	cmd = "{} -m zencad --mainonly --tgtpath {}".format(interpreter, tgtpath)
+	cmd = "{} -m zencad --mainonly {} --tgtpath {}".format(interpreter, debugstr, tgtpath)
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 	return subproc
 
 @traced
-def start_unbound_application(*args, tgtpath, **kwargs):
+def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 	"""Основная процедура запуска.
 
 	Создаёт в отдельном процессе графическую оболочку,
@@ -155,7 +156,7 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 
 	global MAIN_COMMUNICATOR
 
-	subproc = start_application(tgtpath)
+	subproc = start_application(tgtpath, debug)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())

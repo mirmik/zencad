@@ -3,6 +3,8 @@ import os
 import sys
 import zencad
 import signal
+import psutil
+import zencad.gui.signal_os
 
 from zencad.util import print_to_stderr
 
@@ -46,10 +48,33 @@ class console_retransler(threading.Thread):
 		#os.kill(self.pid, signal.SIGKILL)
 		self.stop_token = True
 
+
+		# TODO: CHANGE FINISH MODEL
+
+		#try:
+		#	if __RETRANSLER_TRACE__:
+		#		print_to_stderr("A")
+		#	self.readFile.close()
+		#except:
+		#	if __RETRANSLER_TRACE__:
+		#		print_to_stderr("Q")
+#
+		#if __RETRANSLER_TRACE__:
+		#	print_to_stderr("L")
 		try:
-			self.readFile.close()
-		except:
-			pass
+			#	print_to_stderr("B")
+			#time.sleep(0.05)
+			zencad.gui.signal_os.kill(self.pid, zencad.gui.signal_os.sigkill)
+		except Exception as ex:
+			print_to_stderr("console_retransler on kill", ex)
+
+		if __RETRANSLER_TRACE__:
+			print_to_stderr("finish console retransler... exit")
+
+
+		#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
+		#for p in alive:
+		#    p.kill()
 
 	def do_retrans(self, old=1, new=3):
 		os.dup2(old, new)

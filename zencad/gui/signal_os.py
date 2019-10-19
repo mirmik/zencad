@@ -6,12 +6,15 @@ import signal
 if sys.platform != 'win32':
     kill = os.kill
     sleep = time.sleep
+    sigkill = signal.SIGKILL
 else: 
     # adapt the conflated API on Windows.
     import threading
 
     sigmap = {signal.SIGINT: signal.CTRL_C_EVENT,
               signal.SIGBREAK: signal.CTRL_BREAK_EVENT}
+
+    sigkill = signal.CTRL_BREAK_EVENT
 
     def kill(pid, signum):
         if signum in sigmap and pid == os.getpid():
