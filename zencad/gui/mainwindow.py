@@ -359,10 +359,15 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.replace_widget(self.screen_label)
 
 		if self.client_communicator:
-			self.client_communicator.send({"cmd": "stopworld"})
-			self.client_communicator.stop_listen()
-			time.sleep(0.05)
-			self.client_communicator.kill()
+			if self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
+				self.client_communicator.send({"cmd": "stopworld"})
+				self.client_communicator.stop_listen()
+				time.sleep(0.05)
+				self.client_communicator.kill()
+
+			else:
+				self.client_communicator.send({"cmd": "smooth_stopworld"})
+				time.sleep(0.05)
 	
 		self.session_id += 1
 
