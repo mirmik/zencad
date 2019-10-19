@@ -310,24 +310,24 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				print_to_stderr("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
-		print_to_stderr("pre sleep")
-		time.sleep(0.05)
-		print_to_stderr("post sleep")
-		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
-			if __TRACE__:
-				print_to_stderr("self.client_communicator.kill()")
-			self.client_communicator.kill()
-
-		if SLEEPED_OPTIMIZATION and self.sleeped_client:
-			if __TRACE__:
-				print_to_stderr("self.sleeped_client.kill()")
-			self.sleeped_client.kill()
-
-
-		if zencad.gui.application.RETRANSLATE_THREAD:
-			if __TRACE__:
-				print_to_stderr("zencad.gui.application.RETRANSLATE_THREAD.finish()")
-			zencad.gui.application.RETRANSLATE_THREAD.finish()
+		#print_to_stderr("pre sleep")
+		#time.sleep(0.05)
+		#print_to_stderr("post sleep")
+		#if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
+		#	if __TRACE__:
+		#		print_to_stderr("self.client_communicator.kill()")
+		#	self.client_communicator.kill()
+#
+		#if SLEEPED_OPTIMIZATION and self.sleeped_client:
+		#	if __TRACE__:
+		#		print_to_stderr("self.sleeped_client.kill()")
+		#	self.sleeped_client.kill()
+#
+#
+		#if zencad.gui.application.RETRANSLATE_THREAD:
+		#	if __TRACE__:
+		#		print_to_stderr("zencad.gui.application.RETRANSLATE_THREAD.finish()")
+		#	zencad.gui.application.RETRANSLATE_THREAD.finish()
 
 		#if self.client_pid:
 		#	os.kill(self.client_pid, signal.SIGKILL)
