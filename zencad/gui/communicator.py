@@ -109,16 +109,16 @@ class Communicator(QObject):
 			self.listener_thr.start()
 
 	def stop_listen(self):
-		try:
-			os.close(self.ipipe)
-		except:
-			pass
-			#print("Warn: os.close(self.ipipe) is fault")
-
-		try:
-			os.close(self.opipe)
-		except:
-			pass
+		#try:
+		#	os.close(self.ipipe)
+		#except:
+		#	pass
+		#	#print("Warn: os.close(self.ipipe) is fault")
+#
+		#try:
+		#	os.close(self.opipe)
+		#except:
+		#	pass
 			#print("Warn: os.close(self.opipe) is fault")
 
 		self.listener_thr.event.set()
