@@ -16,6 +16,8 @@ import math
 import threading
 import pyservoce
 
+from zencad.util import print_to_stderr
+
 __TRACE__ = False
 
 def trace(*argv):
@@ -364,6 +366,8 @@ class DisplayWidget(QGLWidget):
 		marker.set_location(zencad.translate(x, y, z))
 		marker.hide(x == 0 and y == 0 and z == 0)
 
+		self.redraw()
+
 	def zoom_down(self, koeff):
 		self.view.set_scale(self.view.scale()*(1/koeff))
 		self.location_changed_handle()
@@ -395,7 +399,8 @@ class DisplayWidget(QGLWidget):
 	def external_communication_command(self, data):
 		cmd = data["cmd"]
 
-		#print("external_command:", data)
+		if __TRACE__:
+			print_to_stderr("external_command:", data)
 
 		if cmd == "autoscale": self.autoscale()
 		elif cmd == "resetview": self.reset_orient()
@@ -408,7 +413,8 @@ class DisplayWidget(QGLWidget):
 		elif cmd == "to_freecad": self.addon_to_freecad_action()
 		elif cmd == "tracking": self.tracking_mode = data["en"]
 		elif cmd == "screenshot": self.addon_screenshot_upload()
-
+		elif cmd == "console": sys.stdout.write(data["data"])
+			
 		else:
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
 

@@ -15,15 +15,17 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
-__TRACE__ = True
+__TRACE__ = False
 
 class Communicator(QObject):
 
 	class Listener(QThread):
 		oposite_clossed = pyqtSignal()
 		newdata = pyqtSignal(bytes)
-		def __init__(self, ipipe):
+		def __init__(self, ipipe, parent):
 			super().__init__()
+			#self.name = "Listener"
+			self.parent = parent
 			#self.lock = threading.RLock()
 			#self.condition = threading.Condition(self.lock)
 			self.event = threading.Event()
@@ -54,8 +56,11 @@ class Communicator(QObject):
 					self.oposite_clossed.emit()
 					return
 
-				ddd = base64.decodestring(bytes(inputdata, "utf-8"))
-				dddd = pickle.loads(ddd)
+				try:
+					ddd = base64.decodestring(bytes(inputdata, "utf-8"))
+					dddd = pickle.loads(ddd)
+				except:
+					print_to_stderr("Unpicling:", ddd)
 
 				if dddd == "unwait":
 					self.unwait()
@@ -65,8 +70,13 @@ class Communicator(QObject):
 					self.buffer = dddd["data"]
 					continue
 
+				if dddd["cmd"] == "set_opposite_pid":
+					self.procpid = dddd["data"]
+					continue
+
+
 				if __TRACE__:
-					print_to_stderr("received", dddd)
+					print_to_stderr("received {}: {}".format(self.procpid, dddd))
 
 				self.newdata.emit(ddd)
 
@@ -76,15 +86,22 @@ class Communicator(QObject):
 		self.subproc = None
 		self.ipipe = ipipe
 		self.opipe = opipe
-		self.listener_thr = self.Listener(ipipe)
+		self.listener_thr = self.Listener(ipipe, self)
 		self.newdata = self.listener_thr.newdata
 		self.oposite_clossed = self.listener_thr.oposite_clossed
+		self.listen_started = False
+
+		self.send({"cmd":"set_opposite_pid", "data":os.getpid()})
 
 	def naive_connect(self, handle):
 		pass
 
 	def start_listen(self):
-		self.listener_thr.start()
+		if self.listen_started:
+			pass
+		else:
+			self.listen_started = True
+			self.listener_thr.start()
 
 	def stop_listen(self):
 		try:
@@ -108,13 +125,13 @@ class Communicator(QObject):
 
 	def send(self, obj):
 		if __TRACE__:
-			print_to_stderr("communucator send: ", obj)
+			print_to_stderr("communucator send to {}: {}".format(self.procpid, obj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
 		except Exception as ex:
 			if __TRACE__:
-				print_to_stderr("Exception on send", obj)
+				print_to_stderr("Exception on send", self.procpid, obj, ex)
 			self.stop_listen()
 			#print("Warn: communicator send error", obj, ex)
 		#os.flush(self.opipe)

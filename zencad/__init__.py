@@ -31,6 +31,16 @@ from zencad.geom.prim1d import *
 from zencad.geom.ops3d import *
 from zencad.geom.ops1d2d import *
 
+#__DEFAULT_TRACE__ = True
+#
+#def enable_trace(en):
+#    #import zencad.__main__
+#    zencad.gui.application.__TRACED__ = en
+#    zencad.gui.retransler.__RETRANSLER_TRACE__ = en
+#    zencad.gui.mainwindow.__TRACE__ = en
+#
+#enable_trace(__DEFAULT_TRACE__)
+
 def gr(grad):
     print("'gr' function is deprecated. Use 'deg' instead")
     return float(grad) / 180.0 * math.pi

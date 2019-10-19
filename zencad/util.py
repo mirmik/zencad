@@ -5,7 +5,7 @@ import os
 import sys
 
 def print_to_stderr(*args):
-    sys.stderr.write("STDERR: ")
+    sys.stderr.write("STDERR {}: ".format(os.getpid()))
     sys.stderr.write(str(args))
     sys.stderr.write("\r\n")
     sys.stderr.flush()
