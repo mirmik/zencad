@@ -539,8 +539,8 @@ def standalone(*args, **kwargs):
 
 def screenshot_return_send_dec(communicator):
 	def screenshot_return_send(arg, size):
-		communicator.send({"cmd":"tobuffer", "data": (arg, size) })
-		communicator.unwait()
+		#communicator.send({"cmd":"tobuffer", "data": (arg, size) })
+		communicator.send({"cmd":"finish_screen", "data": (arg, size)})
 	return screenshot_return_send
 
 def bind_widget_signal(widget, communicator):

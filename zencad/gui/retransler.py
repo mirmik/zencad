@@ -70,15 +70,9 @@ class console_retransler(QThread):
 		# TODO: CHANGE FINISH MODEL
 
 		try:
-			if __RETRANSLER_TRACE__:
-				print_to_stderr("A")
-
-			print_to_stderr("A")
 			os.close(self.readFile.fileno())
-			print_to_stderr("A")
 		except:
-			if __RETRANSLER_TRACE__:
-				print_to_stderr("Q")
+			pass
 #
 		#if __RETRANSLER_TRACE__:
 		#	print_to_stderr("L")

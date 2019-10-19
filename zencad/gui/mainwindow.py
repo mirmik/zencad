@@ -231,6 +231,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
+		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1])
 		#elif cmd == "screenshot_return": self.screen_return(data["data"])
 		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
 		else:
@@ -343,24 +344,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator = None
 
 		if self.cc_window and self.open_in_progress is False:
-			screen = self.screen()
-			painter = QPainter(screen)
-			painter.setPen(Qt.green)
-			font = QFont()
-			font.setPointSize(12)
-			painter.setFont(font)
-			message = "Loading... please wait."
-			painter.drawText(
-				QPoint(
-					screen.width()/2 - QFontMetrics(font).width(message)/2,
-					QFontMetrics(font).height()), 
-				message)
-			painter.end()
-	
-			self.screen_label = QLabel()
-			self.screen_label.setPixmap(screen)
+			self.start_screen()
+		#	time.sleep(0.3)
 
-			self.replace_widget(self.screen_label)
+		else:
+			self.open_bottom_half()
+
+	def open_bottom_half(self):
+		path = self.current_opened
 
 		if self.client_communicator:
 			if self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
@@ -392,15 +383,42 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.open_in_progress = True
 		self.openlock.release()
 
-	def screen(self):
-		screen = QGuiApplication.primaryScreen()
-		p = screen.grabWindow(self.cc_window)
+	def start_screen(self):
+		#screen = QGuiApplication.primaryScreen()
+		#p = screen.grabWindow(self.cc_window)
 
 		self.client_communicator.send({"cmd":"screenshot"})
-		self.client_communicator.wait()
+		#self.client_communicator.wait()
 
-		btes, size = self.client_communicator.rpc_buffer()		
-		return QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+	
+	def finish_screen(self, data, size):
+		btes, size = data, size#self.client_communicator.rpc_buffer()		
+		screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+
+		#if self.open_in_progress == False:
+		#	return
+		
+		painter = QPainter(screen)
+		painter.setPen(Qt.green)
+		font = QFont()
+		font.setPointSize(12)
+		painter.setFont(font)
+		message = "Loading... please wait."
+		painter.drawText(
+			QPoint(
+				screen.width()/2 - QFontMetrics(font).width(message)/2,
+				QFontMetrics(font).height()), 
+			message)
+		painter.end()
+	
+		self.screen_label = QLabel()
+		self.screen_label.setPixmap(screen)
+
+		#if self.open_in_progress == False:
+		#	return
+
+		self.replace_widget(self.screen_label)
+		self.open_bottom_half()
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]
