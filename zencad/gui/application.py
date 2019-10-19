@@ -212,6 +212,9 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 def update_unbound_application(*args, **kwargs):
 	common_unbouded_proc(pipes=True, *args, **kwargs)
 
+def on_terminate(proc):
+	trace("process {} finished with exit code {}".format(proc, proc.returncode))
+
 @traced
 def common_unbouded_proc(scene, 
 	view=None,
@@ -239,9 +242,6 @@ def common_unbouded_proc(scene,
 		need_prescale=need_prescale)
 	DISPLAY_WINID = widget
 
-	def on_terminate(proc):
-		trace("process {} finished with exit code {}".format(proc, proc.returncode))
-		
 	if pipes:
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
