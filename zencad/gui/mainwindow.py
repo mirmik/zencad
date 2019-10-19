@@ -278,7 +278,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 					info("restore saved eye location")
 		
 				self.open_in_progress = False
-				self.update()
+				self.client_communicator.send({"cmd":"redraw"})
 			except Exception as ex:
 				print_to_stderr("exception on window bind", ex)
 
