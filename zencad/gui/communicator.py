@@ -133,7 +133,9 @@ class Communicator(QObject):
 			print_to_stderr("communucator send to {}: {}".format(self.procpid, obj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
+			print_to_stderr("a")
 			os.write(self.opipe, sendstr)
+			print_to_stderr("b")
 		except Exception as ex:
 			if __TRACE__:
 				print_to_stderr("Exception on send", self.procpid, obj, ex)
