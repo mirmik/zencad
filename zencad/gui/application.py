@@ -330,6 +330,7 @@ def common_unbouded_proc(scene,
 	widget.widget_closed.connect(_clossed)
 
 	widget.show()
+	#widget.hide()
 	app.exec()
 	trace("FINISH UNBOUNDED QTAPP")
 

@@ -252,26 +252,30 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if __TRACE__:
 			print_to_stderr("bind_window")
 		with self.openlock:
-			if session_id != self.session_id:
-				return
+			try:
+				if session_id != self.session_id:
+					return
+		
+				container = QWindow.fromWinId(winid)
+				self.cc = QWidget.createWindowContainer(container)
+				#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
 	
-			container = QWindow.fromWinId(winid)
-			self.cc = QWidget.createWindowContainer(container)
-			#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
-
-			self.cc_window = winid
-			self.vsplitter.replaceWidget(0, self.cc)
-			#self.client_communicator.send("unwait")
-			self.client_pid = pid
-			self.setWindowTitle(self.current_opened)
-	
-			#info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
-			info("window bind success")
-			if not self.need_prescale and self.last_location is not None:
-				self.client_communicator.send({"cmd":"location", "dct": self.last_location})
-				info("restore saved eye location")
-	
-			self.open_in_progress = False
+				self.cc_window = winid
+				self.vsplitter.replaceWidget(0, self.cc)
+				#self.client_communicator.send("unwait")
+				self.client_pid = pid
+				self.setWindowTitle(self.current_opened)
+		
+				#info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
+				info("window bind success")
+				if not self.need_prescale and self.last_location is not None:
+					self.client_communicator.send({"cmd":"location", "dct": self.last_location})
+					info("restore saved eye location")
+		
+				self.open_in_progress = False
+				self.update()
+			except Exception as ex:
+				print_to_stderr("exception on window bind", ex)
 
 
 	def replace_widget(self, wdg):
