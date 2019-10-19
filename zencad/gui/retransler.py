@@ -43,7 +43,13 @@ class console_retransler(threading.Thread):
 		if __RETRANSLER_TRACE__:
 			print_to_stderr("finish console retransler... started")
 			
-		os.kill(self.pid, signal.SIGKILL)
+		#os.kill(self.pid, signal.SIGKILL)
+		self.stop_token = True
+
+		try:
+			self.readFile.close()
+		except:
+			pass
 
 	def do_retrans(self, old=1, new=3):
 		os.dup2(old, new)
