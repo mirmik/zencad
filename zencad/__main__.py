@@ -8,6 +8,7 @@ import zencad.showapi
 import zencad.gui.application
 import zencad.gui.viewadaptor
 import zencad.gui.retransler
+import zencad.gui.mainwindow
 import pyservoce.trace
 import runpy
 
@@ -36,10 +37,28 @@ def trace(*args):
 		sys.stderr.write("\r\n")
 		sys.stderr.flush()
 
+def finish_procedure():
+	trace("MAIN FINISH")
 
-def main():
-	trace("__MAIN__", sys.argv)
+	trace("MAIN: Wait childs ...")
+	trace("MAIN:  list of threads: ", threading.enumerate())
 
+	if zencad.gui.application.CONSOLE_RETRANS_THREAD:
+		zencad.gui.application.CONSOLE_RETRANS_THREAD.finish()
+	
+	def on_terminate(proc):
+		trace("process {} finished with exit code {}".format(proc, proc.returncode))
+	
+	procs = psutil.Process().children()
+	psutil.wait_procs(procs, callback=on_terminate)
+	#for p in procs:
+	#    p.terminate()
+	#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
+	#for p in alive:
+	#    p.kill()
+	trace("MAIN: Wait childs ... OK")
+
+def do_main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
@@ -49,10 +68,21 @@ def main():
 	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--tgtpath")
+	parser.add_argument("--debug", action="store_true")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 
+	if pargs.debug:
+		global __MAIN_TRACE__
+		zencad.gui.application.__DEBUG_MODE__ = True
+		__MAIN_TRACE__ = True
+		zencad.gui.application.__TRACE__ = True
+		zencad.gui.retransler.__RETRANSLER_TRACE__ = True
+		zencad.gui.viewadaptor.__TRACE__ = True
+		zencad.gui.mainwindow.__TRACE__ = True
+
+	trace("__MAIN__", sys.argv)
 	trace(pargs)
 
 	pargs.nodaemon = True
@@ -65,28 +95,7 @@ def main():
 			print_to_stderr("Error: mainonly mode without tgtpath")
 			exit(0)
 
-		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)
-		trace("MAIN FINISH")
-
-		trace("MAIN: Wait childs ...")
-		trace("MAIN:  list of threads: ", threading.enumerate())
-
-		if zencad.gui.application.CONSOLE_RETRANS_THREAD:
-			zencad.gui.application.CONSOLE_RETRANS_THREAD.finish()
-	
-		def on_terminate(proc):
-			trace("process {} finished with exit code {}".format(proc, proc.returncode))
-	
-		procs = psutil.Process().children()
-		psutil.wait_procs(procs, callback=on_terminate)
-		#for p in procs:
-		#    p.terminate()
-		#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
-		#for p in alive:
-		#    p.kill()
-	
-	
-		trace("MAIN: Wait childs ... OK")
+		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
 	if pargs.replace and CONSOLE_RETRANS:
@@ -184,9 +193,14 @@ def main():
 	
 	trace("AFTER RUNPY")
 
+def main():
+	do_main()
+	finish_procedure()
+	print_to_stderr("EXIT")
+	exit(0)
+
 if __name__ == "__main__":
 	setproctitle.setproctitle("zencad")
 	main()
 
-	print_to_stderr("EXIT")
-	exit(0)
+	
