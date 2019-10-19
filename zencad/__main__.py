@@ -69,6 +69,7 @@ def do_main():
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--tgtpath")
 	parser.add_argument("--debug", action="store_true")
+	parser.add_argument("--debugcomm", action="store_true")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
@@ -81,6 +82,9 @@ def do_main():
 		zencad.gui.retransler.__RETRANSLER_TRACE__ = True
 		zencad.gui.viewadaptor.__TRACE__ = True
 		zencad.gui.mainwindow.__TRACE__ = True
+
+	if pargs.debugcomm:
+		zencad.gui.communicator.__TRACE__ = True
 
 	trace("__MAIN__", sys.argv)
 	trace(pargs)
@@ -196,7 +200,7 @@ def do_main():
 def main():
 	do_main()
 	finish_procedure()
-	print_to_stderr("EXIT")
+	trace("EXIT")
 	exit(0)
 
 if __name__ == "__main__":

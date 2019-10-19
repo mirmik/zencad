@@ -67,9 +67,9 @@ class Communicator(QObject):
 					self.unwait()
 					continue
 
-				if dddd["cmd"] == "tobuffer":
-					self.buffer = dddd["data"]
-					continue
+				#if dddd["cmd"] == "tobuffer":
+				#	self.buffer = dddd["data"]
+				#	continue
 
 				if dddd["cmd"] == "smooth_stopworld":
 					self.parent.smooth_stop.emit()
