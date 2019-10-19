@@ -239,6 +239,9 @@ def common_unbouded_proc(scene,
 		need_prescale=need_prescale)
 	DISPLAY_WINID = widget
 
+	def on_terminate(proc):
+		trace("process {} finished with exit code {}".format(proc, proc.returncode))
+		
 	if pipes:
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
@@ -334,9 +337,6 @@ def common_unbouded_proc(scene,
 
 	if __TRACE__:
 		print_to_stderr("list of threads: ", threading.enumerate())
-	
-	def on_terminate(proc):
-		trace("process {} finished with exit code {}".format(proc, proc.returncode))
 
 	procs = psutil.Process().children()
 	if __TRACE__:
