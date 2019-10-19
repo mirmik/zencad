@@ -5,7 +5,9 @@ import os
 import sys
 import zencad
 import zencad.showapi
+import zencad.gui.application
 import zencad.gui.viewadaptor
+import zencad.gui.retransler
 import pyservoce.trace
 import runpy
 
@@ -15,13 +17,15 @@ import argparse
 import subprocess
 import threading
 import multiprocessing
+import setproctitle
 import base64
+import psutil
 import signal
 
 from zencad.util import print_to_stderr
 
-__MAIN_TRACE__ = False
 CONSOLE_RETRANS = True
+__MAIN_TRACE__ = False
 
 STDOUT_FILENO = zencad.gui.application.STDOUT_FILENO
 STDIN_FILENO = zencad.gui.application.STDIN_FILENO
@@ -32,41 +36,6 @@ def trace(*args):
 		sys.stderr.write("\r\n")
 		sys.stderr.flush()
 
-class console_retransler(threading.Thread):
-	def __init__(self, r):
-		super().__init__()
-		self.r = r
-		self.stop_token = False
-
-	def run(self):
-		try:
-			self.pid = os.getpid()
-			self.readFile = os.fdopen(self.r)
-		except Exception as ex:
-			sys.stderr.write("console_retransler::rdopen error: ", ex, self.ipipe)
-			sys.stderr.write("\r\n")
-			sys.stderr.flush()
-			exit(0)
-		
-		while(True):
-			if self.stop_token:
-				if __MAIN_TRACE__:
-					print_to_stderr("finish console retransler... ok")
-				return
-			try:
-				inputdata = self.readFile.readline()
-			except:
-				if __MAIN_TRACE__:
-					print_to_stderr("finish console retransler... except")
-				return
-			
-			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console","data":inputdata})
-
-	def finish(self):
-		if __MAIN_TRACE__:
-			print_to_stderr("finish console retransler... started")
-			
-		os.kill(self.pid, signal.SIGKILL)
 
 def main():
 	trace("__MAIN__", sys.argv)
@@ -93,10 +62,38 @@ def main():
 	# TODO: переименовать режим.
 	if pargs.mainonly:
 		if pargs.tgtpath == None:
-			print("Error: mainonly mode without tgtpath")
+			print_to_stderr("Error: mainonly mode without tgtpath")
 			exit(0)
 
-		return zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True)
+		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)
+		trace("MAIN FINISH")
+
+		trace("MAIN: Wait childs ...")
+		trace("MAIN:  list of threads: ", threading.enumerate())
+
+		if zencad.gui.application.CONSOLE_RETRANS_THREAD:
+			zencad.gui.application.CONSOLE_RETRANS_THREAD.finish()
+	
+		def on_terminate(proc):
+			trace("process {} finished with exit code {}".format(proc, proc.returncode))
+	
+		procs = psutil.Process().children()
+		psutil.wait_procs(procs, callback=on_terminate)
+		#for p in procs:
+		#    p.terminate()
+		#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
+		#for p in alive:
+		#    p.kill()
+	
+	
+		trace("MAIN: Wait childs ... OK")
+		return
+
+	if pargs.replace and CONSOLE_RETRANS:
+		# Теперь можно сделать поток для обработки данных, которые программа собирается 
+		# посылать в stdout
+		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
+		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
@@ -106,32 +103,28 @@ def main():
 			data = pickle.loads(base64.decodestring(data))
 		except:
 			print_to_stderr("Unpickle error", data)
+			exit(0)			
 
 		if "cmd" in data and data["cmd"] == "stopworld":
 			return
 
-		pargs.prescale = data["need_prescale"]
-		pargs.paths = [data["path"]]
+		try:
+			pargs.prescale = data["need_prescale"]
+			pargs.paths = [data["path"]]
+		except:
+			print_to_stderr("Unpickle error_2", data)
+			exit(0)			
 
 	if pargs.replace and CONSOLE_RETRANS:
-		# Перебиндить stdout на третий дескриптор, а вместо него подсунуть закольцованный пайп.
-		os.dup2(1, 3)
-		r, w = os.pipe()
-		os.close(1)
-		os.dup2(w, 1)
 
-		sys.stdout = os.fdopen(1, "w", 1)
-
+		# Теперь можно сделать поток для обработки данных, которые программа собирается 
+		# посылать в stdout
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 		zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
 
-		# Теперь можно сделать поток для обработки данных, которые программа собирается 
-		# посылать в stdout
-		zencad.gui.application.CONSOLE_RETRANS_THREAD = console_retransler(r)
-		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 
 	if len(pargs.paths) == 0 and not pargs.sleeped:
 		# Если программа вызывается без указания файла, создаём gui. 
@@ -192,4 +185,8 @@ def main():
 	trace("AFTER RUNPY")
 
 if __name__ == "__main__":
+	setproctitle.setproctitle("zencad")
 	main()
+
+	print_to_stderr("EXIT")
+	exit(0)

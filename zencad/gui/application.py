@@ -8,6 +8,7 @@ import zencad.gui.viewadaptor
 import zencad.gui.startwdg
 import zencad.gui.communicator
 import zencad.gui.actions
+import zencad.gui.retransler
 
 import zencad.lazifier
 import zencad.opengl
@@ -21,10 +22,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from zencad.util import print_to_stderr
+
 import setproctitle
+import psutil
 import multiprocessing
 import os
 import sys
+import threading
 import time
 import pickle
 import runpy
@@ -35,7 +40,7 @@ STDOUT_FILENO = 1
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACED__= False
+__TRACE__= False
 
 INTERPRETER = sys.executable
 RETRANSLATE_THREAD = None
@@ -43,8 +48,8 @@ MAIN_COMMUNICATOR = None
 CONSOLE_RETRANS_THREAD = None
 
 def trace(*argv):
-	if __TRACED__:
-		print("APPTRACE: {}".format(str(argv)))
+	if __TRACE__:
+		print_to_stderr("APPTRACE: {}".format(str(argv)))
 
 def traced(func):
 	#def decor(*argv, **kwargs):
@@ -53,13 +58,14 @@ def traced(func):
 	return func
 
 @traced
-def start_main_application(tgtpath=None, presentation=False, display_mode=False):
+def start_main_application(tgtpath=None, presentation=False, display_mode=False, console_retrans=False):
 	"""Запустить графический интерфейс в текущем потоке.
 
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
 	вызывающий поток."""
 
 	setproctitle.setproctitle("zencad")
+	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
 
 	app = QApplication([])
 	
@@ -71,10 +77,24 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 #	pal.setColor(QPalette.Window, QColor(160, 161, 165))
 #	app.setPalette(pal)
 
-	global MAIN_COMMUNICATOR
-	MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=0, opipe=1)
+	#trace("START MAIN Communicator ????")
+	#global MAIN_COMMUNICATOR
+	#MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=0, opipe=1)
 
+	trace("START MAIN WIDGET")
 	if presentation == False:	
+		communicator_out = 1
+
+		if console_retrans:
+			trace("start_main_application::console_retrans")			
+			zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
+			zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
+			communicator_out = 3
+
+		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
+			ipipe=zencad.gui.application.STDIN_FILENO, opipe=communicator_out)
+		#zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
+
 		mw = MainWindow(
 			client_communicator=
 				MAIN_COMMUNICATOR,
@@ -97,6 +117,9 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False)
 	mw.show()
 	app.exec()
 	trace("FINISH MAIN QTAPP")
+
+	if zencad.gui.application.MAIN_COMMUNICATOR:
+		zencad.gui.application.MAIN_COMMUNICATOR.stop_listen()
 
 @traced
 def start_application(tgtpath):
@@ -130,7 +153,6 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 	Для коммуникации между процессами создаётся pipe"""
 
 	global MAIN_COMMUNICATOR
-	global DISPLAY_WINID
 
 	subproc = start_application(tgtpath)
 
@@ -138,6 +160,8 @@ def start_unbound_application(*args, tgtpath, **kwargs):
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
 
 	MAIN_COMMUNICATOR = communicator
+
+	communicator.subproc = subproc
 
 	common_unbouded_proc(pipes=True, need_prescale=True, *args, **kwargs)
 
@@ -195,6 +219,7 @@ def common_unbouded_proc(scene,
 	sleeped = False):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
+	trace("common_unbouded_proc")
 	setproctitle.setproctitle("zencad")
 
 	ANIMATE_THREAD = None
@@ -215,6 +240,8 @@ def common_unbouded_proc(scene,
 			widget, MAIN_COMMUNICATOR)
 
 		def stop_world():
+			if __TRACE__:
+				print_to_stderr("common_unbouded_proc::stop_world")
 			MAIN_COMMUNICATOR.stop_listen()
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -231,15 +258,20 @@ def common_unbouded_proc(scene,
 
 
 		def receiver(data):
-			data = pickle.loads(data)
-			if data["cmd"] == "stopworld": 
-				stop_world()
-			else:
-				widget.external_communication_command(data)
+			if __TRACE__:
+				print_to_stderr("common_unbouded_proc::receiver")
+			try:
+				data = pickle.loads(data)
+				if data["cmd"] == "stopworld": 
+					stop_world()
+				else:
+					widget.external_communication_command(data)
+			except Exception as ex:
+				print_to_stderr("common_unbouded_proc::receiver", ex)
 
 		MAIN_COMMUNICATOR.newdata.connect(receiver)
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
-		time.sleep(0.00001)
+		#time.sleep(2)
 		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
 		#MAIN_COMMUNICATOR.wait()
 
@@ -257,6 +289,32 @@ def common_unbouded_proc(scene,
 	if close_handle:
 		widget.widget_closed.connect(close_handle)
 
+	MAIN_COMMUNICATOR.start_listen()
+
+	def _clossed():
+		print("CLOSSED!!!")
+
+	widget.widget_closed.connect(_clossed)
+
 	widget.show()
 	app.exec()
 	trace("FINISH UNBOUNDED QTAPP")
+
+	trace("Wait childs ...")
+
+	print("list of threads: ", threading.enumerate())
+	
+	def on_terminate(proc):
+		trace("process {} finished with exit code {}".format(proc, proc.returncode))
+
+	procs = psutil.Process().children()
+	print(procs)
+	psutil.wait_procs(procs, callback=on_terminate)
+	#for p in procs:
+	#    p.terminate()
+	#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
+	#for p in alive:
+	#    p.kill()
+
+
+	trace("Wait childs ... OK")
