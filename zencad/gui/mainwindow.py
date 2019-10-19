@@ -310,7 +310,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				print_to_stderr("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
+		print_to_stderr("pre sleep")
 		time.sleep(0.05)
+		print_to_stderr("post sleep")
 		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
 			if __TRACE__:
 				print_to_stderr("self.client_communicator.kill()")
