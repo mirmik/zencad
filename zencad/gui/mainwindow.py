@@ -257,11 +257,15 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				if session_id != self.session_id:
 					return
 		
+				if __TRACE__:
+					print_to_stderr("bind window")
 				container = QWindow.fromWinId(winid)
 				self.cc = QWidget.createWindowContainer(container)
 				#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
 	
 				self.cc_window = winid
+				if __TRACE__:
+					print_to_stderr("replace widget")
 				self.vsplitter.replaceWidget(0, self.cc)
 				#self.client_communicator.send("unwait")
 				self.client_pid = pid
