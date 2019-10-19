@@ -7,10 +7,28 @@ import psutil
 import zencad.gui.signal_os
 
 from zencad.util import print_to_stderr
+from threading import Timer
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 __RETRANSLER_TRACE__ = False
 
-class console_retransler(threading.Thread):
+def run_with_timeout(timeout, default, f, *args, **kwargs):
+	if not timeout:
+		return f(*args, **kwargs)
+	try:
+		timeout_timer = Timer(timeout, threading.interrupt_main)
+		timeout_timer.start()
+		result = f(*args, **kwargs)
+		return result
+	except KeyboardInterrupt:
+		return default
+	finally:
+		timeout_timer.cancel()
+
+class console_retransler(QThread):
 	def __init__(self):
 		super().__init__()
 		self.name = "console_retransler"
@@ -51,25 +69,28 @@ class console_retransler(threading.Thread):
 
 		# TODO: CHANGE FINISH MODEL
 
-		#try:
-		#	if __RETRANSLER_TRACE__:
-		#		print_to_stderr("A")
-		#	self.readFile.close()
-		#except:
-		#	if __RETRANSLER_TRACE__:
-		#		print_to_stderr("Q")
+		try:
+			if __RETRANSLER_TRACE__:
+				print_to_stderr("A")
+
+			print_to_stderr("A")
+			os.close(self.readFile.fileno())
+			print_to_stderr("A")
+		except:
+			if __RETRANSLER_TRACE__:
+				print_to_stderr("Q")
 #
 		#if __RETRANSLER_TRACE__:
 		#	print_to_stderr("L")
-		try:
-			#	print_to_stderr("B")
-			#time.sleep(0.05)
-			zencad.gui.signal_os.kill(self.pid, zencad.gui.signal_os.sigkill)
-		except Exception as ex:
-			print_to_stderr("console_retransler on kill", ex)
-
-		if __RETRANSLER_TRACE__:
-			print_to_stderr("finish console retransler... exit")
+		#try:
+		#	#	print_to_stderr("B")
+		#	#time.sleep(0.05)
+		#	zencad.gui.signal_os.kill(self.pid, zencad.gui.signal_os.sigkill)
+		#except Exception as ex:
+		#	print_to_stderr("console_retransler on kill", ex)
+#
+		#if __RETRANSLER_TRACE__:
+		#	print_to_stderr("finish console retransler... exit")
 
 
 		#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
