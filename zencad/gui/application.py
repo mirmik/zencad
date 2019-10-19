@@ -243,6 +243,31 @@ def common_unbouded_proc(scene,
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
 
+
+		def smooth_stop_world():
+			if __TRACE__:
+				print_to_stderr("common_unbouded_proc::smooth_stop_world")
+			
+			if ANIMATE_THREAD:
+				ANIMATE_THREAD.finish()
+
+			if close_handle:
+				close_handle()
+
+			procs = psutil.Process().children()
+			if __TRACE__:
+				print_to_stderr(procs)
+			psutil.wait_procs(procs, callback=on_terminate)
+
+			MAIN_COMMUNICATOR.stop_listen()
+			
+			if CONSOLE_RETRANS_THREAD:
+				CONSOLE_RETRANS_THREAD.finish()			
+			
+			trace("FINISH UNBOUNDED QTAPP : app quit on receive")
+			app.quit()
+			trace("app quit on receive... after")
+
 		def stop_world():
 			if __TRACE__:
 				print_to_stderr("common_unbouded_proc::stop_world")
@@ -275,6 +300,7 @@ def common_unbouded_proc(scene,
 
 		MAIN_COMMUNICATOR.newdata.connect(receiver)
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
+		MAIN_COMMUNICATOR.smooth_stop.connect(smooth_stop_world)
 		#time.sleep(2)
 		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
 		#MAIN_COMMUNICATOR.wait()

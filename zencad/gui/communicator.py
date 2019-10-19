@@ -18,6 +18,7 @@ import signal
 __TRACE__ = False
 
 class Communicator(QObject):
+	smooth_stop = pyqtSignal()
 
 	class Listener(QThread):
 		oposite_clossed = pyqtSignal()
@@ -68,6 +69,10 @@ class Communicator(QObject):
 
 				if dddd["cmd"] == "tobuffer":
 					self.buffer = dddd["data"]
+					continue
+
+				if dddd["cmd"] == "smooth_stopworld":
+					self.parent.smooth_stop.emit()
 					continue
 
 				if dddd["cmd"] == "set_opposite_pid":
