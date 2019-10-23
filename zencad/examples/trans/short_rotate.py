@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZenCad API example: short_rotate
-last update: 13.10.2019
+last update: 24.10.2019
 
 Detail:
 Short rotate application example.
