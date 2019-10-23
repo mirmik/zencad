@@ -69,8 +69,30 @@ def examples_paths():
 
     root = os.path.join(zencad.moduledir, "examples")
     for path, subdirs, files in os.walk(root):
+        subdirs[:] = [d for d in subdirs if not d.startswith('__pycache__')]
         for name in files:
             if os.path.splitext(name)[1] == ".py":
                 ret.append(os.path.join(path, name))
 
     return ret
+
+def examples_dict(root = None):
+    import zencad
+    if root is None:
+        root = os.path.join(zencad.moduledir, "examples")
+
+    dct = {}
+    dct["__files__"] = set()
+
+    for d in os.listdir(root):
+        dpath = os.path.join(root, d)
+
+        if d == "__pycache__" or d == "fonts":
+            continue
+
+        if os.path.isdir(dpath):
+            dct[d] = examples_dict(dpath)
+        else:
+            dct["__files__"].add(d)
+
+    return dct

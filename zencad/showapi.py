@@ -54,7 +54,9 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
     else:
         raise Exception("undeclared SHOWMODE")
 
-def display(shp, color=Color(0.6, 0.6, 0.8), deep=True):
+default_color = zencad.gui.settings.Settings.get_default_color()
+
+def display(shp, color=default_color, deep=True):
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
 
