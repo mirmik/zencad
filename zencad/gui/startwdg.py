@@ -15,7 +15,7 @@ class StartDialog(QDialog):
 	def make_example_tree_nodes(self, parent, dct):
 		files = dct["__files__"]
 
-		for p in [ d for d in dct if d != "__files__" ]:
+		for p in sorted([ d for d in dct if d != "__files__" ]):
 			node = QTreeWidgetItem(parent)
 			node.setText(0,str(p))
 			self.make_example_tree_nodes(node, dct[p])
