@@ -55,6 +55,7 @@ class SettingsWidget(QDialog):
 
 		self.vlayout = QVBoxLayout()
 		self.vlayout.addWidget(TableField(ltext="Home directory", wdg=LineEdit()))
+		self.vlayout.addWidget(TableField(ltext="Text editor command", wdg=LineEdit(deftext=settings.get_settings()["gui"]["text_editor"])))
 		self.vlayout.addWidget(TableField(ltext="Default color", wdg=ColorChanger(values=settings.get_default_color())))
 
 		self.setLayout(self.vlayout)
