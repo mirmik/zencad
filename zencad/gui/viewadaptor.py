@@ -67,6 +67,9 @@ class DisplayWidget(QGLWidget):
 		self.animate_updated = threading.Event()
 		self.count_of_helped_shapes = 0
 
+		self.alt_pressed = False
+		self.shift_pressed = False
+
 	def redraw(self):
 		self.animate_updated.clear()
 		self.view.redraw()
