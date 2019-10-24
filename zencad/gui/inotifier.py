@@ -28,9 +28,12 @@ class InotifyThread(QThread):
 		while 1:
 			self.lock.acquire()
 
-			if (os.stat(self.path).st_mtime != self.last_mtime):
-				self.last_mtime = os.stat(self.path).st_mtime
-				self.changed.emit()
+			try:
+				if (os.stat(self.path).st_mtime != self.last_mtime):
+					self.last_mtime = os.stat(self.path).st_mtime
+					self.changed.emit()
+			except FileNotFoundError:
+				pass
 
 			self.lock.release()
 			time.sleep(0.0001)
