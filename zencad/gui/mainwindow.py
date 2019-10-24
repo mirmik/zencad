@@ -14,6 +14,7 @@ import zencad.opengl
 
 import zencad.gui.communicator
 import zencad.gui.actions
+import zencad.gui.settings
 
 import pyservoce
 import evalcache
@@ -349,6 +350,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.client_communicator.start_listen()
 		self.client_communicator.newdata.connect(self.new_worker_message)
+
+		zencad.gui.settings.Settings.add_recent(path)
 
 		self.notifier.retarget(path)
 		self.open_in_progress = True

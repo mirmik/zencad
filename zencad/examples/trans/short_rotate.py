@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ZenCad API example: short_rotate
-last update: 13.10.2019
+last update: 24.10.2019
 
 Detail:
 Short rotate application example.
@@ -18,23 +18,31 @@ Practice shooting :).
 from zencad import *
 import zencad.draw
 
+u = 20
+
 # Parameters
 angle = deg(60)
 arrl, arrw, arrh = 2, 2, 15
 
 src = points([
-	(-20,-40,20),
-	(20,-40,0),
-	(-40,20,0),
+	(-1,-2, 1),
+	( 1,-2, 1),
+	(-2, 1, 0),
 ])
 
 tgt = points([
-	(20,40,40),
-	(20,20,40),
-	(20,40,20)
+	( 1, 2, 3),
+	( 1, 1, 0),
+	( 1, 2, 1)
 ])
 
 clr = [ color.red, color.green, color.blue ]
+
+# Scale
+for i in range(len(src)):
+	for j in range(3):
+		src[i][j] *= u	
+		tgt[i][j] *= u
 
 # Make short rotate transformation
 transes = [ translate(*src[i]) * short_rotate((0,0,1), tgt[i] - src[i]) for i in range(len(src)) ]
@@ -53,7 +61,6 @@ for i in range(len(src)):
 	disp(arr)
 
 # Draw white cube.
-u = 20
 N = 4
 for i in range(N):
 	for j in range(N):

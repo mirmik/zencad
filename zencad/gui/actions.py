@@ -7,6 +7,7 @@ import tempfile
 import signal
 
 import zencad.gui.util
+import zencad.gui.settingswdg
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -243,6 +244,10 @@ class MainWindowActionsMixin:
 		self.info_widget.coords_difference_mode = en
 		self.info_widget.update_dist()
 
+	def settings(self):
+		wdg = zencad.gui.settingswdg.SettingsWidget()
+		wdg.exec()
+
 	def _add_open_action(self, menu, name, path):
 		def callback():
 			self._open_routine(path)
@@ -301,6 +306,9 @@ class MainWindowActionsMixin:
 		)
 		self.mAboutAction = self.create_action(
 			"About", self.aboutAction, "About the application"
+		)
+		self.mSettings = self.create_action(
+			"Settings", self.settings, "GUI/View Settings"
 		)
 		self.mReset = self.create_action("Reset", self.resetAction, "Reset")
 		self.mCentering = self.create_action(
@@ -391,6 +399,7 @@ class MainWindowActionsMixin:
 		self.mViewMenu.addAction(self.mDisplayMode)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
+		self.mViewMenu.addAction(self.mSettings)
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
