@@ -39,6 +39,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
     if triedron:
         viewer.set_triedron_axes()
     view = viewer.create_view()
+    view.set_triedron(False)
     view.set_virtual_window(size[0], size[1])
 
     if yaw is None:
