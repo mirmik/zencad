@@ -38,6 +38,14 @@
 	text-align: justify;
 }
 
+.article h1 {
+	font-size: 40px;
+}
+
+.article h2 {
+	font-size: 30px;
+}
+
 /* Buttons
 */
 .btn {

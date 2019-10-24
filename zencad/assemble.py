@@ -58,14 +58,14 @@ class unit:
 				c.location_update(deep=True, view=view)
 
 		if view:
-			self.apply_view_location(False)
+			self._apply_view_location(False)
 
 	def relocate(self, location, deep=False, view=False):
 		self.location = evalcache.unlazy_if_need(location)
 		self.location_update(deep, False)
 
 		if view:
-			self.apply_view_location(deep)
+			self._apply_view_location(deep)
 
 	def set_objects(self, objects):
 		self.dispobjects = objects
@@ -117,13 +117,16 @@ class unit:
 
 		return str((n,h))
 
-	def apply_view_location(self, deep):
+	def _apply_view_location(self, deep):
+		"""Перерисовать положения объектов юнита во всех зарегестрированных 
+		view. Если deep, применить рекурсивно."""
+
 		for v in self.views:
 			v.set_location(self.global_location)
 
 		if deep:
 			for c in self.childs:
-				c.apply_view_location(deep)
+				c._apply_view_location(deep)
 		
 	def bind_scene(self, scene, color=pyservoce.default_color, deep=False):
 		for d in self.dispobjects:
@@ -140,7 +143,7 @@ class unit:
 			scene.viewer.display(shape_view.sctrl)
 			self.views.add(shape_view)
 
-		self.apply_view_location(deep=False)
+		self._apply_view_location(deep=False)
 
 		if deep:
 			for c in self.childs:
