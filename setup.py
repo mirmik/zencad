@@ -17,6 +17,7 @@ requires = [
         "pillow",
         "pyopengl",
         "PyQt5",
+        "psutil"
     ] 
 
 setup(
