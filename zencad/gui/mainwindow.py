@@ -23,6 +23,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from zencad.util import print_to_stderr
+
 import signal
 import multiprocessing
 import time
@@ -37,7 +39,9 @@ import random
 MAIN_COMMUNICATOR = None
 DISPLAY_WINID = None
 
+SLEEPED_OPTIMIZATION = False
 __TRACE_COMMUNICATION__ = False
+__TRACE__ = False
 
 class ScreenWidget(QWidget):
 	def __init__(self):
@@ -105,8 +109,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
-			self.client_communicator.start_listen()
-		self.sleeped_client = zencad.gui.application.spawn_sleeped_client(1)
+			#self.client_communicator.start_listen()
+
+		if SLEEPED_OPTIMIZATION:
+			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(session_id=1)
 
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
@@ -205,6 +211,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		return label
 
 	def new_worker_message(self, data):
+		#print_to_stderr("new_worker_message")
 		data = pickle.loads(data)
 		try:
 			cmd = data["cmd"]
@@ -212,7 +219,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			return
 
 		if __TRACE_COMMUNICATION__:
-			print("MainWindow:communicator:", data)
+			print_to_stderr("MainWindow:communicator:", data)
 
 		# TODO: Переделать в словарь
 		if cmd == "hello": print("HelloWorld")
@@ -225,6 +232,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
+		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1])
 		#elif cmd == "screenshot_return": self.screen_return(data["data"])
 		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
 		else:
@@ -243,27 +251,37 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console.write(data)
 
 	def bind_window(self, winid, pid, session_id):
+		if __TRACE__:
+			print_to_stderr("bind_window")
 		with self.openlock:
-			if session_id != self.session_id:
-				return
+			try:
+				if session_id != self.session_id:
+					return
+		
+				if __TRACE__:
+					print_to_stderr("bind window")
+				container = QWindow.fromWinId(winid)
+				self.cc = QWidget.createWindowContainer(container)
+				#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
 	
-			container = QWindow.fromWinId(winid)
-			self.cc = QWidget.createWindowContainer(container)
-			#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
-	
-			self.cc_window = winid
-			self.vsplitter.replaceWidget(0, self.cc)
-			self.client_communicator.send("unwait")
-			self.client_pid = pid
-			self.setWindowTitle(self.current_opened)
-	
-			#info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
-			info("window bind success")
-			if not self.need_prescale and self.last_location is not None:
-				self.client_communicator.send({"cmd":"location", "dct": self.last_location})
-				info("restore saved eye location")
-	
-			self.open_in_progress = False
+				self.cc_window = winid
+				if __TRACE__:
+					print_to_stderr("replace widget")
+				self.vsplitter.replaceWidget(0, self.cc)
+				#self.client_communicator.send("unwait")
+				self.client_pid = pid
+				self.setWindowTitle(self.current_opened)
+		
+				#info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
+				info("window bind success")
+				if not self.need_prescale and self.last_location is not None:
+					self.client_communicator.send({"cmd":"location", "dct": self.last_location})
+					info("restore saved eye location")
+		
+				self.open_in_progress = False
+				self.client_communicator.send({"cmd":"redraw"})
+			except Exception as ex:
+				print_to_stderr("exception on window bind", ex)
 
 
 	def replace_widget(self, wdg):
@@ -274,16 +292,52 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
-		if self.client_communicator:
+		if __TRACE__:
+			print_to_stderr("closeEvent")
+		if self.cc:
+			self.cc.close()
+
+		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
+			if __TRACE__:
+				print_to_stderr("send stopworld")
 			self.client_communicator.send({"cmd": "stopworld"})
-		if self.sleeped_client:
+		else:
+			if __TRACE__:
+				print_to_stderr("send smooth_stopworld")
+			self.client_communicator.send({"cmd": "smooth_stopworld"})
+
+		if SLEEPED_OPTIMIZATION and self.sleeped_client:
+			if __TRACE__:
+				print_to_stderr("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
-		time.sleep(0.05)
-		if self.client_communicator:
-			self.client_communicator.kill()
-		if self.sleeped_client:
-			self.sleeped_client.kill()
 		
+		#print_to_stderr("pre sleep")
+		#time.sleep(0.05)
+		#print_to_stderr("post sleep")
+		#if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
+		#	if __TRACE__:
+		#		print_to_stderr("self.client_communicator.kill()")
+		#	self.client_communicator.kill()
+#
+		#if SLEEPED_OPTIMIZATION and self.sleeped_client:
+		#	if __TRACE__:
+		#		print_to_stderr("self.sleeped_client.kill()")
+		#	self.sleeped_client.kill()
+#
+#
+		#if zencad.gui.application.RETRANSLATE_THREAD:
+		#	if __TRACE__:
+		#		print_to_stderr("zencad.gui.application.RETRANSLATE_THREAD.finish()")
+		#	zencad.gui.application.RETRANSLATE_THREAD.finish()
+
+		#if self.client_pid:
+		#	os.kill(self.client_pid, signal.SIGKILL)
+		
+	def showEvent(self, ev):
+		if __TRACE__:
+			print_to_stderr("showEvent")
+		if self.client_communicator:
+			self.client_communicator.start_listen()
 
 	def reopen_current(self):
 		if time.time() - self.last_reopen_time > 0.25:
@@ -311,38 +365,33 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator = None
 
 		if self.cc_window and self.open_in_progress is False:
-			screen = self.screen()
-			painter = QPainter(screen)
-			painter.setPen(Qt.green)
-			font = QFont()
-			font.setPointSize(12)
-			painter.setFont(font)
-			message = "Loading... please wait."
-			painter.drawText(
-				QPoint(
-					screen.width()/2 - QFontMetrics(font).width(message)/2,
-					QFontMetrics(font).height()), 
-				message)
-			painter.end()
-	
-			self.screen_label = QLabel()
-			self.screen_label.setPixmap(screen)
+			self.start_screen()
+		#	time.sleep(0.3)
 
-			self.replace_widget(self.screen_label)
+		else:
+			self.open_bottom_half()
+
+	def open_bottom_half(self):
+		path = self.current_opened
 
 		if self.client_communicator:
-			self.client_communicator.send({"cmd": "stopworld"})
-			self.client_communicator.stop_listen()
-			time.sleep(0.05)
-			self.client_communicator.kill()
+			if self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
+				self.client_communicator.send({"cmd": "stopworld"})
+				self.client_communicator.stop_listen()
+				time.sleep(0.05)
+				self.client_communicator.kill()
+
+			else:
+				self.client_communicator.send({"cmd": "smooth_stopworld"})
+				time.sleep(0.05)
 	
 		self.session_id += 1
 
-		#self.sleeped_client = None
-		if self.sleeped_client:
+		if SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
+			time.sleep(0.05)
 
 		else:
 			self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
@@ -357,15 +406,42 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.open_in_progress = True
 		self.openlock.release()
 
-	def screen(self):
-		screen = QGuiApplication.primaryScreen()
-		p = screen.grabWindow(self.cc_window)
+	def start_screen(self):
+		#screen = QGuiApplication.primaryScreen()
+		#p = screen.grabWindow(self.cc_window)
 
 		self.client_communicator.send({"cmd":"screenshot"})
-		self.client_communicator.wait()
+		#self.client_communicator.wait()
 
-		btes, size = self.client_communicator.rpc_buffer()		
-		return QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+	
+	def finish_screen(self, data, size):
+		btes, size = data, size#self.client_communicator.rpc_buffer()		
+		screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+
+		#if self.open_in_progress == False:
+		#	return
+		
+		painter = QPainter(screen)
+		painter.setPen(Qt.green)
+		font = QFont()
+		font.setPointSize(12)
+		painter.setFont(font)
+		message = "Loading... please wait."
+		painter.drawText(
+			QPoint(
+				screen.width()/2 - QFontMetrics(font).width(message)/2,
+				QFontMetrics(font).height()), 
+			message)
+		painter.end()
+	
+		self.screen_label = QLabel()
+		self.screen_label.setPixmap(screen)
+
+		#if self.open_in_progress == False:
+		#	return
+
+		self.replace_widget(self.screen_label)
+		self.open_bottom_half()
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]
