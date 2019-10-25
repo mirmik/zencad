@@ -13,7 +13,7 @@ directory = os.path.dirname(os.path.realpath(__file__))
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.19.0",
+    version="0.19.1",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
@@ -45,7 +45,6 @@ setup(
         "pillow",
         "pyopengl",
         "PyQt5",
-        "setproctitle"
-    ],
+    ] + [] if sys.platform == "win32" else ["setproctitle"],
     entry_points={"console_scripts": ["zencad=zencad.__main__:main"]},
 )

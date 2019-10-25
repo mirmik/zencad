@@ -103,3 +103,8 @@ def examples_dict(root = None):
             dct["__files__"].add(d)
 
     return dct
+
+def set_process_name(name):
+    if sys.platform != "win32":
+        import setproctitle
+        setproctitle.setproctitle(name)  
