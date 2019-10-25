@@ -18,7 +18,6 @@ import argparse
 import subprocess
 import threading
 import multiprocessing
-import setproctitle
 import base64
 import psutil
 import signal
@@ -209,7 +208,7 @@ def main():
 	exit(0)
 
 if __name__ == "__main__":
-	setproctitle.setproctitle("zencad")
+	zencad.util.set_process_name("zencad")
 	main()
 
 	

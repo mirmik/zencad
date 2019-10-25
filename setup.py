@@ -45,7 +45,6 @@ setup(
         "pillow",
         "pyopengl",
         "PyQt5",
-        "setproctitle"
-    ],
+    ] + [] if sys.platform == "win32" else ["setproctitle"],
     entry_points={"console_scripts": ["zencad=zencad.__main__:main"]},
 )

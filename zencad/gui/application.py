@@ -9,6 +9,7 @@ import zencad.gui.startwdg
 import zencad.gui.communicator
 import zencad.gui.actions
 import zencad.gui.retransler
+from zencad.util import set_process_name
 
 import zencad.lazifier
 import zencad.opengl
@@ -24,7 +25,6 @@ from PyQt5.QtGui import *
 
 from zencad.util import print_to_stderr
 
-import setproctitle
 import psutil
 import multiprocessing
 import os
@@ -65,7 +65,7 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	Используются файловые дескрипторы по умолчанию, которые длжен открыть
 	вызывающий поток."""
 
-	setproctitle.setproctitle("zencad")
+	set_process_name("zencad")
 	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
 
 	app = QApplication([])
@@ -227,7 +227,6 @@ def common_unbouded_proc(scene,
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
 	trace("common_unbouded_proc")
-	setproctitle.setproctitle("zencad")
 
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
