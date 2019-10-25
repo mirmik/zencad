@@ -23,7 +23,7 @@ requires = [
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.19.5",
+    version="0.19.6",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
