@@ -10,10 +10,19 @@ import os
 
 directory = os.path.dirname(os.path.realpath(__file__))
 
+requires = [
+        "evalcache",
+        "pyservoce>=1.10.0",
+        "numpy",
+        "pillow",
+        "pyopengl",
+        "PyQt5",
+    ] 
+
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.19.1",
+    version="0.19.5",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
@@ -38,13 +47,6 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=[
-        "evalcache",
-        "pyservoce>=1.10.0",
-        "numpy",
-        "pillow",
-        "pyopengl",
-        "PyQt5",
-    ] + [] if sys.platform == "win32" else ["setproctitle"],
+    install_requires=requires,
     entry_points={"console_scripts": ["zencad=zencad.__main__:main"]},
 )
