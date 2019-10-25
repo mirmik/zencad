@@ -62,6 +62,21 @@ def metric_bolt_body(E, d, h, H, t):
 	
 	return m
 
+
+def metric_bolt_body(d, H, t):
+	"""
+		Body of metric nut.
+
+		E - hexagon diametr
+		dmax - bolt diameter
+		h - height
+		t - chamfer size
+	"""
+	m = cylinder(d, H)
+	m = chamfer(m, r=t, refs=[point3(0,0,0), point3(0,0,H)])
+	
+	return m
+
 class metric_part(zencad.assemble.unit):
 	def __init__(self, M, step):
 		super().__init__()
@@ -72,22 +87,26 @@ class metric_part(zencad.assemble.unit):
 		self.M = M
 
 
-class metic_nut(metric_part):
+class metric_nut(metric_part):
 	def __init__(self, M, E, h, step):
-		super().__init__()
-		D = M
-		d_middle =  middle_diameter(M, step)
-		d = internal_diameter(M, step)
-		m = metric_nut_body(E, d_middle, h, step/2)
+		super().__init__(M,step)
+		self.md = metric_nut_body(E=E, d=self.d, h=h, 0)
+		self.mD = metric_nut_body(E=E, d=self.D, h=h, t=self.D-self.d)
+		self.add_shape(md, color=color.mech)
+		self.add_shape(mD-md, color=color.transparentmech)
 
-		self.set_shape(m)
+class metric_rod(metric_part):
+	def __init__(self, M, h, step):
+		super().__init__(M,step)
+		self.md = metric_rod_body(self.d, 0)
+		self.mD = metric_rod_body(self.D, t=self.D-self.d)
+		self.add_shape(md, color=color.mech)
+		self.add_shape(mD-md, color=color.transparentmech)
 
-class metic_bolt(metric_part):
-	def __init__(self, M, E, h, step):
-		super().__init__()
-		D = M
-		d_middle =  middle_diameter(M, step)
-		d = internal_diameter(M, step)
-		m = metric_bolt_body(E, d_middle, h, step/2)
-
-		self.set_shape(m)
+class metric_bolt(metric_part):
+	def __init__(self, M, E, h, H, step):
+		super().__init__(M,step)
+		self.md = metric_bolt_body(E=E, d=self.d, h=h, H=H, t=0)
+		self.mD = metric_bolt_body(E=E, d=self.D, h=h, H=H, t=self.D-self.d)
+		self.add_shape(md, color=color.mech)
+		self.add_shape(mD-md, color=color.transparentmech)
