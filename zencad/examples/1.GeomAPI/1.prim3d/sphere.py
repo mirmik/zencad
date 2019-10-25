@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# coding: utf-8
+"""
+ZenCad API example: sphere
+"""
 
 from zencad import *
-
-test_mode()
 
 m1 = sphere(r=10)
 m2 = sphere(r=10, yaw=deg(135))

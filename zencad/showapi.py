@@ -57,6 +57,11 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, **kwargs):
 default_color = zencad.gui.settings.Settings.get_default_color()
 
 def display(shp, color=default_color, deep=True):
+    if isinstance(shp, list) or isinstance(shp, tuple):
+        for s in shp:
+            display(s)
+        return
+
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
 

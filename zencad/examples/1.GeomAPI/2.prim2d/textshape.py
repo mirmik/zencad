@@ -7,10 +7,10 @@ date: 04.10.2019
 import os
 from zencad import *
 
-zencad_example_directory = os.path.dirname(os.path.realpath(__file__))
+zencad_example_directory = zencad.moduledir + "/examples"
 
-testfont = os.path.join(zencad_example_directory, "../fonts/testfont.ttf")
-mandarinc = os.path.join(zencad_example_directory, "../fonts/mandarinc.ttf")
+testfont = os.path.join(zencad_example_directory, "fonts/testfont.ttf")
+mandarinc = os.path.join(zencad_example_directory, "fonts/mandarinc.ttf")
 
 m0 = textshape(text="ZenCad", fontpath=testfont, size=100)
 m1 = textshape(text="ZenCad", fontpath=mandarinc, size=100)
