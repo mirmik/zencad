@@ -1,17 +1,12 @@
 # -*- mode: python -*-
 
-import os
-
 block_cipher = None
 
 
-a = Analysis(['./zencad/__main__.py'],
-             pathex=['./zencad'],
+a = Analysis(['zencad/__main__.py'],
+             pathex=['/home/mirmik/project/zencad'],
              binaries=[],
-             datas=[
-                ( './zencad/examples', './zencad/examples/' ),
-                ( './zencad/industrial-robot.svg', './zencad/' )
-             ],
+             datas=[],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -26,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name=('ZenCad.exe' if os.name == "nt" else 'ZenCad'),
+          name='__main__',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -38,4 +33,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='ZenCad')
+               name='__main__')
