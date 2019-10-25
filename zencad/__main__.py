@@ -27,6 +27,7 @@ def main():
 	trace("__MAIN__", sys.argv)
 
 	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", "--info", action="store_true")
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
@@ -42,6 +43,10 @@ def main():
 	pargs.nodaemon = True
 
 	trace(pargs)
+
+	if pargs.info:
+		print(zencad.moduledir)
+		return
 
 	# Режим работы программы, в котором создаётся gui с предоткрытым файлом.
 	# Используется в том числе для внутренней работы.	

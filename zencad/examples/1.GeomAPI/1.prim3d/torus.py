@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# coding: utf-8
+"""
+ZenCad API example: torus
+"""
 
 from zencad import *
-
-test_mode()
 
 tor_r1 = 5
 tor_r2 = 2

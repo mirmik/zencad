@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""
+ZenCad example: integration with skimage
+
+In that example we use skimage for countors finding.
+If we have contours, we can build geometry on their base.
+"""
+
 
 import numpy as np
 import matplotlib.pyplot as plt

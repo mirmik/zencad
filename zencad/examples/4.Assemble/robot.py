@@ -60,9 +60,7 @@ class Robot(zencad.assemble.unit):
 base = box(100, 100, 1, center=True).down(0.5)
 robot0 = Robot()
 
-fontpath = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "./fonts/mandarinc.ttf"
-)
+fontpath = os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf")
 text = textshape(text="Brutality", fontpath=fontpath, size=15).extrude(2)
 tcenter = text.center()
 text = text.translate(-tcenter.x, -tcenter.y, -tcenter.z)
