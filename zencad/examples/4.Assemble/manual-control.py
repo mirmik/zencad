@@ -63,4 +63,7 @@ def animate(wdg):
 		LINKS[i].rotator.set_coord((SLDS[i].value() - 5000) / 10000 * math.pi * 2)
 	a.location_update()
 
-show(animate=animate, preanimate=preanimate)
+def close_handle():
+	CTRWIDGET.close()
+
+show(animate=animate, preanimate=preanimate, close_handle=close_handle)
