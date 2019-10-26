@@ -60,6 +60,7 @@ def finish_procedure():
 def do_main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
+	parser.add_argument("-m", "--module", default="zencad")
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
@@ -73,6 +74,9 @@ def do_main():
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
+
+	if pargs.module != "zencad":
+		print("module opt is not equal 'zencad'")
 
 	if pargs.debug:
 		global __MAIN_TRACE__
