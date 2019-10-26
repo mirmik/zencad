@@ -58,7 +58,7 @@ def finish_procedure():
 	trace("MAIN: Wait childs ... OK")
 
 def protect_path(s):
-	if s[0]==s[-1] and (s[0] == "'") or (s[0] == '"'):
+	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
 		return s[1:-1]
 
 def do_main():
