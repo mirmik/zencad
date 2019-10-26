@@ -39,6 +39,7 @@ d = link(ax=(1,0,0))
 a.rotator.link(b)
 b.rotator.link(c)
 c.rotator.link(d)
+d.rotator.output.set_shape(cone(5,12,40).up(10) + cylinder(5,10))
 
 LINKS = [a,b,c,d]
 
@@ -48,7 +49,7 @@ def preanimate(wdg):
 	global CTRWIDGET, SLDS
 	CTRWIDGET = QWidget()
 	layout = QVBoxLayout()
-	SLDS = [ Slider() for i in range(len(LINKS) - 1) ]
+	SLDS = [ Slider() for i in range(len(LINKS)) ]
 
 	for sld in SLDS:
 		layout.addWidget(sld)
@@ -58,7 +59,7 @@ def preanimate(wdg):
 	CTRWIDGET.show()
 
 def animate(wdg):
-	for i in range(len(LINKS) - 1):
+	for i in range(len(LINKS)):
 		LINKS[i].rotator.set_coord((SLDS[i].value() - 5000) / 10000 * math.pi * 2)
 	a.location_update()
 
