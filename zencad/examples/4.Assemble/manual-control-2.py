@@ -46,15 +46,17 @@ a = link(ax=(0,1,0))
 b = link(ax=(1,0,0))
 c = link(ax=(0,1,0))
 d = link(ax=(1,0,0))
+e = link(ax=(0,1,0))
 
 r.link(a)
 a.rotator.link(b)
 b.rotator.link(c)
 c.rotator.link(d)
+d.rotator.link(e)
 
-LINKS = [a,b,c,d]
+LINKS = [a,b,c,d,e]
 
-chain = zencad.cynematic.cynematic_chain(d.rotator.output)
+chain = zencad.cynematic.cynematic_chain(LINKS[-1].rotator.output)
 
 disp(a)
 
@@ -77,7 +79,7 @@ def preanimate(wdg):
 tgtshp = sphere(5)
 ctr = disp(tgtshp) 
 
-K = 0.5
+K = 1
 stime = time.time()
 lasttime = stime
 def animate(wdg):
@@ -89,10 +91,10 @@ def animate(wdg):
 	target_location = translate(XSLD.value()/5000*120, YSLD.value()/5000*120, ZSLD.value()/5000*120)
 
 	sens = chain.sensivity()
-	error = d.rotator.output.global_location.inverse() * target_location
+	error = LINKS[-1].rotator.output.global_location.inverse() * target_location
 
 	ttrans = error.translation() * K
-	#rtrans = error.rotation().rotation_vector() * K 
+	rtrans = error.rotation().rotation_vector() * K 
 
 	target = ttrans
 	vcoords, iters = zencad.malgo.svd_backpack(target, vectors=[v for w,v in sens ])
