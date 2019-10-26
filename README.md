@@ -21,6 +21,10 @@ Install zencad from pypi:
 Maybe need install qt5-default, because pyqt5 has trouble with xcb plugin.  
 ```apt install qt5-default ```
 
+### For Windows:
+Windows version of ZenCad needed `vcredist` (Microsoft Redistibutable Package).
+Please, install `vcredist 2015` for Python3.7 and also `vcredist 2019` for Python3.8
+
 Standalone Distribution
 -----------------------
 ZenCad should have standalone version for Windows.  
