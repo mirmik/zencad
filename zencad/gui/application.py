@@ -219,6 +219,7 @@ def on_terminate(proc):
 def common_unbouded_proc(scene, 
 	view=None,
 	animate=None, 
+	preanimate=None,
 	close_handle=None,
 	pipes=False, 
 	need_prescale=False, 
@@ -306,6 +307,9 @@ def common_unbouded_proc(scene,
 		#time.sleep(2)
 		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
 		#MAIN_COMMUNICATOR.wait()
+
+	if preanimate:
+		preanimate(widget)
 
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
