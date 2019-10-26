@@ -209,7 +209,7 @@ def main():
 	do_main()
 	finish_procedure()
 	trace("EXIT")
-	exit(0)
+	sys.exit(0)
 
 if __name__ == "__main__":
 	zencad.util.set_process_name("zencad")
