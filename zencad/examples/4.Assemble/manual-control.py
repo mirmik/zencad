@@ -28,7 +28,7 @@ class Slider(QSlider):
 class link(zencad.assemble.unit):
 	def __init__(self, h=40, ax=(0,1,0)):
 		super().__init__()
-		self.set_shape(cylinder(5,h))
+		self.set_shape(cylinder(5,h) + cylinder(6,10,center=True).transform(up(h) * short_rotate((0,0,1), ax)))
 		self.rotator = zencad.cynematic.rotator(parent=self, ax=ax, location=up(h))
 
 a = link(ax=(0,1,0))

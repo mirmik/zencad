@@ -128,7 +128,9 @@ class unit:
 			for c in self.childs:
 				c._apply_view_location(deep)
 		
-	def bind_scene(self, scene, color=pyservoce.default_color, deep=False):
+	def bind_scene(self, scene, color=pyservoce.default_color, deep=True):
+		self.location_update(deep)
+
 		for d in self.dispobjects:
 			scene.viewer.display(d)
 			self.views.add(ShapeView(d))
