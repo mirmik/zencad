@@ -1,19 +1,31 @@
-# -*- mode: python -*-
-
-import os
+# -*- mode: python ; coding: utf-8 -*-
 
 block_cipher = None
 
+import sys
+import os
+import glob
 
-a = Analysis(['./zencad/__main__.py'],
-             pathex=['./zencad'],
+datas = []
+for (p, d, f) in os.walk("./zencad/examples"):
+  print(p)
+  datas.extend([(os.path.join(p,a), os.path.relpath(p, start=".")) for a in f])
+
+datas.append(("zencad/industrial-robot.svg", "zencad"))
+datas.append(("zencad/techpriest.jpg", "zencad"))
+datas.append(("zencad/zencad_logo.png", "zencad"))
+
+print(datas)
+
+extra_dll_dir = "../servoce/pyservoce/libs"
+os.environ['PATH'] += os.pathsep + extra_dll_dir
+
+a = Analysis(['zencad\\__main__.py'],
+             pathex=['C:\\Users\\mirmik\\project\\zencad'],
              binaries=[],
-             datas=[
-                ( './zencad/examples', './zencad/examples/' ),
-                ( './zencad/industrial-robot.svg', './zencad/' )
-             ],
              hiddenimports=[],
              hookspath=[],
+             datas=datas,
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,
@@ -26,7 +38,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name=('ZenCad.exe' if os.name == "nt" else 'ZenCad'),
+          name='ZenCad',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -38,4 +50,5 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
+               upx_exclude=[],
                name='ZenCad')
