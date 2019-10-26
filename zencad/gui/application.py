@@ -141,7 +141,7 @@ def start_application(tgtpath, debug):
 
 	debugstr = "--debug" if debug or __DEBUG_MODE__ else "" 
 	interpreter = INTERPRETER
-	cmd = "{} -m zencad --mainonly {} --tgtpath {}".format(interpreter, debugstr, tgtpath)
+	cmd = '{} -m zencad --mainonly {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 	return subproc
@@ -179,7 +179,7 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	debug_mode = "--debug" if __DEBUG_MODE__ else ""
 	interpreter = INTERPRETER
 
-	cmd = "{interpreter} -m zencad {path} --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}".format(
+	cmd = '{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}'.format(
 		interpreter=interpreter, 
 		path=path, 
 		prescale=prescale, 
