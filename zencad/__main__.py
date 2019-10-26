@@ -57,6 +57,10 @@ def finish_procedure():
 	#    p.kill()
 	trace("MAIN: Wait childs ... OK")
 
+def protect_path(s):
+	if s[0]==s[-1] and (s[0] == "'") or (s[0] == '"'):
+		return s[1:-1]
+
 def do_main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
@@ -74,6 +78,9 @@ def do_main():
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
+
+	if hasattr(pargs,"tgtpath") and pargs.tgtpath: pargs.tgtpath = protect_path(pargs.tgtpath)
+	if len(pargs.paths) > 0: pargs.paths[0] = protect_path(pargs.paths[0])
 
 	if pargs.module != "zencad":
 		print("module opt is not equal 'zencad'")
