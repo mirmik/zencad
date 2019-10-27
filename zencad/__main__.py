@@ -60,6 +60,7 @@ def finish_procedure():
 def protect_path(s):
 	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
 		return s[1:-1]
+	return s
 
 def do_main():
 	parser = argparse.ArgumentParser()
@@ -172,7 +173,10 @@ def do_main():
 		# информация отсюда транслируется функции show
 		# через глобальные переменные.
 
-		path = os.path.join(os.getcwd(), pargs.paths[0])
+		if not os.path.abspath(pargs.paths[0]):
+			path = os.path.join(os.getcwd(), pargs.paths[0])
+		else:
+			path = pargs.paths[0]
 		zencad.showapi.EXECPATH = path
 	
 		# Устанавливаем рабочей директорией дирректорию,

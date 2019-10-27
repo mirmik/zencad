@@ -3,7 +3,7 @@ import pyservoce
 
 from abc import ABC, abstractmethod
 
-class cynematic_unit(ABC, zencad.assemble.unit):
+class kinematic_unit(ABC, zencad.assemble.unit):
 	"""Кинематическое звено задаётся двумя системами координат,
 	входной и выходной. Изменение кинематических параметров изменяет
 	положение выходной СК относительно входной"""
@@ -30,14 +30,14 @@ class cynematic_unit(ABC, zencad.assemble.unit):
 	def link(self, arg):
 		"""Присоединить объект arg к выходной СК.
 
-		Для cynematic_unit метод link переопределяется,
+		Для kinematic_unit метод link переопределяется,
 		с тем, чтобы линковка происходила не ко входной, 
 		а к выходной СК"""
 
 		self.output.link(arg)
 
 
-class cynematic_unit_one_axis(cynematic_unit):
+class kinematic_unit_one_axis(kinematic_unit):
 	"""Кинематическое звено специального вида,
 	взаимное положение СК которого может быть описано одним 3вектором
 
@@ -70,7 +70,7 @@ class cynematic_unit_one_axis(cynematic_unit):
 		raise NotImplementedError
 
 
-class rotator(cynematic_unit_one_axis):
+class rotator(kinematic_unit_one_axis):
 	def sensivity(self):
 		"""Возвращает тензор производной по положению
 		в собственной системе координат в формате (w, v)"""
@@ -81,7 +81,7 @@ class rotator(cynematic_unit_one_axis):
 		self.output.relocate(pyservoce.rotate(self.ax, coord * self.mul), **kwargs)
 
 
-class actuator(cynematic_unit_one_axis):
+class actuator(kinematic_unit_one_axis):
 	def sensivity(self):
 		"""Возвращает тензор производной по положению
 		в собственной системе координат в формате (w, v)"""
@@ -92,7 +92,7 @@ class actuator(cynematic_unit_one_axis):
 		self.output.relocate(pyservoce.translate(self.ax * coord * self.mul), **kwargs)
 
 
-class planemover(cynematic_unit):
+class planemover(kinematic_unit):
 	"""Кинематическое звено с двумя степенями свободы для перемещения
 	по плоскости"""
 
@@ -114,7 +114,7 @@ class planemover(cynematic_unit):
 			pyservoce.translate(pyservoce.vector3(self.x, self.y, 0)), **kwargs)
 
 
-class spherical_rotator(cynematic_unit):
+class spherical_rotator(kinematic_unit):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self._yaw = 0
@@ -143,7 +143,7 @@ class spherical_rotator(cynematic_unit):
 	def update_position(self, **kwargs):
 		self.output.relocate(pyservoce.rotateZ(self._yaw) * pyservoce.rotateY(self._pitch))
 
-class cynematic_chain:
+class kinematic_chain:
 	"""Объект-алгоритм управления участком кинематической чепи от точки
 	выхода, до точки входа.
 
@@ -157,12 +157,12 @@ class cynematic_chain:
 	def __init__(self, finallink, startlink = None):
 		self.chain = self.collect_chain(finallink, startlink)
 		self.simplified_chain = self.simplify_chain(self.chain)
-		self.cynematic_pairs = self.collect_cynematic_pairs()
+		self.kinematic_pairs = self.collect_kinematic_pairs()
 
-	def collect_cynematic_pairs(self):
+	def collect_kinematic_pairs(self):
 		par = []
 		for l in self.chain:
-			if isinstance(l, cynematic_unit):
+			if isinstance(l, kinematic_unit):
 				par.append(l)
 		return par
 
@@ -192,7 +192,7 @@ class cynematic_chain:
 		tmp = None
 
 		for l in chain:
-			if isinstance(l, cynematic_unit):
+			if isinstance(l, kinematic_unit):
 				if tmp is not None:
 					ret.append(tmp)
 					tmp = None
@@ -250,7 +250,7 @@ class cynematic_chain:
 					trsf = link.location * trsf
 
 		else:
-			for link in self.cynematic_pairs:
+			for link in self.kinematic_pairs:
 				lsenses = link.senses()
 				
 				linktrans = link.output.global_location
