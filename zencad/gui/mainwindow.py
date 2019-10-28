@@ -34,6 +34,7 @@ import os
 import pickle
 import sys
 import signal
+import string
 import random
 
 MAIN_COMMUNICATOR = None
@@ -230,6 +231,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "wmarker": self.marker_handler("w", data)
 		elif cmd == "location": self.location_update_handle(data["loc"])
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
+		elif cmd == "keypressed_raw": self.internal_key_pressed_raw(data["key"], data["modifiers"])
+		elif cmd == "keyreleased_raw": self.internal_key_released_raw(data["key"], data["modifiers"])
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
 		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1])
@@ -453,3 +456,18 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def internal_key_pressed(self, s):
 		if s == "F11": self.fullScreen()
 		elif s == "F10": self.displayMode() 
+
+	def internal_key_pressed_raw(self, key, modifiers):
+		#print("internal_key_pressed_raw")
+		#if ((modifiers & (int(Qt.AltModifier | Qt.ControlModifier))) == 0) and (chr(key) in set(string.printable)):
+		#	event = QInputMethodEvent()
+		#	event.setCommitString(chr(key))
+		#	QGuiApplication.sendEvent(self.texteditor, event);
+
+		event = QKeyEvent(QEvent.KeyPress, key, Qt.KeyboardModifier(modifiers));
+		QGuiApplication.postEvent(self.texteditor, event);
+
+	def internal_key_released_raw(self, key, modifiers):
+		print("internal_key_pressed_raw")
+		event = QKeyEvent(QEvent.KeyRelease, key, Qt.KeyboardModifier(modifiers));
+		QGuiApplication.postEvent(self.texteditor, event);
