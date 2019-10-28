@@ -282,3 +282,7 @@ class TextEditor(QPlainTextEdit):
             self.save()
 
         QPlainTextEdit.keyPressEvent(self, event)
+
+    #def event(self, ev):
+     #   print(ev.__class__)
+      #  return QPlainTextEdit.event(self, ev)
