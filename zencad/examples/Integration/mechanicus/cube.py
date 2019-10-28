@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import sys
 from skimage import measure, io
 from itertools import chain
