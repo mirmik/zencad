@@ -257,8 +257,7 @@ def common_unbouded_proc(scene,
 
 
 		def smooth_stop_world():
-			if __TRACE__:
-				print_to_stderr("common_unbouded_proc::smooth_stop_world")
+			trace("common_unbouded_proc::smooth_stop_world")
 			
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -267,8 +266,7 @@ def common_unbouded_proc(scene,
 				close_handle()
 
 			procs = psutil.Process().children()
-			if __TRACE__:
-				print_to_stderr(procs)
+			trace(procs)
 			psutil.wait_procs(procs, callback=on_terminate)
 
 			MAIN_COMMUNICATOR.stop_listen()
@@ -281,8 +279,7 @@ def common_unbouded_proc(scene,
 			trace("app quit on receive... after")
 
 		def stop_world():
-			if __TRACE__:
-				print_to_stderr("common_unbouded_proc::stop_world")
+			trace("common_unbouded_proc::stop_world")
 			MAIN_COMMUNICATOR.stop_listen()
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -299,8 +296,7 @@ def common_unbouded_proc(scene,
 
 
 		def receiver(data):
-			if __TRACE__:
-				print_to_stderr("common_unbouded_proc::receiver")
+			trace("common_unbouded_proc::receiver")
 			try:
 				data = pickle.loads(data)
 				if data["cmd"] == "stopworld": 
@@ -348,8 +344,7 @@ def common_unbouded_proc(scene,
 
 	trace("Wait childs ...")
 
-	if __TRACE__:
-		print_to_stderr("list of threads: ", threading.enumerate())
+	trace("list of threads: ", threading.enumerate())
 
 	procs = psutil.Process().children()
 	if __TRACE__:
