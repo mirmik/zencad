@@ -347,8 +347,7 @@ def common_unbouded_proc(scene,
 	trace("list of threads: ", threading.enumerate())
 
 	procs = psutil.Process().children()
-	if __TRACE__:
-		print_to_stderr(procs)
+	trace(procs)
 	psutil.wait_procs(procs, callback=on_terminate)
 	#for p in procs:
 	#    p.terminate()
