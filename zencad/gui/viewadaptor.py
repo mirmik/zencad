@@ -14,15 +14,18 @@ import os
 import time
 import math
 import threading
+
 import pyservoce
+from zencad.configure import *
 
 from zencad.util import print_to_stderr
 
-__TRACE__ = False
+#__TRACE__ = False
+#OPTION_RETRANSLATE_KEYS_TO_MAINCOMMUNICATOR = True
 
 def trace(*argv):
-	if __TRACE__:
-		print("DISPTRACE:", *argv)
+	if CONFIGURE_VIEWADAPTOR_TRACE:
+		print_to_stderr("DISPTRACE:", *argv)
 
 class DisplayWidget(QGLWidget):
 	tracking_info_signal = pyqtSignal(tuple)
@@ -404,19 +407,21 @@ class DisplayWidget(QGLWidget):
 
 		else:
 			# If signal not handling here, translate it onto top level
-			self.signal_key_pressed_raw.emit(event.key(), modifiers)
+			if CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+				self.signal_key_pressed_raw.emit(event.key(), modifiers)
 
 			#self.setWindowState(Qt.WindowFullScreen)
 
 	def keyReleaseEvent(self, event):
 		modifiers = QApplication.keyboardModifiers()
-		self.signal_key_released_raw.emit(event.key(), modifiers)
+		
+		if CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+			self.signal_key_released_raw.emit(event.key(), modifiers)
 
 	def external_communication_command(self, data):
 		cmd = data["cmd"]
 
-		if __TRACE__:
-			print_to_stderr("external_command:", data)
+		trace("external_command:", data)
 
 		if cmd == "autoscale": self.autoscale()
 		elif cmd == "resetview": self.reset_orient()

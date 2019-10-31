@@ -24,14 +24,10 @@ import signal
 
 from zencad.util import print_to_stderr
 
-CONSOLE_RETRANS = True
-__MAIN_TRACE__ = False
-
-STDOUT_FILENO = zencad.gui.application.STDOUT_FILENO
-STDIN_FILENO = zencad.gui.application.STDIN_FILENO
+from zencad.configure import *
 
 def trace(*args):
-	if __MAIN_TRACE__: 
+	if CONFIGURE_MAIN_TRACE: 
 		sys.stderr.write(str(args))
 		sys.stderr.write("\r\n")
 		sys.stderr.flush()
@@ -118,7 +114,7 @@ def do_main():
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
-	if pargs.replace and CONSOLE_RETRANS:
+	if pargs.replace and CONFIGURE_CONSOLE_RETRANSLATE:
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
@@ -144,7 +140,7 @@ def do_main():
 			print_to_stderr("Unpickle error_2", data)
 			exit(0)			
 
-	if pargs.replace and CONSOLE_RETRANS:
+	if pargs.replace and CONFIGURE_CONSOLE_RETRANSLATE:
 
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
