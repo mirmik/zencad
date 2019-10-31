@@ -36,6 +36,7 @@ import sys
 import signal
 import string
 import random
+import psutil
 
 MAIN_COMMUNICATOR = None
 
@@ -221,7 +222,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		except:
 			return
 
-		trace("MainWindow:communicator:", data)
+		trace("MainWindow:communicator: input message")
 
 		# TODO: Переделать в словарь
 		if cmd == "hello": print("HelloWorld")
@@ -309,7 +310,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
 		#print_to_stderr("pre sleep")
-		#time.sleep(0.05)
+		
+		time.sleep(0.05)
+		procs = psutil.Process().children()	
+		for p in procs:
+			p.terminate()
+
 		#print_to_stderr("post sleep")
 		#if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
 		#	if __TRACE__:
