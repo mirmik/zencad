@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-import zencad.gui.settings
+import zencad.settings
 
 class TableField(QWidget):
 	def __init__(self, ltext, wdg, llen=150):
@@ -51,7 +51,7 @@ class SettingsWidget(QDialog):
 	def __init__(self):
 		super().__init__()
 
-		settings = zencad.gui.settings.Settings()
+		settings = zencad.settings.Settings()
 
 		self.vlayout = QVBoxLayout()
 		self.vlayout.addWidget(TableField(ltext="Home directory", wdg=LineEdit()))

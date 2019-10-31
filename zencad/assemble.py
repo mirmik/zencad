@@ -2,6 +2,8 @@ import pyservoce
 import evalcache
 import numpy
 
+import zencad.settings
+
 class ShapeView:
 	def __init__(self, sctrl):
 		self.sctrl = sctrl
@@ -60,12 +62,12 @@ class unit:
 		if view:
 			self._apply_view_location(False)
 
-	def relocate(self, location, deep=False, view=False):
+	def relocate(self, location, deep=False, view=True):
 		self.location = evalcache.unlazy_if_need(location)
-		self.location_update(deep, False)
+		self.location_update(deep=deep, view=False)
 
 		if view:
-			self._apply_view_location(deep)
+			self._apply_view_location(deep=deep)
 
 	def set_objects(self, objects):
 		self.dispobjects = objects
@@ -73,7 +75,7 @@ class unit:
 	def add_object(self, d):
 		self.dispobjects.append(d)
 
-	def add_shape(self, shp, color=pyservoce.default_color):
+	def add_shape(self, shp, color=zencad.settings.Settings.get_default_color()):
 		shp = evalcache.unlazy_if_need(shp)
 		controller = pyservoce.interactive_object(shp)
 		controller.set_color(pyservoce.color(color))
@@ -128,7 +130,10 @@ class unit:
 			for c in self.childs:
 				c._apply_view_location(deep)
 		
-	def bind_scene(self, scene, color=pyservoce.default_color, deep=True):
+	def bind_scene(self, 
+				scene, 
+				color=zencad.settings.Settings.get_default_color(), 
+				deep=True):
 		self.location_update(deep)
 
 		for d in self.dispobjects:
