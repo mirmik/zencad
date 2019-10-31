@@ -172,7 +172,9 @@ def do_main():
 			zencad.gui.application.start_main_application(presentation=True)
 		else:
 			# Windows?
-			subprocess.Popen("nohup python3 -m zencad --nodaemon > /dev/null 2>&1&", shell=True, stdout=None, stderr=None)
+			print("TODO ?")
+			sys.exit(0)
+			#subprocess.Popen("nohup python3 -m zencad --nodaemon > /dev/null 2>&1&", shell=True, stdout=None, stderr=None)
 		
 	else:
 		# Режим работы, когда указан файл.
@@ -192,8 +194,9 @@ def do_main():
 		# содержащую целевой файл.
 		# TODO: Возможно, так делать нужно только
 		# при загрузке через GUI. Вынести флаг?
-		directory = os.path.dirname(path)
+		directory = os.path.dirname(os.path.abspath(path))
 		os.chdir(directory)
+		
 		sys.path.append(directory)
 		
 		# По умолчанию приложение работает в режиме,

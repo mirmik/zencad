@@ -312,9 +312,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		#print_to_stderr("pre sleep")
 		
 		time.sleep(0.05)
+		trace("closeEvent...terminate")
+	
 		procs = psutil.Process().children()	
 		for p in procs:
 			p.terminate()
+
+		trace("closeEvent...ok")
 
 		#print_to_stderr("post sleep")
 		#if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:

@@ -102,7 +102,6 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 				MAIN_COMMUNICATOR,
 			openned_path=tgtpath,
 			display_mode=display_mode)
-		mw.show()
 
 	else:
 		strt_dialog = zencad.gui.startwdg.StartDialog()
@@ -264,6 +263,8 @@ def common_unbouded_proc(scene,
 
 			if close_handle:
 				close_handle()
+
+			#time.sleep(0.1)
 
 			procs = psutil.Process().children()
 			trace(procs)
