@@ -407,7 +407,7 @@ class DisplayWidget(QGLWidget):
 
 		else:
 			# If signal not handling here, translate it onto top level
-			if CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+			if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
 				self.signal_key_pressed_raw.emit(event.key(), modifiers)
 
 			#self.setWindowState(Qt.WindowFullScreen)
@@ -415,7 +415,7 @@ class DisplayWidget(QGLWidget):
 	def keyReleaseEvent(self, event):
 		modifiers = QApplication.keyboardModifiers()
 		
-		if CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+		if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
 			self.signal_key_released_raw.emit(event.key(), modifiers)
 
 	def external_communication_command(self, data):

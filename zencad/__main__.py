@@ -125,13 +125,14 @@ def do_main():
 			trace("SLEEPED THREAD: read")
 			rawdata = readFile.readline()
 			try:
-				data = pickle.loads(base64.decodestring(bytes(rawdata, "utf-8")))
+				data = pickle.loads(base64.b64decode(bytes(rawdata, "utf-8")))
 				trace("SLEEPED THREAD RECV:", data)
 			except:
-				print_to_stderr("Unpickle error", data)
+				print_to_stderr("Unpickle error", rawdata)
 				exit(0)			
 	
 			if "cmd" in data and data["cmd"] == "stopworld":
+				sys.exit(0)
 				return
 	
 			if "cmd" in data and data["cmd"] == "set_opposite_pid":
