@@ -64,6 +64,8 @@ def do_main():
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
+	parser.add_argument('-v', "--debug", action="store_true")
+	parser.add_argument("-I", "--mpath", action="store_true")
 	parser.add_argument("-m", "--module", default="zencad")
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
@@ -74,7 +76,6 @@ def do_main():
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--disable-sleeped", action="store_true")
 	parser.add_argument("--tgtpath")
-	parser.add_argument('-v', "--debug", action="store_true")
 	parser.add_argument("--debugcomm", action="store_true")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
@@ -89,13 +90,16 @@ def do_main():
 	if pargs.debug:
 		zencad.configure.verbose(True)
 
+	if pargs.info:
+		zencad.configure.info(True)
+
 	if pargs.disable_sleeped:
 		zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION = False
 
 	trace("__MAIN__", sys.argv)
 	trace(pargs)
 
-	if pargs.info:
+	if pargs.mpath:
 		print(zencad.moduledir)
 		return
 
