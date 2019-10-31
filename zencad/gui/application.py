@@ -40,7 +40,9 @@ STDOUT_FILENO = 1
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACE__= False
+from zencad.configure import *
+
+__TRACE__= CONFIGURE_APPLICATION_TRACE
 __DEBUG_MODE__ = False
 
 INTERPRETER = sys.executable
@@ -121,6 +123,14 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 
 	if zencad.gui.application.MAIN_COMMUNICATOR:
 		zencad.gui.application.MAIN_COMMUNICATOR.stop_listen()
+
+	time.sleep(0.05)
+
+	procs = psutil.Process().children()	
+	for p in procs:
+		p.terminate()
+
+	#psutil.wait_procs(procs, callback=on_terminate)
 
 @traced
 def start_application(tgtpath, debug):
