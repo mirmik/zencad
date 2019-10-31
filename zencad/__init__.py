@@ -95,6 +95,8 @@ zencad.color.cian =    zencad.color(1,0,1)
 zencad.color.mech =    zencad.color(0.6, 0.6, 0.8)
 zencad.color.transmech =    zencad.color(0.6, 0.6, 0.8, 0.8)
 
+default_color = zencad.settings.Settings.get_default_color()
+
 
 pyservoce.Shape.move = pyservoce.Shape.translate
 pyservoce.Shape.moveX = pyservoce.Shape.right

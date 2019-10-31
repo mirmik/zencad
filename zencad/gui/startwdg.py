@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import zencad.gui.util
-import zencad.gui.settings
+import zencad.settings
 import os
 
 class StartDialog(QDialog):
@@ -47,7 +47,7 @@ class StartDialog(QDialog):
 		self.examples_tree.itemDoubleClicked.connect(self.open_examples_handle)
 		
 		self.recent_scripts_wdg = QListWidget()
-		for l in zencad.gui.settings.Settings.get_recent():
+		for l in zencad.settings.Settings.get_recent():
 			self.recent_scripts_wdg.addItem(os.path.basename(l))  
 		self.recent_scripts_wdg.itemDoubleClicked.connect(self.open_recent_handle)
 		self.recent_scripts_wdg.setStyleSheet("QListWidget { background-color:transparent; color:white; border:none; }")
@@ -129,7 +129,7 @@ class StartDialog(QDialog):
 
 	def open_recent_handle(self):
 		index = self.recent_scripts_wdg.currentRow() 
-		self.openpath = zencad.gui.settings.Settings.get_recent()[index]
+		self.openpath = zencad.settings.Settings.get_recent()[index]
 		self.accept()
 
 	def open_examples_handle(self):
