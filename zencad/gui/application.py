@@ -40,9 +40,8 @@ STDOUT_FILENO = 1
 
 from zencad.gui.mainwindow import MainWindow
 
-from zencad.configure import *
+import zencad.configure
 
-__TRACE__= CONFIGURE_APPLICATION_TRACE
 __DEBUG_MODE__ = False
 
 INTERPRETER = sys.executable
@@ -51,7 +50,7 @@ MAIN_COMMUNICATOR = None
 CONSOLE_RETRANS_THREAD = None
 
 def trace(*argv):
-	if __TRACE__:
+	if zencad.configure.CONFIGURE_APPLICATION_TRACE:
 		print_to_stderr("APPTRACE: {}".format(str(argv)))
 
 def traced(func):

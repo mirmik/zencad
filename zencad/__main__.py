@@ -24,10 +24,10 @@ import signal
 
 from zencad.util import print_to_stderr
 
-from zencad.configure import *
+import zencad.configure
 
 def trace(*args):
-	if CONFIGURE_MAIN_TRACE: 
+	if zencad.configure.CONFIGURE_MAIN_TRACE: 
 		sys.stderr.write(str(args))
 		sys.stderr.write("\r\n")
 		sys.stderr.flush()
@@ -72,7 +72,7 @@ def do_main():
 	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--tgtpath")
-	parser.add_argument("--debug", action="store_true")
+	parser.add_argument('-v', "--debug", action="store_true")
 	parser.add_argument("--debugcomm", action="store_true")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
@@ -85,16 +85,7 @@ def do_main():
 		print("module opt is not equal 'zencad'")
 
 	if pargs.debug:
-		global __MAIN_TRACE__
-		zencad.gui.application.__DEBUG_MODE__ = True
-		__MAIN_TRACE__ = True
-		zencad.gui.application.__TRACE__ = True
-		zencad.gui.retransler.__RETRANSLER_TRACE__ = True
-		zencad.gui.viewadaptor.__TRACE__ = True
-		zencad.gui.mainwindow.__TRACE__ = True
-
-	if pargs.debugcomm:
-		zencad.gui.communicator.__TRACE__ = True
+		zencad.configure.verbose(True)
 
 	trace("__MAIN__", sys.argv)
 	trace(pargs)
@@ -116,7 +107,7 @@ def do_main():
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
-	if pargs.replace and CONFIGURE_CONSOLE_RETRANSLATE:
+	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
@@ -153,7 +144,7 @@ def do_main():
 			print_to_stderr("Unpickle error_2", data)
 			exit(0)			
 
-	if pargs.replace and CONFIGURE_CONSOLE_RETRANSLATE:
+	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
