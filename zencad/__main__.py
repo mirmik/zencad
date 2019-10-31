@@ -59,6 +59,8 @@ def protect_path(s):
 	return s
 
 def do_main():
+	OPPOSITE_PID_SAVE = None
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
 	parser.add_argument("-m", "--module", default="zencad")
@@ -123,15 +125,26 @@ def do_main():
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
-		data = os.read(zencad.gui.application.STDIN_FILENO, 512)
-		try:
-			data = pickle.loads(base64.decodestring(data))
-		except:
-			print_to_stderr("Unpickle error", data)
-			exit(0)			
+		readFile = os.fdopen(zencad.gui.application.STDIN_FILENO)
+		while 1:
+			trace("SLEEPED THREAD: read")
+			rawdata = readFile.readline()
+			try:
+				data = pickle.loads(base64.decodestring(bytes(rawdata, "utf-8")))
+				trace("SLEEPED THREAD RECV:", data)
+			except:
+				print_to_stderr("Unpickle error", data)
+				exit(0)			
+	
+			if "cmd" in data and data["cmd"] == "stopworld":
+				return
+	
+			if "cmd" in data and data["cmd"] == "set_opposite_pid":
+				OPPOSITE_PID_SAVE = data["data"]
+				continue
 
-		if "cmd" in data and data["cmd"] == "stopworld":
-			return
+			break
+
 
 		try:
 			pargs.prescale = data["need_prescale"]
@@ -147,7 +160,11 @@ def do_main():
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
-		zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
+		
+		if OPPOSITE_PID_SAVE is not None:
+			zencad.gui.application.MAIN_COMMUNICATOR.set_opposite_pid(OPPOSITE_PID_SAVE)
+
+		#zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
 
 

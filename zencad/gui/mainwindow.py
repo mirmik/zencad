@@ -43,7 +43,7 @@ from zencad.configure import *
 
 def trace(*args):
 	if CONFIGURE_MAINWINDOW_TRACE:
-		print_to_stderr("MAINWINDOW:", *argv)
+		print_to_stderr("MAINWINDOW:", *args)
 
 class ScreenWidget(QWidget):
 	def __init__(self):
@@ -114,6 +114,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			#self.client_communicator.start_listen()
 
 		if CONFIGURE_SLEEPED_OPTIMIZATION:
+			trace("preconstruct slepped client")
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(session_id=1)
 
 		self.cw = QWidget()
@@ -341,6 +342,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.last_reopen_time = time.time()
 
 	def _open_routine(self, path):
+		trace("_open_routine")
+
 		print()
 		info("open: file:{}".format(path))
 		self.setWindowTitle(path)
@@ -368,6 +371,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.open_bottom_half()
 
 	def open_bottom_half(self):
+		trace("open_bottom_half")
 		path = self.current_opened
 
 		if self.client_communicator:
@@ -384,6 +388,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.session_id += 1
 
 		if CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
+			trace("unsleep procedure")
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)

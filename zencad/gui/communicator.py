@@ -15,7 +15,7 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
-__TRACE__ = False
+from zencad.configure import *
 
 class Communicator(QObject):
 	smooth_stop = pyqtSignal()
@@ -76,12 +76,12 @@ class Communicator(QObject):
 					continue
 
 				if dddd["cmd"] == "set_opposite_pid":
-					self.procpid = dddd["data"]
+					self.parent.procpid = dddd["data"]
 					continue
 
 
-				if __TRACE__:
-					print_to_stderr("received {}: {}".format(self.procpid, dddd))
+				if CONFIGURE_COMMUNICATOR_TRACE:
+					print_to_stderr("received {}: {}".format(self.parent.procpid, dddd))
 
 				self.newdata.emit(ddd)
 
@@ -129,13 +129,13 @@ class Communicator(QObject):
 		#print("unwait")
 
 	def send(self, obj):
-		if __TRACE__:
+		if CONFIGURE_COMMUNICATOR_TRACE:
 			print_to_stderr("communucator send to {}: {}".format(self.procpid, obj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
 		except Exception as ex:
-			if __TRACE__:
+			if CONFIGURE_COMMUNICATOR_TRACE:
 				print_to_stderr("Exception on send", self.procpid, obj, ex)
 			self.stop_listen()
 			#print("Warn: communicator send error", obj, ex)
@@ -160,6 +160,8 @@ class Communicator(QObject):
 	def rpc_buffer(self):
 		return self.listener_thr.buffer
 
+	def set_opposite_pid(self, pid):
+		self.procpid = pid
 
 
 
