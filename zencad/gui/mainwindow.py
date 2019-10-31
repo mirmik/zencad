@@ -38,11 +38,12 @@ import string
 import random
 
 MAIN_COMMUNICATOR = None
-DISPLAY_WINID = None
 
-SLEEPED_OPTIMIZATION = False
-__TRACE_COMMUNICATION__ = False
-__TRACE__ = False
+from zencad.configure import *
+
+def trace(*args):
+	if CONFIGURE_MAINWINDOW_TRACE:
+		print_to_stderr("MAINWINDOW:", *argv)
 
 class ScreenWidget(QWidget):
 	def __init__(self):
@@ -112,7 +113,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			#self.client_communicator.start_listen()
 
-		if SLEEPED_OPTIMIZATION:
+		if CONFIGURE_SLEEPED_OPTIMIZATION:
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(session_id=1)
 
 		self.cw = QWidget()
@@ -219,7 +220,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		except:
 			return
 
-		if __TRACE_COMMUNICATION__:
+		if CONFIGURE_MAINWINDOW_TRACE_COMMUNICATION:
 			print_to_stderr("MainWindow:communicator:", data)
 
 		# TODO: Переделать в словарь
@@ -245,7 +246,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		fmt='.5f'
 		x = data["x"]; y = data["y"]; z = data["z"];
 		idx = qw.upper()
-		print("{0}: x:{1}, y:{2}, z:{3}; point({1},{2},{3})".format(
+		print("{0}: x:{1}, y:{2}, z:{3}; point3({1},{2},{3})".format(
 			idx, format(x, fmt), format(y, fmt), format(z, fmt)))
 
 		self.info_widget.set_marker_data(qw, x, y, z)
@@ -254,22 +255,19 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console.write(data)
 
 	def bind_window(self, winid, pid, session_id):
-		if __TRACE__:
-			print_to_stderr("bind_window")
+		trace("bind_window")
 		with self.openlock:
 			try:
 				if session_id != self.session_id:
 					return
 		
-				if __TRACE__:
-					print_to_stderr("bind window")
+				trace("bind window")
 				container = QWindow.fromWinId(winid)
 				self.cc = QWidget.createWindowContainer(container)
 				#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
 	
 				self.cc_window = winid
-				if __TRACE__:
-					print_to_stderr("replace widget")
+				trace("replace widget")
 				self.vsplitter.replaceWidget(0, self.cc)
 				#self.client_communicator.send("unwait")
 				self.client_pid = pid
@@ -295,23 +293,19 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
-		if __TRACE__:
-			print_to_stderr("closeEvent")
+		trace("closeEvent")
 		if self.cc:
 			self.cc.close()
 
 		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
-			if __TRACE__:
-				print_to_stderr("send stopworld")
+			trace("send stopworld")
 			self.client_communicator.send({"cmd": "stopworld"})
 		else:
-			if __TRACE__:
-				print_to_stderr("send smooth_stopworld")
+			trace("send smooth_stopworld")
 			self.client_communicator.send({"cmd": "smooth_stopworld"})
 
-		if SLEEPED_OPTIMIZATION and self.sleeped_client:
-			if __TRACE__:
-				print_to_stderr("send sleeped optimization stopworld")
+		if CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
+			trace("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
 		#print_to_stderr("pre sleep")
@@ -337,8 +331,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		#	os.kill(self.client_pid, signal.SIGKILL)
 		
 	def showEvent(self, ev):
-		if __TRACE__:
-			print_to_stderr("showEvent")
+		trace("showEvent")
 		if self.client_communicator:
 			self.client_communicator.start_listen()
 
@@ -390,7 +383,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	
 		self.session_id += 1
 
-		if SLEEPED_OPTIMIZATION and self.sleeped_client:
+		if CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
@@ -468,6 +461,5 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		QGuiApplication.postEvent(self.texteditor, event);
 
 	def internal_key_released_raw(self, key, modifiers):
-		print("internal_key_pressed_raw")
 		event = QKeyEvent(QEvent.KeyRelease, key, Qt.KeyboardModifier(modifiers));
 		QGuiApplication.postEvent(self.texteditor, event);
