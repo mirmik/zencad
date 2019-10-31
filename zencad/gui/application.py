@@ -244,6 +244,7 @@ def common_unbouded_proc(scene,
 	global DISPLAY_WINID
 
 	app = QApplication([])
+	zencad.gui.signal.setup_qt_interrupt_handling()
 	zencad.opengl.init_opengl()
 
 	widget = zencad.gui.viewadaptor.DisplayWidget(
