@@ -39,10 +39,10 @@ import random
 
 MAIN_COMMUNICATOR = None
 
-from zencad.configure import *
+import zencad.configure
 
 def trace(*args):
-	if CONFIGURE_MAINWINDOW_TRACE:
+	if zencad.configure.CONFIGURE_MAINWINDOW_TRACE:
 		print_to_stderr("MAINWINDOW:", *args)
 
 class ScreenWidget(QWidget):
@@ -113,7 +113,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator.newdata.connect(self.new_worker_message)
 			#self.client_communicator.start_listen()
 
-		if CONFIGURE_SLEEPED_OPTIMIZATION:
+		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION:
 			trace("preconstruct slepped client")
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(session_id=1)
 
@@ -221,8 +221,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		except:
 			return
 
-		if CONFIGURE_MAINWINDOW_TRACE_COMMUNICATION:
-			print_to_stderr("MainWindow:communicator:", data)
+		trace("MainWindow:communicator:", data)
 
 		# TODO: Переделать в словарь
 		if cmd == "hello": print("HelloWorld")
@@ -305,7 +304,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			trace("send smooth_stopworld")
 			self.client_communicator.send({"cmd": "smooth_stopworld"})
 
-		if CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
+		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
 			trace("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
@@ -387,7 +386,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	
 		self.session_id += 1
 
-		if CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
+		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
 			trace("unsleep procedure")
 			self.client_communicator = self.sleeped_client
 			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})

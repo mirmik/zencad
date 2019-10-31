@@ -15,7 +15,7 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
-from zencad.configure import *
+import zencad.configure
 
 class Communicator(QObject):
 	smooth_stop = pyqtSignal()
@@ -80,7 +80,7 @@ class Communicator(QObject):
 					continue
 
 
-				if CONFIGURE_COMMUNICATOR_TRACE:
+				if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 					print_to_stderr("received {}: {}".format(self.parent.procpid, dddd))
 
 				self.newdata.emit(ddd)
@@ -129,13 +129,13 @@ class Communicator(QObject):
 		#print("unwait")
 
 	def send(self, obj):
-		if CONFIGURE_COMMUNICATOR_TRACE:
+		if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 			print_to_stderr("communucator send to {}: {}".format(self.procpid, obj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
 		except Exception as ex:
-			if CONFIGURE_COMMUNICATOR_TRACE:
+			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 				print_to_stderr("Exception on send", self.procpid, obj, ex)
 			self.stop_listen()
 			#print("Warn: communicator send error", obj, ex)

@@ -16,7 +16,7 @@ import math
 import threading
 
 import pyservoce
-from zencad.configure import *
+import zencad.configure
 
 from zencad.util import print_to_stderr
 
@@ -24,7 +24,7 @@ from zencad.util import print_to_stderr
 #OPTION_RETRANSLATE_KEYS_TO_MAINCOMMUNICATOR = True
 
 def trace(*argv):
-	if CONFIGURE_VIEWADAPTOR_TRACE:
+	if zencad.configure.CONFIGURE_VIEWADAPTOR_TRACE:
 		print_to_stderr("DISPTRACE:", *argv)
 
 class DisplayWidget(QGLWidget):
