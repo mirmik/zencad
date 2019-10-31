@@ -88,7 +88,8 @@ class ScreenWidget(QWidget):
 		painter.end()
 
 def info(*args):
-	print("GUI:", *args)
+	if zencad.configure.CONFIGURE_GUI_INFO:
+		print("GUI:", *args)
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, 
