@@ -354,7 +354,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def _open_routine(self, path):
 		trace("_open_routine")
 
-		print()
+		info("")
 		info("open: file:{}".format(path))
 		self.setWindowTitle(path)
 
