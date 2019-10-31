@@ -1,8 +1,9 @@
 * Основные концепции
 	* [Главная страница](index.html)
 	* [Скриптовый CAD](scriptcad.html)
-	* [Кэширование](caching.html)
 	* [Разбор HelloWorld](helloworld.html)
+	* [Установка](installation.html)
+	* [Внутренняя кухня](internal.html)
 * Базовые примитивы и операции
 	* [Объёмные примитивы](prim3d.html)  
 	* [Плоские примитивы](prim2d.html)  
