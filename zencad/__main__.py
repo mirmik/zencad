@@ -60,6 +60,7 @@ def protect_path(s):
 
 def do_main():
 	OPPOSITE_PID_SAVE = None
+	zencad.gui.signal.setup_simple_interrupt_handling()
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
