@@ -3,7 +3,7 @@
 from PyQt5.QtCore import *
 import pyservoce
 
-default_color = (0.6, 0.6, 0.8, 0)
+pre_default_color = (0.6, 0.6, 0.8, 0)
 
 class Settings():
 	list_of_settings = {
@@ -11,10 +11,10 @@ class Settings():
 			"text_editor" : "subl",
 		},
 		"view" : {
-			"default_color_red" : default_color[0],
-			"default_color_green" : default_color[1],
-			"default_color_blue" : default_color[2],
-			"default_color_alpha" : default_color[3],
+			"default_color_red" : pre_default_color[0],
+			"default_color_green" : pre_default_color[1],
+			"default_color_blue" : pre_default_color[2],
+			"default_color_alpha" : pre_default_color[3],
 		},
 		"memory" : {
 			"recents" : []

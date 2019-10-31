@@ -24,14 +24,10 @@ import signal
 
 from zencad.util import print_to_stderr
 
-CONSOLE_RETRANS = True
-__MAIN_TRACE__ = False
-
-STDOUT_FILENO = zencad.gui.application.STDOUT_FILENO
-STDIN_FILENO = zencad.gui.application.STDIN_FILENO
+import zencad.configure
 
 def trace(*args):
-	if __MAIN_TRACE__: 
+	if zencad.configure.CONFIGURE_MAIN_TRACE: 
 		sys.stderr.write(str(args))
 		sys.stderr.write("\r\n")
 		sys.stderr.flush()
@@ -57,9 +53,19 @@ def finish_procedure():
 	#    p.kill()
 	trace("MAIN: Wait childs ... OK")
 
+def protect_path(s):
+	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
+		return s[1:-1]
+	return s
+
 def do_main():
+	OPPOSITE_PID_SAVE = None
+	zencad.gui.signal.setup_simple_interrupt_handling()
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
+	parser.add_argument('-v', "--debug", action="store_true")
+	parser.add_argument("-I", "--mpath", action="store_true")
 	parser.add_argument("-m", "--module", default="zencad")
 	parser.add_argument("--mainonly", action="store_true")
 	parser.add_argument("--replace", action="store_true")
@@ -68,32 +74,32 @@ def do_main():
 	parser.add_argument("--sleeped", action="store_true")
 	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--disable-show", action="store_true")
+	parser.add_argument("--disable-sleeped", action="store_true")
 	parser.add_argument("--tgtpath")
-	parser.add_argument("--debug", action="store_true")
 	parser.add_argument("--debugcomm", action="store_true")
 	parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
 	pargs = parser.parse_args()
 
+	if hasattr(pargs,"tgtpath") and pargs.tgtpath: pargs.tgtpath = protect_path(pargs.tgtpath)
+	if len(pargs.paths) > 0: pargs.paths[0] = protect_path(pargs.paths[0])
+
 	if pargs.module != "zencad":
 		print("module opt is not equal 'zencad'")
 
 	if pargs.debug:
-		global __MAIN_TRACE__
-		zencad.gui.application.__DEBUG_MODE__ = True
-		__MAIN_TRACE__ = True
-		zencad.gui.application.__TRACE__ = True
-		zencad.gui.retransler.__RETRANSLER_TRACE__ = True
-		zencad.gui.viewadaptor.__TRACE__ = True
-		zencad.gui.mainwindow.__TRACE__ = True
+		zencad.configure.verbose(True)
 
-	if pargs.debugcomm:
-		zencad.gui.communicator.__TRACE__ = True
+	if pargs.info:
+		zencad.configure.info(True)
+
+	if pargs.disable_sleeped:
+		zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION = False
 
 	trace("__MAIN__", sys.argv)
 	trace(pargs)
 
-	if pargs.info:
+	if pargs.mpath:
 		print(zencad.moduledir)
 		return
 
@@ -110,7 +116,7 @@ def do_main():
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
-	if pargs.replace and CONSOLE_RETRANS:
+	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
@@ -119,15 +125,27 @@ def do_main():
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
-		data = os.read(zencad.gui.application.STDIN_FILENO, 512)
-		try:
-			data = pickle.loads(base64.decodestring(data))
-		except:
-			print_to_stderr("Unpickle error", data)
-			exit(0)			
+		readFile = os.fdopen(zencad.gui.application.STDIN_FILENO)
+		while 1:
+			trace("SLEEPED THREAD: read")
+			rawdata = readFile.readline()
+			try:
+				data = pickle.loads(base64.b64decode(bytes(rawdata, "utf-8")))
+				trace("SLEEPED THREAD RECV:", data)
+			except:
+				print_to_stderr("Unpickle error", rawdata)
+				exit(0)			
+	
+			if "cmd" in data and data["cmd"] == "stopworld":
+				sys.exit(0)
+				return
+	
+			if "cmd" in data and data["cmd"] == "set_opposite_pid":
+				OPPOSITE_PID_SAVE = data["data"]
+				continue
 
-		if "cmd" in data and data["cmd"] == "stopworld":
-			return
+			break
+
 
 		try:
 			pargs.prescale = data["need_prescale"]
@@ -136,14 +154,18 @@ def do_main():
 			print_to_stderr("Unpickle error_2", data)
 			exit(0)			
 
-	if pargs.replace and CONSOLE_RETRANS:
+	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
-		zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
+		
+		if OPPOSITE_PID_SAVE is not None:
+			zencad.gui.application.MAIN_COMMUNICATOR.set_opposite_pid(OPPOSITE_PID_SAVE)
+
+		#zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
 
 
@@ -155,7 +177,9 @@ def do_main():
 			zencad.gui.application.start_main_application(presentation=True)
 		else:
 			# Windows?
-			subprocess.Popen("nohup python3 -m zencad --nodaemon > /dev/null 2>&1&", shell=True, stdout=None, stderr=None)
+			print("TODO ?")
+			sys.exit(0)
+			#subprocess.Popen("nohup python3 -m zencad --nodaemon > /dev/null 2>&1&", shell=True, stdout=None, stderr=None)
 		
 	else:
 		# Режим работы, когда указан файл.
@@ -165,15 +189,19 @@ def do_main():
 		# информация отсюда транслируется функции show
 		# через глобальные переменные.
 
-		path = os.path.join(os.getcwd(), pargs.paths[0])
+		if not os.path.abspath(pargs.paths[0]):
+			path = os.path.join(os.getcwd(), pargs.paths[0])
+		else:
+			path = pargs.paths[0]
 		zencad.showapi.EXECPATH = path
 	
 		# Устанавливаем рабочей директорией дирректорию,
 		# содержащую целевой файл.
 		# TODO: Возможно, так делать нужно только
 		# при загрузке через GUI. Вынести флаг?
-		directory = os.path.dirname(path)
+		directory = os.path.dirname(os.path.abspath(path))
 		os.chdir(directory)
+		
 		sys.path.append(directory)
 		
 		# По умолчанию приложение работает в режиме,
@@ -209,7 +237,7 @@ def main():
 	do_main()
 	finish_procedure()
 	trace("EXIT")
-	exit(0)
+	sys.exit(0)
 
 if __name__ == "__main__":
 	zencad.util.set_process_name("zencad")

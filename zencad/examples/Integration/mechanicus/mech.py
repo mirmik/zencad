@@ -8,7 +8,7 @@ If we have contours, we can build geometry on their base.
 
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import sys
 from skimage import measure, io
 from itertools import chain
