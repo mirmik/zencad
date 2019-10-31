@@ -9,6 +9,7 @@ import zencad.gui.startwdg
 import zencad.gui.communicator
 import zencad.gui.actions
 import zencad.gui.retransler
+import zencad.gui.signal
 from zencad.util import set_process_name
 
 import zencad.lazifier
@@ -70,7 +71,8 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
 
 	app = QApplication([])
-	
+	zencad.gui.signal.setup_qt_interrupt_handling()
+
 	zencad.opengl.init_opengl()
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 	
