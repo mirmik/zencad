@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-# coding: utf-8
+
+"""
+ZenCad API example: segment.py
+"""
 
 from zencad import *
 
-test_mode()
-
-m = segment((0, 0, 0), (10, 20, 30))
+m = segment((10, 0, 0), (10, 20, 30))
 display(m)
 
 show()

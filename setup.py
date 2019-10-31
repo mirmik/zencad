@@ -8,9 +8,6 @@ import glob
 import sys
 import os
 
-print(os.name)
-print(sys.platform)
-
 directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
@@ -26,7 +23,7 @@ requires = [
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.19.6",
+    version="0.20.0",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",

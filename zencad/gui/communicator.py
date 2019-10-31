@@ -15,7 +15,7 @@ from PyQt5.QtGui import *
 import os 
 import signal
 
-__TRACE__ = False
+import zencad.configure
 
 class Communicator(QObject):
 	smooth_stop = pyqtSignal()
@@ -58,7 +58,7 @@ class Communicator(QObject):
 					return
 
 				try:
-					ddd = base64.decodestring(bytes(inputdata, "utf-8"))
+					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
 					dddd = pickle.loads(ddd)
 				except:
 					print_to_stderr("Unpicling:", ddd)
@@ -76,12 +76,14 @@ class Communicator(QObject):
 					continue
 
 				if dddd["cmd"] == "set_opposite_pid":
-					self.procpid = dddd["data"]
+					self.parent.procpid = dddd["data"]
 					continue
 
 
-				if __TRACE__:
-					print_to_stderr("received {}: {}".format(self.procpid, dddd))
+				if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
+					strform = str(dddd)
+					if len(strform) > 100: strform = strform[0:101]
+					print_to_stderr("received {}: {}".format(self.parent.procpid, strform))
 
 				self.newdata.emit(ddd)
 
@@ -129,14 +131,16 @@ class Communicator(QObject):
 		#print("unwait")
 
 	def send(self, obj):
-		if __TRACE__:
-			print_to_stderr("communucator send to {}: {}".format(self.procpid, obj))
+		if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
+			strobj = str(obj)
+			if len(strobj) > 100: strobj=strobj[:101]
+			print_to_stderr("communucator send to {}: {}".format(self.procpid, strobj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
 		except Exception as ex:
-			if __TRACE__:
-				print_to_stderr("Exception on send", self.procpid, obj, ex)
+			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
+				print_to_stderr("Exception on send", self.procpid, strobj, ex)
 			self.stop_listen()
 			#print("Warn: communicator send error", obj, ex)
 		#os.flush(self.opipe)
@@ -160,6 +164,8 @@ class Communicator(QObject):
 	def rpc_buffer(self):
 		return self.listener_thr.buffer
 
+	def set_opposite_pid(self, pid):
+		self.procpid = pid
 
 
 

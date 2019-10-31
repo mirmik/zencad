@@ -14,15 +14,18 @@ import os
 import time
 import math
 import threading
+
 import pyservoce
+import zencad.configure
 
 from zencad.util import print_to_stderr
 
-__TRACE__ = False
+#__TRACE__ = False
+#OPTION_RETRANSLATE_KEYS_TO_MAINCOMMUNICATOR = True
 
 def trace(*argv):
-	if __TRACE__:
-		print("DISPTRACE:", *argv)
+	if zencad.configure.CONFIGURE_VIEWADAPTOR_TRACE:
+		print_to_stderr("DISPTRACE:", *argv)
 
 class DisplayWidget(QGLWidget):
 	tracking_info_signal = pyqtSignal(tuple)
@@ -31,6 +34,8 @@ class DisplayWidget(QGLWidget):
 
 	locationChanged = pyqtSignal(dict)
 	signal_key_pressed = pyqtSignal(str)
+	signal_key_pressed_raw = pyqtSignal(int, int)
+	signal_key_released_raw = pyqtSignal(int, int)
 	signal_screenshot_reply = pyqtSignal(bytes, tuple)
 
 	zoom_koeff_key = 1.3
@@ -383,27 +388,40 @@ class DisplayWidget(QGLWidget):
 		trace("keyPressEvent", event.key())
 		trace(event.nativeVirtualKey())
 
+		modifiers = QApplication.keyboardModifiers()
+
 		if event.key() == Qt.Key_Q:
 			self.markerQPressed()
-		if event.key() == Qt.Key_W:
+		elif event.key() == Qt.Key_W:
 			self.markerWPressed()
-		if event.key() == Qt.Key_F3 or event.key() == Qt.Key_PageUp:
+		elif event.key() == Qt.Key_F3 or event.key() == Qt.Key_PageUp:
 			self.zoom_up(self.zoom_koeff_key)
-		if event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
+		elif event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
 			self.zoom_down(self.zoom_koeff_key)
 
-		if event.key() == Qt.Key_F11:
-			self.signal_key_pressed.emit("F11")
+		#elif event.key() == Qt.Key_F11:
+		#	self.signal_key_pressed.emit("F11")
 
-		if event.key() == Qt.Key_F10:
-			self.signal_key_pressed.emit("F10")
+		#elif event.key() == Qt.Key_F10:
+		#	self.signal_key_pressed.emit("F10")
+
+		else:
+			# If signal not handling here, translate it onto top level
+			if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+				self.signal_key_pressed_raw.emit(event.key(), modifiers)
+
 			#self.setWindowState(Qt.WindowFullScreen)
+
+	def keyReleaseEvent(self, event):
+		modifiers = QApplication.keyboardModifiers()
+		
+		if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+			self.signal_key_released_raw.emit(event.key(), modifiers)
 
 	def external_communication_command(self, data):
 		cmd = data["cmd"]
 
-		if __TRACE__:
-			print_to_stderr("external_command:", data)
+		trace("external_command:", data)
 
 		if cmd == "autoscale": self.autoscale()
 		elif cmd == "resetview": self.reset_orient()
@@ -556,6 +574,10 @@ def bind_widget_signal(widget, communicator):
 		"cmd":"location", "loc": arg }))
 	widget.signal_key_pressed.connect(lambda arg:communicator.send({
 		"cmd":"keypressed", "key": arg }))
+	widget.signal_key_pressed_raw.connect(lambda key, modifiers:communicator.send({
+		"cmd":"keypressed_raw", "key": key, "modifiers": modifiers }))
+	widget.signal_key_released_raw.connect(lambda key, modifiers:communicator.send({
+		"cmd":"keyreleased_raw", "key": key, "modifiers": modifiers }))
 	widget.tracking_info_signal.connect(lambda arg:communicator.send({
 		"cmd":"trackinfo", "data": arg }))
 	widget.signal_screenshot_reply.connect(screenshot_return_send_dec(communicator))

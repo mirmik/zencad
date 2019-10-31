@@ -9,6 +9,7 @@ import zencad.gui.startwdg
 import zencad.gui.communicator
 import zencad.gui.actions
 import zencad.gui.retransler
+import zencad.gui.signal
 from zencad.util import set_process_name
 
 import zencad.lazifier
@@ -40,7 +41,8 @@ STDOUT_FILENO = 1
 
 from zencad.gui.mainwindow import MainWindow
 
-__TRACE__= False
+import zencad.configure
+
 __DEBUG_MODE__ = False
 
 INTERPRETER = sys.executable
@@ -49,7 +51,7 @@ MAIN_COMMUNICATOR = None
 CONSOLE_RETRANS_THREAD = None
 
 def trace(*argv):
-	if __TRACE__:
+	if zencad.configure.CONFIGURE_APPLICATION_TRACE:
 		print_to_stderr("APPTRACE: {}".format(str(argv)))
 
 def traced(func):
@@ -69,7 +71,8 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
 
 	app = QApplication([])
-	
+	zencad.gui.signal.setup_qt_interrupt_handling()
+
 	zencad.opengl.init_opengl()
 	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 	
@@ -101,7 +104,6 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 				MAIN_COMMUNICATOR,
 			openned_path=tgtpath,
 			display_mode=display_mode)
-		mw.show()
 
 	else:
 		strt_dialog = zencad.gui.startwdg.StartDialog()
@@ -122,6 +124,14 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	if zencad.gui.application.MAIN_COMMUNICATOR:
 		zencad.gui.application.MAIN_COMMUNICATOR.stop_listen()
 
+	time.sleep(0.05)
+
+	procs = psutil.Process().children()	
+	for p in procs:
+		p.terminate()
+
+	#psutil.wait_procs(procs, callback=on_terminate)
+
 @traced
 def start_application(tgtpath, debug):
 	"""Запустить графическую оболочку в новом.
@@ -141,7 +151,7 @@ def start_application(tgtpath, debug):
 
 	debugstr = "--debug" if debug or __DEBUG_MODE__ else "" 
 	interpreter = INTERPRETER
-	cmd = "{} -m zencad --mainonly {} --tgtpath {}".format(interpreter, debugstr, tgtpath)
+	cmd = '{} -m zencad --mainonly {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 	return subproc
@@ -179,7 +189,7 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	debug_mode = "--debug" if __DEBUG_MODE__ else ""
 	interpreter = INTERPRETER
 
-	cmd = "{interpreter} -m zencad {path} --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}".format(
+	cmd = '{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}'.format(
 		interpreter=interpreter, 
 		path=path, 
 		prescale=prescale, 
@@ -219,6 +229,7 @@ def on_terminate(proc):
 def common_unbouded_proc(scene, 
 	view=None,
 	animate=None, 
+	preanimate=None,
 	close_handle=None,
 	pipes=False, 
 	need_prescale=False, 
@@ -233,6 +244,7 @@ def common_unbouded_proc(scene,
 	global DISPLAY_WINID
 
 	app = QApplication([])
+	zencad.gui.signal.setup_qt_interrupt_handling()
 	zencad.opengl.init_opengl()
 
 	widget = zencad.gui.viewadaptor.DisplayWidget(
@@ -247,8 +259,7 @@ def common_unbouded_proc(scene,
 
 
 		def smooth_stop_world():
-			if __TRACE__:
-				print_to_stderr("common_unbouded_proc::smooth_stop_world")
+			trace("common_unbouded_proc::smooth_stop_world")
 			
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -256,9 +267,10 @@ def common_unbouded_proc(scene,
 			if close_handle:
 				close_handle()
 
+			#time.sleep(0.1)
+
 			procs = psutil.Process().children()
-			if __TRACE__:
-				print_to_stderr(procs)
+			trace(procs)
 			psutil.wait_procs(procs, callback=on_terminate)
 
 			MAIN_COMMUNICATOR.stop_listen()
@@ -271,8 +283,7 @@ def common_unbouded_proc(scene,
 			trace("app quit on receive... after")
 
 		def stop_world():
-			if __TRACE__:
-				print_to_stderr("common_unbouded_proc::stop_world")
+			trace("common_unbouded_proc::stop_world")
 			MAIN_COMMUNICATOR.stop_listen()
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -289,8 +300,7 @@ def common_unbouded_proc(scene,
 
 
 		def receiver(data):
-			if __TRACE__:
-				print_to_stderr("common_unbouded_proc::receiver")
+			trace("common_unbouded_proc::receiver")
 			try:
 				data = pickle.loads(data)
 				if data["cmd"] == "stopworld": 
@@ -306,6 +316,9 @@ def common_unbouded_proc(scene,
 		#time.sleep(2)
 		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
 		#MAIN_COMMUNICATOR.wait()
+
+	if preanimate:
+		preanimate(widget)
 
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
@@ -335,12 +348,10 @@ def common_unbouded_proc(scene,
 
 	trace("Wait childs ...")
 
-	if __TRACE__:
-		print_to_stderr("list of threads: ", threading.enumerate())
+	trace("list of threads: ", threading.enumerate())
 
 	procs = psutil.Process().children()
-	if __TRACE__:
-		print_to_stderr(procs)
+	trace(procs)
 	psutil.wait_procs(procs, callback=on_terminate)
 	#for p in procs:
 	#    p.terminate()

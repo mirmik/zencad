@@ -54,7 +54,7 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
     else:
         raise Exception("undeclared SHOWMODE")
 
-default_color = zencad.gui.settings.Settings.get_default_color()
+default_color = zencad.settings.Settings.get_default_color()
 
 def display(shp, color=default_color, deep=True):
     if isinstance(shp, list) or isinstance(shp, tuple):
