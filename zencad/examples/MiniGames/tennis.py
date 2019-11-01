@@ -64,7 +64,7 @@ def change_angle():
 
 	BALL_SPEED = [math.cos(angle) * BALL_SPEED_NORMAL, math.sin(angle) * BALL_SPEED_NORMAL]
 
-def preanimate(wdg):
+def preanimate(wdg, animate_thread):
 	global CTRWIDGET, SLD0, SLD1
 	CTRWIDGET = QWidget()
 	layout = QVBoxLayout()
