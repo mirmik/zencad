@@ -85,15 +85,16 @@ def unify(shp):
 
 zencad.color = pyservoce.color
 
-zencad.color.white =   zencad.color(1,1,1)
-zencad.color.red =     zencad.color(1,0,0)
-zencad.color.green =   zencad.color(0,1,0)
-zencad.color.blue =    zencad.color(0,0,1)
-zencad.color.yellow =  zencad.color(1,1,0)
-zencad.color.magenta = zencad.color(0,1,1)
-zencad.color.cian =    zencad.color(1,0,1)
-zencad.color.mech =    zencad.color(0.6, 0.6, 0.8)
-zencad.color.transmech =    zencad.color(0.6, 0.6, 0.8, 0.8)
+zencad.color.white =     zencad.color(1,1,1)
+zencad.color.black =     zencad.color(0,0,0)
+zencad.color.red =       zencad.color(1,0,0)
+zencad.color.green =     zencad.color(0,1,0)
+zencad.color.blue =      zencad.color(0,0,1)
+zencad.color.yellow =    zencad.color(1,1,0)
+zencad.color.magenta =   zencad.color(0,1,1)
+zencad.color.cian =      zencad.color(1,0,1)
+zencad.color.mech =      zencad.color(0.6, 0.6, 0.8)
+zencad.color.transmech = zencad.color(0.6, 0.6, 0.8, 0.8)
 
 default_color = zencad.settings.Settings.get_default_color()
 
