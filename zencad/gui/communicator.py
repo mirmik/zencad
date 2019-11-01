@@ -61,7 +61,7 @@ class Communicator(QObject):
 					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
 					dddd = pickle.loads(ddd)
 				except:
-					print_to_stderr("Unpicling:", ddd)
+					print_to_stderr("Unpicling:", ddd, len(inputdata))
 
 				if dddd == "unwait":
 					self.unwait()
@@ -111,19 +111,20 @@ class Communicator(QObject):
 			self.listener_thr.start()
 
 	def stop_listen(self):
-		#try:
-		#	os.close(self.ipipe)
-		#except:
-		#	pass
-		#	#print("Warn: os.close(self.ipipe) is fault")
+		try:
+			os.close(self.ipipe)
+		except:
+			pass
+			#print_to_stderr("Warn: os.close(self.ipipe) is fault")
 #
-		#try:
-		#	os.close(self.opipe)
-		#except:
-		#	pass
-			#print("Warn: os.close(self.opipe) is fault")
+		try:
+			os.close(self.opipe)
+		except:
+			pass
+			#print_to_stderr("Warn: os.close(self.opipe) is fault")
 
 		self.listener_thr.event.set()
+		self.listener_thr.wait()
 
 		#os.kill(self.listener_thr.pid, signal.SIGKILL)
 		#print("wait")
@@ -138,10 +139,12 @@ class Communicator(QObject):
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
+			return True
 		except Exception as ex:
 			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 				print_to_stderr("Exception on send", self.procpid, strobj, ex)
 			self.stop_listen()
+			return False
 			#print("Warn: communicator send error", obj, ex)
 		#os.flush(self.opipe)
 
