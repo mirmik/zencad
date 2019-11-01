@@ -50,6 +50,8 @@ RETRANSLATE_THREAD = None
 MAIN_COMMUNICATOR = None
 CONSOLE_RETRANS_THREAD = None
 
+DISPLAY_WIDGET = None
+
 def trace(*argv):
 	if zencad.configure.CONFIGURE_APPLICATION_TRACE:
 		print_to_stderr("APPTRACE: {}".format(str(argv)))
@@ -241,7 +243,7 @@ def common_unbouded_proc(scene,
 
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
-	global DISPLAY_WINID
+	global DISPLAY_WIDGET
 
 	app = QApplication([])
 	zencad.gui.signal.setup_qt_interrupt_handling()
@@ -251,7 +253,7 @@ def common_unbouded_proc(scene,
 		scene=scene, 
 		view=scene.viewer.create_view() if view is None else view, 
 		need_prescale=need_prescale)
-	DISPLAY_WINID = widget
+	DISPLAY_WIDGET = widget
 
 	if pipes:
 		zencad.gui.viewadaptor.bind_widget_signal(
@@ -314,16 +316,17 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
 		MAIN_COMMUNICATOR.smooth_stop.connect(smooth_stop_world)
 		#time.sleep(2)
-		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(DISPLAY_WINID.winId()), "pid":os.getpid(), "session_id":session_id})
+		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(widget.winId()), "pid":os.getpid(), "session_id":session_id})
 		#MAIN_COMMUNICATOR.wait()
-
-	if preanimate:
-		preanimate(widget)
 
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
 			widget=widget, 
-			updater_function=animate)  
+			updater_function=animate)
+
+		if preanimate:
+			preanimate(widget, ANIMATE_THREAD)
+
 		ANIMATE_THREAD.start()
 	
 		def animate_stop():
