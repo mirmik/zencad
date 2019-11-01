@@ -56,27 +56,28 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
 
 default_color = zencad.settings.Settings.get_default_color()
 
-def display(shp, color=default_color, deep=True):
+def display(shp, color=default_color, deep=True, scene=default_scene):
     if isinstance(shp, list) or isinstance(shp, tuple):
+        lst = []
         for s in shp:
-            display(s)
-        return
+            lst.append(display(s, color=color, deep=deep, scene=scene))
+        return lst
 
     if isinstance(shp, evalcache.LazyObject):
         shp = evalcache.unlazy(shp)
 
     if isinstance(shp, zencad.assemble.unit):
-        return shp.bind_scene(default_scene, color=color, deep=deep)
+        return shp.bind_scene(scene, color=color, deep=deep)
 
-    return default_scene.add(shp, color)
+    return scene.add(shp, color)
 
 
 def disp(*args, **kwargs):
     return display(*args, **kwargs)
 
 
-def highlight(m):
-    display(m, Color(0.5, 0, 0, 0.5))
+def highlight(m, color=Color(0.5, 0, 0, 0.5)):
+    display(m, color)
     return m
 
 
