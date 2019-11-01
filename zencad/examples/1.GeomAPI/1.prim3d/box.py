@@ -24,8 +24,6 @@ disp(m2.right(30 * 2), color=color.green)
 disp(m3.right(30 * 3), color=color.blue)
 
 # Mister Cube:
-w = 40
-
 mister_cube = (
 	box(40, center=True)
 	- box(8, center=True).translate(10,-20,8)
