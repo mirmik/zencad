@@ -24,6 +24,9 @@ class AnimateThread(QThread):
 		self.cancelled = True
 		self.wdg.animate_updated.set()
 
+	def set_animate_step(self, step):
+			self.animate_step = step
+
 	def run(self):
 		time.sleep(0.1)
 		lasttime = time.time() - self.animate_step

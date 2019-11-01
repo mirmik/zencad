@@ -31,6 +31,8 @@ from zencad.geom.prim1d import *
 from zencad.geom.ops3d import *
 from zencad.geom.ops1d2d import *
 
+from zencad.showapi import default_scene
+
 #__DEFAULT_TRACE__ = True
 #
 #def enable_trace(en):
