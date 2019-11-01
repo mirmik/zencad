@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import io
 import base64
 import pickle
@@ -16,6 +17,10 @@ import os
 import signal
 
 import zencad.configure
+
+def trace(*args):
+	if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
+		print_to_stderr("Communicator:", *args)
 
 class Communicator(QObject):
 	smooth_stop = pyqtSignal()
@@ -122,19 +127,30 @@ class Communicator(QObject):
 			self.listener_thr.start()
 
 	def stop_listen(self):
+		trace("stop_listen")
+		
+		if sys.platform == "win32" or sys.platform == "win64": 
+			return
+
 		try:
+			trace("close ipipe")
 			os.close(self.ipipe)
 		except:
 			pass
 			#print_to_stderr("Warn: os.close(self.ipipe) is fault")
 #
 		try:
+			trace("close opipe")
 			os.close(self.opipe)
 		except:
 			pass
 			#print_to_stderr("Warn: os.close(self.opipe) is fault")
 
+		trace("event set")
 		self.listener_thr.event.set()
+		
+		#print(sys.platform)
+		trace("wait listener")
 		self.listener_thr.wait()
 
 		#os.kill(self.listener_thr.pid, signal.SIGKILL)
@@ -143,6 +159,7 @@ class Communicator(QObject):
 		#print("unwait")
 
 	def stop_listen_nowait(self):
+		trace("stop_listen_nowait")
 		try:
 			os.close(self.ipipe)
 		except:
@@ -161,6 +178,8 @@ class Communicator(QObject):
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
+			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
+				print_to_stderr("Correct sending")
 			return True
 		except Exception as ex:
 			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
@@ -181,6 +200,7 @@ class Communicator(QObject):
 		self.listener_thr.event.unwait()
 	
 	def kill(self):
+		trace("kill")
 		#if self.procpid:
 		#	os.kill(self.procpid, signal.SIGKILL)
 		try:
