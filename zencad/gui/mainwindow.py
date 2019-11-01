@@ -275,6 +275,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.cc_window = winid
 			trace("replace widget")
 			self.vsplitter.replaceWidget(0, self.cc)
+			self.update()
 			#self.client_communicator.send("unwait")
 			self.client_pid = pid
 			self.setWindowTitle(self.current_opened)
@@ -288,6 +289,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.open_in_progress = False
 			self.client_communicator.send({"cmd":"resize"})
 			self.client_communicator.send({"cmd":"redraw"})
+			time.sleep(0.05)
+			self.update()
 		except Exception as ex:
 			self.openlock.unlock()
 			print_to_stderr("exception on window bind", ex)
@@ -415,7 +418,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
 			trace("unsleep procedure")
 			self.client_communicator = self.sleeped_client
-			self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
+			success = self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
+			if not success:
+				self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
+					need_prescale = self.need_prescale, session_id=self.session_id)
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
 			time.sleep(0.05)
 

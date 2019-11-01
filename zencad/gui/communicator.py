@@ -43,25 +43,36 @@ class Communicator(QObject):
 				readFile = os.fdopen(self.ipipe)
 			except Exception as ex:
 				print_to_stderr("rdopen error: ", ex, self.ipipe)
-				exit(0)
+				self.parent.stop_listen_nowait()
+				return
 			
 			while(True):
 				try:
 					inputdata = readFile.readline()
 				except:
 					print_to_stderr("readFile.readline() fault")
-					self.oposite_clossed.emit()
+					self.parent.stop_listen_nowait()
+					#self.oposite_clossed.emit()
 					return
 				
 				if len(inputdata) == 0:
-					self.oposite_clossed.emit()
+					self.parent.stop_listen_nowait()
+					#self.oposite_clossed.emit()
 					return
 
 				try:
 					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
+				except:
+					print_to_stderr("Unpicling(A):", len(inputdata), inputdata)
+					self.parent.stop_listen_nowait()
+					return
+
+				try:
 					dddd = pickle.loads(ddd)
 				except:
-					print_to_stderr("Unpicling:", ddd, len(inputdata))
+					print_to_stderr("Unpicling(B):", ddd)
+					self.parent.stop_listen_nowait()
+					return
 
 				if dddd == "unwait":
 					self.unwait()
@@ -131,6 +142,17 @@ class Communicator(QObject):
 		#self.listener_thr.wait()
 		#print("unwait")
 
+	def stop_listen_nowait(self):
+		try:
+			os.close(self.ipipe)
+		except:
+			pass
+#
+		try:
+			os.close(self.opipe)
+		except:
+			pass
+
 	def send(self, obj):
 		if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 			strobj = str(obj)
@@ -161,8 +183,11 @@ class Communicator(QObject):
 	def kill(self):
 		#if self.procpid:
 		#	os.kill(self.procpid, signal.SIGKILL)
-		if self.subproc:
-			self.subproc.terminate()
+		try:
+			if self.subproc:
+				self.subproc.terminate()
+		except:
+			pass
 
 	def rpc_buffer(self):
 		return self.listener_thr.buffer
