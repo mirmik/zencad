@@ -407,7 +407,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				self.client_communicator.stop_listen()
 				time.sleep(0.05)
 				self.client_communicator.kill()
-				os.wait()
+				if sys.platform != "win32" and sys.platform != "win64":
+					os.wait()
 
 			else:
 				self.client_communicator.send({"cmd": "smooth_stopworld"})
