@@ -411,7 +411,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_communicator.start_listen()
 		self.client_communicator.newdata.connect(self.new_worker_message)
 
-		zencad.settings.Settings.add_recent(path)
+		zencad.settings.Settings.add_recent(os.path.abspath(path))
 
 		self.notifier.retarget(path)
 		self.open_in_progress = True
