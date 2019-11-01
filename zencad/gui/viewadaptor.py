@@ -199,8 +199,7 @@ class DisplayWidget(QGLWidget):
 		if self.inited:
 			self.view.must_be_resized()
 
-	def resize_addon(self, ev):
-		self.resize()
+	def resize_addon(self):
 		if self.inited:
 			self.view.must_be_resized()
 
