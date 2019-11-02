@@ -199,6 +199,10 @@ class DisplayWidget(QGLWidget):
 		if self.inited:
 			self.view.must_be_resized()
 
+	def resize_addon(self):
+		if self.inited:
+			self.view.must_be_resized()
+
 	def paintEngine(self):
 		return None
 
@@ -426,6 +430,7 @@ class DisplayWidget(QGLWidget):
 		if cmd == "autoscale": self.autoscale()
 		elif cmd == "resetview": self.reset_orient()
 		elif cmd == "redraw": self.redraw()
+		elif cmd == "resize": self.resize_addon()
 		elif cmd == "orient1": self.reset_orient1()
 		elif cmd == "orient2": self.reset_orient2()
 		elif cmd == "centering": self.view.centering() # TODO: Неправильно работает

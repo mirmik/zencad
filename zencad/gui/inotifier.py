@@ -12,6 +12,7 @@ class InotifyThread(QThread):
 	def __init__(self, parent):
 		QThread.__init__(self, parent)
 		self.lock = threading.Lock()
+		self.emit_time = time.time()
 
 	def retarget(self, path):
 		self.lock.acquire()
@@ -30,8 +31,10 @@ class InotifyThread(QThread):
 
 			try:
 				if (os.stat(self.path).st_mtime != self.last_mtime):
-					self.last_mtime = os.stat(self.path).st_mtime
-					self.changed.emit()
+					if time.time() - self.emit_time > 0.75:
+						self.last_mtime = os.stat(self.path).st_mtime
+						self.changed.emit()
+						self.emit_time = time.time()
 			except FileNotFoundError:
 				pass
 
