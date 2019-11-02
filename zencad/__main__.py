@@ -134,7 +134,7 @@ def do_main():
 				trace("SLEEPED THREAD RECV:", data)
 			except:
 				print_to_stderr("Unpickle error", rawdata)
-				exit(0)			
+				sys.exit(0)			
 	
 			if "cmd" in data and data["cmd"] == "stopworld":
 				sys.exit(0)
