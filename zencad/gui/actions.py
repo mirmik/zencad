@@ -379,6 +379,9 @@ class MainWindowActionsMixin:
 		moduledir = os.path.dirname(__file__)
 		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "../examples"))
 
+		self.mEditMenu = self.menuBar().addMenu(self.tr("&Edit"))
+		self.mEditMenu.addAction(self.mSettings)
+
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
 		self.mNavigationMenu.addAction(self.mReset)
 		self.mNavigationMenu.addAction(self.mCentering)
@@ -401,7 +404,6 @@ class MainWindowActionsMixin:
 		self.mViewMenu.addAction(self.mDisplayMode)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
-		self.mViewMenu.addAction(self.mSettings)
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)
