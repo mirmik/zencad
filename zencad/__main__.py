@@ -195,6 +195,10 @@ def do_main():
 		else:
 			path = pargs.paths[0]
 		zencad.showapi.EXECPATH = path
+
+		if os.path.splitext(pargs.paths[0])[1] == ".brep":
+			zencad.gui.viewadaptor.brep_hot_open(pargs.paths[0])
+			return
 	
 		# Устанавливаем рабочей директорией дирректорию,
 		# содержащую целевой файл.
