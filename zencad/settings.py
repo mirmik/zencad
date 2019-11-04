@@ -2,13 +2,20 @@
 
 from PyQt5.QtCore import *
 import pyservoce
+import sys
 
 pre_default_color = (0.6, 0.6, 0.8, 0)
+
+def default_text_editor_os():
+	if sys.platform == "linux":
+		return "xdg-open {path} &"
+	else:
+		return "" 
 
 class Settings():
 	list_of_settings = {
 		"gui" : {
-			"text_editor" : "subl {path}",
+			"text_editor" : default_text_editor_os(),
 		},
 		"view" : {
 			"default_color_red" : pre_default_color[0],
