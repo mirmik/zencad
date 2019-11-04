@@ -26,7 +26,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="caching.html">Кэширование</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
@@ -38,21 +38,22 @@
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
-<li>Отображение и рисование <br />
-<ul>
-<li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
-</ul></li>
 <li>Преобразования
 <ul>
 <li><a href="trans0.html">Синтаксис преобразований</a>  </li>
 <li><a href="trans1.html">Комбинации преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
 </ul></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li>Отображение и рисование <br />
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+</ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
-<li><a href="assemble.html">Сборки</a></li>
+<li><a href="assemble.html">Сборки и подвижные модели</a></li>
+<li><a href="internal.html">Внутренняя кухня</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -71,13 +72,15 @@
 
 <span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">widget</span><span class="p">):</span>
     <span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">nulltime</span><span class="p">)</span> <span class="o">*</span> <span class="n">right</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">set_location</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
 
 <span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">)</span> 
 </code></pre></div>
 
 <p>Здесь мы используем специальную функцию анимации <code>animate</code>, которая, используя объект контроллер, возвращенный функцией disp, в зависимости от текущего момента времени обновляет местоположение контролируемого объекта.
-В качестве параметра метода <code>set_location</code> выступает объект преобразования. (Подробнее в <a href="trans0.html">Преобразования</a>, <a href="trans1.html">Комбинации преобразований</a>)</p>
+В качестве параметра метода <code>relocate</code> выступает объект преобразования. (Подробнее в <a href="trans0.html">Преобразования</a>, <a href="trans1.html">Комбинации преобразований</a>)</p>
+
+<p>Кроме параметра <code>animate</code> функция show имеет связанные параметры <code>preanimate</code> и <code>close_handle</code>. <code>preanimate</code> принимает функцию, вызывающуюся один раз до первой итерации <code>animate</code>, но уже после создания графического окружения. <code>close_handle</code> вызывается как обработчик при завершении процесса.</p>
 </article>
     </div>
     <div id="footer"></div>
