@@ -337,7 +337,8 @@ def common_unbouded_proc(scene,
 	if close_handle:
 		widget.widget_closed.connect(close_handle)
 
-	MAIN_COMMUNICATOR.start_listen()
+	if MAIN_COMMUNICATOR is not None:
+		MAIN_COMMUNICATOR.start_listen()
 
 	def _clossed():
 		print("CLOSSED!!!")
