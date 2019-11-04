@@ -60,7 +60,7 @@ def protect_path(s):
 
 def do_main():
 	OPPOSITE_PID_SAVE = None
-	zencad.gui.signal.setup_simple_interrupt_handling()
+	zencad.gui.signal_handling.setup_simple_interrupt_handling()
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
@@ -146,13 +146,14 @@ def do_main():
 
 			break
 
-
 		try:
 			pargs.prescale = data["need_prescale"]
 			pargs.paths = [data["path"]]
 		except:
 			print_to_stderr("Unpickle error_2", data)
-			exit(0)			
+			exit(0)
+
+		zencad.settings.restore()			
 
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 
