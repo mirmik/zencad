@@ -106,6 +106,9 @@ def set(path, value):
 def store():
 	Settings.store()
 
+def get_default_color():
+	return Settings.get_default_color()
+
 def get_external_editor_command():
 	return Settings.list_of_settings["gui"]["text_editor"]
 

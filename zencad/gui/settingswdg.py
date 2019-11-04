@@ -64,7 +64,10 @@ class ColorChanger(QWidget):
 		self.setLayout(self.layout)
 
 	def apply(self):
-		values = [ float(e.text()) for e in self.edits ]
+
+		values = tuple([ float(e.text()) for e in self.edits ])
+		if values != zencad.settings.get_default_color():
+			print("You should reevaluate script for color applying")
 		values = zencad.settings.Settings.set_default_color(*values)
 
 	def set_default(self):
