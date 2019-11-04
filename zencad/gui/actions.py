@@ -19,8 +19,6 @@ BANNER_TEXT = (  # "\n"
 	"╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═════╝ "
 )
 
-SETTINGS = {"external_text_editor": "subl"}
-
 class MainWindowActionsMixin:
 	def create_action(self, text, action, tip, shortcut=None, checkbox=False):
 		act = QAction(self.tr(text), self)
@@ -104,7 +102,8 @@ class MainWindowActionsMixin:
 		self.client_communicator.send({"cmd": "exportbrep"})	
 
 	def externalTextEditorOpen(self):
-		os.system(SETTINGS["external_text_editor"] + " " + self.current_opened)
+		cmd = zencad.settings.get_external_editor_command()
+		os.system(cmd.format(path=self.current_opened))
 
 	def to_freecad_action(self):
 		self.client_communicator.send({"cmd": "to_freecad"})
@@ -246,7 +245,10 @@ class MainWindowActionsMixin:
 
 	def settings(self):
 		wdg = zencad.gui.settingswdg.SettingsWidget()
-		wdg.exec()
+		status = wdg.exec()
+
+		if status == 1 and zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION:
+			self.remake_sleeped_thread()
 
 	def _add_open_action(self, menu, name, path):
 		def callback():

@@ -24,26 +24,54 @@ class TableField(QWidget):
 		spacing = self.layout.spacing()
 		#self.setFixedWidth(llen + self.wdg.width() + right + spacing)
 
-class LineEdit(QLineEdit):
-	def __init__(self, deftext="", length=200):
+class TextFieldChanger(QWidget):
+	def __init__(self, label, path, length=200):
 		super().__init__()
-		self.setFixedWidth(length)
-		self.setText(deftext)
+		self.path=path
+		self.layout = QHBoxLayout()
+		self.layout.addWidget(QLabel(label))
+		self.edit = QLineEdit()
+		self.edit.setFixedWidth(length)
+		self.edit.setText(zencad.settings.get(path))
+		self.layout.addWidget(self.edit)
+		self.setLayout(self.layout)
+
+	def apply(self):
+		zencad.settings.set(self.path, self.edit.text())
 
 class ColorChanger(QWidget):
-	def __init__(self, values):
+	def __init__(self):
 		super().__init__()
+		values = zencad.settings.Settings.get_default_color()
+
+		self.defbutton = QPushButton("Mech")
+		self.defbutton.clicked.connect(self.set_default)
+
 		labels = "RGBA"
-		self.edits = [ LineEdit(length=30) for i in range(4) ]
+		self.edits = [ QLineEdit() for i in range(4) ]
+		for e in self.edits: e.setFixedWidth(30)
 
 		self.layout = QHBoxLayout()
 		for i in range(4):
 			self.edits[i].setText(str(values[i]))
 			self.layout.addWidget(TableField(ltext=labels[i], wdg=self.edits[i], llen=30))
 
+		self.layout.addStretch()
+		self.layout.addWidget(self.defbutton)
+
 		self.layout.setContentsMargins(0,0,0,0)
-		self.layout.setSpacing(0)
+		self.layout.addWidget(QWidget())
 		self.setLayout(self.layout)
+
+	def apply(self):
+		values = [ float(e.text()) for e in self.edits ]
+		values = zencad.settings.Settings.set_default_color(*values)
+
+	def set_default(self):
+		self.edits[0].setText(str(round(zencad.color.mech.r, 5)))
+		self.edits[1].setText(str(round(zencad.color.mech.g, 5)))
+		self.edits[2].setText(str(round(zencad.color.mech.b, 5)))
+		self.edits[3].setText(str(round(zencad.color.mech.a, 5)))
 
 class SettingsWidget(QDialog):
 	"""Виджет настроек системы"""
@@ -53,13 +81,42 @@ class SettingsWidget(QDialog):
 
 		settings = zencad.settings.Settings()
 
+		self.ok_button = QPushButton("Ok")
+		self.cancel_button = QPushButton("Cancel")
+		self.hlayout = QHBoxLayout()
+		self.hlayout.addWidget(self.ok_button)
+		self.hlayout.addWidget(self.cancel_button)
+
+		self.default_color_edit = ColorChanger()
+		self.texteditor_edit = TextFieldChanger(path=["gui", "text_editor"], label="Text editor command:")
+
+		self.appliers = []
+		self.appliers.append(self.default_color_edit)
+		self.appliers.append(self.texteditor_edit)
+
 		self.vlayout = QVBoxLayout()
-		self.vlayout.addWidget(TableField(ltext="Home directory", wdg=LineEdit()))
-		self.vlayout.addWidget(TableField(ltext="Text editor command", wdg=LineEdit(deftext=settings.get_settings()["gui"]["text_editor"])))
-		self.vlayout.addWidget(TableField(ltext="Default color", wdg=ColorChanger(values=settings.get_default_color())))
+		self.vlayout.addWidget(self.texteditor_edit)
+		self.vlayout.addWidget(self.default_color_edit)
+		#self.vlayout.addWidget(TableField(ltext="Text editor command", wdg=LineEdit(deftext=settings.get_settings()["gui"]["text_editor"])))
+		#self.vlayout.addWidget(TableField(ltext="Default color", wdg=ColorChanger(values=settings.get_default_color())))
+		self.vlayout.addLayout(self.hlayout)
+
+		self.ok_button.clicked.connect(self.ok_handle)
+		self.cancel_button.clicked.connect(self.cancel_handle)
 
 		self.setLayout(self.vlayout)
 
+	def save_all(self):
+		for a in self.appliers:
+			a.apply()
+		zencad.settings.store()
+
+	def ok_handle(self):
+		self.save_all()
+		self.accept()
+
+	def cancel_handle(self):
+		self.reject()
 
 if __name__ == "__main__":
 	import sys

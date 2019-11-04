@@ -180,6 +180,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if display_mode:
 			self.displayMode()
 
+	def remake_sleeped_thread(self):
+		self.sleeped_client.send({"cmd":"stopworld"})
+		self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
+
 	def presentation_label(self):
 		url = os.path.join(zencad.moduledir, "zencad_logo.png")
 		img = QPixmap(url);
