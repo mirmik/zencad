@@ -8,7 +8,9 @@ pre_default_color = (0.6, 0.6, 0.8, 0)
 
 def default_text_editor_os():
 	if sys.platform == "linux":
-		return "xdg-open {path} &"
+		return "xdg-open {path}"
+	elif sys.platform in ["win32", "win64"]:
+		return "notepad.exe {path}"
 	else:
 		return "" 
 
