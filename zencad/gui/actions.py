@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 
 import os
 import tempfile
+import subprocess
 import signal
 
 import zencad.gui.util
@@ -103,7 +104,7 @@ class MainWindowActionsMixin:
 
 	def externalTextEditorOpen(self):
 		cmd = zencad.settings.get_external_editor_command()
-		os.system(cmd.format(path=self.current_opened))
+		subprocess.Popen(cmd.format(path=self.current_opened), shell=True)
 
 	def to_freecad_action(self):
 		self.client_communicator.send({"cmd": "to_freecad"})
