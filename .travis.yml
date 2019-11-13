@@ -26,12 +26,12 @@ matrix:
         - sudo apt install -y python3-pybind11
 
         - cd /
-        - find . -name "gp_Pnt.hxx"
+        - sudo find . -name "gp_Pnt.hxx"
         - cd -
 
+        - ls /usr/local/include/occt/ || true
         - ls /usr/local/include/opencascade/ || true
-        - ls /usr/local/include/opencascade/ || true
-        - ls /usr/include/occt/ || true
+        - ls /usr/include/opencascade/ || true
         - ls /usr/include/occt/ || true
 
         - python3 -m pip install licant
