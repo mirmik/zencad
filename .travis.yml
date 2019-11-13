@@ -38,13 +38,15 @@ matrix:
 
         - git clone https://github.com/mirmik/servoce --recursive
         - cd servoce 
-        - python3 ./setup.py install
-        - cd ..
-
+        
         - ls /usr/local/include/occt/ || true
         - ls /usr/local/include/opencascade/ || true
         - ls /usr/include/opencascade/ || true
         - ls /usr/include/occt/ || true
+
+        - python3 ./setup.py install
+        - cd ..
+
 
         - python3 -m pip install zencad
 
