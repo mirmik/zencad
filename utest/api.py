@@ -9,19 +9,19 @@ sys.path.insert(0, "..")
 
 print("import")
 try:
-print("import pyservoce")
+    print("import pyservoce")
     import pyservoce
 
-print("import traceback")
+    print("import traceback")
     import traceback
 
-print("import unittest")
+    print("import unittest")
     import unittest
 
-print("import zencad")
+    print("import zencad")
     import zencad
 
-print("import tests")
+    print("import tests")
     import prim1d_test
     import prim2d_test
     import prim3d_test
