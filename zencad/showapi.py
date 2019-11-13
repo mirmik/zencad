@@ -1,18 +1,24 @@
 from pyservoce import Scene, Color
 import argparse
+print("b")
 import evalcache
 import sys
 
+print("b")
 import zencad.assemble
 import zencad.gui.application
 
+print("b")
 default_scene = Scene()
+print("b")
 SHOWMODE = "makeapp"
+print("b")
 PRESCALE = False
 SLEEPED = False
 SESSION_ID = 0
 EXECPATH = sys.argv[0]
 
+print("b")
 def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, **kwargs):
     """ Функция активации графической части.
 
@@ -54,8 +60,10 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
     else:
         raise Exception("undeclared SHOWMODE")
 
+print("b")
 default_color = zencad.settings.Settings.get_default_color()
 
+print("b")
 def display(shp, color=default_color, deep=True, scene=default_scene):
     if isinstance(shp, list) or isinstance(shp, tuple):
         lst = []
@@ -72,6 +80,7 @@ def display(shp, color=default_color, deep=True, scene=default_scene):
     return scene.add(shp, color)
 
 
+print("b")
 def disp(*args, **kwargs):
     return display(*args, **kwargs)
 
