@@ -8,20 +8,25 @@ import sys
 sys.path.insert(0, "..")
 
 print("import")
-import unittest
-import zencad
+try:
+    import traceback
+    import unittest
+    import zencad
+    import prim1d_test
+    import prim2d_test
+    import prim3d_test
+    import ops3d_test
+    import ops1d2d_test
+    import boolean_test
+    import math_test
+    import trans_test
+    import rigidity_test
+    import curve3_test
+    import curve2_test
+except Exception as ex:
+    print(ex)
+    traceback.print_exc()
 
-import prim1d_test
-import prim2d_test
-import prim3d_test
-import ops3d_test
-import ops1d2d_test
-import boolean_test
-import math_test
-import trans_test
-import rigidity_test
-import curve3_test
-import curve2_test
 
 print("import ... finish")
 
