@@ -12,3 +12,25 @@ matrix:
       script:
         - cd utest
         - python3 ./api.py
+
+    - os: linux
+      python:
+        "3.7"
+            
+      install: 
+        - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        - sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
+        - sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
+        - sudo apt-get update
+        - sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
+
+        - git clone https://github.com/mirmik/servoce --recursive
+        - cd servoce 
+        - python3 ./setup.py install
+        - cd ..
+
+        - python3 -m pip install zencad
+
+      script:
+        - cd utest
+        - python3 ./api.py
