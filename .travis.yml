@@ -25,6 +25,8 @@ matrix:
         - sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
         - sudo apt install -y python3-pybind11
 
+        - find . -name "gp_Pnt.hxx"
+
         - ls /usr/local/include/opencascade/ || true
         - ls /usr/local/include/opencascade/ || true
         - ls /usr/include/occt/ || true
