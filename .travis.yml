@@ -24,6 +24,8 @@ matrix:
         - sudo apt-get update
         - sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
 
+        - python3 -m pip install licant
+
         - git clone https://github.com/mirmik/servoce --recursive
         - cd servoce 
         - python3 ./setup.py install
