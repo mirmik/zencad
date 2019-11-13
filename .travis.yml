@@ -8,8 +8,8 @@ install:
   - echo "INSTALL"
   - pwd
   - ls
-
-  python3 -m pip install zencad
+  
+  - python3 -m pip install zencad
 
 script:
   - echo "SCRIPT"
