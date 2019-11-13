@@ -9,6 +9,8 @@ install:
   - pwd
   - ls
 
+  python3 -m pip install zencad
+
 script:
   - echo "SCRIPT"
   - pwd
