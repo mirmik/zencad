@@ -41,6 +41,11 @@ matrix:
         - python3 ./setup.py install
         - cd ..
 
+        - ls /usr/local/include/occt/ || true
+        - ls /usr/local/include/opencascade/ || true
+        - ls /usr/include/opencascade/ || true
+        - ls /usr/include/occt/ || true
+
         - python3 -m pip install zencad
 
       script:
