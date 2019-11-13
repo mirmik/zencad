@@ -18,6 +18,9 @@ try:
     print("import unittest")
     import unittest
 
+    print("import PyQt5")
+    import PyQt5
+
     print("import zencad")
     import zencad
 
