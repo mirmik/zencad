@@ -32,20 +32,20 @@ print("a")
 from zencad.convert import *
 print("a")
 import types
-print("a")
+print("a1")
 
 moduledir = os.path.dirname(__file__)
-print("a")
+print("a2")
 exampledir = os.path.join(os.path.dirname(__file__), "examples")
-print("a")
+print("a3")
 
 from zencad.showapi import show, display, disp, hl, highlight
-print("a")
+print("a4")
 
 from zencad.geom.prim3d import *
-print("a")
+print("a5")
 from zencad.geom.prim2d import *
-print("a")
+print("a6")
 from zencad.geom.prim1d import *
 print("a")
 
