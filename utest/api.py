@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
+print("api.py")
+
 import sys
 
 sys.path.insert(0, "..")
 
+print("import")
 import unittest
 import zencad
 
@@ -20,6 +23,7 @@ import rigidity_test
 import curve3_test
 import curve2_test
 
+print("import ... finish")
 
 def execute_test(test):
     print()
@@ -30,6 +34,7 @@ def execute_test(test):
 
 
 if __name__ == "__main__":
+    print("main")
     execute_test(prim1d_test)
     execute_test(prim2d_test)
     execute_test(prim3d_test)
