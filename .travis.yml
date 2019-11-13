@@ -7,14 +7,8 @@ matrix:
         "3.7"
             
       install: 
-        - echo "INSTALL"
-        - pwd
-        - ls
-      
         - python3 -m pip install zencad
-      
-      script:
-        - echo "SCRIPT"
-        - pwd
-        - ls
 
+      script:
+        - cd utest
+        - python3 ./api.py
