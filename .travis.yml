@@ -1,20 +1,16 @@
 language: python
 
-
-matrix:
-  - include:
-    - os: linux
-      python: "3.7"
+os: linux
+python:
+  "3.7"
       
-      install: 
-        - echo "INSTALL"
-        - pwd
-        - ls
+install: 
+  - echo "INSTALL"
+  - pwd
+  - ls
 
-        python3 -m pip install zencad
-
-      script:
-        - echo "SCRIPT"
-        - pwd
-        - ls
+script:
+  - echo "SCRIPT"
+  - pwd
+  - ls
 
