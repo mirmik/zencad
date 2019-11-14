@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 
 import os
 import tempfile
+import subprocess
 import signal
 
 import zencad.gui.util
@@ -18,8 +19,6 @@ BANNER_TEXT = (  # "\n"
 	"███████╗███████╗██║ ╚████║╚██████╗██║  ██║██████╔╝\n"
 	"╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═════╝ "
 )
-
-SETTINGS = {"external_text_editor": "subl"}
 
 class MainWindowActionsMixin:
 	def create_action(self, text, action, tip, shortcut=None, checkbox=False):
@@ -104,7 +103,8 @@ class MainWindowActionsMixin:
 		self.client_communicator.send({"cmd": "exportbrep"})	
 
 	def externalTextEditorOpen(self):
-		os.system(SETTINGS["external_text_editor"] + " " + self.current_opened)
+		cmd = zencad.settings.get_external_editor_command()
+		subprocess.Popen(cmd.format(path=self.current_opened), shell=True)
 
 	def to_freecad_action(self):
 		self.client_communicator.send({"cmd": "to_freecad"})
@@ -246,7 +246,10 @@ class MainWindowActionsMixin:
 
 	def settings(self):
 		wdg = zencad.gui.settingswdg.SettingsWidget()
-		wdg.exec()
+		status = wdg.exec()
+
+		if status == 1 and zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION:
+			self.remake_sleeped_thread()
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
@@ -377,6 +380,9 @@ class MainWindowActionsMixin:
 		moduledir = os.path.dirname(__file__)
 		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "../examples"))
 
+		self.mEditMenu = self.menuBar().addMenu(self.tr("&Edit"))
+		self.mEditMenu.addAction(self.mSettings)
+
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
 		self.mNavigationMenu.addAction(self.mReset)
 		self.mNavigationMenu.addAction(self.mCentering)
@@ -399,7 +405,6 @@ class MainWindowActionsMixin:
 		self.mViewMenu.addAction(self.mDisplayMode)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
-		self.mViewMenu.addAction(self.mSettings)
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
 		self.mHelpMenu.addAction(self.mAboutAction)

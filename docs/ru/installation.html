@@ -26,7 +26,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="caching.html">Кэширование</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
@@ -38,21 +38,22 @@
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
-<li>Отображение и рисование <br />
-<ul>
-<li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
-</ul></li>
 <li>Преобразования
 <ul>
 <li><a href="trans0.html">Синтаксис преобразований</a>  </li>
 <li><a href="trans1.html">Комбинации преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
 </ul></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li>Отображение и рисование <br />
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+</ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
-<li><a href="assemble.html">Сборки</a></li>
+<li><a href="assemble.html">Сборки и подвижные модели</a></li>
+<li><a href="internal.html">Внутренняя кухня</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -62,17 +63,18 @@
 </nav>
       <article class="article"><h1>Установка</h1>
 
-<p>UNDER_CONSTRUCT</p>
-
 <p>Система ZenCad протестирована на Linux (семейство Debian), Windows.</p>
 
 <h2>Установка pypi</h2>
 
-<h2>Особенности.</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">zencad</span>
+</code></pre></div>
 
-<h3>Установка Linux.</h3>
+<h2>Особенности установки на различных ОС.</h2>
 
 <h3>Установка Windows.</h3>
+
+<p>На текущий момент может понадобиться установка vcredist2019.</p>
 
 <h3>Установка MacOS.</h3>
 
@@ -80,9 +82,14 @@
 
 <h3>Установка standalone версии (Windows).</h3>
 
-<h2>Установка из исходного года.</h2>
+<p>StandAlone версия может быть найдена в <a href="https://github.com/mirmik/zencad/releases">здесь</a>. StandAlone версия может отстовать от основной ветки.</p>
 
-<h3>Сборка pyservoce</h3>
+<h2>Установка из исходного кода.</h2>
+
+<p>Для установки из исходного кода потребуется собрать, или получить, собранными бинарные зависимости: <br />
+* <a href="https://github.com/mirmik/servoce">pyservoce</a> <br />
+* <a href="https://www.opencascade.com/content/overview">OpenCascade(необходимой версии)</a> <br />
+Особенности компиляции под разные ОС могут различаться.</p>
 </article>
     </div>
     <div id="footer"></div>
