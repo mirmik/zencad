@@ -1,4 +1,4 @@
-#!/usr/bin/env zencad
+#!/usr/bin/env python3
 
 import numpy
 
