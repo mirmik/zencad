@@ -3,8 +3,8 @@ ZenCad
 CAD system for righteous zen programmers  
 
 Status:  
-![](https://travis-ci.com/mirmik/zencad.svg?branch=master) - master
-![](https://travis-ci.com/mirmik/zencad.svg?branch=dev) - dev
+![](https://travis-ci.com/mirmik/zencad.svg?branch=master) - master  
+![](https://travis-ci.com/mirmik/zencad.svg?branch=dev) - dev  
 
 What is it?
 -----------
