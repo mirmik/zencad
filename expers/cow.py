@@ -60,7 +60,10 @@ class cow(zencad.assemble.unit):
 		self.speed_screw = self.inertia.impulse_to_speed(self.impulse_screw)
 		speed_screw_delta = self.speed_screw.scale(delta)
 
-		self.location = self.location * speed_screw_delta.to_trans()
+		speed_screw_delta_trans = speed_screw_delta.to_trans()
+		self.location = self.location * speed_screw_delta_trans
+
+		self.speed_screw = speed_screw_delta_trans.inverse_rotate(self.speed_screw) 
 
 		print(self.location)
 
