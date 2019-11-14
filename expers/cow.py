@@ -1,8 +1,11 @@
 #!/usr/bin/env zencad
 
+import numpy
+
 from zencad import *
 import zencad.assemble
 from zencad.libs.screw import screw
+from zencad.libs.inertia import inertia
 
 #m = box(3)
 
@@ -27,6 +30,7 @@ class cow(zencad.assemble.unit):
 
 	def __init__(self):
 		super().__init__()
+		self.inertia = inertia(1, numpy.diag([1,1,1]))
 		self.set_shape(zencad.sphere(self.r))
 		self.make_drivers()
 
@@ -50,7 +54,9 @@ class cow(zencad.assemble.unit):
 		for f in fscrews:
 			fscrew += f
 
-		self.acceleration = self.inertia.produce(fscrew)
+		self.impulse_screw = self.inertia.produce_impulse_screw(fscrew)
+		print(self.impulse_screw)
+
 
 cow = cow()
 
