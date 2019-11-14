@@ -15,6 +15,9 @@ class screw:
 	def __add__(self, oth):
 		return screw(self.ang + oth.ang, self.lin + oth.lin)
 
+	def scale(self, oth):
+		return screw(self.ang * oth, self.lin * oth)
+
 	def __iadd__(self, oth):
 		self.ang += oth.ang
 		self.lin += oth.lin
@@ -47,7 +50,17 @@ class screw:
 		print("TODO fromtrans")
 		return screw()
 
-
+	def to_trans(self):
+		trans0 = zencad.translate(*self.lin)
+		
+		rot_mul = self.ang.length()
+		if rot_mul == 0:
+			return trans0
+		else:
+			rot_dim = self.ang.normalize()
+			trans1 = zencad.rotate(rot_dim, rot_mul)
+			return trans0 * trans1 
+		
 	@staticmethod
 	def from_array(a):
 		return screw(ang=(a[3], a[4], a[5]), lin=(a[0], a[1], a[2]))
