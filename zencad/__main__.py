@@ -9,7 +9,6 @@ import zencad.gui.application
 import zencad.gui.viewadaptor
 import zencad.gui.retransler
 import zencad.gui.mainwindow
-import pyservoce.trace
 import runpy
 
 import pickle
