@@ -22,8 +22,8 @@ class cow(zencad.assemble.unit):
 		def set_control_signal(self, signal):
 			self.signal = signal
 
-		def get_force(self):
-			return self.marshal * self.signal
+		def get_force_screw(self):
+			return screw(lin=self.marshal * self.signal, ang=(0,0,0))
 
 		def serve(self, delta):
 			pass
@@ -31,6 +31,7 @@ class cow(zencad.assemble.unit):
 	def __init__(self):
 		super().__init__()
 		self.inertia = inertia(1, numpy.diag([1,1,1]))
+		self.impulse_screw = screw()
 		self.set_shape(zencad.sphere(self.r))
 		self.make_drivers()
 
@@ -47,16 +48,21 @@ class cow(zencad.assemble.unit):
 		for f in self.force_producer_list:
 			f.serve(delta)
 
-		fscrews = [ screw(ang=(0,0,0), lin=f.get_force())
+		fscrews = [ f.get_force_screw()
 			.inverse_transform(f.location) for f in self.force_producer_list ]
 
 		fscrew = screw()
 		for f in fscrews:
 			fscrew += f
 
-		self.impulse_screw = self.inertia.produce_impulse_screw(fscrew)
-		print(self.impulse_screw)
+		self.impulse_screw += fscrew.scale(delta) 
 
+		self.speed_screw = self.inertia.impulse_to_speed(self.impulse_screw)
+		speed_screw_delta = self.speed_screw.scale(delta)
+
+		self.location = self.location * speed_screw_delta.to_trans()
+
+		print(self.location)
 
 cow = cow()
 
@@ -64,6 +70,9 @@ cow.force_producer_list[0].set_control_signal(1)
 cow.force_producer_list[1].set_control_signal(2)
 cow.force_producer_list[2].set_control_signal(3)
 
+cow.serve(0.1)
+cow.serve(0.1)
+cow.serve(0.1)
 cow.serve(0.1)
 
 #display(cow)
