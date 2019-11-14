@@ -145,7 +145,7 @@ def animate(wdg):
 	location_error_screw = screw.from_trans(location_error)	 
 	speed_error_screw = -speed_screw
 
-	K0 = 1.5
+	K0 = 1.0
 	K1 = 0.6
 	control_signal = speed_error_screw * K0 + location_error_screw * K1
 
