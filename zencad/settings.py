@@ -2,13 +2,22 @@
 
 from PyQt5.QtCore import *
 import pyservoce
+import sys
 
 pre_default_color = (0.6, 0.6, 0.8, 0)
+
+def default_text_editor_os():
+	if sys.platform == "linux":
+		return "xdg-open {path}"
+	elif sys.platform in ["win32", "win64"]:
+		return "notepad.exe {path}"
+	else:
+		return "" 
 
 class Settings():
 	list_of_settings = {
 		"gui" : {
-			"text_editor" : "subl",
+			"text_editor" : default_text_editor_os(),
 		},
 		"view" : {
 			"default_color_red" : pre_default_color[0],
@@ -87,6 +96,30 @@ class Settings():
 
 
 Settings.restore()
+
+def restore():
+	Settings.restore()
+
+def get(path):
+	it = Settings.list_of_settings
+	for p in path:
+		it = it[p]
+	return it
+
+def set(path, value):
+	it = Settings.list_of_settings
+	for p in path[:-1]:
+		it = it[p]
+	it[path[-1]] = value
+
+def store():
+	Settings.store()
+
+def get_default_color():
+	return Settings.get_default_color()
+
+def get_external_editor_command():
+	return Settings.list_of_settings["gui"]["text_editor"]
 
 if __name__ == "__main__":
 	print(Settings.list_of_settings)

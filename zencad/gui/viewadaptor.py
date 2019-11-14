@@ -586,3 +586,12 @@ def bind_widget_signal(widget, communicator):
 	widget.tracking_info_signal.connect(lambda arg:communicator.send({
 		"cmd":"trackinfo", "data": arg }))
 	widget.signal_screenshot_reply.connect(screenshot_return_send_dec(communicator))
+
+
+def brep_hot_open(path):
+	import zencad.convert
+	scn = zencad.Scene()
+
+	scn.add(zencad.convert.from_brep(path).unlazy())
+
+	zencad.gui.application.common_unbouded_proc(scene = scn, need_prescale=True)
