@@ -27,7 +27,7 @@ matrix:
 
         - python3 -m pip install licant
 
-        - git clone https://github.com/mirmik/servoce --recursive --branch future/travis
+        - git clone https://github.com/mirmik/servoce --recursive
         - cd servoce 
         - python3 ./setup.py install
         - cd ..
