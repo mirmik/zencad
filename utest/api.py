@@ -1,25 +1,47 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
+print("api.py")
+
 import sys
 
 sys.path.insert(0, "..")
 
-import unittest
-import zencad
+print("import")
+try:
+    print("import pyservoce")
+    import pyservoce
 
-import prim1d_test
-import prim2d_test
-import prim3d_test
-import ops3d_test
-import ops1d2d_test
-import boolean_test
-import math_test
-import trans_test
-import rigidity_test
-import curve3_test
-import curve2_test
+    print("import traceback")
+    import traceback
 
+    print("import unittest")
+    import unittest
+
+    print("import PyQt5")
+    import PyQt5
+
+    print("import zencad")
+    import zencad
+
+    print("import tests")
+    import prim1d_test
+    import prim2d_test
+    import prim3d_test
+    import ops3d_test
+    import ops1d2d_test
+    import boolean_test
+    import math_test
+    import trans_test
+    import rigidity_test
+    import curve3_test
+    import curve2_test
+except Exception as ex:
+    print(ex)
+    traceback.print_exc()
+
+
+print("import ... finish")
 
 def execute_test(test):
     print()
@@ -30,6 +52,7 @@ def execute_test(test):
 
 
 if __name__ == "__main__":
+    print("main")
     execute_test(prim1d_test)
     execute_test(prim2d_test)
     execute_test(prim3d_test)
