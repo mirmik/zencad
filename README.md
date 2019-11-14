@@ -1,8 +1,8 @@
 ZenCad
 ======
 CAD system for righteous zen programmers  
-![](https://travis-ci.com/mirmik/zencad.svg?branch=master)  
-![](https://travis-ci.com/mirmik/zencad.svg?branch=dev)  
+master:![](https://travis-ci.com/mirmik/zencad.svg?branch=master)  
+dev:![](https://travis-ci.com/mirmik/zencad.svg?branch=dev)  
 
 What is it?
 -----------
