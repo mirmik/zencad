@@ -2,16 +2,16 @@ language: python
 
 matrix:
   include:
-    - os: linux
-      python:
-        "3.7"
+    #- os: linux
+    #  python:
+    #    "3.7"
             
-      install: 
-        - python3 -m pip install zencad
+    #  install: 
+    #    - python3 -m pip install zencad
 
-      script:
-        - cd utest
-        - python3 ./api.py
+    #  script:
+    #    - cd utest
+    #    - python3 ./api.py
 
     - os: linux
       python:
