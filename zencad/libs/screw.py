@@ -21,6 +21,11 @@ class screw:
 	def __mul__(self, oth):
 		return screw(self.ang * oth, self.lin * oth)
 
+	def elementwise_mul(self, oth):
+		#return screw((self.ang * oth.ang), self.lin * oth.lin)
+		r = self.to_array() * oth.to_array()
+		return screw.from_array(r)
+
 	def __neg__(self):
 		return screw(-self.ang, -self.lin)
 
