@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy
+import time
 
 import zencad.malgo
 from zencad import *
@@ -79,7 +80,7 @@ class cow(zencad.assemble.unit):
 			f.serve(delta)
 
 		fscrews = [ f.get_force_screw()
-			.transform(f.location) for f in self.force_producer_list ]
+			.rotate_by(f.location).carry(-f.location.translation()) for f in self.force_producer_list ]
 
 		fscrew = screw()
 		for f in fscrews:
@@ -93,12 +94,13 @@ class cow(zencad.assemble.unit):
 		speed_screw_delta_trans = speed_screw_delta.to_trans()
 		self.location = self.location * speed_screw_delta_trans
 
-		self.speed_screw = self.speed_screw.inverse_transform(speed_screw_delta_trans)
+		self.impulse_screw = self.impulse_screw.inverse_rotate_by(speed_screw_delta_trans)
+		self.speed_screw = self.speed_screw.inverse_rotate_by(speed_screw_delta_trans)
 
-		self.location_update()
+		self.location_update(deep=True)
 
 	def sensivities(self):
-		sens = [ f.sensivity().transform(f.location).carry(f.location.translation()) 
+		sens = [ f.sensivity().rotate_by(f.location).carry(-f.location.translation()) 
 			for f in self.force_producer_list ]
 
 		return sens
@@ -107,31 +109,48 @@ class cow(zencad.assemble.unit):
 		return zencad.malgo.svd_backpack(target, sens)
 
 	def set_control(self, control_screw):
-		control_screw = control_screw.inverse_transform(self.location)
-		print(control_screw)
+		#control_screw = control_screw.inverse_rotate_by(self.location)
 		control_screw = control_screw.to_array()
 		sens = [ s.to_array() for s in self.sensivities() ]
 		koeffs = self.solve_control_equations(control_screw, sens)[0]
+		#print(koeffs)
 
 		for i in range(len(self.force_producer_list)):
 			self.force_producer_list[i].set_control_signal(koeffs[i])
 
 cow = cow()
 
+start_time = time.time()
+last_time = start_time
 def animate(wdg):
-	cow.serve(0.05)
-	speed_screw = cow.speed_screw.transform(cow.global_location)
+	global last_time
+	curtime = time.time()
+	delta = curtime - last_time
+	last_time=curtime
+	from_start = curtime - start_time
 
-	target_location = translate(-10,0,0) * rotateZ(deg(180))
+
+	cow.serve(delta)
+	speed_screw = cow.speed_screw
+
+	if from_start < 5:
+		target_location = translate(100,100,100) * rotate((1,1,1), deg(180))
+	elif from_start < 10:
+		target_location = translate(-100,100,100) * rotate((1,1,1), deg(-90))
+	else: 
+		target_location = nulltrans()
+
 	location_error = cow.global_location.inverse() * target_location
-	
+
 	location_error_screw = screw.from_trans(location_error)	 
 	speed_error_screw = -speed_screw
 
-	K0 = 1
-	K1 = 0.1
+	K0 = 1.5
+	K1 = 0.6
 	control_signal = speed_error_screw * K0 + location_error_screw * K1
 
+	print(location_error_screw)
+	#control_signal = screw(lin=(0,1,0), ang=(0,0,0))
 	cow.set_control(control_signal)
 
 	#cow.force_producer_list[0].set_control_signal(-0.1 * speed_screw.lin[0] + 0.1 * (10 - cow.location.translation()[0]))
