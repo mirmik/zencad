@@ -90,19 +90,21 @@ class cow(zencad.assemble.unit):
 
 		print(self.speed_screw)
 
+		self.location_update()
+
 cow = cow()
 
-cow.force_producer_list[0].set_control_signal(1)
+cow.force_producer_list[0].set_control_signal(0.1)
 cow.force_producer_list[1].set_control_signal(0)
 cow.force_producer_list[2].set_control_signal(0)
 cow.force_producer_list[3].set_control_signal(0)
 cow.force_producer_list[4].set_control_signal(0)
-cow.force_producer_list[5].set_control_signal(0.1)
+cow.force_producer_list[5].set_control_signal(0.001)
 
-cow.serve(0.1)
-cow.serve(0.1)
-cow.serve(0.1)
-cow.serve(0.1)
 
-#display(cow)
-#show()
+def animate(wdg):
+	cow.serve(0.1)
+
+
+display(cow)
+show(animate = animate)
