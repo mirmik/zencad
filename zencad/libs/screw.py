@@ -75,11 +75,11 @@ class screw:
 	def __repr__(self):
 		return "screw({},{})".format(self.ang,self.lin)
 
-	def inverse_transform(self, trans):
-		trans = trans.inverse()
-		return screw(ang=trans(self.ang), lin=trans(self.lin))
+	def inverse_rotate_by(self, trans):
+		q = trans.rotation().inverse()
+		return screw(ang=q.rotate(self.ang), lin=q.rotate(self.lin))
 
-	def transform(self, trans):
+	def rotate_by(self, trans):
 		return screw(ang=trans(self.ang), lin=trans(self.lin))
 
 def screw_of_vector(vec, arm):
