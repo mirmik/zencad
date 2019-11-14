@@ -15,6 +15,15 @@ class screw:
 	def __add__(self, oth):
 		return screw(self.ang + oth.ang, self.lin + oth.lin)
 
+	def __sub__(self, oth):
+		return screw(self.ang - oth.ang, self.lin - oth.lin)
+
+	def __mul__(self, oth):
+		return screw(self.ang * oth, self.lin * oth)
+
+	def __neg__(self):
+		return screw(-self.ang, -self.lin)
+
 	def scale(self, oth):
 		return screw(self.ang * oth, self.lin * oth)
 
@@ -34,21 +43,16 @@ class screw:
 			self.ang + arm.cross(self.lin), 
 			self.lin)
 
+	
 	def to_array(self):
 		"""Массив имеет обратный принятому в screw порядку"""
 		return numpy.array([*self.lin, *self.ang])
 
 	@staticmethod
 	def from_trans(trans):
-		"""Создать винт на основе объекта трансформации zencad.transform
-		
-		Detail:
-		-------
-		Масштабирование игнорируется.
-		"""
-
-		print("TODO fromtrans")
-		return screw()
+		lin = trans.translation()
+		ang = trans.rotation().rotation_vector()
+		return screw(lin=lin, ang=ang)
 
 	def to_trans(self):
 		trans0 = zencad.translate(*self.lin)
@@ -67,6 +71,9 @@ class screw:
 
 	def __str__(self):
 		return "(a:{},l:{})".format(self.ang, self.lin)
+
+	def __repr__(self):
+		return "screw({},{})".format(self.ang,self.lin)
 
 	def inverse_transform(self, trans):
 		trans = trans.inverse()

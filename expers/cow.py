@@ -2,6 +2,7 @@
 
 import numpy
 
+import zencad.malgo
 from zencad import *
 import zencad.assemble
 from zencad.libs.screw import screw
@@ -25,6 +26,9 @@ class cow(zencad.assemble.unit):
 		def get_force_screw(self):
 			return screw(lin=self.marshal * self.signal, ang=(0,0,0))
 
+		def sensivity(self):
+			return screw(lin=self.marshal, ang=(0,0,0))
+
 		def serve(self, delta):
 			pass
 
@@ -41,6 +45,9 @@ class cow(zencad.assemble.unit):
 
 		def get_force_screw(self):
 			return screw(ang=self.marshal * self.signal, lin=(0,0,0))
+
+		def sensivity(self):
+			return screw(ang=self.marshal, lin=(0,0,0))
 
 		def serve(self, delta):
 			pass
@@ -72,7 +79,7 @@ class cow(zencad.assemble.unit):
 			f.serve(delta)
 
 		fscrews = [ f.get_force_screw()
-			.inverse_transform(f.location) for f in self.force_producer_list ]
+			.transform(f.location) for f in self.force_producer_list ]
 
 		fscrew = screw()
 		for f in fscrews:
@@ -88,23 +95,51 @@ class cow(zencad.assemble.unit):
 
 		self.speed_screw = self.speed_screw.inverse_transform(speed_screw_delta_trans)
 
-		print(self.speed_screw)
-
 		self.location_update()
+
+	def sensivities(self):
+		sens = [ f.sensivity().transform(f.location).carry(f.location.translation()) 
+			for f in self.force_producer_list ]
+
+		return sens
+
+	def solve_control_equations(self, target, sens):
+		return zencad.malgo.svd_backpack(target, sens)
+
+	def set_control(self, control_screw):
+		control_screw = control_screw.inverse_transform(self.location)
+		print(control_screw)
+		control_screw = control_screw.to_array()
+		sens = [ s.to_array() for s in self.sensivities() ]
+		koeffs = self.solve_control_equations(control_screw, sens)[0]
+
+		for i in range(len(self.force_producer_list)):
+			self.force_producer_list[i].set_control_signal(koeffs[i])
 
 cow = cow()
 
-cow.force_producer_list[0].set_control_signal(0.1)
-cow.force_producer_list[1].set_control_signal(0)
-cow.force_producer_list[2].set_control_signal(0)
-cow.force_producer_list[3].set_control_signal(0)
-cow.force_producer_list[4].set_control_signal(0)
-cow.force_producer_list[5].set_control_signal(0.001)
-
-
 def animate(wdg):
-	cow.serve(0.1)
+	cow.serve(0.05)
+	speed_screw = cow.speed_screw.transform(cow.global_location)
 
+	target_location = translate(-10,0,0) * rotateZ(deg(180))
+	location_error = cow.global_location.inverse() * target_location
+	
+	location_error_screw = screw.from_trans(location_error)	 
+	speed_error_screw = -speed_screw
+
+	K0 = 1
+	K1 = 0.1
+	control_signal = speed_error_screw * K0 + location_error_screw * K1
+
+	cow.set_control(control_signal)
+
+	#cow.force_producer_list[0].set_control_signal(-0.1 * speed_screw.lin[0] + 0.1 * (10 - cow.location.translation()[0]))
+	#cow.force_producer_list[1].set_control_signal(0)
+	#cow.force_producer_list[2].set_control_signal(0)
+	#cow.force_producer_list[3].set_control_signal(0)
+	#cow.force_producer_list[4].set_control_signal(0)
+	#cow.force_producer_list[5].set_control_signal(0)
 
 display(cow)
 show(animate = animate)
