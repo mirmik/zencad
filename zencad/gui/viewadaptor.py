@@ -58,6 +58,7 @@ class DisplayWidget(QGLWidget):
 		self.showmarkers = showmarkers
 
 		self.scene = scene
+		self.scene.viewer.set_triedron(True)
 		self.view = view
  
 		self.temporary1 = QPoint()
