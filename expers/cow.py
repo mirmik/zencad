@@ -55,7 +55,7 @@ class cow(zencad.assemble.unit):
 
 	def __init__(self):
 		super().__init__()
-		self.inertia = inertia(1, numpy.diag([1,1,1]))
+		self.inertia = inertia(1, numpy.diag([1,1,4]))
 		self.impulse_screw = screw()
 		self.set_shape(zencad.sphere(self.r))
 		self.make_drivers()
@@ -148,6 +148,7 @@ def animate(wdg):
 	K0 = 1.0
 	K1 = 0.6
 	control_signal = speed_error_screw * K0 + location_error_screw * K1
+	control_signal = control_signal.elementwise_mul(screw(lin=(1,1,1),ang=(1,1,4)))
 
 	print(location_error_screw)
 	#control_signal = screw(lin=(0,1,0), ang=(0,0,0))
