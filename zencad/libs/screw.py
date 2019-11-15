@@ -15,6 +15,23 @@ class screw:
 	def __add__(self, oth):
 		return screw(self.ang + oth.ang, self.lin + oth.lin)
 
+	def __sub__(self, oth):
+		return screw(self.ang - oth.ang, self.lin - oth.lin)
+
+	def __mul__(self, oth):
+		return screw(self.ang * oth, self.lin * oth)
+
+	def elementwise_mul(self, oth):
+		#return screw((self.ang * oth.ang), self.lin * oth.lin)
+		r = self.to_array() * oth.to_array()
+		return screw.from_array(r)
+
+	def __neg__(self):
+		return screw(-self.ang, -self.lin)
+
+	def scale(self, oth):
+		return screw(self.ang * oth, self.lin * oth)
+
 	def __iadd__(self, oth):
 		self.ang += oth.ang
 		self.lin += oth.lin
@@ -31,23 +48,28 @@ class screw:
 			self.ang + arm.cross(self.lin), 
 			self.lin)
 
+	
 	def to_array(self):
 		"""Массив имеет обратный принятому в screw порядку"""
 		return numpy.array([*self.lin, *self.ang])
 
 	@staticmethod
 	def from_trans(trans):
-		"""Создать винт на основе объекта трансформации zencad.transform
+		lin = trans.translation()
+		ang = trans.rotation().rotation_vector()
+		return screw(lin=lin, ang=ang)
+
+	def to_trans(self):
+		trans0 = zencad.translate(*self.lin)
 		
-		Detail:
-		-------
-		Масштабирование игнорируется.
-		"""
-
-		print("TODO fromtrans")
-		return screw()
-
-
+		rot_mul = self.ang.length()
+		if rot_mul == 0:
+			return trans0
+		else:
+			rot_dim = self.ang.normalize()
+			trans1 = zencad.rotate(rot_dim, rot_mul)
+			return trans0 * trans1 
+		
 	@staticmethod
 	def from_array(a):
 		return screw(ang=(a[3], a[4], a[5]), lin=(a[0], a[1], a[2]))
@@ -55,11 +77,14 @@ class screw:
 	def __str__(self):
 		return "(a:{},l:{})".format(self.ang, self.lin)
 
-	def inverse_transform(self, trans):
-		trans = trans.inverse()
-		return screw(ang=trans(self.ang), lin=trans(self.lin))
+	def __repr__(self):
+		return "screw({},{})".format(self.ang,self.lin)
 
-	def transform(self, trans):
+	def inverse_rotate_by(self, trans):
+		q = trans.rotation().inverse()
+		return screw(ang=q.rotate(self.ang), lin=q.rotate(self.lin))
+
+	def rotate_by(self, trans):
 		return screw(ang=trans(self.ang), lin=trans(self.lin))
 
 def screw_of_vector(vec, arm):

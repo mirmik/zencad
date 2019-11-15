@@ -110,7 +110,6 @@ zencad.moveX = zencad.right
 zencad.moveY = zencad.forw
 zencad.moveZ = zencad.up
 
-
 def to_vector(arg):
     return zencad.util.vector3(arg)
 
