@@ -10,6 +10,10 @@ from zencad.libs.screw import screw
 from zencad.libs.inertia import inertia
 
 #m = box(3)
+model = (box(20,10,10,center=True)+
+			box(20,10,10,center=True).rotateZ(deg(90))+
+			box(20,10,10,center=True).rotateY(deg(90))
+)
 
 class cow(zencad.assemble.unit):
 	r = 10
@@ -55,9 +59,12 @@ class cow(zencad.assemble.unit):
 
 	def __init__(self):
 		super().__init__()
-		self.inertia = inertia(1, numpy.diag([1,1,4]))
+		self.inertia = inertia(1, numpy.diag([1,1,1]))
 		self.impulse_screw = screw()
-		self.set_shape(zencad.sphere(self.r))
+		self.set_shape(
+			#zencad.sphere(self.r)
+			model
+		)
 		self.make_drivers()
 
 	def add_force_producer(self, trans):
@@ -120,6 +127,10 @@ class cow(zencad.assemble.unit):
 
 cow = cow()
 
+hl(model.transform(translate(100,100,100) * rotate((1,1,1), deg(180))))
+hl(model.transform(translate(-100,100,100) * rotate((1,1,1), deg(-90))))
+hl(model)
+
 start_time = time.time()
 last_time = start_time
 def animate(wdg):
@@ -133,9 +144,9 @@ def animate(wdg):
 	cow.serve(delta)
 	speed_screw = cow.speed_screw
 
-	if from_start < 5:
+	if from_start < 7:
 		target_location = translate(100,100,100) * rotate((1,1,1), deg(180))
-	elif from_start < 10:
+	elif from_start < 14:
 		target_location = translate(-100,100,100) * rotate((1,1,1), deg(-90))
 	else: 
 		target_location = nulltrans()
@@ -145,12 +156,29 @@ def animate(wdg):
 	location_error_screw = screw.from_trans(location_error)	 
 	speed_error_screw = -speed_screw
 
-	K0 = 1.0
-	K1 = 0.6
-	control_signal = speed_error_screw * K0 + location_error_screw * K1
-	control_signal = control_signal.elementwise_mul(screw(lin=(1,1,1),ang=(1,1,4)))
+	T = 1
+	ksi = 0.8
+	
+	def koeffs(T, ksi, A):
+		K1 = A/T**2
+		K0 = 2*ksi*K1*T
+		return K0, K1
 
-	print(location_error_screw)
+	K0_m, K1_m = koeffs(T, ksi, cow.inertia.mass)
+	K0_I0, K1_I0 = koeffs(T, ksi, cow.inertia.matrix[0,0])
+	K0_I1, K1_I1 = koeffs(T, ksi, cow.inertia.matrix[1,1])
+	K0_I2, K1_I2 = koeffs(T, ksi, cow.inertia.matrix[2,2])
+	
+	K0 = screw(lin=(K0_m, K0_m, K0_m), ang=(K0_I0, K0_I1, K0_I2))
+	K1 = screw(lin=(K1_m, K1_m, K1_m), ang=(K1_I0, K1_I1, K1_I2))
+
+	#K0 = 2.2
+	#K1 = 1.4
+	control_signal = (speed_error_screw.elementwise_mul(K0) 
+		+ location_error_screw.elementwise_mul(K1))
+	#control_signal = control_signal.elementwise_mul(screw(lin=(1,1,1),ang=(1,1,1)))
+
+	#print(location_error_screw)
 	#control_signal = screw(lin=(0,1,0), ang=(0,0,0))
 	cow.set_control(control_signal)
 
