@@ -21,6 +21,11 @@ class screw:
 	def __mul__(self, oth):
 		return screw(self.ang * oth, self.lin * oth)
 
+	def elementwise_mul(self, oth):
+		#return screw((self.ang * oth.ang), self.lin * oth.lin)
+		r = self.to_array() * oth.to_array()
+		return screw.from_array(r)
+
 	def __neg__(self):
 		return screw(-self.ang, -self.lin)
 
@@ -75,11 +80,11 @@ class screw:
 	def __repr__(self):
 		return "screw({},{})".format(self.ang,self.lin)
 
-	def inverse_transform(self, trans):
-		trans = trans.inverse()
-		return screw(ang=trans(self.ang), lin=trans(self.lin))
+	def inverse_rotate_by(self, trans):
+		q = trans.rotation().inverse()
+		return screw(ang=q.rotate(self.ang), lin=q.rotate(self.lin))
 
-	def transform(self, trans):
+	def rotate_by(self, trans):
 		return screw(ang=trans(self.ang), lin=trans(self.lin))
 
 def screw_of_vector(vec, arm):
