@@ -2,6 +2,9 @@ import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.util import angle_pair, deg
 
+@lazy.lazy(cls=nocached_shape_generator)
+def nullshape():
+    return pyservoce.box(1,1,1) - pyservoce.box(1,1,1)
 
 @lazy.lazy(cls=nocached_shape_generator)
 def box(size, arg2=None, arg3=None, center=False):
