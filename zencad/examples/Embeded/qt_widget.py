@@ -17,4 +17,6 @@ app = QApplication(sys.argv[:1])
 zencad.opengl.init_opengl()
 widget = zencad.gui.viewadaptor.DisplayWidget(scn)
 widget.show()
-app.exec()
+
+if zencad.showapi.showmode != "noshow":
+	app.exec()
