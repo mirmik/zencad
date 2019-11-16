@@ -14,6 +14,8 @@ examples = zencad.util.examples_paths()
 for epath in examples:
 	cmd = sys.executable + " -m zencad --disable-show " + epath
 	print(cmd)
-	x = subprocess.check_output(cmd.split())
-	if x != 0:
+	
+	exit_code = subprocess.call(cmd, shell=True)
+	if exit_code != 0:
+		print(exit_code)
 		raise Exception("Error in example {0}".format(epath))
