@@ -10,7 +10,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-scn = zencad.Scene()
+try:
+	scn = zencad.Scene()
+except:
+	print("Display missing?")
+	sys.exit(0)
+
 scn.add(evalcache.unlazy(zencad.box(10)))
 
 app = QApplication(sys.argv[:1])

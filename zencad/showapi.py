@@ -6,7 +6,13 @@ import sys
 import zencad.assemble
 import zencad.gui.application
 
-default_scene = Scene()
+try:
+    default_scene = Scene()
+except Exception as ex:
+    print("warning: {}".format(ex))
+    default_scene = None
+
+
 SHOWMODE = "makeapp"
 PRESCALE = False
 SLEEPED = False
@@ -56,7 +62,18 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
 
 default_color = zencad.settings.Settings.get_default_color()
 
+class stub_controller:
+    def __init__(self):
+        pass
+
+    def hide(self, en):
+        pass
+
+
 def display(shp, color=default_color, deep=True, scene=default_scene):
+    if default_scene is None:
+        return stub_controller()
+
     if isinstance(shp, list) or isinstance(shp, tuple):
         lst = []
         for s in shp:

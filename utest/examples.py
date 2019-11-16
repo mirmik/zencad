@@ -9,7 +9,7 @@ import PyQt5.QtWidgets
 import PyQt5.QtCore
 import PyQt5.QtGui
 
-examples = zencad.util.examples_paths()
+examples = zencad.util.examples_paths(root="../zencad/examples")
 
 for epath in examples:
 	cmd = sys.executable + " -m zencad --disable-show " + epath
