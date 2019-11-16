@@ -45,7 +45,7 @@ LINKS = [a,b,c,d]
 
 disp(a)
 
-def preanimate(wdg):
+def preanimate(widget, animate_thread):
 	global CTRWIDGET, SLDS
 	CTRWIDGET = QWidget()
 	layout = QVBoxLayout()
