@@ -32,7 +32,8 @@ matrix:
         - python3 ./setup.py install
         - cd ..
 
-        - python3 -m pip install zencad
+        #- python3 -m pip install zencad
+        - ./setup.py install --user
 
       script:
         - cd utest
