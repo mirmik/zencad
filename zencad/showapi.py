@@ -63,8 +63,8 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
 default_color = zencad.settings.Settings.get_default_color()
 
 class stub_controller:
-    def __init__(self):
-        pass
+    def __init__(self, shp):
+        self.shp = shp
 
     def hide(self, en):
         pass
@@ -72,7 +72,11 @@ class stub_controller:
 
 def display(shp, color=default_color, deep=True, scene=default_scene):
     if default_scene is None:
-        return stub_controller()
+        # TODO: Add another stubs
+        if isinstance(shp, evalcache.LazyObject):
+            return stub_controller(shp.unlazy())
+        else:
+            return stub_controller(shp)    
 
     if isinstance(shp, list) or isinstance(shp, tuple):
         lst = []
