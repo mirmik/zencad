@@ -70,11 +70,15 @@ def circle_tangent_points(center, radius, point):
     
     return [ point3(b1x,b1y), point3(b2x,b2y) ]
 
-def examples_paths():
+def examples_paths(root = None):
     import zencad
     ret = []
 
-    root = os.path.join(zencad.moduledir, "examples")
+    if root is None:
+        root = os.path.join(zencad.moduledir, "examples")
+    else:
+        root = os.path.abspath(root)
+
     for path, subdirs, files in os.walk(root):
         subdirs[:] = [d for d in subdirs if not d.startswith('__pycache__')]
         for name in files:
