@@ -26,6 +26,7 @@ matrix:
         - sudo apt install -y python3-pybind11
 
         - python3 -m pip install licant
+        - pyhon3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
 
         - git clone https://github.com/mirmik/servoce --recursive
         - cd servoce 
