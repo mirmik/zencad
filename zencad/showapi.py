@@ -55,6 +55,7 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
             scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, *args, **kwargs)
 
     elif SHOWMODE == "noshow":
+        print("showapi: showing disabled")
         return
 
     else:
