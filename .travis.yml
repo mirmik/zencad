@@ -37,3 +37,4 @@ matrix:
       script:
         - cd utest
         - python3 ./api.py
+        - python3 ./examples.py
