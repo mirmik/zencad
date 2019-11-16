@@ -21,7 +21,7 @@ class cow(zencad.assemble.unit):
 	class force_producer(zencad.assemble.unit):
 		def __init__(self, parent, location):
 			super().__init__(parent=parent, location=location)
-			self.set_shape(cylinder(r=1,h=3))
+			self.set_shape(cylinder(r=1,h=3,center=True))
 			self.marshal = vector3(0,0,1)
 			self.signal = 0
 
@@ -75,12 +75,22 @@ class cow(zencad.assemble.unit):
 
 	def make_drivers(self):
 		self.force_producer_list = []
-		self.add_force_producer(rotateY(-deg(90)))
-		self.add_force_producer(rotateX(deg(90)))
-		self.add_force_producer(nulltrans())
-		self.add_torque_producer(rotateY(-deg(90)))
-		self.add_torque_producer(rotateX(deg(90)))
-		self.add_torque_producer(nulltrans())
+		self.add_force_producer(right(10))
+		self.add_force_producer(left(10))
+		self.add_force_producer(forw(10))
+		self.add_force_producer(back(10))
+		self.add_force_producer(left(10) * rotateX(deg(90)))
+		self.add_force_producer(right(10) * rotateX(deg(90)))
+		self.add_force_producer(forw(10) * rotateY(deg(90)))
+		self.add_force_producer(back(10) * rotateY(deg(90)))
+		
+		#self.add_force_producer(up(10) * rotateY(deg(90)))
+		#self.add_force_producer(down(10) * rotateY(deg(90)))
+		#self.add_force_producer(up(10) * rotateX(deg(90)))
+		#self.add_force_producer(down(10) * rotateX(deg(90)))
+		#self.add_torque_producer(rotateY(-deg(90)))
+		#self.add_torque_producer(rotateX(deg(90)))
+		#self.add_torque_producer(nulltrans())
 
 	def serve(self, delta):
 		for f in self.force_producer_list:
