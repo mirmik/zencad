@@ -70,7 +70,12 @@ m3 = m.forw(h * 1.5)
 m = m - base
 m2 = m.rotateX(deg(180)).up(20)
 
-scn = Scene()
+try:
+    scn = zencad.Scene()
+except:
+    print("Display missing?")
+    sys.exit(0)
+
 view = scn.viewer.create_view()
 view.set_triedron(False)
 #view.set_background(pyservoce.color(0,0,0.6))

@@ -234,14 +234,17 @@ def do_main():
 			print("Error: {}".format(ex))
 			ex_type, ex, tb = sys.exc_info()
 			traceback.print_tb(tb)
+			return -1
+
+	return 0
 	
 	trace("AFTER RUNPY")
 
 def main():
-	do_main()
+	sts = do_main()
 	finish_procedure()
 	trace("EXIT")
-	sys.exit(0)
+	sys.exit(sts)
 
 if __name__ == "__main__":
 	zencad.util.set_process_name("zencad")

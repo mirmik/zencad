@@ -3,22 +3,25 @@
 import zencad
 import sys
 import os
+import subprocess
 
 import PyQt5.QtWidgets
 import PyQt5.QtCore
 import PyQt5.QtGui
 
-examples = zencad.util.examples_paths()
-#print(examples)
+examples = zencad.util.examples_paths(root="../zencad/examples")
 
-def exec():
-	pass
+if "TRAVIS_OS_NAME" in os.environ:
+	print("Travis. Filter examples.")
+	examples = [ e for e in examples if not "Embeded" in e ]
+	examples = [ e for e in examples if not "Integration" in e ]
 
-PyQt5.QtWidgets.QApplication.exec = exec
 
 for epath in examples:
 	cmd = sys.executable + " -m zencad --disable-show " + epath
 	print(cmd)
-	os.system(cmd)
-
-	pass
+	
+	exit_code = subprocess.call(cmd, shell=True)
+	if exit_code != 0:
+		print(exit_code)
+		raise Exception("Error in example {0}".format(epath))

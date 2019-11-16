@@ -60,7 +60,7 @@ chain = zencad.libs.kinematic.kinematic_chain(LINKS[-1].rotator.output)
 
 disp(a)
 
-def preanimate(wdg):
+def preanimate(widget, animate_thread):
 	global CTRWIDGET, XSLD, YSLD, ZSLD
 	CTRWIDGET = QWidget()
 	layout = QVBoxLayout()

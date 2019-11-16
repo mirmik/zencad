@@ -6,7 +6,13 @@ import sys
 import zencad.assemble
 import zencad.gui.application
 
-default_scene = Scene()
+try:
+    default_scene = Scene()
+except Exception as ex:
+    print("warning: {}".format(ex))
+    default_scene = None
+
+
 SHOWMODE = "makeapp"
 PRESCALE = False
 SLEEPED = False
@@ -49,6 +55,7 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
             scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, *args, **kwargs)
 
     elif SHOWMODE == "noshow":
+        print("showapi: showing disabled")
         return
 
     else:
@@ -56,7 +63,22 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
 
 default_color = zencad.settings.Settings.get_default_color()
 
+class stub_controller:
+    def __init__(self, shp):
+        self.shp = shp
+
+    def hide(self, en):
+        pass
+
+
 def display(shp, color=default_color, deep=True, scene=default_scene):
+    if default_scene is None:
+        # TODO: Add another stubs
+        if isinstance(shp, evalcache.LazyObject):
+            return stub_controller(shp.unlazy())
+        else:
+            return stub_controller(shp)    
+
     if isinstance(shp, list) or isinstance(shp, tuple):
         lst = []
         for s in shp:
