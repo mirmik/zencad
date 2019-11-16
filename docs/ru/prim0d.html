@@ -83,12 +83,14 @@
 
 <p>Иногда кроме указаний точек используются объекты-векторы для указания направлений. Принцип работы с векторами аналогичен работе с точками.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
+<div class="codehilite"><pre><span></span><code><span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
 </code></pre></div>
 
 <hr />
 
-<h2>Vectors и Points</h2>
+<h2>vectors, points</h2>
 
 <p>Функции vectors и points явно создают массивы точек из массивов координат.</p>
 
@@ -98,7 +100,21 @@
 
 <hr />
 
-<h2>Deg</h2>
+<h2>nullshape</h2>
+
+<p>Пустой примитив. Может участвовать в булевых операциях.
+Пример использования в цикле:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="n">nullshape</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1">#alternate: union([box(20).translate(10*i,10*i,10*i) for i in range(7)])</span>
+</code></pre></div>
+
+<hr />
+
+<h2>deg</h2>
 
 <p>API ZenCad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg: <br />
 <code>deg(180)</code> соответствует <code>math.pi</code>.</p>

@@ -33,9 +33,9 @@ loft(wires)
 
 ---
 ## Sweep
-Операция выдавливания тела `shp` по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь `traj` задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории. Эту опцию рекомендуется устанавливать для спирального свипа (см. [https://en.wikipedia.org/wiki/Frenet-Serret_formulas](https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas)).  
+Операция выдавливания тела `shp` по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь `path` задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории. Эту опцию рекомендуется устанавливать для спирального свипа (см. [https://en.wikipedia.org/wiki/Frenet-Serret_formulas](https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas)).  
 ```python
-sweep(proto=profile, traj=trajectory, frenet=True/False)
+sweep(proto=profile, path=trajectory, frenet=True/False)
 ```
 ![](../images/generic/sweep0.png)
 ![](../images/generic/sweep1.png)  
