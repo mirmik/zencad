@@ -166,3 +166,28 @@ matrix:
         - python3 ./examples.py
 
     
+
+
+
+
+
+
+     # Self Making with Display (Bionic)    PyPi
+    - os: linux
+      dist: bionic
+      python:
+        - "3.7"
+        - "3.8"
+            
+      services:
+        - xvfb
+
+      install: 
+        - python3 -m pip install zencad
+
+      script:
+        - cd utest
+        - python3 ./api.py
+        - python3 ./examples.py
+
+    
