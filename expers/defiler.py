@@ -14,7 +14,7 @@ class defiler(zencad.assemble.unit):
 
 	class arm(zencad.assemble.unit):
 		class arm_node(zencad.assemble.unit):
-			h=5
+			h=20
 			r=1
 
 			def __init__(self, ax=(0,1,0)):
@@ -25,21 +25,23 @@ class defiler(zencad.assemble.unit):
 
 		def __init__(self):
 			super().__init__()
-			self.arm_node_0 = self.arm_node(ax=(0,1,0))
+			self.arm_node_0 = self.arm_node(ax=(1,0,0))
 			self.arm_node_1 = self.arm_node(ax=(1,0,0))
-			self.arm_node_2 = self.arm_node(ax=(0,1,0))
-			self.arm_node_3 = self.arm_node(ax=(1,0,0))
-			self.arm_node_4 = self.arm_node(ax=(0,1,0))
-			self.arm_node_5 = self.arm_node(ax=(1,0,0))
-			self.arm_node_6 = self.arm_node(ax=(0,1,0))
+			#self.arm_node_2 = self.arm_node(ax=(0,1,0))
+			#self.arm_node_3 = self.arm_node(ax=(1,0,0))
+			#self.arm_node_4 = self.arm_node(ax=(0,1,0))
+			#self.arm_node_5 = self.arm_node(ax=(0,1,0))
+			#self.arm_node_6 = self.arm_node(ax=(1,0,0))
 
 			self.link(self.arm_node_0)
 			self.arm_node_0.rot.link(self.arm_node_1)
-			self.arm_node_1.rot.link(self.arm_node_2)
-			self.arm_node_2.rot.link(self.arm_node_3)
-			self.arm_node_3.rot.link(self.arm_node_4)
-			self.arm_node_4.rot.link(self.arm_node_5)
-			self.arm_node_5.rot.link(self.arm_node_6)
+			#self.arm_node_1.rot.link(self.arm_node_2)
+			#self.arm_node_2.rot.link(self.arm_node_3)
+			#self.arm_node_3.rot.link(self.arm_node_4)
+			#self.arm_node_4.rot.link(self.arm_node_5)
+			#self.arm_node_5.rot.link(self.arm_node_6)
+			self.arm_node_6 = self.arm_node_1
+
 
 	
 	def __init__(self):
@@ -55,25 +57,39 @@ class defiler(zencad.assemble.unit):
 		self.arm_12 = self.arm()
 		self.arm_13 = self.arm()
 
-		self.rot_00 = zencad.libs.kinematic.rotator(location=move( self.x/4,self.y/2,0), ax=(0,1,0))
-		self.rot_01 = zencad.libs.kinematic.rotator(location=move(        0,self.y/2,0), ax=(0,1,0))
-		self.rot_02 = zencad.libs.kinematic.rotator(location=move(-self.x/4,self.y/2,0), ax=(0,1,0))
-		self.rot_03 = zencad.libs.kinematic.rotator(location=move(-self.x/4*2,self.y/2,0), ax=(0,1,0))
-		self.rot_10 = zencad.libs.kinematic.rotator(location=move( self.x/4,-self.y/2,0), ax=(0,-1,0))
-		self.rot_11 = zencad.libs.kinematic.rotator(location=move(        0,-self.y/2,0), ax=(0,-1,0))
-		self.rot_12 = zencad.libs.kinematic.rotator(location=move(-self.x/4,-self.y/2,0), ax=(0,-1,0))
-		self.rot_13 = zencad.libs.kinematic.rotator(location=move(-self.x/4*2,-self.y/2,0), ax=(0,-1,0))
+
+
+		self.brot_00 = zencad.libs.kinematic.rotator(location=move( self.x/4,self.y/2,0), ax=(0,0,1))
+		self.brot_01 = zencad.libs.kinematic.rotator(location=move(        0,self.y/2,0), ax=(0,0,1))
+		self.brot_02 = zencad.libs.kinematic.rotator(location=move(-self.x/4,self.y/2,0), ax=(0,0,1))
+		self.brot_03 = zencad.libs.kinematic.rotator(location=move(-self.x/4*2,self.y/2,0), ax=(0,0,1))
+		self.brot_10 = zencad.libs.kinematic.rotator(location=move( self.x/4,-self.y/2,0), ax=(0,0,1))
+		self.brot_11 = zencad.libs.kinematic.rotator(location=move(        0,-self.y/2,0), ax=(0,0,1))
+		self.brot_12 = zencad.libs.kinematic.rotator(location=move(-self.x/4,-self.y/2,0), ax=(0,0,1))
+		self.brot_13 = zencad.libs.kinematic.rotator(location=move(-self.x/4*2,-self.y/2,0), ax=(0,0,1))
+
+		self.rot_00 = zencad.libs.kinematic.rotator(ax=(1,0,0))
+		self.rot_01 = zencad.libs.kinematic.rotator(ax=(1,0,0))
+		self.rot_02 = zencad.libs.kinematic.rotator(ax=(1,0,0))
+		self.rot_03 = zencad.libs.kinematic.rotator(ax=(1,0,0))
+		self.rot_10 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
+		self.rot_11 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
+		self.rot_12 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
+		self.rot_13 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
 		
 		self.arms = [self.arm_00, self.arm_01, self.arm_02, self.arm_03, self.arm_10, self.arm_11, self.arm_12, self.arm_13]
 		self.rots = [self.rot_00, self.rot_01, self.rot_02, self.rot_03, self.rot_10, self.rot_11, self.rot_12, self.rot_13]
+		self.brots = [self.brot_00, self.brot_01, self.brot_02, self.brot_03, self.brot_10, self.brot_11, self.brot_12, self.brot_13]
 
-		for rot in self.rots: self.link(rot)
-		for rot in self.rots: rot.add_triedron()
+		#for rot in self.rots: rot.add_triedron()
 
 		for i in range(len(self.arms)):
+			self.link(self.brots[i])
+			self.brots[i].link(self.rots[i])
 			self.rots[i].link(self.arms[i])
-			self.arms[i].baserot = self.rots[i]
-			self.rots[i].set_coord(math.pi)
+			self.arms[i].baserot = self.brots[i]
+			self.arms[i].baserot2 = self.rots[i]
+			self.rots[i].set_coord(0)
 
 		self.arm_chains = []
 		for arm in self.arms:
@@ -102,13 +118,17 @@ def serve_arm(arm, arm_chain, target, delta, side, no):
 	print(koeffs)
 
 	arm.baserot.set_coord(arm.baserot.coord + koeffs[0] * delta)
-	arm.arm_node_0.rot.set_coord(arm.arm_node_0.rot.coord + koeffs[1] * delta)
-	arm.arm_node_1.rot.set_coord(arm.arm_node_1.rot.coord + koeffs[2] * delta)
-	arm.arm_node_2.rot.set_coord(arm.arm_node_2.rot.coord + koeffs[3] * delta)
-	arm.arm_node_3.rot.set_coord(arm.arm_node_3.rot.coord + koeffs[4] * delta)
-	arm.arm_node_4.rot.set_coord(arm.arm_node_4.rot.coord + koeffs[5] * delta)
-	arm.arm_node_5.rot.set_coord(arm.arm_node_5.rot.coord + koeffs[6] * delta)
-	arm.arm_node_6.rot.set_coord(arm.arm_node_6.rot.coord + koeffs[7] * delta)
+	arm.baserot2.set_coord(arm.baserot2.coord + koeffs[1] * delta)
+	if -math.pi < arm.baserot2.coord < math.pi:
+		pass
+	else:   arm.baserot2.coord = 0
+	arm.arm_node_0.rot.set_coord(arm.arm_node_0.rot.coord + koeffs[2] * delta)
+	arm.arm_node_1.rot.set_coord(arm.arm_node_1.rot.coord + koeffs[3] * delta)
+	#arm.arm_node_2.rot.set_coord(arm.arm_node_2.rot.coord + koeffs[3] * delta)
+	#arm.arm_node_3.rot.set_coord(arm.arm_node_3.rot.coord + koeffs[4] * delta)
+	#arm.arm_node_4.rot.set_coord(arm.arm_node_4.rot.coord + koeffs[5] * delta)
+	#arm.arm_node_5.rot.set_coord(arm.arm_node_5.rot.coord + koeffs[6] * delta)
+	#arm.arm_node_6.rot.set_coord(arm.arm_node_6.rot.coord + koeffs[7] * delta)
 
 	if (arm.global_location.translation() - targets[side][targetno[no]+1].translation()).length() < 30:
 		targetno[no] += 1
@@ -152,7 +172,7 @@ def animate(wdg):
 	serve_arm(defiler.arms[7], defiler.arm_chains[7], target[7], delta=delta, side=1,no=7)
 
 	if drive:
-		defiler.relocate(translate(delta*5,0,0) * defiler.location)
+		defiler.relocate(translate(delta*15,0,0) * defiler.location)
 
 
 	defiler.location_update()
