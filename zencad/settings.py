@@ -26,7 +26,10 @@ class Settings():
 			"default_color_alpha" : pre_default_color[3],
 		},
 		"memory" : {
-			"recents" : []
+			"recents" : [],
+			"hsplitter_position": None,
+			"vsplitter_position": None,
+			"wsize": None
 		}
 	}
 	
@@ -100,6 +103,12 @@ Settings.restore()
 def restore():
 	Settings.restore()
 
+def hsplitter_position_get():
+	return Settings.list_of_settings["memory"]["hsplitter_position"]
+
+def vsplitter_position_get():
+	return Settings.list_of_settings["memory"]["vsplitter_position"]
+	
 def get(path):
 	it = Settings.list_of_settings
 	for p in path:

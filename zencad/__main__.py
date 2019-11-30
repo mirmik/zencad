@@ -74,6 +74,7 @@ def do_main():
 	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--disable-sleeped", action="store_true")
+	parser.add_argument("--no-restore", action="store_true")
 	parser.add_argument("--tgtpath")
 	parser.add_argument("--debugcomm", action="store_true")
 	parser.add_argument("--session_id", type=int, default=0)
@@ -94,6 +95,10 @@ def do_main():
 
 	if pargs.disable_sleeped:
 		zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION = False
+
+	if pargs.no_restore:
+		zencad.configure.CONFIGURE_NO_RESTORE = True
+
 
 	trace("__MAIN__", sys.argv)
 	trace(pargs)

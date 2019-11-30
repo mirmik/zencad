@@ -128,8 +128,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.cw_layout.addWidget(self.hsplitter)
 		self.cw_layout.addWidget(self.info_widget)
 		self.cw.setLayout(self.cw_layout)
-		
-		self.resize(1000,800)
+		#self.resize(1000,800)
 
 		lbl = ScreenWidget()
 
@@ -138,6 +137,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.vsplitter.addWidget(lbl)
 		self.vsplitter.addWidget(self.console)
 
+		self.resize(640,480)
 		self.vsplitter.setSizes([self.height()*5/8, self.height()*3/8])
 		self.hsplitter.setSizes([self.width()*3/8, self.width()*5/8])
 
@@ -179,6 +179,28 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		if display_mode:
 			self.displayMode()
+		else:
+			self.restore_gui_state()
+		self._display_mode = display_mode
+
+	def restore_gui_state(self):
+		if zencad.configure.CONFIGURE_NO_RESTORE:
+			return
+		hsplitter_position = zencad.settings.hsplitter_position_get()
+		vsplitter_position = zencad.settings.vsplitter_position_get()
+		wsize = zencad.settings.get(["memory","wsize"])
+		if hsplitter_position: self.hsplitter.setSizes([int(s) for s in hsplitter_position])
+		if vsplitter_position: self.vsplitter.setSizes([int(s) for s in vsplitter_position])
+		if wsize: self.setGeometry(wsize)
+
+	def store_gui_state(self):
+		hsplitter_position = self.hsplitter.sizes()
+		vsplitter_position = self.vsplitter.sizes()
+		wsize = self.geometry()
+		zencad.settings.set(["memory","hsplitter_position"], hsplitter_position)
+		zencad.settings.set(["memory","vsplitter_position"], vsplitter_position)
+		zencad.settings.set(["memory","wsize"], wsize)
+		zencad.settings.store()
 
 	def remake_sleeped_thread(self):
 		self.sleeped_client.send({"cmd":"stopworld"})
@@ -309,6 +331,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
+		if not self._display_mode:
+			self.store_gui_state()
+
 		trace("closeEvent")
 		if self.cc:
 			self.cc.close()
