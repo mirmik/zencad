@@ -1,6 +1,6 @@
 import unittest
 import zencad
-
+import os
 
 class Prim2dprobe(unittest.TestCase):
     def setUp(self):
@@ -71,6 +71,7 @@ class Prim2dprobe(unittest.TestCase):
 
     def test_textshape_probe(self):
         text = "HelloWorld"
+        directory = os.path.dirname(__file__) 
         zencad.textshape(
-            text=text, fontpath="../zencad/examples/fonts/testfont.ttf", size=20
+            text=text, fontpath=os.path.join(directory, "../zencad/examples/fonts/testfont.ttf"), size=20
         )
