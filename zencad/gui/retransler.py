@@ -92,6 +92,9 @@ class console_retransler(QThread):
 		#    p.kill()
 
 	def do_retrans(self, old=1, new=3):
+		if __RETRANSLER_TRACE__:
+			print_to_stderr("do_retrans old:{} new:{}".format(old, new))
+
 		os.dup2(old, new)
 		r, w = os.pipe()
 		self.r = r

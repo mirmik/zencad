@@ -66,7 +66,7 @@ def do_main():
 	parser.add_argument('-v', "--debug", action="store_true")
 	parser.add_argument("-I", "--mpath", action="store_true")
 	parser.add_argument("-m", "--module", default="zencad")
-	parser.add_argument("--mainonly", action="store_true")
+	parser.add_argument("--subproc", action="store_true")
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
@@ -109,12 +109,11 @@ def do_main():
 
 	pargs.nodaemon = True
 
-	# Режим работы программы, в котором создаётся gui с предоткрытым файлом.
-	# Используется в том числе для внутренней работы.	
-	# TODO: переименовать режим.
-	if pargs.mainonly:
+	# Подчинённый режим работы gui. 
+	# Используется при создании gui из в ходе работы интерпретатора.
+	if pargs.subproc:
 		if pargs.tgtpath == None:
-			print_to_stderr("Error: mainonly mode without tgtpath")
+			print_to_stderr("Error: subproc mode without tgtpath")
 			exit(0)
 
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
