@@ -50,3 +50,15 @@ helix(r, h, step, angle=angle, left=True/False)
 ![](../images/generic/helix1.png)  
 ![](../images/generic/helix2.png)
 ![](../images/generic/helix3.png)  
+
+---
+## Bezier
+Кривая Безье ([wiki](https://en.wikipedia.org/wiki/B%C3%A9zier_curve)).
+Задаётся массивом опорных точек и массивом весов (опционально).
+
+```python
+bezier(pnts)
+bezier(pnts, weights)
+```
+![](../images/generic/bezier0.png)
+![](../images/generic/bezier1.png)  

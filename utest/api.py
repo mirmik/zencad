@@ -46,9 +46,12 @@ print("import ... finish")
 def execute_test(test):
     print()
     print("TEST:")
-    unittest.TextTestRunner(verbosity=2).run(
+    result = unittest.TextTestRunner(verbosity=2).run(
         unittest.TestLoader().loadTestsFromModule(test)
     )
+
+    if len(result.errors) != 0:
+        sys.exit(-1)
 
 
 if __name__ == "__main__":
