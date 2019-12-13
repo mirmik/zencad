@@ -36,3 +36,25 @@ def bezier(pnts, weights=None):
 		return pyservoce.bezier(pnts, weights)
 	else:
 		return pyservoce.bezier(pnts)
+
+@lazy.lazy(cls=nocached_shape_generator)
+def bspline(pnts, knots, muls, degree, periodic=False, check_rational=True, weights=None):
+	"""Построение дуги круга по трем точкам"""
+	pnts = points(pnts)
+
+	if weights:
+		return pyservoce.bspline(
+			pnts=pnts, 
+			knots=knots,
+			weights=weights,
+			multiplicities=muls,
+			degree=degree,
+			periodic=periodic,
+			check_rational=check_rational)
+	else:
+		return pyservoce.bspline(
+			pnts=pnts, 
+			knots=knots,
+			multiplicities=muls,
+			degree=degree,
+			periodic=periodic)
