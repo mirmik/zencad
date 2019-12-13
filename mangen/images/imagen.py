@@ -36,7 +36,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
                 scn.add(mod)
 
     viewer = scn.viewer
-    if triedron:
+    if triedron or True: # Always add triedron 
         viewer.set_triedron_axes()
     view = viewer.create_view()
     view.set_triedron(False)
@@ -758,4 +758,16 @@ doscreen(
     triedron=True,
     yaw=yaw,
     pitch=pitch,
+)
+
+doscreen(
+    model=bezier([(0,0,0),(0,10,0),(0,10,10)]),
+    path="bezier0.png",
+    size=wsize
+)
+
+doscreen(
+    model=bezier([(0,0,0),(0,10,0),(0,10,10)], [1,2,1]),
+    path="bezier1.png",
+    size=wsize
 )
