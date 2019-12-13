@@ -42,6 +42,7 @@ STDOUT_FILENO = 1
 from zencad.gui.mainwindow import MainWindow
 
 import zencad.configure
+import zencad.settings
 
 __DEBUG_MODE__ = False
 
@@ -108,15 +109,21 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			display_mode=display_mode)
 
 	else:
-		strt_dialog = zencad.gui.startwdg.StartDialog()
-		strt_dialog.exec()
+		if zencad.settings.list()["gui"]["start_widget"] == "true":
+			strt_dialog = zencad.gui.startwdg.StartDialog()
+			strt_dialog.exec()
 
-		if strt_dialog.result() == 0:
-			return
+			if strt_dialog.result() == 0:
+				return
+
+			openpath = strt_dialog.openpath
+
+		else:
+			openpath = zencad.gui.util.create_temporary_file(zencad_template=True)
 
 		mw = MainWindow(
 			presentation=False, 
-			fastopen=strt_dialog.openpath,
+			fastopen=openpath,
 			display_mode=display_mode)
 
 	mw.show()
