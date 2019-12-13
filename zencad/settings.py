@@ -18,6 +18,7 @@ class Settings():
 	list_of_settings = {
 		"gui" : {
 			"text_editor" : default_text_editor_os(),
+			"start_widget" : True
 		},
 		"view" : {
 			"default_color_red" : pre_default_color[0],
@@ -129,6 +130,13 @@ def get_default_color():
 
 def get_external_editor_command():
 	return Settings.list_of_settings["gui"]["text_editor"]
+
+def list():
+	return Settings.list_of_settings
+
+def start_screen(en):
+	Settings.list_of_settings["gui"]["start_widget"] = "false" if en else "true"
+	store()
 
 if __name__ == "__main__":
 	print(Settings.list_of_settings)
