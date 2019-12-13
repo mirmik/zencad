@@ -12,7 +12,7 @@ directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
         "evalcache",
-        "pyservoce>=1.10.0",
+        "pyservoce>=1.14.0",
         "numpy",
         "pillow",
         "pyopengl",
@@ -26,7 +26,7 @@ if sys.platform != "win32":
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.22.0",
+    version="0.23.0",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
