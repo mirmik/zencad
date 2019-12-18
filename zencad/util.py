@@ -2,6 +2,7 @@ import runpy
 import math
 import pyservoce
 import os
+import evalcache
 import sys
 
 PROCNAME = str(os.getpid())
@@ -32,17 +33,21 @@ def angle_pair(arg):
 
 
 def point3(*arg):
-    if isinstance(arg[0], pyservoce.point3):
-        return arg[0]
+    args = [ evalcache.unlazy_if_need(a) for a in arg ]
 
-    return pyservoce.point3(*arg)
+    if isinstance(args[0], pyservoce.point3):
+        return args[0]
+
+    return pyservoce.point3(*args)
 
 
 def vector3(*arg):
-    if isinstance(arg[0], pyservoce.vector3):
-        return arg[0]
+    args = [ evalcache.unlazy_if_need(a) for a in arg ]
 
-    return pyservoce.vector3(*arg)
+    if isinstance(args[0], pyservoce.vector3):
+        return args[0]
+
+    return pyservoce.vector3(*args)
 
 
 def points(tpls):
