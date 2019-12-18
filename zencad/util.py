@@ -4,8 +4,10 @@ import pyservoce
 import os
 import sys
 
+PROCNAME = str(os.getpid())
+
 def print_to_stderr(*args):
-    sys.stderr.write("STDERR {}: ".format(os.getpid()))
+    sys.stderr.write("STDERR {}: ".format(PROCNAME))
     sys.stderr.write(str(args))
     sys.stderr.write("\r\n")
     sys.stderr.flush()

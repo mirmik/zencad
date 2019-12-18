@@ -24,6 +24,9 @@ class TableField(QWidget):
 		spacing = self.layout.spacing()
 		#self.setFixedWidth(llen + self.wdg.width() + right + spacing)
 
+	def restore(self):
+		pass
+
 class TextFieldChanger(QWidget):
 	def __init__(self, label, path, length=200):
 		super().__init__()
@@ -38,6 +41,25 @@ class TextFieldChanger(QWidget):
 
 	def apply(self):
 		zencad.settings.set(self.path, self.edit.text())
+
+	def restore(self):
+		pass
+
+class Checker(QWidget):
+	def __init__(self, label, path):
+		super().__init__()
+		self.path=path
+		self.layout = QHBoxLayout()
+		self.layout.addWidget(QLabel(label))
+		self.check = QCheckBox()
+		self.layout.addWidget(self.check) 
+		self.setLayout(self.layout)
+
+	def apply(self):
+		zencad.settings.start_screen(self.check.checkState() == 0)
+
+	def restore(self):
+		self.check.setCheckState(2 if zencad.settings.list()["gui"]["start_widget"]=="true" else 0)
 
 class ColorChanger(QWidget):
 	def __init__(self):
@@ -62,6 +84,9 @@ class ColorChanger(QWidget):
 		self.layout.setContentsMargins(0,0,0,0)
 		self.layout.addWidget(QWidget())
 		self.setLayout(self.layout)
+
+	def restore(self):
+		pass
 
 	def apply(self):
 
@@ -92,17 +117,23 @@ class SettingsWidget(QDialog):
 
 		self.default_color_edit = ColorChanger()
 		self.texteditor_edit = TextFieldChanger(path=["gui", "text_editor"], label="Text editor command:")
+		self.not_start_widget = Checker("Показывать стартовый экран", path=["gui", "start_widget"])
 
 		self.appliers = []
 		self.appliers.append(self.default_color_edit)
 		self.appliers.append(self.texteditor_edit)
+		self.appliers.append(self.not_start_widget)
 
 		self.vlayout = QVBoxLayout()
 		self.vlayout.addWidget(self.texteditor_edit)
 		self.vlayout.addWidget(self.default_color_edit)
+		self.vlayout.addWidget(self.not_start_widget)
 		#self.vlayout.addWidget(TableField(ltext="Text editor command", wdg=LineEdit(deftext=settings.get_settings()["gui"]["text_editor"])))
 		#self.vlayout.addWidget(TableField(ltext="Default color", wdg=ColorChanger(values=settings.get_default_color())))
 		self.vlayout.addLayout(self.hlayout)
+
+		for a in self.appliers:
+			a.restore()
 
 		self.ok_button.clicked.connect(self.ok_handle)
 		self.cancel_button.clicked.connect(self.cancel_handle)

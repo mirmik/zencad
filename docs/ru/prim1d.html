@@ -27,6 +27,7 @@
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li><a href="caching.html">Кэширование</a></li>
+<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
@@ -43,6 +44,12 @@
 <li><a href="trans0.html">Синтаксис преобразований</a>  </li>
 <li><a href="trans1.html">Комбинации преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="reflect.html">Рефлексия геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
 <li>Отображение и рисование <br />
 <ul>
@@ -67,7 +74,7 @@
 
 <hr />
 
-<h2>Segment</h2>
+<h2>segment</h2>
 
 <p>Отрезок линии задаётся двумя точками.</p>
 
@@ -78,7 +85,7 @@
 
 <hr />
 
-<h2>Polysegment</h2>
+<h2>polysegment</h2>
 
 <p>Полисегмент - ломанная линия. Задаётся масивом точек. Установка флага <code>closed</code> добавляет сегмент полилинии, идущий от точки конца к точке начала. <code>pnts</code> - массив точек.</p>
 
@@ -90,7 +97,7 @@
 
 <hr />
 
-<h2>Interpolate</h2>
+<h2>interpolate</h2>
 
 <p>Инструмент для построения bspline по набору точек <code>pnts</code>. Также можно указать тангенсы <code>tangs</code> линии в каждой точке (нулевой мектор соответствует неуказанному тангенсу). Установка флага <code>closed</code> добавляет замыкающий участок кривой.</p>
 
@@ -104,7 +111,7 @@
 
 <hr />
 
-<h2>Circle Arc</h2>
+<h2>circle_arc</h2>
 
 <p>Данный метод представляет альтернативный к <code>circle</code> (см. <a href="prim2d.html">Плоские примитивы</a>) метод генерации дуги окружности по трем точкам.</p>
 
@@ -115,7 +122,7 @@
 
 <hr />
 
-<h2>Helix</h2>
+<h2>helix</h2>
 
 <p>Восходящая спираль. Задается радиусом, высотой и шагом витка. При установке опции <code>left</code>, меняет правую навивку на левую. При установке angle, радиус линейно меняется со сменой высоты.</p>
 
@@ -130,10 +137,11 @@
 
 <hr />
 
-<h2>Bezier</h2>
+<h2>bezier</h2>
 
 <p>Кривая Безье (<a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">wiki</a>).
-Задаётся массивом опорных точек и массивом весов (опционально).</p>
+Задаётся массивом опорных точек и массивом весов (опционально).
+Если веса не заданы, все веса считаются равными единице.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">)</span>
 <span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
@@ -141,6 +149,23 @@
 
 <p><img src="../images/generic/bezier0.png" alt="" />
 <img src="../images/generic/bezier1.png" alt="" />  </p>
+
+<hr />
+
+<h2>bspline</h2>
+
+<p>Создать BSpline прямым заданием параметров.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">,</span> <span class="n">check_rational</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">default</span><span class="p">:</span> 
+    <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span>
+    <span class="n">check_rational</span><span class="o">=</span><span class="bp">True</span>
+</code></pre></div>
+
+<p><img src="../images/generic/bspline0.png" alt="" />
+<img src="../images/generic/bspline1.png" alt="" />  </p>
 </article>
     </div>
     <div id="footer"></div>
