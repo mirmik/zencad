@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZenCad</title>
+    <link href="../main.css" rel="stylesheet">
+  </head>
+  <body>
+    <meta charset="utf-8">
+    <div class="header" id="header">
+      <h1>
+        <a class="header_ref" href="index.html">ZenCad</a>
+      </h1>
+      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
+        <span class="icon"></span>
+      </a>
+      <p>
+        <a href="../ru/crvalgo.html">Ru</a>
+        <a href="../en/crvalgo.html">En</a>
+      </p>
+    </div>
+    <div id="content">
+      <nav class="nav"><ul>
+<li>Основные концепции
+<ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="helloworld.html">Разбор HelloWorld</a></li>
+<li><a href="installation.html">Установка</a></li>
+<li><a href="caching.html">Кэширование</a></li>
+<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
+</ul></li>
+<li>Базовые примитивы и операции
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
+<li><a href="prim2d.html">Плоские примитивы</a>  </li>
+<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="lincycle.html">Линии и циклы</a>  </li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+</ul></li>
+<li>Преобразования
+<ul>
+<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
+<li><a href="trans1.html">Комбинации преобразований</a>  </li>
+<li><a href="bool.html">Булевы операции</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="reflect.html">Рефлексия геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
+</ul></li>
+<li>Отображение и рисование <br />
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+</ul></li>
+<li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li><a href="animate.html">Анимация</a></li>
+<li><a href="assemble.html">Сборки и подвижные модели</a></li>
+<li><a href="internal.html">Внутренняя кухня</a></li>
+<li>Библиотеки
+<ul>
+<li><a href="kinematic.html">kinematic</a></li>
+<li><a href="nut.html">nut</a></li>
+</ul></li>
+</ul>
+</nav>
+      <article class="article"><h1>Анализ кривых</h1>
+
+<h2>Теоритеческая сводка.</h2>
+
+<p>Общепризнанным методом задания кривых в системах вычислительной геометрии является параметрический метод.</p>
+
+<p>Согласно ему кривая задана непрерывным отображением скалярного множества <em>[U_min, U_max]</em> на пространство заданной мерности.
+<em>P = F(U) : P ∈ R^N, U ∈ R^1[U_min, U_max]</em>, где <em>F</em> - функтор отображения, а <em>N</em> - мерность пространства.</p>
+
+<p>На практике это означает, что любая точка <em>P</em> на кривой имеет соответствующее ей значение скалярного параметра <em>U</em>. Следует понимать, что в общем случае функция связывающая параметр <em>U</em> в точке <em>P</em> и длину кривой из точки начала <em>O</em> до точки <em>P</em> не линейна. Поэтому вычисления над кривой в терминах длин требуют применения специального математического аппарата (реализованного в виде методов настоящей библиотеки).</p>
+
+<h2>Классы кривых.</h2>
+
+<p>В ZenCad существуют следующие классы реализующие методы анализа кривых:</p>
+
+<ul>
+<li>Edge (порождается инструментами segment, interpolate, bezier, bspline и т.д.)</li>
+<li>Curve3 (NotReleased)</li>
+<li>Curve2 (NotReleased)</li>
+</ul>
+
+<hr />
+
+<h2>curve.range()</h2>
+
+<p>Вернуть кортеж состоящий из параметров <em>U_min</em> и <em>U_max</em>.</p>
+
+<h2>curve.length()</h2>
+
+<p>Вернуть длину кривой между параметрами <em>U_min</em> и <em>U_max</em>.</p>
+
+<h2>curve.d0(u)</h2>
+
+<p>Вернуть точку, соответствующую параметру <em>u</em>.</p>
+
+<h2>curve.linoff(u, dist)</h2>
+
+<p>Вернуть параметр точки, смещенной на длину <em>dist</em> относительно точки задаваемой параметром <em>u</em>.</p>
+
+<h2>curve.linoff_point(u, dist)</h2>
+
+<p>Вернуть точку, смещенную на длину dist относительно точки задаваемой параметром <em>u</em>. <br />
+alternate: <code>curve.d0(curve.linoff(u,dist))</code></p>
+
+<h2>curve.uniform_points(npnts, strt=U_min, fini=U_max)</h2>
+
+<p>Вернуть массив точек, равномерно распределённых на кривой. Параметр <em>npnts</em> - задаёт количество точек.
+Параметры </p>
+</article>
+    </div>
+    <div id="footer"></div>
+  </body>
+</html>
