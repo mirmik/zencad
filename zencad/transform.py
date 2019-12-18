@@ -260,6 +260,7 @@ def rotate_array(n):
 
 
 def short_rotate(fromvec, tovec):
-    if fromvec.early(tovec, 0.000000000001):
+    _f, _t = vector3(fromvec), vector3(tovec)
+    if _f.early(_t, 0.000000000001):
         return nulltrans()
-    return pyservoce.short_rotate(vector3(fromvec), vector3(tovec))
+    return pyservoce.short_rotate(_f, _t)
