@@ -79,14 +79,14 @@ def display(shp, color=default_color, deep=True, scene=default_scene):
         else:
             return stub_controller(shp)    
 
+    if isinstance(shp, evalcache.LazyObject):
+        shp = evalcache.unlazy(shp)
+
     if isinstance(shp, list) or isinstance(shp, tuple):
         lst = []
         for s in shp:
             lst.append(display(s, color=color, deep=deep, scene=scene))
         return lst
-
-    if isinstance(shp, evalcache.LazyObject):
-        shp = evalcache.unlazy(shp)
 
     if isinstance(shp, zencad.assemble.unit):
         return shp.bind_scene(scene, color=color, deep=deep)
