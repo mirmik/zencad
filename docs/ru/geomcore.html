@@ -14,8 +14,8 @@
         <span class="icon"></span>
       </a>
       <p>
-        <a href="../ru/interactive_object.html">Ru</a>
-        <a href="../en/interactive_object.html">En</a>
+        <a href="../ru/geomcore.html">Ru</a>
+        <a href="../en/geomcore.html">En</a>
       </p>
     </div>
     <div id="content">
@@ -68,16 +68,33 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Интерактивный объект</h1>
+      <article class="article"><h1>Введение в геометрическое ядро OpenCascade</h1>
 
-<p>UNDER_CONSTRUCT</p>
+<p>Библиотека ZenCad основана на функциональных возможностях и объектной структуре геометрического ядра OpenCascade.</p>
 
-<p>Интерактивный объект - есть единица отображения в визуализаторе zencad.</p>
+<h1>Структура геометрических объектов в ядре OpenCascade</h1>
 
-<p>Методы:
-relocate - переместить объект <br />
-hide - скрыть/показать объект <br />
-set_color - установить цвет  </p>
+<p>Under_Construct</p>
+
+<p>Shape(occt: TopoDS_Shape) - абстрактный геометрический объект <br />
+Vertex(occt: TopoDS_Vertex) - вершина <br />
+Solid(occt: TopoDS_Solid) - твердое тело <br />
+Face(occt: TopoDS_Face) - грань <br />
+Edge(occt: TopoDS_Edge) - ребро <br />
+Wire(occt: TopoDS_Wire) - цикл <br />
+Shell(occt: TopoDS_Shell) - оболочка <br />
+Compound(occt: TopoDS_Compound) <br />
+Compsolid(occt: TopoDS_CompSolid)  </p>
+
+<p>Under_Construct</p>
+
+<h1>Документация на ядро</h1>
+
+<p>Ядро OpenCascade довольно обширно, имеет бесчисленное количество инструментов и потому врядли возможно сколь-нибудь передать его суть в рамках этой маленькой справки.</p>
+
+<p>За подробной информацией о геометрическом ядре OpenCascade следует обратиться к документации: <br />
+<a href="https://www.opencascade.com/doc/occt-7.3.0/overview/html/index.html">Technology Overview</a> <br />
+<a href="https://www.opencascade.com/doc/occt-7.3.0/refman/html/index.html">Reference Manual</a></p>
 </article>
     </div>
     <div id="footer"></div>

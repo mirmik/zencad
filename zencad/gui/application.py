@@ -42,6 +42,7 @@ STDOUT_FILENO = 1
 from zencad.gui.mainwindow import MainWindow
 
 import zencad.configure
+import zencad.settings
 
 __DEBUG_MODE__ = False
 
@@ -108,15 +109,21 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			display_mode=display_mode)
 
 	else:
-		strt_dialog = zencad.gui.startwdg.StartDialog()
-		strt_dialog.exec()
+		if zencad.settings.list()["gui"]["start_widget"] == "true":
+			strt_dialog = zencad.gui.startwdg.StartDialog()
+			strt_dialog.exec()
 
-		if strt_dialog.result() == 0:
-			return
+			if strt_dialog.result() == 0:
+				return
+
+			openpath = strt_dialog.openpath
+
+		else:
+			openpath = zencad.gui.util.create_temporary_file(zencad_template=True)
 
 		mw = MainWindow(
 			presentation=False, 
-			fastopen=strt_dialog.openpath,
+			fastopen=openpath,
 			display_mode=display_mode)
 
 	mw.show()
@@ -153,7 +160,7 @@ def start_application(tgtpath, debug):
 
 	debugstr = "--debug" if debug or __DEBUG_MODE__ else "" 
 	interpreter = INTERPRETER
-	cmd = '{} -m zencad --mainonly {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
+	cmd = '{} -m zencad --subproc {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 	return subproc
@@ -241,6 +248,7 @@ def common_unbouded_proc(scene,
 
 	trace("common_unbouded_proc")
 
+	THREAD_FINALIZER = None
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WIDGET
@@ -271,18 +279,29 @@ def common_unbouded_proc(scene,
 
 			#time.sleep(0.1)
 
-			procs = psutil.Process().children()
-			trace(procs)
-			psutil.wait_procs(procs, callback=on_terminate)
+			#procs = psutil.Process().children()
+			#trace(procs)
+			#psutil.wait_procs(procs, callback=on_terminate)
 
-			MAIN_COMMUNICATOR.stop_listen()
+			#MAIN_COMMUNICATOR.stop_listen()
 			
-			if CONSOLE_RETRANS_THREAD:
-				CONSOLE_RETRANS_THREAD.finish()			
+			#if CONSOLE_RETRANS_THREAD:
+			#	CONSOLE_RETRANS_THREAD.finish()			
 			
-			trace("FINISH UNBOUNDED QTAPP : app quit on receive")
-			app.quit()
-			trace("app quit on receive... after")
+			class final_waiter_thr(QThread):
+				def run(self):
+					procs = psutil.Process().children()
+					trace(procs)
+					psutil.wait_procs(procs, callback=on_terminate)
+					app.quit()
+
+			nonlocal THREAD_FINALIZER
+			THREAD_FINALIZER = final_waiter_thr()
+			THREAD_FINALIZER.start()
+
+			#trace("FINISH UNBOUNDED QTAPP : app quit on receive")
+			#app.quit()
+			#trace("app quit on receive... after")
 
 		def stop_world():
 			trace("common_unbouded_proc::stop_world")
@@ -305,8 +324,11 @@ def common_unbouded_proc(scene,
 			trace("common_unbouded_proc::receiver")
 			try:
 				data = pickle.loads(data)
+				trace(data)
 				if data["cmd"] == "stopworld": 
 					stop_world()
+				elif data["cmd"] == "console":
+					sys.stdout.write(data["data"])
 				else:
 					widget.external_communication_command(data)
 			except Exception as ex:

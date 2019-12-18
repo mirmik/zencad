@@ -39,6 +39,7 @@ import random
 import psutil
 
 MAIN_COMMUNICATOR = None
+MAINWINDOW_PROCESS = False
 
 import zencad.configure
 
@@ -100,6 +101,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			display_mode=False,
 			title = "ZenCad"):
 		super().__init__()
+
+		global MAINWINDOW_PROCESS
+		MAINWINDOW_PROCESS = True
+		zencad.util.PROCNAME = "mainw"
+
 		self.setWindowTitle(title)
 		self.openlock = QMutex()#threading.Lock()
 		self.console = zencad.gui.console.ConsoleWidget()
@@ -460,9 +466,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
 				need_prescale = self.need_prescale, session_id=self.session_id)
 
-		self.client_communicator.start_listen()
 		self.client_communicator.newdata.connect(self.new_worker_message)
-
+		self.client_communicator.start_listen()
+		
 		trace("client_communicator, fd:", self.client_communicator.ipipe, self.client_communicator.opipe)
 		zencad.settings.Settings.add_recent(os.path.abspath(path))
 

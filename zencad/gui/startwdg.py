@@ -84,16 +84,34 @@ class StartDialog(QDialog):
 		#self.v0_layout.addLayout(self.h0_layout)
 		#self.v0_layout.addWidget(self.zencad_label)
 
+		self.not_open_next_time = QWidget()
+		self.not_open_next_time_layout = QHBoxLayout()
+		self.not_open_next_time_check = QCheckBox()
+		self.not_open_next_time_check.stateChanged.connect(self.not_open_next_time_handler)
+		self.not_open_next_time_layout.addStretch()
+		self.not_open_next_time_label=QLabel("Не показывать этот экран")
+		self.not_open_next_time_label.setStyleSheet("QLabel { color : white; }")
+		self.not_open_next_time_layout.addWidget(self.not_open_next_time_label)
+		self.not_open_next_time_layout.addWidget(self.not_open_next_time_check)
+		self.not_open_next_time.setLayout(self.not_open_next_time_layout)
+
 		self.glayout.addWidget(self.zencad_label,		0,0, 1,2)
 		self.glayout.addLayout(self.h0_layout, 			1,0)
-		self.glayout.addWidget(self.examples_label, 	1,1)
+		self.glayout.addWidget(self.examples_label, 	2,1)
 		self.glayout.addWidget(self.recent_label, 		2,0)
 		self.glayout.addWidget(self.recent_scripts_wdg, 3,0)
-		self.glayout.addWidget(self.examples_tree, 		2,1, 3,1)
+		self.glayout.addWidget(self.examples_tree, 		3,1)
 		self.glayout.addWidget(self.open_recent_btn, 	4,0)
 		self.glayout.addWidget(self.open_example_btn, 	4,1)
+		self.glayout.addWidget(self.not_open_next_time, 5,0, 5,2)
 
 		self.setLayout(self.glayout)
+
+	def not_open_next_time_handler(self, status):
+		if status != 0:
+			zencad.settings.start_screen(True)
+		else:
+			zencad.settings.start_screen(False)
 
 	def paintEvent(self, ev):
 		linearGrad = QLinearGradient(0, 0, self.width(), self.height())
