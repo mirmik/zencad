@@ -26,7 +26,7 @@ if sys.platform != "win32":
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.24.1",
+    version="0.24.2",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
