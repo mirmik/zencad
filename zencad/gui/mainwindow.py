@@ -184,6 +184,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self._open_routine(fastopen)
 
 		if display_mode:
+			self.restore_gui_state()
 			self.displayMode()
 		else:
 			self.restore_gui_state()
