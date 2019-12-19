@@ -18,7 +18,8 @@ class Settings():
 	list_of_settings = {
 		"gui" : {
 			"text_editor" : default_text_editor_os(),
-			"start_widget" : True
+			"start_widget" : True,
+			"bind_widget" : True
 		},
 		"view" : {
 			"default_color_red" : pre_default_color[0],

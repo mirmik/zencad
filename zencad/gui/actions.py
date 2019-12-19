@@ -244,6 +244,9 @@ class MainWindowActionsMixin:
 		self.info_widget.coords_difference_mode = en
 		self.info_widget.update_dist()
 
+	def reopen_current(self):
+		self._open_routine(self.current_opened)
+
 	def settings(self):
 		wdg = zencad.gui.settingswdg.SettingsWidget()
 		status = wdg.exec()
@@ -352,6 +355,9 @@ class MainWindowActionsMixin:
 		self.mDisplayMode = self.create_action(
 			"Display mode", self.displayMode, "Display mode", "F10"
 		)
+		self.mReopenCurrent = self.create_action(
+			"Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
+		)
 		self.mWebManual = self.create_action(
 			"Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser"
 		)
@@ -364,6 +370,7 @@ class MainWindowActionsMixin:
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
+		self.mFileMenu.addAction(self.mReopenCurrent)
 		self.mFileMenu.addAction(self.mCreateTemp)
 		self.mFileMenu.addAction(self.mCreateAction)
 		self.mFileMenu.addAction(self.mOpenAction)
