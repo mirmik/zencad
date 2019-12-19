@@ -80,12 +80,16 @@ class ScreenWidget(QWidget):
 		font = QFont()
 		font.setPointSize(12)
 		painter.setFont(font)
-		message = "Loading... please wait."
-		painter.drawText(
-			QPoint(
-				self.width()/2 - QFontMetrics(font).width(message)/2,
-				QFontMetrics(font).height()), 
-			message)
+
+		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
+		if not bind_widget_flag == "false":
+			message = "Loading... please wait."
+		
+			painter.drawText(
+				QPoint(
+					self.width()/2 - QFontMetrics(font).width(message)/2,
+					QFontMetrics(font).height()), 
+				message)
 		painter.end()
 
 def info(*args):
@@ -111,6 +115,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
+		self.cc = None
 		self.last_reopen_time = time.time()
 		self.need_prescale = True
 
@@ -291,25 +296,29 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 	def bind_window(self, winid, pid, session_id):
 		trace("bind_window")
+		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
 		
 		if not self.openlock.tryLock():
 			return
 		
+		#	self.openlock.unlock()
+		#	return
+
 		try:
 			if session_id != self.session_id:
 				self.openlock.unlock()
 				return
 		
-			trace("bind window")
-			container = QWindow.fromWinId(winid)
-			self.cc = QWidget.createWindowContainer(container)
-			#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
-	
-			self.cc_window = winid
-			trace("replace widget")
-			self.vsplitter.replaceWidget(0, self.cc)
-			self.update()
-			#self.client_communicator.send("unwait")
+			if not bind_widget_flag == "false":
+				trace("bind window")
+				container = QWindow.fromWinId(winid)
+				self.cc = QWidget.createWindowContainer(container)
+				
+				self.cc_window = winid
+				trace("replace widget")
+				self.vsplitter.replaceWidget(0, self.cc)
+				self.update()
+			
 			self.client_pid = pid
 			self.setWindowTitle(self.current_opened)
 		
