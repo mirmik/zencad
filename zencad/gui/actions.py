@@ -352,7 +352,7 @@ class MainWindowActionsMixin:
 			"Hide editor", self.hideEditor, "Hide editor", checkbox=True
 		)
 		self.mAutoUpdate = self.create_action(
-			"Automatic updates", self.auto_update, "Automatic updates", checkbox=True, defcheck=True,
+			"Restart on update", self.auto_update, "Restart on update", checkbox=True, defcheck=True,
 		)
 		self.mFullScreen = self.create_action(
 			"Full screen", self.fullScreen, "Full screen", "F11"
