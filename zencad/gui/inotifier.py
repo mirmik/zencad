@@ -13,6 +13,7 @@ class InotifyThread(QThread):
 		QThread.__init__(self, parent)
 		self.lock = threading.Lock()
 		self.emit_time = time.time()
+		self.stop_token = False
 
 	def retarget(self, path):
 		self.lock.acquire()
@@ -25,8 +26,14 @@ class InotifyThread(QThread):
 
 		self.lock.release()
 
+	def stop(self):
+		self.stop_token = True
+
 	def run(self):
 		while 1:
+			if self.stop_token:
+				return
+
 			self.lock.acquire()
 
 			try:

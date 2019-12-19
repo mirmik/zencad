@@ -60,7 +60,7 @@ class Checker(QWidget):
 		zencad.settings.set(self.path, self.check.checkState() != 0)
 
 	def restore(self):
-		self.check.setCheckState(2 if zencad.settings.get(self.path) else 0)
+		self.check.setCheckState(2 if zencad.settings.get(self.path)=="true" else 0)
 
 class ColorChanger(QWidget):
 	def __init__(self):
@@ -109,6 +109,7 @@ class SettingsWidget(QDialog):
 		super().__init__()
 
 		settings = zencad.settings.Settings()
+		zencad.settings.restore()
 
 		self.ok_button = QPushButton("Ok")
 		self.cancel_button = QPushButton("Cancel")
