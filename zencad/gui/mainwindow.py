@@ -355,8 +355,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
-		if not self._display_mode:
-			self.store_gui_state()
+		#if not self._display_mode:
+		self.store_gui_state()
 
 		trace("closeEvent")
 		if self.cc:
