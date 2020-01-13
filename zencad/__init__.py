@@ -98,6 +98,7 @@ zencad.color.magenta =   zencad.color(0,1,1)
 zencad.color.cian =      zencad.color(1,0,1)
 zencad.color.mech =      zencad.color(0.6, 0.6, 0.8)
 zencad.color.transmech = zencad.color(0.6, 0.6, 0.8, 0.8)
+zencad.color.orange =    zencad.color(1, 0xa5/255, 0)
 
 default_color = zencad.settings.Settings.get_default_color()
 
