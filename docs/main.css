@@ -20,6 +20,18 @@
   	font-size: 13px;
 }
 
+.nav ul 
+{
+	padding-left: 2em;
+}
+
+pre 
+{
+	padding-left: 2em;
+	background: lightgray;
+	box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
 /*.nav .ul {
 	list-style-type: none;
 	padding: 0;
