@@ -132,9 +132,19 @@ alternate: <code>curve.d0(curve.linoff(u,dist))</code></p>
 
 <hr />
 
+<h2>curve.uniform</h2>
+
+<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Вернуть массив параметров точек, равномерно распределённых на кривой. Параметр <em>npnts</em> - задаёт количество точек.
+Параметры umin, umax задают диапазон на множестве параметров в котором будет проведена процедура распределения.</p>
+
+<hr />
+
 <h2>curve.uniform_points</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="n">point3</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Вернуть массив точек, равномерно распределённых на кривой. Параметр <em>npnts</em> - задаёт количество точек.

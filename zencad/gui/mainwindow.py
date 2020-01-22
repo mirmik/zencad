@@ -80,12 +80,16 @@ class ScreenWidget(QWidget):
 		font = QFont()
 		font.setPointSize(12)
 		painter.setFont(font)
-		message = "Loading... please wait."
-		painter.drawText(
-			QPoint(
-				self.width()/2 - QFontMetrics(font).width(message)/2,
-				QFontMetrics(font).height()), 
-			message)
+
+		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
+		if not bind_widget_flag == "false":
+			message = "Loading... please wait."
+		
+			painter.drawText(
+				QPoint(
+					self.width()/2 - QFontMetrics(font).width(message)/2,
+					QFontMetrics(font).height()), 
+				message)
 		painter.end()
 
 def info(*args):
@@ -111,6 +115,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
+		self.cc = None
 		self.last_reopen_time = time.time()
 		self.need_prescale = True
 
@@ -158,11 +163,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if openned_path:
 			self.set_current_opened(openned_path)
 
-		self.notifier = InotifyThread(self)
-		self.notifier.changed.connect(self.reopen_current)
-		
-		if openned_path:
-			self.notifier.retarget(self.current_opened)
+		#self.notifier = InotifyThread(self)
+		#self.notifier.changed.connect(self.reopen_current)
+		#if openned_path:
+		#	self.notifier.retarget(self.current_opened)
+		self.make_notifier(openned_path)
 
 		if presentation:
 			self.presentation_mode = True
@@ -189,6 +194,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		else:
 			self.restore_gui_state()
 		self._display_mode = display_mode
+
+	def make_notifier(self, path=None):
+		self.notifier = InotifyThread(self)
+		self.notifier.changed.connect(self.reopen_current)
+		
+		if path:
+			self.notifier.retarget(path)
+
 
 	def restore_gui_state(self):
 		if zencad.configure.CONFIGURE_NO_RESTORE:
@@ -291,25 +304,29 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 	def bind_window(self, winid, pid, session_id):
 		trace("bind_window")
+		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
 		
 		if not self.openlock.tryLock():
 			return
 		
+		#	self.openlock.unlock()
+		#	return
+
 		try:
 			if session_id != self.session_id:
 				self.openlock.unlock()
 				return
 		
-			trace("bind window")
-			container = QWindow.fromWinId(winid)
-			self.cc = QWidget.createWindowContainer(container)
-			#self.cc.setAttribute( Qt.WA_TransparentForMouseEvents )
-	
-			self.cc_window = winid
-			trace("replace widget")
-			self.vsplitter.replaceWidget(0, self.cc)
-			self.update()
-			#self.client_communicator.send("unwait")
+			if not bind_widget_flag == "false":
+				trace("bind window")
+				container = QWindow.fromWinId(winid)
+				self.cc = QWidget.createWindowContainer(container)
+				
+				self.cc_window = winid
+				trace("replace widget")
+				self.vsplitter.replaceWidget(0, self.cc)
+				self.update()
+			
 			self.client_pid = pid
 			self.setWindowTitle(self.current_opened)
 		
@@ -338,8 +355,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
-		if not self._display_mode:
-			self.store_gui_state()
+		#if not self._display_mode:
+		self.store_gui_state()
 
 		trace("closeEvent")
 		if self.cc:
@@ -472,7 +489,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		trace("client_communicator, fd:", self.client_communicator.ipipe, self.client_communicator.opipe)
 		zencad.settings.Settings.add_recent(os.path.abspath(path))
 
-		self.notifier.retarget(path)
+		# Если уведомления включены, обновить цель
+		if self.notifier:
+			self.notifier.retarget(path)
+		
 		self.openlock.unlock()
 
 	

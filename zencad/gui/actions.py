@@ -9,6 +9,7 @@ import signal
 
 import zencad.gui.util
 import zencad.gui.settingswdg
+from zencad.gui.inotifier import InotifyThread
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -21,7 +22,7 @@ BANNER_TEXT = (  # "\n"
 )
 
 class MainWindowActionsMixin:
-	def create_action(self, text, action, tip, shortcut=None, checkbox=False):
+	def create_action(self, text, action, tip, shortcut=None, checkbox=False, defcheck=False):
 		act = QAction(self.tr(text), self)
 		act.setStatusTip(self.tr(tip))
 
@@ -33,6 +34,7 @@ class MainWindowActionsMixin:
 		else:
 			act.setCheckable(True)
 			act.toggled.connect(action)
+			act.setChecked(defcheck)
 
 		return act
 
@@ -244,6 +246,9 @@ class MainWindowActionsMixin:
 		self.info_widget.coords_difference_mode = en
 		self.info_widget.update_dist()
 
+#	def reopen_current(self):
+#		self._open_routine(self.current_opened)
+
 	def settings(self):
 		wdg = zencad.gui.settingswdg.SettingsWidget()
 		status = wdg.exec()
@@ -346,11 +351,17 @@ class MainWindowActionsMixin:
 		self.mHideEditor = self.create_action(
 			"Hide editor", self.hideEditor, "Hide editor", checkbox=True
 		)
+		self.mAutoUpdate = self.create_action(
+			"Restart on update", self.auto_update, "Restart on update", checkbox=True, defcheck=True,
+		)
 		self.mFullScreen = self.create_action(
 			"Full screen", self.fullScreen, "Full screen", "F11"
 		)
 		self.mDisplayMode = self.create_action(
 			"Display mode", self.displayMode, "Display mode", "F10"
+		)
+		self.mReopenCurrent = self.create_action(
+			"Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
 		)
 		self.mWebManual = self.create_action(
 			"Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser"
@@ -364,6 +375,7 @@ class MainWindowActionsMixin:
 
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
+		self.mFileMenu.addAction(self.mReopenCurrent)
 		self.mFileMenu.addAction(self.mCreateTemp)
 		self.mFileMenu.addAction(self.mCreateAction)
 		self.mFileMenu.addAction(self.mOpenAction)
@@ -392,6 +404,7 @@ class MainWindowActionsMixin:
 		self.mNavigationMenu.addAction(self.mTracking)
 
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
+		self.mUtilityMenu.addAction(self.mAutoUpdate)
 		self.mUtilityMenu.addAction(self.mTEAction)
 		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addSeparator()
@@ -412,3 +425,15 @@ class MainWindowActionsMixin:
 
 	def createToolbars(self):
 		pass
+
+	def auto_update(self, en):
+		if not en:
+			self.notifier.stop()
+			self.notifier = None
+		else:
+			self.notifier = InotifyThread(self)
+			if self.current_opened:
+				self.notifier.retarget(self.current_opened)
+				self.notifier.changed.connect(self.reopen_current)
+				self.notifier.start()	
+		
