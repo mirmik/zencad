@@ -70,14 +70,91 @@
 </nav>
       <article class="article"><h1>Интерактивный объект</h1>
 
-<p>UNDER_CONSTRUCT</p>
+<p>Интерактивный объект - есть единица отображения стандартного визуализатора zencad.</p>
 
-<p>Интерактивный объект - есть единица отображения в визуализаторе zencad.</p>
+<p>В этом разделе перечислены типы интерактивных объектов и указаны методы соответствующего базового класса.</p>
 
-<p>Методы:
-relocate - переместить объект <br />
-hide - скрыть/показать объект <br />
-set_color - установить цвет  </p>
+<hr />
+
+<h2>Геометрические интерактивные объекты.</h2>
+
+<p>Механизм интерактивных объектов используется для отображения геометрических форм, обрабатываемых zencad.</p>
+
+<p>Пример 1 (Создание интерактивного объекта формы):</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">scn</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">scene</span><span class="p">()</span>
+
+<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">interactive_object</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> 
+<span class="n">scn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">intobj</span><span class="p">)</span>
+
+<span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scn</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример 2 (Создание интерактивного объекта формы с помощью функции отображения disp):</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">yellow</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Графические интерактивные объекты.</h2>
+
+<p>Помимо интерактивных объектов геометрических форм существуют интерактивные объекты, которые могут использоваться для передачи дополненительной информации на рабочей сцене:</p>
+
+<h3>Стрелка:</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">arrow</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Отобразить стрелку, соответствующую вектору <em>vec</em>, ведущему из точки <em>pnt</em>, размер головы стрелки определяется параметром <em>arrlen</em>, толщина линии параметром <em>width</em>.
+Если параметр scene не None, объект сразу добавляется в scene.</p>
+
+<h3>Линия:</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">line</span><span class="p">(</span><span class="n">apnt</span><span class="p">,</span> <span class="n">bpnt</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Отобразить линию, между точками <em>apnt</em> и <em>bpnt</em>, толщина линии параметром <em>width</em>.
+Если параметр scene не None, объект сразу добавляется в scene.</p>
+
+<hr />
+
+<h2>Методы класса interactive_object:</h2>
+
+<h3>Переразмещение</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Переразмещает объект в положение <em>trans</em> относительно исходного расположения. </p>
+
+<h3>Скрытие</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">hide</span><span class="p">(</span><span class="n">en</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Скрыть или же вновь отобразить объект. Скрытый объект не удаляется из памяти.</p>
+
+<h3>Установка цвета</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+
+<span class="c1"># Examples:</span>
+<span class="c1"># RGB:</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
+
+<span class="c1"># RGBA:</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Изменить цвет интерактивного объекта. 
+Параметр color представляет или кортеж или объект zencad.color.</p>
 </article>
     </div>
     <div id="footer"></div>
