@@ -4,8 +4,15 @@ from zencad import *
 import threading
 import time
 import random
+import types
 
-w, h = 20, 20
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+
+import threading
+
+w, h = 10, 20
 sz = 10
 FIELDS=[]
 
@@ -39,11 +46,22 @@ class FalledBody:
 	def fall(self):
 		self.curcoord = (self.curcoord[0], self.curcoord[1]-1)
 
+	def check_valid(self, newcoord, indexes):
+		for p in indexes:
+			coords = (p[0] + newcoord[0], p[1] + newcoord[1])
+			if coords[0] < 0 or coords[0] >= w:
+				return False
+			if coords[1] < 0 or coords[1] >= h:
+				return False
+			if FIELDS[coords[1]][coords[0]].type == 2:
+				return False
+
+		return True
+
+
 	def can_fall(self):
-		print("can_fall")
 		for p in self.indexes:
 			coords = (p[0] + self.curcoord[0], p[1] + self.curcoord[1] - 1)
-			print(coords)
 			if coords[1] < 0 or FIELDS[coords[1]][coords[0]].type == 2:
 				return False
 
@@ -54,6 +72,39 @@ class FalledBody:
 			coords = (p[0] + self.curcoord[0], p[1] + self.curcoord[1])
 			FIELDS[coords[1]][coords[0]].type = 2
 
+	def up_handle(self):
+		newindexes = [ (-ind[1], ind[0]) for ind in self.indexes ]
+		valid = self.check_valid(self.curcoord, newindexes)
+		if valid:
+			self.hide()
+			self.indexes = newindexes
+			self.draw()
+
+	def down_handle(self):
+		validcoord = self.curcoord
+		itcoord = self.curcoord
+		while self.check_valid(itcoord, self.indexes):
+			validcoord = itcoord
+			itcoord = (itcoord[0], itcoord[1]-1)
+		self.hide()
+		self.curcoord = validcoord
+		self.draw()
+			
+
+	def xmove_handle(self, add):
+		newcoord = (self.curcoord[0] + add, self.curcoord[1])
+		valid = self.check_valid(newcoord, self.indexes)
+		if valid:
+			self.hide()
+			self.curcoord = newcoord
+			self.draw()
+
+	def right_handle(self):
+		self.xmove_handle(+1)
+	
+	def left_handle(self):
+		self.xmove_handle(-1)
+
 class Field:
 	def __init__(self, i, j):
 		self.shp = box(sz, center=True)
@@ -63,6 +114,30 @@ class Field:
 		self.cube.hide(True)
 		self.type = 0
 
+	def copy(self, oth):
+		if oth.type == 0:
+			self.cube.hide(True)
+		else:
+			self.cube.hide(False)
+			self.cube.set_color(oth.cube.color())
+
+		self.type = oth.type
+
+def clean():
+	for i in range(h):
+		istype2 = 0
+		for j in range(w):
+			if FIELDS[i][j].type == 2:
+				istype2 +=1
+		if istype2 == w:
+			for ii in range(i, h-1):
+				for j in range(w):
+					FIELDS[ii][j].copy(FIELDS[ii+1][j]) 
+			
+			for j in range(w):
+				FIELDS[h-1][j].type = 0	
+				FIELDS[h-1][j].cube.hide(True)
+
 for i in range(h):
 	FIELDS.append([])
 	for j in range(w):
@@ -70,9 +145,14 @@ for i in range(h):
 
 def make_falled_body():
 	choices = [
-		([(0,0), (1,0), (2,0), (3,0)], zencad.color.green),
-		([(0,0), (1,0), (2,0)], zencad.color.blue),
-		([(0,0), (1,0), (1,1)], zencad.color.yellow),
+		([(-1,0), (0,0), (1,0), (2,0)], zencad.color.green),
+		([(-1,0), (0,0), (1,0)], zencad.color.blue),
+		([(-1,0), (0,0), (0,1)], zencad.color.yellow),
+		([(-1,0), (0,0), (0,1), (1,1)], zencad.color.red),
+		([(1,0), (0,0), (0,1), (-1,1)], zencad.color.red),
+		([(0,0)], zencad.color.magenta),
+		([(0,0), (0,-1), (0,1), (-1,0), (1,0)], zencad.color.magenta),
+		([(0,0), (0,-1), (-1,0), (1,0)], zencad.color.blue),
 	]
 	tpl = random.choice(choices)
 	return FalledBody(*tpl)
@@ -80,10 +160,12 @@ def make_falled_body():
 def redraw():
 	zencad.gui.application.DISPLAY_WIDGET.view.redraw()
 
+lock = QMutex()
 falled_body = None
 def timer_loop(wdg):
 	global falled_body
 
+	lock.lock()
 	if falled_body is None:
 		falled_body = make_falled_body()
 		falled_body.draw()
@@ -95,11 +177,28 @@ def timer_loop(wdg):
 		else:
 			falled_body.keep()
 			falled_body = None
+
+	clean()
+	lock.unlock()
 				
 		#redraw()
 
 def animate_settings(wdg, animate_thread):
+	def keyPressEvent(self, ev):
+		if falled_body is None:
+			return
+		lock.lock()
+		if ev.key() == Qt.Key_Up: falled_body.up_handle()
+		elif ev.key() == Qt.Key_Down: falled_body.down_handle()
+		elif ev.key() == Qt.Key_Right: falled_body.right_handle()
+		elif ev.key() == Qt.Key_Left: falled_body.left_handle()
+		clean()
+		wdg.redraw()
+		lock.unlock()
+
 	animate_thread.set_animate_step(0.75)
+	raw_keyPressEvent = wdg.keyPressEvent
+	wdg.keyPressEvent = types.MethodType(keyPressEvent, wdg)
 
 
 #thr = threading.Thread(target=timer_loop)

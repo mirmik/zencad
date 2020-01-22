@@ -4,6 +4,7 @@ from PyQt5.QtCore import *
 import pyservoce
 import sys
 
+restored = False
 pre_default_color = (0.6, 0.6, 0.8, 0)
 
 def default_text_editor_os():
@@ -18,7 +19,8 @@ class Settings():
 	list_of_settings = {
 		"gui" : {
 			"text_editor" : default_text_editor_os(),
-			"start_widget" : True
+			"start_widget" : True,
+			"bind_widget" : True
 		},
 		"view" : {
 			"default_color_red" : pre_default_color[0],
@@ -49,6 +51,11 @@ class Settings():
 
 	@classmethod
 	def restore(self):
+		global restored
+
+		if restored:
+			return
+
 		settings = QSettings("ZenCad", "settings")
 
 		for g in self.list_of_settings:
@@ -56,6 +63,8 @@ class Settings():
 			for k in self.list_of_settings[g]:
 				self.list_of_settings[g][k] = settings.value(k, self.list_of_settings[g][k])
 			settings.endGroup()
+
+		restored = True
 
 	@classmethod
 	def set_editor(self, editor):

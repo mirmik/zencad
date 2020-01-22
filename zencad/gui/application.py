@@ -363,7 +363,7 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.start_listen()
 
 	def _clossed():
-		print("CLOSSED!!!")
+		pass
 
 	widget.widget_closed.connect(_clossed)
 

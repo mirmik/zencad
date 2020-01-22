@@ -56,10 +56,11 @@ class Checker(QWidget):
 		self.setLayout(self.layout)
 
 	def apply(self):
-		zencad.settings.start_screen(self.check.checkState() == 0)
+		#zencad.settings.start_screen(self.check.checkState() == 0)
+		zencad.settings.set(self.path, self.check.checkState() != 0)
 
 	def restore(self):
-		self.check.setCheckState(2 if zencad.settings.list()["gui"]["start_widget"]=="true" else 0)
+		self.check.setCheckState(2 if zencad.settings.get(self.path)=="true" else 0)
 
 class ColorChanger(QWidget):
 	def __init__(self):
@@ -108,6 +109,7 @@ class SettingsWidget(QDialog):
 		super().__init__()
 
 		settings = zencad.settings.Settings()
+		zencad.settings.restore()
 
 		self.ok_button = QPushButton("Ok")
 		self.cancel_button = QPushButton("Cancel")
@@ -118,16 +120,19 @@ class SettingsWidget(QDialog):
 		self.default_color_edit = ColorChanger()
 		self.texteditor_edit = TextFieldChanger(path=["gui", "text_editor"], label="Text editor command:")
 		self.not_start_widget = Checker("Показывать стартовый экран", path=["gui", "start_widget"])
+		self.bind_widget = Checker("Линковать виджет", path=["gui", "bind_widget"])
 
 		self.appliers = []
 		self.appliers.append(self.default_color_edit)
 		self.appliers.append(self.texteditor_edit)
 		self.appliers.append(self.not_start_widget)
+		self.appliers.append(self.bind_widget)
 
 		self.vlayout = QVBoxLayout()
 		self.vlayout.addWidget(self.texteditor_edit)
 		self.vlayout.addWidget(self.default_color_edit)
 		self.vlayout.addWidget(self.not_start_widget)
+		self.vlayout.addWidget(self.bind_widget)
 		#self.vlayout.addWidget(TableField(ltext="Text editor command", wdg=LineEdit(deftext=settings.get_settings()["gui"]["text_editor"])))
 		#self.vlayout.addWidget(TableField(ltext="Default color", wdg=ColorChanger(values=settings.get_default_color())))
 		self.vlayout.addLayout(self.hlayout)
