@@ -771,3 +771,15 @@ doscreen(
     path="bezier1.png",
     size=wsize
 )
+
+doscreen(
+    model=section(box(10, center=True) - sphere(4)),
+    path="section0.png",
+    size=wsize
+)
+
+doscreen(
+    model=section(box(10, center=True), sphere(7)),
+    path="section1.png",
+    size=wsize
+)
