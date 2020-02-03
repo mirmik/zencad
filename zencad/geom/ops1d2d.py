@@ -32,6 +32,7 @@ def sew(lst, sort=True):
                 l_strt = l.endpoints()[0]
                 l_fini = l.endpoints()[1]
 
+                # TODO: Fix point3 equality in servoce library and change equalities to early methods.
                 if strt == l_strt:
                     strt = l_fini
                     lst.remove(l)
