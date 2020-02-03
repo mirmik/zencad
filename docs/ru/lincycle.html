@@ -74,10 +74,15 @@
 
 <h2>Sew</h2>
 
-<p>Операция sew собирает комплексную линию из массива компонентов <code>wires</code>.
-Требования. Части линий обязательно должны граничить друг с другом. Порядок не должен быть нарушен.</p>
+<p>Операция <em>sew</em> собирает сложную линию из массива частей <em>wires</em>. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">)</span>
+<p>В качестве элементов массива <em>wires</em> могут выступать объекты типов Edge и Wire (<a href="https://mirmik.github.io/zencad/ru/geomcore.html">см. геометрические типы</a>) </p>
+
+<p>Требования. Части линии обязательно должны граничить друг с другом. Порядок следования не должен быть нарушен. Если аргумент <em>sort</em> установлен, алгоритм постарается автоматически отсортировать входящие линии в правильном порядке.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="bp">True</span><span class="p">])</span>
+
+<span class="c1"># Example:</span>
 <span class="n">sew</span><span class="p">([</span>
     <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
     <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
@@ -85,6 +90,8 @@
     <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="p">])</span>
 </code></pre></div>
+
+<hr />
 
 <h2>Fill</h2>
 
@@ -103,6 +110,36 @@
 
 <p><img src="../images/generic/fill0.png" alt="" />
 <img src="../images/generic/fill1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Section</h2>
+
+<p>Поиск рёбер пересечения пары тел.</p>
+
+<p>Операция <em>section</em> чем то похожа на <em>intersect</em> из <a href="https://mirmik.github.io/zencad/ru/boolops.html">булевых операций</a>, только результатом является не твердое тело, а рёбра пересечений. </p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Аргументы <em>a</em> и <em>b</em> - пересекаемые тела. Если один из аргументов действительное число или вектор, то на основе этого параметра строится тело в виде плоскости пересечения.</p>
+
+<h3>Пример. Пересечение оболочек разности куба и сферы горизонтальной плоскостью.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/section0.png" alt="" />  </p>
+
+<h3>Пример. Пересечение оболочек куба и сферы.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/section1.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
