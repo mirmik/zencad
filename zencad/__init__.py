@@ -1,5 +1,11 @@
 import math
-import pyservoce
+
+try:
+    import pyservoce
+except Exception as ex:
+    print(ex)
+    raise ex
+
 from pyservoce import unify
 from pyservoce import point3, vector3
 from pyservoce import Scene, View, Color
