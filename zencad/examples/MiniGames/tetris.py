@@ -145,14 +145,21 @@ for i in range(h):
 
 def make_falled_body():
 	choices = [
-		([(-1,0), (0,0), (1,0), (2,0)], zencad.color.green),
-		([(-1,0), (0,0), (1,0)], zencad.color.blue),
-		([(-1,0), (0,0), (0,1)], zencad.color.yellow),
-		([(-1,0), (0,0), (0,1), (1,1)], zencad.color.red),
-		([(1,0), (0,0), (0,1), (-1,1)], zencad.color.red),
-		([(0,0)], zencad.color.magenta),
-		([(0,0), (0,-1), (0,1), (-1,0), (1,0)], zencad.color.magenta),
-		([(0,0), (0,-1), (-1,0), (1,0)], zencad.color.blue),
+		([(0,1), (0,0), (0,-1), (-1,-1)], color.blue),
+		([(0,2), (0,1), (0,0), (0,-1)], color.cian),
+		([(1,1), (0,1), (1,0), (0,0)], color.yellow),
+		([(0,2), (0,1), (0,0), (1,0)], color.orange),
+		([(-1,1), (0,1), (0,0), (1,0)], color.red),
+		([(-1,0), (0,0), (1,0), (0,1)], color.magenta),
+		([(-1,0), (0,0), (0,1), (1,1)], color.green),
+		#([(-1,0), (0,0), (1,0), (2,0)], zencad.color.green),
+		#([(-1,0), (0,0), (1,0)], zencad.color.blue),
+		#([(-1,0), (0,0), (0,1)], zencad.color.yellow),
+		#([(-1,0), (0,0), (0,1), (1,1)], zencad.color.red),
+		#([(1,0), (0,0), (0,1), (-1,1)], zencad.color.red),
+		#([(0,0)], zencad.color.magenta),
+		#([(0,0), (0,-1), (0,1), (-1,0), (1,0)], zencad.color.magenta),
+		#([(0,0), (0,-1), (-1,0), (1,0)], zencad.color.blue),
 	]
 	tpl = random.choice(choices)
 	return FalledBody(*tpl)
