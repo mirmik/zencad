@@ -3,6 +3,7 @@ In Progress:
 	Tetris minigame: change bodies to the classic scheme. 
 	Fix colors bugs. Swap cian and magenta colors.
 	Add debug information for pyservoce library loading fault.
+	(pyservoce - 1.16.0)
 
 -------------------------------------------------------------------
 ## 0.26.0: 
