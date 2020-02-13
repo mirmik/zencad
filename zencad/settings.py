@@ -33,7 +33,11 @@ class Settings():
 			"hsplitter_position": None,
 			"vsplitter_position": None,
 			"wsize": None
+		},
+		"markers": {
+			"size" : 1
 		}
+
 	}
 	
 	#def __init__(self):
