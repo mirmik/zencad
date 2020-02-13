@@ -23,6 +23,8 @@ from zencad.util import print_to_stderr
 #__TRACE__ = False
 #OPTION_RETRANSLATE_KEYS_TO_MAINCOMMUNICATOR = True
 
+MARKER_SIZE = float(zencad.settings.get(["markers", "size"]))
+
 def trace(*argv):
 	if zencad.configure.CONFIGURE_VIEWADAPTOR_TRACE:
 		print_to_stderr("DISPTRACE:", *argv)
@@ -143,7 +145,7 @@ class DisplayWidget(QGLWidget):
 	def create_qwmarkers(self):
 		if self.showmarkers:
 			zencad.lazifier.disable_lazy()
-			self.msphere = zencad.sphere(1)
+			self.msphere = zencad.sphere(MARKER_SIZE)
 			self.MarkerQController = self.scene.add(
 				self.msphere, zencad.Color(1, 0, 0)
 			)
@@ -315,26 +317,6 @@ class DisplayWidget(QGLWidget):
 		self.markerRequestQ.emit((x,y,z))
 		self.redraw_marker("q",x,y,z)
 
-		#if self.marker1[1]:
-		#	self.mw.marker1Label.setText(
-		#		"x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x, y, z)
-		#	)
-		#	print(
-		#		"Q: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(
-		#			x, y, z
-		#		)
-		#	)
-		#else:
-		#	self.mw.marker1Label.setText(zencad.shower.QMARKER_MESSAGE)
-		#self.mw.updateDistLabel()
-
-		#if self.showmarkers:
-		#	zencad.lazifier.disable_lazy()
-		#	self.MarkerQController.set_location(zencad.translate(x, y, z))
-		#	zencad.lazifier.restore_lazy()
-		#	self.MarkerQController.hide(not self.marker1[1])
-		#	self.view.redraw()
-
 	def markerWPressed(self):
 		self.marker2 = self.view.intersect_point(
 			self.lastPosition.x(), self.lastPosition.y()
@@ -346,28 +328,7 @@ class DisplayWidget(QGLWidget):
 		self.markerRequestW.emit((x,y,z))
 		self.redraw_marker("w",x,y,z)
 
-		#if self.marker2[1]:
-		#	self.mw.marker2Label.setText(
-		#		"x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x, y, z)
-		#	)
-		#	print(
-		#		"W: x:{0:8.3f},  y:{1:8.3f},  z:{2:8.3f} -> point3({0:.3f},{1:.3f},{2:.3f})".format(
-		#			x, y, z
-		#		)
-		#	)
-		#else:
-		#	self.mw.marker2Label.setText(zencad.shower.WMARKER_MESSAGE)
-		#self.mw.updateDistLabel()
-
-		#if self.showmarkers:
-		#	zencad.lazifier.disable_lazy()
-		#	self.MarkerWController.set_location(zencad.translate(x, y, z))
-		#	zencad.lazifier.restore_lazy()
-		#	self.MarkerWController.hide(not self.marker2[1])
-		#	self.view.redraw()
-
 	def location_changed_handle(self):
-		#pass
 		self.locationChanged.emit(self.location())
 
 	def redraw_marker(self, qw, x, y, z):
