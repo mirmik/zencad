@@ -3,6 +3,7 @@
 
 import os
 import sys
+import time
 import zencad
 import zencad.showapi
 import zencad.gui.application
@@ -237,7 +238,9 @@ def do_main():
 		except Exception as ex:
 			print("Error: {}".format(ex))
 			ex_type, ex, tb = sys.exc_info()
-			traceback.print_tb(tb)
+			print("\r\n".join(traceback.format_exception(ex_type, ex, tb)))
+			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"fault"})
+			time.sleep(0.1)
 			return -1
 
 	return 0
