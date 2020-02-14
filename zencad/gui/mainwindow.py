@@ -327,7 +327,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				self.vsplitter.replaceWidget(0, self.cc)
 
 				if oldwindow is not None:
-					QWindow.fromWinId(oldwindow).close()					
+					wind = QWindow.fromWinId(oldwindow)
+					if wind is not None:
+						wind.close()					
 
 				self.update()
 			
