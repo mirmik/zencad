@@ -48,14 +48,19 @@ def trace(*args):
 		print_to_stderr("MAINWINDOW:", *args)
 
 class ScreenWidget(QWidget):
-	def __init__(self):
+	def __init__(self, text=None, color=QColor(137,40,151)):
+		if text is None:
+			text = "Loading... please wait."
+
+		self.text = text
+		self.color = color
 		super().__init__()
 
 	def paintEvent(self, ev):
 		pathes = ["techpriest.jpg"]
 
 		painter = QPainter(self)
-		painter.setPen(QColor(137,40,151))
+		painter.setPen(self.color)
 		painter.setBrush(QColor(218,216,203))
 		painter.drawRect(0,0,self.width(),self.height())
 		bird = QImage(os.path.join(zencad.moduledir, random.choice(pathes)))
@@ -83,7 +88,7 @@ class ScreenWidget(QWidget):
 
 		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
 		if not bind_widget_flag == "false":
-			message = "Loading... please wait."
+			message = self.text
 		
 			painter.drawText(
 				QPoint(
@@ -111,7 +116,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		zencad.util.PROCNAME = "mainw"
 
 		self.setWindowTitle(title)
-		self.openlock = QMutex()#threading.Lock()
+		self.openlock = QMutex()
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
@@ -124,7 +129,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		
 		if self.client_communicator:
 			self.client_communicator.newdata.connect(self.new_worker_message)
-			#self.client_communicator.start_listen()
 
 		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION:
 			trace("preconstruct slepped client")
@@ -139,7 +143,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.cw_layout.addWidget(self.hsplitter)
 		self.cw_layout.addWidget(self.info_widget)
 		self.cw.setLayout(self.cw_layout)
-		#self.resize(1000,800)
 
 		lbl = ScreenWidget()
 
@@ -163,10 +166,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if openned_path:
 			self.set_current_opened(openned_path)
 
-		#self.notifier = InotifyThread(self)
-		#self.notifier.changed.connect(self.reopen_current)
-		#if openned_path:
-		#	self.notifier.retarget(self.current_opened)
 		self.make_notifier(openned_path)
 
 		if presentation:
@@ -175,7 +174,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.console.hide()
 		else:
 			self.presentation_mode = False
-		#	self.set_presentation_label()
 
 		self.fscreen_mode=False
 		self.oldopenned = self.current_opened
@@ -262,7 +260,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		return label
 
 	def new_worker_message(self, data):
-		#print_to_stderr("new_worker_message")
 		data = pickle.loads(data)
 		try:
 			cmd = data["cmd"]
@@ -285,8 +282,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
 		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1])
-		#elif cmd == "screenshot_return": self.screen_return(data["data"])
-		#elif cmd == "settitle": self.setWindowTitle(data["arg"])
+		elif cmd == "fault": self.open_fault()
 		else:
 			print("Warn: unrecognized command", data)
 
@@ -308,9 +304,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		
 		if not self.openlock.tryLock():
 			return
-		
-		#	self.openlock.unlock()
-		#	return
 
 		try:
 			if session_id != self.session_id:
@@ -330,7 +323,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_pid = pid
 			self.setWindowTitle(self.current_opened)
 		
-			#info("window bind success: winid:{} file:{}".format(winid, self.current_opened))
 			info("window bind success")
 			if not self.need_prescale and self.last_location is not None:
 				self.client_communicator.send({"cmd":"location", "dct": self.last_location})
@@ -355,7 +347,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.texteditor.open(path)
 
 	def closeEvent(self, event):
-		#if not self._display_mode:
 		self.store_gui_state()
 
 		trace("closeEvent")
@@ -373,8 +364,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			trace("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
 		
-		#print_to_stderr("pre sleep")
-		
 		time.sleep(0.05)
 		trace("closeEvent...terminate")
 	
@@ -383,26 +372,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			p.terminate()
 
 		trace("closeEvent...ok")
-
-		#print_to_stderr("post sleep")
-		#if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
-		#	if __TRACE__:
-		#		print_to_stderr("self.client_communicator.kill()")
-		#	self.client_communicator.kill()
-#
-		#if SLEEPED_OPTIMIZATION and self.sleeped_client:
-		#	if __TRACE__:
-		#		print_to_stderr("self.sleeped_client.kill()")
-		#	self.sleeped_client.kill()
-#
-#
-		#if zencad.gui.application.RETRANSLATE_THREAD:
-		#	if __TRACE__:
-		#		print_to_stderr("zencad.gui.application.RETRANSLATE_THREAD.finish()")
-		#	zencad.gui.application.RETRANSLATE_THREAD.finish()
-
-		#if self.client_pid:
-		#	os.kill(self.client_pid, signal.SIGKILL)
 		
 	def showEvent(self, ev):
 		trace("showEvent")
@@ -450,6 +419,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def open_bottom_half(self):
 		trace("open_bottom_half")
 
+		self.console.clear()
+
 		if not self.openlock.tryLock():
 			return
 		path = self.current_opened
@@ -495,14 +466,35 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		
 		self.openlock.unlock()
 
+	def open_fault(self):
+		if hasattr(self, "last_screen"):	
+			painter = QPainter(self.last_screen)
+			painter.setPen(Qt.red)
+			font = QFont()
+			font.setPointSize(12)
+			painter.setFont(font)
+			message = "Exception in executable script"
+			painter.drawText(
+				QPoint(
+					self.last_screen.width()/2 - QFontMetrics(font).width(message)/2,
+					QFontMetrics(font).height()), 
+				message)
+			painter.end()
+		
+			self.screen_label = QLabel()
+			self.screen_label.setPixmap(self.last_screen)
+	
+			self.replace_widget(self.screen_label)
+
+		else:
+			self.replace_widget(ScreenWidget("Exception in executable script", QColor(255,0,0)))
+
 	
 	def finish_screen(self, data, size):
-		btes, size = data, size#self.client_communicator.rpc_buffer()		
+		btes, size = data, size		
 		screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
 
-		#if self.open_in_progress == False:
-		#	return
-		
 		painter = QPainter(screen)
 		painter.setPen(Qt.green)
 		font = QFont()
@@ -519,9 +511,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.screen_label = QLabel()
 		self.screen_label.setPixmap(screen)
 
-		#if self.open_in_progress == False:
-		#	return
-
 		self.replace_widget(self.screen_label)
 		self.open_bottom_half()
 
@@ -537,12 +526,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif s == "F10": self.displayMode() 
 
 	def internal_key_pressed_raw(self, key, modifiers):
-		#print("internal_key_pressed_raw")
-		#if ((modifiers & (int(Qt.AltModifier | Qt.ControlModifier))) == 0) and (chr(key) in set(string.printable)):
-		#	event = QInputMethodEvent()
-		#	event.setCommitString(chr(key))
-		#	QGuiApplication.sendEvent(self.texteditor, event);
-
 		event = QKeyEvent(QEvent.KeyPress, key, Qt.KeyboardModifier(modifiers));
 		QGuiApplication.postEvent(self.texteditor, event);
 

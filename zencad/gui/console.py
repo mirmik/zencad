@@ -38,6 +38,9 @@ class ConsoleWidget(QTextEdit):
     def flush(self):
         self.stdout.flush()
 
+    def clear(self):
+        self.setText("")
+
     def write(self, data):
         #data = data.decode("utf-8")
         self.append_signal.emit(data)

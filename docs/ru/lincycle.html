@@ -91,21 +91,25 @@
 <span class="p">])</span>
 </code></pre></div>
 
+<p><img src="../images/generic/fill0.png" alt="" /></p>
+
 <hr />
 
 <h2>Fill</h2>
 
-<p>Данная операция применяется к плоской замкнутой линии и превращает ее в грань.</p>
+<p>Данная операция применяется к плоской замкнутой линии <em>wire</em> и превращает ее в грань.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wire</span> <span class="o">=</span> <span class="n">sew</span><span class="p">([</span>
+<div class="codehilite"><pre><span></span><code><span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
+<span class="n">wire</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span> <span class="c1">#alternate</span>
+
+<span class="c1"># Example:</span>
+<span class="n">wire</span> <span class="o">=</span> <span class="n">sew</span><span class="p">([</span>
     <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
     <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
     <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
     <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="p">])</span>
-
 <span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
-<span class="n">wire</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span> <span class="c1">#alternate</span>
 </code></pre></div>
 
 <p><img src="../images/generic/fill0.png" alt="" />
