@@ -121,20 +121,21 @@ class SettingsWidget(QDialog):
 		self.texteditor_edit = TextFieldChanger(path=["gui", "text_editor"], label="Text editor command:")
 		self.not_start_widget = Checker("Показывать стартовый экран", path=["gui", "start_widget"])
 		self.bind_widget = Checker("Линковать виджет", path=["gui", "bind_widget"])
-
+		self.marker_size_edit = TextFieldChanger(path=["markers", "size"], label="Marker size:")
+		
 		self.appliers = []
-		self.appliers.append(self.default_color_edit)
-		self.appliers.append(self.texteditor_edit)
-		self.appliers.append(self.not_start_widget)
-		self.appliers.append(self.bind_widget)
-
 		self.vlayout = QVBoxLayout()
-		self.vlayout.addWidget(self.texteditor_edit)
-		self.vlayout.addWidget(self.default_color_edit)
-		self.vlayout.addWidget(self.not_start_widget)
-		self.vlayout.addWidget(self.bind_widget)
-		#self.vlayout.addWidget(TableField(ltext="Text editor command", wdg=LineEdit(deftext=settings.get_settings()["gui"]["text_editor"])))
-		#self.vlayout.addWidget(TableField(ltext="Default color", wdg=ColorChanger(values=settings.get_default_color())))
+		
+		def append(obj):
+			self.appliers.append(obj)
+			self.vlayout.addWidget(obj)
+
+		append(self.texteditor_edit)
+		append(self.default_color_edit)
+		append(self.not_start_widget)
+		append(self.bind_widget)
+		append(self.marker_size_edit)
+
 		self.vlayout.addLayout(self.hlayout)
 
 		for a in self.appliers:

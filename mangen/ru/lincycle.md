@@ -19,20 +19,23 @@ sew([
 	segment((20,0,0), (0,0,0))
 ])
 ```
+![](../images/generic/fill0.png)
 
 ----------------------------------
 ## Fill
-Данная операция применяется к плоской замкнутой линии и превращает ее в грань.
+Данная операция применяется к плоской замкнутой линии _wire_ и превращает ее в грань.
 ```python
+fill(wire)
+wire.fill() #alternate
+
+# Example:
 wire = sew([
 	segment((0,0,0), (0,10,0)), 
 	circle_arc((0,10,0),(10,15,0),(20,10,0)), 
 	segment((20,0,0), (20,10,0)),
 	segment((20,0,0), (0,0,0))
 ])
-
 fill(wire)
-wire.fill() #alternate
 ```
 ![](../images/generic/fill0.png)
 ![](../images/generic/fill1.png)  
