@@ -117,6 +117,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.setWindowTitle(title)
 		self.openlock = QMutex()
+		self.opened_subproc = None
+		self.window = None
+		self.winid = None
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
@@ -259,7 +262,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.preslabel = label
 		return label
 
-	def new_worker_message(self, data):
+	def new_worker_message(self, data, procpid):
 		data = pickle.loads(data)
 		try:
 			cmd = data["cmd"]
@@ -281,7 +284,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "keyreleased_raw": self.internal_key_released_raw(data["key"], data["modifiers"])
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
-		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1])
+		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1], procpid)
 		elif cmd == "fault": self.open_fault()
 		else:
 			print("Warn: unrecognized command", data)
@@ -312,12 +315,20 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		
 			if not bind_widget_flag == "false":
 				trace("bind window")
-				container = QWindow.fromWinId(winid)
-				self.cc = QWidget.createWindowContainer(container)
+				oldwindow = self.cc_window
+				self.window = QWindow.fromWinId(winid)
+
+				size = self.vsplitter.widget(0).size()
+				#oldcc = self.cc
+				self.cc = QWidget.createWindowContainer(self.window)
 				
 				self.cc_window = winid
 				trace("replace widget")
 				self.vsplitter.replaceWidget(0, self.cc)
+
+				if oldwindow is not None:
+					QWindow.fromWinId(oldwindow).close()					
+
 				self.update()
 			
 			self.client_pid = pid
@@ -329,13 +340,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				info("restore saved eye location")
 		
 			self.open_in_progress = False
-			self.client_communicator.send({"cmd":"resize"})
+			self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
 			self.client_communicator.send({"cmd":"redraw"})
-			time.sleep(0.05)
+			time.sleep(0.1)
 			self.update()
 		except Exception as ex:
 			self.openlock.unlock()
 			print_to_stderr("exception on window bind", ex)
+			raise ex
 		self.openlock.unlock()
 
 
@@ -379,9 +391,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.client_communicator.start_listen()
 
 	def reopen_current(self):
-		if time.time() - self.last_reopen_time > 0.5:
-			self._open_routine(self.current_opened)
-			self.last_reopen_time = time.time()
+		#if time.time() - self.last_reopen_time > 0.7:
+		self._open_routine(self.current_opened)
+		self.last_reopen_time = time.time()
 
 	def _open_routine(self, path):
 		if not self.openlock.tryLock():
@@ -409,20 +421,22 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		if self.cc_window and self.open_in_progress is False:
 			success = self.client_communicator.send({"cmd":"screenshot"})
+			self.opened_subproc = self.client_communicator.subproc.pid
 			if success:
 				self.openlock.unlock()
 				return
 
 		self.openlock.unlock()
-		self.open_bottom_half()
+		self.open_bottom_half(None)
 
-	def open_bottom_half(self):
+	def open_bottom_half(self, subproc):
 		trace("open_bottom_half")
 
 		self.console.clear()
 
 		if not self.openlock.tryLock():
 			return
+
 		path = self.current_opened
 
 		if self.client_communicator:
@@ -490,7 +504,16 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.replace_widget(ScreenWidget("Exception in executable script", QColor(255,0,0)))
 
 	
-	def finish_screen(self, data, size):
+	def finish_screen(self, data, size, subproc):
+		if not self.openlock.tryLock():
+			return
+
+		if (subproc is not None 
+				and self.opened_subproc is not None 
+				and subproc != self.opened_subproc):
+			self.openlock.unlock()
+			return
+
 		btes, size = data, size		
 		screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
 		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
@@ -512,7 +535,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.screen_label.setPixmap(screen)
 
 		self.replace_widget(self.screen_label)
-		self.open_bottom_half()
+
+		self.openlock.unlock()
+		self.open_bottom_half(subproc)
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]

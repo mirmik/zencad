@@ -220,29 +220,32 @@ class PythonHighlighter(QSyntaxHighlighter):
 		else:
 			return False
 
-  class LineNumberArea(QWidget)
+class LineNumberArea(QWidget):
 	def __init__(self, editor):
 		QWidget.__init__(self, editor)
 		self.codeEditor = editor;
 
-	def sizeHint()
+	def sizeHint(self):
 		return QSize(self.codeEditor.lineNumberAreaWidth(), 0);
 
-	def paintEvent(event):
+	def paintEvent(self, event):
 		self.codeEditor.lineNumberAreaPaintEvent(event);
 
 class TextEditor(QPlainTextEdit):
 	def __init__(self):
+		self.base_color = QColor(40, 41, 35)
+		self.lines_numbers_border = 10
+
 		QPlainTextEdit.__init__(self)
 		pallete = self.palette()
-		pallete.setColor(QPalette.Base, QColor(40, 41, 35))
+		pallete.setColor(QPalette.Base, self.base_color)
 		pallete.setColor(QPalette.Text, QColor(255, 255, 255))
 		self.setPalette(pallete)
 		self.highlighter = PythonHighlighter(self.document())
 		self.rewrite = None
 		self.edited = None
 
-		self.line_numbers = 
+		self.lineNumberArea = LineNumberArea(self)
 
 		font = QFont()
 		font.setFamily("Monospace")
@@ -252,6 +255,12 @@ class TextEditor(QPlainTextEdit):
 
 		metrics = QFontMetrics(font)
 		self.setTabStopWidth(metrics.width("    "))
+
+		self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+		self.updateRequest.connect(self.updateLineNumberArea)
+		#self.cursorPositionChanged.connect(self.highlightCurrentLine)
+
+		self.updateLineNumberAreaWidth()
 
 	def save(self):
 		try:
@@ -294,13 +303,62 @@ class TextEditor(QPlainTextEdit):
 
 		QPlainTextEdit.keyPressEvent(self, event)
 
+	def updateLineNumberArea(self, rect, dy):
+		if dy:
+			self.lineNumberArea.scroll(0, dy)
+		else:
+			self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
+	
+		if rect.contains(self.viewport().rect()):
+			self.updateLineNumberAreaWidth()
+
+	def lineNumberAreaPaintEvent(self, event):
+		painter = QPainter(self.lineNumberArea)
+		rect = QRect(
+			event.rect().x(), 
+			event.rect().y(), 
+			event.rect().width(), 
+			event.rect().height())
+		painter.fillRect(rect, self.base_color)
+		#painter.fillRect(event.rect(), Qt.red)
+		
+		block = self.firstVisibleBlock();
+		blockNumber = block.blockNumber();
+		top = qRound(self.blockBoundingGeometry(block).translated(self.contentOffset()).top());
+		bottom = top + qRound(self.blockBoundingRect(block).height());
+
+		while block.isValid() and top <= event.rect().bottom():
+			if block.isVisible() and bottom >= event.rect().top():
+				number = str(blockNumber + 1)
+				painter.setPen(Qt.gray)
+				painter.drawText(0, top, self.lineNumberArea.width() - self.lines_numbers_border, 
+					self.fontMetrics().height(),
+								 Qt.AlignRight, number)
+				
+			block = block.next()
+			top = bottom
+			bottom = top + qRound(self.blockBoundingRect(block).height())
+			blockNumber+=1
+
 	def updateLineNumberAreaWidth(self):
-		self.setViewportMargins(20, 0, 0, 0)
+		self.setViewportMargins(self.lineNumberAreaWidth() + self.lines_numbers_border, 0, 0, 0)
 
 	def resizeEvent(self, e):
-		print("resizeEvent")
 		QPlainTextEdit.resizeEvent(self, e)
 		cr = self.contentsRect()
-		print(cr)
 		self.updateLineNumberAreaWidth()
-		#lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+
+		argrect = QRect(cr.left(), cr.top(), self.lineNumberAreaWidth() + self.lines_numbers_border, cr.height())
+
+		self.lineNumberArea.setGeometry(argrect);
+
+	def lineNumberAreaWidth(self):
+		digits = 1;
+		maxim = max(1, self.blockCount());
+		while maxim >= 10:
+			maxim /= 10
+			digits += 1
+	
+		space = 3 + self.fontMetrics().horizontalAdvance('9'[0]) * digits;
+	
+		return space;

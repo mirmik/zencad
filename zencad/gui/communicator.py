@@ -27,7 +27,7 @@ class Communicator(QObject):
 
 	class Listener(QThread):
 		oposite_clossed = pyqtSignal()
-		newdata = pyqtSignal(bytes)
+		newdata = pyqtSignal(bytes, int)
 		def __init__(self, ipipe, parent):
 			super().__init__()
 			#self.name = "Listener"
@@ -101,7 +101,7 @@ class Communicator(QObject):
 					if len(strform) > 100: strform = strform[0:101]
 					print_to_stderr("received {}: {}".format(self.parent.procpid, strform))
 
-				self.newdata.emit(ddd)
+				self.newdata.emit(ddd, self.parent.subproc.pid if self.parent.subproc is not None else None)
 
 	def __init__(self, ipipe, opipe):
 		super().__init__()
