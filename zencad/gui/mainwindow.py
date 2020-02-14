@@ -423,7 +423,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		if self.cc_window and self.open_in_progress is False:
 			success = self.client_communicator.send({"cmd":"screenshot"})
-			self.opened_subproc = self.client_communicator.subproc.pid
+			if self.client_communicator.subproc is not None:
+				self.opened_subproc = self.client_communicator.subproc.pid
 			if success:
 				self.openlock.unlock()
 				return
