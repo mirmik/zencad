@@ -475,7 +475,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			#	self.openlock.unlock()
 			#	return
 
-		print("planned to finalize:", len(self.client_finalization_list))
+		trace("planned to finalize:", len(self.client_finalization_list))
 
 	#	self.openlock.unlock()
 	#	self.open_bottom_half(None)
@@ -533,7 +533,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		# Теперь новый клиент готов к работе.
 		self.open_in_progress = True
 		self.communicator_dictionary[self.client_communicator.subproc.pid] = self.client_communicator
-		print("add to self.communicator_dictionary", [c for c in self.communicator_dictionary])
+		trace("add to self.communicator_dictionary", [c for c in self.communicator_dictionary])
 		self.client_communicator.oposite_clossed.connect(self.delete_communicator)
 		self.client_communicator.newdata.connect(self.new_worker_message)
 		self.client_communicator.start_listen()
