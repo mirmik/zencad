@@ -537,9 +537,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_communicator.oposite_clossed.connect(self.delete_communicator)
 		self.client_communicator.newdata.connect(self.new_worker_message)
 		self.client_communicator.start_listen()
-
-		fds = set(os.listdir('/proc/self/fd/'))
-		print(fds)
 		
 		trace("client_communicator, fd:", self.client_communicator.ipipe, self.client_communicator.opipe)
 		

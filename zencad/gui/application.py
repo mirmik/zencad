@@ -161,7 +161,8 @@ def start_application(tgtpath, debug):
 	interpreter = INTERPRETER
 	cmd = '{} -m zencad --subproc {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
 
-	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
+		close_fds=True)
 	return subproc
 
 @traced
@@ -205,7 +206,8 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 		session_id=session_id)
 	
 	try:
-		subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+		subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
+			close_fds=True)
 		return subproc
 	except OSError as ex:
 		print("Warn: subprocess.Popen finished with exception", ex)
@@ -225,6 +227,10 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 	communicator = zencad.gui.communicator.Communicator(
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
 	communicator.subproc = subproc
+
+	fds = set(os.listdir('/proc/self/fd/'))
+	print_to_stderr("OPEN NEWPROC", subproc.pid, fds)
+	print_to_stderr("pipes: opipe:{} ipipe:{}".format(subproc.stdout.fileno(), subproc.stdin.fileno()))
 
 	return communicator
 
