@@ -47,7 +47,7 @@ def trace(*args):
 	if zencad.configure.CONFIGURE_MAINWINDOW_TRACE:
 		print_to_stderr("MAINWINDOW:", *args)
 
-class ScreenWidget(QWidget):
+class ScreenSaverWidget(QWidget):
 	def __init__(self, text=None, color=QColor(137,40,151)):
 		if text is None:
 			text = "Loading... please wait."
@@ -55,6 +55,10 @@ class ScreenWidget(QWidget):
 		self.text = text
 		self.color = color
 		super().__init__()
+
+	def set_text(self, text):
+		self.text = text
+		self.update()
 
 	def paintEvent(self, ev):
 		pathes = ["techpriest.jpg"]
@@ -150,11 +154,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.cw_layout.addWidget(self.info_widget)
 		self.cw.setLayout(self.cw_layout)
 
-		lbl = ScreenWidget()
+		self.screen_saver = ScreenSaverWidget()
 
 		self.hsplitter.addWidget(self.texteditor)
 		self.hsplitter.addWidget(self.vsplitter)
-		self.vsplitter.addWidget(lbl)
+		self.vsplitter.addWidget(self.screen_saver)
 		self.vsplitter.addWidget(self.console)
 
 		self.resize(640,480)
@@ -199,6 +203,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.restore_gui_state()
 		self._display_mode = display_mode
 
+
+		#self.vsplitter.splitterMoved.connect(self.embeded_window_resized)
+		#self.hsplitter.splitterMoved.connect(self.embeded_window_resized)
+
 	def make_notifier(self, path=None):
 		self.notifier = InotifyThread(self)
 		self.notifier.changed.connect(self.reopen_current)
@@ -230,40 +238,40 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.sleeped_client.send({"cmd":"stopworld"})
 		self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
 
-	def presentation_label(self):
-		url = os.path.join(zencad.moduledir, "zencad_logo.png")
-		img = QPixmap(url);
-
-		painter = QPainter(img)
-		painter.setPen(Qt.green)
-		font = QFont()
-		font.setPointSize(18)
-		painter.setFont(font)
-		message2 = """From the fact that you will create 3d models with scripts,\nnothing will change in your life, created with scripts but 3d models will be."""
-		message = "Cad system for righteous Zen programmers. "
-		painter.drawText(
-			QPoint(
-				20 ,
-				img.height() - 20), 
-			message)
-		
-		font = QFont()
-		font.setPointSize(12)
-		painter.setFont(font)
-		painter.setPen(Qt.yellow)
-		for i, s in enumerate(message2.splitlines()):
-			painter.drawText(
-			QPoint(
-				20 ,
-				img.height() - 25 - QFontMetrics(font).height()*(2-i)), 
-			s)
-
-		painter.end()
-
-		label = QLabel();
-		label.setPixmap(img);
-		self.preslabel = label
-		return label
+	#def presentation_label(self):
+	#	url = os.path.join(zencad.moduledir, "zencad_logo.png")
+	#	img = QPixmap(url);
+#
+	#	painter = QPainter(img)
+	#	painter.setPen(Qt.green)
+	#	font = QFont()
+	#	font.setPointSize(18)
+	#	painter.setFont(font)
+	#	message2 = """From the fact that you will create 3d models with scripts,\nnothing will change in your life, created with scripts but 3d models will be."""
+	#	message = "Cad system for righteous Zen programmers. "
+	#	painter.drawText(
+	#		QPoint(
+	#			20 ,
+	#			img.height() - 20), 
+	#		message)
+	#	
+	#	font = QFont()
+	#	font.setPointSize(12)
+	#	painter.setFont(font)
+	#	painter.setPen(Qt.yellow)
+	#	for i, s in enumerate(message2.splitlines()):
+	#		painter.drawText(
+	#		QPoint(
+	#			20 ,
+	#			img.height() - 25 - QFontMetrics(font).height()*(2-i)), 
+	#		s)
+#
+	#	painter.end()
+#
+	#	label = QLabel();
+	#	label.setPixmap(img);
+	#	self.preslabel = label
+	#	return label
 
 	def new_worker_message(self, data, procpid):
 		data = pickle.loads(data)
@@ -312,6 +320,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		for comm in self.client_finalization_list:
 			comm.send({"cmd":"stopworld"})
 
+	#def embeded_window_resized(self, *args, **kwargs):
+	#	print("embeded_window_resized")
+	#	if self.cc:
+	#		self.blacklifier.setGeometry(self.cc.geometry())
+	#		#self.blacklifier.setParent(self.cc)
+	#		self.blacklifier.raise_()
+			
 	def bind_window(self, winid, pid, session_id):
 		trace("bind_window: winid:{}, pid:{}".format(winid,pid))
 		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
@@ -371,7 +386,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.openlock.unlock()
 
 	def replace_widget(self, wdg):
-		self.vsplitter.replaceWidget(0, wdg)
+		if wdg is not self.vsplitter.widget(0):
+			wdg.resize(self.vsplitter.widget(0).size())
+			self.vsplitter.replaceWidget(0, wdg)
 
 	def set_current_opened(self, path):
 		self.current_opened = path
@@ -432,7 +449,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			if comm not in self.communicator_dictionary.values():
 				self.client_finalization_list.remove(comm)
 
-		print("del from self.communicator_dictionary {}".format([ c.subproc.pid for c 
+		trace("del from self.communicator_dictionary {}".format([ c.subproc.pid for c 
 			in self.communicator_dictionary.values()]))
 
 
@@ -543,72 +560,24 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		# Добавляем путь в список последних вызовов.
 		zencad.settings.Settings.add_recent(os.path.abspath(path))
 
+		self.screen_saver.set_text("Loading script: {}".format(path))
+		# Сплиттер некоректно отработает, до первого showEvent
+		if hasattr(self, "MARKER"):
+			self.replace_widget(self.screen_saver)
+		self.MARKER=None
+
 		# Если уведомления включены, обновить цель.
 		if self.notifier:
 			self.notifier.retarget(path)
 		
 		self.openlock.unlock()
 
-	def open_fault(self):
-		print("OPEN FAULT. TODO.")
-		#if hasattr(self, "last_screen"):	
-		#	painter = QPainter(self.last_screen)
-		#	painter.setPen(Qt.red)
-		#	font = QFont()
-		#	font.setPointSize(12)
-		#	painter.setFont(font)
-		#	message = "Exception in executable script"
-		#	painter.drawText(
-		#		QPoint(
-		#			self.last_screen.width()/2 - QFontMetrics(font).width(message)/2,
-		#			QFontMetrics(font).height()), 
-		#		message)
-		#	painter.end()
-		#
-		#	self.screen_label = QLabel()
-		#	self.screen_label.setPixmap(self.last_screen)
-	#
-		#	self.replace_widget(self.screen_label)
-#
-		#else:
-		#	self.replace_widget(ScreenWidget("Exception in executable script", QColor(255,0,0)))
+	#def resizeEvent(self, ev):
+	#	super().resizeEvent(ev)
+		#self.embeded_window_resized()
 
-	
-	def finish_screen(self, data, size, subproc):
-		print("FINISH_SCREEN")
-	#	if not self.openlock.tryLock():
-	#		return
-#
-	#	if (subproc is not None 
-	#			and self.opened_subproc is not None 
-	#			and subproc != self.opened_subproc):
-	#		self.openlock.unlock()
-	#		return
-#
-	#	btes, size = data, size		
-	#	screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
-	#	self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
-#
-	#	painter = QPainter(screen)
-	#	painter.setPen(Qt.green)
-	#	font = QFont()
-	#	font.setPointSize(12)
-	#	painter.setFont(font)
-	#	message = "Loading... please wait."
-	#	painter.drawText(
-	#		QPoint(
-	#			screen.width()/2 - QFontMetrics(font).width(message)/2,
-	#			QFontMetrics(font).height()), 
-	#		message)
-	#	painter.end()
-	#
-	#	self.screen_label = QLabel()
-	#	self.screen_label.setPixmap(screen)
-#
-	#	self.replace_widget(self.screen_label)
-#
-	#	self.openlock.unlock()
-	#	self.open_bottom_half(subproc)
+	def open_fault(self):
+		self.screen_saver.set_text("Error in loaded script")
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]

@@ -59,13 +59,7 @@ def protect_path(s):
 	return s
 
 def do_main():
-	fds = set(os.listdir('/proc/self/fd/'))
-	print_to_stderr("STARTWITH FDS", fds)
-
 	os.closerange(3, 100)
-	
-	fds = set(os.listdir('/proc/self/fd/'))
-	print_to_stderr("STARTWITH FDS", fds)
 
 	OPPOSITE_PID_SAVE = None
 	zencad.gui.signal_handling.setup_simple_interrupt_handling()
@@ -150,12 +144,10 @@ def do_main():
 				sys.exit(0)			
 	
 			if "cmd" in data and data["cmd"] == "stopworld":
-				print_to_stderr("SLEEPED THREAD: stopworld")
 				sys.exit(0)
 				return
 	
 			if "cmd" in data and data["cmd"] == "set_opposite_pid":
-				print_to_stderr("SLEEPED THREAD: set_opposite_pid", data["data"])
 				OPPOSITE_PID_SAVE = data["data"]
 				continue
 

@@ -228,10 +228,6 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
 	communicator.subproc = subproc
 
-	fds = set(os.listdir('/proc/self/fd/'))
-	print_to_stderr("OPEN NEWPROC", subproc.pid, fds)
-	print_to_stderr("pipes: opipe:{} ipipe:{}".format(subproc.stdout.fileno(), subproc.stdin.fileno()))
-
 	return communicator
 
 @traced
@@ -333,7 +329,7 @@ def common_unbouded_proc(scene,
 			Prepare to finalization.
 			Stop animation.
 			Invoke finalization handle."""
-			print_to_stderr("stop_activity")
+			trace("common_unbouded_proc::stop_activity")
 
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
