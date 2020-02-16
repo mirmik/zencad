@@ -59,6 +59,14 @@ def protect_path(s):
 	return s
 
 def do_main():
+	fds = set(os.listdir('/proc/self/fd/'))
+	print_to_stderr("STARTWITH FDS", fds)
+
+	os.closerange(3, 100)
+	
+	fds = set(os.listdir('/proc/self/fd/'))
+	print_to_stderr("STARTWITH FDS", fds)
+
 	OPPOSITE_PID_SAVE = None
 	zencad.gui.signal_handling.setup_simple_interrupt_handling()
 
@@ -130,6 +138,7 @@ def do_main():
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
 		readFile = os.fdopen(zencad.gui.application.STDIN_FILENO)
+
 		while 1:
 			trace("SLEEPED THREAD: read")
 			rawdata = readFile.readline()
@@ -141,10 +150,12 @@ def do_main():
 				sys.exit(0)			
 	
 			if "cmd" in data and data["cmd"] == "stopworld":
+				print_to_stderr("SLEEPED THREAD: stopworld")
 				sys.exit(0)
 				return
 	
 			if "cmd" in data and data["cmd"] == "set_opposite_pid":
+				print_to_stderr("SLEEPED THREAD: set_opposite_pid", data["data"])
 				OPPOSITE_PID_SAVE = data["data"]
 				continue
 
@@ -160,12 +171,19 @@ def do_main():
 		zencad.settings.restore()			
 
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
+		
+		def hard_finish_checker(rawdata):
+			if pickle.loads(rawdata)["cmd"] == "hardstop":
+				print("HARDSTOP")
+				zencad.gui.application.quit()
+				sys.exit(0)
 
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
+		zencad.gui.application.MAIN_COMMUNICATOR.newdata.connect(hard_finish_checker)
 		
 		if OPPOSITE_PID_SAVE is not None:
 			zencad.gui.application.MAIN_COMMUNICATOR.set_opposite_pid(OPPOSITE_PID_SAVE)

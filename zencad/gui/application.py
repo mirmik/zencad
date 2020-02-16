@@ -44,12 +44,11 @@ from zencad.gui.mainwindow import MainWindow
 import zencad.configure
 import zencad.settings
 
-__DEBUG_MODE__ = False
-
 INTERPRETER = sys.executable
 RETRANSLATE_THREAD = None
 MAIN_COMMUNICATOR = None
 CONSOLE_RETRANS_THREAD = None
+APPLICATION = None
 
 DISPLAY_WIDGET = None
 
@@ -158,7 +157,7 @@ def start_application(tgtpath, debug):
 	#os.dup2(i, 3)
 	#os.dup2(o, 4)
 
-	debugstr = "--debug" if debug or __DEBUG_MODE__ else "" 
+	debugstr = "--debug" if debug or zencad.configure.DEBUG_MODE else "" 
 	interpreter = INTERPRETER
 	cmd = '{} -m zencad --subproc {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
 
@@ -181,7 +180,6 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
 
 	MAIN_COMMUNICATOR = communicator
-
 	communicator.subproc = subproc
 
 	common_unbouded_proc(pipes=True, need_prescale=True, *args, **kwargs)
@@ -195,7 +193,7 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
-	debug_mode = "--debug" if __DEBUG_MODE__ else ""
+	debug_mode = "--debug" if zencad.configure.DEBUG_MODE else ""
 	interpreter = INTERPRETER
 
 	cmd = '{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}'.format(
@@ -206,8 +204,12 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 		debug_mode=debug_mode,
 		session_id=session_id)
 	
-	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-	return subproc
+	try:
+		subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+		return subproc
+	except OSError as ex:
+		print("Warn: subprocess.Popen finished with exception", ex)
+		raise ex
 
 @traced
 def spawn_sleeped_client(session_id):
@@ -222,7 +224,6 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
-
 	communicator.subproc = subproc
 
 	return communicator
@@ -252,8 +253,10 @@ def common_unbouded_proc(scene,
 	ANIMATE_THREAD = None
 	global MAIN_COMMUNICATOR
 	global DISPLAY_WIDGET
+	global APPLICATION
 
 	app = QApplication([])
+	APPLICATION = app
 	zencad.gui.signal_handling.setup_qt_interrupt_handling()
 	zencad.opengl.init_opengl()
 
@@ -319,6 +322,19 @@ def common_unbouded_proc(scene,
 			app.quit()
 			trace("app quit on receive... after")
 
+		def stop_activity():
+			"""
+			Prepare to finalization.
+			Stop animation.
+			Invoke finalization handle."""
+			print_to_stderr("stop_activity")
+
+			if ANIMATE_THREAD:
+				ANIMATE_THREAD.finish()
+
+			if close_handle:
+				close_handle()
+
 
 		def receiver(data):
 			trace("common_unbouded_proc::receiver")
@@ -327,6 +343,8 @@ def common_unbouded_proc(scene,
 				trace(data)
 				if data["cmd"] == "stopworld": 
 					stop_world()
+				elif data["cmd"] == "stop_activity":
+					stop_activity()
 				elif data["cmd"] == "console":
 					sys.stdout.write(data["data"])
 				else:
@@ -337,10 +355,15 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.newdata.connect(receiver)
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
 		MAIN_COMMUNICATOR.smooth_stop.connect(smooth_stop_world)
-		#time.sleep(2)
-		MAIN_COMMUNICATOR.send({"cmd":"bindwin", "id":int(widget.winId()), "pid":os.getpid(), "session_id":session_id})
-		#MAIN_COMMUNICATOR.wait()
-
+	
+		# Шлём на ту сторону указание отрисовать нас.
+		MAIN_COMMUNICATOR.send({
+			"cmd":"bindwin", 
+			"id":int(widget.winId()), 
+			"pid":os.getpid(), 
+			"session_id":session_id
+		})
+		
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
 			widget=widget, 
@@ -368,22 +391,18 @@ def common_unbouded_proc(scene,
 	widget.widget_closed.connect(_clossed)
 
 	widget.show()
-	#widget.hide()
 	app.exec()
+
 	trace("FINISH UNBOUNDED QTAPP")
-
 	trace("Wait childs ...")
-
 	trace("list of threads: ", threading.enumerate())
 
 	procs = psutil.Process().children()
 	trace(procs)
 	psutil.wait_procs(procs, callback=on_terminate)
-	#for p in procs:
-	#    p.terminate()
-	#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
-	#for p in alive:
-	#    p.kill()
-
 
 	trace("Wait childs ... OK")
+
+def quit():
+	if APPLICATION:
+		APPLICATION.quit()
