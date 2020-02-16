@@ -55,7 +55,7 @@ class Communicator(QObject):
 					inputdata = readFile.readline()
 				except Exception as ex:
 					print_to_stderr("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex)
-					self.parent.stop_listen_nowait()
+					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
 				
@@ -64,7 +64,7 @@ class Communicator(QObject):
 					if checks < 3:
 						continue
 					print_to_stderr("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe))
-					self.parent.stop_listen_nowait()
+					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
 
@@ -74,14 +74,16 @@ class Communicator(QObject):
 					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
 				except:
 					print_to_stderr("Unpicling(A):", len(inputdata), inputdata)
-					self.parent.stop_listen_nowait()
+					self.parent._stop_listen_nowait()
+					self.parent.oposite_clossed.emit()
 					return
 
 				try:
 					dddd = pickle.loads(ddd)
 				except:
 					print_to_stderr("Unpicling(B):", ddd)
-					self.parent.stop_listen_nowait()
+					self.parent._stop_listen_nowait()
+					self.parent.oposite_clossed.emit()
 					return
 
 				if dddd == "unwait":
@@ -128,6 +130,28 @@ class Communicator(QObject):
 			self.listen_started = True
 			self.listener_thr.start()
 
+	def subproc_pid(self):
+		return self.subproc.pid if self.subproc else None
+
+	def close_pipes(self):
+		if self.subproc is not None:
+			self.subproc.stdin.close()
+			self.subproc.stdout.close()
+
+		else:
+			if not self.closed_fds:
+				try:
+					trace("close ipipe", self.ipipe, self.subproc_pid())
+					os.close(self.ipipe)
+				except OSError as ex:
+					print_to_stderr(ex)
+	
+				try:
+					trace("close opipe", self.opipe, self.subproc_pid())
+					os.close(self.opipe)
+				except OSError as ex:
+					print_to_stderr(ex)
+
 	def stop_listen(self):
 		trace("stop_listen", self.subproc.pid if self.subproc else None)
 
@@ -137,20 +161,7 @@ class Communicator(QObject):
 		if sys.platform == "win32" or sys.platform == "win64": 
 			return
 
-		if not self.closed_fds:
-			try:
-				trace("close ipipe")
-				os.close(self.ipipe)
-			except:
-				pass
-				#print_to_stderr("Warn: os.close(self.ipipe) is fault")
-	#
-			try:
-				trace("close opipe")
-				os.close(self.opipe)
-			except:
-				pass
-				#print_to_stderr("Warn: os.close(self.opipe) is fault")
+		self.close_pipes()
 
 		trace("event set")
 		self.listener_thr.event.set()
@@ -161,7 +172,7 @@ class Communicator(QObject):
 		self.closed_fds = True
 		self.closed = True
 
-	def stop_listen_nowait(self):
+	def _stop_listen_nowait(self):
 		trace("stop_listen_nowait", self.subproc.pid if self.subproc else None)
 
 		if self.closed:
@@ -172,20 +183,10 @@ class Communicator(QObject):
 		fds = set(os.listdir('/proc/self/fd/'))
 		print_to_stderr(fds)
 		
-		if not self.closed_fds:
-			try:
-				trace("close ipipe")
-				os.close(self.ipipe)
-			except OSError as ex:
-				print_to_stderr(ex)
-#	
-			try:
-				trace("close opipe")
-				os.close(self.opipe)
-			except OSError as ex:
-				print_to_stderr(ex)
+		self.close_pipes()
 
 		self.closed_fds = True
+		self.closed = True
 
 		fds = set(os.listdir('/proc/self/fd/'))
 		print_to_stderr(fds)
