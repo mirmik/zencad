@@ -46,7 +46,7 @@ class Communicator(QObject):
 			try:
 				readFile = os.fdopen(self.ipipe)
 			except Exception as ex:
-				print_to_stderr("rdopen error: (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex, self.ipipe)
+				trace("rdopen error: (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex, self.ipipe)
 				self.parent.stop_listen_nowait()
 				return
 			
@@ -54,7 +54,7 @@ class Communicator(QObject):
 				try:
 					inputdata = readFile.readline()
 				except Exception as ex:
-					print_to_stderr("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex)
+					trace("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex)
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -63,7 +63,7 @@ class Communicator(QObject):
 					checks += 1
 					if checks < 3:
 						continue
-					print_to_stderr("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe))
+					trace("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe))
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -73,7 +73,7 @@ class Communicator(QObject):
 				try:
 					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
 				except:
-					print_to_stderr("Unpicling(A):", len(inputdata), inputdata)
+					trace("Unpicling(A):", len(inputdata), inputdata)
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -81,7 +81,7 @@ class Communicator(QObject):
 				try:
 					dddd = pickle.loads(ddd)
 				except:
-					print_to_stderr("Unpicling(B):", ddd)
+					trace("Unpicling(B):", ddd)
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -144,13 +144,13 @@ class Communicator(QObject):
 					trace("close ipipe", self.ipipe, self.subproc_pid())
 					os.close(self.ipipe)
 				except OSError as ex:
-					print_to_stderr(ex)
+					trace(ex)
 	
 				try:
 					trace("close opipe", self.opipe, self.subproc_pid())
 					os.close(self.opipe)
 				except OSError as ex:
-					print_to_stderr(ex)
+					trace(ex)
 
 	def stop_listen(self):
 		trace("stop_listen", self.subproc.pid if self.subproc else None)
@@ -159,6 +159,7 @@ class Communicator(QObject):
 			return
 		
 		if sys.platform == "win32" or sys.platform == "win64": 
+			# WHAT???? TODO: Расследовать, почему так и прокоментировать
 			return
 
 		self.close_pipes()
@@ -177,19 +178,11 @@ class Communicator(QObject):
 
 		if self.closed:
 			return
-
-		print_to_stderr("to close", self.ipipe, self.opipe)
-
-		fds = set(os.listdir('/proc/self/fd/'))
-		print_to_stderr(fds)
 		
 		self.close_pipes()
 
 		self.closed_fds = True
 		self.closed = True
-
-		fds = set(os.listdir('/proc/self/fd/'))
-		print_to_stderr(fds)
 
 	def send(self, obj):
 		if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
