@@ -127,6 +127,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.last_reopen_time = time.time()
 		self.need_prescale = True
 
+		self.client_finalization_list = []
+		self.communicator_dictionary = {}
+
 		self.nqueue = zencad.gui.nqueue.nqueue()
 		self.client_communicator = client_communicator
 		
@@ -267,6 +270,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		try:
 			cmd = data["cmd"]
 		except:
+			print("Warn: new_worker_message: message without 'cmd' field")
+			return
+
+		if procpid != self.client_communicator.subproc.pid:
 			return
 
 		trace("MainWindow:communicator: input message")
@@ -301,9 +308,19 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def internal_console_request(self, data):
 		self.console.write(data)
 
+	def subprocess_finalization_do(self):
+		for comm in self.client_finalization_list:
+			comm.send({"cmd":"stopworld"})
+
 	def bind_window(self, winid, pid, session_id):
-		trace("bind_window")
+		trace("bind_window: winid:{}, pid:{}".format(winid,pid))
 		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
+
+		if self.client_communicator.subproc.pid != pid:
+			"""Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
+			то бинд уже неактуален."""
+			print("Nonactual bind")
+			return
 		
 		if not self.openlock.tryLock():
 			return
@@ -314,7 +331,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				return
 		
 			if not bind_widget_flag == "false":
-				trace("bind window")
 				oldwindow = self.cc_window
 				self.window = QWindow.fromWinId(winid)
 
@@ -350,8 +366,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.openlock.unlock()
 			print_to_stderr("exception on window bind", ex)
 			raise ex
-		self.openlock.unlock()
 
+		self.subprocess_finalization_do()
+		self.openlock.unlock()
 
 	def replace_widget(self, wdg):
 		self.vsplitter.replaceWidget(0, wdg)
@@ -397,6 +414,30 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self._open_routine(self.current_opened)
 		self.last_reopen_time = time.time()
 
+	def delete_communicator(self):
+		"""Вызывается по сигналу об окончании сеанса"""
+
+		self.openlock.lock()
+		
+		comm = self.sender()
+		comm.stop_listen()
+		
+		if comm in self.client_finalization_list:
+			self.client_finalization_list.remove(comm)
+		
+		del self.communicator_dictionary[comm.subproc.pid]
+		
+		# clean client_finalization_list from uncostistent nodes
+		for comm in self.client_finalization_list:
+			if comm not in self.communicator_dictionary.values():
+				self.client_finalization_list.remove(comm)
+
+		print("del from self.communicator_dictionary {}".format([ c.subproc.pid for c 
+			in self.communicator_dictionary.values()]))
+
+
+		self.openlock.unlock()
+
 	def _open_routine(self, path):
 		if not self.openlock.tryLock():
 			return
@@ -414,133 +455,163 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.set_current_opened(path)
 
 		if self.open_in_progress is True:
-			self.client_communicator.stop_listen()
-			time.sleep(0.05)
-			self.client_communicator.kill()
-			self.nqueue.add(self.client_communicator)
-			self.client_communicator = None
+			"""Процедура открытия была инициирована раньше,
+			чем прошлый открываемый скрипт отчитался об успешном завершении"""
+			self.client_communicator.send({"cmd":"hardstop"})
+			self.client_finalization_list.append(self.client_communicator)
+		#	self.client_communicator.stop_listen()
+		#	time.sleep(0.05)
+		#	self.client_communicator.kill()
+		#	self.nqueue.add(self.client_communicator)
+		#	self.client_communicator = None
 
 
 		if self.cc_window and self.open_in_progress is False:
-			success = self.client_communicator.send({"cmd":"screenshot"})
-			if self.client_communicator.subproc is not None:
-				self.opened_subproc = self.client_communicator.subproc.pid
-			if success:
-				self.openlock.unlock()
-				return
+			self.client_communicator.send({"cmd":"stop_activity"})
+			self.client_finalization_list.append(self.client_communicator)
+			#if self.client_communicator.subproc is not None:
+			#	self.opened_subproc = self.client_communicator.subproc.pid
+			#if success:
+			#	self.openlock.unlock()
+			#	return
 
-		self.openlock.unlock()
-		self.open_bottom_half(None)
+		print("planned to finalize:", len(self.client_finalization_list))
 
-	def open_bottom_half(self, subproc):
-		trace("open_bottom_half")
+	#	self.openlock.unlock()
+	#	self.open_bottom_half(None)
+
+	#def open_bottom_half(self, subproc):
+	#	trace("open_bottom_half")
+	#	print("open_bottom_half")
 
 		self.console.clear()
 
-		if not self.openlock.tryLock():
-			return
+	#	if not self.openlock.tryLock():
+	#		return
 
 		path = self.current_opened
 
-		if self.client_communicator:
-			if self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
-				self.client_communicator.send({"cmd": "stopworld"})
-				self.client_communicator.stop_listen()
-				time.sleep(0.05)
-				self.client_communicator.kill()
-				if sys.platform != "win32" and sys.platform != "win64":
-					os.wait()
-
-			else:
-				self.client_communicator.send({"cmd": "smooth_stopworld"})
+		#if 0:
+		#	if self.client_communicator:
+		#		if self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
+		#			self.client_communicator.send({"cmd": "stopworld"})
+		#			self.client_communicator.stop_listen()
+		#			time.sleep(0.05)
+		#			self.client_communicator.kill()
+		#			if sys.platform != "win32" and sys.platform != "win64":
+		#				os.wait()
+	#
+		#		else:
+		#			self.client_communicator.send({"cmd": "smooth_stopworld"})
+		#			time.sleep(0.05)
+		
+		try:
+			self.session_id += 1
+			if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
+				""" Будим спящую заготовку """
+				trace("unsleep procedure")
+				self.client_communicator = self.sleeped_client
+				success = self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
+				if not success:
+					"""Если разбудить заготовку не удалось, просто создать новый процесс"""
+					print("NOT SUCCESS UNSLEEP ROUTINE")
+					self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
+						need_prescale = self.need_prescale, session_id=self.session_id)
+				# Инициируем создание новой заготовки.
+				self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
 				time.sleep(0.05)
 	
-		self.session_id += 1
-
-		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
-			trace("unsleep procedure")
-			self.client_communicator = self.sleeped_client
-			success = self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
-			if not success:
+			else:
+				""" Если оптимизация не включена, то просто создать новый процесс. """
 				self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
 					need_prescale = self.need_prescale, session_id=self.session_id)
-			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
-			time.sleep(0.05)
 
-		else:
-			self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
-				need_prescale = self.need_prescale, session_id=self.session_id)
+		except OSError as ex:
+			print("Err: open error")
+			return
 
+		# Теперь новый клиент готов к работе.
+		self.open_in_progress = True
+		self.communicator_dictionary[self.client_communicator.subproc.pid] = self.client_communicator
+		print("add to self.communicator_dictionary", [c for c in self.communicator_dictionary])
+		self.client_communicator.oposite_clossed.connect(self.delete_communicator)
 		self.client_communicator.newdata.connect(self.new_worker_message)
 		self.client_communicator.start_listen()
+
+		fds = set(os.listdir('/proc/self/fd/'))
+		print(fds)
 		
 		trace("client_communicator, fd:", self.client_communicator.ipipe, self.client_communicator.opipe)
+		
+		# Добавляем путь в список последних вызовов.
 		zencad.settings.Settings.add_recent(os.path.abspath(path))
 
-		# Если уведомления включены, обновить цель
+		# Если уведомления включены, обновить цель.
 		if self.notifier:
 			self.notifier.retarget(path)
 		
 		self.openlock.unlock()
 
 	def open_fault(self):
-		if hasattr(self, "last_screen"):	
-			painter = QPainter(self.last_screen)
-			painter.setPen(Qt.red)
-			font = QFont()
-			font.setPointSize(12)
-			painter.setFont(font)
-			message = "Exception in executable script"
-			painter.drawText(
-				QPoint(
-					self.last_screen.width()/2 - QFontMetrics(font).width(message)/2,
-					QFontMetrics(font).height()), 
-				message)
-			painter.end()
-		
-			self.screen_label = QLabel()
-			self.screen_label.setPixmap(self.last_screen)
-	
-			self.replace_widget(self.screen_label)
-
-		else:
-			self.replace_widget(ScreenWidget("Exception in executable script", QColor(255,0,0)))
+		print("OPEN FAULT. TODO.")
+		#if hasattr(self, "last_screen"):	
+		#	painter = QPainter(self.last_screen)
+		#	painter.setPen(Qt.red)
+		#	font = QFont()
+		#	font.setPointSize(12)
+		#	painter.setFont(font)
+		#	message = "Exception in executable script"
+		#	painter.drawText(
+		#		QPoint(
+		#			self.last_screen.width()/2 - QFontMetrics(font).width(message)/2,
+		#			QFontMetrics(font).height()), 
+		#		message)
+		#	painter.end()
+		#
+		#	self.screen_label = QLabel()
+		#	self.screen_label.setPixmap(self.last_screen)
+	#
+		#	self.replace_widget(self.screen_label)
+#
+		#else:
+		#	self.replace_widget(ScreenWidget("Exception in executable script", QColor(255,0,0)))
 
 	
 	def finish_screen(self, data, size, subproc):
-		if not self.openlock.tryLock():
-			return
-
-		if (subproc is not None 
-				and self.opened_subproc is not None 
-				and subproc != self.opened_subproc):
-			self.openlock.unlock()
-			return
-
-		btes, size = data, size		
-		screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
-		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
-
-		painter = QPainter(screen)
-		painter.setPen(Qt.green)
-		font = QFont()
-		font.setPointSize(12)
-		painter.setFont(font)
-		message = "Loading... please wait."
-		painter.drawText(
-			QPoint(
-				screen.width()/2 - QFontMetrics(font).width(message)/2,
-				QFontMetrics(font).height()), 
-			message)
-		painter.end()
-	
-		self.screen_label = QLabel()
-		self.screen_label.setPixmap(screen)
-
-		self.replace_widget(self.screen_label)
-
-		self.openlock.unlock()
-		self.open_bottom_half(subproc)
+		print("FINISH_SCREEN")
+	#	if not self.openlock.tryLock():
+	#		return
+#
+	#	if (subproc is not None 
+	#			and self.opened_subproc is not None 
+	#			and subproc != self.opened_subproc):
+	#		self.openlock.unlock()
+	#		return
+#
+	#	btes, size = data, size		
+	#	screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+	#	self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+#
+	#	painter = QPainter(screen)
+	#	painter.setPen(Qt.green)
+	#	font = QFont()
+	#	font.setPointSize(12)
+	#	painter.setFont(font)
+	#	message = "Loading... please wait."
+	#	painter.drawText(
+	#		QPoint(
+	#			screen.width()/2 - QFontMetrics(font).width(message)/2,
+	#			QFontMetrics(font).height()), 
+	#		message)
+	#	painter.end()
+	#
+	#	self.screen_label = QLabel()
+	#	self.screen_label.setPixmap(screen)
+#
+	#	self.replace_widget(self.screen_label)
+#
+	#	self.openlock.unlock()
+	#	self.open_bottom_half(subproc)
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]
