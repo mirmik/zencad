@@ -136,7 +136,10 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 
 	procs = psutil.Process().children()	
 	for p in procs:
-		p.terminate()
+		try:
+			p.terminate()
+		except psutil.NoSuchProcess:
+			pass
 
 	#psutil.wait_procs(procs, callback=on_terminate)
 
@@ -265,13 +268,15 @@ def common_unbouded_proc(scene,
 	widget = zencad.gui.viewadaptor.DisplayWidget(
 		scene=scene, 
 		view=scene.viewer.create_view() if view is None else view, 
-		need_prescale=need_prescale)
+		need_prescale=need_prescale,
+		bind_mode = pipes,
+		session_id = session_id,
+		communicator = MAIN_COMMUNICATOR)
 	DISPLAY_WIDGET = widget
 
 	if pipes:
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
-
 
 		def smooth_stop_world():
 			trace("common_unbouded_proc::smooth_stop_world")
@@ -281,17 +286,6 @@ def common_unbouded_proc(scene,
 
 			if close_handle:
 				close_handle()
-
-			#time.sleep(0.1)
-
-			#procs = psutil.Process().children()
-			#trace(procs)
-			#psutil.wait_procs(procs, callback=on_terminate)
-
-			#MAIN_COMMUNICATOR.stop_listen()
-			
-			#if CONSOLE_RETRANS_THREAD:
-			#	CONSOLE_RETRANS_THREAD.finish()			
 			
 			class final_waiter_thr(QThread):
 				def run(self):
@@ -303,10 +297,6 @@ def common_unbouded_proc(scene,
 			nonlocal THREAD_FINALIZER
 			THREAD_FINALIZER = final_waiter_thr()
 			THREAD_FINALIZER.start()
-
-			#trace("FINISH UNBOUNDED QTAPP : app quit on receive")
-			#app.quit()
-			#trace("app quit on receive... after")
 
 		def stop_world():
 			trace("common_unbouded_proc::stop_world")
@@ -358,13 +348,6 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
 		MAIN_COMMUNICATOR.smooth_stop.connect(smooth_stop_world)
 	
-		# Шлём на ту сторону указание отрисовать нас.
-		MAIN_COMMUNICATOR.send({
-			"cmd":"bindwin", 
-			"id":int(widget.winId()), 
-			"pid":os.getpid(), 
-			"session_id":session_id
-		})
 		
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
