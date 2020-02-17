@@ -265,7 +265,10 @@ def common_unbouded_proc(scene,
 	widget = zencad.gui.viewadaptor.DisplayWidget(
 		scene=scene, 
 		view=scene.viewer.create_view() if view is None else view, 
-		need_prescale=need_prescale)
+		need_prescale=need_prescale,
+		bind_mode = pipes,
+		session_id = session_id,
+		communicator = MAIN_COMMUNICATOR)
 	DISPLAY_WIDGET = widget
 
 	if pipes:
@@ -358,13 +361,6 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
 		MAIN_COMMUNICATOR.smooth_stop.connect(smooth_stop_world)
 	
-		# Шлём на ту сторону указание отрисовать нас.
-		MAIN_COMMUNICATOR.send({
-			"cmd":"bindwin", 
-			"id":int(widget.winId()), 
-			"pid":os.getpid(), 
-			"session_id":session_id
-		})
 		
 	if animate:
 		ANIMATE_THREAD = AnimateThread(

@@ -43,9 +43,15 @@ class DisplayWidget(QGLWidget):
 	zoom_koeff_key = 1.3
 	zoom_koeff_mouse = 1.1
 
-	def __init__(self, scene, need_prescale=True, view=None, showmarkers=True):
+	def __init__(self, scene, need_prescale=True, view=None, showmarkers=True,
+		communicator=None, session_id=0, bind_mode=False):
 		trace("construct DisplayWidget")
 		QWidget.__init__(self)
+
+		self.communicator=communicator
+		self.session_id=session_id
+		self.bind_mode=bind_mode
+
 		self.setFocusPolicy(Qt.StrongFocus)
 		self.orient = 1
 		self.mousedown = False
@@ -176,6 +182,16 @@ class DisplayWidget(QGLWidget):
 
 			#self.view.redraw()
 			self.inited = True
+
+			# Шлём на ту сторону указание отрисовать нас.
+			if self.bind_mode:
+				self.communicator.send({
+					"cmd":"bindwin", 
+					"id":int(self.winId()), 
+					"pid":os.getpid(), 
+					"session_id":self.session_id
+				})
+
 		else:
 			pass
 			#self.update()
