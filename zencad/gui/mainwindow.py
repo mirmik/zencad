@@ -597,7 +597,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.screen_saver.drop_background()
 
 		if self.embeded_window and self.open_in_progress is False:
-			if not another_file:
+			if not another_file and zencad.configure.CONFIGURE_SCREEN_SAVER_TRANSLATE:
 				self.client_communicator.send({"cmd":"screenshot"})
 			self.client_communicator.send({"cmd":"stop_activity"})
 			self.client_finalization_list.append(self.client_communicator)
@@ -696,9 +696,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.screen_saver.set_error_state()
 
 	def finish_screen(self, data, size, procpid):
+		self.openlock.lock()
 		btes, size = data, size		
 		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
 		self.screen_saver.set_background(self.last_screen)
+		self.openlock.unlock()
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]
