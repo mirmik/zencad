@@ -189,7 +189,7 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 	common_unbouded_proc(pipes=True, need_prescale=True, *args, **kwargs)
 
 @traced
-def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
+def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=None):
 	"""Создать новый поток и отправить запрос на добавление
 	его вместо предыдущего ??? 
 
@@ -198,15 +198,17 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0):
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
 	debug_mode = "--debug" if zencad.configure.DEBUG_MODE else ""
+	sizestr = "--size {},{}".format(size.width(), size.height()) if size is not None else ""
 	interpreter = INTERPRETER
 
-	cmd = '{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {sleeped} --session_id {session_id}'.format(
+	cmd = '{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {sleeped} {sizestr} --session_id {session_id}'.format(
 		interpreter=interpreter, 
 		path=path, 
 		prescale=prescale, 
 		sleeped=sleeped,
 		debug_mode=debug_mode,
-		session_id=session_id)
+		session_id=session_id,
+		sizestr = sizestr)
 	
 	try:
 		subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
@@ -221,11 +223,11 @@ def spawn_sleeped_client(session_id):
 	return start_unbounded_worker("", session_id, False, True)
 
 @traced
-def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False):
+def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False, size=None):
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
 
-	subproc = start_worker(path, sleeped, need_prescale, session_id)
+	subproc = start_worker(path, sleeped, need_prescale, session_id, size=size)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
@@ -249,7 +251,8 @@ def common_unbouded_proc(scene,
 	pipes=False, 
 	need_prescale=False, 
 	session_id=0,
-	sleeped = False):
+	sleeped = False,
+	size=None):
 	"""Создание приложения клиента, управляющее логикой сеанса"""
 
 	trace("common_unbouded_proc")
@@ -273,6 +276,9 @@ def common_unbouded_proc(scene,
 		session_id = session_id,
 		communicator = MAIN_COMMUNICATOR)
 	DISPLAY_WIDGET = widget
+
+	if size:
+		widget.resize(QSize(size[0], size[1]))
 
 	if pipes:
 		zencad.gui.viewadaptor.bind_widget_signal(

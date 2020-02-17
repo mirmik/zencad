@@ -78,6 +78,7 @@ def do_main():
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--disable-sleeped", action="store_true")
 	parser.add_argument("--disable-screen", action="store_true")
+	parser.add_argument("--size")
 	parser.add_argument("--no-restore", action="store_true")
 	parser.add_argument("--tgtpath")
 	parser.add_argument("--debugcomm", action="store_true")
@@ -159,6 +160,7 @@ def do_main():
 
 		try:
 			pargs.prescale = data["need_prescale"]
+			pargs.size = data["size"]
 			pargs.paths = [data["path"]]
 		except:
 			print_to_stderr("Unpickle error_2", data)
@@ -249,6 +251,10 @@ def do_main():
 
 		if pargs.disable_show:
 			zencad.showapi.SHOWMODE = "noshow"
+
+		if pargs.size:
+			arr = pargs.size.split(',')
+			zencad.showapi.SIZE = (int(arr[0]), int(arr[1]))
 
 		try:
 			runpy.run_path(path, run_name="__main__")
