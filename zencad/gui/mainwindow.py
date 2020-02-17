@@ -53,26 +53,50 @@ class ScreenSaverWidget(QWidget):
 			text = "Loading... please wait."
 
 		self.text = text
+		self.subtext = ["", "", ""]
 		self.color = color
+		self.last_install_time = time.time()
 		super().__init__()
+
+	def set_background(self, bg):
+		self.background_pixmap = bg
+		#self.background_pixmap_dark = bg.copy(0,0,bg.width(),bg.height())
+
 
 	def set_error_state(self):
 		self.mode = "error"
 		self.set_text("Error in loaded script")
+		self.subtext=["","",""]
+
+	def drop_background(self):
+		self.background_pixmap = None
 
 	def set_loading_state(self):
 		self.mode = "load"
 		self.set_text("Loading ...")
+		self.last_install_time = time.time()
 
 	def set_text(self, text):
 		self.text = text
 		self.update()
 
+	def set_subtext(self, lvl, text):
+		self.subtext[lvl] = text
+		self.update()
+
 	def black_box_paint(self, ev):
 		painter = QPainter(self)
-		painter.setBrush(Qt.black)
 		painter.setPen(Qt.white)
-		painter.drawRect(0,0,self.width(),self.height())
+		
+		if self.background_pixmap == None:
+			painter.setBrush(Qt.black)
+			painter.drawRect(0,0,self.width(),self.height())
+		else:
+			if time.time() - self.last_install_time < 0.7 and self.mode!="error":
+				painter.drawPixmap(0,0,self.width(),self.height(), self.background_pixmap)
+			else:
+				painter.drawPixmap(0,0,self.width(),self.height(), self.background_pixmap)
+				painter.fillRect(QRect(0, 0, self.width(), self.height()), QBrush(QColor(0, 0, 0, 200)))
 
 		font = QFont()
 		font.setPointSize(16)
@@ -80,11 +104,32 @@ class ScreenSaverWidget(QWidget):
 	
 		message = self.text
 
-		painter.drawText(
-			QPoint(
-				self.width()/2 - QFontMetrics(font).width(message)/2,
-				self.height()/2 - QFontMetrics(font).height() / 2), 
-				message)
+		if time.time() - self.last_install_time > 0.7 or self.mode=="error":
+			painter.drawText(
+				QPoint(
+					self.width()/2 - QFontMetrics(font).width(message)/2,
+					self.height()/2 - 1 * QFontMetrics(font).height()), 
+					message)
+	
+			painter.drawText(
+				QPoint(
+					self.width()/2 - QFontMetrics(font).width(self.subtext[0])/2,
+					self.height()/2 + 0 *QFontMetrics(font).height()), 
+					self.subtext[0])
+	
+			painter.drawText(
+				QPoint(
+					self.width()/2 - QFontMetrics(font).width(self.subtext[1])/2,
+					self.height()/2 + 1*QFontMetrics(font).height()), 
+					self.subtext[1])
+	
+			painter.drawText(
+				QPoint(
+					self.width()/2 - QFontMetrics(font).width(self.subtext[2])/2,
+					self.height()/2 + 2*QFontMetrics(font).height()), 
+					self.subtext[2])
+
+		QTimer.singleShot(750, self.repaint)
 		
 	def basePaintEvent(self, ev):
 		pathes = ["techpriest.jpg"]
@@ -329,9 +374,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			print("Warn: new_worker_message: message without 'cmd' field")
 			return
 
-		if procpid != self.client_communicator.subproc.pid:
+		if procpid != self.client_communicator.subproc.pid and data["cmd"] != "finish_screen":
 			return
-
+		
 		trace("MainWindow:communicator: input message")
 
 		# TODO: Переделать в словарь
@@ -349,8 +394,16 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
 		elif cmd == "finish_screen": self.finish_screen(data["data"][0], data["data"][1], procpid)
 		elif cmd == "fault": self.open_fault()
+		elif cmd == "evalcache": self.evalcache_notification(data)
 		else:
 			print("Warn: unrecognized command", data)
+
+	def evalcache_notification(self, data):
+		if data["subcmd"] == "newtree":
+			self.screen_saver.set_subtext(0, "Eval tree: objs:{objs} root:{root}".format(root=data["root"][:8], objs=data["len"]))
+		if data["subcmd"] == "progress":
+			self.screen_saver.set_subtext(1, "to load: {}".format(data["toload"]))
+			self.screen_saver.set_subtext(2, "to eval: {}".format(data["toeval"]))
 
 	def marker_handler(self, qw, data):
 		fmt='.5f'
@@ -467,7 +520,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	
 		procs = psutil.Process().children()	
 		for p in procs:
-			p.terminate()
+			try:
+				p.terminate()
+			except psutil.NoSuchProcess as ex:
+				pass
 
 		trace("closeEvent...ok")
 		
@@ -517,25 +573,32 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.presentation_mode = False
 
 		self.need_prescale = self.oldopenned != path
+
+		another_file = path != self.current_opened
+
 		self.oldopenned = path
+		self.current_opened = path
 
 		if update_texteditor:
-			self.set_current_opened(path)
+			self.texteditor.open(path)
 
 		if self.open_in_progress is True:
 			"""Процедура открытия была инициирована раньше,
 			чем прошлый открываемый скрипт отчитался об успешном завершении"""
 			self.client_communicator.kill()
 			self.client_finalization_list.append(self.client_communicator)
-			self.open_in_progress = False
+			#self.open_in_progress = False
 		#	self.client_communicator.stop_listen()
 		#	time.sleep(0.05)
 		#	self.client_communicator.kill()
 		#	self.nqueue.add(self.client_communicator)
 		#	self.client_communicator = None
-
+		if another_file:
+			self.screen_saver.drop_background()
 
 		if self.cc_window and self.open_in_progress is False:
+			if not another_file:
+				self.client_communicator.send({"cmd":"screenshot"})
 			self.client_communicator.send({"cmd":"stop_activity"})
 			self.client_finalization_list.append(self.client_communicator)
 			#if self.client_communicator.subproc is not None:
@@ -630,6 +693,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 	def open_fault(self):
 		self.screen_saver.set_error_state()
+
+	def finish_screen(self, data, size, procpid):
+		btes, size = data, size		
+		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+		self.screen_saver.set_background(self.last_screen)
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]

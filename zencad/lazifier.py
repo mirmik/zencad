@@ -3,6 +3,8 @@ import evalcache.dircache
 import evalcache.dircache_v2
 from evalcache.lazyfile import LazyFile
 
+from zencad.util import print_to_stderr
+
 import pyservoce
 import hashlib
 import os
@@ -17,28 +19,35 @@ lazy = evalcache.Lazy(
     algo=algo, 
     onbool=True,
     onstr=True,
-    status_notify=True
+#    status_notify=True
 )
 
-def stcb(root):
-    arr = evalcache.lazy.tree_objects(root)
-    #print("total:{}".format(len(arr)))
+def install_evalcahe_notication(comm):
+    lazy.status_notify_enable(True)
 
-def sncb(root, obj):
-    arrs = evalcache.lazy.tree_needeval(root)
-    #print("toload:{} toeval:{}".format(len(arrs.toload), len(arrs.toeval)))
-
-def ftcb(root):
-    pass
-
-def fncb(root, obj):
-    arrs = evalcache.lazy.tree_needeval(root)
-    #print("toload:{} toeval:{}".format(len(arrs.toload), len(arrs.toeval)))
-
-lazy.set_start_tree_evaluation_callback(stcb)
-lazy.set_start_node_evaluation_callback(sncb)
-lazy.set_fini_tree_evaluation_callback(ftcb)
-lazy.set_fini_node_evaluation_callback(fncb)
+    def stcb(root):
+        arr = evalcache.lazy.tree_objects(root)
+        comm.send({"cmd":"evalcache", "subcmd":"newtree", "len":len(arr), "root":root.__lazyhexhash__})
+    
+    def sncb(root, obj):
+        disable_lazy()
+        arrs = evalcache.lazy.tree_needeval(root)
+        comm.send({"cmd":"evalcache", "subcmd":"progress", "toload":len(arrs.toload), "toeval":len(arrs.toeval)})
+        restore_lazy()
+    
+    def ftcb(root):
+        pass
+    
+    def fncb(root, obj):
+        disable_lazy()
+        arrs = evalcache.lazy.tree_needeval(root)
+        comm.send({"cmd":"evalcache", "subcmd":"progress", "toload":len(arrs.toload), "toeval":len(arrs.toeval)})
+        restore_lazy()
+    
+    lazy.set_start_tree_evaluation_callback(stcb)
+    lazy.set_start_node_evaluation_callback(sncb)
+    lazy.set_fini_tree_evaluation_callback(ftcb)
+    lazy.set_fini_node_evaluation_callback(fncb)
 
 
 def _scale_do(self, factor, center=pyservoce.libservoce.point3(0,0,0)):
