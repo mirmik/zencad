@@ -16,8 +16,30 @@ lazy = evalcache.Lazy(
     cache=evalcache.dircache_v2.DirCache_v2(cachepath), 
     algo=algo, 
     onbool=True,
-    onstr=True
+    onstr=True,
+    status_notify=True
 )
+
+def stcb(root):
+    arr = evalcache.lazy.tree_objects(root)
+    #print("total:{}".format(len(arr)))
+
+def sncb(root, obj):
+    arrs = evalcache.lazy.tree_needeval(root)
+    #print("toload:{} toeval:{}".format(len(arrs.toload), len(arrs.toeval)))
+
+def ftcb(root):
+    pass
+
+def fncb(root, obj):
+    arrs = evalcache.lazy.tree_needeval(root)
+    #print("toload:{} toeval:{}".format(len(arrs.toload), len(arrs.toeval)))
+
+lazy.set_start_tree_evaluation_callback(stcb)
+lazy.set_start_node_evaluation_callback(sncb)
+lazy.set_fini_tree_evaluation_callback(ftcb)
+lazy.set_fini_node_evaluation_callback(fncb)
+
 
 def _scale_do(self, factor, center=pyservoce.libservoce.point3(0,0,0)):
     if isinstance(factor, (list, tuple)):
@@ -316,22 +338,24 @@ diag = None
 ensave = None
 desave = None
 onplace = None
-
+status_notify = None
 
 def disable_lazy():
-    global ensave, desave, onplace
+    global ensave, desave, onplace, diag, status_notify
     ensave = lazy.encache
     desave = lazy.decache
     diag = lazy.diag
     onplace = lazy.onplace
+    status_notify = lazy.status_notify
     lazy.diag = False
     lazy.encache = False
     lazy.decache = False
     lazy.onplace = True
-
+    lazy.status_notify = False
 
 def restore_lazy():
     lazy.onplace = onplace
     lazy.encache = ensave
     lazy.decache = desave
     lazy.diag = diag
+    lazy.status_notify = status_notify

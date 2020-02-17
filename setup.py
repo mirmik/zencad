@@ -11,7 +11,7 @@ import os
 directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
-        "evalcache",
+        "evalcache>=1.11.0",
         "pyservoce>=1.17.0",
         "numpy",
         "pillow",
