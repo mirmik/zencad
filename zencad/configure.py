@@ -13,6 +13,11 @@ CONFIGURE_NO_RESTORE = False
 CONFIGURE_CONSOLE_RETRANSLATE = True 
 CONFIGURE_SCREEN_SAVER_TRANSLATE = True
 
+if sys.platform == "win32" or sys.platform == "win64":
+	# TODO: Эта опция падает на винде, видимо из-за некоректной передачи данных 
+	CONFIGURE_SCREEN_SAVER_TRANSLATE = False
+
+
 DEBUG_MODE = False
 
 def verbose(en):

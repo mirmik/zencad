@@ -275,7 +275,6 @@ def common_unbouded_proc(scene,
 		zencad.gui.viewadaptor.bind_widget_signal(
 			widget, MAIN_COMMUNICATOR)
 
-
 		def smooth_stop_world():
 			trace("common_unbouded_proc::smooth_stop_world")
 			
@@ -284,17 +283,6 @@ def common_unbouded_proc(scene,
 
 			if close_handle:
 				close_handle()
-
-			#time.sleep(0.1)
-
-			#procs = psutil.Process().children()
-			#trace(procs)
-			#psutil.wait_procs(procs, callback=on_terminate)
-
-			#MAIN_COMMUNICATOR.stop_listen()
-			
-			#if CONSOLE_RETRANS_THREAD:
-			#	CONSOLE_RETRANS_THREAD.finish()			
 			
 			class final_waiter_thr(QThread):
 				def run(self):
@@ -306,10 +294,6 @@ def common_unbouded_proc(scene,
 			nonlocal THREAD_FINALIZER
 			THREAD_FINALIZER = final_waiter_thr()
 			THREAD_FINALIZER.start()
-
-			#trace("FINISH UNBOUNDED QTAPP : app quit on receive")
-			#app.quit()
-			#trace("app quit on receive... after")
 
 		def stop_world():
 			trace("common_unbouded_proc::stop_world")
