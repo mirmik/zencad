@@ -24,68 +24,71 @@ def trace(*args):
 
 class Communicator(QObject):
 	smooth_stop = pyqtSignal()
+	oposite_clossed = pyqtSignal()
 
 	class Listener(QThread):
-		oposite_clossed = pyqtSignal()
-		newdata = pyqtSignal(bytes)
+		newdata = pyqtSignal(bytes, int)
 		def __init__(self, ipipe, parent):
 			super().__init__()
-			#self.name = "Listener"
 			self.parent = parent
-			#self.lock = threading.RLock()
-			#self.condition = threading.Condition(self.lock)
 			self.event = threading.Event()
 			self.pid = os.getpid()
 			self.ipipe = ipipe
 			self.file = io.BytesIO()
-			#self.unwait_token = str(base64.b64encode(pickle.dumps("unwait")), "utf-8") + "\n"
 
 		def unwait(self):
 			self.event.set()
 
 		def run(self):
+			checks = 0
+			oposite_pid = self.parent.subproc.pid if self.parent.subproc else None
+
 			try:
 				readFile = os.fdopen(self.ipipe)
 			except Exception as ex:
-				print_to_stderr("rdopen error: ", ex, self.ipipe)
+				trace("rdopen error: (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex, self.ipipe)
 				self.parent.stop_listen_nowait()
 				return
 			
 			while(True):
 				try:
 					inputdata = readFile.readline()
-				except:
-					print_to_stderr("readFile.readline() fault")
-					self.parent.stop_listen_nowait()
-					#self.oposite_clossed.emit()
+				except Exception as ex:
+					trace("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex)
+					self.parent._stop_listen_nowait()
+					self.parent.oposite_clossed.emit()
 					return
 				
 				if len(inputdata) == 0:
-					self.parent.stop_listen_nowait()
-					#self.oposite_clossed.emit()
+					checks += 1
+					if checks < 3:
+						continue
+					trace("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe))
+					self.parent._stop_listen_nowait()
+					self.parent.oposite_clossed.emit()
 					return
+
+				checks = 0
 
 				try:
 					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
 				except:
-					print_to_stderr("Unpicling(A):", len(inputdata), inputdata)
-					self.parent.stop_listen_nowait()
+					trace("Unpicling(A):", len(inputdata), inputdata)
+					self.parent._stop_listen_nowait()
+					self.parent.oposite_clossed.emit()
 					return
 
 				try:
 					dddd = pickle.loads(ddd)
 				except:
-					print_to_stderr("Unpicling(B):", ddd)
-					self.parent.stop_listen_nowait()
+					trace("Unpicling(B):", ddd)
+					self.parent._stop_listen_nowait()
+					self.parent.oposite_clossed.emit()
 					return
 
 				if dddd == "unwait":
 					self.unwait()
 					continue
-
-				#if dddd["cmd"] == "tobuffer":
-				#	self.buffer = dddd["data"]
-				#	continue
 
 				if dddd["cmd"] == "smooth_stopworld":
 					self.parent.smooth_stop.emit()
@@ -100,8 +103,8 @@ class Communicator(QObject):
 					strform = str(dddd)
 					if len(strform) > 100: strform = strform[0:101]
 					print_to_stderr("received {}: {}".format(self.parent.procpid, strform))
-
-				self.newdata.emit(ddd)
+				
+				self.newdata.emit(ddd, self.parent.subproc.pid if self.parent.subproc is not None else None)
 
 	def __init__(self, ipipe, opipe):
 		super().__init__()
@@ -111,8 +114,9 @@ class Communicator(QObject):
 		self.opipe = opipe
 		self.listener_thr = self.Listener(ipipe, self)
 		self.newdata = self.listener_thr.newdata
-		self.oposite_clossed = self.listener_thr.oposite_clossed
 		self.listen_started = False
+		self.closed = False
+		self.closed_fds = False
 
 		self.send({"cmd":"set_opposite_pid", "data":os.getpid()})
 
@@ -126,60 +130,68 @@ class Communicator(QObject):
 			self.listen_started = True
 			self.listener_thr.start()
 
+	def subproc_pid(self):
+		return self.subproc.pid if self.subproc else None
+
+	def close_pipes(self):
+		if self.subproc is not None:
+			self.subproc.stdin.close()
+			self.subproc.stdout.close()
+
+		else:
+			if not self.closed_fds:
+				try:
+					trace("close ipipe", self.ipipe, self.subproc_pid())
+					os.close(self.ipipe)
+				except OSError as ex:
+					trace(ex)
+	
+				try:
+					trace("close opipe", self.opipe, self.subproc_pid())
+					os.close(self.opipe)
+				except OSError as ex:
+					trace(ex)
+
 	def stop_listen(self):
-		trace("stop_listen")
+		trace("stop_listen", self.subproc.pid if self.subproc else None)
+
+		if self.closed:
+			return
 		
 		if sys.platform == "win32" or sys.platform == "win64": 
+			# WHAT???? TODO: Расследовать, почему так и прокоментировать
 			return
 
-		try:
-			trace("close ipipe")
-			os.close(self.ipipe)
-		except:
-			pass
-			#print_to_stderr("Warn: os.close(self.ipipe) is fault")
-#
-		try:
-			trace("close opipe")
-			os.close(self.opipe)
-		except:
-			pass
-			#print_to_stderr("Warn: os.close(self.opipe) is fault")
+		self.close_pipes()
 
 		trace("event set")
 		self.listener_thr.event.set()
 		
-		#print(sys.platform)
 		trace("wait listener")
 		self.listener_thr.wait()
 
-		#os.kill(self.listener_thr.pid, signal.SIGKILL)
-		#print("wait")
-		#self.listener_thr.wait()
-		#print("unwait")
+		self.closed_fds = True
+		self.closed = True
 
-	def stop_listen_nowait(self):
-		trace("stop_listen_nowait")
-		try:
-			os.close(self.ipipe)
-		except:
-			pass
-#
-		try:
-			os.close(self.opipe)
-		except:
-			pass
+	def _stop_listen_nowait(self):
+		trace("stop_listen_nowait", self.subproc.pid if self.subproc else None)
+
+		if self.closed:
+			return
+		
+		self.close_pipes()
+
+		self.closed_fds = True
+		self.closed = True
 
 	def send(self, obj):
 		if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 			strobj = str(obj)
 			if len(strobj) > 100: strobj=strobj[:101]
-			print_to_stderr("communucator send to {}: {}".format(self.procpid, strobj))
+			print_to_stderr("communicator send to {}: {}".format(self.procpid, strobj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
-			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
-				print_to_stderr("Correct sending")
 			return True
 		except Exception as ex:
 			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
