@@ -1,3 +1,7 @@
+## 0.28.1:
+	Fix Windows build.
+	Disable screen option for future investigation.
+
 ## 0.28.0:
 	Improve gui stability.
 	Add line numbers for texteditor.
