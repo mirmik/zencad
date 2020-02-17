@@ -158,9 +158,9 @@ class Communicator(QObject):
 		if self.closed:
 			return
 		
-		if sys.platform == "win32" or sys.platform == "win64": 
+		#if sys.platform == "win32" or sys.platform == "win64": 
 			# WHAT???? TODO: Расследовать, почему так и прокоментировать
-			return
+		#	return
 
 		self.close_pipes()
 
