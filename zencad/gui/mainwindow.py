@@ -56,11 +56,37 @@ class ScreenSaverWidget(QWidget):
 		self.color = color
 		super().__init__()
 
+	def set_error_state(self):
+		self.mode = "error"
+		self.set_text("Error in loaded script")
+
+	def set_loading_state(self):
+		self.mode = "load"
+		self.set_text("Loading ...")
+
 	def set_text(self, text):
 		self.text = text
 		self.update()
 
-	def paintEvent(self, ev):
+	def black_box_paint(self, ev):
+		painter = QPainter(self)
+		painter.setBrush(Qt.black)
+		painter.setPen(Qt.white)
+		painter.drawRect(0,0,self.width(),self.height())
+
+		font = QFont()
+		font.setPointSize(16)
+		painter.setFont(font)
+	
+		message = self.text
+
+		painter.drawText(
+			QPoint(
+				self.width()/2 - QFontMetrics(font).width(message)/2,
+				self.height()/2 - QFontMetrics(font).height() / 2), 
+				message)
+		
+	def basePaintEvent(self, ev):
 		pathes = ["techpriest.jpg"]
 
 		painter = QPainter(self)
@@ -101,9 +127,30 @@ class ScreenSaverWidget(QWidget):
 				message)
 		painter.end()
 
+	def paintEvent(self, ev):
+		if self.mode == "error":
+			self.black_box_paint(ev)
+		elif self.mode == "load":
+			self.black_box_paint(ev)
+		else: 
+			self.basePaintEvent(ev)
+
 def info(*args):
 	if zencad.configure.CONFIGURE_GUI_INFO:
 		print("GUI:", *args)
+
+class KeyPressEater(QObject):
+	def __init__(self):
+		super().__init__()
+
+	def eventFilter(self, obj, event):
+		#if event.type() == QEvent.Paint:
+			#painter = QPainter(obj)
+			#painter.setBrush(Qt.black)
+			#painter.drawRect(0,0,100,100)
+		#	return True
+
+		return False
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, 
@@ -203,6 +250,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.restore_gui_state()
 		self._display_mode = display_mode
 
+		self.evfilter = KeyPressEater()
 
 		#self.vsplitter.splitterMoved.connect(self.embeded_window_resized)
 		#self.hsplitter.splitterMoved.connect(self.embeded_window_resized)
@@ -352,6 +400,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				size = self.vsplitter.widget(0).size()
 				#oldcc = self.cc
 				self.cc = QWidget.createWindowContainer(self.window)
+				#self.cc.installEventFilter(self.evfilter)
 				
 				self.cc_window = winid
 				trace("replace widget")
@@ -531,7 +580,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				success = self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
 				if not success:
 					"""Если разбудить заготовку не удалось, просто создать новый процесс"""
-					print("NOT SUCCESS UNSLEEP ROUTINE")
+					trace("NOT SUCCESS UNSLEEP ROUTINE")
 					self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
 						need_prescale = self.need_prescale, session_id=self.session_id)
 				# Инициируем создание новой заготовки.
@@ -560,7 +609,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		# Добавляем путь в список последних вызовов.
 		zencad.settings.Settings.add_recent(os.path.abspath(path))
 
-		self.screen_saver.set_text("Loading script: {}".format(path))
+		self.screen_saver.set_loading_state()
 		# Сплиттер некоректно отработает, до первого showEvent
 		if hasattr(self, "MARKER"):
 			self.replace_widget(self.screen_saver)
@@ -577,7 +626,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		#self.embeded_window_resized()
 
 	def open_fault(self):
-		self.screen_saver.set_text("Error in loaded script")
+		self.screen_saver.set_error_state()
 
 	def location_update_handle(self, dct):
 		scale = dct["scale"]
