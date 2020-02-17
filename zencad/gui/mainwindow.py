@@ -422,7 +422,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				info("restore saved eye location")
 		
 			self.open_in_progress = False
-			self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
+			if not bind_widget_flag == "false":
+				self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
 			self.client_communicator.send({"cmd":"redraw"})
 			time.sleep(0.1)
 			self.update()
