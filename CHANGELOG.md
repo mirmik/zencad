@@ -1,3 +1,6 @@
+## 0.28.2:
+	Fix window update tremmer
+
 ## 0.28.1:
 	Fix Windows build.
 	Disable screen option for future investigation.
