@@ -647,12 +647,14 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				""" Будим спящую заготовку """
 				trace("unsleep procedure")
 				self.client_communicator = self.sleeped_client
-				success = self.client_communicator.send({"path":path, "need_prescale":self.need_prescale})
+				size = self.vsplitter.widget(0).size()
+				size = "{},{}".format(size.width(), size.height())
+				success = self.client_communicator.send({"path":path, "need_prescale":self.need_prescale, "size":size})
 				if not success:
 					"""Если разбудить заготовку не удалось, просто создать новый процесс"""
 					trace("NOT SUCCESS UNSLEEP ROUTINE")
 					self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
-						need_prescale = self.need_prescale, session_id=self.session_id)
+						need_prescale = self.need_prescale, session_id=self.session_id, size=self.vsplitter.widget(0).size())
 				# Инициируем создание новой заготовки.
 				self.sleeped_client = zencad.gui.application.spawn_sleeped_client(self.session_id + 1)
 				time.sleep(0.05)
@@ -660,7 +662,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			else:
 				""" Если оптимизация не включена, то просто создать новый процесс. """
 				self.client_communicator = zencad.gui.application.start_unbounded_worker(path, 
-					need_prescale = self.need_prescale, session_id=self.session_id)
+					need_prescale = self.need_prescale, session_id=self.session_id, size=self.vsplitter.widget(0).size())
 
 		except OSError as ex:
 			print("Err: open error")
@@ -682,8 +684,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.screen_saver.set_loading_state()
 		# Сплиттер некоректно отработает, до первого showEvent
 		if hasattr(self, "MARKER"):
-			self.replace_widget(self.screen_saver)
-			self.embeded_window_container.close()
+			timeout = 100 if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else 500
+			def foo():
+				self.replace_widget(self.screen_saver)
+				self.embeded_window_container.close()
+			QTimer.singleShot(timeout, foo)
 		self.MARKER=None
 
 		# Если уведомления включены, обновить цель.
