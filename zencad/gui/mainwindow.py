@@ -418,6 +418,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console.write(data)
 
 	def subprocess_finalization_do(self):
+		trace("subprocess_finalization_do")
 		for comm in self.client_finalization_list:
 			comm.send({"cmd":"stopworld"})
 
@@ -540,6 +541,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def delete_communicator(self):
 		"""Вызывается по сигналу об окончании сеанса"""
 
+		trace("delete_communicator")
+
 		self.openlock.lock()
 		
 		comm = self.sender()
@@ -558,6 +561,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		trace("del from self.communicator_dictionary {}".format([ c.subproc.pid for c 
 			in self.communicator_dictionary.values()]))
 
+		comm.kill()
 
 		self.openlock.unlock()
 

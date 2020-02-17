@@ -136,7 +136,10 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 
 	procs = psutil.Process().children()	
 	for p in procs:
-		p.terminate()
+		try:
+			p.terminate()
+		except psutil.NoSuchProcess:
+			pass
 
 	#psutil.wait_procs(procs, callback=on_terminate)
 
