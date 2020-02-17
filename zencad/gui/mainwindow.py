@@ -241,7 +241,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.open_in_progress = False
 
 		if fastopen:
-			self._open_routine(fastopen)
+			self._open_routine(fastopen, update_texteditor=True)
 
 		if display_mode:
 			self.restore_gui_state()
@@ -477,7 +477,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 	def reopen_current(self):
 		#if time.time() - self.last_reopen_time > 0.7:
-		self._open_routine(self.current_opened)
+		self._open_routine(self.current_opened, False)
 		self.last_reopen_time = time.time()
 
 	def delete_communicator(self):
@@ -504,7 +504,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.openlock.unlock()
 
-	def _open_routine(self, path):
+	def _open_routine(self, path, update_texteditor):
 		if not self.openlock.tryLock():
 			return
 		trace("_open_routine")
@@ -518,7 +518,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.need_prescale = self.oldopenned != path
 		self.oldopenned = path
 
-		self.set_current_opened(path)
+		if update_texteditor:
+			self.set_current_opened(path)
 
 		if self.open_in_progress is True:
 			"""Процедура открытия была инициирована раньше,
