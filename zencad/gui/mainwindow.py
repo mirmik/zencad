@@ -219,7 +219,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
 		self.current_opened = None
-		self.cc = None
+		self.embeded_window =None
+		self.embeded_window_container = None
 		self.last_reopen_time = time.time()
 		self.need_prescale = True
 
@@ -281,7 +282,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.oldopenned = self.current_opened
 		self.last_location = None
 		self.session_id=0
-		self.cc_window =None
 
 		self.open_in_progress = False
 
@@ -423,9 +423,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 	#def embeded_window_resized(self, *args, **kwargs):
 	#	print("embeded_window_resized")
-	#	if self.cc:
-	#		self.blacklifier.setGeometry(self.cc.geometry())
-	#		#self.blacklifier.setParent(self.cc)
+	#	if self.embeded_window_container:
+	#		self.blacklifier.setGeometry(self.embeded_window_container.geometry())
+	#		#self.blacklifier.setParent(self.embeded_window_container)
 	#		self.blacklifier.raise_()
 			
 	def bind_window(self, winid, pid, session_id):
@@ -447,22 +447,22 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				return
 		
 			if not bind_widget_flag == "false":
-				oldwindow = self.cc_window
-				self.window = QWindow.fromWinId(winid)
+				#oldwindow = self.cc_window
+				self.embeded_window = QWindow.fromWinId(winid)
 
 				size = self.vsplitter.widget(0).size()
-				#oldcc = self.cc
-				self.cc = QWidget.createWindowContainer(self.window)
-				#self.cc.installEventFilter(self.evfilter)
+				#oldcc = self.embeded_window_container
+				self.embeded_window_container = QWidget.createWindowContainer(self.embeded_window)
+				#self.embeded_window_container.installEventFilter(self.evfilter)
 				
-				self.cc_window = winid
+				#self.cc_window = winid
 				trace("replace widget")
-				self.vsplitter.replaceWidget(0, self.cc)
+				self.vsplitter.replaceWidget(0, self.embeded_window_container)
 
-				if oldwindow is not None:
-					wind = QWindow.fromWinId(oldwindow)
-					if wind is not None:
-						wind.close()					
+				#if oldwindow is not None:
+				#	wind = QWindow.fromWinId(oldwindow)
+				#	if wind is not None:
+				#		wind.close()					
 
 				self.update()
 			
@@ -501,8 +501,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.store_gui_state()
 
 		trace("closeEvent")
-		if self.cc:
-			self.cc.close()
+		if self.embeded_window_container:
+			self.embeded_window_container.close()
 
 		if self.client_communicator and self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
 			trace("send stopworld")
@@ -596,7 +596,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if another_file:
 			self.screen_saver.drop_background()
 
-		if self.cc_window and self.open_in_progress is False:
+		if self.embeded_window and self.open_in_progress is False:
 			if not another_file:
 				self.client_communicator.send({"cmd":"screenshot"})
 			self.client_communicator.send({"cmd":"stop_activity"})
@@ -679,6 +679,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		# Сплиттер некоректно отработает, до первого showEvent
 		if hasattr(self, "MARKER"):
 			self.replace_widget(self.screen_saver)
+			self.embeded_window_container.close()
 		self.MARKER=None
 
 		# Если уведомления включены, обновить цель.
