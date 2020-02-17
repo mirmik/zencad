@@ -504,7 +504,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.openlock.unlock()
 
-	def _open_routine(self, path, update_texteditor):
+	def _open_routine(self, path, update_texteditor=True):
 		if not self.openlock.tryLock():
 			return
 		trace("_open_routine")
