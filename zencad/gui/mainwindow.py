@@ -524,8 +524,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.open_in_progress is True:
 			"""Процедура открытия была инициирована раньше,
 			чем прошлый открываемый скрипт отчитался об успешном завершении"""
-			self.client_communicator.send({"cmd":"hardstop"})
+			self.client_communicator.kill()
 			self.client_finalization_list.append(self.client_communicator)
+			self.open_in_progress = False
 		#	self.client_communicator.stop_listen()
 		#	time.sleep(0.05)
 		#	self.client_communicator.kill()
