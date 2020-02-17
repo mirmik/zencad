@@ -181,6 +181,8 @@ def do_main():
 		if OPPOSITE_PID_SAVE is not None:
 			zencad.gui.application.MAIN_COMMUNICATOR.set_opposite_pid(OPPOSITE_PID_SAVE)
 
+		zencad.lazifier.install_evalcahe_notication(zencad.gui.application.MAIN_COMMUNICATOR)
+
 		#zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
 
