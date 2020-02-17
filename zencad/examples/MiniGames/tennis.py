@@ -16,8 +16,10 @@ SLD0 = None
 SLD1 = None
 
 BALL_POSITION = [0,0]
-BALL_SPEED_NORMAL = math.sqrt(100**2 * 2)
-BALL_SPEED = [100,100]
+BALL_SPEED_NORMAL = math.sqrt(150**2 * 2)
+BALL_SPEED = [
+	BALL_SPEED_NORMAL*math.cos(deg(45)),
+	BALL_SPEED_NORMAL*math.cos(deg(45))]
 
 BOX_WIDTH = 300
 BOX_LENGTH = 500
@@ -72,8 +74,8 @@ def preanimate(wdg, animate_thread):
 	SLD0 = Slider()
 	SLD1 = Slider()
 
-	layout.addWidget(SLD0)
 	layout.addWidget(SLD1)
+	layout.addWidget(SLD0)
 
 	CTRWIDGET.setLayout(layout)
 	CTRWIDGET.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Dialog)
