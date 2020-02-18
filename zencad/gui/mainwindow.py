@@ -685,9 +685,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		# Сплиттер некоректно отработает, до первого showEvent
 		if hasattr(self, "MARKER"):
 			timeout = 100 if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else 500
+			old_window_container = self.embeded_window_container
 			def foo():
-				self.replace_widget(self.screen_saver)
-				self.embeded_window_container.close()
+				self.openlock.unlock()
+				if self.open_in_progress:
+					self.replace_widget(self.screen_saver)
+				old_window_container.close()
+				self.openlock.unlock()
 			QTimer.singleShot(timeout, foo)
 		self.MARKER=None
 
