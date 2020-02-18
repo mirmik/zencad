@@ -107,10 +107,15 @@ class Settings():
 	@classmethod
 	def clear_deleted_recent(self):
 		recents = self.list_of_settings["memory"]["recents"]
+		need_store = False
+
 		for r in recents:
 			if not os.path.exists(r) or not os.path.isfile(r):
 				self.list_of_settings["memory"]["recents"].remove(r)
-		self.store()
+				need_store = True
+	
+		if need_store:
+			self.store()
 
 	@classmethod
 	def get_recent(self):
