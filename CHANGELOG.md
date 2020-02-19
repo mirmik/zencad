@@ -1,6 +1,7 @@
 ## 0.28.2:
 	Fix window update tremmer
 	Add deleted recent files cleaning
+	Fix file descriptors bugs.
 
 ## 0.28.1:
 	Fix Windows build.
