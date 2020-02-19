@@ -29,6 +29,7 @@ from zencad.util import print_to_stderr
 import psutil
 import multiprocessing
 import os
+import io
 import sys
 import threading
 import time
@@ -90,17 +91,17 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 
 	trace("START MAIN WIDGET")
 	if presentation == False:	
-		communicator_out = 1
+		communicator_out_file = sys.stdout
 
 		if console_retrans:
 			trace("start_main_application::console_retrans")			
-			zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
+			zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler(sys.stdout)
 			zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
-			communicator_out = zencad.gui.application.CONSOLE_RETRANS_THREAD.new
+			communicator_out_file = zencad.gui.application.CONSOLE_RETRANS_THREAD.new_file
 
-		trace(f"Create MAIN_COMMUNICATOR: ipipe:{zencad.gui.application.STDIN_FILENO} opipe:{communicator_out}")
+		trace(f"Create MAIN_COMMUNICATOR: ipipe:{zencad.gui.application.STDIN_FILENO} opipe:{communicator_out_file.fileno()}")
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-			ipipe=zencad.gui.application.STDIN_FILENO, opipe=communicator_out)
+			ifile=sys.stdin, ofile=communicator_out_file)
 
 		trace("Create MainWindow")
 		mw = MainWindow(
@@ -191,8 +192,11 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 
 	subproc = start_application(tgtpath, debug)
 
+	stdout = io.TextIOWrapper(subproc.stdout, encoding="utf-8", line_buffering=True)
+	stdin = io.TextIOWrapper(subproc.stdin, encoding="utf-8", line_buffering=True)
+
 	communicator = zencad.gui.communicator.Communicator(
-		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
+		ifile=stdout, ofile=stdin)
 
 	MAIN_COMMUNICATOR = communicator
 	communicator.subproc = subproc
@@ -238,10 +242,14 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False,
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
 
+	trace("start_unbounded_worker")
 	subproc = start_worker(path, sleeped, need_prescale, session_id, size=size)
 
+	stdout = io.TextIOWrapper(subproc.stdout, encoding="utf-8", line_buffering=True)
+	stdin = io.TextIOWrapper(subproc.stdin, encoding="utf-8", line_buffering=True)
+
 	communicator = zencad.gui.communicator.Communicator(
-		ipipe=subproc.stdout.fileno(), opipe=subproc.stdin.fileno())
+		ifile=stdout, ofile=stdin)
 	communicator.subproc = subproc
 
 	return communicator

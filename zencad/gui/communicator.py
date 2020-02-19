@@ -6,6 +6,7 @@ import io
 import base64
 import pickle
 import threading
+import traceback
 
 from zencad.util import print_to_stderr
 
@@ -28,13 +29,13 @@ class Communicator(QObject):
 
 	class Listener(QThread):
 		newdata = pyqtSignal(bytes, int)
-		def __init__(self, ipipe, parent):
+		def __init__(self, ifile, parent):
 			super().__init__()
 			self.parent = parent
 			self.event = threading.Event()
 			self.pid = os.getpid()
-			self.ipipe = ipipe
-			self.file = io.BytesIO()
+			self.ifile = ifile
+			#self.file = io.BytesIO()
 
 		def unwait(self):
 			self.event.set()
@@ -42,11 +43,13 @@ class Communicator(QObject):
 		def run(self):
 			checks = 0
 			oposite_pid = lambda : self.parent.subproc_pid()
+			trace("START LISTEN")
 
 			try:
-				readFile = os.fdopen(self.ipipe)
+				trace("COMMUNICATOR: ifile:{}".format(self.ifile))
+				readFile = self.ifile
 			except Exception as ex:
-				trace("rdopen error: (oposite:{}, ipipe:{})".format(oposite_pid(), self.ipipe), ex, self.ipipe)
+				trace("rdopen error: (oposite:{}, ifile:{})".format(oposite_pid(), self.ifile), ex, self.ifile)
 				self.parent.stop_listen_nowait()
 				return
 			
@@ -58,7 +61,7 @@ class Communicator(QObject):
 						print_to_stderr(f"Receive: sender:{oposite_pid()} len:{len(inputdata)} dump50:{repr(inputdata[:50])}")
 
 				except Exception as ex:
-					trace("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid(), self.ipipe), ex)
+					trace("readFile.readline() fault (oposite:{}, ifile:{})".format(oposite_pid(), self.ifile), ex)
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -67,7 +70,7 @@ class Communicator(QObject):
 					checks += 1
 					if checks < 3:
 						continue
-					trace("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid(), self.ipipe))
+					trace("input data zero size (oposite:{}, ifile:{})".format(oposite_pid(), self.ifile))
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -117,13 +120,13 @@ class Communicator(QObject):
 				
 				self.newdata.emit(data_base64, self.parent.subproc_pid())
 
-	def __init__(self, ipipe, opipe):
+	def __init__(self, ifile, ofile):
 		super().__init__()
 		self.declared_opposite_pid = None
 		self.subproc = None
-		self.ipipe = ipipe
-		self.opipe = opipe
-		self.listener_thr = self.Listener(ipipe, self)
+		self.ifile = ifile
+		self.ofile = ofile
+		self.listener_thr = self.Listener(ifile=ifile, parent=self)
 		self.newdata = self.listener_thr.newdata
 		self.listen_started = False
 		self.closed = False
@@ -158,15 +161,15 @@ class Communicator(QObject):
 		else:
 			if not self.closed_fds:
 				try:
-					trace("close ipipe", self.ipipe, self.subproc_pid())
-					os.close(self.ipipe)
-				except OSError as ex:
+					trace("close ifile", self.ifile.fileno(), self.subproc_pid())
+					self.ifile.close()
+				except (OSError, ValueError) as ex:
 					trace(ex)
 	
 				try:
-					trace("close opipe", self.opipe, self.subproc_pid())
-					os.close(self.opipe)
-				except OSError as ex:
+					trace("close ofile", self.ofile.fileno(), self.subproc_pid())
+					self.ofile.close()
+				except (OSError, ValueError) as ex:
 					trace(ex)
 
 	def stop_listen(self):
@@ -206,22 +209,25 @@ class Communicator(QObject):
 			strobj = str(obj)
 			if len(strobj) > 100: strobj=strobj[:101]
 			print_to_stderr("communicator send to {}: {}".format(self.subproc_pid(), strobj))
-		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
+		sendstr_bytes = base64.b64encode(pickle.dumps(obj)) + b"\n"
+		sendstr = sendstr_bytes.decode("utf-8")
 		try:
-			os.write(self.opipe, sendstr)
+			self.ofile.write(sendstr)
+			self.ofile.flush()
 
 			if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP:
-				print_to_stderr(f"Send: pipe:{self.opipe} recver:{self.subproc_pid()} len:{len(sendstr)} dump50:{[sendstr[:50]]}")
-				print_to_stderr(f"Send: pipe:{self.opipe} recver:{self.subproc_pid()} unpickle:{obj}")
+				print_to_stderr(f"Send: pipe:{self.ofile} recver:{self.subproc_pid()} len:{len(sendstr)} dump50:{[sendstr[:50]]}")
+				print_to_stderr(f"Send: pipe:{self.ofile} recver:{self.subproc_pid()} unpickle:{obj}")
 
 			return True
 		except Exception as ex:
 			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
-				print_to_stderr(f"Exception on send: op_pid:{self.subproc_pid()} ipipe:{self.ipipe}, opipe:{self.opipe}, {strobj}, {ex}")
+				print_to_stderr(f"Exception on send: op_pid:{self.subproc_pid()} ifile:{self.ifile}, ofile:{self.ofile}, {strobj}, {ex}")
+				traceback.print_exc()
 			self.stop_listen()
 			return False
 			#print("Warn: communicator send error", obj, ex)
-		#os.flush(self.opipe)
+		#os.flush(self.ofile)
 
 	def wait(self):
 		self.listener_thr.event.wait()
@@ -254,12 +260,12 @@ class Communicator(QObject):
 #class NoQtCommunicator:
 #
 #	class Listener(threading.Thread):
-#		def __init__(self, ipipe):
+#		def __init__(self, ifile):
 #			super().__init__()
 #			#self.lock = threading.RLock()
 #			#self.condition = threading.Condition(self.lock)
 #			self.event = threading.Event()
-#			self.ipipe = ipipe
+#			self.ifile = ifile
 #			self.file = io.BytesIO()
 #			self.stop_token = False
 #			self.unwait_token = str(base64.b64encode(pickle.dumps("unwait")), "utf-8") + "\n"
@@ -269,9 +275,9 @@ class Communicator(QObject):
 #
 #		def run(self):
 #			try:
-#				readFile = os.fdopen(self.ipipe)
+#				readFile = os.fdopen(self.ifile)
 #			except Exception as ex:
-#				print_to_stderr("rdopen error: ", ex, self.ipipe)
+#				print_to_stderr("rdopen error: ", ex, self.ifile)
 #				exit(0)
 #			
 #			while(True):
@@ -299,10 +305,10 @@ class Communicator(QObject):
 #				data_base64 = base64.decodestring(bytes(inputdata, "utf-8"))
 #				self.newdata(data_base64)
 #
-#	def __init__(self, ipipe):
+#	def __init__(self, ifile):
 #		super().__init__()
-#		self.ipipe = os.dup(ipipe)
-#		self.listener_thr = self.Listener(ipipe)
+#		self.ifile = os.dup(ifile)
+#		self.listener_thr = self.Listener(ifile)
 #
 #	def naive_connect(self, handle):
 #		self.newdata = handle
@@ -313,9 +319,9 @@ class Communicator(QObject):
 #
 #	def stop_listen(self):
 #		try:
-#			os.close(self.ipipe)
+#			os.close(self.ifile)
 #		except:
-#			print("Warn: os.close(self.ipipe) is fault")
+#			print("Warn: os.close(self.ifile) is fault")
 #		self.listener_thr.stop_token = True
 #
 #	def wait(self):
