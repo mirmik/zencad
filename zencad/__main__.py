@@ -59,7 +59,7 @@ def protect_path(s):
 	return s
 
 def do_main():
-	os.closerange(3, 100)
+	#os.closerange(3, 100)
 
 	OPPOSITE_PID_SAVE = None
 	zencad.gui.signal_handling.setup_simple_interrupt_handling()
@@ -73,7 +73,7 @@ def do_main():
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
-	parser.add_argument("--sleeped", action="store_true")
+	parser.add_argument("--sleeped", action="store_true", help="Don't use manualy. Create sleeped thread.")
 	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--disable-sleeped", action="store_true")
@@ -104,11 +104,14 @@ def do_main():
 	if pargs.disable_screen:
 		zencad.configure.CONFIGURE_SCREEN_SAVER_TRANSLATE = False
 
+	if pargs.debugcomm:
+		zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP = True
+
 	if pargs.no_restore:
 		zencad.configure.CONFIGURE_NO_RESTORE = True
 
 
-	trace("__MAIN__", sys.argv)
+	trace(f"__MAIN__ ({os.getpid()})", sys.argv)
 	trace(pargs)
 
 	if pargs.mpath:
@@ -127,15 +130,18 @@ def do_main():
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
+	retrans_out = None
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
 		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
+		retrans_out = zencad.gui.application.CONSOLE_RETRANS_THREAD.new
 
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
+		zencad.util.PROCNAME = f"sl({os.getpid()})"
 		readFile = os.fdopen(zencad.gui.application.STDIN_FILENO)
 
 		while 1:
@@ -169,18 +175,10 @@ def do_main():
 		zencad.settings.restore()			
 
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
-		
-		#def hard_finish_checker(rawdata):
-		#	print_to_stderr("hard_finish_checker", pickle.loads(rawdata)["cmd"])
-		#	if pickle.loads(rawdata)["cmd"] == "hardstop":
-		#		print_to_stderr("HARDSTOP")
-		#		zencad.gui.application.quit()
-		#		sys.exit(0)
-
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
+			ipipe=zencad.gui.application.STDIN_FILENO, opipe=retrans_out)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 		#zencad.gui.application.MAIN_COMMUNICATOR.newdata.connect(hard_finish_checker)
 		

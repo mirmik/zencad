@@ -9,6 +9,12 @@ from PyQt5.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
 
 # import PyQt5.QtWidgets as QtWidgets
 
+import zencad.configure
+from zencad.util import print_to_stderr
+
+def trace(*args):
+	if zencad.configure.CONFIGURE_MAINWINDOW_TRACE:
+		print_to_stderr("MAINWINDOW:", *args)
 
 def format(color, style=""):
 	"""Return a QTextCharFormat with the given attributes.
@@ -284,14 +290,19 @@ class TextEditor(QPlainTextEdit):
 		f.close()
 
 	def open(self, path):
+		trace(f"TEXTEDITOR: open {path}")
 		if path == self.edited and path == self.rewrite:
 			self.rewrite = None
 			return
 		self.edited = path
 		self.update_text_field()
+		trace(f"TEXTEDITOR: open ... ok")
 
 	def update_text_field(self):
+		trace(f"TEXTEDITOR: update_text_field")
 		filetext = open(self.edited).read()
+
+		trace(f"TEXTEDITOR: setText")
 		self.setPlainText(filetext)
 
 	def keyPressEvent(self, event):

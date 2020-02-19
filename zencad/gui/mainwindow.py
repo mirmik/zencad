@@ -56,6 +56,7 @@ class ScreenSaverWidget(QWidget):
 		self.subtext = ["", "", ""]
 		self.color = color
 		self.last_install_time = time.time()
+		self.mode="techpriest"
 		super().__init__()
 
 	def set_background(self, bg):
@@ -207,9 +208,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			title = "ZenCad"):
 		super().__init__()
 
+		trace("MAINWINDOW: constructor")
+
 		global MAINWINDOW_PROCESS
 		MAINWINDOW_PROCESS = True
-		zencad.util.PROCNAME = "mainw"
+		zencad.util.PROCNAME = f"mw({os.getpid()})"
 
 		self.setWindowTitle(title)
 		self.openlock = QMutex()
@@ -237,16 +240,22 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			trace("preconstruct slepped client")
 			self.sleeped_client = zencad.gui.application.spawn_sleeped_client(session_id=1)
 
+		trace("MAINWINDOW: create widgets")
+
+		trace("MAINWINDOW: create central widget")
 		self.cw = QWidget()
 		self.cw_layout = QVBoxLayout()
 		self.hsplitter = QSplitter(Qt.Horizontal)
 		self.vsplitter = QSplitter(Qt.Vertical)
+
+		trace("MAINWINDOW: create InfoWidget")
 		self.info_widget = InfoWidget()
 
 		self.cw_layout.addWidget(self.hsplitter)
 		self.cw_layout.addWidget(self.info_widget)
 		self.cw.setLayout(self.cw_layout)
 
+		trace("MAINWINDOW: create ScreenSaverWidget")
 		self.screen_saver = ScreenSaverWidget()
 
 		self.hsplitter.addWidget(self.texteditor)
@@ -260,22 +269,29 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.cw_layout.setContentsMargins(0,0,0,0)
 		self.cw_layout.setSpacing(0)
+		trace("MAINWINDOW: set central widget")
 		self.setCentralWidget(self.cw)
 
+		trace("MAINWINDOW: create menus")
 		self.createActions()
 		self.createMenus()
 		self.createToolbars()
 
 		if openned_path:
+			trace(f"MAINWINDOW: set_current_opened {openned_path}")
 			self.set_current_opened(openned_path)
 
+		trace(f"MAINWINDOW: Make Notifier")
 		self.make_notifier(openned_path)
 
+		trace(f"MAINWINDOW: Is presentation mode?")
 		if presentation:
+			trace(f"MAINWINDOW: Presentation mode")
 			self.presentation_mode = True
 			self.texteditor.hide()
 			self.console.hide()
 		else:
+			trace(f"MAINWINDOW: Presentation mode disabled")
 			self.presentation_mode = False
 
 		self.fscreen_mode=False
@@ -285,9 +301,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.open_in_progress = False
 
+		trace(f"MAINWINDOW: Is fastopen?")
 		if fastopen:
+			trace("FASTOPEN {}".format(fastopen))
 			self._open_routine(fastopen, update_texteditor=True)
 
+		trace(f"MAINWINDOW: Is display mode?")
 		if display_mode:
 			self.restore_gui_state()
 			self.displayMode()
@@ -296,6 +315,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self._display_mode = display_mode
 
 		self.evfilter = KeyPressEater()
+
+		trace("MAINWINDOW: finish constructor")
 
 		#self.vsplitter.splitterMoved.connect(self.embeded_window_resized)
 		#self.hsplitter.splitterMoved.connect(self.embeded_window_resized)
@@ -374,7 +395,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			print("Warn: new_worker_message: message without 'cmd' field")
 			return
 
-		if procpid != self.client_communicator.subproc.pid and data["cmd"] != "finish_screen":
+		if procpid != self.client_communicator.subproc_pid() and data["cmd"] != "finish_screen":
+			trace("MAINWINDOW: message: procpid != self.client_communicator.subproc_pid", procpid, self.client_communicator.subproc_pid())
 			return
 		
 		trace("MainWindow:communicator: input message")
@@ -433,7 +455,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		trace("bind_window: winid:{}, pid:{}".format(winid,pid))
 		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
 
-		if self.client_communicator.subproc.pid != pid:
+		if self.client_communicator.subproc_pid() != pid:
 			"""Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
 			то бинд уже неактуален."""
 			print("Nonactual bind")
