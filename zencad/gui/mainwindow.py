@@ -698,8 +698,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_communicator.newdata.connect(self.new_worker_message)
 		self.client_communicator.start_listen()
 		
-		trace("client_communicator, fd:", self.client_communicator.ipipe, self.client_communicator.opipe)
-		
 		# Добавляем путь в список последних вызовов.
 		zencad.settings.Settings.add_recent(os.path.abspath(path))
 

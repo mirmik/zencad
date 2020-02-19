@@ -130,13 +130,13 @@ def do_main():
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
-	retrans_out = None
+	retrans_out_file = None
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
-		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
+		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler(sys.stdout)
 		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
-		retrans_out = zencad.gui.application.CONSOLE_RETRANS_THREAD.new
+		retrans_out_file = zencad.gui.application.CONSOLE_RETRANS_THREAD.new_file
 
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
@@ -178,7 +178,7 @@ def do_main():
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-			ipipe=zencad.gui.application.STDIN_FILENO, opipe=retrans_out)
+			ifile=sys.stdin, ofile=retrans_out_file)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 		#zencad.gui.application.MAIN_COMMUNICATOR.newdata.connect(hard_finish_checker)
 		
