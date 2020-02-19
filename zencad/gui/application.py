@@ -74,21 +74,6 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	set_process_name("zencad")
 	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
 
-	app = QApplication([])
-	zencad.gui.signal_handling.setup_qt_interrupt_handling()
-
-	zencad.opengl.init_opengl()
-	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
-	
-	#TODO: Настройка цветов.
-#	pal = app.palette()
-#	pal.setColor(QPalette.Window, QColor(160, 161, 165))
-#	app.setPalette(pal)
-
-	#trace("START MAIN Communicator ????")
-	#global MAIN_COMMUNICATOR
-	#MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(ipipe=0, opipe=1)
-
 	trace("START MAIN WIDGET")
 	if presentation == False:	
 		communicator_out_file = sys.stdout
@@ -98,6 +83,12 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler(sys.stdout)
 			zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 			communicator_out_file = zencad.gui.application.CONSOLE_RETRANS_THREAD.new_file
+
+		app = QApplication([])
+		zencad.gui.signal_handling.setup_qt_interrupt_handling()
+
+		zencad.opengl.init_opengl()
+		app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 
 		trace(f"Create MAIN_COMMUNICATOR: ipipe:{zencad.gui.application.STDIN_FILENO} opipe:{communicator_out_file.fileno()}")
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
@@ -112,6 +103,13 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 
 	else:
 		trace("EXEC (StartDialog)")
+
+		app = QApplication([])
+		zencad.gui.signal_handling.setup_qt_interrupt_handling()
+	
+		zencad.opengl.init_opengl()
+		app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
+
 		if zencad.settings.list()["gui"]["start_widget"] == "true":
 			strt_dialog = zencad.gui.startwdg.StartDialog()
 			strt_dialog.exec()
@@ -192,8 +190,8 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 
 	subproc = start_application(tgtpath, debug)
 
-	stdout = io.TextIOWrapper(subproc.stdout, encoding="utf-8", line_buffering=True)
-	stdin = io.TextIOWrapper(subproc.stdin, encoding="utf-8", line_buffering=True)
+	stdout = io.TextIOWrapper(subproc.stdout, line_buffering=True)
+	stdin = io.TextIOWrapper(subproc.stdin, line_buffering=True)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ifile=stdout, ofile=stdin)
@@ -245,8 +243,8 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False,
 	trace("start_unbounded_worker")
 	subproc = start_worker(path, sleeped, need_prescale, session_id, size=size)
 
-	stdout = io.TextIOWrapper(subproc.stdout, encoding="utf-8", line_buffering=True)
-	stdin = io.TextIOWrapper(subproc.stdin, encoding="utf-8", line_buffering=True)
+	stdout = io.TextIOWrapper(subproc.stdout, line_buffering=True)
+	stdin = io.TextIOWrapper(subproc.stdin, line_buffering=True)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ifile=stdout, ofile=stdin)
