@@ -15,24 +15,35 @@ from PyQt5.QtGui import *
 
 __RETRANSLER_TRACE__ = False
 
-def run_with_timeout(timeout, default, f, *args, **kwargs):
-	if not timeout:
-		return f(*args, **kwargs)
-	try:
-		timeout_timer = Timer(timeout, threading.interrupt_main)
-		timeout_timer.start()
-		result = f(*args, **kwargs)
-		return result
-	except KeyboardInterrupt:
-		return default
-	finally:
-		timeout_timer.cancel()
+#def run_with_timeout(timeout, default, f, *args, **kwargs):
+#	if not timeout:
+#		return f(*args, **kwargs)
+#	try:
+#		timeout_timer = Timer(timeout, threading.interrupt_main)
+#		timeout_timer.start()
+#		result = f(*args, **kwargs)
+#		return result
+#	except KeyboardInterrupt:
+#		return default
+#	finally:
+#		timeout_timer.cancel()
 
 class console_retransler(QThread):
-	def __init__(self):
+	def __init__(self, old=1, new=None):
 		super().__init__()
-		self.name = "console_retransler"
-		self.do_retrans()
+		#self.name = "console_retransler"
+
+		# Find free file descriptor
+		#if new is None:
+		#	for i in range(30):
+		#		try:
+		#			os.fstat(i)
+		#		except:
+		#			new = i
+		#			break
+
+
+		self.do_retrans(old=old, new=new)
 		self.stop_token = False
 
 	def run(self):
@@ -91,11 +102,15 @@ class console_retransler(QThread):
 		#for p in alive:
 		#    p.kill()
 
-	def do_retrans(self, old=1, new=3):
+	def do_retrans(self, old=1, new=None):
 		if __RETRANSLER_TRACE__:
 			print_to_stderr("do_retrans old:{} new:{}".format(old, new))
 
-		os.dup2(old, new)
+		if new:
+			os.dup2(old, new)
+		else:
+			new = os.dup(old)
+		
 		r, w = os.pipe()
 		self.r = r
 		self.w = w

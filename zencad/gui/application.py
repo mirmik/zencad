@@ -49,6 +49,7 @@ RETRANSLATE_THREAD = None
 MAIN_COMMUNICATOR = None
 CONSOLE_RETRANS_THREAD = None
 APPLICATION = None
+IS_STARTER = False
 
 DISPLAY_WIDGET = None
 
@@ -95,12 +96,13 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			trace("start_main_application::console_retrans")			
 			zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
 			zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
-			communicator_out = 3
+			communicator_out = zencad.gui.application.CONSOLE_RETRANS_THREAD.new
 
+		trace(f"Create MAIN_COMMUNICATOR: ipipe:{zencad.gui.application.STDIN_FILENO} opipe:{communicator_out}")
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 			ipipe=zencad.gui.application.STDIN_FILENO, opipe=communicator_out)
-		#zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 
+		trace("Create MainWindow")
 		mw = MainWindow(
 			client_communicator=
 				MAIN_COMMUNICATOR,
@@ -108,6 +110,7 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			display_mode=display_mode)
 
 	else:
+		trace("EXEC (StartDialog)")
 		if zencad.settings.list()["gui"]["start_widget"] == "true":
 			strt_dialog = zencad.gui.startwdg.StartDialog()
 			strt_dialog.exec()
@@ -125,7 +128,10 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			fastopen=openpath,
 			display_mode=display_mode)
 
+	trace("Show MainWindow")
 	mw.show()
+	
+	trace("APP EXEC (MainWindow)")
 	app.exec()
 	trace("FINISH MAIN QTAPP")
 
@@ -161,8 +167,9 @@ def start_application(tgtpath, debug):
 	#os.dup2(o, 4)
 
 	debugstr = "--debug" if debug or zencad.configure.DEBUG_MODE else "" 
+	no_sleeped = "" if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else "--disable-sleeped"
 	interpreter = INTERPRETER
-	cmd = '{} -m zencad --subproc {} --tgtpath "{}"'.format(interpreter, debugstr, tgtpath)
+	cmd = f'{interpreter} -m zencad {no_sleeped} --subproc {debugstr} --tgtpath "{tgtpath}"'
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
 		close_fds=True)
@@ -177,6 +184,10 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 	Для коммуникации между процессами создаётся pipe"""
 
 	global MAIN_COMMUNICATOR
+	global IS_STARTER
+
+	IS_STARTER = True
+	zencad.util.PROCNAME = f"st({os.getpid()})"
 
 	subproc = start_application(tgtpath, debug)
 
@@ -237,6 +248,7 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False,
 
 @traced
 def update_unbound_application(*args, **kwargs):
+	zencad.util.PROCNAME = f"un({os.getpid()})"
 	common_unbouded_proc(pipes=True, *args, **kwargs)
 
 def on_terminate(proc):
@@ -306,6 +318,9 @@ def common_unbouded_proc(scene,
 
 		def stop_world():
 			trace("common_unbouded_proc::stop_world")
+			if IS_STARTER:
+				return smooth_stop_world()
+
 			MAIN_COMMUNICATOR.stop_listen()
 			if ANIMATE_THREAD:
 				ANIMATE_THREAD.finish()
@@ -382,6 +397,8 @@ def common_unbouded_proc(scene,
 	widget.widget_closed.connect(_clossed)
 
 	widget.show()
+
+	trace("APP EXEC (DisplayWidget)")
 	app.exec()
 
 	trace("FINISH UNBOUNDED QTAPP")

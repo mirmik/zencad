@@ -41,20 +41,24 @@ class Communicator(QObject):
 
 		def run(self):
 			checks = 0
-			oposite_pid = self.parent.subproc.pid if self.parent.subproc else None
+			oposite_pid = lambda : self.parent.subproc_pid()
 
 			try:
 				readFile = os.fdopen(self.ipipe)
 			except Exception as ex:
-				trace("rdopen error: (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex, self.ipipe)
+				trace("rdopen error: (oposite:{}, ipipe:{})".format(oposite_pid(), self.ipipe), ex, self.ipipe)
 				self.parent.stop_listen_nowait()
 				return
 			
 			while(True):
 				try:
 					inputdata = readFile.readline()
+
+					if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP:
+						print_to_stderr(f"Receive: sender:{oposite_pid()} len:{len(inputdata)} dump50:{repr(inputdata[:50])}")
+
 				except Exception as ex:
-					trace("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe), ex)
+					trace("readFile.readline() fault (oposite:{}, ipipe:{})".format(oposite_pid(), self.ipipe), ex)
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -63,7 +67,7 @@ class Communicator(QObject):
 					checks += 1
 					if checks < 3:
 						continue
-					trace("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid, self.ipipe))
+					trace("input data zero size (oposite:{}, ipipe:{})".format(oposite_pid(), self.ipipe))
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -71,7 +75,7 @@ class Communicator(QObject):
 				checks = 0
 
 				try:
-					ddd = base64.b64decode(bytes(inputdata, "utf-8"))
+					data_base64 = base64.b64decode(bytes(inputdata, "utf-8"))
 				except:
 					trace("Unpicling(A):", len(inputdata), inputdata)
 					self.parent._stop_listen_nowait()
@@ -79,36 +83,43 @@ class Communicator(QObject):
 					return
 
 				try:
-					dddd = pickle.loads(ddd)
+					data_unpickled = pickle.loads(data_base64)
 				except:
-					trace("Unpicling(B):", ddd)
+					trace("Unpicling(B):", data_base64)
+
+					#DEBUG
+					continue
+
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
 
-				if dddd == "unwait":
+				if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP:
+					print_to_stderr(f"Receive: sender:{oposite_pid()} unpickle:{data_unpickled}")
+
+				if data_unpickled == "unwait":
 					self.unwait()
 					continue
 
-				if dddd["cmd"] == "smooth_stopworld":
+				if data_unpickled["cmd"] == "smooth_stopworld":
 					self.parent.smooth_stop.emit()
 					continue
 
-				if dddd["cmd"] == "set_opposite_pid":
-					self.parent.procpid = dddd["data"]
+				if data_unpickled["cmd"] == "set_opposite_pid":
+					self.parent.declared_opposite_pid = data_unpickled["data"]
 					continue
 
 
 				if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
-					strform = str(dddd)
+					strform = str(data_unpickled)
 					if len(strform) > 100: strform = strform[0:101]
-					print_to_stderr("received {}: {}".format(self.parent.procpid, strform))
+					print_to_stderr("received {}: {}".format(self.parent.subproc_pid(), strform))
 				
-				self.newdata.emit(ddd, self.parent.subproc.pid if self.parent.subproc is not None else None)
+				self.newdata.emit(data_base64, self.parent.subproc_pid())
 
 	def __init__(self, ipipe, opipe):
 		super().__init__()
-		self.procpid = None
+		self.declared_opposite_pid = None
 		self.subproc = None
 		self.ipipe = ipipe
 		self.opipe = opipe
@@ -131,7 +142,13 @@ class Communicator(QObject):
 			self.listener_thr.start()
 
 	def subproc_pid(self):
-		return self.subproc.pid if self.subproc else None
+		""" PID процесса на той стороне можно узнать двумя путями.
+		Либо это pid связанный с объектом subprocess, связанным с ним, 
+		либо, если этот объект отсутствует, можно воспользоваться
+		переданной кем-либо информацией о таком процессе. 
+		Иногда процедура возвращает None. Это значит, что процесс на той стороне не был создан
+		через subprocess и никто не успел уведомить коммуникатор о его pid."""
+		return self.subproc.pid if self.subproc else self.declared_opposite_pid
 
 	def close_pipes(self):
 		if self.subproc is not None:
@@ -188,14 +205,19 @@ class Communicator(QObject):
 		if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
 			strobj = str(obj)
 			if len(strobj) > 100: strobj=strobj[:101]
-			print_to_stderr("communicator send to {}: {}".format(self.procpid, strobj))
+			print_to_stderr("communicator send to {}: {}".format(self.subproc_pid(), strobj))
 		sendstr = base64.b64encode(pickle.dumps(obj)) + bytes("\n", 'utf-8')
 		try:
 			os.write(self.opipe, sendstr)
+
+			if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP:
+				print_to_stderr(f"Send: pipe:{self.opipe} recver:{self.subproc_pid()} len:{len(sendstr)} dump50:{[sendstr[:50]]}")
+				print_to_stderr(f"Send: pipe:{self.opipe} recver:{self.subproc_pid()} unpickle:{obj}")
+
 			return True
 		except Exception as ex:
 			if zencad.configure.CONFIGURE_COMMUNICATOR_TRACE:
-				print_to_stderr("Exception on send", self.procpid, strobj, ex)
+				print_to_stderr(f"Exception on send: op_pid:{self.subproc_pid()} ipipe:{self.ipipe}, opipe:{self.opipe}, {strobj}, {ex}")
 			self.stop_listen()
 			return False
 			#print("Warn: communicator send error", obj, ex)
@@ -225,7 +247,7 @@ class Communicator(QObject):
 		return self.listener_thr.buffer
 
 	def set_opposite_pid(self, pid):
-		self.procpid = pid
+		self.declared_opposite_pid = pid
 
 
 
@@ -274,8 +296,8 @@ class Communicator(QObject):
 #					self.oposite_clossed.emit()
 #					return
 #
-#				ddd = base64.decodestring(bytes(inputdata, "utf-8"))
-#				self.newdata(ddd)
+#				data_base64 = base64.decodestring(bytes(inputdata, "utf-8"))
+#				self.newdata(data_base64)
 #
 #	def __init__(self, ipipe):
 #		super().__init__()

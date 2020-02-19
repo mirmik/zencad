@@ -185,6 +185,8 @@ class DisplayWidget(QGLWidget):
 
 			# Шлём на ту сторону указание отрисовать нас.
 			if self.bind_mode:
+
+				trace("DISPLAYWIDGET: Trying to bind window")
 				self.communicator.send({
 					"cmd":"bindwin", 
 					"id":int(self.winId()), 
