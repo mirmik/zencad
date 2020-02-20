@@ -175,8 +175,9 @@ def start_application(tgtpath, debug):
 	debugstr = "--debug" if debug or zencad.configure.DEBUG_MODE else "" 
 	debugcomm_mode = "--debugcomm" if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP else ""
 	no_sleeped = "" if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else "--disable-sleeped"
+	no_evalcache_notify = "--no-evalcache-notify" if zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES else ""
 	interpreter = INTERPRETER
-	cmd = f'{interpreter} -m zencad {no_sleeped} --subproc {debugstr} --tgtpath "{tgtpath}"'
+	cmd = f'{interpreter} -m zencad {no_sleeped} --subproc {debugstr} --tgtpath "{tgtpath} {no_evalcache_notify} {debugcomm}"'
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
 		close_fds=True)
@@ -220,10 +221,11 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=No
 	sleeped = "--sleeped" if sleeped else ""
 	debug_mode = "--debug" if zencad.configure.DEBUG_MODE else ""
 	debugcomm_mode = "--debugcomm" if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP else ""
+	no_evalcache_notify = "--no-evalcache-notify" if zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES else ""
 	sizestr = "--size {},{}".format(size.width(), size.height()) if size is not None else ""
 	interpreter = INTERPRETER
 
-	cmd = f'{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {debugcomm_mode} {sleeped} {sizestr} --session_id {session_id}'
+	cmd = f'{interpreter} -m zencad "{path}" --replace {prescale} {no_evalcache_notify} {debug_mode} {debugcomm_mode} {sleeped} {sizestr} --session_id {session_id}'
 	
 	try:
 		subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 

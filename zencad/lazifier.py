@@ -4,6 +4,7 @@ import evalcache.dircache_v2
 from evalcache.lazyfile import LazyFile
 
 from zencad.util import print_to_stderr
+import zencad.configure
 
 import pyservoce
 import hashlib
@@ -23,6 +24,9 @@ lazy = evalcache.Lazy(
 )
 
 def install_evalcahe_notication(comm):
+    if zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES:
+        return
+
     lazy.status_notify_enable(True)
 
     def stcb(root):
