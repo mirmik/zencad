@@ -190,8 +190,8 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 
 	subproc = start_application(tgtpath, debug)
 
-	stdout = io.TextIOWrapper(subproc.stdout)
-	stdin = io.TextIOWrapper(subproc.stdin)
+	stdout = io.TextIOWrapper(subproc.stdout, line_buffering=True)
+	stdin = io.TextIOWrapper(subproc.stdin, line_buffering=True)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ifile=stdout, ofile=stdin)
@@ -243,8 +243,8 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False,
 	trace("start_unbounded_worker")
 	subproc = start_worker(path, sleeped, need_prescale, session_id, size=size)
 
-	stdout = io.TextIOWrapper(subproc.stdout)
-	stdin = io.TextIOWrapper(subproc.stdin)
+	stdout = io.TextIOWrapper(subproc.stdout, line_buffering=True)
+	stdin = io.TextIOWrapper(subproc.stdin, line_buffering=True)
 
 	communicator = zencad.gui.communicator.Communicator(
 		ifile=stdout, ofile=stdin)

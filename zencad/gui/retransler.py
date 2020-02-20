@@ -1,6 +1,7 @@
 import threading
 import os
 import sys
+import io
 import zencad
 import signal
 import psutil
@@ -70,4 +71,4 @@ class console_retransler(QThread):
 		os.close(old_desc)
 		os.dup2(w, old_desc)
 
-		sys.stdout = os.fdopen(old_desc, "w")
+		sys.stdout = io.TextIOWrapper(os.fdopen(old_desc, "wb"), line_buffering=True)
