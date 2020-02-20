@@ -33,6 +33,7 @@ import io
 import sys
 import threading
 import time
+import signal
 import pickle
 import runpy
 import subprocess
@@ -73,6 +74,12 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 
 	set_process_name("zencad")
 	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
+
+	def signal_sigchild(a,b):
+		os.wait()
+
+	if sys.platform == "linux":
+		signal.signal(signal.SIGCHLD, signal_sigchild) 
 
 	trace("START MAIN WIDGET")
 	if presentation == False:	
@@ -166,6 +173,7 @@ def start_application(tgtpath, debug):
 	#os.dup2(o, 4)
 
 	debugstr = "--debug" if debug or zencad.configure.DEBUG_MODE else "" 
+	debugcomm_mode = "--debugcomm" if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP else ""
 	no_sleeped = "" if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else "--disable-sleeped"
 	interpreter = INTERPRETER
 	cmd = f'{interpreter} -m zencad {no_sleeped} --subproc {debugstr} --tgtpath "{tgtpath}"'
@@ -211,17 +219,11 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=No
 	prescale = "--prescale" if need_prescale else ""
 	sleeped = "--sleeped" if sleeped else ""
 	debug_mode = "--debug" if zencad.configure.DEBUG_MODE else ""
+	debugcomm_mode = "--debugcomm" if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP else ""
 	sizestr = "--size {},{}".format(size.width(), size.height()) if size is not None else ""
 	interpreter = INTERPRETER
 
-	cmd = '{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {sleeped} {sizestr} --session_id {session_id}'.format(
-		interpreter=interpreter, 
-		path=path, 
-		prescale=prescale, 
-		sleeped=sleeped,
-		debug_mode=debug_mode,
-		session_id=session_id,
-		sizestr = sizestr)
+	cmd = f'{interpreter} -m zencad "{path}" --replace {prescale} {debug_mode} {debugcomm_mode} {sleeped} {sizestr} --session_id {session_id}'
 	
 	try:
 		subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
