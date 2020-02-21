@@ -79,6 +79,7 @@ def do_main():
 	parser.add_argument("--disable-sleeped", action="store_true")
 	parser.add_argument("--disable-screen", action="store_true")
 	parser.add_argument("--no-evalcache-notify", action="store_true")
+	parser.add_argument("--no-embed", action="store_true")
 	parser.add_argument("--size")
 	parser.add_argument("--no-restore", action="store_true")
 	parser.add_argument("--tgtpath")
@@ -110,6 +111,9 @@ def do_main():
 
 	if pargs.no_evalcache_notify:
 		zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES = True
+
+	if pargs.no_embed:
+		zencad.configure.CONFIGURE_NO_EMBEDING_WINDOWS = True
 
 	if pargs.no_restore:
 		zencad.configure.CONFIGURE_NO_RESTORE = True
