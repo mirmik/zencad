@@ -1,3 +1,6 @@
+## 0.28.3
+	Fix console mode bug
+
 ## 0.28.2:
 	Fix window update tremmer
 	Add deleted recent files cleaning
