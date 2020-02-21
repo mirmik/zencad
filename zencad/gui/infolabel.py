@@ -8,14 +8,25 @@ QMARKER_MESSAGE = "Press 'Q' to set marker"
 WMARKER_MESSAGE = "Press 'W' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 
+import zencad.configure
+from zencad.util import print_to_stderr
+
+def trace(*args):
+	if zencad.configure.CONFIGURE_MAINWINDOW_TRACE:
+		print_to_stderr("MAINWINDOW:", *args)
+
 class InfoWidget(QWidget):
 	def __init__(self):
 		super().__init__()
+		trace("InfoWidget: ctor")
 		self.infolay = QHBoxLayout()
 
+		trace("InfoWidget: ctor0.1")
 		self.poslbl = QLabel("Tracking disabled")
+		trace("InfoWidget: ctor0")
 		self.poslbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 		self.poslbl.setAlignment(Qt.AlignCenter)
+		trace("InfoWidget: ctor1")
 
 		self.marker1Label = QLabel(QMARKER_MESSAGE)
 		self.marker1Label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -23,6 +34,7 @@ class InfoWidget(QWidget):
 			"QLabel { background-color : rgb(100,0,0); color : white; }"
 		)
 		self.marker1Label.setAlignment(Qt.AlignCenter)
+		trace("InfoWidget: ctor2")
 
 		self.marker2Label = QLabel(WMARKER_MESSAGE)
 		self.marker2Label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -30,10 +42,12 @@ class InfoWidget(QWidget):
 			"QLabel { background-color : rgb(0,100,0); color : white; }"
 		)
 		self.marker2Label.setAlignment(Qt.AlignCenter)
+		trace("InfoWidget: ctor3")
 
 		self.markerDistLabel = QLabel(DISTANCE_DEFAULT_MESSAGE)
 		self.markerDistLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 		self.markerDistLabel.setAlignment(Qt.AlignCenter)
+		trace("InfoWidget: ctor4")
 
 #		self.infoLabel = QLabel("")
 #		self.infoLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -44,16 +58,21 @@ class InfoWidget(QWidget):
 		self.infolay.addWidget(self.marker1Label)
 		self.infolay.addWidget(self.marker2Label)
 		self.infolay.addWidget(self.markerDistLabel)
+		trace("InfoWidget: ctor5")
 #		self.infolay.addWidget(self.infoLabel)
 
 		self.infolay.setContentsMargins(0,0,0,0)
 		self.infolay.setSpacing(0)
 
 		self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+		trace("InfoWidget: ctor6")
 		self.setLayout(self.infolay)
 
+		trace("InfoWidget: ctor7")
 		self.saved_data = {"q":None, "w":None}
 		self.coords_difference_mode=False
+
+		trace("InfoWidget: ctor... ok")
 
 	def set_marker_data(self, qw, x, y, z):
 		data = "x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x, y, z)

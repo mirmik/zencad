@@ -43,9 +43,15 @@ class DisplayWidget(QGLWidget):
 	zoom_koeff_key = 1.3
 	zoom_koeff_mouse = 1.1
 
-	def __init__(self, scene, need_prescale=True, view=None, showmarkers=True):
+	def __init__(self, scene, need_prescale=True, view=None, showmarkers=True,
+		communicator=None, session_id=0, bind_mode=False):
 		trace("construct DisplayWidget")
 		QWidget.__init__(self)
+
+		self.communicator=communicator
+		self.session_id=session_id
+		self.bind_mode=bind_mode
+
 		self.setFocusPolicy(Qt.StrongFocus)
 		self.orient = 1
 		self.mousedown = False
@@ -176,6 +182,18 @@ class DisplayWidget(QGLWidget):
 
 			#self.view.redraw()
 			self.inited = True
+
+			# Шлём на ту сторону указание отрисовать нас.
+			if self.bind_mode:
+
+				trace("DISPLAYWIDGET: Trying to bind window")
+				self.communicator.send({
+					"cmd":"bindwin", 
+					"id":int(self.winId()), 
+					"pid":os.getpid(), 
+					"session_id":self.session_id
+				})
+
 		else:
 			pass
 			#self.update()
@@ -202,8 +220,9 @@ class DisplayWidget(QGLWidget):
 		if self.inited:
 			self.view.must_be_resized()
 
-	def resize_addon(self):
+	def resize_addon(self, size):
 		if self.inited:
+			self.resize(size)
 			self.view.must_be_resized()
 
 	def paintEngine(self):
@@ -392,7 +411,7 @@ class DisplayWidget(QGLWidget):
 		if cmd == "autoscale": self.autoscale()
 		elif cmd == "resetview": self.reset_orient()
 		elif cmd == "redraw": self.redraw()
-		elif cmd == "resize": self.resize_addon()
+		elif cmd == "resize": self.resize_addon(size=QSize(data["size"][0],data["size"][1]))
 		elif cmd == "orient1": self.reset_orient1()
 		elif cmd == "orient2": self.reset_orient2()
 		elif cmd == "centering": self.view.centering() # TODO: Неправильно работает

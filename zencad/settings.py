@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 
 from PyQt5.QtCore import *
 import pyservoce
@@ -104,7 +105,21 @@ class Settings():
 		self.store()
 
 	@classmethod
+	def clear_deleted_recent(self):
+		recents = self.list_of_settings["memory"]["recents"]
+		need_store = False
+
+		for r in recents:
+			if not os.path.exists(r) or not os.path.isfile(r):
+				self.list_of_settings["memory"]["recents"].remove(r)
+				need_store = True
+	
+		if need_store:
+			self.store()
+
+	@classmethod
 	def get_recent(self):
+		self.clear_deleted_recent()
 		return self.list_of_settings["memory"]["recents"]
 
 	@classmethod

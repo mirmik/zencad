@@ -1,6 +1,7 @@
 import threading
 import os
 import sys
+import io
 import zencad
 import signal
 import psutil
@@ -13,32 +14,17 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-__RETRANSLER_TRACE__ = False
-
-def run_with_timeout(timeout, default, f, *args, **kwargs):
-	if not timeout:
-		return f(*args, **kwargs)
-	try:
-		timeout_timer = Timer(timeout, threading.interrupt_main)
-		timeout_timer.start()
-		result = f(*args, **kwargs)
-		return result
-	except KeyboardInterrupt:
-		return default
-	finally:
-		timeout_timer.cancel()
-
 class console_retransler(QThread):
-	def __init__(self):
+	def __init__(self, stdout, new_desc=None):
 		super().__init__()
-		self.name = "console_retransler"
-		self.do_retrans()
+
+		self.do_retrans(old_file=stdout, new_desc=new_desc)
 		self.stop_token = False
 
 	def run(self):
 		try:
 			self.pid = os.getpid()
-			self.readFile = os.fdopen(self.r)
+			self.readFile = self.r_file
 		except Exception as ex:
 			sys.stderr.write("console_retransler::rdopen error: ", ex, self.ipipe)
 			sys.stderr.write("\r\n")
@@ -47,61 +33,42 @@ class console_retransler(QThread):
 		
 		while(True):
 			if self.stop_token:
-				if __RETRANSLER_TRACE__:
+				if zencad.configure.CONFIGURE_MAIN_TRACE:
 					print_to_stderr("finish console retransler... ok")
 				return
 			try:
 				inputdata = self.readFile.readline()
 			except:
-				if __RETRANSLER_TRACE__:
+				if zencad.configure.CONFIGURE_MAIN_TRACE:
 					print_to_stderr("finish console retransler... except")
 				return
 			
 			zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"console","data":inputdata})
 
 	def finish(self):
-		if __RETRANSLER_TRACE__:
+		if zencad.configure.CONFIGURE_MAIN_TRACE:
 			print_to_stderr("finish console retransler... started")
 			
-		#os.kill(self.pid, signal.SIGKILL)
 		self.stop_token = True
 
+	def do_retrans(self, old_file, new_desc=None):
+		if zencad.configure.CONFIGURE_MAIN_TRACE:
+			print_to_stderr("do_retrans old:{} new:{}".format(old_file, new_desc))
 
-		# TODO: CHANGE FINISH MODEL
-
-		#try:
-		#	os.close(self.readFile.fileno())
-		#except:
-		#	pass
-#
-		#if __RETRANSLER_TRACE__:
-		#	print_to_stderr("L")
-		#try:
-		#	#	print_to_stderr("B")
-		#	#time.sleep(0.05)
-		#	zencad.gui.signal_os.kill(self.pid, zencad.gui.signal_os.sigkill)
-		#except Exception as ex:
-		#	print_to_stderr("console_retransler on kill", ex)
-#
-		#if __RETRANSLER_TRACE__:
-		#	print_to_stderr("finish console retransler... exit")
-
-
-		#gone, alive = psutil.wait_procs(procs, timeout=3, callback=on_terminate)
-		#for p in alive:
-		#    p.kill()
-
-	def do_retrans(self, old=1, new=3):
-		if __RETRANSLER_TRACE__:
-			print_to_stderr("do_retrans old:{} new:{}".format(old, new))
-
-		os.dup2(old, new)
+		old_desc = old_file.fileno()
+		if new_desc:
+			os.dup2(old_desc, new_desc)
+		else:
+			new_desc = os.dup(old_desc)
+		
 		r, w = os.pipe()
-		self.r = r
-		self.w = w
-		self.old = old
-		self.new = new
-		os.close(old)
-		os.dup2(w, old)
+		self.r_file = os.fdopen(r, "r")
+		self.w_file = os.fdopen(w, "w")
+		self.old_desc = old_desc
+		self.new_desc = new_desc
+		self.new_file = os.fdopen(new_desc, "w")
+		old_file.close()
+		os.close(old_desc)
+		os.dup2(w, old_desc)
 
-		sys.stdout = os.fdopen(old, "w", 1)
+		sys.stdout = io.TextIOWrapper(os.fdopen(old_desc, "wb"), line_buffering=True)
