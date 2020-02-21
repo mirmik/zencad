@@ -196,10 +196,7 @@ class DisplayWidget(QGLWidget):
 
 		else:
 			pass
-			#self.update()
-			#self.view.redraw()
-
-		#self.location_changed_handle()
+			
 		trace("DisplayWidget::showEvent: finish")
 
 	def paintEvent(self, ev):
@@ -210,6 +207,8 @@ class DisplayWidget(QGLWidget):
 			self.view.must_be_resized()
 			self.painted = True
 		trace("DisplayWidget::paintEvent: finish")
+
+		self.view.redraw()
 
 	def prescale(self):
 		self.reset_orient1()
