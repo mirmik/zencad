@@ -1,3 +1,17 @@
+## 0.28.2:
+	Fix window update tremmer
+	Add deleted recent files cleaning
+	Fix file descriptors bugs.
+
+## 0.28.1:
+	Fix Windows build.
+	Disable screen option for future investigation.
+
+## 0.28.0:
+	Improve gui stability.
+	Add line numbers for texteditor.
+	Add screen saver.
+	Add evalcache progress messages. 
 
 ## 0.27.0:
 	Tetris minigame: change bodies to the classic scheme. 

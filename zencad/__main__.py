@@ -59,6 +59,8 @@ def protect_path(s):
 	return s
 
 def do_main():
+	#os.closerange(3, 100)
+
 	OPPOSITE_PID_SAVE = None
 	zencad.gui.signal_handling.setup_simple_interrupt_handling()
 
@@ -71,10 +73,13 @@ def do_main():
 	parser.add_argument("--replace", action="store_true")
 	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
-	parser.add_argument("--sleeped", action="store_true")
+	parser.add_argument("--sleeped", action="store_true", help="Don't use manualy. Create sleeped thread.")
 	parser.add_argument("--nodaemon", action="store_true")
 	parser.add_argument("--disable-show", action="store_true")
 	parser.add_argument("--disable-sleeped", action="store_true")
+	parser.add_argument("--disable-screen", action="store_true")
+	parser.add_argument("--no-evalcache-notify", action="store_true")
+	parser.add_argument("--size")
 	parser.add_argument("--no-restore", action="store_true")
 	parser.add_argument("--tgtpath")
 	parser.add_argument("--debugcomm", action="store_true")
@@ -97,11 +102,20 @@ def do_main():
 	if pargs.disable_sleeped:
 		zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION = False
 
+	if pargs.disable_screen:
+		zencad.configure.CONFIGURE_SCREEN_SAVER_TRANSLATE = False
+
+	if pargs.debugcomm:
+		zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP = True
+
+	if pargs.no_evalcache_notify:
+		zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES = True
+
 	if pargs.no_restore:
 		zencad.configure.CONFIGURE_NO_RESTORE = True
 
 
-	trace("__MAIN__", sys.argv)
+	trace(f"__MAIN__ ({os.getpid()})", sys.argv)
 	trace(pargs)
 
 	if pargs.mpath:
@@ -120,16 +134,20 @@ def do_main():
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
 		return
 
+	retrans_out_file = None
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
-		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler()
+		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler(sys.stdout)
 		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
+		retrans_out_file = zencad.gui.application.CONSOLE_RETRANS_THREAD.new_file
 
 	if pargs.sleeped:
 		# Эксперементальная функциональность для ускорения обновления модели. 
 		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
+		zencad.util.PROCNAME = f"sl({os.getpid()})"
 		readFile = os.fdopen(zencad.gui.application.STDIN_FILENO)
+
 		while 1:
 			trace("SLEEPED THREAD: read")
 			rawdata = readFile.readline()
@@ -152,6 +170,7 @@ def do_main():
 
 		try:
 			pargs.prescale = data["need_prescale"]
+			pargs.size = data["size"]
 			pargs.paths = [data["path"]]
 		except:
 			print_to_stderr("Unpickle error_2", data)
@@ -160,15 +179,17 @@ def do_main():
 		zencad.settings.restore()			
 
 	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
-
 		# Теперь можно сделать поток для обработки данных, которые программа собирается 
 		# посылать в stdout
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
-			ipipe=zencad.gui.application.STDIN_FILENO, opipe=3)
+			ifile=sys.stdin, ofile=retrans_out_file)
 		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
+		#zencad.gui.application.MAIN_COMMUNICATOR.newdata.connect(hard_finish_checker)
 		
 		if OPPOSITE_PID_SAVE is not None:
 			zencad.gui.application.MAIN_COMMUNICATOR.set_opposite_pid(OPPOSITE_PID_SAVE)
+
+		zencad.lazifier.install_evalcahe_notication(zencad.gui.application.MAIN_COMMUNICATOR)
 
 		#zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
 	
@@ -232,6 +253,10 @@ def do_main():
 
 		if pargs.disable_show:
 			zencad.showapi.SHOWMODE = "noshow"
+
+		if pargs.size:
+			arr = pargs.size.split(',')
+			zencad.showapi.SIZE = (int(arr[0]), int(arr[1]))
 
 		try:
 			runpy.run_path(path, run_name="__main__")

@@ -17,6 +17,7 @@ SHOWMODE = "makeapp"
 PRESCALE = False
 SLEEPED = False
 SESSION_ID = 0
+SIZE = (640,480)
 EXECPATH = sys.argv[0]
 
 def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, **kwargs):
@@ -52,7 +53,7 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
     elif SHOWMODE == "replace":
         # Replace main programm widget with target id's widget
         zencad.gui.application.update_unbound_application(
-            scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, *args, **kwargs)
+            scene=scene, need_prescale=PRESCALE, sleeped=SLEEPED, session_id=SESSION_ID, size=SIZE, *args, **kwargs)
 
     elif SHOWMODE == "noshow":
         print("showapi: showing disabled")

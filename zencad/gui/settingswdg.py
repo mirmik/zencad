@@ -35,7 +35,7 @@ class TextFieldChanger(QWidget):
 		self.layout.addWidget(QLabel(label))
 		self.edit = QLineEdit()
 		self.edit.setFixedWidth(length)
-		self.edit.setText(zencad.settings.get(path))
+		self.edit.setText(str(zencad.settings.get(path)))
 		self.layout.addWidget(self.edit)
 		self.setLayout(self.layout)
 
