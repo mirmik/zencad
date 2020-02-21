@@ -584,6 +584,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			in self.communicator_dictionary.values()]))
 
 		comm.kill()
+		#comm.subproc.wait()
 
 		self.openlock.unlock()
 
