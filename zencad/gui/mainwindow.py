@@ -74,7 +74,10 @@ class ScreenSaverWidget(QWidget):
 
 	def set_loading_state(self):
 		self.mode = "load"
-		self.set_text("Loading ...")
+		if sys.platform == "darwin":
+			self.set_text("Loading ... (embeding not supported for osx)")
+		else:
+			self.set_text("Loading ...")
 		self.last_install_time = time.time()
 
 	def set_text(self, text):
@@ -451,9 +454,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	#		#self.blacklifier.setParent(self.embeded_window_container)
 	#		self.blacklifier.raise_()
 			
+	def is_window_binded(self):
+		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
+		return not bind_widget_flag == "false" and not zencad.configure.CONFIGURE_NO_EMBEDING_WINDOWS
+
 	def bind_window(self, winid, pid, session_id):
 		trace("bind_window: winid:{}, pid:{}".format(winid,pid))
-		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
 
 		if self.client_communicator.subproc_pid() != pid:
 			"""Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
@@ -469,7 +475,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				self.openlock.unlock()
 				return
 		
-			if not bind_widget_flag == "false":
+			if self.is_window_binded():
 				#oldwindow = self.cc_window
 				self.embeded_window = QWindow.fromWinId(winid)
 
@@ -498,7 +504,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				info("restore saved eye location")
 		
 			self.open_in_progress = False
-			if not bind_widget_flag == "false":
+			if self.is_window_binded():
 				self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
 			self.client_communicator.send({"cmd":"redraw"})
 			time.sleep(0.1)
@@ -713,7 +719,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 					self.replace_widget(self.screen_saver)
 				old_window_container.close()
 				self.openlock.unlock()
-			QTimer.singleShot(timeout, foo)
+
+			if self.is_window_binded():
+				QTimer.singleShot(timeout, foo)
 		self.MARKER=None
 
 		# Если уведомления включены, обновить цель.
