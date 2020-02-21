@@ -707,7 +707,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			timeout = 100 if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else 500
 			old_window_container = self.embeded_window_container
 			def foo():
-				self.openlock.unlock()
+				self.openlock.lock()
 				if self.open_in_progress:
 					self.replace_widget(self.screen_saver)
 				old_window_container.close()
