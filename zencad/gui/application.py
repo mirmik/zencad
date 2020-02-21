@@ -173,11 +173,11 @@ def start_application(tgtpath, debug):
 	#os.dup2(o, 4)
 
 	debugstr = "--debug" if debug or zencad.configure.DEBUG_MODE else "" 
-	debugcomm_mode = "--debugcomm" if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP else ""
+	debugcomm = "--debugcomm" if zencad.configure.CONFIGURE_PRINT_COMMUNICATION_DUMP else ""
 	no_sleeped = "" if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION else "--disable-sleeped"
 	no_evalcache_notify = "--no-evalcache-notify" if zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES else ""
 	interpreter = INTERPRETER
-	cmd = f'{interpreter} -m zencad {no_sleeped} --subproc {debugstr} --tgtpath "{tgtpath} {no_evalcache_notify} {debugcomm}"'
+	cmd = f'{interpreter} -m zencad {no_sleeped} --subproc {debugstr} --tgtpath {tgtpath} {no_evalcache_notify} {debugcomm}"'
 
 	subproc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE, 
 		close_fds=True)
