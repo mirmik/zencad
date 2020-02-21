@@ -131,7 +131,9 @@ def do_main():
 			print_to_stderr("Error: subproc mode without tgtpath")
 			exit(0)
 
+		trace("start_main_application")
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
+		trace("start_main_application ... ok")
 		return
 
 	retrans_out_file = None

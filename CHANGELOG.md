@@ -1,4 +1,7 @@
 ## 0.28.3
+	Fix app finalization for console mode.
+
+## 0.28.3
 	Fix console mode bug
 
 ## 0.28.2:
