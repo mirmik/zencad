@@ -1,6 +1,7 @@
 ## 0.28.4
 	Fix app finalization for console mode.
 	Fix viewadaptor repainting on expand etc.
+	Add "version" option
 
 ## 0.28.3
 	Fix console mode bug
