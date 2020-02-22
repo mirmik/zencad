@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import zencad
+import zencad.version
 import zencad.showapi
 import zencad.gui.application
 import zencad.gui.viewadaptor
@@ -67,6 +68,7 @@ def do_main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
 	parser.add_argument('-v', "--debug", action="store_true")
+	parser.add_argument("--version", action="store_true")
 	parser.add_argument("-I", "--mpath", action="store_true")
 	parser.add_argument("-m", "--module", default="zencad")
 	parser.add_argument("--subproc", action="store_true")
@@ -93,6 +95,10 @@ def do_main():
 
 	if pargs.module != "zencad":
 		print("module opt is not equal 'zencad'")
+
+	if pargs.version:
+		print(zencad.version.__version__)
+		sys.exit(0)
 
 	if pargs.debug:
 		zencad.configure.verbose(True)
