@@ -116,6 +116,7 @@ def examples_dict(root = None):
     return dct
 
 def set_process_name(name):
-    if sys.platform != "win32":
-        import setproctitle
-        setproctitle.setproctitle(name)  
+    pass
+    #if sys.platform != "win32":
+    #    import setproctitle
+    #    setproctitle.setproctitle(name)  

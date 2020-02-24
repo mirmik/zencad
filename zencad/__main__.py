@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import zencad
+import zencad.version
 import zencad.showapi
 import zencad.gui.application
 import zencad.gui.viewadaptor
@@ -67,6 +68,7 @@ def do_main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--info", action="store_true")
 	parser.add_argument('-v', "--debug", action="store_true")
+	parser.add_argument("--version", action="store_true")
 	parser.add_argument("-I", "--mpath", action="store_true")
 	parser.add_argument("-m", "--module", default="zencad")
 	parser.add_argument("--subproc", action="store_true")
@@ -79,6 +81,7 @@ def do_main():
 	parser.add_argument("--disable-sleeped", action="store_true")
 	parser.add_argument("--disable-screen", action="store_true")
 	parser.add_argument("--no-evalcache-notify", action="store_true")
+	parser.add_argument("--no-embed", action="store_true")
 	parser.add_argument("--size")
 	parser.add_argument("--no-restore", action="store_true")
 	parser.add_argument("--tgtpath")
@@ -92,6 +95,10 @@ def do_main():
 
 	if pargs.module != "zencad":
 		print("module opt is not equal 'zencad'")
+
+	if pargs.version:
+		print(zencad.version.__version__)
+		sys.exit(0)
 
 	if pargs.debug:
 		zencad.configure.verbose(True)
@@ -110,6 +117,9 @@ def do_main():
 
 	if pargs.no_evalcache_notify:
 		zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES = True
+
+	if pargs.no_embed:
+		zencad.configure.CONFIGURE_NO_EMBEDING_WINDOWS = True
 
 	if pargs.no_restore:
 		zencad.configure.CONFIGURE_NO_RESTORE = True
@@ -131,7 +141,9 @@ def do_main():
 			print_to_stderr("Error: subproc mode without tgtpath")
 			exit(0)
 
+		trace("start_main_application")
 		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
+		trace("start_main_application ... ok")
 		return
 
 	retrans_out_file = None
