@@ -185,7 +185,7 @@ class DisplayWidget(QGLWidget):
 
 			# Шлём на ту сторону указание отрисовать нас.
 			if self.bind_mode:
-
+			#	def foo():
 				trace("DISPLAYWIDGET: Trying to bind window")
 				self.communicator.send({
 					"cmd":"bindwin", 
@@ -193,6 +193,8 @@ class DisplayWidget(QGLWidget):
 					"pid":os.getpid(), 
 					"session_id":self.session_id
 				})
+				time.sleep(0.02)
+			#	self.timer = QTimer.singleShot(0, foo)
 
 		else:
 			pass
