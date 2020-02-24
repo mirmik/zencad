@@ -40,6 +40,8 @@ from zencad.showapi import default_scene
 
 from zencad.geom.curve3 import extract_curve
 
+from zencad.version import __version__
+
 #__DEFAULT_TRACE__ = True
 #
 #def enable_trace(en):
