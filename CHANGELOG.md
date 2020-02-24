@@ -1,3 +1,6 @@
+## 0.28.12
+	Revert sdist experiment
+
 ## 0.28.7
 	Change distribution model from wheel to sdist
 
