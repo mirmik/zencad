@@ -8,8 +8,6 @@ import glob
 import sys
 import os
 
-import zencad.version
-
 directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
@@ -28,7 +26,7 @@ if sys.platform != "win32":
 setup(
     name="zencad",
     packages=["zencad"],
-    version=zencad.version.__version__,
+    version="0.28.8",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",

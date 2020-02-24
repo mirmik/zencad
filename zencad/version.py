@@ -1,1 +1,2 @@
-__version__ = "0.28.7"
+import pkg_resources
+__version__ = pkg_resources.get_distribution("zencad").version
