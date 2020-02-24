@@ -1,3 +1,6 @@
+## 0.28.7
+	Change distribution model from wheel to sdist
+
 ## 0.28.4
 	Fix app finalization for console mode.
 	Fix viewadaptor repainting on expand etc.
