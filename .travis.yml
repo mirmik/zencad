@@ -53,7 +53,8 @@ matrix:
         - python3 ./api.py
         - python3 ./examples.py
 
-   - os: osx
+    - os: osx
+      osx_image: xcode11.2
       language: shell
             
       install: 
