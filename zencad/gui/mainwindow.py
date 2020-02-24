@@ -741,7 +741,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def finish_screen(self, data, size, procpid):
 		self.openlock.lock()
 		btes, size = data, size		
-		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format.Format_RGBA8888).mirrored(False,True))
+		self.last_screen = QPixmap.fromImage(QImage(btes, size[0], size[1], QImage.Format_RGBA8888).mirrored(False,True))
 		self.screen_saver.set_background(self.last_screen)
 		self.openlock.unlock()
 
