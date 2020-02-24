@@ -54,12 +54,8 @@ matrix:
         - python3 ./examples.py
 
    - os: osx
-      dist: bionic
       language: shell
             
-      #services:
-      #  - xvfb
-
       install: 
         - python3 -m pip install zencad
 
