@@ -3,3 +3,6 @@ recursive-include  *.py
 include industrial-robot.svg
 include techpriest.jpg
 include zencad_logo.png
+
+include zencad/examples/fonts/mandarinc.ttf
+include zencad/examples/fonts/testfont.ttf
