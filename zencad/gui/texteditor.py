@@ -370,6 +370,6 @@ class TextEditor(QPlainTextEdit):
 			maxim /= 10
 			digits += 1
 	
-		space = 3 + self.fontMetrics().horizontalAdvance('9'[0]) * digits;
+		space = 3 + self.fontMetrics().width('9'[0]) * digits;
 	
 		return space;
