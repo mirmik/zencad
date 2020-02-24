@@ -50,7 +50,7 @@ class MainWindowActionsMixin:
 				"<p><h3>Feedback</h3>"
 				"<pre>email: mirmikns@yandex.ru\n"
 				"github: https://github.com/mirmik/zencad\n"
-				"2018-2019<pre/>".format(BANNER_TEXT, ABOUT_TEXT)
+				"2018-2020<pre/>".format(BANNER_TEXT, ABOUT_TEXT)
 			),
 		)
 

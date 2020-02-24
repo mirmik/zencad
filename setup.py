@@ -16,17 +16,17 @@ requires = [
         "numpy",
         "pillow",
         "pyopengl",
-        "PyQt5",
+        "PyQt5!=5.14.1",
         "psutil"
     ] 
 
-if sys.platform != "win32":
-    requires.append("setproctitle")
+#if sys.platform != "win32":
+#   requires.append("setproctitle")
 
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.28.3",
+    version="0.28.13",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",

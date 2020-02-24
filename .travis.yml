@@ -21,7 +21,6 @@ matrix:
 
         - python3 -m pip install licant
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
-        - python3 -m pip install setproctitle
         - python3 -m pip install scikit-image
 
         - git clone https://github.com/mirmik/servoce --recursive
@@ -45,6 +44,18 @@ matrix:
       services:
         - xvfb
 
+      install: 
+        - python3 -m pip install zencad
+
+      script:
+        - cd utest
+        - python3 ./api.py
+        - python3 ./examples.py
+
+    - os: osx
+      osx_image: xcode11.2
+      language: shell
+            
       install: 
         - python3 -m pip install zencad
 
