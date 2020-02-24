@@ -717,7 +717,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				self.openlock.lock()
 				if self.open_in_progress:
 					self.replace_widget(self.screen_saver)
-				old_window_container.close()
+				if old_window_container is not None:
+					old_window_container.close()
 				self.openlock.unlock()
 
 			if self.is_window_binded():
