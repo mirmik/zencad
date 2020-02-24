@@ -141,11 +141,13 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	app.exec()
 	trace("FINISH MAIN QTAPP")
 
+	trace("MAIN_COMMUNICATOR stop listen")
 	if zencad.gui.application.MAIN_COMMUNICATOR:
 		zencad.gui.application.MAIN_COMMUNICATOR.stop_listen()
 
 	time.sleep(0.05)
 
+	trace("terminate process")
 	procs = psutil.Process().children()	
 	for p in procs:
 		try:
@@ -366,6 +368,8 @@ def common_unbouded_proc(scene,
 				trace(data)
 				if data["cmd"] == "stopworld": 
 					stop_world()
+				elif data["cmd"] == "smooth_stopworld": 
+					smooth_stop_world()
 				elif data["cmd"] == "stop_activity":
 					stop_activity()
 				elif data["cmd"] == "console":

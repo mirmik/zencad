@@ -161,14 +161,16 @@ class Communicator(QObject):
 		else:
 			if not self.closed_fds:
 				try:
-					trace("close ifile", self.ifile.fileno(), self.subproc_pid())
-					self.ifile.close()
+					#trace("close ifile", self.ifile.fileno(), self.subproc_pid())
+					pass
+					#self.ifile.close()
 				except (OSError, ValueError) as ex:
 					trace(ex)
 	
 				try:
-					trace("close ofile", self.ofile.fileno(), self.subproc_pid())
-					self.ofile.close()
+					#trace("close ofile", self.ofile.fileno(), self.subproc_pid())
+					pass
+					#self.ofile.close()
 				except (OSError, ValueError) as ex:
 					trace(ex)
 
@@ -187,8 +189,8 @@ class Communicator(QObject):
 		trace("event set")
 		self.listener_thr.event.set()
 		
-		trace("wait listener")
-		self.listener_thr.wait()
+		#trace("wait listener")
+		#self.listener_thr.wait()
 
 		self.closed_fds = True
 		self.closed = True
