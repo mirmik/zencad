@@ -16,7 +16,7 @@ requires = [
         "numpy",
         "pillow",
         "pyopengl",
-        "PyQt5",
+        "PyQt5!=5.14.1",
         "psutil"
     ] 
 
