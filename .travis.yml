@@ -53,4 +53,19 @@ matrix:
         - python3 ./api.py
         - python3 ./examples.py
 
+   - os: osx
+      dist: bionic
+      language: shell
+            
+      #services:
+      #  - xvfb
+
+      install: 
+        - python3 -m pip install zencad
+
+      script:
+        - cd utest
+        - python3 ./api.py
+        - python3 ./examples.py
+
     
