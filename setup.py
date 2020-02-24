@@ -20,8 +20,8 @@ requires = [
         "psutil"
     ] 
 
-if sys.platform != "win32":
-    requires.append("setproctitle")
+#if sys.platform != "win32":
+#   requires.append("setproctitle")
 
 setup(
     name="zencad",
