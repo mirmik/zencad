@@ -1,5 +1,6 @@
 ## 0.29.0
 	Changed "rotate" signature for openscad compatible.
+	Update manual.
 
 ## 0.28.12
 	Revert sdist experiment
