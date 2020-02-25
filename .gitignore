@@ -112,3 +112,4 @@ ENV/
 *.stl
 *.brep
 /mangen/images/generic/*
+/docs/images/generic/*

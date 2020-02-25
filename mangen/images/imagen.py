@@ -783,3 +783,9 @@ doscreen(
     path="section1.png",
     size=wsize
 )
+
+doscreen(
+    model=nulltrans()(box(10)),
+    path="nulltrans01.png",
+    size=wsize
+)
