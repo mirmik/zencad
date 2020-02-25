@@ -25,6 +25,12 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
         scn.add(mmm)
     except:
         for m in model:
+            if isinstance(m, (tuple, list)):
+                c=m[1]
+                m=m[0]
+            else:
+                c=zencad.default_color
+
             mod = m
             if isinstance(mod, evalcache.LazyObject):
                 mod = mod.unlazy()
@@ -33,7 +39,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
                 scn.add(mod, color(1, 0, 0))
 
             else:
-                scn.add(mod)
+                scn.add(mod, c)
 
     viewer = scn.viewer
     if triedron or True: # Always add triedron 
@@ -77,7 +83,8 @@ doscreen(
 )
 
 # prim3d
-doscreen(model=box(10, 20, 30), path="box.png", size=wsize)
+doscreen(model=box(10, 20, 30, center=False), path="box0.png", size=wsize)
+doscreen(model=box(10, center=True), path="box1.png", size=wsize)
 
 doscreen(model=sphere(r=10), path="sphere0.png", size=wsize)
 doscreen(model=sphere(r=10, yaw=deg(120)), path="sphere1.png", size=wsize)
@@ -90,11 +97,13 @@ doscreen(
 
 doscreen(model=cylinder(r=10, h=20), path="cylinder0.png", size=wsize)
 doscreen(model=cylinder(r=10, h=20, yaw=deg(45)), path="cylinder1.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, center=True), path="cylinder2.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, yaw=deg(45), center=True), path="cylinder3.png", size=wsize)
 
 doscreen(model=cone(r1=20, r2=10, h=20), path="cone0.png", size=wsize)
 doscreen(model=cone(r1=20, r2=10, h=20, yaw=deg(45)), path="cone1.png", size=wsize)
 doscreen(model=cone(r1=0, r2=20, h=20), path="cone2.png", size=wsize)
-doscreen(model=cone(r1=20, r2=0, h=20), path="cone3.png", size=wsize)
+doscreen(model=cone(r1=20, r2=0, h=20, center=True), path="cone3.png", size=wsize)
 
 doscreen(model=torus(r1=20, r2=5), path="torus0.png", size=wsize)
 doscreen(model=torus(r1=20, r2=5, yaw=deg(120)), path="torus1.png", size=wsize)
@@ -787,5 +796,63 @@ doscreen(
 doscreen(
     model=nulltrans()(box(10)),
     path="nulltrans01.png",
+    size=wsize
+)
+
+doscreen(
+    model=box(10),
+    path="multitrans0.png",
+    size=wsize
+)
+
+doscreen(
+    model=multitransform([ 
+        translate(10,0,0) * rotateZ(deg(60)),
+        translate(10,10,0) * rotateZ(deg(120)),
+        translate(0,10,0) * rotateZ(deg(180)),
+        nulltrans()
+    ])(box(10)),
+    path="multitrans1.png",
+    size=wsize
+)
+
+doscreen(
+    model=box(5, center=True),
+    path="complextrans0.png",
+    size=wsize
+)
+
+doscreen(
+    model=(moveX(20) * rotateZ(deg(60)))(box(5, center=True)),
+    path="complextrans1.png",
+    size=wsize
+)
+
+
+trans = moveX(20) * rotateZ(deg(20))
+m = box(5,center=True)
+
+doscreen(
+    model=((trans(m),color.green),),
+    path="invtrans0.png",
+    size=wsize
+)
+
+doscreen(
+    model=((trans.inverse()(m), color.red),),
+    path="invtrans1.png",
+    size=wsize
+)
+
+trans = rotateZ(deg(20))
+doscreen(
+    model=((trans(m),color.green),),
+    path="invtrans2.png",
+    size=wsize
+)
+
+doscreen(
+    model=((trans.inverse()(m), color.red),),
+    path="invtrans3.png",
     size=wsize
 )
