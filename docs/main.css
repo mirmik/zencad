@@ -30,10 +30,6 @@
   	font-size: 13px;
 }
 
-.article h1 {
-	text-align: left;
-}
-
 .nav ul 
 {
 	padding-left: 2em;
@@ -66,10 +62,12 @@ pre
 
 .article h1 {
 	font-size: 40px;
+	text-align: left;
 }
 
 .article h2 {
 	font-size: 30px;
+	text-align: left;
 }
 
 /* Buttons
