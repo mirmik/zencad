@@ -3,14 +3,13 @@
 	* [Скриптовый CAD](scriptcad.html)
 	* [Разбор HelloWorld](helloworld.html)
 	* [Установка](installation.html)
+	* [BREP представление](geomcore.html)
 	* [Кэширование](caching.html)
-	* [Введение в геометрическое ядро](geomcore.html)
 * Базовые примитивы и операции
 	* [Объёмные примитивы](prim3d.html)  
 	* [Плоские примитивы](prim2d.html)  
-	* [Создание линий](prim1d.html)  
+	* [Линии и циклы](prim1d.html)  
 	* [Точки, вектора, утилиты](prim0d.html)
-	* [Линии и циклы](lincycle.html)  
 	* [Топологически зависимые преобразования](fillet.html)  
 	* [Ссылочная геометрия](ops3d.html)
 * Преобразования
@@ -27,7 +26,7 @@
 * [Экспорт/Импорт](expimp.html)
 * [Анимация](animate.html)
 * [Сборки и подвижные модели](assemble.html)
-* [Внутренняя кухня](internal.html)
+* [Внутренняя кухня ZenCad](internal.html)
 * Библиотеки
 	* [kinematic](kinematic.html)
 	* [nut](nut.html)

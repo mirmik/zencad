@@ -10,6 +10,16 @@
 	color: white;
 }
 
+.spoiler {
+	color: #444444;
+	background: lightgray;
+	box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.spoiler p {
+	padding: 1em;
+}
+
 .nav {
 	float: left;
 	background-color: white;
@@ -18,6 +28,10 @@
 	padding: 1em;
   	font-family: Helvetica, Arial, sans-serif;
   	font-size: 13px;
+}
+
+.article h1 {
+	text-align: left;
 }
 
 .nav ul 

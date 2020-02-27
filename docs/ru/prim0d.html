@@ -26,16 +26,15 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
-<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
@@ -59,7 +58,7 @@
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
 <li><a href="assemble.html">Сборки и подвижные модели</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -69,13 +68,15 @@
 </nav>
       <article class="article"><h1>Точка, вектор, вспомогательные функции.</h1>
 
+<p>В библиотеки ZenCad есть некоторые вспомогательные математические объекты и функции для работы с ними.</p>
+
 <hr />
 
-<h2>Point3</h2>
+<h2>Точка.</h2>
 
 <p>Некоторые функции ZenCad используют в качестве параметров точки или массивы точек. Для создания объекта точки можно использовать функцию <code>point3</code>. Кроме того, часто функция может сама сформировать точки по списку или кортежу координат.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
 
 <span class="c1">#Equivalent calls</span>
 <span class="n">interpolate</span><span class="p">([</span><span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">point3</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
@@ -85,18 +86,30 @@
 
 <hr />
 
-<h2>Vector3</h2>
+<h2>Вектор.</h2>
 
 <p>Иногда кроме указаний точек используются объекты-векторы для указания направлений. Принцип работы с векторами аналогичен работе с точками.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 
 <span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
 </code></pre></div>
 
 <hr />
 
-<h2>vectors, points</h2>
+<h2>Операции над точками и векторами.</h2>
+
+<p>Точки и вектора могут использоваться в математических операциях в соответствиями с правилами линейной алгебры.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">pnt</span> <span class="o">-</span> <span class="n">pnt</span> <span class="o">-&gt;</span> <span class="n">vec</span>
+<span class="n">pnt</span> <span class="o">+</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">pnt</span>
+<span class="n">vec</span> <span class="o">+</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">vec</span>
+<span class="n">vec</span> <span class="o">-</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">vec</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Функции vectors, points.</h2>
 
 <p>Функции vectors и points явно создают массивы точек из массивов координат.</p>
 
@@ -106,10 +119,11 @@
 
 <hr />
 
-<h2>nullshape</h2>
+<h2>Пустое примитив. nullshape.</h2>
 
-<p>Пустой примитив. Может участвовать в булевых операциях.
-Пример использования в цикле:</p>
+<p>Пустой примитив. Может участвовать в булевых операциях.  </p>
+
+<p>Пример использования в цикле:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="n">nullshape</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
@@ -120,10 +134,16 @@
 
 <hr />
 
-<h2>deg</h2>
+<h2>Функция deg.</h2>
 
 <p>API ZenCad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg: <br />
 <code>deg(180)</code> соответствует <code>math.pi</code>.</p>
+
+<p>Код функции deg:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>

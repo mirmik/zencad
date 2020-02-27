@@ -5,11 +5,14 @@ from zencad import *
 import os
 
 import zencad.visual
+import zencad.internal_models
 import pyservoce
 
 # lazy.diag = True
 
 wsize = (300, 200)
+
+dock = lambda sz: box(sz,sz,2,center=True).down(1)
 
 if not os.path.exists("generic"):
     os.makedirs("generic")
@@ -799,60 +802,70 @@ doscreen(
     size=wsize
 )
 
+m = zencad.internal_models.knight()
 doscreen(
-    model=box(10),
+    model=(m, dock(80)),
     path="multitrans0.png",
     size=wsize
 )
 
 doscreen(
-    model=multitransform([ 
-        translate(10,0,0) * rotateZ(deg(60)),
-        translate(10,10,0) * rotateZ(deg(120)),
-        translate(0,10,0) * rotateZ(deg(180)),
+    model=(multitransform([ 
+        translate(-20,20,0) * rotateZ(deg(60)),
+        translate(-20,-20,0) * rotateZ(deg(120)),
+        translate(20,20,0) * rotateZ(deg(180)),
         nulltrans()
-    ])(box(10)),
+    ])(m), dock(80)),
     path="multitrans1.png",
     size=wsize
 )
 
+P=-deg(60)
+D=60
+
+m = zencad.internal_models.knight()
 doscreen(
-    model=box(5, center=True),
+    model=(m, dock(80)),
     path="complextrans0.png",
-    size=wsize
+    size=wsize,
+    pitch=P
 )
 
 doscreen(
-    model=(moveX(20) * rotateZ(deg(60)))(box(5, center=True)),
+    model=((moveX(20) * rotateZ(deg(60)))(m), dock(D)),
     path="complextrans1.png",
-    size=wsize
+    size=wsize,
+    pitch=P
 )
 
-
-trans = moveX(20) * rotateZ(deg(20))
-m = box(5,center=True)
+trans = moveX(20) * rotateZ(deg(45))
+m = zencad.internal_models.knight()
 
 doscreen(
-    model=((trans(m),color.green),),
+    model=((trans(m)), dock(D)),
     path="invtrans0.png",
-    size=wsize
+    size=wsize,
+    pitch=P
 )
 
 doscreen(
-    model=((trans.inverse()(m), color.red),),
+    model=((trans.inverse()(m)), dock(D)),
     path="invtrans1.png",
-    size=wsize
+    size=wsize,
+    pitch=P
 )
 
-trans = rotateZ(deg(20))
+trans = rotateZ(deg(45))
 doscreen(
-    model=((trans(m),color.green),),
+    model=((trans(m)), dock(D)),
     path="invtrans2.png",
-    size=wsize
+    size=wsize,
+    pitch=P
 )
 
 doscreen(
-    model=((trans.inverse()(m), color.red),),
+    model=((trans.inverse()(m)), dock(D)),
     path="invtrans3.png",
-    size=wsize
+    size=wsize,
+    pitch=P
 )

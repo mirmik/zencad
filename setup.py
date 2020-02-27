@@ -45,6 +45,7 @@ setup(
             "geom/*",
             "libs/*",
             "gui/*",
+            "internal_models/*",
             "examples/*",
             "examples/**/*",
             "examples/**/**/*",
