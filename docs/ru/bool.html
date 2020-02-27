@@ -24,7 +24,7 @@
 <ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
@@ -164,6 +164,25 @@
 </code></pre></div>
 
 <p><img src="../images/generic/section1.png" alt="" /></p>
+
+<hr />
+
+<h2>Булевы операции над двумерными телами.</h2>
+
+<p>Точно также как и к трёхмерным объектам, перечисленные выше операции могут применяться к двумерным объектам до тех пор, пока они находятся в одной плоскости.</p>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">m1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">m2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">^</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">m2</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</code></pre></div>
+
+<p><img src="../images/generic/bool20.png" alt="" />
+<img src="../images/generic/bool21.png" alt="" /> <br />
+<img src="../images/generic/bool22.png" alt="" />
+<img src="../images/generic/bool23.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
