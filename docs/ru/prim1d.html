@@ -26,16 +26,15 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
-<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
@@ -59,7 +58,7 @@
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
 <li><a href="assemble.html">Сборки и подвижные модели</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -67,9 +66,17 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Операции генерации линий.</h1>
+      <article class="article"><h1>Кривые и циклы.</h1>
 
-<p>Линии могут использоваться как части составных граней (см. операции <code>sew</code> и <code>fill</code>), а также как аргументы для операций ссылочной геометрии. </p>
+<p>Во многих случаях объёмных и плоских примитивов недостаточно для построения требуемой геометрии. Продвинутые операции, из числа тех, что встречаются в данном руководстве позволяют строить геометрические тела на основе произвольных линий.</p>
+
+<p>В <em>ZenCad</em> (и геометрическом ядре opencascade) существует два класса одномерных геометрических тел - <em>Edge</em> и <em>Wire</em>. <em>Edge</em> является простым примитивом. Объединение нескольких Edge в одну составную кривую порождают объект Wire. Как правило, в <em>ZenCad</em>, <em>Wire</em> и <em>Edge</em> могут использоваться взаимозаменяемо, однако при анализе модели с использованием рефлексии эта разница может быть существенной.")</p>
+
+<p>Набор <em>Wire</em> и/или <em>Edge</em> может быть соединён в сложную кривую с помощью функции <em>sew</em> (Подробнее ниже в этом разделе).</p>
+
+<p>Замкнутые кривые называются циклами. Если кривая (все составные кривые) цикла лежит в одной плоскости, то такой цикл может быть преобразован в грань (Face) при помощи функции <em>fill</em> (см. раздел "Плоские примитивы".).</p>
+
+<p>Некоторые дополнительные операции при работе с кривыми описаны в разделе "Анализ кривых".</p>
 
 <hr />
 
@@ -165,6 +172,29 @@
 
 <p><img src="../images/generic/bspline0.png" alt="" />
 <img src="../images/generic/bspline1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Sew</h2>
+
+<p>Операция <em>sew</em> собирает сложную линию из массива частей <em>wires</em>. </p>
+
+<p>В качестве элементов массива <em>wires</em> могут выступать объекты типов Edge и Wire (<a href="https://mirmik.github.io/zencad/ru/geomcore.html">см. геометрические типы</a>) </p>
+
+<p>Требования. Части линии обязательно должны граничить друг с другом. Порядок следования не должен быть нарушен. Если аргумент <em>sort</em> установлен, алгоритм постарается автоматически отсортировать входящие линии в правильном порядке.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="bp">True</span><span class="p">])</span>
+
+<span class="c1"># Example:</span>
+<span class="n">sew</span><span class="p">([</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
+    <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre></div>
+
+<p><img src="../images/generic/fill0.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>

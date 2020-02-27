@@ -26,16 +26,15 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
-<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
@@ -59,7 +58,7 @@
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
 <li><a href="assemble.html">Сборки и подвижные модели</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -67,7 +66,7 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Булевы операции</h1>
+      <article class="article"><h1>Булевы операции и сечения.</h1>
 
 <p>CSG геометрия операется на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д объектов. В zencad есть два способа выполнения этих операций: </p>
 
@@ -78,7 +77,7 @@
 
 <hr />
 
-<h2>Union</h2>
+<h2>Объединение тел.</h2>
 
 <div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
@@ -98,7 +97,7 @@
 
 <hr />
 
-<h2>Difference</h2>
+<h2>Вычитание тел.</h2>
 
 <div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
@@ -118,7 +117,7 @@
 
 <hr />
 
-<h2>Intersect</h2>
+<h2>Пересечение тел.</h2>
 
 <div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">^</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
@@ -138,75 +137,33 @@
 
 <hr />
 
-<h2>Example</h2>
+<h2>Сечения.</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
-<span class="c1">#coding: utf-8</span>
+<p>Поиск рёбер пересечения пары тел.</p>
 
-<span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="n">lazy</span><span class="o">.</span><span class="n">diag</span> <span class="o">=</span> <span class="bp">True</span>
+<p>Операция <em>section</em> похожа на <em>intersect</em>, только результатом является не твердое тело, а рёбра пересечений. </p>
 
-<span class="n">c1</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">c2</span> <span class="o">=</span> <span class="mi">130</span>
-<span class="n">c3</span> <span class="o">=</span> <span class="n">c2</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">20</span>
-
-<span class="n">base</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span><span class="n">c1</span><span class="p">,</span><span class="n">c1</span><span class="p">,</span><span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-<span class="n">f1</span> <span class="o">=</span> <span class="n">ngon</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="mi">35</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
-<span class="n">f2</span> <span class="o">=</span> <span class="n">ngon</span><span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="mi">35</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
-<span class="n">f3</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="mi">35</span><span class="p">)</span>
-
-<span class="n">s1</span> <span class="o">=</span> <span class="n">linear_extrude</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">s2</span> <span class="o">=</span> <span class="n">linear_extrude</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateY</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
-<span class="n">s3</span> <span class="o">=</span> <span class="n">linear_extrude</span><span class="p">(</span><span class="n">f3</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
-
-<span class="n">m1</span> <span class="o">=</span> <span class="n">base</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">-</span> <span class="n">s2</span> <span class="o">-</span> <span class="n">s3</span>
-<span class="n">m2</span> <span class="o">=</span> <span class="n">base</span> <span class="o">^</span> <span class="n">s1</span> <span class="o">^</span> <span class="n">s2</span> <span class="o">^</span> <span class="n">s3</span>
-<span class="n">m3</span> <span class="o">=</span> <span class="n">s1</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">+</span> <span class="n">s3</span>
-
-<span class="n">ystep</span> <span class="o">=</span> <span class="mi">240</span>
-<span class="n">xstep</span> <span class="o">=</span> <span class="mi">240</span>
-
-<span class="n">fontpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">moduledir</span><span class="p">,</span> <span class="s2">&quot;examples/fonts/testfont.ttf&quot;</span><span class="p">)</span>
-
-<span class="n">t1</span> <span class="o">=</span> <span class="n">textshape</span><span class="p">(</span><span class="s2">&quot;difference&quot;</span><span class="p">,</span> <span class="n">fontpath</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
-<span class="n">t1c</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
-<span class="n">t1</span><span class="o">=</span><span class="n">t1</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="n">t1c</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">t1c</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-
-<span class="n">t2</span> <span class="o">=</span> <span class="n">textshape</span><span class="p">(</span><span class="s2">&quot;intersect&quot;</span><span class="p">,</span> <span class="n">fontpath</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
-<span class="n">t2c</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
-<span class="n">t2</span><span class="o">=</span><span class="n">t2</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="n">t2c</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">t2c</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-
-<span class="n">t3</span> <span class="o">=</span> <span class="n">textshape</span><span class="p">(</span><span class="s2">&quot;union&quot;</span><span class="p">,</span> <span class="n">fontpath</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
-<span class="n">t3c</span> <span class="o">=</span> <span class="n">t3</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
-<span class="n">t3</span><span class="o">=</span><span class="n">t3</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="n">t3c</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">t3c</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">forw</span><span class="p">(</span><span class="n">ystep</span><span class="p">))</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">xstep</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">s3</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">xstep</span><span class="p">))</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">m2</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">m3</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">))</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">c3</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">c3</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">t3</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">c3</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-
-<span class="n">disp</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.95</span><span class="p">))</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.95</span><span class="p">))</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">s3</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">xstep</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.95</span><span class="p">))</span>
-
-<span class="n">disp</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.95</span><span class="p">))</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.95</span><span class="p">))</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">s3</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">ystep</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.95</span><span class="p">))</span>
-
-<span class="n">show</span><span class="p">()</span>
+<div class="codehilite"><pre><span></span><code><span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/boolean.png" alt="" /></p>
+<p>Аргументы <em>a</em> и <em>b</em> - пересекаемые тела. Если один из аргументов действительное число или вектор, то на основе этого параметра строится тело в виде плоскости пересечения.</p>
+
+<h3>Пример. Пересечение оболочек разности куба и сферы горизонтальной плоскостью.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/section0.png" alt="" />  </p>
+
+<h3>Пример. Пересечение оболочек куба и сферы.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/section1.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>

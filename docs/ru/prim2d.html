@@ -26,16 +26,15 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
-<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
@@ -59,7 +58,7 @@
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
 <li><a href="assemble.html">Сборки и подвижные модели</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -163,6 +162,28 @@
 
 <p><img src="../images/generic/textshape0.png" alt="" />
 <img src="../images/generic/textshape1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Fill</h2>
+
+<p>Данная операция применяется к плоской замкнутой линии <em>wire</em> и превращает ее в грань.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
+<span class="n">wire</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span> <span class="c1">#alternate</span>
+
+<span class="c1"># Example:</span>
+<span class="n">wire</span> <span class="o">=</span> <span class="n">sew</span><span class="p">([</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
+    <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/fill0.png" alt="" />
+<img src="../images/generic/fill1.png" alt="" />  </p>
 </article>
     </div>
     <div id="footer"></div>

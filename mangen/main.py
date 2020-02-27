@@ -42,7 +42,7 @@ def page_generate(path, title, mdpath, navpath, comming=False):
         if comming:
             article.add("English version in preparation. COMMING SOON.")
         dominate.util.raw(
-            markdown2.markdown(open(mdpath).read(), extras=["fenced-code-blocks", "tables"])
+            markdown2.markdown(open(mdpath).read(), extras=["spoiler","fenced-code-blocks", "tables"])
         )
 
     writer.build_file(path, page)
@@ -74,6 +74,7 @@ with redirect_page:
         dominate.tags.a("ZenCad/en", href="en/index.html")
 writer.build_file("index.html", redirect_page)
 
+os.system("cd images && ./imagen.py")
 writer.copy_tree(dst=".", src="images")
 writer.copy_file("main.css", "main.css")
 writer.remove_file("images/imagen.py")

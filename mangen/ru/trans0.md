@@ -183,7 +183,8 @@ mirrorXZ() # equal to mirror_axis(0,1,0)
 Пример:
 ```python
 trans = moveX(20) * rotateZ(deg(60))
-m = trans(box(5, center=True))
+m = zencad.internal_models.knight()
+disp(trans(m))
 
 # alternate: box(5, center=True).rotZ(deg(60).movX(20)
 ```
@@ -203,8 +204,8 @@ trsf.inverse()
 
 Пример:
 ```python
-trans = rotateZ(deg(20))
-m = box(5, center=True)
+trans = rotateZ(deg(45))
+m = zencad.internal_models.knight()
 disp(trans(m), color.green)
 disp(trans.inverse()(m), color.red)
 ```
@@ -214,8 +215,8 @@ disp(trans.inverse()(m), color.red)
 
 Пример:
 ```python
-trans = moveX(20) * rotateZ(deg(20))
-m = box(5, center=True)
+trans = moveX(20) * rotateZ(deg(45))
+m = zencad.internal_models.knight()
 disp(trans(m), color.green)
 disp(trans.inverse()(m), color.red)
 ```
@@ -254,11 +255,12 @@ multitrans(transes)
 Пример:
 ```python
 def extrans(): return multitransform([ 
-	translate(10,0,0) * rotateZ(deg(60)),
-	translate(10,10,0) * rotateZ(deg(120)),
-	translate(0,10,0) * rotateZ(deg(180)),
-	nulltrans()
+	translate(-20,20,0) * rotateZ(deg(60)),
+    translate(-20,-20,0) * rotateZ(deg(120)),
+    translate(20,20,0) * rotateZ(deg(180)),
+    nulltrans()
 ])
+disp(extrans(zencad.internal_models.knight()))
 ```
 
 | До | После |

@@ -26,16 +26,15 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор HelloWorld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
-<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
 <li>Базовые примитивы и операции
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
@@ -59,7 +58,7 @@
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
 <li><a href="assemble.html">Сборки и подвижные модели</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
 <li><a href="kinematic.html">kinematic</a></li>
@@ -67,31 +66,110 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Введение в геометрическое ядро OpenCascade</h1>
+      <article class="article"><h1>Введение в BREP представление геометрических моделей.</h1>
 
-<p>Библиотека ZenCad основана на функциональных возможностях и объектной структуре геометрического ядра OpenCascade.</p>
+<p>Библиотека ZenCad основана на функциональных возможностях и объектной структуре геометрического ядра OpenCascade, использующего для работы с геометрическими моделями BREP представление.</p>
 
-<hr />
+<p>Для более полного понимания работы библиотеки и использования продвинутых функций требуется хотябы поверхностное понимания BREP и топологической структуры геометрических объектов в используемом геометрическом ядре.</p>
 
-<h1>Структура геометрических объектов в ядре OpenCascade</h1>
-
-<p>Under_Construct</p>
-
-<p>Shape(occt: TopoDS_Shape) - абстрактный геометрический объект <br />
-Vertex(occt: TopoDS_Vertex) - вершина <br />
-Solid(occt: TopoDS_Solid) - твердое тело <br />
-Face(occt: TopoDS_Face) - грань <br />
-Edge(occt: TopoDS_Edge) - ребро <br />
-Wire(occt: TopoDS_Wire) - цикл <br />
-Shell(occt: TopoDS_Shell) - оболочка <br />
-Compound(occt: TopoDS_Compound) <br />
-Compsolid(occt: TopoDS_CompSolid)  </p>
-
-<p>Under_Construct</p>
+<p>Изучение этого раздела, впрочем, не требуется при первоначальном знакомстве с системой и его можно смело пропустить.</p>
 
 <hr />
 
-<h1>Документация на ядро</h1>
+<h2>BREP представление.</h2>
+
+<p>Граничное представление (ан. Boundary representation) есть способ представления тел через описание их границ.</p>
+
+<p>Объект в граничном представлении задаётся топологически (с помощью набора ссылок на ограничивающие его объекты) и геометрически (с помощью порождающего его форму геометрического правила). Ограничивающие объекты в свою очередь задаются исходя из тех же соображений.</p>
+
+<p>Так, например куб порождён внутренним пространством 6-ти граней. Каждая грань геометрически задана плоскостью и ограничена 4-мя объектами рёбер. Каждое ребро геометрически задано прямой линией и ограничено двумя вершинами, представленными своими координатами.</p>
+
+<p>В разных библиотеках, использующих BREP представление, разделение на классы объектов может выполняться с определённой спецификой, но общая идея будет неизменной. ZenCad использует систему классов ядра OpenCascade.</p>
+
+<hr />
+
+<h2>Классы геометрических объектов.</h2>
+
+<table>
+<thead>
+<tr>
+  <th>ZenCad</th>
+  <th>OpenCascade</th>
+  <th>Составной</th>
+  <th>Мерность</th>
+  <th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Shape</td>
+  <td>TopoDS_Shape</td>
+  <td>неопр.</td>
+  <td>неопр.</td>
+  <td>Абстрактный геометрический объект</td>
+</tr>
+<tr>
+  <td>Vertex</td>
+  <td>TopoDS_Vertex</td>
+  <td>нет</td>
+  <td>0</td>
+  <td>Dершина</td>
+</tr>
+<tr>
+  <td>Edge</td>
+  <td>TopoDS_Edge</td>
+  <td>нет</td>
+  <td>1</td>
+  <td>Ребро</td>
+</tr>
+<tr>
+  <td>Wire</td>
+  <td>TopoDS_Wire</td>
+  <td>да</td>
+  <td>1</td>
+  <td>Сложное ребро</td>
+</tr>
+<tr>
+  <td>Face</td>
+  <td>TopoDS_Face</td>
+  <td>нет</td>
+  <td>2</td>
+  <td>Грань</td>
+</tr>
+<tr>
+  <td>Shell</td>
+  <td>TopoDS_Shell</td>
+  <td>да</td>
+  <td>2</td>
+  <td>Оболочка</td>
+</tr>
+<tr>
+  <td>Solid</td>
+  <td>TopoDS_Solid</td>
+  <td>нет</td>
+  <td>3</td>
+  <td>Твёрдое тело</td>
+</tr>
+<tr>
+  <td>CompSolid</td>
+  <td>TopoDS_CompSolid</td>
+  <td>да</td>
+  <td>3</td>
+  <td>Объединение твёрдых тел</td>
+</tr>
+<tr>
+  <td>Compound</td>
+  <td>TopoDS_Compound</td>
+  <td>да</td>
+  <td>неопр.</td>
+  <td>Составной объект</td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h2>Более подробно о ядре.</h2>
 
 <p>Ядро OpenCascade довольно обширно, имеет бесчисленное количество инструментов и потому врядли возможно сколь-нибудь передать его суть в рамках этой маленькой справки.</p>
 
