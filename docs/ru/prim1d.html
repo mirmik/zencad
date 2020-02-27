@@ -80,9 +80,11 @@
 
 <hr />
 
-<h2>segment</h2>
+<h2>Cегмент.</h2>
 
 <p>Отрезок линии задаётся двумя точками.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">segment</span><span class="p">(</span><span class="n">pnt1</span><span class="p">,</span> <span class="n">pnt2</span><span class="p">)</span>
 </code></pre></div>
@@ -91,9 +93,11 @@
 
 <hr />
 
-<h2>polysegment</h2>
+<h2>Полисегмент.</h2>
 
 <p>Полисегмент - ломанная линия. Задаётся масивом точек. Установка флага <code>closed</code> добавляет сегмент полилинии, идущий от точки конца к точке начала. <code>pnts</code> - массив точек.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
@@ -103,9 +107,11 @@
 
 <hr />
 
-<h2>interpolate</h2>
+<h2>Интерполяция по точкам.</h2>
 
-<p>Инструмент для построения bspline по набору точек <code>pnts</code>. Также можно указать тангенсы <code>tangs</code> линии в каждой точке (нулевой мектор соответствует неуказанному тангенсу). Установка флага <code>closed</code> добавляет замыкающий участок кривой.</p>
+<p>Инструмент для построения интерполированной кривой, проходящей через набаор точек <em>pnts</em>. С помощью необязательного параметра <em>tangs</em> в каждой точке можно задать направление, под которым кривая пройдёт через точку (нулевой вектор соответствует произвольному пересечению). Установка флага <code>closed</code> добавляет замыкающий участок кривой.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[],</span> <span class="n">closed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
@@ -117,9 +123,10 @@
 
 <hr />
 
-<h2>circle_arc</h2>
+<h2>Дуга окружности по трём точкам.</h2>
 
-<p>Данный метод представляет альтернативный к <code>circle</code> (см. <a href="prim2d.html">Плоские примитивы</a>) метод генерации дуги окружности по трем точкам.</p>
+<p>Данный метод представляет альтернативный к <em>circle</em> (см. <a href="prim2d.html">Плоские примитивы</a>) метод генерации дуги окружности по трем точкам.
+Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">circle_arc</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">)</span> 
 </code></pre></div>
@@ -128,12 +135,13 @@
 
 <hr />
 
-<h2>helix</h2>
+<h2>Восходящая спираль.</h2>
 
-<p>Восходящая спираль. Задается радиусом, высотой и шагом витка. При установке опции <code>left</code>, меняет правую навивку на левую. При установке angle, радиус линейно меняется со сменой высоты.</p>
+<p>Восходящая спираль. Задается радиусом <em>r</em>, высотой <em>h</em> и шагом витка <em>step</em>. При установке опции <em>left</em>, меняет правую навивку на левую. При установке необязательно параметра <em>angle,</em> радиус меняется со сменой высоты по коническому закону.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/helix0.png" alt="" />
@@ -143,11 +151,13 @@
 
 <hr />
 
-<h2>bezier</h2>
+<h2>Кривая Безье.</h2>
 
 <p>Кривая Безье (<a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">wiki</a>).
 Задаётся массивом опорных точек и массивом весов (опционально).
 Если веса не заданы, все веса считаются равными единице.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">)</span>
 <span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
@@ -158,9 +168,11 @@
 
 <hr />
 
-<h2>bspline</h2>
+<h2>BSpline.</h2>
 
 <p>Создать BSpline прямым заданием параметров.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">,</span> <span class="n">check_rational</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">)</span>
@@ -175,7 +187,7 @@
 
 <hr />
 
-<h2>Sew</h2>
+<h2>Создание сложной кривой. (sew)</h2>
 
 <p>Операция <em>sew</em> собирает сложную линию из массива частей <em>wires</em>. </p>
 
@@ -183,10 +195,14 @@
 
 <p>Требования. Части линии обязательно должны граничить друг с другом. Порядок следования не должен быть нарушен. Если аргумент <em>sort</em> установлен, алгоритм постарается автоматически отсортировать входящие линии в правильном порядке.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="bp">True</span><span class="p">])</span>
+<p>Сигнатура:</p>
 
-<span class="c1"># Example:</span>
-<span class="n">sew</span><span class="p">([</span>
+<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="bp">True</span><span class="p">])</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">([</span>
     <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
     <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
     <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
