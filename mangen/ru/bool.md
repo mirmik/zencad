@@ -85,3 +85,21 @@ b = sphere(7)
 sect = section(a, b)
 ```
 ![](../images/generic/section1.png)
+
+---------------------------------------------
+## Булевы операции над двумерными телами.
+Точно также как и к трёхмерным объектам, перечисленные выше операции могут применяться к двумерным объектам до тех пор, пока они находятся в одной плоскости.
+
+Пример:
+```python
+m0 = sphere(10) - square(10)
+m1 = sphere(10) + square(10)
+m2 = sphere(10) ^ square(10)
+m2 = section(sphere(10), square(10))
+```
+
+![](../images/generic/bool20.png)
+![](../images/generic/bool21.png)  
+![](../images/generic/bool22.png)
+![](../images/generic/bool23.png)
+

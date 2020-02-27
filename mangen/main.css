@@ -60,6 +60,18 @@ pre
 	text-align: justify;
 }
 
+.article .t0 p {
+	text-align: center;
+	font-style: oblique;
+}
+
+.article h0 {
+	font-size: 60px;
+	text-align: center;
+	font-weight: bold;
+	font-style: oblique;
+}
+
 .article h1 {
 	font-size: 40px;
 	text-align: left;

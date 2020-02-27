@@ -19,7 +19,7 @@ if not os.path.exists("generic"):
 
 
 @lazy.file_creator(pathfield="path")
-def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
+def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
     scn = Scene()
     try:
         mmm = model
@@ -45,7 +45,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
                 scn.add(mod, c)
 
     viewer = scn.viewer
-    if triedron or True: # Always add triedron 
+    if triedron: # Always add triedron 
         viewer.set_triedron_axes()
     view = viewer.create_view()
     view.set_triedron(False)
@@ -66,7 +66,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
     zencad.visual.screen_view(view, path, size)
 
 
-def doscreen(model, path, size, yaw=None, pitch=None, triedron=False):
+def doscreen(model, path, size, yaw=None, pitch=None, triedron=True):
     print("screen (path:{0}, size:{1}, model:{2})".format(path, size, model))
     doscreen_impl(
         model, "generic/" + path, size, yaw=yaw, pitch=pitch, triedron=triedron
@@ -401,6 +401,7 @@ doscreen(
     size=wsize,
     yaw=yaw,
     pitch=pitch,
+    triedron=False
 )
 doscreen(
     model=sphere(r=10)
@@ -868,4 +869,28 @@ doscreen(
     path="invtrans3.png",
     size=wsize,
     pitch=P
+)
+
+doscreen(
+    model=circle(10) - square(10),
+    path="bool20.png",
+    size=wsize, triedron=False
+)
+
+doscreen(
+    model=circle(10) + square(10),
+    path="bool21.png",
+    size=wsize, triedron=False
+)
+
+doscreen(
+    model=circle(10) ^ square(10),
+    path="bool22.png",
+    size=wsize, triedron=False
+)
+
+doscreen(
+    model=section(circle(10), square(10)),
+    path="bool23.png",
+    size=wsize, triedron=False
 )

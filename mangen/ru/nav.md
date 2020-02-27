@@ -1,7 +1,7 @@
 * Основные концепции
 	* [Главная страница](index.html)
 	* [Скриптовый CAD](scriptcad.html)
-	* [Разбор HelloWorld](helloworld.html)
+	* [Разбор helloworld](helloworld.html)
 	* [Установка](installation.html)
 	* [BREP представление](geomcore.html)
 	* [Кэширование](caching.html)
@@ -15,6 +15,7 @@
 * Преобразования
 	* [Афинные преобразований](trans0.html)  
 	* [Булевы операции](bool.html)
+	* [Прочие операции](other.html)
 * Рефлексия и анализ
 	* [Рефлексия геометрии](reflect.html)
 	* [Анализ кривых](crvalgo.html)

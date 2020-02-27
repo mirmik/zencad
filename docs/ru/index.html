@@ -24,7 +24,7 @@
 <ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
@@ -66,22 +66,40 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>ZenCad</h1>
+      <article class="article"><p><center><h0>ZenCad.<h0/></center></p>
 
-<p>Скриптовый CAD для праведных дзэн-программеров. <br />
-<img src="../images/generic/zencad-logo.png" alt="" />  </p>
+<p><center></p>
+
+<div class="t0"><p>Скриптовый CAD для праведных прогеров.</p></div>
+
+<p><img src="../images/generic/zencad-logo.png" alt="" /> <br />
+</center></p>
 
 <hr />
 
 <h2>Что это?</h2>
 
-<p>ZenCad - это библиотека для создания 3д моделей. ZenCad исповедует идею создания 3д модели методом генерации скрипта и ноги его растут из системы OpenScad. В отличие от OpenScad, ZenCad использует геометрическое ядро граничного представления OpenCascade и язык общего назначения Python.</p>
+<p><em>ZenCad</em> - это библиотека параметрического 3д моделирования. библиотека исповедует идею создания 3д модели путём написания скрипта и ноги её растут из системы <em>OpenScad</em>. В отличие от <em>OpenScad</em>, библиотека использует геометрическое ядро граничного представления <em>OpenCascade</em> и язык общего назначения <em>Python</em>.</p>
+
+<p><em>ZenCad</em> может использоваться как самостоятельная система быстрого прототипирования для целей макетирования или 3д печати, так и в комплексе с библиотеками экосистемы <em>Python</em>, в частности для построения 3д моделий на основе расчетов выполненных в таких системах как scipy и sympy.</p>
 
 <hr />
 
-<h2>Установка</h2>
+<h2># Быстрый старт.</h2>
+
+<h2>Установка.</h2>
 
 <div class="codehilite"><pre><span></span><code>python3 -m pip install zencad
+</code></pre></div>
+
+<hr />
+
+<h2>Запуск графической оболочки.</h2>
+
+<div class="codehilite"><pre><span></span><code>zencad
+
+<span class="c1"># alternate:</span>
+python3 -m pip zencad
 </code></pre></div>
 
 <hr />
