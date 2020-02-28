@@ -20,33 +20,35 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
 </ul></li>
-<li>Базовые примитивы и операции
+<li>Базовые примитивы и утилиты
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
 <li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
-<li>Преобразования
+<li>Преобразования, операции над геометрическими телами
 <ul>
 <li><a href="trans0.html">Афинные преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
 <li>Отображение и рисование <br />
@@ -78,7 +80,7 @@
 
 <p>С математической точки зрения объекты преобразования является линейными операторами и относительно них допустимы некоторые операции линейной алгебры. Соответствующий функционал библиотеки описан в разделе "Операции над преобразованиями".  </p>
 
-<p>Дополнительные функции для работы с преобразованиями описаны в разделе "Дополнительные преобразования".</p>
+<p>Функции для работы с преобразованиями и специальные виды преобразований описаны в разделе "Дополнительные преобразования".</p>
 
 <hr />
 
@@ -192,6 +194,7 @@
 <span class="n">scaleX</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="c1"># general_transformation</span>
 <span class="n">scaleY</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="c1"># general_transformation</span>
 <span class="n">scaleZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="c1"># general_transformation</span>
+<span class="n">scaleXYZ</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="c1"># general_transformation</span>
 </code></pre></div>
 
 <hr />
@@ -351,7 +354,7 @@
 
 <hr />
 
-<h3>Единичное преобразование</h3>
+<h3>Преобразование само в себя.</h3>
 
 <p>Специальное преобразование, никак не изменяющее объект.</p>
 
@@ -408,6 +411,42 @@ transes - массив преобразований.</p>
 </tr>
 </tbody>
 </table>
+
+<hr />
+
+<h2>Минимальный поворот.</h2>
+
+<p>Данное преобразование соответствует минимальному поворота от вектора <em>f</em> к вектору <em>t</em>. <em>f</em> - необязательный параметр и по умолчанию соответствует вертикальному направлению.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">short_rotate</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Круговой массив.</h2>
+
+<p>Строит круговой массив объектов.</p>
+
+<p>Сигнатура и код преобразования:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">rotateZ</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Квадратное отражение.</h2>
+
+<p>Достраивает 3 отражения исходного объекта.</p>
+
+<p>Сигнатура и код преобразования:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">sqrmirror</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span><span class="n">nulltrans</span><span class="p">(),</span> <span class="n">mirrorYZ</span><span class="p">(),</span> <span class="n">mirrorXZ</span><span class="p">(),</span> <span class="n">mirrorZ</span><span class="p">()])</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>

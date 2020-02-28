@@ -32,25 +32,13 @@ from zencad.showapi import show, display, disp, hl, highlight
 from zencad.geom.prim3d import *
 from zencad.geom.prim2d import *
 from zencad.geom.prim1d import *
-
 from zencad.geom.ops3d import *
 from zencad.geom.ops1d2d import *
-
 from zencad.showapi import default_scene
-
 from zencad.geom.curve3 import extract_curve
-
 from zencad.version import __version__
 
-#__DEFAULT_TRACE__ = True
-#
-#def enable_trace(en):
-#    #import zencad.__main__
-#    zencad.gui.application.__TRACED__ = en
-#    zencad.gui.retransler.__RETRANSLER_TRACE__ = en
-#    zencad.gui.mainwindow.__TRACE__ = en
-#
-#enable_trace(__DEFAULT_TRACE__)
+import zencad.reflect 
 
 def gr(grad):
     print("'gr' function is deprecated. Use 'deg' instead")

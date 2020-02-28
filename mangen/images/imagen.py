@@ -894,3 +894,31 @@ doscreen(
     path="bool23.png",
     size=wsize, triedron=False
 )
+
+m = cone(r1=5, r2=0, h=10, center=True).rotX(deg(45))
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane()),
+    path="infplane0.png",
+    size=wsize
+)
+
+m = cone(r1=5, r2=0, h=10, center=True)
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane()),
+    path="infplane01.png",
+    size=wsize
+)
+
+m = cone(r1=5, r2=0, h=10, center=True)
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane().rotX(deg(45))),
+    path="infplane1.png",
+    size=wsize
+)
+
+m = cone(r1=5, r2=0, h=10, center=True)
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane().rotY(deg(90)).right(2)),
+    path="infplane2.png",
+    size=wsize
+)

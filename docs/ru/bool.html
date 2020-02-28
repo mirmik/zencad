@@ -20,33 +20,35 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
 </ul></li>
-<li>Базовые примитивы и операции
+<li>Базовые примитивы и утилиты
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
 <li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
-<li>Преобразования
+<li>Преобразования, операции над геометрическими телами
 <ul>
 <li><a href="trans0.html">Афинные преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
 <li>Отображение и рисование <br />
@@ -79,6 +81,17 @@
 
 <h2>Объединение тел.</h2>
 
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+<span class="c1"># Оператор:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">+</span> <span class="n">shp1</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
 <div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 
@@ -98,6 +111,17 @@
 <hr />
 
 <h2>Вычитание тел.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">difference</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+<span class="c1"># Оператор:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">-</span> <span class="n">shp1</span>
+</code></pre></div>
+
+<p>Пример:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
@@ -119,6 +143,17 @@
 
 <h2>Пересечение тел.</h2>
 
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">intersect</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+<span class="c1"># Оператор:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">^</span> <span class="n">shp1</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
 <div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">^</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 
@@ -134,36 +169,6 @@
 <img src="../images/generic/intersect0.png" alt="" /> <br />
 <img src="../images/generic/intersect1.png" alt="" />
 <img src="../images/generic/intersect2.png" alt="" />  </p>
-
-<hr />
-
-<h2>Сечения.</h2>
-
-<p>Поиск рёбер пересечения пары тел.</p>
-
-<p>Операция <em>section</em> похожа на <em>intersect</em>, только результатом является не твердое тело, а рёбра пересечений. </p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</code></pre></div>
-
-<p>Аргументы <em>a</em> и <em>b</em> - пересекаемые тела. Если один из аргументов действительное число или вектор, то на основе этого параметра строится тело в виде плоскости пересечения.</p>
-
-<h3>Пример. Пересечение оболочек разности куба и сферы горизонтальной плоскостью.</h3>
-
-<div class="codehilite"><pre><span></span><code><span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/section0.png" alt="" />  </p>
-
-<h3>Пример. Пересечение оболочек куба и сферы.</h3>
-
-<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
-<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
-<span class="n">sect</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/section1.png" alt="" /></p>
 
 <hr />
 

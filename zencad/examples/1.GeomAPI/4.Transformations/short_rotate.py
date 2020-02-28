@@ -45,7 +45,7 @@ for i in range(len(src)):
 		tgt[i][j] *= u
 
 # Make short rotate transformation
-transes = [ translate(*src[i]) * short_rotate((0,0,1), tgt[i] - src[i]) for i in range(len(src)) ]
+transes = [ translate(*src[i]) * short_rotate(tgt[i] - src[i]) for i in range(len(src)) ]
 
 # Make cylinders geometry
 cyl = cylinder(r=5, h=10, center=True)

@@ -16,6 +16,9 @@ def difference(arr):
 def intersect(arr):
     return pyservoce.intersect(arr)
 
+#@lazy.lazy(cls=shape_generator)
+#def projection(shp):
+#	return shp ^ pyservoce.infplane()
 
 @lazy.lazy(cls=shape_generator)
 def section(a, b=0):
@@ -45,7 +48,8 @@ def section(a, b=0):
 
 	result = pyservoce.section(
 			to_halfspace_if_need(a),
-			to_halfspace_if_need(b)
+			to_halfspace_if_need(b),
+			False
 		)
 
 	return result

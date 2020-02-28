@@ -20,33 +20,35 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
 </ul></li>
-<li>Базовые примитивы и операции
+<li>Базовые примитивы и утилиты
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
 <li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
-<li>Преобразования
+<li>Преобразования, операции над геометрическими телами
 <ul>
 <li><a href="trans0.html">Афинные преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
 <li>Отображение и рисование <br />
@@ -174,6 +176,31 @@
 
 <p><img src="../images/generic/textshape0.png" alt="" />
 <img src="../images/generic/textshape1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Бесконечная плоскость.</h2>
+
+<p>Бесконечная плоскость - специальный геометрический объект, который может использоваться в некоторых операцих над другими объектами.
+Бесконечная плоскость не может быть отображена непосредственно.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">infplane</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Пример (Построение конических сечений):</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/infplane01.png" alt="" />
+<img src="../images/generic/infplane0.png" alt="" /> <br />
+<img src="../images/generic/infplane1.png" alt="" />
+<img src="../images/generic/infplane2.png" alt="" />  </p>
 
 <hr />
 
