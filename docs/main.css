@@ -10,6 +10,16 @@
 	color: white;
 }
 
+.spoiler {
+	color: #444444;
+	background: lightgray;
+	box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.spoiler p {
+	padding: 1em;
+}
+
 .nav {
 	float: left;
 	background-color: white;
@@ -23,6 +33,18 @@
 .nav ul 
 {
 	padding-left: 2em;
+}
+
+table {
+	border-spacing: 7px 11px; 
+}
+
+th {
+	text-align: center;	
+}
+
+tr {
+	text-align: center;	
 }
 
 pre 
@@ -50,12 +72,26 @@ pre
 	text-align: justify;
 }
 
+.article .t0 p {
+	text-align: center;
+	font-style: oblique;
+}
+
+.article h0 {
+	font-size: 60px;
+	text-align: center;
+	font-weight: bold;
+	font-style: oblique;
+}
+
 .article h1 {
 	font-size: 40px;
+	text-align: left;
 }
 
 .article h2 {
 	font-size: 30px;
+	text-align: left;
 }
 
 /* Buttons

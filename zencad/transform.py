@@ -9,100 +9,14 @@ import sys
 import operator
 import numpy as np
 
-# Объекты трансформации более не являются хешируемыми.
-# Скорости хеширование трансформаций особо не добавляет, а путаницу вносит.
-
-#class LazyObjectTransformGeneratorCached(evalcache.LazyObject):
-#    def __init__(self, *args, **kwargs):
-#        evalcache.LazyObject.__init__(self, *args, **kwargs)
-#
-#    def __call__(self, *args, **kwargs):
-#        return evalcache.lazy.lazyinvoke(
-#            self,
-#            self,
-#            args,
-#            kwargs,
-#            encache=False,
-#            decache=False,
-#            cls=LazyObjectTransformCached,
-#        )
-#
-#
-#class LazyObjectTransformGeneratorNoCached(evalcache.LazyObject):
-#    def __init__(self, *args, **kwargs):
-#        evalcache.LazyObject.__init__(self, *args, **kwargs)
-#
-#    def __call__(self, *args, **kwargs):
-#        return evalcache.lazy.lazyinvoke(
-#            self,
-#            self,
-#            args,
-#            kwargs,
-#            encache=False,
-#            decache=False,
-#            cls=LazyObjectTransformNoCached,
-#        )
-#
-#
-#class LazyObjectTransformCached(evalcache.LazyObject):
-#    def __init__(self, *args, **kwargs):
-#        evalcache.LazyObject.__init__(self, *args, **kwargs)
-#
-#    def __mul__(self, oth):
-#        return evalcache.lazy.lazyinvoke(
-#            self,
-#            operator.__mul__,
-#            (self, oth),
-#            encache=False,
-#            decache=False,
-#            cls=LazyObjectTransformCached,
-#        )
-#
-#    def __call__(self, *args, **kwargs):
-#        return evalcache.lazy.lazyinvoke(self, self, args, kwargs, cls=LazyObjectShape)
-#
-#
-#class LazyObjectTransformNoCached(evalcache.LazyObject):
-#    def __init__(self, *args, **kwargs):
-#        evalcache.LazyObject.__init__(self, *args, **kwargs)
-#
-#    def __mul__(self, oth):
-#        return evalcache.lazy.lazyinvoke(
-#            self,
-#            operator.__mul__,
-#            (self, oth),
-#            encache=False,
-#            decache=False,
-#            cls=LazyObjectTransformCached,
-#        )
-#
-#    def __call__(self, *args, **kwargs):
-#        return evalcache.lazy.lazyinvoke(
-#            self, self, args, kwargs, encache=False, decache=False, cls=LazyObjectShape
-#        )
-
-
-#evalcache.lazy.hashfuncs[
-#    LazyObjectTransformNoCached
-#] = evalcache.lazy.updatehash_LazyObject
-#evalcache.lazy.hashfuncs[
-#    LazyObjectTransformCached
-#] = evalcache.lazy.updatehash_LazyObject
-#evalcache.lazy.hashfuncs[
-#    LazyObjectTransformGeneratorCached
-#] = evalcache.lazy.updatehash_LazyObject
-#evalcache.lazy.hashfuncs[
-#    LazyObjectTransformGeneratorNoCached
-#] = evalcache.lazy.updatehash_LazyObject
-
+# Replace pyservoce transformation __call__ method
+# for support lazy objects.
 native_call = pyservoce.transformation.__call__
-
 def transform_call(self, arg):
     if isinstance(arg, evalcache.LazyObject):
         return arg.transform(self)
 
     return native_call(self, arg)
-
 pyservoce.transformation.__call__ = transform_call
 
 
@@ -248,7 +162,7 @@ def nulltrans():
     return translate(0, 0, 0)
 
 
-def sqrtrans():
+def sqrmirror():
     return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()])
 
 
@@ -259,8 +173,8 @@ def rotate_array(n):
     return multitrans(transes)
 
 
-def short_rotate(fromvec, tovec):
-    _f, _t = vector3(fromvec), vector3(tovec)
+def short_rotate(t, f=(0,0,1)):
+    _f, _t = vector3(f), vector3(t)
     if _f.early(_t, 0.000000000001):
         return nulltrans()
-    return pyservoce.short_rotate(_f, _t)
+    return pyservoce.short_rotate(t=_t, f=_f)

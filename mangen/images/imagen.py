@@ -5,18 +5,22 @@ from zencad import *
 import os
 
 import zencad.visual
+import zencad.internal_models
+import zencad.platonic
 import pyservoce
 
 # lazy.diag = True
 
 wsize = (300, 200)
 
+dock = lambda sz: box(sz,sz,2,center=True).down(1)
+
 if not os.path.exists("generic"):
     os.makedirs("generic")
 
 
 @lazy.file_creator(pathfield="path")
-def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
+def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
     scn = Scene()
     try:
         mmm = model
@@ -25,6 +29,12 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
         scn.add(mmm)
     except:
         for m in model:
+            if isinstance(m, (tuple, list)):
+                c=m[1]
+                m=m[0]
+            else:
+                c=zencad.default_color
+
             mod = m
             if isinstance(mod, evalcache.LazyObject):
                 mod = mod.unlazy()
@@ -33,10 +43,10 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
                 scn.add(mod, color(1, 0, 0))
 
             else:
-                scn.add(mod)
+                scn.add(mod, c)
 
     viewer = scn.viewer
-    if triedron or True: # Always add triedron 
+    if triedron: # Always add triedron 
         viewer.set_triedron_axes()
     view = viewer.create_view()
     view.set_triedron(False)
@@ -57,7 +67,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=False):
     zencad.visual.screen_view(view, path, size)
 
 
-def doscreen(model, path, size, yaw=None, pitch=None, triedron=False):
+def doscreen(model, path, size, yaw=None, pitch=None, triedron=True):
     print("screen (path:{0}, size:{1}, model:{2})".format(path, size, model))
     doscreen_impl(
         model, "generic/" + path, size, yaw=yaw, pitch=pitch, triedron=triedron
@@ -77,7 +87,8 @@ doscreen(
 )
 
 # prim3d
-doscreen(model=box(10, 20, 30), path="box.png", size=wsize)
+doscreen(model=box(10, 20, 30, center=False), path="box0.png", size=wsize)
+doscreen(model=box(10, center=True), path="box1.png", size=wsize)
 
 doscreen(model=sphere(r=10), path="sphere0.png", size=wsize)
 doscreen(model=sphere(r=10, yaw=deg(120)), path="sphere1.png", size=wsize)
@@ -90,11 +101,13 @@ doscreen(
 
 doscreen(model=cylinder(r=10, h=20), path="cylinder0.png", size=wsize)
 doscreen(model=cylinder(r=10, h=20, yaw=deg(45)), path="cylinder1.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, center=True), path="cylinder2.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, yaw=deg(45), center=True), path="cylinder3.png", size=wsize)
 
 doscreen(model=cone(r1=20, r2=10, h=20), path="cone0.png", size=wsize)
 doscreen(model=cone(r1=20, r2=10, h=20, yaw=deg(45)), path="cone1.png", size=wsize)
 doscreen(model=cone(r1=0, r2=20, h=20), path="cone2.png", size=wsize)
-doscreen(model=cone(r1=20, r2=0, h=20), path="cone3.png", size=wsize)
+doscreen(model=cone(r1=20, r2=0, h=20, center=True), path="cone3.png", size=wsize)
 
 doscreen(model=torus(r1=20, r2=5), path="torus0.png", size=wsize)
 doscreen(model=torus(r1=20, r2=5, yaw=deg(120)), path="torus1.png", size=wsize)
@@ -389,6 +402,7 @@ doscreen(
     size=wsize,
     yaw=yaw,
     pitch=pitch,
+    triedron=False
 )
 doscreen(
     model=sphere(r=10)
@@ -781,5 +795,161 @@ doscreen(
 doscreen(
     model=section(box(10, center=True), sphere(7)),
     path="section1.png",
+    size=wsize
+)
+
+doscreen(
+    model=nulltrans()(box(10)),
+    path="nulltrans01.png",
+    size=wsize
+)
+
+m = zencad.internal_models.knight()
+doscreen(
+    model=(m, dock(80)),
+    path="multitrans0.png",
+    size=wsize
+)
+
+doscreen(
+    model=(multitransform([ 
+        translate(-20,20,0) * rotateZ(deg(60)),
+        translate(-20,-20,0) * rotateZ(deg(120)),
+        translate(20,20,0) * rotateZ(deg(180)),
+        nulltrans()
+    ])(m), dock(80)),
+    path="multitrans1.png",
+    size=wsize
+)
+
+P=-deg(60)
+D=60
+
+m = zencad.internal_models.knight()
+doscreen(
+    model=(m, dock(80)),
+    path="complextrans0.png",
+    size=wsize,
+    pitch=P
+)
+
+doscreen(
+    model=((moveX(20) * rotateZ(deg(60)))(m), dock(D)),
+    path="complextrans1.png",
+    size=wsize,
+    pitch=P
+)
+
+trans = moveX(20) * rotateZ(deg(45))
+m = zencad.internal_models.knight()
+
+doscreen(
+    model=((trans(m)), dock(D)),
+    path="invtrans0.png",
+    size=wsize,
+    pitch=P
+)
+
+doscreen(
+    model=((trans.inverse()(m)), dock(D)),
+    path="invtrans1.png",
+    size=wsize,
+    pitch=P
+)
+
+trans = rotateZ(deg(45))
+doscreen(
+    model=((trans(m)), dock(D)),
+    path="invtrans2.png",
+    size=wsize,
+    pitch=P
+)
+
+doscreen(
+    model=((trans.inverse()(m)), dock(D)),
+    path="invtrans3.png",
+    size=wsize,
+    pitch=P
+)
+
+doscreen(
+    model=circle(10) - square(10),
+    path="bool20.png",
+    size=wsize, triedron=False
+)
+
+doscreen(
+    model=circle(10) + square(10),
+    path="bool21.png",
+    size=wsize, triedron=False
+)
+
+doscreen(
+    model=circle(10) ^ square(10),
+    path="bool22.png",
+    size=wsize, triedron=False
+)
+
+doscreen(
+    model=section(circle(10), square(10)),
+    path="bool23.png",
+    size=wsize, triedron=False
+)
+
+m = cone(r1=5, r2=0, h=10, center=True).rotX(deg(45))
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane()),
+    path="infplane0.png",
+    size=wsize
+)
+
+m = cone(r1=5, r2=0, h=10, center=True)
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane()),
+    path="infplane01.png",
+    size=wsize
+)
+
+m = cone(r1=5, r2=0, h=10, center=True)
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane().rotX(deg(45))),
+    path="infplane1.png",
+    size=wsize
+)
+
+m = cone(r1=5, r2=0, h=10, center=True)
+doscreen(
+    model=((m, (1,0,0,0.6)), m ^ infplane().rotY(deg(90)).right(2)),
+    path="infplane2.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(4,10),
+    path="platonic0.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(6,10),
+    path="platonic1.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(8,10),
+    path="platonic2.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(12,10),
+    path="platonic3.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(20,10),
+    path="platonic4.png",
     size=wsize
 )

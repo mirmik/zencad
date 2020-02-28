@@ -1,4 +1,5 @@
 from pyservoce import Scene, Color
+import pyservoce
 import argparse
 import evalcache
 import sys
@@ -91,6 +92,9 @@ def display(shp, color=default_color, deep=True, scene=default_scene):
 
     if isinstance(shp, zencad.assemble.unit):
         return shp.bind_scene(scene, color=color, deep=deep)
+
+    if scene is None:
+        return pyservoce.interactive_object(shp, color)
 
     return scene.add(shp, color)
 

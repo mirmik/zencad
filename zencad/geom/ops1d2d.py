@@ -14,9 +14,7 @@ def fill(*args, **kwargs):
 def interpolate(pnts, tangs=[], closed=False):
     return pyservoce.interpolate(points(pnts), vectors(tangs), closed)
 
-
-@lazy.lazy(cls=shape_generator)
-def sew(lst, sort=True):
+def _sew_wire(lst, sort=True):
     lst = evalcache.unlazy_if_need(lst)
 
     if sort:
@@ -27,6 +25,7 @@ def sew(lst, sort=True):
         fini = lst[0].endpoints()[1]
         lst.remove(lst[0])
 
+        stubiter = 0
         while len(res) != size:
             for l in lst:
                 l_strt = l.endpoints()[0]
@@ -37,25 +36,45 @@ def sew(lst, sort=True):
                     strt = l_fini
                     lst.remove(l)
                     res.insert(0, l)
+                    break
 
                 elif strt == l_fini:
                     strt = l_strt
                     lst.remove(l)
                     res.insert(0, l)
+                    break
 
                 elif fini == l_strt:
                     fini = l_fini
                     lst.remove(l)
                     res.append(l)
+                    break
 
                 elif fini == l_fini:
                     fini = l_fini
                     lst.remove(l)
                     res.append(l)
+                    break
+
+            else:
+                stubiter += 1
+
+            if stubiter >= 3:
+                raise Exception("sew:sorting: Failed to wires sorting")
 
         lst = res
 
-    return pyservoce.sew(lst)
+    return pyservoce.make_wire(lst)
+
+def _sew_shell(lst):
+    return pyservoce.make_shell(lst)
+
+@lazy.lazy(cls=shape_generator)
+def sew(lst, sort=True):
+    if isinstance(lst[0], pyservoce.Face):
+        return _sew_shell(lst)
+    else:
+        return _sew_wire(lst, sort)
 
 
 @lazy.lazy(cls=shape_generator)
