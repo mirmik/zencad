@@ -107,9 +107,9 @@ ENV/
 *.zen
 .evalcache
 .evalfile
-/test/screens/*.png
+test/screens/*.png
 
 *.stl
 *.brep
-/mangen/images/generic/*
-/docs/images/generic/*
+mangen/images/generic/*.png
+docs/images/generic/*.png
