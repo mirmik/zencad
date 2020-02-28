@@ -14,9 +14,7 @@ def fill(*args, **kwargs):
 def interpolate(pnts, tangs=[], closed=False):
     return pyservoce.interpolate(points(pnts), vectors(tangs), closed)
 
-
-@lazy.lazy(cls=shape_generator)
-def sew(lst, sort=True):
+def _sew_wire(lst, sort=True):
     lst = evalcache.unlazy_if_need(lst)
 
     if sort:
@@ -66,7 +64,17 @@ def sew(lst, sort=True):
 
         lst = res
 
-    return pyservoce.sew(lst)
+    return pyservoce.make_wire(lst)
+
+def _sew_shell(lst):
+    return pyservoce.make_shell(lst)
+
+@lazy.lazy(cls=shape_generator)
+def sew(lst, sort=True):
+    if isinstance(lst[0], pyservoce.Face):
+        return _sew_shell(lst)
+    else:
+        return _sew_wire(lst, sort)
 
 
 @lazy.lazy(cls=shape_generator)
