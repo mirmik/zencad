@@ -78,7 +78,7 @@ class rotator(kinematic_unit_one_axis):
 
 	def set_coord(self, coord, **kwargs):
 		self.coord = coord
-		self.output.relocate(pyservoce.rotate(self.ax, coord * self.mul), **kwargs)
+		self.output.relocate(pyservoce.rotate(v=self.ax, a=coord*self.mul), **kwargs)
 
 
 class actuator(kinematic_unit_one_axis):

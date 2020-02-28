@@ -46,7 +46,6 @@ nut = (
 )
 
 fontpath = os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf")
-print(fontpath)
 m = textshape("ZenCad", fontpath, 20)
 
 w = 64.68

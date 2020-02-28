@@ -1,25 +1,25 @@
+* [Главная страница](index.html)
+* [Разбор helloworld](helloworld.html)
+* [Установка](installation.html)
 * Основные концепции
-	* [Главная страница](index.html)
 	* [Скриптовый CAD](scriptcad.html)
-	* [Разбор HelloWorld](helloworld.html)
-	* [Установка](installation.html)
+	* [BREP представление](geomcore.html)
 	* [Кэширование](caching.html)
-	* [Введение в геометрическое ядро](geomcore.html)
-* Базовые примитивы и операции
+* Базовые примитивы и утилиты
 	* [Объёмные примитивы](prim3d.html)  
 	* [Плоские примитивы](prim2d.html)  
-	* [Создание линий](prim1d.html)  
+	* [Линии и циклы](prim1d.html)  
 	* [Точки, вектора, утилиты](prim0d.html)
-	* [Линии и циклы](lincycle.html)  
+* Преобразования, операции над геометрическими телами
+	* [Афинные преобразований](trans0.html)  
+	* [Булевы операции](bool.html)
 	* [Топологически зависимые преобразования](fillet.html)  
 	* [Ссылочная геометрия](ops3d.html)
-* Преобразования
-	* [Синтаксис преобразований](trans0.html)  
-	* [Комбинации преобразований](trans1.html)  
-	* [Булевы операции](bool.html)
+	* [Прочие операции](other.html)
 * Рефлексия и анализ
 	* [Рефлексия геометрии](reflect.html)
 	* [Анализ кривых](crvalgo.html)
+	* [Анализ поверхностей](surfalgo.html)
 	* [Геометрические характеристики](geomprop.html)
 * Отображение и рисование  
 	* [Отображение](show.html)
@@ -28,7 +28,8 @@
 * [Экспорт/Импорт](expimp.html)
 * [Анимация](animate.html)
 * [Сборки и подвижные модели](assemble.html)
-* [Внутренняя кухня](internal.html)
+* [Внутренняя кухня ZenCad](internal.html)
 * Библиотеки
+	* [Платоновы тела](platonic.html)
 	* [kinematic](kinematic.html)
 	* [nut](nut.html)

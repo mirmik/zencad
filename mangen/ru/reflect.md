@@ -1,18 +1,23 @@
 # Рефлексия
 Сложные геометрические объекты состоят из более простых. Данная группа функций и методов позволяет расскладывать сложные объекты на образующие их компоненты.
 
+Для работы с эими фунциями рекомендуется изучить топологическое устройство brep моделей в ядре _OpenCascade_. (Начать ознаклмление можно с раздела [Введение в BREP представление геометрических моделей](geomcore.html))
+
 ---------------------------
 ## Массивы базовых объектов
-С помощью следующих методов можно извлечь простые объекты, лежащие в основе сложных: 
+Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. 
 
-shape.vertices()  
-shape.solids()  
-shape.faces()  
-shape.edges()  
-shape.wires()  
-shape.shells()  
-shape.compounds()  
-shape.compsolids()  
+Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция _filter_ позволяет отфильтровать выборку по необходимому условию.
+```python
+shape.vertices(filter=None) # -> [point3]
+shape.solids(filter=None) # -> [Shape; future:Solid] 
+shape.faces(filter=None) # -> [Face]
+shape.edges(filter=None) # -> [Edge]
+shape.wires(filter=None) # -> [Shape; future:Wire]
+shape.shells(filter=None) # -> [Shape; future:Shell]
+shape.compounds(filter=None) # -> [Shape; future:Compound]
+shape.compsolids(filter=None) # -> [Shape; future:Compsolid]
+```
 
 ---------------------------------------------------
 ## Взятие базового объекта по методу ближайшей точки
@@ -21,6 +26,8 @@ shape.compsolids()
 
 Следующие функции реализуют метод ближайшей точке и возвращают ближайший к _pnt_ базовый объект соответствующего типа, принадлежащий сложному объекту _shp_.
 
-near\_edge(shp, pnt)  
-near\_face(shp, pnt)  
-near\_vertex(shp, pnt)  
+```python
+near_edge(shp, pnt) # -> Edge
+near_face(shp, pnt) # -> Face
+near_vertex(shp, pnt) # -> point3
+```

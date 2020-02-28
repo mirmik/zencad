@@ -6,8 +6,9 @@ from zencad.util import angle_pair, points
 @lazy.lazy(cls=nocached_shape_generator)
 def rectangle(a, b=None, center=False, wire=False):
     if b is None:
-        return pyservoce.square(a, center, wire)
-    return pyservoce.rectangle(a, b, center, wire)
+        return pyservoce.square(a, center, wire=wire)
+    else:
+        return pyservoce.rectangle(a, b, center, wire=wire)
 
 
 @lazy.lazy(cls=nocached_shape_generator)

@@ -20,35 +20,35 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
+<li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
 <ul>
-<li><a href="index.html">Главная страница</a></li>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
-<li><a href="installation.html">Установка</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
-<li><a href="geomcore.html">Введение в геометрическое ядро</a></li>
 </ul></li>
-<li>Базовые примитивы и операции
+<li>Базовые примитивы и утилиты
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
+<li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
+</ul></li>
+<li>Преобразования, операции над геометрическими телами
+<ul>
+<li><a href="trans0.html">Афинные преобразований</a>  </li>
+<li><a href="bool.html">Булевы операции</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
-</ul></li>
-<li>Преобразования
-<ul>
-<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
-<li><a href="trans1.html">Комбинации преобразований</a>  </li>
-<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
 <li>Отображение и рисование <br />
@@ -60,15 +60,18 @@
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="animate.html">Анимация</a></li>
 <li><a href="assemble.html">Сборки и подвижные модели</a></li>
-<li><a href="internal.html">Внутренняя кухня</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
+<li><a href="platonic.html">Платоновы тела</a></li>
 <li><a href="kinematic.html">kinematic</a></li>
 <li><a href="nut.html">nut</a></li>
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h2>helloworld.py</h2>
+      <article class="article"><h1>Привет, друг.</h1>
+
+<p>Вот пример, демонстрирующий принцип построения моделей в zencad.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -87,38 +90,44 @@
 
 <h2>Что происходит:</h2>
 
-<p>Этот пример демонстрирует принцип работы с zencad.</p>
-
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
 </code></pre></div>
 
-<p>Здесь мы импортируем в текущее пространство пространство имён zencad. В данном случае, нас интересуют функции <code>box</code>, <code>sphere</code>, <code>display</code>, <code>show</code>.</p>
+<p>В первой строчке мы импортируем в текущее пространство пространство имён zencad. В данном случае, нас интересуют функции <code>box</code>, <code>sphere</code>, <code>display</code>, <code>show</code>.
+</br>
+</br></p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
 </code></pre></div>
 
-<p>В этом куске кода мы подготавливаем примитивы. Создаётся объект box с размерами 200x200x200 и смещением геометрического центра в начало координат. Также создаются две сферы радиусом 120 и 60.</p>
+<p>Подготавливаем геометрические примитивы. Создаётся объект box с размерами 200x200x200 и смещением геометрического центра в начало координат. Также создаются две сферы радиусом 120 и 60.
+</br>
+</br></p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
 </code></pre></div>
 
-<p>Вычисляем модель с применением булевых операций. Сперва из куба будет вычтена большая сфера. Потом добавлена малая. Порядок слагаемых в данном случае важен, поскольку операции объединения и разности геометрических тел некомутативны.</p>
+<p>Вычисляем модель с применением булевых операций. Сперва из куба будет вычтена большая сфера. Потом добавлена малая. Порядок слагаемых в данном случае важен, поскольку операции объединения и разности геометрических тел некомутативны.
+</br>
+</br></p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Передаём данный объект геометрии в сцену, которая будет отображена следующей операцией.</p>
+<p>Функция display передаёт объект в сцену для последующего отображения.
+</br>
+</br></p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
 
-<p>Отображаем сцену в приложении - визуализаторе.</p>
+<p>Отображаем виджет сцены.</p>
 
 <hr />
 
-<h2>Что должно быть увидено:</h2>
+<h2>Если всё прошло благополучно:</h2>
 
 <p><img src="../images/helloworld.png" alt="" /></p>
 </article>
