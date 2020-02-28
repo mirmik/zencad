@@ -82,7 +82,7 @@ class TransformationProbe(unittest.TestCase):
 		self.assertEqual( (zencad.translate(z,y,x)(box)).center().unlazy(), zencad.point(40,40,40) )
 
 	def test_short_rotate(self):
-		t = zencad.short_rotate((0,0,1), (1,0,0))
+		t = zencad.short_rotate((1,0,0))
 
 		m = zencad.point3(0,0,1)
 		m = t(m)
