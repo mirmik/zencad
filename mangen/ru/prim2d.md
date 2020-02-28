@@ -88,6 +88,28 @@ textshape(text=textString, fontpath=pathToFont, size=fontSize)
 ![](../images/generic/textshape0.png)
 ![](../images/generic/textshape1.png)  
 
+---
+## Бесконечная плоскость.
+Бесконечная плоскость - специальный геометрический объект, который может использоваться в некоторых операцих над другими объектами.
+Бесконечная плоскость не может быть отображена непосредственно.
+
+Сигнатура:
+```python
+infplane()
+```
+
+Пример (Построение конических сечений):
+```python
+cone(r1=5, r2=0, h=10, center=True) ^ infplane()
+cone(r1=5, r2=0, h=10, center=True).rotX(deg(45)) ^ infplane()
+cone(r1=5, r2=0, h=10, center=True) ^ infplane().rotX(deg(45))
+cone(r1=5, r2=0, h=10, center=True) ^ infplane().rotX(deg(90)).right(3)
+```
+![](../images/generic/infplane01.png)
+![](../images/generic/infplane0.png)  
+![](../images/generic/infplane1.png)
+![](../images/generic/infplane2.png)  
+
 ----------------------------------
 ## Fill
 Данная операция применяется к плоской замкнутой линии _wire_ и превращает ее в грань.

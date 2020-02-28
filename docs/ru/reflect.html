@@ -20,33 +20,35 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Кэширование</a></li>
 </ul></li>
-<li>Базовые примитивы и операции
+<li>Базовые примитивы и утилиты
 <ul>
 <li><a href="prim3d.html">Объёмные примитивы</a>  </li>
 <li><a href="prim2d.html">Плоские примитивы</a>  </li>
 <li><a href="prim1d.html">Линии и циклы</a>  </li>
 <li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a></li>
 </ul></li>
-<li>Преобразования
+<li>Преобразования, операции над геометрическими телами
 <ul>
 <li><a href="trans0.html">Афинные преобразований</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
 <li>Отображение и рисование <br />
@@ -70,22 +72,24 @@
 
 <p>Сложные геометрические объекты состоят из более простых. Данная группа функций и методов позволяет расскладывать сложные объекты на образующие их компоненты.</p>
 
-<p>Для работы с эими фунциями рекомендуется изучить топологическое устройство brep моделей в ядре <em>OpenCascade</em>.</p>
+<p>Для работы с эими фунциями рекомендуется изучить топологическое устройство brep моделей в ядре <em>OpenCascade</em>. (Начать ознаклмление можно с раздела <a href="geomcore.html">Введение в BREP представление геометрических моделей</a>)</p>
 
 <hr />
 
 <h2>Массивы базовых объектов</h2>
 
-<p>С помощью следующих методов можно извлечь простые объекты, лежащие в основе сложных: </p>
+<p>Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">()</span>  
-<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">()</span>  
+<p>Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция <em>filter</em> позволяет отфильтровать выборку по необходимому условию.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
 </code></pre></div>
 
 <hr />
@@ -97,9 +101,9 @@
 
 <p>Следующие функции реализуют метод ближайшей точке и возвращают ближайший к <em>pnt</em> базовый объект соответствующего типа, принадлежащий сложному объекту <em>shp</em>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span>  
-<span class="n">near_face</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span>  
-<span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span>  
+<div class="codehilite"><pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Edge</span>
+<span class="n">near_face</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Face</span>
+<span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; point3</span>
 </code></pre></div>
 </article>
     </div>

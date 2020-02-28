@@ -7,6 +7,16 @@ CSG геометрия операется на булевы операции. В
 
 ---
 ## Объединение тел.
+Сигнатура:
+```python
+# Функция:
+result = union(array)
+
+# Оператор:
+result = shp0 + shp1
+```
+
+Пример:
 ```python
 #with operators:
 sphere(r=10) + cylinder(r=5, h=10, center=True) + cylinder(r=5, h=10, center=True).rotateX(deg(90))
@@ -25,6 +35,16 @@ union([
 
 ---
 ## Вычитание тел.
+Сигнатура:
+```python
+# Функция:
+result = difference(array)
+
+# Оператор:
+result = shp0 - shp1
+```
+
+Пример:
 ```python
 #with operators:
 sphere(r=10) - cylinder(r=5, h=10, center=True) - cylinder(r=5, h=10, center=True).rotateX(deg(90))
@@ -43,6 +63,17 @@ difference([
 
 ---
 ## Пересечение тел.
+
+Сигнатура:
+```python
+# Функция:
+result = intersect(array)
+
+# Оператор:
+result = shp0 ^ shp1
+```
+
+Пример:
 ```python
 #with operators:
 sphere(r=10) ^ cylinder(r=5, h=10, center=True) ^ cylinder(r=5, h=10, center=True).rotateX(deg(90))
@@ -58,33 +89,6 @@ intersect([
 ![](../images/generic/intersect0.png)  
 ![](../images/generic/intersect1.png)
 ![](../images/generic/intersect2.png)  
-
-------------------------------
-## Сечения.
-Поиск рёбер пересечения пары тел.
-
-Операция _section_ похожа на _intersect_, только результатом является не твердое тело, а рёбра пересечений. 
-
-```python
-section(a, b=0)
-```
-
-Аргументы _a_ и _b_ - пересекаемые тела. Если один из аргументов действительное число или вектор, то на основе этого параметра строится тело в виде плоскости пересечения.
-
-### Пример. Пересечение оболочек разности куба и сферы горизонтальной плоскостью.
-```python
-body = box(10, center=True) - sphere(4)
-sect = section(body)
-```
-![](../images/generic/section0.png)  
-
-### Пример. Пересечение оболочек куба и сферы.
-```python
-a = box(10, center=True) 
-b = sphere(7)
-sect = section(a, b)
-```
-![](../images/generic/section1.png)
 
 ---------------------------------------------
 ## Булевы операции над двумерными телами.

@@ -27,6 +27,7 @@ def sew(lst, sort=True):
         fini = lst[0].endpoints()[1]
         lst.remove(lst[0])
 
+        stubiter = 0
         while len(res) != size:
             for l in lst:
                 l_strt = l.endpoints()[0]
@@ -37,21 +38,31 @@ def sew(lst, sort=True):
                     strt = l_fini
                     lst.remove(l)
                     res.insert(0, l)
+                    break
 
                 elif strt == l_fini:
                     strt = l_strt
                     lst.remove(l)
                     res.insert(0, l)
+                    break
 
                 elif fini == l_strt:
                     fini = l_fini
                     lst.remove(l)
                     res.append(l)
+                    break
 
                 elif fini == l_fini:
                     fini = l_fini
                     lst.remove(l)
                     res.append(l)
+                    break
+
+            else:
+                stubiter += 1
+
+            if stubiter >= 3:
+                raise Exception("sew:sorting: Failed to wires sorting")
 
         lst = res
 
