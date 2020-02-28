@@ -6,6 +6,7 @@ import os
 
 import zencad.visual
 import zencad.internal_models
+import zencad.platonic
 import pyservoce
 
 # lazy.diag = True
@@ -920,5 +921,35 @@ m = cone(r1=5, r2=0, h=10, center=True)
 doscreen(
     model=((m, (1,0,0,0.6)), m ^ infplane().rotY(deg(90)).right(2)),
     path="infplane2.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(4,10),
+    path="platonic0.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(6,10),
+    path="platonic1.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(8,10),
+    path="platonic2.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(12,10),
+    path="platonic3.png",
+    size=wsize
+)
+
+doscreen(
+    model=zencad.platonic.platonic(20,10),
+    path="platonic4.png",
     size=wsize
 )

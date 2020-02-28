@@ -35,6 +35,18 @@
 	padding-left: 2em;
 }
 
+table {
+	border-spacing: 7px 11px; 
+}
+
+th {
+	text-align: center;	
+}
+
+tr {
+	text-align: center;	
+}
+
 pre 
 {
 	padding-left: 2em;
