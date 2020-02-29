@@ -14,7 +14,10 @@ class ShapeView:
 	def hide(self, en):
 		self.sctrl.hide(en)
 
-class unit:
+	def transform(self, trsf):
+		self.sctrl.transform(trsf)
+
+class unit(pyservoce.TransformableMixin):
 	"""Базовый класс для использования в кинематических цепях и сборках
 
 	Вычисляет свою текущую позицию исходя из дерева построения.
@@ -155,4 +158,8 @@ class unit:
 		if deep:
 			for c in self.childs:
 				c.bind_scene(scene, color=color, deep=True)
+
+	def transform(self, trsf):
+		for v in self.views:
+			v.transform(trsf)
 
