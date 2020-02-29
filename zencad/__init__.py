@@ -14,7 +14,7 @@ from pyservoce import point3 as point
 from pyservoce import vector3 as vector
 
 from zencad.visual import screen
-from zencad.transform import *
+from zencad.geom.transform import *
 
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.lazifier import disable_cache, test_mode

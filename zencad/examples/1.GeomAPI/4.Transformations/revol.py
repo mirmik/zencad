@@ -16,7 +16,7 @@ b2 = a2.rotateX(deg(90)).right(40)
 b3 = a3.rotateX(deg(90)).right(40)
 
 m1 = revol(b1)
-m2 = revol(b2)
+m2 = revol(a2, r=40)
 m3 = revol(b3)
 
 # Display revols:

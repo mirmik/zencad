@@ -147,31 +147,43 @@ def scaleXYZ(x,y,z):
 
 
 class multitransform:
-    def __init__(self, transes):
+    def __init__(self, transes, fuse=False):
         self.transes = transes
+        self.fuse = fuse
 
     def __call__(self, shp):
-        return union([t(shp) for t in self.transes])
+        if self.fuse:
+            return union([t(shp) for t in self.transes])
+        else:
+            return [t(shp) for t in self.transes]
 
 
-def multitrans(transes):
-    return multitransform(transes)
+def multitrans(transes, fuse=False):
+    return multitransform(transes, fuse)
 
 
 def nulltrans():
     return translate(0, 0, 0)
 
 
-def sqrmirror():
-    return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()])
+def sqrmirror(fuse=False):
+    return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()], fuse=fuse)
 
 
-def rotate_array(n):
+def rotate_array(n, fuse=False):
     transes = [
         rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)
     ]
-    return multitrans(transes)
+    return multitrans(transes, fuse=fuse)
 
+def rotate_array2(r, n, yaw=(0,360), roll=(0,0), endpoint=False, fuse=False):
+    lspace1 = np.linspace(yaw[0], yaw[1], num=n, endpoint=endpoint)
+    lspace2 = np.linspace(roll[0], roll[1], num=n, endpoint=endpoint)
+
+    transes = [
+        rotateZ(a) * right(r) * rotateX(deg(90)) * rotateZ(a2) for a, a2 in zip(lspace1, lspace2)
+    ]
+    return multitrans(transes, fuse=fuse)
 
 def short_rotate(t, f=(0,0,1)):
     _f, _t = vector3(f), vector3(t)
