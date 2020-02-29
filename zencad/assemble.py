@@ -160,6 +160,4 @@ class unit(pyservoce.TransformableMixin):
 				c.bind_scene(scene, color=color, deep=True)
 
 	def transform(self, trsf):
-		for v in self.views:
-			v.transform(trsf)
-
+		self.relocate(trsf * self.location, deep=True, view=True)
