@@ -1,20 +1,29 @@
 import pyservoce
+import evalcache
+
 from zencad.lazifier import lazy, shape_generator
-import zencad.transform
+import zencad.geom.transform
 
 @lazy.lazy(cls=shape_generator)
+def _lazy_union(arr):
+	return pyservoce.union(arr)
+
 def union(arr):
-    return pyservoce.union(arr)
+	if isinstance(arr[0], evalcache.LazyObject):
+		return _lazy_union(arr)
+	else:
+		return pyservoce.union(arr)
+
 
 
 @lazy.lazy(cls=shape_generator)
 def difference(arr):
-    return pyservoce.difference(arr)
+	return pyservoce.difference(arr)
 
 
 @lazy.lazy(cls=shape_generator)
 def intersect(arr):
-    return pyservoce.intersect(arr)
+	return pyservoce.intersect(arr)
 
 #@lazy.lazy(cls=shape_generator)
 #def projection(shp):

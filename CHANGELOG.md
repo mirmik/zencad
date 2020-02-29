@@ -1,3 +1,12 @@
+## 0.31.0
+	Change multitransform semantic. Now it produce shape array by default.
+	Improve pipe_shell instrument. Add pipe_shell for arrays.
+	Add rotate_array2 function
+	Add revol2 function
+	Improve revol function
+	Add revol2 example
+	Add platonic example 
+
 ## 0.30.0
 	Many small fixes.
 	Great manual update.
