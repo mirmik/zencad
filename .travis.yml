@@ -3,7 +3,8 @@ language: python
 matrix:
   include:
     # Self Making with Display (Bionic)
-    - os: linux
+    - name: "Ubuntu: Build"
+      os: linux
       dist: bionic
       python:
         - "3.7"
@@ -36,7 +37,9 @@ matrix:
         - python3 ./examples.py
 
      # Self Making with Display (Bionic)    PyPi
-    - os: linux
+    - name: "Ubuntu: Loading from pypi"
+      os: linux
+      if: branch = master
       dist: bionic
       python:
         - "3.7"
@@ -52,7 +55,9 @@ matrix:
         - python3 ./api.py
         - python3 ./examples.py
 
-    - os: osx
+    - name: "OSX: Loading from pypi"
+      os: osx
+      if: branch = master
       osx_image: xcode11.2
       language: shell
             
@@ -63,5 +68,3 @@ matrix:
         - cd utest
         - python3 ./api.py
         - python3 ./examples.py
-
-    
