@@ -7,6 +7,8 @@
 	Add revol2 example.
 	Add platonic example.
 	Add transform methods for units and interactives. 
+	Fixed animation quite exeption.
+	Method "set_location" is deprecated.
 
 ## 0.30.0
 	Many small fixes.
