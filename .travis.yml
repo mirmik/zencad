@@ -72,6 +72,7 @@ matrix:
 
      # Self Making with Display (Bionic)    PyPi
     - name: "Ubuntu: Loading from pypi"
+      if: branch = master
       os: linux
       dist: bionic
       python:
@@ -89,6 +90,7 @@ matrix:
         - python3 ./examples.py
 
     - name: "OSX: Loading from pypi"
+      if: branch = master
       os: osx
       osx_image: xcode11.2
       language: shell
