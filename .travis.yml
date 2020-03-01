@@ -6,6 +6,7 @@ matrix:
     - name: "Ubuntu: Build(servoce==master)"
       os: linux
       dist: bionic
+      if: branch = master
       python:
         - "3.7"
 
