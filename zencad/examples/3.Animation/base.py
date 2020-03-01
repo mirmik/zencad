@@ -7,13 +7,10 @@ import time
 s = box(10, center=True)
 controller = disp(s)
 
-
 nulltime = time.time()
-
 
 def animate(widget):
     trans = rotateZ(time.time() - nulltime) * right(30)
-    controller.set_location(trans)
-
+    controller.relocate(trans)
 
 show(animate=animate)
