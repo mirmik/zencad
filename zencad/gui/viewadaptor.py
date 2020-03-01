@@ -357,7 +357,7 @@ class DisplayWidget(QGLWidget):
 		elif qw == "w":
 			marker = self.MarkerWController
 
-		marker.set_location(zencad.translate(x, y, z))
+		marker.relocate(zencad.translate(x, y, z))
 		marker.hide(x == 0 and y == 0 and z == 0)
 
 		self.redraw()

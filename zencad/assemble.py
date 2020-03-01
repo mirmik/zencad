@@ -8,8 +8,8 @@ class ShapeView:
 	def __init__(self, sctrl):
 		self.sctrl = sctrl
 
-	def set_location(self, trans):
-		self.sctrl.set_location(trans)
+	def relocate(self, trans):
+		self.sctrl.relocate(trans)
 
 	def hide(self, en):
 		self.sctrl.hide(en)
@@ -127,7 +127,7 @@ class unit(pyservoce.TransformableMixin):
 		view. Если deep, применить рекурсивно."""
 
 		for v in self.views:
-			v.set_location(self.global_location)
+			v.relocate(self.global_location)
 
 		if deep:
 			for c in self.childs:
