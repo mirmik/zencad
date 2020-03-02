@@ -332,6 +332,12 @@ class MainWindowActionsMixin:
 		self.mTracking = self.create_action(
 			"Tracking", self.trackingAction, "Tracking", checkbox=True
 		)
+
+		self.mPerspective = self.create_action(
+			"Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=False
+		)
+		self.perspective_checkbox_state = False
+
 		#self.mTestAction = self.create_action(
 		#	"TestAction", self.testAction, "TestAction"
 		#)
@@ -402,6 +408,7 @@ class MainWindowActionsMixin:
 		self.mNavigationMenu.addAction(self.mOrient1)
 		self.mNavigationMenu.addAction(self.mOrient2)
 		self.mNavigationMenu.addAction(self.mTracking)
+		self.mNavigationMenu.addAction(self.mPerspective)
 
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
 		self.mUtilityMenu.addAction(self.mAutoUpdate)
@@ -425,6 +432,10 @@ class MainWindowActionsMixin:
 
 	def createToolbars(self):
 		pass
+
+	def set_perspective(self, en):
+		self.client_communicator.send({"cmd": "set_perspective", "en": en})
+		self.perspective_checkbox_state = en
 
 	def auto_update(self, en):
 		if not en:

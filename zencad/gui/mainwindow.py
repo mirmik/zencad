@@ -507,6 +507,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			if self.is_window_binded():
 				self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
 			self.client_communicator.send({"cmd":"redraw"})
+			self.client_communicator.send({"cmd":"set_perspective", "en": self.perspective_checkbox_state})
 			time.sleep(0.1)
 			self.update()
 		except Exception as ex:
