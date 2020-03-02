@@ -11,7 +11,7 @@ pitch_unit = zencad.assemble.unit(parent=yaw_unit)
 roll_unit = zencad.assemble.unit(parent=pitch_unit)
 model_unit = zencad.assemble.unit(
 	parent=roll_unit,
-	shape=box(20,10,5,center=True) + box(10,20,5,center=True))
+	parts=[box(20,10,5,center=True) + box(10,20,5,center=True)])
 
 yaw_unit.add_triedron(length=25, arrlen=2)
 pitch_unit.add_triedron(length=20, arrlen=2)

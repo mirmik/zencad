@@ -36,9 +36,9 @@ class link(zencad.assemble.unit):
 	def __init__(self, h=40, ax=(0,1,0)):
 		super().__init__()
 		if ax != (0,0,1):
-			self.set_shape(cylinder(5,h) + cylinder(6,10,center=True).transform(up(h) * short_rotate((0,0,1), ax)))
+			self.add_shape(cylinder(5,h) + cylinder(6,10,center=True).transform(up(h) * short_rotate((0,0,1), ax)))
 		else:
-			self.set_shape(cylinder(5,h))	
+			self.add_shape(cylinder(5,h))	
 		self.rotator = zencad.libs.kinematic.rotator(parent=self, ax=ax, location=up(h))
 
 r = zencad.libs.kinematic.rotator(ax=(0,0,1))
