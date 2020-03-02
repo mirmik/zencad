@@ -1,4 +1,4 @@
-## 0.30.0
+## 0.29.0
 	Many small fixes.
 	Great manual update.
 	Rework transformations api.
@@ -6,7 +6,7 @@
 	Add platonic bodies.
 	ATTENTION: short_rotate signature was changed.
 
-## 0.29.0
+## 0.28.13
 	Changed "rotate" signature for openscad compatible.
 	Update manual.
 
