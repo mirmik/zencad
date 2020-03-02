@@ -26,16 +26,18 @@ class unit(pyservoce.TransformableMixin):
 
 	def __init__(self, 
 				parent=None,
-				shape=None,
+				parts=[],	
+				shape=None,		
 				name=None, 
 				location=pyservoce.libservoce.nulltrans()):    
 		self.parent = parent
-		self.shape = shape
 		self.location = evalcache.unlazy_if_need(location)
 		self.global_location = self.location
 		self.name = name
 		self.color = None
 		self.dispobjects = []
+		self.scene = None
+				
 		self.shapes_holder = []
 
 		self.views = set()
@@ -43,6 +45,14 @@ class unit(pyservoce.TransformableMixin):
 
 		if parent is not None:
 			parent.add_child(self)
+
+		if shape is not None:
+			print("zencad.assemble.unit: `shape` option is deprecated. use `parts` option instead") 
+			self.shape = shape
+			self.add_shape(self.shape)
+
+		for obj in parts:
+			self.add(obj)
 
 	def add_child(self, child):
 		child.parent = self
@@ -75,8 +85,21 @@ class unit(pyservoce.TransformableMixin):
 	def set_objects(self, objects):
 		self.dispobjects = objects
 
+	def set_shape(self, shp):
+		raise Exception("zencad.assemble.unit: set_shape function removed. Use `add_shape` instead.")
+
 	def add_object(self, d):
 		self.dispobjects.append(d)
+
+	def add(self, obj, color=zencad.settings.Settings.get_default_color()):
+		obj = evalcache.unlazy_if_need(obj)
+		
+		if isinstance(obj, zencad.assemble.unit):
+			return self.add_child(obj)
+		elif isinstance(obj, pyservoce.Shape):
+			return self.add_shape(obj, color)
+		elif isinstance(obj, pyservoce.interactive_object):
+			return self.add_object(obj)
 
 	def add_shape(self, shp, color=zencad.settings.Settings.get_default_color()):
 		shp = evalcache.unlazy_if_need(shp)
@@ -95,10 +118,7 @@ class unit(pyservoce.TransformableMixin):
 		self.dispobjects.append(self.xaxis)
 		self.dispobjects.append(self.yaxis)
 		self.dispobjects.append(self.zaxis)
-
-	def set_shape(self, shape):
-		self.shape = shape
-
+		
 	def set_color(self, *args, **kwargs):
 		self.color = pyservoce.color(*args, **kwargs)
 
@@ -111,16 +131,9 @@ class unit(pyservoce.TransformableMixin):
 
 	def __str__(self):
 		if self.name:
-			n = self.name
+			return self.name
 		else:
-			n = repr(self)
-
-		if self.shape is None:
-			h = "NullShape"
-		else:
-			h = self.shape.__lazyhexhash__[0:10]
-
-		return str((n,h))
+			return repr(self)
 
 	def _apply_view_location(self, deep):
 		"""Перерисовать положения объектов юнита во всех зарегестрированных 
@@ -143,21 +156,35 @@ class unit(pyservoce.TransformableMixin):
 			scene.viewer.display(d)
 			self.views.add(ShapeView(d))
 
-		if self.shape is not None:
-			if self.color is not None:
-				color = self.color
-	
-			shape_view = ShapeView(scene.add(
-				evalcache.unlazy_if_need(self.shape), 
-				color))
-			scene.viewer.display(shape_view.sctrl)
-			self.views.add(shape_view)
-
 		self._apply_view_location(deep=False)
 
 		if deep:
 			for c in self.childs:
 				c.bind_scene(scene, color=color, deep=True)
 
+		self.scene = scene
+		return self
+
 	def transform(self, trsf):
 		self.relocate(trsf * self.location, deep=True, view=True)
+		return self
+
+	def copy(self, deep=True):
+		parts = [obj.copy(bind_to_scene=False) for obj in self.dispobjects]
+
+		if deep:
+			parts = parts + [ child.copy(deep=True) for child in self.childs ]
+
+		cpy = zencad.assemble.unit(
+			parent=self.parent,
+			location = self.location,
+			parts = parts,
+			name = self.name
+		)
+
+		cpy.location_update()
+
+		if self.scene:
+			cpy.bind_scene(self.scene)
+
+		return cpy

@@ -40,12 +40,12 @@ class Slider(QSlider):
 class player(zencad.assemble.unit):
 	def __init__(self):
 		super().__init__()
-		self.set_shape(box(80,10,10,center=True))
+		self.add_shape(box(80,10,10,center=True))
 
 class ball(zencad.assemble.unit):
 	def __init__(self):
 		super().__init__()
-		self.set_shape(sphere(5))
+		self.add_shape(sphere(5))
 
 player_one = player()
 player_two = player()
