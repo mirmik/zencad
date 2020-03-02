@@ -224,7 +224,7 @@ disp(trans.inverse()(m), color.red)
 |---|---|
 | ![invtrans0](../images/generic/invtrans0.png) | ![invtrans1](../images/generic/invtrans1.png) |
 
-Примечание. Инверсия композиции преобразований может быть вычеслена как:  
+Примечание. Инверсия композиции преобразований может быть вычислена как:  
 _<p align=center>(A * B)<sup>-1</sup> = B<sup>-1</sup> * A<sup>-1</sup><p/>_
 
 

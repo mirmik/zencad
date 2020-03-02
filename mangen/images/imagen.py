@@ -817,7 +817,7 @@ doscreen(
         translate(-20,-20,0) * rotateZ(deg(120)),
         translate(20,20,0) * rotateZ(deg(180)),
         nulltrans()
-    ])(m), dock(80)),
+    ], fuse=True)(m), dock(80)),
     path="multitrans1.png",
     size=wsize
 )
