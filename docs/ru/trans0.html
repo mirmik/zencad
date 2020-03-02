@@ -27,7 +27,7 @@
 <ul>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
-<li><a href="caching.html">Кэширование</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,7 +38,7 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразований</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
@@ -51,15 +51,15 @@
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
-<li>Отображение и рисование <br />
+<li>Визуализация <br />
 <ul>
 <li><a href="show.html">Отображение</a></li>
 <li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li><a href="animate.html">Анимация</a></li>
-<li><a href="assemble.html">Сборки и подвижные модели</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
@@ -142,10 +142,10 @@
 <span class="n">shp</span><span class="o">.</span><span class="n">moveZ</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># moveX(+x)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># moveX(-x)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">forw</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveX(+y)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveX(-y)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>    <span class="c1"># moveX(+z)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># moveX(-z)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">forw</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveY(+y)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveY(-y)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>    <span class="c1"># moveZ(+z)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># moveZ(-z)</span>
 
 <span class="c1"># Сокращенный синтаксис:</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">movX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -169,10 +169,10 @@
 <span class="c1"># Мнемонический синтаксис:</span>
 <span class="n">right</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># moveX(+x)</span>
 <span class="n">left</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># moveX(-x)</span>
-<span class="n">forw</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveX(+y)</span>
-<span class="n">back</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveX(-y)</span>
-<span class="n">up</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>    <span class="c1"># moveX(+z)</span>
-<span class="n">down</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># moveX(-z)</span>
+<span class="n">forw</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveY(+y)</span>
+<span class="n">back</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveY(-y)</span>
+<span class="n">up</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>    <span class="c1"># moveZ(+z)</span>
+<span class="n">down</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># moveZ(-z)</span>
 </code></pre></div>
 
 <hr />
@@ -346,7 +346,7 @@
 </tbody>
 </table>
 
-<p>Примечание. Инверсия композиции преобразований может быть вычеслена как: <br />
+<p>Примечание. Инверсия композиции преобразований может быть вычислена как: <br />
 <em><p align=center>(A * B)<sup>-1</sup> = B<sup>-1</sup> * A<sup>-1</sup><p/></em></p>
 
 <hr />
