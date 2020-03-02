@@ -165,6 +165,10 @@ class DisplayWidget(QGLWidget):
 
 			self.count_of_helped_shapes += 2
 
+	def set_perspective(self, en):
+		self.view.set_perspective(en)
+		self.view.redraw()
+
 	def showEvent(self, ev):
 		trace("DisplayWidget::showEvent")
 		if self.inited != True:
@@ -417,6 +421,7 @@ class DisplayWidget(QGLWidget):
 		elif cmd == "orient2": self.reset_orient2()
 		elif cmd == "centering": self.view.centering() # TODO: Неправильно работает
 		elif cmd == "location": self.set_location(data["dct"])
+		elif cmd == "set_perspective": self.set_perspective(data["en"])
 		elif cmd == "exportstl": self.addon_exportstl()
 		elif cmd == "exportbrep": self.addon_exportbrep()
 		elif cmd == "to_freecad": self.addon_to_freecad_action()
