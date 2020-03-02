@@ -33,7 +33,8 @@ class Settings():
 			"recents" : [],
 			"hsplitter_position": None,
 			"vsplitter_position": None,
-			"wsize": None
+			"wsize": None,
+			"perspective":False
 		},
 		"markers": {
 			"size" : 1

@@ -334,9 +334,9 @@ class MainWindowActionsMixin:
 		)
 
 		self.mPerspective = self.create_action(
-			"Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=False
+			"Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=zencad.settings.get(["memory","perspective"])=='true'
 		)
-		self.perspective_checkbox_state = False
+		self.perspective_checkbox_state = zencad.settings.get(["memory","perspective"])=='true'
 
 		#self.mTestAction = self.create_action(
 		#	"TestAction", self.testAction, "TestAction"
@@ -434,8 +434,10 @@ class MainWindowActionsMixin:
 		pass
 
 	def set_perspective(self, en):
-		self.client_communicator.send({"cmd": "set_perspective", "en": en})
+		if self.client_communicator:
+			self.client_communicator.send({"cmd": "set_perspective", "en": en})
 		self.perspective_checkbox_state = en
+		zencad.settings.set(["memory", "perspective"], "true")
 
 	def auto_update(self, en):
 		if not en:
