@@ -21,13 +21,13 @@
 	* [Анализ кривых](crvalgo.html)
 	* [Анализ поверхностей](surfalgo.html)
 	* [Геометрические характеристики](geomprop.html)
-* Отображение и рисование  
+* Визуализация  
 	* [Отображение](show.html)
 	* [Интерактивный объект](interactive_object.html)  
+	* [Иерархические модели](assemble.html)
+	* [Анимация](animate.html)
 * [Графический интерфейс](gui.html)
 * [Экспорт/Импорт](expimp.html)
-* [Анимация](animate.html)
-* [Сборки и подвижные модели](assemble.html)
 * [Внутренняя кухня ZenCad](internal.html)
 * Библиотеки
 	* [Платоновы тела](platonic.html)
