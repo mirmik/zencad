@@ -64,10 +64,10 @@ shp.moveY(y)
 shp.moveZ(z)
 shp.right(x) # moveX(+x)
 shp.left(x)  # moveX(-x)
-shp.forw(y)  # moveX(+y)
-shp.back(y)  # moveX(-y)
-shp.up(z)    # moveX(+z)
-shp.down(z)  # moveX(-z)
+shp.forw(y)  # moveY(+y)
+shp.back(y)  # moveY(-y)
+shp.up(z)    # moveZ(+z)
+shp.down(z)  # moveZ(-z)
 
 # Сокращенный синтаксис:
 shp.movX(x)
@@ -91,10 +91,10 @@ moveZ(z)
 # Мнемонический синтаксис:
 right(x) # moveX(+x)
 left(x)  # moveX(-x)
-forw(y)  # moveX(+y)
-back(y)  # moveX(-y)
-up(z)    # moveX(+z)
-down(z)  # moveX(-z)
+forw(y)  # moveY(+y)
+back(y)  # moveY(-y)
+up(z)    # moveZ(+z)
+down(z)  # moveZ(-z)
 ```
 
 -------------------------------
