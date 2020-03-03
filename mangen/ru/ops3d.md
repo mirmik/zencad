@@ -44,13 +44,22 @@ sweep(proto=profile, path=trajectory, frenet=True/False)
 ![](../images/generic/sweep4.png)
 
 ---
-## Revol
+## Тело вращения.
 Операция создания тела вращения. Задаётся с указанием вращаемого тела. При необходимости создания сектора задаётся угол.
 ```python
-revol(proto=model, yaw=angle)
+revol(proto=model, r=None, yaw=angle)
 revol(proto=model)
 ```
 ![](../images/generic/revol0.png)
 ![](../images/generic/revol1.png)  
 ![](../images/generic/revol2.png)
 ![](../images/generic/revol3.png)  
+
+---
+## Тело вращения. (расширенная версия).
+Расширенная версия операции _revol_. Строит тело вращения от прототипа _proto_ на интервале угла поворота _yaw_. Указание опции _roll_ позволяет изменять угол поворота прототипа по мере прохождения интервала. Тело строится по опорным копиям тела прототипа, количество копий задаётся опцией _n_. _nparts_ определяет количество сегментов результирующего тела вращения.
+
+Сигнатура:
+```python
+revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), nparts=None)
+```

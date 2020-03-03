@@ -1,4 +1,4 @@
-## 0.31.0
+## 0.30.0
 	Change multitransform semantic. Now it produce shape array by default.
 	Improve pipe_shell instrument. Add pipe_shell for arrays.
 	Add rotate_array2 function.
@@ -12,7 +12,7 @@
 	Add perspective projection.
 	ATTENTION: Backward compatibility broken. multiple transformations have changed the default behavior. Now an array is created, not a union. The old behavior is available with the option fuse = False.
 
-## 0.30.0
+## 0.29.0
 	Many small fixes.
 	Great manual update.
 	Rework transformations api.
@@ -20,7 +20,7 @@
 	Add platonic bodies.
 	ATTENTION: short_rotate signature was changed.
 
-## 0.29.0
+## 0.28.13
 	Changed "rotate" signature for openscad compatible.
 	Update manual.
 
