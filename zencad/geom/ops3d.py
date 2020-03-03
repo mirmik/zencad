@@ -51,7 +51,7 @@ def revol(proto, r=None, yaw=0.0):
 	return pyservoce.revol(proto, yaw)
 
 @lazy.lazy(cls=shape_generator)
-def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, parts=None):
+def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=None):
 	rets=[]
 	arrs=[]
 
@@ -59,18 +59,18 @@ def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, parts=None
 
 	if is_full_circle:
 		endpoint = False
-		if parts == None:
-			parts = 2 
+		if nparts == None:
+			nparts = 2 
 
 	else:
 		endpoint = True
-		if parts == None:
-			parts = 1 
+		if nparts == None:
+			nparts = 1 
 
 	yaw_dist = yaw[1] - yaw[0]
 	roll_dist = roll[1] - roll[0]
-	yaw_step = yaw_dist / parts
-	roll_step = roll_dist / parts
+	yaw_step = yaw_dist / nparts
+	roll_step = roll_dist / nparts
 
 	def part_of_interval(part, total, a, b):
 		total_p = total + 1
@@ -80,10 +80,10 @@ def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, parts=None
 
 		return(point(a,b,koeff(part,total)), point(a,b,koeff(part+1,total)))
 
-	for ipart in range(parts):
-		part_n = n // parts
-		part_yaw = part_of_interval(ipart, parts, yaw[0], yaw[1])
-		part_roll = part_of_interval(ipart, parts, roll[0], roll[1])
+	for ipart in range(nparts):
+		part_n = n // nparts
+		part_yaw = part_of_interval(ipart, nparts, yaw[0], yaw[1])
+		part_roll = part_of_interval(ipart, nparts, roll[0], roll[1])
 
 		for w in proto.wires():
 			m=zencad.geom.transform.rotate_array2(
