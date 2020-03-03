@@ -10,6 +10,7 @@
 	Fixed animation quite exception.
 	Method "set_location" is deprecated.
 	Add perspective projection.
+	ATTENTION: Backward compatibility broken. multiple transformations have changed the default behavior. Now an array is created, not a union. The old behavior is available with the option fuse = False.
 
 ## 0.30.0
 	Many small fixes.
