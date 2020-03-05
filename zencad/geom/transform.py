@@ -9,6 +9,8 @@ import sys
 import operator
 import numpy as np
 
+DEF_MTRANS_FUSE = True
+
 # Replace pyservoce transformation __call__ method
 # for support lazy objects.
 native_call = pyservoce.transformation.__call__
@@ -147,13 +149,20 @@ def scaleXYZ(x,y,z):
 
 
 class multitransform:
-	def __init__(self, transes, fuse=False, multiply_interactive=True):
+	"""
+		fuse: True - вернуть объединение. False - вернуть массив.
+		multiply_interactive: True - делать копии интерактивных объектов и юнитов.
+	"""
+	def __init__(self, transes, fuse=DEF_MTRANS_FUSE, multiply_interactive=True):
 		self.transes = transes
 		self.fuse = fuse
 		self.multiply_interactive = multiply_interactive
 
 	def __call__(self, shp):
-		if self.multiply_interactive and isinstance(shp, (pyservoce.interactive_object, zencad.assemble.unit)):
+		if self.multiply_interactive \
+				and isinstance(shp, (
+					pyservoce.interactive_object, 
+					zencad.assemble.unit)):
 			rets = []
 			clones = [shp.copy() for i in range(len(self.transes)-1)]
 			objects = [shp] + clones
@@ -166,7 +175,7 @@ class multitransform:
 			return [t(shp) for t in self.transes]
 
 
-def multitrans(transes, fuse=False, multiply_interactive=True):
+def multitrans(transes, fuse=DEF_MTRANS_FUSE, multiply_interactive=True):
 	return multitransform(transes, fuse, multiply_interactive)
 
 
@@ -174,17 +183,17 @@ def nulltrans():
 	return translate(0, 0, 0)
 
 
-def sqrmirror(fuse=False):
+def sqrmirror(fuse=DEF_MTRANS_FUSE):
 	return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()], fuse=fuse)
 
 
-def rotate_array(n, fuse=False):
+def rotate_array(n, fuse=DEF_MTRANS_FUSE):
 	transes = [
 		rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)
 	]
 	return multitrans(transes, fuse=fuse)
 
-def rotate_array2(r, n, yaw=(0,360), roll=(0,0), endpoint=False, fuse=False):
+def rotate_array2(r, n, yaw=(0,360), roll=(0,0), endpoint=False, fuse=DEF_MTRANS_FUSE):
 	lspace1 = np.linspace(yaw[0], yaw[1], num=n, endpoint=endpoint)
 	lspace2 = np.linspace(roll[0], roll[1], num=n, endpoint=endpoint)
 

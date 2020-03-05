@@ -69,43 +69,87 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Assemble</h1>
+      <article class="article"><h1>Иерархические сборки.</h1>
 
-<p>Модуль assemble предназначен для построения иерархических цепочек геометрических тел или иных интерактивных объектов.</p>
+<p>При отображении сложной или анимированной сцены необъходимо работать с большим количеством связанных интерактивных объектов, перемещающихся друг относительно друга по определённым законам.</p>
 
-<p>Основной единицей модуля являются объекты класса zencad.assemble.unit.</p>
-
-<p>zencad.assemble.unit:</p>
+<p>Для облегчения реализации такого поведения в zencad представлена библиотека zencad.assemble и её основное средство zencad.assemble.unit.</p>
 
 <hr />
 
-<h1>unit</h1>
+<h2>Сборочный юнит (zencad.assemble.unit).</h2>
 
-<p>Юнит - это единица, задающая локальную систему координат, относительно которой позиционируются связанные с юнитом объекты. Юниты создают структуру дерева, отсчитывая своё положение относительно юнита предка (unit.parent). Если юнит не имеет предка, его положение отсчитывается от глобальной системы координат.</p>
+<p>Сборочный юнит - это объект, имеющий собственную локальную систему координат, относительно которой позиционируются связанные с этим юнитом интерактивные объекты и другие юниты. Юниты могут создавать структуру дерева, отсчитывая своё положение относительно положения юнита-предка (unit.parent). Если юнит не имеет предка, его положение отсчитывается от глобальной системы координат.</p>
 
 <p>Юнит содержит имеет два объекта координатного преобразования - location и global_location. </p>
 
 <ul>
 <li>location - задаёт положение юнита относительно положения юнита предка. location может быть обновлён или непосредственно, или с помощью метода relocate.</li>
-<li>global<em>location - это положение юнита относительно глобальной системы координат. global</em>location используется при отрисовке объекта. global<em>location строится на основе дерева unit.location и может быть обновлён с помощью метода location</em>update, relocate или соответствующих опций других методов.</li>
+<li>global<em>location - это положение юнита относительно глобальной системы координат. global</em>location используется при отрисовке объекта. global<em>location строится на основе дерева unit.location и может быть обновлён с помощью метода location</em>update, relocate и, с помощью других операций.</li>
 </ul>
 
-<h2>u.link(child)</h2>
+<hr />
 
-<pre><code>установить объект `u` предком для объекта `child`.
+<h2>Добавление объекта.</h2>
+
+<p>Создаёт и связывает с юнитом интерактивный объект на основе переданного геометрического объекта <em>obj</em>.</p>
+
+<p>Если в качестве параметра передан интерактивный объект, юнит берёт его под управление. (Примечание: юнит управляет расположением интерактивного объекта).</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<pre><code>m = box(10)
+i = interactive_object(box(10).right(20))
+u.add(m)
+u.add(i)
 </code></pre>
 
-<h2>u.location_update(deep=True, view=True)</h2>
+<h2>Добавление юнита-потомка.</h2>
+
+<p>Устанавливает объект <em>u</em> предком для объекта <em>child</em>.
+Теперь положение объектов в юните <em>child</em> (и его потомках) будет расчитываться с учётом положения объекта <em>u</em>.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">***</span>
+</code></pre></div>
+
+<h2>Обновить глобальное расположение.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div>
 
 <p>Обновить глобальное расположение объекта согласно данным о его текущем положении и объекту глобального положения предка. 
 view - если объект отображен, перерисовать его, исходя из нового положения.
 deep - применить рекурсивно всех потомков объекта.</p>
 
-<h2>u.relocate(location, deep=False, view=False)</h2>
+<h2>Изменить локальное положение.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div>
 
 <p>Изменить текущее положение на объект location и применить процедуру location_update с опциями deep, view.</p>
 
-<h2>u.bind_scene(scene, color=zencad.default_color, deep=True):</h2>
+<h2>Отобразить на сцене.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">bind_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+</code></pre></div>
 
 <p>Добавить юнит в сцену scene. Все объекты, цвета которых не установлены, будут окрашены в default_color. Если deep, рекурсивно добавить в сцену все зависимые юниты.</p>
 </article>
