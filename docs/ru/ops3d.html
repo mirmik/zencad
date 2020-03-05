@@ -122,11 +122,11 @@ TODO: Добавить больше параметров в алгоритм с�
 
 <hr />
 
-<h2>Revol</h2>
+<h2>Тело вращения.</h2>
 
 <p>Операция создания тела вращения. Задаётся с указанием вращаемого тела. При необходимости создания сектора задаётся угол.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
 <span class="n">revol</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div>
 
@@ -134,6 +134,17 @@ TODO: Добавить больше параметров в алгоритм с�
 <img src="../images/generic/revol1.png" alt="" /> <br />
 <img src="../images/generic/revol2.png" alt="" />
 <img src="../images/generic/revol3.png" alt="" />  </p>
+
+<hr />
+
+<h2>Тело вращения. (расширенная версия).</h2>
+
+<p>Расширенная версия операции <em>revol</em>. Строит тело вращения от прототипа <em>proto</em> на интервале угла поворота <em>yaw</em>. Указание опции <em>roll</em> позволяет изменять угол поворота прототипа по мере прохождения интервала. Тело строится по опорным копиям тела прототипа, количество копий задаётся опцией <em>n</em>. <em>nparts</em> определяет количество сегментов результирующего тела вращения.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">nparts</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>
