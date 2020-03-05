@@ -16,22 +16,66 @@ def linear_extrude(proto, vec, center=False):
 def extrude(vec):
 	return linear_extrude(*args, **kwargs)
 
+@lazy.lazy(cls=shape_generator)
+def pipe_0(proto, spine):
+	return pyservoce.pipe_0(proto, spine)
 
 @lazy.lazy(cls=shape_generator)
-def pipe(proto, path):
-	return pyservoce.pipe(proto, path)
+def pipe(proto, spine, frenet=False, mode="corrected_frenet", force_approx_c1=False, path=None):
+	if path is not None:
+		spine = path
+		print("pipe: path option is renamed. use spine instead")
+
+	if frenet is True:
+		mode = "frenet"
+
+	if isinstance(proto, pyservoce.SolidShape):
+		proto = proto.outshell()
+
+	return pyservoce.pipe(proto, spine, mode, force_approx_c1)
 
 
 @lazy.lazy(cls=shape_generator)
-def pipe_shell(proto, path, frenet=False, approx_c1=False):
-	if isinstance(proto, pyservoce.libservoce.Shape):
-		return pyservoce.pipe_shell(proto, path, frenet)
+def pipe_shell(
+		wires, 
+		spine, 
+		frenet=False, 
+		binormal=vector3(0,0,0), 
+		parallel=vector3(0,0,0), 
+		force_approx_c1=False, 
+		solid=True,
+		discrete=False, 
+		path=None):
+	if path is not None:
+		spine = path
+		print("pipe: path option is renamed. use spine instead")
+	#if isinstance(proto, pyservoce.libservoce.Shape):
+	#	return pyservoce.pipe_shell(proto, path, frenet)
 
-	return pyservoce.pipe_shell(proto, path, frenet, approx_c1)
+	fwires = []
+	for w in wires:
+		if isinstance(w, pyservoce.Face):
+			fwires.append(w.outwire())
+		else:
+			fwires.append(w)
 
-@lazy.lazy(cls=shape_generator)
-def pipe_shell2(proto, path, auxspine, car):
-	return pyservoce.pipe_shell(proto, path, auxspine, car)
+	return pyservoce.pipe_shell(
+		wires=fwires, 
+		spine=spine, 
+		frenet=frenet, 
+		force_approx_c1=force_approx_c1, 
+		binormal=vector3(binormal),
+		parallel=vector3(parallel),
+		discrete=discrete,
+		solid=solid)
+
+#@lazy.lazy(cls=shape_generator)
+#def pipe_shell2(wires, spine, auxspine, car, path=None):
+#	if path is not None:
+#		spine = path
+#		print("pipe: path option is renamed. use spine instead")
+#
+#	return pyservoce.pipe_shell(proto, path, auxspine, car)
 
 
 @lazy.lazy(cls=shape_generator)
@@ -91,18 +135,19 @@ def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=Non
 				n=part_n,
 				yaw=part_yaw,
 				roll=part_roll,
-				endpoint=endpoint)(w)
+				endpoint=endpoint,
+				fuse=False)(w)
 	
 			arrs.append(m)
 	
 		# Радиус окружности не имеет значения.
 			rets.append(
 				pyservoce.pipe_shell(
-					prof=m, 
-					path=zencad.geom.prim2d.circle(
+					wires=m, 
+					spine=zencad.geom.prim2d.circle(
 						r=100,angle=part_yaw,wire=True).unlazy(), 
-					approx_c1=True, 
-					isFrenet=True))
+					#force_approx_c1=True, 
+					frenet=True))
 	
 		if sects:
 			return arrs
