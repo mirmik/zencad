@@ -62,3 +62,22 @@ def textshape(text, fontpath, size, center=False):
 def infplane(*args, **kwargs):
     return pyservoce.infplane(*args, **kwargs)
 
+
+@lazy.lazy(cls=shape_generator)
+def ruled(a, b):
+    if a.shapetype()=="edge" and b.shapetype()=="edge":
+        return pyservoce.ruled_face(a, b)
+
+    else:
+        return pyservoce.ruled_shell(a, b)
+
+    #return pyservoce.infplane(*args, **kwargs)
+
+
+@lazy.lazy(cls=shape_generator)
+def trivial_tube(spine, r):
+    return pyservoce.trivial_tube(spine, r)
+    
+@lazy.lazy(cls=shape_generator)
+def tube(spine, r, tol=1e-6, cont=0, maxdegree=3, maxsegm=2):
+    return pyservoce.tube(spine, r, tol, cont, maxdegree, maxsegm)

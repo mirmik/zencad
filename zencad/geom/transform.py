@@ -202,7 +202,7 @@ def rotate_array2(r, n, yaw=(0,360), roll=(0,0), endpoint=False, fuse=DEF_MTRANS
 	]
 	return multitrans(transes, fuse=fuse)
 
-def short_rotate(t, f=(0,0,1)):
+def short_rotate(f, t):
 	_f, _t = vector3(f), vector3(t)
 	if _f.early(_t, 0.000000000001):
 		return nulltrans()

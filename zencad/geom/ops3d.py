@@ -50,12 +50,14 @@ def pipe_shell(
 		solid=True,
 		discrete=False,
 		transition=0, 
-		path=None):
+		path=None,
+		proto=None):
 	if path is not None:
 		spine = path
 		print("pipe: path option is renamed. use spine instead")
-	#if isinstance(proto, pyservoce.libservoce.Shape):
-	#	return pyservoce.pipe_shell(proto, path, frenet)
+	if proto is not None:
+		profiles = [proto]
+		print("pipe: proto option was renamed. use profile instead")
 
 	fwires = []
 	for w in profiles:
@@ -191,6 +193,10 @@ def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=Non
 @lazy.lazy(cls=shape_generator)
 def thicksolid(proto, t, refs):
 	return pyservoce.thicksolid(proto, points(refs), t)
+
+@lazy.lazy(cls=shape_generator)
+def offset(proto, r):
+	return pyservoce.offset_shape(proto, r)
 
 
 @lazy.lazy(cls=shape_generator)

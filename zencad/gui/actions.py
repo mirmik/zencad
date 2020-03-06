@@ -280,6 +280,20 @@ class MainWindowActionsMixin:
 			m = menu.addMenu(d)
 			self._init_example_menu(m, os.path.join(directory, d))
 
+	def _init_recent_menu(self, menu):
+		def _add_open_action(menu, name, path):
+			def callback():
+				self._open_routine(path)
+
+			menu.addAction(self.create_action(name, callback, path))
+
+		for l in zencad.settings.Settings.get_recent():
+			_add_open_action(menu, os.path.basename(l), l)
+
+	def update_recent_menu(self):
+		self.recentMenu.clear()
+		self._init_recent_menu(self.recentMenu)
+
 	def createActions(self):
 		self.mCreateAction = self.create_action(
 			"CreateNew...", self.createNewAction, "Create"
@@ -387,7 +401,10 @@ class MainWindowActionsMixin:
 		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mSaveAction)
 		self.mFileMenu.addAction(self.mSaveAs)
+		self.mFileMenu.addSeparator()
 		self.exampleMenu = self.mFileMenu.addMenu("Examples")
+		self.recentMenu = self.mFileMenu.addMenu("Recent")
+		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
 		self.mFileMenu.addAction(self.mToFreeCad)
@@ -397,6 +414,7 @@ class MainWindowActionsMixin:
 
 		moduledir = os.path.dirname(__file__)
 		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "../examples"))
+		self._init_recent_menu(self.recentMenu)
 
 		self.mEditMenu = self.menuBar().addMenu(self.tr("&Edit"))
 		self.mEditMenu.addAction(self.mSettings)
@@ -437,7 +455,8 @@ class MainWindowActionsMixin:
 		if self.client_communicator:
 			self.client_communicator.send({"cmd": "set_perspective", "en": en})
 		self.perspective_checkbox_state = en
-		zencad.settings.set(["memory", "perspective"], "true")
+
+		zencad.settings.set(["memory", "perspective"], "true" if en else "false")
 
 	def auto_update(self, en):
 		if not en:

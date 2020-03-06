@@ -305,6 +305,9 @@ class TextEditor(QPlainTextEdit):
 		trace(f"TEXTEDITOR: setText")
 		self.setPlainText(filetext)
 
+	def reopen(self):
+		self.update_text_field()
+
 	def keyPressEvent(self, event):
 		if (
 			event.key() == Qt.Key_S

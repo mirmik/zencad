@@ -953,3 +953,10 @@ doscreen(
     path="platonic4.png",
     size=wsize
 )
+
+
+doscreen(
+    model=offset(cone(r1=15,r2=10,h=20), r=5),
+    path="offset0.png",
+    size=wsize
+)
