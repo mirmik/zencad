@@ -21,30 +21,35 @@ def pipe_0(proto, spine):
 	return pyservoce.pipe_0(proto, spine)
 
 @lazy.lazy(cls=shape_generator)
-def pipe(proto, spine, frenet=False, mode="corrected_frenet", force_approx_c1=False, path=None):
+def pipe(profile, spine, frenet=False, mode="corrected_frenet", force_approx_c1=False, path=None, proto=None):
 	if path is not None:
 		spine = path
-		print("pipe: path option is renamed. use spine instead")
+		print("pipe: path option was renamed. use spine instead")
+
+	if proto is not None:
+		profile = proto
+		print("pipe: proto option was renamed. use profile instead")
 
 	if frenet is True:
 		mode = "frenet"
 
-	if isinstance(proto, pyservoce.SolidShape):
-		proto = proto.outshell()
+	if isinstance(profile, pyservoce.Solid):
+		profile = profile.outshell()
 
-	return pyservoce.pipe(proto, spine, mode, force_approx_c1)
+	return pyservoce.pipe(profile, spine, mode, force_approx_c1)
 
 
 @lazy.lazy(cls=shape_generator)
 def pipe_shell(
-		wires, 
+		profiles, 
 		spine, 
 		frenet=False, 
 		binormal=vector3(0,0,0), 
 		parallel=vector3(0,0,0), 
 		force_approx_c1=False, 
 		solid=True,
-		discrete=False, 
+		discrete=False,
+		transition=0, 
 		path=None):
 	if path is not None:
 		spine = path
@@ -53,21 +58,49 @@ def pipe_shell(
 	#	return pyservoce.pipe_shell(proto, path, frenet)
 
 	fwires = []
-	for w in wires:
+	for w in profiles:
 		if isinstance(w, pyservoce.Face):
 			fwires.append(w.outwire())
 		else:
 			fwires.append(w)
 
 	return pyservoce.pipe_shell(
-		wires=fwires, 
+		profiles=fwires, 
 		spine=spine, 
 		frenet=frenet, 
 		force_approx_c1=force_approx_c1, 
 		binormal=vector3(binormal),
 		parallel=vector3(parallel),
 		discrete=discrete,
+		transition=transition,
 		solid=solid)
+
+@lazy.lazy(cls=shape_generator)
+def pipe_shell_3(
+		profiles, 
+		spine, 
+		frenet=False, 
+		solid=True,
+		transition=0,
+		path=None):
+
+	if path is not None:
+		spine = path
+		print("pipe: path option is renamed. use spine instead")
+	
+	fwires = []
+	for w in profiles:
+		if isinstance(w, pyservoce.Face):
+			fwires.append(w.outwire())
+		else:
+			fwires.append(w)
+
+	return pyservoce.pipe_shell(
+		profiles=fwires, 
+		spine=spine, 
+		frenet=frenet, 
+		solid=solid,
+		transition=transition)
 
 #@lazy.lazy(cls=shape_generator)
 #def pipe_shell2(wires, spine, auxspine, car, path=None):
@@ -80,7 +113,7 @@ def pipe_shell(
 
 @lazy.lazy(cls=shape_generator)
 def sweep(proto, path, frenet=False):
-	return pyservoce.pipe_shell(proto, path, frenet)
+	return pyservoce.pipe_shell([proto], path, frenet)
 
 
 @lazy.lazy(cls=shape_generator)

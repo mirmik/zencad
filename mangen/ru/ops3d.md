@@ -12,9 +12,9 @@ model.extrude(vec=(x,y,z), center=True/False)
 model.extrude(vec=z, center=True/False)
 ```
 ![](../images/generic/extrude0.png)
-![](../images/generic/extrude1.png)  
+![](../images/generic/extrude1.png)
 ![](../images/generic/extrude2.png)
-![](../images/generic/extrude3.png)  
+![](../images/generic/extrude3.png)
 
 ---
 ## Loft
@@ -30,6 +30,16 @@ loft(wires)
 ![](../images/generic/loft3.png)  
 ![](../images/generic/loft4.png)
 ![](../images/generic/loft5.png)  
+
+---
+# Траекторная развёртка.
+
+Широкий класс операций ссылочной геометрии представляют операции, построения тела путём трансляции (англ. sweep) некоторого профиля или семейства профилей (_profile_, _profiles_) вдоль заданной траектории _spine_.
+
+## Теоретическая сводка.
+
+### Трёхгранник Фрэне.
+В основе операции лежит понятие трёхгранника Фрэне.
 
 ---
 ## Sweep
