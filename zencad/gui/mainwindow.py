@@ -565,6 +565,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def reopen_current(self):
 		#if time.time() - self.last_reopen_time > 0.7:
 		self._open_routine(self.current_opened, False)
+		self.texteditor.reopen()
 		self.last_reopen_time = time.time()
 
 	def delete_communicator(self):
@@ -730,6 +731,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if self.notifier:
 			self.notifier.retarget(path)
 		
+		self.update_recent_menu()
+
 		self.openlock.unlock()
 
 	#def resizeEvent(self, ev):

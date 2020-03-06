@@ -10,6 +10,7 @@ import zencad.showapi
 import zencad.gui.application
 import zencad.gui.viewadaptor
 import zencad.gui.retransler
+import zencad.lazifier
 import zencad.gui.mainwindow
 import runpy
 
@@ -77,12 +78,13 @@ def do_main():
 	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
 	parser.add_argument("--sleeped", action="store_true", help="Don't use manualy. Create sleeped thread.")
-	parser.add_argument("--nodaemon", action="store_true")
-	parser.add_argument("--disable-show", action="store_true")
-	parser.add_argument("--disable-sleeped", action="store_true")
-	parser.add_argument("--disable-screen", action="store_true")
+	parser.add_argument("--no-daemon", action="store_true")
+	parser.add_argument("--no-show", action="store_true")
+	parser.add_argument("--no-sleeped", action="store_true")
+	parser.add_argument("--no-screen", action="store_true")
 	parser.add_argument("--no-evalcache-notify", action="store_true")
 	parser.add_argument("--no-embed", action="store_true")
+	parser.add_argument("--no-cache", action="store_true")
 	parser.add_argument("--size")
 	parser.add_argument("--no-restore", action="store_true")
 	parser.add_argument("--tgtpath")
@@ -111,10 +113,14 @@ def do_main():
 	if pargs.info:
 		zencad.configure.info(True)
 
-	if pargs.disable_sleeped:
+	if pargs.no_sleeped:
 		zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION = False
 
-	if pargs.disable_screen:
+	if pargs.no_cache:
+		zencad.configure.CONFIGURE_DISABLE_LAZY=True
+		zencad.lazifier.disable_lazy()
+
+	if pargs.no_screen:
 		zencad.configure.CONFIGURE_SCREEN_SAVER_TRANSLATE = False
 
 	if pargs.debugcomm:
@@ -268,7 +274,7 @@ def do_main():
 		if pargs.widget:
 			zencad.showapi.SHOWMODE = "widget"
 
-		if pargs.disable_show:
+		if pargs.no_show:
 			zencad.showapi.SHOWMODE = "noshow"
 
 		if pargs.size:
