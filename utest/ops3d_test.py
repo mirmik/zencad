@@ -19,13 +19,14 @@ class Ops3dProbe(unittest.TestCase):
         proto = zencad.circle(20)
         path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
         zencad.pipe(proto, path)
-        zencad.pipe(proto=proto, path=path)
+        zencad.pipe(profile=proto, spine=path)
 
     def test_pipe_shell(self):
-        proto = zencad.circle(20, wire=True)
+        proto0 = zencad.circle(20, wire=True)
+        proto1 = zencad.circle(30, wire=True).up(20)
         path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
-        zencad.pipe_shell(proto, path)
-        zencad.pipe_shell(proto=proto, path=path)
+        zencad.pipe_shell([proto0, proto1], path)
+        zencad.pipe_shell(profiles=[proto0, proto1], spine=path)
 
     def test_sweep(self):
         proto = zencad.circle(20, wire=True)

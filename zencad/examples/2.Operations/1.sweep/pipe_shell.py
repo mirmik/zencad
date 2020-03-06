@@ -12,7 +12,7 @@ wires = [
 
 spine = interpolate([(0,0,0), (0,0,10), (20,0,40)])
 
-m = pipe_shell(wires, spine, frenet=True, parallel=(0,0,1), binormal=(0,0,0), discrete=False)
+m = pipe_shell(wires, spine, frenet=True, transition=1)
 
 disp(m)
 show()
