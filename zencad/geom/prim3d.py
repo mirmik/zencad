@@ -137,5 +137,5 @@ def polyhedron(pnts, faces, shell=False):
         return shl.fill()    
 
 @lazy.lazy(cls=nocached_shape_generator)
-def make_solid(shp):
-    return pyservoce.make_solid(shp)
+def make_solid(*args, **kwargs):
+    return pyservoce.make_solid(*args, **kwargs)

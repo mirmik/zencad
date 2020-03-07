@@ -69,14 +69,19 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Булевы операции и сечения.</h1>
+      <article class="article"><h1>Булевы операции.</h1>
 
-<p>CSG геометрия операется на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д объектов. В zencad есть два способа выполнения этих операций: </p>
+<p>CSG геометрия операется на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д и 2д объектов. В zencad есть два группы этих операций: </p>
 
 <ul>
-<li>над массивами тел с помощью функций <code>union</code>, <code>difference</code>, <code>intersect</code></li>
-<li>над парами тел с помощью операторов <code>+</code> <code>-</code> <code>^</code></li>
+<li>над массивами тел с помощью функций <em>union</em>, <em>difference</em>, <em>intersect</em></li>
+<li>над парами тел с помощью операторов <em>+</em> <em>-</em> <em>^</em></li>
 </ul>
+
+<blockquote class="spoiler">
+  <p>Примечание:
+  Не стоит пытаться с помощью булевых операций получить составную линию из простых линий или сшить оболочку из граней. Для этих манипуляций, существуют специальные процедуры сшивки, освещенные в соответствующих разделах.</p>
+</blockquote>
 
 <hr />
 
@@ -170,6 +175,26 @@
 <img src="../images/generic/intersect0.png" alt="" /> <br />
 <img src="../images/generic/intersect1.png" alt="" />
 <img src="../images/generic/intersect2.png" alt="" />  </p>
+
+<hr />
+
+<h2>Пересечение оболочек.</h2>
+
+<p>Побратим операции <em>intersect</em>, производящий вычисление пересечения оболочек тел.  </p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code>
+</code></pre></div>
+
+<p><img src="../images/generic/section0.png" alt="" />
+<img src="../images/generic/section1.png" alt="" />   </p>
 
 <hr />
 

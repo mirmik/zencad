@@ -9,6 +9,7 @@ from PyQt5.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
 
 # import PyQt5.QtWidgets as QtWidgets
 
+import time
 import zencad.configure
 from zencad.util import print_to_stderr
 
@@ -241,6 +242,7 @@ class TextEditor(QPlainTextEdit):
 	def __init__(self):
 		self.base_color = QColor(40, 41, 35)
 		self.lines_numbers_border = 10
+		self.last_save = time.time() - 1
 
 		QPlainTextEdit.__init__(self)
 		pallete = self.palette()
@@ -269,6 +271,7 @@ class TextEditor(QPlainTextEdit):
 		self.updateLineNumberAreaWidth()
 
 	def save(self):
+		self.last_save=time.time()
 		try:
 			f = open(self.edited, "w")
 			self.rewrite = self.edited
@@ -306,7 +309,10 @@ class TextEditor(QPlainTextEdit):
 		self.setPlainText(filetext)
 
 	def reopen(self):
-		self.update_text_field()
+		if time.time() - self.last_save < 1:
+			pass
+		else:
+			self.update_text_field()
 
 	def keyPressEvent(self, event):
 		if (

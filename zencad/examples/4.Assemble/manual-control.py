@@ -8,7 +8,6 @@ In that example we create special widget to change link`s positions by sliders.
 
 from zencad import *
 import zencad.assemble
-import zencad.libs.kinematic
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -29,7 +28,7 @@ class link(zencad.assemble.unit):
 	def __init__(self, h=40, ax=(0,1,0)):
 		super().__init__()
 		self.add_shape(cylinder(5,h) + cylinder(6,10,center=True).transform(up(h) * short_rotate((0,0,1), ax)))
-		self.rotator = zencad.libs.kinematic.rotator(parent=self, ax=ax, location=up(h))
+		self.rotator = zencad.assemble.rotator(parent=self, ax=ax, location=up(h))
 
 a = link(ax=(0,1,0))
 b = link(ax=(1,0,0))

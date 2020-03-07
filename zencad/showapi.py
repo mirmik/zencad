@@ -88,6 +88,7 @@ def display(shp, color=default_color, deep=True, scene=default_scene):
         lst = []
         for s in shp:
             lst.append(display(s, color=color, deep=deep, scene=scene))
+
         return lst
 
     if isinstance(shp, zencad.assemble.unit):

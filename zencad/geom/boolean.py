@@ -62,3 +62,29 @@ def section(a, b=0):
 		)
 
 	return result
+
+
+
+
+#_add_operator_native = pyservoce.Shape.__add__
+#_sup_operator_native = pyservoce.Shape.__sub__
+#_xor_operator_native = pyservoce.Shape.__xor__
+#
+#def add_operator(a, b):
+#	c = _add_operator_native(a, b)
+#	c = c.restore_shape_type()
+#	return c
+#
+#def sub_operator(a, b):
+#	c = _sub_operator_native(a, b)
+#	c = c.restore_shape_type()
+#	return c
+#
+#def xor_operator(a, b):
+#	c = _xor_operator_native(a, b)
+#	c = c.restore_shape_type()
+#	return c
+#
+#pyservoce.Shape.__add__ = add_operator
+#pyservoce.Shape.__sub__ = sub_operator
+#pyservoce.Shape.__xor__ = xor_operator
