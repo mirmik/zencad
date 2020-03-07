@@ -178,7 +178,7 @@ def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=Non
 		# Радиус окружности не имеет значения.
 			rets.append(
 				pyservoce.pipe_shell(
-					wires=m, 
+					profiles=m, 
 					spine=zencad.geom.prim2d.circle(
 						r=100,angle=part_yaw,wire=True).unlazy(), 
 					#force_approx_c1=True, 
@@ -218,3 +218,10 @@ def chamfer(proto, r, refs=None):
 pyservoce.Shape.extrude = linear_extrude
 pyservoce.Shape.fillet = fillet
 pyservoce.Shape.chamfer = chamfer
+
+
+
+
+@lazy.lazy(cls=shape_generator)
+def project(*args, **kwargs):
+	return pyservoce.project(*args, **kwargs)

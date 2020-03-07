@@ -243,6 +243,24 @@ nulltrans()
 |---|---|
 | ![nulltrans0](../images/generic/nulltrans01.png) | ![nulltrans0](../images/generic/nulltrans01.png) |
 
+---------
+### Минимальный поворот.
+Данное преобразование соответствует минимальному поворота от вектора _<span style="color:green">f</span>_ к вектору _<span style="color:blue">t</span>_. 
+
+Сигнатура:
+```python
+short_rotate(f, t)
+```
+
+Пример:
+```python
+short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight())
+```
+
+| До | После |
+|---|---|
+| ![multitrans0](../images/generic/short_rotate0.png) | ![multitrans0](../images/generic/short_rotate1.png) |
+
 ------------------------------------
 ### Множественное преобразование.
 Оператор множественного преобразования создаёт объединение преобразований объекта прототипа.
@@ -266,17 +284,8 @@ disp(extrans(zencad.internal_models.knight()))
 |---|---|
 | ![multitrans0](../images/generic/multitrans0.png) | ![multitrans0](../images/generic/multitrans1.png) |
 
----------
-## Минимальный поворот.
-Данное преобразование соответствует минимальному поворота от вектора _f_ к вектору _t_. _f_ - необязательный параметр и по умолчанию соответствует вертикальному направлению.
-
-Сигнатура:
-```python
-short_rotate(t, f=(0,0,1))
-```
-
 ----------
-## Круговой массив.
+### Круговой массив.
 Строит круговой массив объектов.
 
 Сигнатура и код преобразования:
@@ -288,7 +297,7 @@ def rotate_array(n):
     return multitrans(transes)
 ```
 
-## Квадратное отражение.
+### Квадратное отражение.
 Достраивает 3 отражения исходного объекта.
 
 Сигнатура и код преобразования:

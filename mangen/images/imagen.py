@@ -960,3 +960,33 @@ doscreen(
     path="offset0.png",
     size=wsize
 )
+
+doscreen(
+    model=(
+        rounded_polysegment([(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)], 10), 
+        *points([(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)])
+    ),
+    path="rounded_polysegment0.png",
+    size=wsize,
+    yaw=deg(160-90-30)
+)
+
+
+import zencad.draw as draw
+doscreen(
+    model=(
+        zencad.internal_models.knight(), 
+        draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
+        draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
+    path="short_rotate0.png",
+    size=wsize
+)
+
+doscreen(
+    model=(
+        short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight()), 
+        draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
+        draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
+    path="short_rotate1.png",
+    size=wsize
+)

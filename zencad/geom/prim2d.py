@@ -79,5 +79,23 @@ def trivial_tube(spine, r):
     return pyservoce.trivial_tube(spine, r)
     
 @lazy.lazy(cls=shape_generator)
-def tube(spine, r, tol=1e-6, cont=0, maxdegree=3, maxsegm=2):
-    return pyservoce.tube(spine, r, tol, cont, maxdegree, maxsegm)
+def tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
+    print("a", spine)
+    ret, f, l = pyservoce.tube(spine, r, tol, cont, maxdegree, maxsegm)
+    print("b")
+    
+    if bounds:
+        return (ret,f,l)
+
+    return ret
+
+
+#@lazy.lazy(cls=shape_generator)
+#def tube_by_points(pnts, r1, r2, tol=1e-6, cont=2, maxdegree=3, maxsegm=20):
+ #   wire = tube_wire_by_points(pnts, r2)
+  #  return pyservoce.tube(wire, r1, cont, maxdegree, maxsegm)
+
+
+@lazy.lazy(cls=shape_generator)
+def make_face(*args, **kwargs):
+    return pyservoce.make_face(*args, **kwargs)

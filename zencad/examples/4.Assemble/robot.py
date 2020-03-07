@@ -2,7 +2,6 @@
 
 from zencad import *
 import zencad.assemble
-import zencad.libs.kinematic
 
 import time
 import numpy
@@ -43,8 +42,8 @@ class Robot(zencad.assemble.unit):
          #   parent=self, child=arm_model, location=arm_translate
         #)
 
-        self.left_arm_connector = zencad.libs.kinematic.spherical_rotator(parent=self, location=mirrorYZ() * arm_translate)
-        self.right_arm_connector = zencad.libs.kinematic.spherical_rotator(parent=self, location=arm_translate)
+        self.left_arm_connector = zencad.assemble.spherical_rotator(parent=self, location=mirrorYZ() * arm_translate)
+        self.right_arm_connector = zencad.assemble.spherical_rotator(parent=self, location=arm_translate)
 
         self.left_arm_connector.output.add_shape(arm_model)
         self.right_arm_connector.output.add_shape(arm_model)
@@ -53,7 +52,7 @@ class Robot(zencad.assemble.unit):
         head = HeadAssemble()
 
         # print("HEAD_CONNECTOR!!!")
-        self.head_connector = zencad.libs.kinematic.rotator(parent=self, location=up(self.h), ax=(0,0,1))
+        self.head_connector = zencad.assemble.rotator(parent=self, location=up(self.h), ax=(0,0,1))
         self.head_connector.link(head)
 
 

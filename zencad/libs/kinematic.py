@@ -3,6 +3,7 @@ import pyservoce
 
 from abc import ABC, abstractmethod
 
+from zencad.assemble import kinematic_unit
 
 class kinematic_chain:
 	"""Объект-алгоритм управления участком кинематической чепи от точки

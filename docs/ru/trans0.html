@@ -379,6 +379,37 @@
 
 <hr />
 
+<h3>Минимальный поворот.</h3>
+
+<p>Данное преобразование соответствует минимальному поворота от вектора <em><span style="color:green">f</span></em> к вектору <em><span style="color:blue">t</span></em>. </p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">short_rotate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">short_rotate</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))(</span><span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">())</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+  <th>До</th>
+  <th>После</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/short_rotate0.png" alt="multitrans0" /></td>
+  <td><img src="../images/generic/short_rotate1.png" alt="multitrans0" /></td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
 <h3>Множественное преобразование.</h3>
 
 <p>Оператор множественного преобразования создаёт объединение преобразований объекта прототипа.
@@ -415,18 +446,7 @@ transes - массив преобразований.</p>
 
 <hr />
 
-<h2>Минимальный поворот.</h2>
-
-<p>Данное преобразование соответствует минимальному поворота от вектора <em>f</em> к вектору <em>t</em>. <em>f</em> - необязательный параметр и по умолчанию соответствует вертикальному направлению.</p>
-
-<p>Сигнатура:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">short_rotate</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
-</code></pre></div>
-
-<hr />
-
-<h2>Круговой массив.</h2>
+<h3>Круговой массив.</h3>
 
 <p>Строит круговой массив объектов.</p>
 
@@ -439,7 +459,7 @@ transes - массив преобразований.</p>
     <span class="k">return</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">)</span>
 </code></pre></div>
 
-<h2>Квадратное отражение.</h2>
+<h3>Квадратное отражение.</h3>
 
 <p>Достраивает 3 отражения исходного объекта.</p>
 

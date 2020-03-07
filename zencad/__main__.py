@@ -78,7 +78,7 @@ def do_main():
 	parser.add_argument("--widget", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
 	parser.add_argument("--sleeped", action="store_true", help="Don't use manualy. Create sleeped thread.")
-	parser.add_argument("--no-daemon", action="store_true")
+	#parser.add_argument("--no-daemon", action="store_true")
 	parser.add_argument("--no-show", action="store_true")
 	parser.add_argument("--no-sleeped", action="store_true")
 	parser.add_argument("--no-screen", action="store_true")
