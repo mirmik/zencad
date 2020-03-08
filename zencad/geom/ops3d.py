@@ -119,8 +119,8 @@ def sweep(proto, path, frenet=False):
 
 
 @lazy.lazy(cls=shape_generator)
-def loft(arr, smooth=False):
-	return pyservoce.loft(arr, smooth=smooth)
+def loft(arr, smooth=False, shell=False, maxdegree=4):
+	return pyservoce.loft(arr, smooth=smooth, solid=not shell, maxdegree=maxdegree)
 
 @lazy.lazy(cls=shape_generator)
 def revol(proto, r=None, yaw=0.0):
