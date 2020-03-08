@@ -1,5 +1,5 @@
 ## 0.30.0
-	Change multitransform semantic. Now it produce shape array by default.
+	Add array producing option for multitransforms.
 	Improve pipe_shell instrument. Add pipe_shell for arrays.
 	Add rotate_array2 function.
 	Add revol2 function.
@@ -10,6 +10,9 @@
 	Fixed animation quite exception.
 	Method "set_location" is deprecated.
 	Add perspective projection.
+	Markers keyboards changed to F3, F4.
+	TextEditor now works with display widget focus.
+	ATTENTION: short_rotate signature was changed one more time.
 
 ## 0.29.0
 	Many small fixes.

@@ -315,11 +315,11 @@ class TextEditor(QPlainTextEdit):
 			self.update_text_field()
 
 	def keyPressEvent(self, event):
-		if (
-			event.key() == Qt.Key_S
-			and QApplication.keyboardModifiers() == Qt.ControlModifier
-		):
-			self.save()
+		#if (
+		#	event.key() == Qt.Key_S
+		#	and QApplication.keyboardModifiers() == Qt.ControlModifier
+		#):
+		#	self.save()
 
 		QPlainTextEdit.keyPressEvent(self, event)
 

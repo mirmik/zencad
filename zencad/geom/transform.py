@@ -186,6 +186,9 @@ def nulltrans():
 def sqrmirror(fuse=DEF_MTRANS_FUSE):
 	return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()], fuse=fuse)
 
+def sqrtrans(*args, **kwargs):
+	print("sqrtrans renamed. use sqrmirror instead")
+	return sqrmirror(*args, **kwargs)
 
 def rotate_array(n, fuse=DEF_MTRANS_FUSE):
 	transes = [
