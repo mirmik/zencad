@@ -133,7 +133,7 @@ class StartDialog(QDialog):
 		self.accept()
 
 	def handle_open(self):
-		path = zencad.gui.util.open_file_dialog(self)
+		path = zencad.gui.util.open_file_dialog(self, directory=os.path.dirname(zencad.settings.Settings.get_recent()[0]))
 
 		if len(path[0]) == 0:
 			#self.reject()

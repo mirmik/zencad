@@ -29,6 +29,14 @@ def trace(*argv):
 	if zencad.configure.CONFIGURE_VIEWADAPTOR_TRACE:
 		print_to_stderr("DISPTRACE:", *argv)
 
+
+class KeyPressEater(QObject):
+	def __init__(self):
+		super().__init__()
+
+	def eventFilter(self, obj, event):
+		return False
+
 class DisplayWidget(QGLWidget):
 	tracking_info_signal = pyqtSignal(tuple)
 	markerRequestQ = pyqtSignal(tuple)
@@ -36,7 +44,7 @@ class DisplayWidget(QGLWidget):
 
 	locationChanged = pyqtSignal(dict)
 	signal_key_pressed = pyqtSignal(str)
-	signal_key_pressed_raw = pyqtSignal(int, int)
+	signal_key_pressed_raw = pyqtSignal(int, int, str)
 	signal_key_released_raw = pyqtSignal(int, int)
 	signal_screenshot_reply = pyqtSignal(bytes, tuple)
 
@@ -52,7 +60,14 @@ class DisplayWidget(QGLWidget):
 		self.session_id=session_id
 		self.bind_mode=bind_mode
 
-		self.setFocusPolicy(Qt.StrongFocus)
+		self.perspective_mode = False
+
+		#self.evfilter = KeyPressEater()
+		#self.installEventFilter(self.evfilter)
+
+		#self.setFocusPolicy(Qt.NoFocus)
+		self.setMouseTracking(True)		
+
 		self.orient = 1
 		self.mousedown = False
 		self.marker1 = (zencad.pyservoce.point3(0, 0, 0), False)
@@ -78,7 +93,6 @@ class DisplayWidget(QGLWidget):
 
 		self.setBackgroundRole(QPalette.NoRole)
 		self.setAttribute(Qt.WA_PaintOnScreen, True)
-		self.setMouseTracking(True)
 
 		self.animate_updated = threading.Event()
 		self.count_of_helped_shapes = 0
@@ -158,6 +172,15 @@ class DisplayWidget(QGLWidget):
 			self.MarkerWController = self.scene.add(
 				self.msphere, zencad.Color(0, 1, 0)
 			)
+
+			self.camera_center_mark = self.scene.add(pyservoce.point3(0,0,0), zencad.Color(1, 0, 0))
+			self.camera_center_axes = (
+				self.scene.add(pyservoce.axis(pyservoce.point3(0,0,0), pyservoce.vector3(1,0,0), pyservoce.color.red)),
+				self.scene.add(pyservoce.axis(pyservoce.point3(0,0,0), pyservoce.vector3(0,1,0), pyservoce.color.green)),
+				self.scene.add(pyservoce.axis(pyservoce.point3(0,0,0), pyservoce.vector3(0,0,1), pyservoce.color.blue))
+			)
+			self.set_center_visible(False)
+
 			zencad.lazifier.restore_lazy()
 
 			self.MarkerQController.hide(True)
@@ -166,6 +189,7 @@ class DisplayWidget(QGLWidget):
 			self.count_of_helped_shapes += 2
 
 	def set_perspective(self, en):
+		self.perspective_mode = en
 		self.view.set_perspective(en)
 		self.view.redraw()
 
@@ -175,6 +199,7 @@ class DisplayWidget(QGLWidget):
 			trace("DisplayWidget::showEvent: init")
 
 			self.viewer = self.scene.viewer
+			self.scene_max0 = self.scene.bbox().max0()
 	
 			if self.view is None:
 				self.view = self.viewer.create_view()
@@ -197,6 +222,10 @@ class DisplayWidget(QGLWidget):
 					"pid":os.getpid(), 
 					"session_id":self.session_id
 				})
+
+				QWindow.fromWinId(self.winId()).setFlags(QWindow.fromWinId(self.winId()).flags() | 
+					Qt.SubWindow) 
+
 				time.sleep(0.02)
 			#	self.timer = QTimer.singleShot(0, foo)
 
@@ -304,6 +333,12 @@ class DisplayWidget(QGLWidget):
 			self.location_changed_handle()
 
 		if theFlags & Qt.RightButton or self.shift_pressed:
+			#if self.orient == 1:
+			#	self.move_right(mv.x()*0.1)
+			#	self.move_up(mv.y()*0.1)
+			#	self.location_changed_handle()
+
+			#if self.orient == 2:
 			self.view.pan(mv.x(), -mv.y())
 			self.location_changed_handle()
 
@@ -353,6 +388,9 @@ class DisplayWidget(QGLWidget):
 		self.redraw_marker("w",x,y,z)
 
 	def location_changed_handle(self):
+		self.camera_center_mark.relocate(pyservoce.translate(*self.view.center()))
+		for c in self.camera_center_axes: 
+			c.relocate(pyservoce.translate(*self.view.center()))
 		self.locationChanged.emit(self.location())
 
 	def redraw_marker(self, qw, x, y, z):
@@ -366,6 +404,51 @@ class DisplayWidget(QGLWidget):
 
 		self.redraw()
 
+	def move_back(self, koeff=1):
+			#scale = self.view.scale()
+			vec = self.view.eye() - self.view.center()  
+			vec = vec.normalize() * self.scene_max0
+			self.view.set_center(self.view.center() + vec * koeff)
+			self.view.set_eye(self.view.eye() + vec * koeff)
+			self.view.redraw()
+			self.location_changed_handle()
+
+	def move_forw(self, koeff=1):
+			#scale = self.view.scale()
+			vec = self.view.center() - self.view.eye() 
+			vec = vec.normalize() * self.scene_max0
+			self.view.set_center(self.view.center() + vec * koeff)
+			self.view.set_eye(self.view.eye() + vec * koeff)
+			self.view.redraw()
+			self.location_changed_handle()
+
+	def move_right(self, koeff=1):
+			#scale = self.view.scale()
+			vec = self.view.center() - self.view.eye() 
+			vec = pyservoce.vector3(0,0,1).cross(vec).normalize() * self.scene_max0
+			self.view.set_center(self.view.center() + vec * koeff)
+			self.view.set_eye(self.view.eye() + vec * koeff)
+			self.view.redraw()
+			self.location_changed_handle()
+
+	def move_left(self, koeff=1):
+			#scale = self.view.scale()
+			vec = self.view.center() - self.view.eye() 
+			vec = pyservoce.vector3(0,0,-1).cross(vec).normalize() * self.scene_max0
+			self.view.set_center(self.view.center() + vec * koeff)
+			self.view.set_eye(self.view.eye() + vec * koeff)
+			self.view.redraw()
+			self.location_changed_handle()
+
+	def move_up(self, koeff=1):
+			#scale = self.view.scale()
+			vec = self.view.center() - self.view.eye() 
+			vec = pyservoce.vector3(0,0,1).normalize() * self.scene_max0
+			self.view.set_center(self.view.center() + vec * koeff)
+			self.view.set_eye(self.view.eye() + vec * koeff)
+			self.view.redraw()
+			self.location_changed_handle()
+
 	def zoom_down(self, koeff):
 		self.view.set_scale(self.view.scale()*(1/koeff))
 		self.location_changed_handle()
@@ -378,16 +461,36 @@ class DisplayWidget(QGLWidget):
 		trace("keyPressEvent", event.key())
 		trace(event.nativeVirtualKey())
 
-		modifiers = QApplication.keyboardModifiers()
+		modifiers = event.modifiers()#QApplication.keyboardModifiers()
 
-		if event.key() == Qt.Key_Q:
+		if event.key() == Qt.Key_F3:
 			self.markerQPressed()
-		elif event.key() == Qt.Key_W:
+		elif event.key() == Qt.Key_F4:
 			self.markerWPressed()
-		elif event.key() == Qt.Key_F3 or event.key() == Qt.Key_PageUp:
+		if event.key() == Qt.Key_F5:
+			self.move_forw()
+		elif event.key() == Qt.Key_F6:
+			self.move_back()
+		elif event.key() == event.key() == Qt.Key_PageUp:
 			self.zoom_up(self.zoom_koeff_key)
-		elif event.key() == Qt.Key_F4 or event.key() == Qt.Key_PageDown:
+		elif event.key() == event.key() == Qt.Key_PageDown:
 			self.zoom_down(self.zoom_koeff_key)
+
+		MOVE_SCALE = 0.05
+
+		if event.key() == Qt.Key_W and self.mousedown:
+			self.move_forw(MOVE_SCALE)
+			return
+		elif event.key() == Qt.Key_S and self.mousedown:
+			self.move_back(MOVE_SCALE)
+			return
+
+		if event.key() == Qt.Key_D and self.mousedown:
+			self.move_left(MOVE_SCALE)
+			return
+		elif event.key() == Qt.Key_A and self.mousedown:
+			self.move_right(MOVE_SCALE)
+			return
 
 		#elif event.key() == Qt.Key_F11:
 		#	self.signal_key_pressed.emit("F11")
@@ -396,17 +499,25 @@ class DisplayWidget(QGLWidget):
 		#	self.signal_key_pressed.emit("F10")
 
 		else:
+			if self.mousedown:
+				return
+
 			# If signal not handling here, translate it onto top level
 			if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
-				self.signal_key_pressed_raw.emit(event.key(), modifiers)
+				self.signal_key_pressed_raw.emit(event.key(), modifiers, event.text())
 
 			#self.setWindowState(Qt.WindowFullScreen)
 
 	def keyReleaseEvent(self, event):
-		modifiers = QApplication.keyboardModifiers()
+		modifiers = event.modifiers()#QApplication.keyboardModifiers()
 		
 		if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
 			self.signal_key_released_raw.emit(event.key(), modifiers)
+
+	def centering(self):
+		self.view.centering()
+		self.set_orient1()
+		self.view.redraw()
 
 	def external_communication_command(self, data):
 		cmd = data["cmd"]
@@ -419,13 +530,15 @@ class DisplayWidget(QGLWidget):
 		elif cmd == "resize": self.resize_addon(size=QSize(data["size"][0],data["size"][1]))
 		elif cmd == "orient1": self.reset_orient1()
 		elif cmd == "orient2": self.reset_orient2()
-		elif cmd == "centering": self.view.centering() # TODO: Неправильно работает
+		elif cmd == "centering": self.centering() 
 		elif cmd == "location": self.set_location(data["dct"])
 		elif cmd == "set_perspective": self.set_perspective(data["en"])
+		elif cmd == "set_center_visible": self.set_center_visible(data["en"])
+		elif cmd == "first_person_mode": self.first_person_mode()
 		elif cmd == "exportstl": self.addon_exportstl()
 		elif cmd == "exportbrep": self.addon_exportbrep()
 		elif cmd == "to_freecad": self.addon_to_freecad_action()
-		elif cmd == "tracking": self.tracking_mode = data["en"]
+		elif cmd == "tracking":  self.tracking_mode_enable(data["en"])
 		elif cmd == "screenshot": self.addon_screenshot_upload()
 		elif cmd == "console": sys.stdout.write(data["data"])
 			
@@ -433,6 +546,31 @@ class DisplayWidget(QGLWidget):
 			print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
 
 	widget_closed = pyqtSignal()
+
+	def set_center_visible(self, en):
+		if en:
+			self.camera_center_mark.hide(False)
+			self.camera_center_axes[0].hide(False)
+			self.camera_center_axes[1].hide(False)
+			self.camera_center_axes[2].hide(False)
+		else:
+			self.camera_center_mark.hide(True)
+			self.camera_center_axes[0].hide(True)
+			self.camera_center_axes[1].hide(True)
+			self.camera_center_axes[2].hide(True)
+
+		self.view.redraw()
+
+	def tracking_mode_enable(self, en):
+		#self.setMouseTracking(en)
+		self.tracking_mode = en
+
+	def first_person_mode(self):
+		self.set_perspective(True)
+		self.view.set_center(self.view.eye()-pyservoce.vector3(0,0,1))
+		self.set_center_visible(False)
+		self.view.redraw()
+
 	def closeEvent(self, ev):
 		self.widget_closed.emit()
 
@@ -566,8 +704,8 @@ def bind_widget_signal(widget, communicator):
 		"cmd":"location", "loc": arg }))
 	widget.signal_key_pressed.connect(lambda arg:communicator.send({
 		"cmd":"keypressed", "key": arg }))
-	widget.signal_key_pressed_raw.connect(lambda key, modifiers:communicator.send({
-		"cmd":"keypressed_raw", "key": key, "modifiers": modifiers }))
+	widget.signal_key_pressed_raw.connect(lambda key, modifiers, text:communicator.send({
+		"cmd":"keypressed_raw", "key": key, "modifiers": modifiers, "text": text }))
 	widget.signal_key_released_raw.connect(lambda key, modifiers:communicator.send({
 		"cmd":"keyreleased_raw", "key": key, "modifiers": modifiers }))
 	widget.tracking_info_signal.connect(lambda arg:communicator.send({

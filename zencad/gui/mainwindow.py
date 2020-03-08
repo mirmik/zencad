@@ -22,6 +22,7 @@ import evalcache
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtTest import *
 
 from zencad.util import print_to_stderr
 
@@ -193,12 +194,6 @@ class KeyPressEater(QObject):
 		super().__init__()
 
 	def eventFilter(self, obj, event):
-		#if event.type() == QEvent.Paint:
-			#painter = QPainter(obj)
-			#painter.setBrush(Qt.black)
-			#painter.drawRect(0,0,100,100)
-		#	return True
-
 		return False
 
 class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
@@ -220,7 +215,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.setWindowTitle(title)
 		self.openlock = QMutex()
 		self.opened_subproc = None
-		self.window = None
+		#self.window = None
 		self.winid = None
 		self.console = zencad.gui.console.ConsoleWidget()
 		self.texteditor = zencad.gui.texteditor.TextEditor()
@@ -317,7 +312,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.restore_gui_state()
 		self._display_mode = display_mode
 
-		self.evfilter = KeyPressEater()
+		#self.evfilter = KeyPressEater()
+		#self.installEventFilter(self.evfilter)
 
 		trace("MAINWINDOW: finish constructor")
 
@@ -337,15 +333,21 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			return
 		hsplitter_position = zencad.settings.hsplitter_position_get()
 		vsplitter_position = zencad.settings.vsplitter_position_get()
+		texteditor_hidden = zencad.settings.get(["memory", "texteditor_hidden"]) == 'true'
+		console_hidden = zencad.settings.get(["memory", "console_hidden"]) == 'true'
 		wsize = zencad.settings.get(["memory","wsize"])
 		if hsplitter_position: self.hsplitter.setSizes([int(s) for s in hsplitter_position])
 		if vsplitter_position: self.vsplitter.setSizes([int(s) for s in vsplitter_position])
+		if texteditor_hidden: self.hideEditor(True)
+		if console_hidden: self.hideConsole(True)
 		if wsize: self.setGeometry(wsize)
 
 	def store_gui_state(self):
 		hsplitter_position = self.hsplitter.sizes()
 		vsplitter_position = self.vsplitter.sizes()
 		wsize = self.geometry()
+		zencad.settings.set(["memory","texteditor_hidden"], self.texteditor.isHidden())
+		zencad.settings.set(["memory","console_hidden"], self.console.isHidden())
 		zencad.settings.set(["memory","hsplitter_position"], hsplitter_position)
 		zencad.settings.set(["memory","vsplitter_position"], vsplitter_position)
 		zencad.settings.set(["memory","wsize"], wsize)
@@ -413,7 +415,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		elif cmd == "wmarker": self.marker_handler("w", data)
 		elif cmd == "location": self.location_update_handle(data["loc"])
 		elif cmd == "keypressed": self.internal_key_pressed(data["key"])
-		elif cmd == "keypressed_raw": self.internal_key_pressed_raw(data["key"], data["modifiers"])
+		elif cmd == "keypressed_raw": self.internal_key_pressed_raw(data["key"], data["modifiers"], data["text"])
 		elif cmd == "keyreleased_raw": self.internal_key_released_raw(data["key"], data["modifiers"])
 		elif cmd == "console": self.internal_console_request(data["data"])
 		elif cmd == "trackinfo": self.info_widget.set_tracking_info(data["data"])
@@ -481,7 +483,9 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 				size = self.vsplitter.widget(0).size()
 				#oldcc = self.embeded_window_container
-				self.embeded_window_container = QWidget.createWindowContainer(self.embeded_window)
+				self.embeded_window_container = QWidget.createWindowContainer(
+					self.embeded_window)
+
 				#self.embeded_window_container.installEventFilter(self.evfilter)
 				
 				#self.cc_window = winid
@@ -756,14 +760,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 
 		self.last_location = dct
 
-	def internal_key_pressed(self, s):
-		if s == "F11": self.fullScreen()
-		elif s == "F10": self.displayMode() 
 
-	def internal_key_pressed_raw(self, key, modifiers):
-		event = QKeyEvent(QEvent.KeyPress, key, Qt.KeyboardModifier(modifiers));
+	def internal_key_pressed_raw(self, key, modifiers, text):
+		self.texteditor.setFocus();
+		event = QKeyEvent(QEvent.KeyPress, key, Qt.KeyboardModifier(modifiers), text);
 		QGuiApplication.postEvent(self.texteditor, event);
-
+		
 	def internal_key_released_raw(self, key, modifiers):
 		event = QKeyEvent(QEvent.KeyRelease, key, Qt.KeyboardModifier(modifiers));
 		QGuiApplication.postEvent(self.texteditor, event);
