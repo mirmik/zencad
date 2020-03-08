@@ -982,11 +982,41 @@ doscreen(
     size=wsize
 )
 
+A = -40
 doscreen(
-    model=(
-        short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight()), 
-        draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
-        draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
-    path="short_rotate1.png",
-    size=wsize
+    model=ruled(circle(r=20, wire=True), circle(r=20, wire=True).up(20)),
+    path="ruled0.png",
+    size=wsize,
+    pitch=deg(A)
+)
+
+
+doscreen(
+    model=ruled(circle(r=20, wire=True), circle(r=20, wire=True).rotZ(math.pi/2*3).up(20)),
+    path="ruled1.png",
+    size=wsize,
+    pitch=deg(A)
+)
+
+
+doscreen(
+    model=ruled(
+        interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
+        interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
+        ),
+    path="ruled2.png",
+    size=wsize,
+    pitch=deg(A),
+    yaw=deg(45)
+)
+
+doscreen(
+    model=ruled(
+        interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
+        interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
+        ),
+    path="ruled3.png",
+    size=wsize,
+    pitch=deg(A),
+    yaw=deg(0)
 )

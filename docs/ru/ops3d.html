@@ -71,6 +71,73 @@
 </nav>
       <article class="article"><h1>Ссылочная геометрия</h1>
 
+<hr />
+
+<h2>Cмещение.</h2>
+
+<p>Путём смещения оболочек, строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/offset0.png" alt="" /></p>
+
+<hr />
+
+<h2>Линейчатая поверхность.</h2>
+
+<p>Строит грань, задаваемую линейчатое поверхностью, опирающейся на линии <em>a</em>, <em>b</em>.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span>
+    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
+    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/ruled0.png" alt="" />
+<img src="../images/generic/ruled1.png" alt="" /> <br />
+<img src="../images/generic/ruled2.png" alt="" /> 
+<img src="../images/generic/ruled3.png" alt="" /></p>
+
+<hr />
+
+<h2>Увязка</h2>
+
+<p>Построение оболочки на масиве каркасных линий <em>profiles</em>. При активации опции <em>shell</em> вместо твёрдого тела строится оболочка. Активации опции <em>smooth</em> изменяет режим линейчатой поверхности на гладкую апроксимацию. При активной апроксимации опция <em>maxdegree</em> ограничивает максимальную степень полинома.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code>
+</code></pre></div>
+
+<p><img src="../images/generic/loft0.png" alt="" />
+<img src="../images/generic/loft1.png" alt="" /> <br />
+<img src="../images/generic/loft2.png" alt="" />
+<img src="../images/generic/loft3.png" alt="" /> <br />
+<img src="../images/generic/loft4.png" alt="" />
+<img src="../images/generic/loft5.png" alt="" />  </p>
+
 <h2>Linear extrude</h2>
 
 <p>Операция линейной экструзии. Самый часто используемый метод придания объёма плоскому объекту.
@@ -87,41 +154,6 @@
 <img src="../images/generic/extrude1.png" alt="" />
 <img src="../images/generic/extrude2.png" alt="" />
 <img src="../images/generic/extrude3.png" alt="" /></p>
-
-<hr />
-
-<h2>Cмещение.</h2>
-
-<p>Строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
-
-<p>Сигнатура:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-</code></pre></div>
-
-<p>Пример:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/offset0.png" alt="" /></p>
-
-<hr />
-
-<h2>Loft</h2>
-
-<p>Операция натягивает 3д поверхность на масив каркасных линий <code>wires</code>. <br />
-TODO: Добавить больше параметров в алгоритм сглаживания.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">wires</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/loft0.png" alt="" />
-<img src="../images/generic/loft1.png" alt="" /> <br />
-<img src="../images/generic/loft2.png" alt="" />
-<img src="../images/generic/loft3.png" alt="" /> <br />
-<img src="../images/generic/loft4.png" alt="" />
-<img src="../images/generic/loft5.png" alt="" />  </p>
 
 <hr />
 
