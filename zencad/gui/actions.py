@@ -63,7 +63,7 @@ class MainWindowActionsMixin:
 			"F5/F6: Перемещение центра фронтально.\n"
 			"PgUp/PgDown или MouseWheel: Изменение масштаба\n"
 			"\n"
-			"При зажатой LeftButton:\n"
+			"При зажатой LeftButton или скрытом текстовом редакторе:\n"
 			"A : влево.\n"
 			"D : вправо.\n"
 			"W : вперёд.\n"
@@ -194,13 +194,13 @@ class MainWindowActionsMixin:
 		print("Invalidate cache: %d files removed" % len(files))
 
 	def hideConsole(self, en):
-		if self.presentation_mode: return
 		self.console.setHidden(en)
 
 	def hideEditor(self, en):
-		if self.presentation_mode: return
 		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
+
+		self.client_communicator.send({"cmd":"keyboard_retranslate", "en": not en})
 
 	#def testAction(self):
 	#	raise NotImplementedError
@@ -267,8 +267,20 @@ class MainWindowActionsMixin:
 	def viewOnly(self):
 		self.view_only(not self.view_mode)
 
+	def display_mode_enable(self, en):
+		if not en:
+			self.hideEditor(False)
+			self.hideConsole(False)
+			self.mHideConsole.setChecked(False)
+			self.mHideEditor.setChecked(False)			
+
+		else:
+			self.hideEditor(True)
+			self.hideConsole(True)
+			self.mHideConsole.setChecked(True)
+			self.mHideEditor.setChecked(True)
+
 	def displayMode(self):
-		if self.presentation_mode: return
 		if self.texteditor.isHidden() and self.console.isHidden():
 			self.hideEditor(False)
 			self.hideConsole(False)

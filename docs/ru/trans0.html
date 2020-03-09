@@ -42,6 +42,7 @@
 <li><a href="bool.html">Булевы операции</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
@@ -412,10 +413,15 @@
 
 <h3>Множественное преобразование.</h3>
 
-<p>Оператор множественного преобразования создаёт объединение преобразований объекта прототипа.
-transes - массив преобразований.</p>
+<p>Проводит операцию множественного преобразования прототипа на массив объектов преобразований transes.
+При этом, если опции <em>array</em> и <em>unit</em> неактивны, производится булево объединение результата. Если активен <em>array</em>, будет возвращен массив результатов. При активации опции <em>unit</em>, будет возвращен сборочный юнит, построенный на массиве результатов.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">)</span>
+<p>Операция множественного преобразования может выполняться над интерактивными объектами и сборочными юнитами.
+В этом случае обыъект преобразования копируется необъходимое число раз. Возврат происходит в виде юнита объединяющего копии или в виде массива при активной опции <em>array</em>. Опция <em>unit</em> при этом ни на что не влияет.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -448,16 +454,83 @@ transes - массив преобразований.</p>
 
 <h3>Круговой массив.</h3>
 
-<p>Строит круговой массив объектов.</p>
+<p>Множественное преобразование, порождающее круговой массив из <em>n</em> объектов на угловом диапазоне <em>yaw</em>. Параметр <em>endpoint</em> отвечает за включение последней точки линейного пространства углов. 
+(праметры <em>array</em>, <em>unit</em> - см. Множественное преобразование.)</p>
 
 <p>Сигнатура и код преобразования:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">rotateZ</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-    <span class="p">]</span>
-    <span class="k">return</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">lspace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span>
+    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">lspace</span>  <span class="p">]</span>
+    <span class="k">return</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
 </code></pre></div>
+
+<p>Примеры:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">rotate_array</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+  <th>До</th>
+  <th>После</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/rotate_array0.png" alt="ra0" /></td>
+  <td><img src="../images/generic/rotate_array1.png" alt="ra1" /></td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h3>Круговой массив c дополнительным креном.</h3>
+
+<p>Множественное преобразование, порождающее круговой массив из <em>n</em> объектов на угловом диапазоне <em>yaw</em>. Параметр <em>endpoint</em> отвечает за включение последней точки линейного пространства углов. 
+(праметры <em>array</em>, <em>unit</em> - см. Множественное преобразование.)</p>
+
+<p>Опция <em>roll</em> задаёт интервал крена тела вокруг траектории вращения.</p>
+
+<p>В отличии от <em>rotate</em>array_ имеет несколько отличную семантику работы с исходным объектом. В <em>rotate</em>array2_ исходный объект изначально находится в начале координат, после чего разворачивается на 90 градусов вокруг оси X и смещается по оси X на растояние равное радиусу <em>r</em>. </p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+    <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> 
+    <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
+    <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> 
+    <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
+    <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">)),</span> 
+    <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> 
+    <span class="n">array</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span>
+        <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+  <th>До</th>
+  <th>После</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/rotate_array20.png" alt="ra0" /></td>
+  <td><img src="../images/generic/rotate_array21.png" alt="ra1" /></td>
+</tr>
+</tbody>
+</table>
 
 <h3>Квадратное отражение.</h3>
 
@@ -468,6 +541,26 @@ transes - массив преобразований.</p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">sqrmirror</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span><span class="n">nulltrans</span><span class="p">(),</span> <span class="n">mirrorYZ</span><span class="p">(),</span> <span class="n">mirrorXZ</span><span class="p">(),</span> <span class="n">mirrorZ</span><span class="p">()])</span>
 </code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sqrmirror</span><span class="p">(</span><span class="n">knight</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+  <th>До</th>
+  <th>После</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/sqrmirror0.png" alt="ra0" /></td>
+  <td><img src="../images/generic/sqrmirror1.png" alt="ra1" /></td>
+</tr>
+</tbody>
+</table>
 </article>
     </div>
     <div id="footer"></div>

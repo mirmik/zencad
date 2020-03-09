@@ -200,7 +200,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 	def __init__(self, 
 			client_communicator=None, 
 			openned_path=None, 
-			presentation=False,
 			fastopen=None,
 			display_mode=False,
 			title = "ZenCad"):
@@ -283,14 +282,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.make_notifier(openned_path)
 
 		trace(f"MAINWINDOW: Is presentation mode?")
-		if presentation:
-			trace(f"MAINWINDOW: Presentation mode")
-			self.presentation_mode = True
-			self.texteditor.hide()
-			self.console.hide()
-		else:
-			trace(f"MAINWINDOW: Presentation mode disabled")
-			self.presentation_mode = False
 
 		self.fscreen_mode=False
 		self.oldopenned = self.current_opened
@@ -304,13 +295,13 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			trace("FASTOPEN {}".format(fastopen))
 			self._open_routine(fastopen, update_texteditor=True)
 
+		self.restore_gui_state()
+		
 		trace(f"MAINWINDOW: Is display mode?")
 		if display_mode:
-			self.restore_gui_state()
-			self.displayMode()
-		else:
-			self.restore_gui_state()
-		self._display_mode = display_mode
+			self.display_mode_enable(True)
+
+		#self._display_mode = display_mode
 
 		#self.evfilter = KeyPressEater()
 		#self.installEventFilter(self.evfilter)
@@ -341,6 +332,12 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if texteditor_hidden: self.hideEditor(True)
 		if console_hidden: self.hideConsole(True)
 		if wsize: self.setGeometry(wsize)
+
+		w = self.hsplitter.width()
+		h = self.vsplitter.height()
+		if hsplitter_position[0]=="0" or hsplitter_position[0]=="1": self.hsplitter.setSizes([0.382*w, 0.618*w])
+		if vsplitter_position[0]=="0" or vsplitter_position[1]=="0": self.vsplitter.setSizes([0.618*h, 0.382*h])
+
 
 	def store_gui_state(self):
 		hsplitter_position = self.hsplitter.sizes()
@@ -460,6 +457,25 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
 		return not bind_widget_flag == "false" and not zencad.configure.CONFIGURE_NO_EMBEDING_WINDOWS
 
+
+	def synchronize_subprocess_state(self):
+		"""
+			Пересылаем на ту сторону информацию об опциях интерфейса.
+		"""
+		size = self.vsplitter.widget(0).size()
+
+		if not self.need_prescale and self.last_location is not None:
+			self.client_communicator.send({"cmd":"location", "dct": self.last_location})
+			info("restore saved eye location")
+	
+		if self.is_window_binded():
+			self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
+		self.client_communicator.send({"cmd":"set_perspective", "en": self.perspective_checkbox_state})
+		self.client_communicator.send({"cmd":"keyboard_retranslate", "en": not self.texteditor.isHidden()})
+		self.client_communicator.send({"cmd":"redraw"})
+
+
+
 	def bind_window(self, winid, pid, session_id):
 		trace("bind_window: winid:{}, pid:{}".format(winid,pid))
 
@@ -481,7 +497,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				#oldwindow = self.cc_window
 				self.embeded_window = QWindow.fromWinId(winid)
 
-				size = self.vsplitter.widget(0).size()
 				#oldcc = self.embeded_window_container
 				self.embeded_window_container = QWidget.createWindowContainer(
 					self.embeded_window)
@@ -503,15 +518,10 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			self.setWindowTitle(self.current_opened)
 		
 			info("window bind success")
-			if not self.need_prescale and self.last_location is not None:
-				self.client_communicator.send({"cmd":"location", "dct": self.last_location})
-				info("restore saved eye location")
-		
 			self.open_in_progress = False
-			if self.is_window_binded():
-				self.client_communicator.send({"cmd":"resize", "size":(size.width(), size.height())})
-			self.client_communicator.send({"cmd":"redraw"})
-			self.client_communicator.send({"cmd":"set_perspective", "en": self.perspective_checkbox_state})
+
+			self.synchronize_subprocess_state()
+
 			time.sleep(0.1)
 			self.update()
 		except Exception as ex:

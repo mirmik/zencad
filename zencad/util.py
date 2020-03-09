@@ -41,6 +41,15 @@ def point3(*arg):
     return pyservoce.point3(*args)
 
 
+def color(*arg):
+    args = [ evalcache.unlazy_if_need(a) for a in arg ]
+
+    if isinstance(args[0], pyservoce.color):
+        return args[0]
+
+    return pyservoce.color(*args)
+
+
 def vector3(*arg):
     args = [ evalcache.unlazy_if_need(a) for a in arg ]
 

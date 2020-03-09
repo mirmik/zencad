@@ -101,7 +101,7 @@ class unit(pyservoce.TransformableMixin):
 		elif isinstance(obj, pyservoce.interactive_object):
 			return self.add_object(obj)
 
-	def add_shape(self, shp, color=zencad.settings.Settings.get_default_color()):
+	def add_shape(self, shp, color=None):
 		shp = evalcache.unlazy_if_need(shp)
 		controller = pyservoce.interactive_object(shp)
 		controller.set_color(pyservoce.color(color))
@@ -148,11 +148,13 @@ class unit(pyservoce.TransformableMixin):
 		
 	def bind_scene(self, 
 				scene, 
-				color=zencad.settings.Settings.get_default_color(), 
+				color=None, 
 				deep=True):
 		self.location_update(deep)
 
 		for d in self.dispobjects:
+			if color is not None:
+				d.set_color(zencad.util.color(color))
 			scene.viewer.display(d)
 			self.views.add(ShapeView(d))
 

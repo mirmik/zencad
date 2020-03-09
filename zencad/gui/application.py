@@ -59,13 +59,8 @@ def trace(*argv):
 	if zencad.configure.CONFIGURE_APPLICATION_TRACE:
 		print_to_stderr("APPTRACE: {}".format(str(argv)))
 
-def traced(func):
-	#def decor(*argv, **kwargs):
-	#	trace(func.__name__, argv, kwargs)
-	#	return func(*argv, **kwargs)
-	return func
 
-@traced
+
 def start_main_application(tgtpath=None, presentation=False, display_mode=False, console_retrans=False):
 	"""Запустить графический интерфейс в текущем потоке.
 
@@ -81,8 +76,16 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	if sys.platform == "linux":
 		signal.signal(signal.SIGCHLD, signal_sigchild) 
 
+	app = QApplication([])
+	zencad.gui.signal_handling.setup_qt_interrupt_handling()
+	zencad.opengl.init_opengl()
+	app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
+
 	trace("START MAIN WIDGET")
 	if presentation == False:	
+		# Если режим презентации отключен, это значит, что уже существует окно,
+		# которое мы сразу можем биндить.
+
 		communicator_out_file = sys.stdout
 
 		if console_retrans:
@@ -90,12 +93,6 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler(sys.stdout)
 			zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 			communicator_out_file = zencad.gui.application.CONSOLE_RETRANS_THREAD.new_file
-
-		app = QApplication([])
-		zencad.gui.signal_handling.setup_qt_interrupt_handling()
-
-		zencad.opengl.init_opengl()
-		app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
 
 		trace(f"Create MAIN_COMMUNICATOR: ipipe:{zencad.gui.application.STDIN_FILENO} opipe:{communicator_out_file.fileno()}")
 		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
@@ -109,13 +106,11 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			display_mode=display_mode)
 
 	else:
-		trace("EXEC (StartDialog)")
+		# Приложение запускается в одиночестве. Без подпроцесса.
+		# Если разрешено, создаём стартовый диалог. 
+		# Если нет, создаём временный файл.
 
-		app = QApplication([])
-		zencad.gui.signal_handling.setup_qt_interrupt_handling()
-	
-		zencad.opengl.init_opengl()
-		app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/../industrial-robot.svg"))
+		trace("EXEC (StartDialog)")
 
 		if zencad.settings.list()["gui"]["start_widget"] == "true":
 			strt_dialog = zencad.gui.startwdg.StartDialog()
@@ -130,7 +125,6 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 			openpath = zencad.gui.util.create_temporary_file(zencad_template=True)
 
 		mw = MainWindow(
-			presentation=False, 
 			fastopen=openpath,
 			display_mode=display_mode)
 
@@ -155,9 +149,7 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 		except psutil.NoSuchProcess:
 			pass
 
-	#psutil.wait_procs(procs, callback=on_terminate)
 
-@traced
 def start_application(tgtpath, debug):
 	"""Запустить графическую оболочку в новом.
 
@@ -186,7 +178,7 @@ def start_application(tgtpath, debug):
 		close_fds=True)
 	return subproc
 
-@traced
+
 def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 	"""Основная процедура запуска.
 
@@ -213,7 +205,7 @@ def start_unbound_application(*args, tgtpath, debug = False, **kwargs):
 
 	common_unbouded_proc(pipes=True, need_prescale=True, *args, **kwargs)
 
-@traced
+
 def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=None):
 	"""Создать новый поток и отправить запрос на добавление
 	его вместо предыдущего ??? 
@@ -239,11 +231,11 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=No
 		print("Warn: subprocess.Popen finished with exception", ex)
 		raise ex
 
-@traced
+
 def spawn_sleeped_client(session_id):
 	return start_unbounded_worker("", session_id, False, True)
 
-@traced
+
 def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False, size=None):
 	"""Запустить процесс, обсчитывающий файл path и 
 	вернуть его коммуникатор."""
@@ -260,7 +252,7 @@ def start_unbounded_worker(path, session_id, need_prescale=False, sleeped=False,
 
 	return communicator
 
-@traced
+
 def update_unbound_application(*args, **kwargs):
 	zencad.util.PROCNAME = f"un({os.getpid()})"
 	common_unbouded_proc(pipes=True, *args, **kwargs)
@@ -268,7 +260,7 @@ def update_unbound_application(*args, **kwargs):
 def on_terminate(proc):
 	trace("process {} finished with exit code {}".format(proc, proc.returncode))
 
-@traced
+
 def common_unbouded_proc(scene, 
 	view=None,
 	animate=None, 
