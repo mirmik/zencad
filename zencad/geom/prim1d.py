@@ -58,3 +58,51 @@ def bspline(pnts, knots, muls, degree, periodic=False, check_rational=True, weig
 			multiplicities=muls,
 			degree=degree,
 			periodic=periodic)
+
+
+@lazy.lazy(cls=shape_generator)
+def rounded_polysegment(pnts, r):
+    pnts = points(pnts)
+    cpnts = pnts[1:-1]
+
+    pairs = []
+    pairs_tangs = []
+    pairs.append((None, pnts[0]))
+
+    for i in range(len(cpnts)):
+        a = pyservoce.segment(pnts[i], pnts[i+1])
+        b = pyservoce.segment(pnts[i+1], pnts[i+2])
+
+        _, ad1 = a.d1(a.range()[1])
+        _, bd1 = b.d1(b.range()[0])
+
+        n = bd1.cross(ad1)
+
+        if n.iszero():
+            pairs.append((cpnts[i], cpnts[i]))
+            pairs_tangs.append(None)
+            continue
+
+        abn = ad1.cross(n)
+        bbn = bd1.cross(n)
+
+        bn = (abn + bbn).normalize() * r
+
+        c = cpnts[i] + bn
+
+        ca = pyservoce.project(c, a)
+        cb = pyservoce.project(c, b)
+
+        pairs.append((ca,cb))
+        pairs_tangs.append((ad1,bd1))
+
+    pairs.append((pnts[-1], None))
+
+    nodes = []
+    for i in range(len(cpnts)):
+        nodes.append(pyservoce.segment(pairs[i][1], pairs[i+1][0]))
+        if pairs_tangs[i] is not None:
+            nodes.append(pyservoce.interpolate(pnts=[pairs[i+1][0],pairs[i+1][1]], tang=[pairs_tangs[i][0],pairs_tangs[i][1]]))
+    nodes.append(pyservoce.segment(pairs[-2][1], pairs[-1][0]))
+
+    return pyservoce.make_wire(nodes)

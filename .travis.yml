@@ -3,8 +3,10 @@ language: python
 matrix:
   include:
     # Self Making with Display (Bionic)
-    - os: linux
+    - name: "Ubuntu: Build(servoce==master)"
+      os: linux
       dist: bionic
+      if: branch = master
       python:
         - "3.7"
 
@@ -35,8 +37,43 @@ matrix:
         - python3 ./api.py
         - python3 ./examples.py
 
+    - name: "Ubuntu: Build(servoce==dev)"
+      os: linux
+      dist: bionic
+      python:
+        - "3.7"
+
+      services:
+        - xvfb
+
+      install: 
+        - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        - sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
+        - sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
+        - sudo apt-get update
+        - sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
+        - sudo apt install -y python3-pybind11
+
+        - python3 -m pip install licant
+        - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
+        - python3 -m pip install scikit-image
+
+        - git clone https://github.com/mirmik/servoce --recursive -b dev
+        - cd servoce 
+        - python3 ./setup.py install
+        - cd ..
+
+        - python3 ./setup.py install
+
+      script:
+        - cd utest
+        - python3 ./api.py
+        - python3 ./examples.py
+
      # Self Making with Display (Bionic)    PyPi
-    - os: linux
+    - name: "Ubuntu: Loading from pypi"
+      if: branch = master
+      os: linux
       dist: bionic
       python:
         - "3.7"
@@ -52,7 +89,9 @@ matrix:
         - python3 ./api.py
         - python3 ./examples.py
 
-    - os: osx
+    - name: "OSX: Loading from pypi"
+      if: branch = master
+      os: osx
       osx_image: xcode11.2
       language: shell
             
@@ -63,5 +102,3 @@ matrix:
         - cd utest
         - python3 ./api.py
         - python3 ./examples.py
-
-    

@@ -8,13 +8,16 @@ class ShapeView:
 	def __init__(self, sctrl):
 		self.sctrl = sctrl
 
-	def set_location(self, trans):
-		self.sctrl.set_location(trans)
+	def relocate(self, trans):
+		self.sctrl.relocate(trans)
 
 	def hide(self, en):
 		self.sctrl.hide(en)
 
-class unit:
+	def transform(self, trsf):
+		self.sctrl.transform(trsf)
+
+class unit(pyservoce.TransformableMixin):
 	"""Базовый класс для использования в кинематических цепях и сборках
 
 	Вычисляет свою текущую позицию исходя из дерева построения.
@@ -23,16 +26,18 @@ class unit:
 
 	def __init__(self, 
 				parent=None,
-				shape=None,
+				parts=[],	
+				shape=None,		
 				name=None, 
 				location=pyservoce.libservoce.nulltrans()):    
 		self.parent = parent
-		self.shape = shape
 		self.location = evalcache.unlazy_if_need(location)
 		self.global_location = self.location
 		self.name = name
 		self.color = None
 		self.dispobjects = []
+		self.scene = None
+				
 		self.shapes_holder = []
 
 		self.views = set()
@@ -40,6 +45,14 @@ class unit:
 
 		if parent is not None:
 			parent.add_child(self)
+
+		if shape is not None:
+			print("zencad.assemble.unit: `shape` option is deprecated. use `parts` option instead") 
+			self.shape = shape
+			self.add_shape(self.shape)
+
+		for obj in parts:
+			self.add(obj)
 
 	def add_child(self, child):
 		child.parent = self
@@ -72,13 +85,31 @@ class unit:
 	def set_objects(self, objects):
 		self.dispobjects = objects
 
+	def set_shape(self, shp):
+		raise Exception("zencad.assemble.unit: set_shape function removed. Use `add_shape` instead.")
+
 	def add_object(self, d):
 		self.dispobjects.append(d)
 
-	def add_shape(self, shp, color=zencad.settings.Settings.get_default_color()):
+	def add(self, obj, color=None):
+		obj = evalcache.unlazy_if_need(obj)
+		
+		if isinstance(obj, zencad.assemble.unit):
+			return self.add_child(obj)
+		elif isinstance(obj, pyservoce.Shape):
+			return self.add_shape(obj, color)
+		elif isinstance(obj, pyservoce.interactive_object):
+			return self.add_object(obj)
+
+	def add_shape(self, shp, color=None):
 		shp = evalcache.unlazy_if_need(shp)
 		controller = pyservoce.interactive_object(shp)
-		controller.set_color(pyservoce.color(color))
+
+		if color is not None:
+			controller.set_color(pyservoce.color(color))
+		else:
+			controller.set_color(pyservoce.color(zencad.default_color))
+
 		self.dispobjects.append(controller)
 		self.shapes_holder.append(shp)
 		return controller
@@ -92,10 +123,7 @@ class unit:
 		self.dispobjects.append(self.xaxis)
 		self.dispobjects.append(self.yaxis)
 		self.dispobjects.append(self.zaxis)
-
-	def set_shape(self, shape):
-		self.shape = shape
-
+		
 	def set_color(self, *args, **kwargs):
 		self.color = pyservoce.color(*args, **kwargs)
 
@@ -108,23 +136,16 @@ class unit:
 
 	def __str__(self):
 		if self.name:
-			n = self.name
+			return self.name
 		else:
-			n = repr(self)
-
-		if self.shape is None:
-			h = "NullShape"
-		else:
-			h = self.shape.__lazyhexhash__[0:10]
-
-		return str((n,h))
+			return repr(self)
 
 	def _apply_view_location(self, deep):
 		"""Перерисовать положения объектов юнита во всех зарегестрированных 
 		view. Если deep, применить рекурсивно."""
 
 		for v in self.views:
-			v.set_location(self.global_location)
+			v.relocate(self.global_location)
 
 		if deep:
 			for c in self.childs:
@@ -132,23 +153,15 @@ class unit:
 		
 	def bind_scene(self, 
 				scene, 
-				color=zencad.settings.Settings.get_default_color(), 
+				color=None, 
 				deep=True):
 		self.location_update(deep)
 
 		for d in self.dispobjects:
+			if color is not None:
+				d.set_color(zencad.util.color(color))
 			scene.viewer.display(d)
 			self.views.add(ShapeView(d))
-
-		if self.shape is not None:
-			if self.color is not None:
-				color = self.color
-	
-			shape_view = ShapeView(scene.add(
-				evalcache.unlazy_if_need(self.shape), 
-				color))
-			scene.viewer.display(shape_view.sctrl)
-			self.views.add(shape_view)
 
 		self._apply_view_location(deep=False)
 
@@ -156,3 +169,166 @@ class unit:
 			for c in self.childs:
 				c.bind_scene(scene, color=color, deep=True)
 
+		self.scene = scene
+		return self
+
+	def transform(self, trsf):
+		self.relocate(trsf * self.location, deep=True, view=True)
+		return self
+
+	def copy(self, deep=True):
+		parts = [obj.copy(bind_to_scene=False) for obj in self.dispobjects]
+
+		if deep:
+			parts = parts + [ child.copy(deep=True) for child in self.childs ]
+
+		cpy = zencad.assemble.unit(
+			parent=self.parent,
+			location = self.location,
+			parts = parts,
+			name = self.name
+		)
+
+		cpy.location_update()
+
+		if self.scene:
+			cpy.bind_scene(self.scene)
+
+		return cpy
+
+
+class kinematic_unit(unit):
+	"""Кинематическое звено задаётся двумя системами координат,
+	входной и выходной. Изменение кинематических параметров изменяет
+	положение выходной СК относительно входной"""
+
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.output = zencad.assemble.unit(parent=self)
+
+	def senses(self):
+		"""Возвращает кортеж тензоров производной по положению
+		по набору кинематических координат
+		в собственной системе координат в формате (w, v)"""
+
+		raise NotImplementedError
+
+	def set_coords(self, coords, **kwargs):
+		"""Устанавливает модельное положение звена согласно 
+		переданным координатам"""
+		
+		raise NotImplementedError
+
+	def link(self, arg):
+		"""Присоединить объект arg к выходной СК.
+
+		Для kinematic_unit метод link переопределяется,
+		с тем, чтобы линковка происходила не ко входной, 
+		а к выходной СК"""
+
+		self.output.link(arg)
+
+
+class kinematic_unit_one_axis(kinematic_unit):
+	"""Кинематическое звено специального вида,
+	взаимное положение СК которого может быть описано одним 3вектором
+
+	ax - вектор, задающий ось и направление. задаётся с точностью до длины.
+	mul - линейный коэффициент масштабирования входной координаты.
+	"""
+	
+	def __init__(self, ax, mul=1, **kwargs):
+		super().__init__(**kwargs)
+		self.coord = 0
+		self.ax = pyservoce.vector3(ax)
+		self.ax = self.ax.normalize()
+		self.mul = mul
+		self.axmul = self.ax * self.mul
+
+	#override
+	def senses(self):
+		return (self.sensivity(),)
+
+	#override
+	def set_coords(self, coords, **kwargs):
+		self.set_coord(coords[0], **kwargs)
+
+	def sensivity(self):
+		raise NotImplementedError
+
+	def set_coord(self, coord, **kwargs):
+		raise NotImplementedError
+
+
+class rotator(kinematic_unit_one_axis):
+	def sensivity(self):
+		"""Возвращает тензор производной по положению
+		в собственной системе координат в формате (w, v)"""
+		return (self.axmul, pyservoce.vector3())
+
+	def set_coord(self, coord, **kwargs):
+		self.coord = coord
+		self.output.relocate(pyservoce.rotate(v=self.ax, a=coord*self.mul), **kwargs)
+
+
+class actuator(kinematic_unit_one_axis):
+	def sensivity(self):
+		"""Возвращает тензор производной по положению
+		в собственной системе координат в формате (w, v)"""
+		return (pyservoce.vector3(), self.axmul)
+
+	def set_coord(self, coord, **kwargs):
+		self.coord = coord
+		self.output.relocate(pyservoce.translate(self.ax * coord * self.mul), **kwargs)
+
+
+class planemover(kinematic_unit):
+	"""Кинематическое звено с двумя степенями свободы для перемещения
+	по плоскости"""
+
+	def __init__(self):
+		super().__init__(**kwargs)
+		self.x = 0
+		self.y = 0
+
+	def senses(self):
+		return (
+			(pyservoce.vector3(1,0,0), pyservoce.vector3()),
+			(pyservoce.vector3(0,1,0), pyservoce.vector3())
+		)
+
+	def set_coords(self, coords, **kwargs):
+		self.x = coord[0]
+		self.y = coord[1]
+		self.output.relocate(
+			pyservoce.translate(pyservoce.vector3(self.x, self.y, 0)), **kwargs)
+
+
+class spherical_rotator(kinematic_unit):
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self._yaw = 0
+		self._pitch = 0
+
+	def senses(self):
+		raise NotImplementedError
+		#return (
+		#	(pyservoce.vector3(1,0,0), pyservoce.vector3()),
+		#	(pyservoce.vector3(0,1,0), pyservoce.vector3())
+		#)
+
+	def set_yaw(self, angle, **kwargs):
+		self._yaw = angle
+		self.update_position(**kwargs)
+
+	def set_pitch(self, angle, **kwargs):
+		self._pitch = angle
+		self.update_position(**kwargs)
+
+	def set_coords(self, coords, **kwargs):
+		self._yaw = coord[0]
+		self._pitch = coord[1]
+		self.update_position(**kwargs)
+
+	def update_position(self, **kwargs):
+		self.output.relocate(pyservoce.rotateZ(self._yaw) * pyservoce.rotateY(self._pitch))

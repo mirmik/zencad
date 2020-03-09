@@ -130,5 +130,7 @@ wire = sew([
 ])
 fill(wire)
 ```
-![](../images/generic/fill0.png)
-![](../images/generic/fill1.png)  
+
+|До|После|
+|--|--|
+|![](../images/generic/fill0.png)|![](../images/generic/fill1.png)|

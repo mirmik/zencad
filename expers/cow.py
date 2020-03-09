@@ -21,7 +21,7 @@ class cow(zencad.assemble.unit):
 	class force_producer(zencad.assemble.unit):
 		def __init__(self, parent, location):
 			super().__init__(parent=parent, location=location)
-			self.set_shape(cylinder(r=1,h=3,center=True))
+			self.add_shape(cylinder(r=1,h=3,center=True))
 			self.marshal = vector3(0,0,1)
 			self.signal = 0
 
@@ -41,7 +41,7 @@ class cow(zencad.assemble.unit):
 	class torque_producer(zencad.assemble.unit):
 		def __init__(self, parent, location):
 			super().__init__(parent=parent, location=location)
-			self.set_shape(cylinder(r=1,h=3))
+			self.add_shape(cylinder(r=1,h=3))
 			self.marshal = vector3(0,0,1)
 			self.signal = 0
 
@@ -61,7 +61,7 @@ class cow(zencad.assemble.unit):
 		super().__init__()
 		self.inertia = inertia(1, numpy.diag([1,1,1]))
 		self.impulse_screw = screw()
-		self.set_shape(
+		self.add_shape(
 			#zencad.sphere(self.r)
 			model
 		)
@@ -137,8 +137,8 @@ class cow(zencad.assemble.unit):
 
 cow = cow()
 
-hl(model.transform(translate(100,100,100) * rotate((1,1,1), deg(180))))
-hl(model.transform(translate(-100,100,100) * rotate((1,1,1), deg(-90))))
+hl(model.transform(translate(100,100,100) * rotate(v=(1,1,1), a=deg(180))))
+hl(model.transform(translate(-100,100,100) * rotate(v=(1,1,1), a=deg(-90))))
 hl(model)
 
 start_time = time.time()
@@ -155,9 +155,9 @@ def animate(wdg):
 	speed_screw = cow.speed_screw
 
 	if from_start < 7:
-		target_location = translate(100,100,100) * rotate((1,1,1), deg(180))
+		target_location = translate(100,100,100) * rotate(v=(1,1,1), a=deg(180))
 	elif from_start < 14:
-		target_location = translate(-100,100,100) * rotate((1,1,1), deg(-90))
+		target_location = translate(-100,100,100) * rotate(v=(1,1,1), a=deg(-90))
 	else: 
 		target_location = nulltrans()
 
@@ -167,7 +167,7 @@ def animate(wdg):
 	speed_error_screw = -speed_screw
 
 	T = 1
-	ksi = 0.8
+	ksi = 0.85
 	
 	def koeffs(T, ksi, A):
 		K1 = A/T**2

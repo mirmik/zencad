@@ -33,7 +33,10 @@ class Settings():
 			"recents" : [],
 			"hsplitter_position": None,
 			"vsplitter_position": None,
-			"wsize": None
+			"console_hidden": False,
+			"texteditor_hidden": False,
+			"wsize": None,
+			"perspective":False
 		},
 		"markers": {
 			"size" : 1

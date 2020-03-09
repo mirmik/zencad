@@ -68,7 +68,7 @@ class rod:
 class mass(zencad.assemble.unit):
 	def __init__(self):
 		super().__init__()
-		self.set_shape(box(12, center=True))
+		self.add_shape(box(12, center=True))
 		self.force_model = zencad.libs.rigidity.force_model_mass_point(self, 20, vec=(0,0,-9.81))
 
 r0 = rod(200, 10, ax=(0,1,0))

@@ -67,7 +67,7 @@ class screw:
 			return trans0
 		else:
 			rot_dim = self.ang.normalize()
-			trans1 = zencad.rotate(rot_dim, rot_mul)
+			trans1 = zencad.rotate(v=rot_dim, a=rot_mul)
 			return trans0 * trans1 
 		
 	@staticmethod

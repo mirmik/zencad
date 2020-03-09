@@ -340,11 +340,19 @@ def test_mode():
 
 def restore_default_lazyopts():
     lazy.cache = evalcache.dircache_v2.DirCache_v2(cachepath)
-    lazy.encache = True
-    lazy.decache = True
-    lazy.diag = False
-    lazy.diag_values = False
-    lazy.print_invokes = False
+    
+    if zencad.configure.CONFIGURE_DISABLE_LAZY:
+        lazy.encache = False
+        lazy.decache = False
+        lazy.diag = False
+        lazy.diag_values = False
+        lazy.print_invokes = False
+    else:
+        lazy.encache = True
+        lazy.decache = True
+        lazy.diag = False
+        lazy.diag_values = False
+        lazy.print_invokes = False
 
 
 diag = None

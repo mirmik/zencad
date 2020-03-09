@@ -953,3 +953,116 @@ doscreen(
     path="platonic4.png",
     size=wsize
 )
+
+
+doscreen(
+    model=offset(cone(r1=15,r2=10,h=20), r=5),
+    path="offset0.png",
+    size=wsize
+)
+
+doscreen(
+    model=(
+        rounded_polysegment([(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)], 10), 
+        *points([(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)])
+    ),
+    path="rounded_polysegment0.png",
+    size=wsize,
+    yaw=deg(160-90-30)
+)
+
+
+import zencad.draw as draw
+doscreen(
+    model=(
+        zencad.internal_models.knight(), 
+        draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
+        draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
+    path="short_rotate0.png",
+    size=wsize
+)
+
+A = -40
+doscreen(
+    model=ruled(circle(r=20, wire=True), circle(r=20, wire=True).up(20)),
+    path="ruled0.png",
+    size=wsize,
+    pitch=deg(A)
+)
+
+
+doscreen(
+    model=ruled(circle(r=20, wire=True), circle(r=20, wire=True).rotZ(math.pi/2*3).up(20)),
+    path="ruled1.png",
+    size=wsize,
+    pitch=deg(A)
+)
+
+
+doscreen(
+    model=ruled(
+        interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
+        interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
+        ),
+    path="ruled2.png",
+    size=wsize,
+    pitch=deg(A),
+    yaw=deg(45)
+)
+
+doscreen(
+    model=ruled(
+        interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
+        interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
+        ),
+    path="ruled3.png",
+    size=wsize,
+    pitch=deg(A),
+    yaw=deg(0)
+)
+
+knight = zencad.internal_models.knight()
+doscreen(
+    model=knight.move(20,20),
+    path="rotate_array0.png",
+    size=wsize
+)
+
+doscreen(
+    model=rotate_array(6, yaw=deg(270), endpoint=True)(knight.move(20,20)),
+    path="rotate_array1.png",
+    size=wsize
+)
+
+
+knight = zencad.internal_models.knight()
+doscreen(
+    model=square(10, center=True, wire=True),
+    path="rotate_array20.png",
+    size=wsize
+)
+
+doscreen(
+    model=rotate_array2(n=60, r=20, yaw=(0,deg(270)), roll=(0,deg(360)), array=True)(square(10, center=True, wire=True)),
+    path="rotate_array21.png",
+    size=wsize
+)
+
+knight = zencad.internal_models.knight()
+doscreen(
+    model=knight.move(20,30),
+    path="sqrmirror0.png",
+    size=wsize
+)
+
+doscreen(
+    model=sqrmirror()(knight.move(20,30)),
+    path="sqrmirror1.png",
+    size=wsize
+)
+
+doscreen(
+    model=revol2(profile=square(10, center=True), r=20, n=60, yaw=(0,deg(360)), roll=(0,deg(360))),
+    path="revol20.png",
+    size=wsize
+)

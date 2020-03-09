@@ -18,7 +18,7 @@ if "TRAVIS_OS_NAME" in os.environ:
 
 
 for epath in examples:
-	cmd = sys.executable + " -m zencad --disable-show " + epath
+	cmd = sys.executable + " -m zencad --no-show " + epath
 	print(cmd)
 	
 	exit_code = subprocess.call(cmd, shell=True)

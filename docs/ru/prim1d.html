@@ -27,7 +27,7 @@
 <ul>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
-<li><a href="caching.html">Кэширование</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,10 +38,11 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразований</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
@@ -51,15 +52,15 @@
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
-<li>Отображение и рисование <br />
+<li>Визуализация <br />
 <ul>
 <li><a href="show.html">Отображение</a></li>
 <li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li><a href="animate.html">Анимация</a></li>
-<li><a href="assemble.html">Сборки и подвижные модели</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
@@ -69,7 +70,7 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Кривые и циклы.</h1>
+      <article class="article"><h1>Линии и циклы.</h1>
 
 <p>Во многих случаях объёмных и плоских примитивов недостаточно для построения требуемой геометрии. Продвинутые операции, из числа тех, что встречаются в данном руководстве позволяют строить геометрические тела на основе произвольных линий.</p>
 
@@ -85,7 +86,7 @@
 
 <h2>Cегмент.</h2>
 
-<p>Отрезок линии задаётся двумя точками.</p>
+<p>Отрезок обыкновенный, задаётся двумя точками.</p>
 
 <p>Сигнатура:</p>
 
@@ -214,6 +215,26 @@
 </code></pre></div>
 
 <p><img src="../images/generic/fill0.png" alt="" /></p>
+
+<hr />
+
+<h2>Скруглённый полисегмент.</h2>
+
+<p>В отличие от полисегмента, создаёт участки окружности в точках сопрежения сегментов. Переменная <em>r</em> задаёт радиус скруглений. Может использоваться вместе с операцией tube (см. кинематические поверхности). </p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span>
+    <span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)],</span> 
+    <span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/rounded_polysegment0.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
