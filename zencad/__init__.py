@@ -40,6 +40,10 @@ from zencad.version import __version__
 
 import zencad.reflect 
 
+def interactive_object(obj, *args, **kwargs):
+    return pyservoce.interactive_object(evalcache.unlazy_if_need(obj), *args, **kwargs)
+
+
 def gr(grad):
     print("'gr' function is deprecated. Use 'deg' instead")
     return float(grad) / 180.0 * math.pi

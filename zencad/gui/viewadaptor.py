@@ -58,47 +58,53 @@ class DisplayWidget(QGLWidget):
 
 		self.communicator=communicator
 		self.session_id=session_id
-		self.bind_mode=bind_mode
 
-		self.perspective_mode = False
-
-		#self.evfilter = KeyPressEater()
-		#self.installEventFilter(self.evfilter)
-
-		#self.setFocusPolicy(Qt.NoFocus)
 		self.setMouseTracking(True)		
 
-		self.orient = 1
-		self.mousedown = False
 		self.marker1 = (zencad.pyservoce.point3(0, 0, 0), False)
 		self.marker2 = (zencad.pyservoce.point3(0, 0, 0), False)
-
-		self.need_prescale = need_prescale
-		self.inited = False
-		self.painted = False
-		self.tracking_mode = False
-		#self.nointersect = nointersect
 		self.showmarkers = showmarkers
 
 		self.scene = scene
 		self.scene.viewer.set_triedron_axes(True)
 		self.view = view
  
+		self.init_opengl_drawing_compability()
+		self.last_redraw = time.time()
+
+		self.animate_updated = threading.Event()
+		self.count_of_helped_shapes = 0
+
+		self.init_navigation_state()
+		self.init_input_state_flags()
+		self.init_modes(bind_mode=bind_mode, need_prescale_mode=need_prescale)
+
+	def init_opengl_drawing_compability(self):
+		self.setBackgroundRole(QPalette.NoRole)
+		self.setAttribute(Qt.WA_PaintOnScreen, True)		
+
+	def init_navigation_state(self):
+		self.orient = 1
 		self.temporary1 = QPoint()
 		self.started_yaw = math.pi * (7 / 16)
 		self.started_pitch = math.pi * -0.15
 		self.yaw = self.started_yaw
 		self.pitch = self.started_pitch
-		self.last_redraw = time.time()
 
-		self.setBackgroundRole(QPalette.NoRole)
-		self.setAttribute(Qt.WA_PaintOnScreen, True)
-
-		self.animate_updated = threading.Event()
-		self.count_of_helped_shapes = 0
-
+	def init_input_state_flags(self):
+		self.mousedown = False
 		self.alt_pressed = False
 		self.shift_pressed = False
+
+	def init_modes(self, bind_mode, need_prescale_mode):
+		self.inited = False
+		self.painted = False
+
+		self.need_prescale_mode = need_prescale_mode
+		self.bind_mode = bind_mode
+		self.perspective_mode = False
+		self.keyboard_retranslate_mode = False
+		self.tracking_mode = False
 
 	def redraw(self):
 		self.animate_updated.clear()
@@ -200,7 +206,7 @@ class DisplayWidget(QGLWidget):
 
 			self.viewer = self.scene.viewer
 			self.scene_max0 = self.scene.bbox().max0()
-	
+			
 			if self.view is None:
 				self.view = self.viewer.create_view()
 
@@ -237,10 +243,12 @@ class DisplayWidget(QGLWidget):
 	def paintEvent(self, ev):
 		trace("DisplayWidget::paintEvent")
 		if self.inited and not self.painted:
-			if self.need_prescale:
+
+			if self.need_prescale_mode:
 				self.prescale()
 			self.view.must_be_resized()
 			self.painted = True
+		
 		trace("DisplayWidget::paintEvent: finish")
 
 		self.view.redraw()
@@ -274,24 +282,13 @@ class DisplayWidget(QGLWidget):
 		self.temporary1 = thePoint
 
 	def onMouseWheel(self, theFlags, theDelta, thePoint):
-		#aFactor = 16
-
-		#aX = thePoint.x()
-		#aY = thePoint.y()
-
 		if theDelta.y() > 0:
 			self.zoom_up(self.zoom_koeff_mouse)
-		#	aX += aFactor
-		#	aY += aFactor
+
 		else:
 			self.zoom_down(self.zoom_koeff_mouse)
-		#	aX -= aFactor
-		#	aY -= aFactor
-
-		#self.view.zoom(thePoint.x(), thePoint.y(), aX, aY)
 
 	def onMouseMove(self, theFlags, thePoint):
-		# self.setFocus()
 		mv = thePoint - self.temporary1
 		self.temporary1 = thePoint
 
@@ -410,8 +407,8 @@ class DisplayWidget(QGLWidget):
 			vec = vec.normalize() * self.scene_max0
 			self.view.set_center(self.view.center() + vec * koeff)
 			self.view.set_eye(self.view.eye() + vec * koeff)
-			self.view.redraw()
 			self.location_changed_handle()
+			self.view.redraw()
 
 	def move_forw(self, koeff=1):
 			#scale = self.view.scale()
@@ -419,8 +416,8 @@ class DisplayWidget(QGLWidget):
 			vec = vec.normalize() * self.scene_max0
 			self.view.set_center(self.view.center() + vec * koeff)
 			self.view.set_eye(self.view.eye() + vec * koeff)
-			self.view.redraw()
 			self.location_changed_handle()
+			self.view.redraw()
 
 	def move_right(self, koeff=1):
 			#scale = self.view.scale()
@@ -428,8 +425,8 @@ class DisplayWidget(QGLWidget):
 			vec = pyservoce.vector3(0,0,1).cross(vec).normalize() * self.scene_max0
 			self.view.set_center(self.view.center() + vec * koeff)
 			self.view.set_eye(self.view.eye() + vec * koeff)
-			self.view.redraw()
 			self.location_changed_handle()
+			self.view.redraw()
 
 	def move_left(self, koeff=1):
 			#scale = self.view.scale()
@@ -437,8 +434,8 @@ class DisplayWidget(QGLWidget):
 			vec = pyservoce.vector3(0,0,-1).cross(vec).normalize() * self.scene_max0
 			self.view.set_center(self.view.center() + vec * koeff)
 			self.view.set_eye(self.view.eye() + vec * koeff)
-			self.view.redraw()
 			self.location_changed_handle()
+			self.view.redraw()
 
 	def move_up(self, koeff=1):
 			#scale = self.view.scale()
@@ -446,8 +443,8 @@ class DisplayWidget(QGLWidget):
 			vec = pyservoce.vector3(0,0,1).normalize() * self.scene_max0
 			self.view.set_center(self.view.center() + vec * koeff)
 			self.view.set_eye(self.view.eye() + vec * koeff)
-			self.view.redraw()
 			self.location_changed_handle()
+			self.view.redraw()
 
 	def zoom_down(self, koeff):
 		self.view.set_scale(self.view.scale()*(1/koeff))
@@ -458,55 +455,56 @@ class DisplayWidget(QGLWidget):
 		self.location_changed_handle()
 
 	def keyPressEvent(self, event):
-		trace("keyPressEvent", event.key())
+		trace("keyPressEvent", event.key(), hex(event.key()))
 		trace(event.nativeVirtualKey())
 
+		MOVE_SCALE = 0.05
 		modifiers = event.modifiers()#QApplication.keyboardModifiers()
 
 		if event.key() == Qt.Key_F3:
 			self.markerQPressed()
+			return
+		
 		elif event.key() == Qt.Key_F4:
 			self.markerWPressed()
-		if event.key() == Qt.Key_F5:
+			return
+		
+		elif event.key() == Qt.Key_F5:
 			self.move_forw()
+			return
+		
 		elif event.key() == Qt.Key_F6:
 			self.move_back()
-		elif event.key() == event.key() == Qt.Key_PageUp:
+			return
+
+		elif event.key() == Qt.Key_PageUp:
 			self.zoom_up(self.zoom_koeff_key)
-		elif event.key() == event.key() == Qt.Key_PageDown:
+			return
+		
+		elif event.key() == Qt.Key_PageDown:
 			self.zoom_down(self.zoom_koeff_key)
+			return
 
-		MOVE_SCALE = 0.05
-
-		if event.key() == Qt.Key_W and self.mousedown:
+		elif event.key() == Qt.Key_W and (self.mousedown or self.keyboard_retranslate_mode is False):
 			self.move_forw(MOVE_SCALE)
 			return
-		elif event.key() == Qt.Key_S and self.mousedown:
+		elif event.key() == Qt.Key_S and (self.mousedown or self.keyboard_retranslate_mode is False):
 			self.move_back(MOVE_SCALE)
 			return
 
-		if event.key() == Qt.Key_D and self.mousedown:
+		elif event.key() == Qt.Key_D and (self.mousedown or self.keyboard_retranslate_mode is False):
 			self.move_left(MOVE_SCALE)
 			return
-		elif event.key() == Qt.Key_A and self.mousedown:
+		elif event.key() == Qt.Key_A and (self.mousedown or self.keyboard_retranslate_mode is False):
 			self.move_right(MOVE_SCALE)
 			return
 
-		#elif event.key() == Qt.Key_F11:
-		#	self.signal_key_pressed.emit("F11")
 
-		#elif event.key() == Qt.Key_F10:
-		#	self.signal_key_pressed.emit("F10")
+		# If signal not handling here, translate it onto top level
+		if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
+			self.signal_key_pressed_raw.emit(event.key(), modifiers, event.text())
 
-		else:
-			if self.mousedown:
-				return
-
-			# If signal not handling here, translate it onto top level
-			if zencad.configure.CONFIGURE_VIEWADAPTOR_RETRANSLATE_KEYS:
-				self.signal_key_pressed_raw.emit(event.key(), modifiers, event.text())
-
-			#self.setWindowState(Qt.WindowFullScreen)
+		
 
 	def keyReleaseEvent(self, event):
 		modifiers = event.modifiers()#QApplication.keyboardModifiers()
@@ -539,6 +537,7 @@ class DisplayWidget(QGLWidget):
 		elif cmd == "exportbrep": self.addon_exportbrep()
 		elif cmd == "to_freecad": self.addon_to_freecad_action()
 		elif cmd == "tracking":  self.tracking_mode_enable(data["en"])
+		elif cmd == "keyboard_retranslate": self.keyboard_retranslate_mode = data["en"]
 		elif cmd == "screenshot": self.addon_screenshot_upload()
 		elif cmd == "console": sys.stdout.write(data["data"])
 			
@@ -569,6 +568,7 @@ class DisplayWidget(QGLWidget):
 		self.set_perspective(True)
 		self.view.set_center(self.view.eye()-pyservoce.vector3(0,0,1))
 		self.set_center_visible(False)
+		self.set_orient1()
 		self.view.redraw()
 
 	def closeEvent(self, ev):

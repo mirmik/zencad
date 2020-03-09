@@ -9,7 +9,8 @@ import sys
 import operator
 import numpy as np
 
-DEF_MTRANS_FUSE = True
+DEF_MTRANS_ARRAY = False
+DEF_MTRANS_UNIT = False
 
 # Replace pyservoce transformation __call__ method
 # for support lazy objects.
@@ -153,57 +154,72 @@ class multitransform:
 		fuse: True - вернуть объединение. False - вернуть массив.
 		multiply_interactive: True - делать копии интерактивных объектов и юнитов.
 	"""
-	def __init__(self, transes, fuse=DEF_MTRANS_FUSE, multiply_interactive=True):
+	def __init__(self, transes, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
 		self.transes = transes
-		self.fuse = fuse
-		self.multiply_interactive = multiply_interactive
+		self.array = array
+		self.unit = unit
 
 	def __call__(self, shp):
-		if self.multiply_interactive \
-				and isinstance(shp, (
+		if isinstance(shp, (
 					pyservoce.interactive_object, 
 					zencad.assemble.unit)):
 			rets = []
 			clones = [shp.copy() for i in range(len(self.transes)-1)]
 			objects = [shp] + clones
 
-			return [ obj.transform(t) for obj, t in zip(objects, self.transes) ]
+			lst = [ obj.transform(t) for obj, t in zip(objects, self.transes) ]
+			
+			if self.array:
+				return lst
+			else:
+				return zencad.assemble.unit(parts=lst)
 
-		if self.fuse:
-			return union([t(shp) for t in self.transes])
 		else:
-			return [t(shp) for t in self.transes]
+			lst = [t(shp) for t in self.transes]
+			if self.array:
+				return lst
+	
+			if self.unit:
+				return zencad.assemble.unit(parts=lst)
+	
+			return union(lst)
 
-
-def multitrans(transes, fuse=DEF_MTRANS_FUSE, multiply_interactive=True):
-	return multitransform(transes, fuse, multiply_interactive)
+def multitrans(transes, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
+	return multitransform(transes, array=array, unit=unit)
 
 
 def nulltrans():
 	return translate(0, 0, 0)
 
 
-def sqrmirror(fuse=DEF_MTRANS_FUSE):
-	return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()], fuse=fuse)
+def sqrmirror(array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
+	return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()], array=array, unit=unit)
 
 def sqrtrans(*args, **kwargs):
 	print("sqrtrans renamed. use sqrmirror instead")
 	return sqrmirror(*args, **kwargs)
 
-def rotate_array(n, fuse=DEF_MTRANS_FUSE):
-	transes = [
-		rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)
-	]
-	return multitrans(transes, fuse=fuse)
+#def rotate_array(n, fuse=DEF_MTRANS_ARRAY):
+#	transes = [
+#		rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)
+#	]
+#	return multitrans(transes, fuse=fuse)
 
-def rotate_array2(r, n, yaw=(0,360), roll=(0,0), endpoint=False, fuse=DEF_MTRANS_FUSE):
+def rotate_array(n, yaw=deg(360), endpoint=False, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
+	lspace = np.linspace(0, yaw, num=n, endpoint=endpoint)
+	transes = [	rotateZ(a) for a in lspace	]
+	return multitrans(transes, array=array, unit=unit)
+
+
+def rotate_array2(n, r=None, yaw=(0,deg(360)), roll=(0,0), endpoint=False, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
 	lspace1 = np.linspace(yaw[0], yaw[1], num=n, endpoint=endpoint)
 	lspace2 = np.linspace(roll[0], roll[1], num=n, endpoint=endpoint)
 
 	transes = [
 		rotateZ(a) * right(r) * rotateX(deg(90)) * rotateZ(a2) for a, a2 in zip(lspace1, lspace2)
 	]
-	return multitrans(transes, fuse=fuse)
+
+	return multitrans(transes, array=array, unit=unit)
 
 def short_rotate(f, t):
 	_f, _t = vector3(f), vector3(t)

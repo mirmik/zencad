@@ -1,7 +1,6 @@
 import unittest
 import zencad
 
-
 class Ops3dProbe(unittest.TestCase):
     def setUp(self):
         zencad.lazy.encache = False
@@ -23,16 +22,17 @@ class Ops3dProbe(unittest.TestCase):
 
     def test_pipe_shell(self):
         proto0 = zencad.circle(20, wire=True)
-        proto1 = zencad.circle(30, wire=True).up(20)
+        proto1 = zencad.circle(30, wire=True).up(10)
+        proto2 = zencad.circle(30, wire=True).up(20)
         path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
-        zencad.pipe_shell([proto0, proto1], path)
-        zencad.pipe_shell(profiles=[proto0, proto1], spine=path)
+        zencad.pipe_shell([proto0, proto1, proto2], path)
+        zencad.pipe_shell(profiles=[proto0, proto1, proto2], spine=path)
 
-    def test_sweep(self):
-        proto = zencad.circle(20, wire=True)
-        path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
-        zencad.sweep(proto, path)
-        zencad.sweep(proto=proto, path=path)
+    #def test_sweep(self):
+    #    proto = zencad.circle(20, wire=True)
+    #    path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
+    #    zencad.sweep(proto, path)
+    #    zencad.sweep(proto=proto, path=path)
 
     def test_loft(self):
         arr = [

@@ -13,7 +13,7 @@ def linear_extrude(proto, vec, center=False):
 	return pyservoce.linear_extrude(proto, vector3(vec), center)
 
 
-def extrude(vec):
+def extrude(*args, **kwargs):
 	return linear_extrude(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
@@ -34,7 +34,10 @@ def pipe(profile, spine, frenet=False, mode="corrected_frenet", force_approx_c1=
 		mode = "frenet"
 
 	if isinstance(profile, pyservoce.Solid):
-		profile = profile.outshell()
+		if len(profile.shells()) != 1:
+			raise Exception("pipe: Solids with more then one shells are not supported")
+		else:
+			profile = profile.shells()[0]
 
 	return pyservoce.pipe(profile, spine, mode, force_approx_c1)
 
@@ -59,10 +62,17 @@ def pipe_shell(
 		profiles = [proto]
 		print("pipe: proto option was renamed. use profile instead")
 
-	fwires = []
+	fwires=[]
 	for w in profiles:
-		if isinstance(w, pyservoce.Face):
-			fwires.append(w.outwire())
+		if w.shapetype() == "edge":
+			fwires.append(w.as_edge())
+			
+		elif w.shapetype() == "face":
+			if (len(w.wires())==1):
+				fwires.append(w.wires()[0])
+			else:
+				raise Exception("faces with more than one wire is unsupported")
+
 		else:
 			fwires.append(w)
 
@@ -78,43 +88,8 @@ def pipe_shell(
 		solid=solid)
 
 @lazy.lazy(cls=shape_generator)
-def pipe_shell_3(
-		profiles, 
-		spine, 
-		frenet=False, 
-		solid=True,
-		transition=0,
-		path=None):
-
-	if path is not None:
-		spine = path
-		print("pipe: path option is renamed. use spine instead")
-	
-	fwires = []
-	for w in profiles:
-		if isinstance(w, pyservoce.Face):
-			fwires.append(w.outwire())
-		else:
-			fwires.append(w)
-
-	return pyservoce.pipe_shell(
-		profiles=fwires, 
-		spine=spine, 
-		frenet=frenet, 
-		solid=solid,
-		transition=transition)
-
-#@lazy.lazy(cls=shape_generator)
-#def pipe_shell2(wires, spine, auxspine, car, path=None):
-#	if path is not None:
-#		spine = path
-#		print("pipe: path option is renamed. use spine instead")
-#
-#	return pyservoce.pipe_shell(proto, path, auxspine, car)
-
-
-@lazy.lazy(cls=shape_generator)
 def sweep(proto, path, frenet=False):
+	print("sweep operation is deprecated. use pipe_shell instead")
 	return pyservoce.pipe_shell([proto], path, frenet)
 
 
@@ -123,14 +98,14 @@ def loft(arr, smooth=False, shell=False, maxdegree=4):
 	return pyservoce.loft(arr, smooth=smooth, solid=not shell, maxdegree=maxdegree)
 
 @lazy.lazy(cls=shape_generator)
-def revol(proto, r=None, yaw=0.0):
+def revol(profile, r=None, yaw=0.0):
 	if r is not None:
-		proto = proto.rotX(deg(90)).movX(r)
+		profile = profile.rotX(deg(90)).movX(r)
 
-	return pyservoce.revol(proto, yaw)
+	return pyservoce.revol(profile, yaw)
 
 @lazy.lazy(cls=shape_generator)
-def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=None):
+def revol2(profile, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=None):
 	rets=[]
 	arrs=[]
 
@@ -164,14 +139,14 @@ def revol2(proto, r, n=30, yaw=(0,deg(360)), roll=(0,0), sects=False, nparts=Non
 		part_yaw = part_of_interval(ipart, nparts, yaw[0], yaw[1])
 		part_roll = part_of_interval(ipart, nparts, roll[0], roll[1])
 
-		for w in proto.wires():
+		for w in profile.wires():
 			m=zencad.geom.transform.rotate_array2(
 				r=r,
 				n=part_n,
 				yaw=part_yaw,
 				roll=part_roll,
 				endpoint=endpoint,
-				fuse=False)(w)
+				array=True)(w)
 	
 			arrs.append(m)
 	

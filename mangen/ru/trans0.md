@@ -263,10 +263,15 @@ short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight())
 
 ------------------------------------
 ### Множественное преобразование.
-Оператор множественного преобразования создаёт объединение преобразований объекта прототипа.
-transes - массив преобразований.
+Проводит операцию множественного преобразования прототипа на массив объектов преобразований transes.
+При этом, если опции _array_ и _unit_ неактивны, производится булево объединение результата. Если активен _array_, будет возвращен массив результатов. При активации опции _unit_, будет возвращен сборочный юнит, построенный на массиве результатов.
+
+Операция множественного преобразования может выполняться над интерактивными объектами и сборочными юнитами.
+В этом случае обыъект преобразования копируется необъходимое число раз. Возврат происходит в виде юнита объединяющего копии или в виде массива при активной опции _array_. Опция _unit_ при этом ни на что не влияет.
+
+Сигнатура:
 ```python
-multitrans(transes)
+multitrans(transes, unit=False, array=False)
 ```
 
 Пример:
@@ -286,16 +291,55 @@ disp(extrans(zencad.internal_models.knight()))
 
 ----------
 ### Круговой массив.
-Строит круговой массив объектов.
+Множественное преобразование, порождающее круговой массив из _n_ объектов на угловом диапазоне _yaw_. Параметр _endpoint_ отвечает за включение последней точки линейного пространства углов. 
+(праметры _array_, _unit_ - см. Множественное преобразование.)
 
 Сигнатура и код преобразования:
 ```python
-def rotate_array(n):
-    transes = [
-        rotateZ(angle) for angle in np.linspace(0, deg(360), num=n, endpoint=False)
-    ]
-    return multitrans(transes)
+def rotate_array(n, yaw=deg(360), endpoint=False, array=False, unit=False):
+	lspace = np.linspace(0, yaw, num=n, endpoint=endpoint)
+	transes = [	rotateZ(a) for a in lspace	]
+	return multitrans(transes, array=array, unit=unit)
 ```
+Примеры:
+```python
+m = zencad.internal_models.knight().move(20,20)
+rotate_array(6, yaw=deg(270, endpoint=True)
+```
+| До | После |
+|---|---|
+| ![ra0](../images/generic/rotate_array0.png) | ![ra1](../images/generic/rotate_array1.png) |
+
+----------
+### Круговой массив c дополнительным креном.
+Множественное преобразование, порождающее круговой массив из _n_ объектов на угловом диапазоне _yaw_. Параметр _endpoint_ отвечает за включение последней точки линейного пространства углов. 
+(праметры _array_, _unit_ - см. Множественное преобразование.)
+
+Опция _roll_ задаёт интервал крена тела вокруг траектории вращения.
+
+В отличии от _rotate_array_ имеет несколько отличную семантику работы с исходным объектом. В _rotate_array2_ исходный объект изначально находится в начале координат, после чего разворачивается на 90 градусов вокруг оси X и смещается по оси X на растояние равное радиусу _r_. 
+
+Сигнатура:
+```python
+rotate_array2(
+	n, r=None, 
+	yaw=(0,deg(360)), roll=(0,0), 
+	endpoint=False, array=False, unit=False)
+```
+Пример:
+```python
+rotate_array2(
+	n=60, 
+	r=20, 
+	yaw=(0,deg(270)), 
+	roll=(0,deg(360)), 
+	array=True)(
+		square(10, center=True, wire=True)
+	)
+```
+| До | После |
+|---|---|
+| ![ra0](../images/generic/rotate_array20.png) | ![ra1](../images/generic/rotate_array21.png) |
 
 ### Квадратное отражение.
 Достраивает 3 отражения исходного объекта.
@@ -305,3 +349,12 @@ def rotate_array(n):
 def sqrmirror():
     return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()])
 ```
+
+Пример:
+```python
+sqrmirror(knight.move(20,30))
+```
+
+| До | После |
+|---|---|
+| ![ra0](../images/generic/sqrmirror0.png) | ![ra1](../images/generic/sqrmirror1.png) |

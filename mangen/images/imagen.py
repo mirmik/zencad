@@ -817,7 +817,7 @@ doscreen(
         translate(-20,-20,0) * rotateZ(deg(120)),
         translate(20,20,0) * rotateZ(deg(180)),
         nulltrans()
-    ], fuse=True)(m), dock(80)),
+    ])(m), dock(80)),
     path="multitrans1.png",
     size=wsize
 )
@@ -1019,4 +1019,50 @@ doscreen(
     size=wsize,
     pitch=deg(A),
     yaw=deg(0)
+)
+
+knight = zencad.internal_models.knight()
+doscreen(
+    model=knight.move(20,20),
+    path="rotate_array0.png",
+    size=wsize
+)
+
+doscreen(
+    model=rotate_array(6, yaw=deg(270), endpoint=True)(knight.move(20,20)),
+    path="rotate_array1.png",
+    size=wsize
+)
+
+
+knight = zencad.internal_models.knight()
+doscreen(
+    model=square(10, center=True, wire=True),
+    path="rotate_array20.png",
+    size=wsize
+)
+
+doscreen(
+    model=rotate_array2(n=60, r=20, yaw=(0,deg(270)), roll=(0,deg(360)), array=True)(square(10, center=True, wire=True)),
+    path="rotate_array21.png",
+    size=wsize
+)
+
+knight = zencad.internal_models.knight()
+doscreen(
+    model=knight.move(20,30),
+    path="sqrmirror0.png",
+    size=wsize
+)
+
+doscreen(
+    model=sqrmirror()(knight.move(20,30)),
+    path="sqrmirror1.png",
+    size=wsize
+)
+
+doscreen(
+    model=revol2(profile=square(10, center=True), r=20, n=60, yaw=(0,deg(360)), roll=(0,deg(360))),
+    path="revol20.png",
+    size=wsize
 )

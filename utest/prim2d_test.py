@@ -75,3 +75,16 @@ class Prim2dprobe(unittest.TestCase):
         zencad.textshape(
             text=text, fontpath=os.path.join(directory, "../zencad/examples/fonts/testfont.ttf"), size=20
         )
+
+
+    def test_normales(self):
+        self.assertGreater(zencad.circle(r=10).normal().z, 0)
+        self.assertGreater(zencad.ellipse(r1=10, r2=5).normal().z, 0)
+        self.assertGreater(zencad.ngon(r=10, n=3).normal().z, 0)
+        self.assertGreater(zencad.ngon(r=10, n=6).normal().z, 0)
+        self.assertGreater(zencad.ngon(r=10, n=12).normal().z, 0)
+        self.assertGreater(zencad.ngon(r=10, n=28).normal().z, 0)
+        self.assertGreater(zencad.rectangle(a=10, b=20).normal().z, 0)
+        self.assertGreater(zencad.rectangle(a=10, b=20, center=True).normal().z, 0)
+        self.assertGreater(zencad.square(a=10).normal().z, 0)
+        self.assertGreater(zencad.square(a=10, center=True).normal().z, 0)

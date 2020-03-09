@@ -42,6 +42,7 @@
 <li><a href="bool.html">Булевы операции</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
@@ -137,87 +138,6 @@
 <img src="../images/generic/loft3.png" alt="" /> <br />
 <img src="../images/generic/loft4.png" alt="" />
 <img src="../images/generic/loft5.png" alt="" />  </p>
-
-<h2>Linear extrude</h2>
-
-<p>Операция линейной экструзии. Самый часто используемый метод придания объёма плоскому объекту.
-Задаётся плоским объектом <code>face</code> и вектором <code>vec</code> вдоль которого будет выполнено растяжение. Если вместо вектора указать одну координату, модель будет вытянута в положительном направлении оси Z.
-При указании опции center, после выполнения операции модель будет транслирована в направлении обратном vec на его половинную длину.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">linear_extrude</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">linear_extrude</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span> <span class="c1">#equal: vec=(0,0,z)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/extrude0.png" alt="" />
-<img src="../images/generic/extrude1.png" alt="" />
-<img src="../images/generic/extrude2.png" alt="" />
-<img src="../images/generic/extrude3.png" alt="" /></p>
-
-<hr />
-
-<h1>Траекторная развёртка.</h1>
-
-<p>Широкий класс операций ссылочной геометрии представляют операции, построения тела путём трансляции (англ. sweep) некоторого профиля или семейства профилей (<em>profile</em>, <em>profiles</em>) вдоль заданной траектории <em>spine</em>.</p>
-
-<h2>Формально о том, что такое траекторная развёртка:</h2>
-
-<p>Пусть задана траектория <em>S(p)</em>, где <em>p</em> - параметр. Опредилим множество базисов <em>T(p)</em>, имеющих центры в точках траектории и угловое положение, определённое по некоему закону <em>R(p)</em> . Пусть в базисе <em>T</em> задано тело <em>M</em>. Такое тело может быть константой или меняться от параметра согласно определенного закона <em>M=M(p)</em>. Геометрическое место точек, объединяющие множество тел <em>M</em>, заданных перемещающимся по траектории <em>S</em> базисом <em>T</em> и будет результатом операции траекторной развёртки.</p>
-
-<p>Относительно данного определения существует три вопроса. 
-1. Закон <em>S(p)</em>, определяющий форму траектории.
-2. Закон <em>M(p)</em>, определяющий форму транслируемого тела.
-3. Закон <em>R(p)</em>, определяющий угловую эволюцию базиса.</p>
-
-<p>По сути, многообразие приведённых ниже операций - суть разные формы ответов на вопросы 1,2,3. </p>
-
-<h2>#</h2>
-
-<h3>Трёхгранник Фрэне.</h3>
-
-<p>В основе операции лежит понятие трёхгранника Фрэне.</p>
-
-<hr />
-
-<h2>Sweep</h2>
-
-<p>Операция выдавливания тела <code>shp</code> по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь <code>path</code> задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории. Эту опцию рекомендуется устанавливать для спирального свипа (см. <a href="https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas">https://en.wikipedia.org/wiki/Frenet-Serret_formulas</a>).  </p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">sweep</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/sweep0.png" alt="" />
-<img src="../images/generic/sweep1.png" alt="" /> <br />
-<img src="../images/generic/sweep2.png" alt="" />
-<img src="../images/generic/sweep3.png" alt="" /> <br />
-<img src="../images/generic/sweep4.png" alt="" /></p>
-
-<hr />
-
-<h2>Тело вращения.</h2>
-
-<p>Операция создания тела вращения. Задаётся с указанием вращаемого тела. При необходимости создания сектора задаётся угол.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
-<span class="n">revol</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/revol0.png" alt="" />
-<img src="../images/generic/revol1.png" alt="" /> <br />
-<img src="../images/generic/revol2.png" alt="" />
-<img src="../images/generic/revol3.png" alt="" />  </p>
-
-<hr />
-
-<h2>Тело вращения. (расширенная версия).</h2>
-
-<p>Расширенная версия операции <em>revol</em>. Строит тело вращения от прототипа <em>proto</em> на интервале угла поворота <em>yaw</em>. Указание опции <em>roll</em> позволяет изменять угол поворота прототипа по мере прохождения интервала. Тело строится по опорным копиям тела прототипа, количество копий задаётся опцией <em>n</em>. <em>nparts</em> определяет количество сегментов результирующего тела вращения.</p>
-
-<p>Сигнатура:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">nparts</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>
