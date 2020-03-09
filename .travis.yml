@@ -89,16 +89,16 @@ matrix:
         - python3 ./api.py
         - python3 ./examples.py
 
-    - name: "OSX: Loading from pypi"
-      if: branch = master
-      os: osx
-      osx_image: xcode11.2
-      language: shell
-            
-      install: 
-        - python3 -m pip install zencad
-
-      script:
-        - cd utest
-        - python3 ./api.py
-        - python3 ./examples.py
+#    - name: "OSX: Loading from pypi"
+#      if: branch = master
+#      os: osx
+#      osx_image: xcode11.2
+#      language: shell
+#            
+#      install: 
+#        - python3 -m pip install zencad
+#
+#      script:
+#        - cd utest
+#        - python3 ./api.py
+#        - python3 ./examples.py
