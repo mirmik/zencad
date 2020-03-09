@@ -2,7 +2,6 @@
 
 from zencad import *
 import zencad.assemble
-import zencad.libs.kinematic
 
 import time
 import numpy
@@ -43,8 +42,8 @@ class Robot(zencad.assemble.unit):
          #   parent=self, child=arm_model, location=arm_translate
         #)
 
-        self.left_arm_connector = zencad.libs.kinematic.spherical_rotator(parent=self, location=mirrorYZ() * arm_translate)
-        self.right_arm_connector = zencad.libs.kinematic.spherical_rotator(parent=self, location=arm_translate)
+        self.left_arm_connector = zencad.assemble.spherical_rotator(parent=self, location=mirrorYZ() * arm_translate)
+        self.right_arm_connector = zencad.assemble.spherical_rotator(parent=self, location=arm_translate)
 
         self.left_arm_connector.output.add_shape(arm_model)
         self.right_arm_connector.output.add_shape(arm_model)
@@ -53,7 +52,7 @@ class Robot(zencad.assemble.unit):
         head = HeadAssemble()
 
         # print("HEAD_CONNECTOR!!!")
-        self.head_connector = zencad.libs.kinematic.rotator(parent=self, location=up(self.h), ax=(0,0,1))
+        self.head_connector = zencad.assemble.rotator(parent=self, location=up(self.h), ax=(0,0,1))
         self.head_connector.link(head)
 
 
@@ -66,7 +65,7 @@ tcenter = text.center()
 text = text.translate(-tcenter.x, -tcenter.y, -tcenter.z)
 text = text.back(20).up(5)
 
-disp(robot0, color=(0.4, 0.4, 0.6), deep=True)
+disp(robot0, deep=True)
 #robot0.bind_scene(zencad.showapi.default_scene, deep=True)
 disp(base, color=(0.3, 0.3, 0.3))
 

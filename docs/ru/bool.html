@@ -27,7 +27,7 @@
 <ul>
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
-<li><a href="caching.html">Кэширование</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,10 +38,11 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразований</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a>  </li>
 <li><a href="bool.html">Булевы операции</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
@@ -51,15 +52,15 @@
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 </ul></li>
-<li>Отображение и рисование <br />
+<li>Визуализация <br />
 <ul>
 <li><a href="show.html">Отображение</a></li>
 <li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li><a href="animate.html">Анимация</a></li>
-<li><a href="assemble.html">Сборки и подвижные модели</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 <li>Библиотеки
 <ul>
@@ -69,14 +70,19 @@
 </ul></li>
 </ul>
 </nav>
-      <article class="article"><h1>Булевы операции и сечения.</h1>
+      <article class="article"><h1>Булевы операции.</h1>
 
-<p>CSG геометрия операется на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д объектов. В zencad есть два способа выполнения этих операций: </p>
+<p>CSG геометрия операется на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д и 2д объектов. В zencad есть два группы этих операций: </p>
 
 <ul>
-<li>над массивами тел с помощью функций <code>union</code>, <code>difference</code>, <code>intersect</code></li>
-<li>над парами тел с помощью операторов <code>+</code> <code>-</code> <code>^</code></li>
+<li>над массивами тел с помощью функций <em>union</em>, <em>difference</em>, <em>intersect</em></li>
+<li>над парами тел с помощью операторов <em>+</em> <em>-</em> <em>^</em></li>
 </ul>
+
+<blockquote class="spoiler">
+  <p>Примечание:
+  Не стоит пытаться с помощью булевых операций получить составную линию из простых линий или сшить оболочку из граней. Для этих манипуляций, существуют специальные процедуры сшивки, освещенные в соответствующих разделах.</p>
+</blockquote>
 
 <hr />
 
@@ -170,6 +176,26 @@
 <img src="../images/generic/intersect0.png" alt="" /> <br />
 <img src="../images/generic/intersect1.png" alt="" />
 <img src="../images/generic/intersect2.png" alt="" />  </p>
+
+<hr />
+
+<h2>Пересечение оболочек.</h2>
+
+<p>Побратим операции <em>intersect</em>, производящий вычисление пересечения оболочек тел.  </p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code>
+</code></pre></div>
+
+<p><img src="../images/generic/section0.png" alt="" />
+<img src="../images/generic/section1.png" alt="" />   </p>
 
 <hr />
 

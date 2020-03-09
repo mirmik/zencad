@@ -14,7 +14,7 @@ from pyservoce import point3 as point
 from pyservoce import vector3 as vector
 
 from zencad.visual import screen
-from zencad.transform import *
+from zencad.geom.transform import *
 
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.lazifier import disable_cache, test_mode
@@ -39,6 +39,10 @@ from zencad.geom.curve3 import extract_curve
 from zencad.version import __version__
 
 import zencad.reflect 
+
+def interactive_object(obj, *args, **kwargs):
+    return pyservoce.interactive_object(evalcache.unlazy_if_need(obj), *args, **kwargs)
+
 
 def gr(grad):
     print("'gr' function is deprecated. Use 'deg' instead")

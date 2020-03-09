@@ -54,6 +54,27 @@ class MainWindowActionsMixin:
 			),
 		)
 
+	def navigation_reference(self):
+		msgBox = QMessageBox()
+		msgBox.setWindowTitle("Справка по навигации:")
+		msgBox.setText(
+			"LeftButton+Move или Alt+Move: Вращение камеры вокруг центра\n"
+			"RightButton+Move или Shift+Move: Стрейф центра.\n"
+			"F5/F6: Перемещение центра фронтально.\n"
+			"PgUp/PgDown или MouseWheel: Изменение масштаба\n"
+			"\n"
+			"При зажатой LeftButton или скрытом текстовом редакторе:\n"
+			"A : влево.\n"
+			"D : вправо.\n"
+			"W : вперёд.\n"
+			"S : назад.\n"
+			"\n"
+			"Для навигации центра используйте Navigation/Visible center\n"
+			"и режим перспективы Navigation/Perspective\n"
+			"Режим перспективы позволяет заглядывать внутрь моделей."
+		)
+		msgBox.exec()
+		
 	def create_new_do(self, path):
 		f = open(path, "w")
 		f.write(
@@ -80,7 +101,7 @@ class MainWindowActionsMixin:
 		self.create_new_do(tmpfl)
 
 	def openAction(self):
-		path = zencad.gui.util.open_file_dialog(self)
+		path = zencad.gui.util.open_file_dialog(self, directory=os.path.dirname(self.current_opened))
 
 		if path[0] == "":
 			return
@@ -173,13 +194,13 @@ class MainWindowActionsMixin:
 		print("Invalidate cache: %d files removed" % len(files))
 
 	def hideConsole(self, en):
-		if self.presentation_mode: return
 		self.console.setHidden(en)
 
 	def hideEditor(self, en):
-		if self.presentation_mode: return
 		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
+
+		self.client_communicator.send({"cmd":"keyboard_retranslate", "en": not en})
 
 	#def testAction(self):
 	#	raise NotImplementedError
@@ -228,8 +249,38 @@ class MainWindowActionsMixin:
 			self.showNormal()
 			self.fscreen_mode = False
 
+	def view_only(self, en):
+		if en:	
+			self.menu_bar_height = self.menuBar().height()
+			#self.texteditor.setHidden(True)
+			#self.console.setHidden(True)
+			self.menuBar().setFixedHeight(0)
+			self.info_widget.setHidden(True)
+		else:
+			#self.texteditor.setHidden(False)
+			#self.console.setHidden(False)
+			self.menuBar().setFixedHeight(self.menu_bar_height)
+			self.info_widget.setHidden(False)
+
+		self.view_mode = en
+
+	def viewOnly(self):
+		self.view_only(not self.view_mode)
+
+	def display_mode_enable(self, en):
+		if not en:
+			self.hideEditor(False)
+			self.hideConsole(False)
+			self.mHideConsole.setChecked(False)
+			self.mHideEditor.setChecked(False)			
+
+		else:
+			self.hideEditor(True)
+			self.hideConsole(True)
+			self.mHideConsole.setChecked(True)
+			self.mHideEditor.setChecked(True)
+
 	def displayMode(self):
-		if self.presentation_mode: return
 		if self.texteditor.isHidden() and self.console.isHidden():
 			self.hideEditor(False)
 			self.hideConsole(False)
@@ -280,6 +331,20 @@ class MainWindowActionsMixin:
 			m = menu.addMenu(d)
 			self._init_example_menu(m, os.path.join(directory, d))
 
+	def _init_recent_menu(self, menu):
+		def _add_open_action(menu, name, path):
+			def callback():
+				self._open_routine(path)
+
+			menu.addAction(self.create_action(name, callback, path))
+
+		for l in zencad.settings.Settings.get_recent():
+			_add_open_action(menu, os.path.basename(l), l)
+
+	def update_recent_menu(self):
+		self.recentMenu.clear()
+		self._init_recent_menu(self.recentMenu)
+
 	def createActions(self):
 		self.mCreateAction = self.create_action(
 			"CreateNew...", self.createNewAction, "Create"
@@ -290,7 +355,7 @@ class MainWindowActionsMixin:
 		self.mOpenAction = self.create_action(
 			"Open...", self.openAction, "Open", "Ctrl+O"
 		)
-		self.mSaveAction = self.create_action("Save", self.saveAction, "Save")
+		self.mSaveAction = self.create_action("Save", self.saveAction, "Save", "Ctrl+S")
 		self.mSaveAs = self.create_action("SaveAs...", self.saveAsAction, "SaveAs...")
 		self.mTEAction = self.create_action(
 			"Open in Editor", self.externalTextEditorOpen, "Editor", "Ctrl+E"
@@ -315,6 +380,9 @@ class MainWindowActionsMixin:
 		self.mAboutAction = self.create_action(
 			"About", self.aboutAction, "About the application"
 		)
+		self.mNavRefer = self.create_action(
+			"Navigation reference", self.navigation_reference, "Navigation reference"
+		)
 		self.mSettings = self.create_action(
 			"Settings", self.settings, "GUI/View Settings"
 		)
@@ -329,9 +397,25 @@ class MainWindowActionsMixin:
 		self.mOrient2 = self.create_action(
 			"Free rotation view", self.orient2, "Orient2"
 		)
+
+		self.mFirstPersonMode = self.create_action(
+			"FirstPersonMode", self.first_person_mode, "First Person Mode"
+		)
+
 		self.mTracking = self.create_action(
 			"Tracking", self.trackingAction, "Tracking", checkbox=True
 		)
+
+		self.mPerspective = self.create_action(
+			"Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=zencad.settings.get(["memory","perspective"])=='true'
+		)
+
+		self.mVisCenter = self.create_action(
+			"Visible center", self.set_center_visible, "Visible center", checkbox=True, defcheck=False
+		)
+
+		self.perspective_checkbox_state = zencad.settings.get(["memory","perspective"])=='true'
+
 		#self.mTestAction = self.create_action(
 		#	"TestAction", self.testAction, "TestAction"
 		#)
@@ -360,11 +444,16 @@ class MainWindowActionsMixin:
 		self.mDisplayMode = self.create_action(
 			"Display mode", self.displayMode, "Display mode", "F10"
 		)
+
+		self.view_mode = False
+		self.mViewOnly = self.create_action(
+			"Hide Bars", self.viewOnly, "Hide bars", "F9"
+		)
 		self.mReopenCurrent = self.create_action(
 			"Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
 		)
 		self.mWebManual = self.create_action(
-			"Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser"
+			"Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser", "F1"
 		)
 		self.mCoordsDiff = self.create_action(
 			"Coords difference",
@@ -373,15 +462,21 @@ class MainWindowActionsMixin:
 			checkbox=True,
 		)
 
+	def set_center_visible(self, en):
+		self.client_communicator.send({"cmd": "set_center_visible", "en": en})
+
 	def createMenus(self):
 		self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
 		self.mFileMenu.addAction(self.mReopenCurrent)
+		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mCreateTemp)
 		self.mFileMenu.addAction(self.mCreateAction)
-		self.mFileMenu.addAction(self.mOpenAction)
 		self.mFileMenu.addAction(self.mSaveAction)
 		self.mFileMenu.addAction(self.mSaveAs)
+		self.mFileMenu.addSeparator()
 		self.exampleMenu = self.mFileMenu.addMenu("Examples")
+		self.recentMenu = self.mFileMenu.addMenu("Recent")
+		self.mFileMenu.addSeparator()
 		self.mFileMenu.addAction(self.mStlExport)
 		self.mFileMenu.addAction(self.mBrepExport)
 		self.mFileMenu.addAction(self.mToFreeCad)
@@ -391,8 +486,11 @@ class MainWindowActionsMixin:
 
 		moduledir = os.path.dirname(__file__)
 		self._init_example_menu(self.exampleMenu, os.path.join(moduledir, "../examples"))
+		self._init_recent_menu(self.recentMenu)
 
 		self.mEditMenu = self.menuBar().addMenu(self.tr("&Edit"))
+		self.mEditMenu.addAction(self.mTEAction)
+		self.mEditMenu.addSeparator()
 		self.mEditMenu.addAction(self.mSettings)
 
 		self.mNavigationMenu = self.menuBar().addMenu(self.tr("&Navigation"))
@@ -401,30 +499,46 @@ class MainWindowActionsMixin:
 		self.mNavigationMenu.addAction(self.mAutoscale)
 		self.mNavigationMenu.addAction(self.mOrient1)
 		self.mNavigationMenu.addAction(self.mOrient2)
-		self.mNavigationMenu.addAction(self.mTracking)
+		self.mNavigationMenu.addSeparator()
+		self.mNavigationMenu.addAction(self.mPerspective)
+		self.mNavigationMenu.addAction(self.mVisCenter)
+		self.mNavigationMenu.addAction(self.mFirstPersonMode)
 
 		self.mUtilityMenu = self.menuBar().addMenu(self.tr("&Utility"))
 		self.mUtilityMenu.addAction(self.mAutoUpdate)
-		self.mUtilityMenu.addAction(self.mTEAction)
-		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addSeparator()
+		self.mUtilityMenu.addAction(self.mTracking)
+		self.mUtilityMenu.addAction(self.mCoordsDiff)
+		self.mUtilityMenu.addSeparator()
+		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addAction(self.mInvalCache)
 		# self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
 		# self.mViewMenu.addAction(self.mDisplayFullScreen)
-		self.mViewMenu.addAction(self.mCoordsDiff)
 		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mDisplayMode)
+		self.mViewMenu.addAction(self.mViewOnly)
 		self.mViewMenu.addAction(self.mHideEditor)
 		self.mViewMenu.addAction(self.mHideConsole)
 
 		self.mHelpMenu = self.menuBar().addMenu(self.tr("&Help"))
-		self.mHelpMenu.addAction(self.mAboutAction)
 		self.mHelpMenu.addAction(self.mWebManual)
+		self.mHelpMenu.addAction(self.mNavRefer)
+		self.mHelpMenu.addAction(self.mAboutAction)
 
 	def createToolbars(self):
 		pass
+
+	def set_perspective(self, en):
+		if self.client_communicator:
+			self.client_communicator.send({"cmd": "set_perspective", "en": en})
+		self.perspective_checkbox_state = en
+
+		zencad.settings.set(["memory", "perspective"], "true" if en else "false")
+
+	def first_person_mode(self):
+		self.client_communicator.send({"cmd": "first_person_mode"})
 
 	def auto_update(self, en):
 		if not en:

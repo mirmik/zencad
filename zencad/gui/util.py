@@ -16,12 +16,12 @@ def create_temporary_file(zencad_template=False):
 
 	return path
 
-def open_file_dialog(parent):
+def open_file_dialog(parent, directory=""):
 	filters = "*.py;;*.*"
 	defaultFilter = "*.py"
 
 	path = QFileDialog.getOpenFileName(
-		parent, "Open File", "", filters, defaultFilter
+		parent, "Open File", directory, filters, defaultFilter
 	)
 
 	return path

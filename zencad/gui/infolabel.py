@@ -4,8 +4,8 @@ from PyQt5.QtGui import *
 
 import math
 
-QMARKER_MESSAGE = "Press 'Q' to set marker"
-WMARKER_MESSAGE = "Press 'W' to set marker"
+QMARKER_MESSAGE = "Press 'F3' to set marker"
+WMARKER_MESSAGE = "Press 'F4' to set marker"
 DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
 
 import zencad.configure

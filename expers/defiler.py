@@ -19,7 +19,7 @@ class defiler(zencad.assemble.unit):
 
 			def __init__(self, ax=(0,1,0)):
 				super().__init__()
-				self.set_shape(cylinder(r=self.r, h=self.h))
+				self.add_shape(cylinder(r=self.r, h=self.h))
 				self.rot=zencad.libs.kinematic.rotator(ax=ax, location=up(self.h))
 				self.link(self.rot)
 
@@ -46,7 +46,7 @@ class defiler(zencad.assemble.unit):
 	
 	def __init__(self):
 		super().__init__()
-		self.set_shape(box(self.x, self.y, self.z, center=True).fillet(3))
+		self.add_shape(box(self.x, self.y, self.z, center=True).fillet(3))
 		
 		self.arm_00 = self.arm()
 		self.arm_01 = self.arm()

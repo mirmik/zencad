@@ -1,20 +1,29 @@
 import pyservoce
+import evalcache
+
 from zencad.lazifier import lazy, shape_generator
-import zencad.transform
+import zencad.geom.transform
 
 @lazy.lazy(cls=shape_generator)
+def _lazy_union(arr):
+	return pyservoce.union(arr)
+
 def union(arr):
-    return pyservoce.union(arr)
+	if isinstance(arr[0], evalcache.LazyObject):
+		return _lazy_union(arr)
+	else:
+		return pyservoce.union(arr)
+
 
 
 @lazy.lazy(cls=shape_generator)
 def difference(arr):
-    return pyservoce.difference(arr)
+	return pyservoce.difference(arr)
 
 
 @lazy.lazy(cls=shape_generator)
 def intersect(arr):
-    return pyservoce.intersect(arr)
+	return pyservoce.intersect(arr)
 
 #@lazy.lazy(cls=shape_generator)
 #def projection(shp):
@@ -53,3 +62,29 @@ def section(a, b=0):
 		)
 
 	return result
+
+
+
+
+#_add_operator_native = pyservoce.Shape.__add__
+#_sup_operator_native = pyservoce.Shape.__sub__
+#_xor_operator_native = pyservoce.Shape.__xor__
+#
+#def add_operator(a, b):
+#	c = _add_operator_native(a, b)
+#	c = c.restore_shape_type()
+#	return c
+#
+#def sub_operator(a, b):
+#	c = _sub_operator_native(a, b)
+#	c = c.restore_shape_type()
+#	return c
+#
+#def xor_operator(a, b):
+#	c = _xor_operator_native(a, b)
+#	c = c.restore_shape_type()
+#	return c
+#
+#pyservoce.Shape.__add__ = add_operator
+#pyservoce.Shape.__sub__ = sub_operator
+#pyservoce.Shape.__xor__ = xor_operator

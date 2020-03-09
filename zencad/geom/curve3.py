@@ -21,7 +21,7 @@ from zencad.util import points, vectors
 
 @lazy
 def interpolate(pnts, tangs=[], closed=False):
-    return pyservoce.curve3_interpolate(points(pnts), vectors(tangs), closed)
+    return pyservoce.interpolate_curve3(points(pnts), vectors(tangs), closed)
 
 @lazy
 def extract_curve(shp):

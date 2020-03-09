@@ -71,7 +71,7 @@ def _sew_shell(lst):
 
 @lazy.lazy(cls=shape_generator)
 def sew(lst, sort=True):
-    if isinstance(lst[0], pyservoce.Face):
+    if lst[0].shapetype()=="face" or lst[0].shapetype()=="shell":
         return _sew_shell(lst)
     else:
         return _sew_wire(lst, sort)

@@ -1,3 +1,21 @@
+## 0.30.0
+	Add array producing option for multitransforms.
+	Improve pipe_shell instrument. Add pipe_shell for arrays.
+	Add rotate_array2 function.
+	Add revol2 function.
+	Improve revol function.
+	Add revol2 example.
+	Add platonic example.
+	Add transform methods for units and interactives. 
+	Fixed animation quite exception.
+	Method "set_location" is deprecated.
+	Add perspective projection.
+	Markers keyboards changed to F3, F4.
+	TextEditor now works with display widget focus.
+	Change navigation control.
+	Add visible cnter option.
+	ATTENTION: short_rotate signature was changed one more time (to 0.28.13 version).
+
 ## 0.29.0
 	Many small fixes.
 	Great manual update.

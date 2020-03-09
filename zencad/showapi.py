@@ -73,7 +73,7 @@ class stub_controller:
         pass
 
 
-def display(shp, color=default_color, deep=True, scene=default_scene):
+def display(shp, color=None, deep=True, scene=default_scene):
     if default_scene is None:
         # TODO: Add another stubs
         if isinstance(shp, evalcache.LazyObject):
@@ -88,11 +88,15 @@ def display(shp, color=default_color, deep=True, scene=default_scene):
         lst = []
         for s in shp:
             lst.append(display(s, color=color, deep=deep, scene=scene))
+
         return lst
 
     if isinstance(shp, zencad.assemble.unit):
         return shp.bind_scene(scene, color=color, deep=deep)
 
+    if color is None:
+        color=default_color
+        
     if scene is None:
         return pyservoce.interactive_object(shp, color)
 
