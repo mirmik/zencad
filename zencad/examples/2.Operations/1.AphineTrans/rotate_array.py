@@ -6,9 +6,6 @@ ZenCad API example: rotate_array
 from zencad import *
 import zencad.internal_models
 
-
-lazy.diag=True
-
 #a = zencad.internal_models.knight()
 a = box(15, center=True) 
 b = cylinder(r=15, h=10)
