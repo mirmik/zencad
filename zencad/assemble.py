@@ -91,7 +91,7 @@ class unit(pyservoce.TransformableMixin):
 	def add_object(self, d):
 		self.dispobjects.append(d)
 
-	def add(self, obj, color=zencad.settings.Settings.get_default_color()):
+	def add(self, obj, color=None):
 		obj = evalcache.unlazy_if_need(obj)
 		
 		if isinstance(obj, zencad.assemble.unit):
@@ -104,7 +104,12 @@ class unit(pyservoce.TransformableMixin):
 	def add_shape(self, shp, color=None):
 		shp = evalcache.unlazy_if_need(shp)
 		controller = pyservoce.interactive_object(shp)
-		controller.set_color(pyservoce.color(color))
+
+		if color is not None:
+			controller.set_color(pyservoce.color(color))
+		else:
+			controller.set_color(pyservoce.color(zencad.default_color))
+
 		self.dispobjects.append(controller)
 		self.shapes_holder.append(shp)
 		return controller

@@ -65,7 +65,7 @@ tcenter = text.center()
 text = text.translate(-tcenter.x, -tcenter.y, -tcenter.z)
 text = text.back(20).up(5)
 
-disp(robot0, color=(0.4, 0.4, 0.6), deep=True)
+disp(robot0, deep=True)
 #robot0.bind_scene(zencad.showapi.default_scene, deep=True)
 disp(base, color=(0.3, 0.3, 0.3))
 
