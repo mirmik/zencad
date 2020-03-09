@@ -12,7 +12,9 @@
 	Add perspective projection.
 	Markers keyboards changed to F3, F4.
 	TextEditor now works with display widget focus.
-	ATTENTION: short_rotate signature was changed one more time.
+	Change navigation control.
+	Add visible cnter option.
+	ATTENTION: short_rotate signature was changed one more time (to 0.28.13 version).
 
 ## 0.29.0
 	Many small fixes.
