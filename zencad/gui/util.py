@@ -20,6 +20,9 @@ def open_file_dialog(parent, directory=""):
 	filters = "*.py;;*.*"
 	defaultFilter = "*.py"
 
+	if directory == tempfile.gettempdir():
+		directory = "." 
+
 	path = QFileDialog.getOpenFileName(
 		parent, "Open File", directory, filters, defaultFilter
 	)
