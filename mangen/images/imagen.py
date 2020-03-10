@@ -983,7 +983,7 @@ doscreen(
 )
 
 doscreen(
-    model=(
+    model=( 
         short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight()), 
         draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
         draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
