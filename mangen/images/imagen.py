@@ -1075,3 +1075,15 @@ doscreen(
     path="revol20.png",
     size=wsize
 )
+
+doscreen(
+    model=cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5,5),
+    path="unify0.png",
+    size=wsize
+)
+
+doscreen(
+    model=unify(cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5,5)),
+    path="unify1.png",
+    size=wsize
+)

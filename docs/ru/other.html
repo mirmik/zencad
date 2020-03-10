@@ -79,6 +79,31 @@
 <p>Данная операция упрощает геометрическое представление объекта, путём удаления лишних рёбер и объединения гранией.</p>
 
 <p>Может выполняться над двумерными и трёхмерными объектами.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">unify</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">unify</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+  <th>До</th>
+  <th>После</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/unify0.png" alt="" /></td>
+  <td><img src="../images/generic/unify1.png" alt="" /></td>
+</tr>
+</tbody>
+</table>
 </article>
     </div>
     <div id="footer"></div>
