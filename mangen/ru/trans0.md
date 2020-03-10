@@ -339,7 +339,7 @@ rotate_array2(
 ```
 | До | После |
 |---|---|
-| ![ra0](../images/generic/rotate_array20.png) | ![ra1](../images/generic/rotate_array21.png) |
+| ![raa0](../images/generic/rotate_array20.png) | ![ra1](../images/generic/rotate_array21.png) |
 
 ### Квадратное отражение.
 Достраивает 3 отражения исходного объекта.
