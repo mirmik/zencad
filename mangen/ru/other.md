@@ -7,3 +7,16 @@
 
 Может выполняться над двумерными и трёхмерными объектами.
 
+Сигнатура:
+```python
+unify(shp)
+```
+
+Пример:
+```python
+unify(cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5,5))
+```
+
+| До | После |
+|---|---|
+| ![](../images/generic/unify0.png) | ![](../images/generic/unify1.png) |
