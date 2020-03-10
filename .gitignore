@@ -112,4 +112,3 @@ test/screens/*.png
 *.stl
 *.brep
 mangen/images/generic/*.png
-docs/images/generic/*.png
