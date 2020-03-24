@@ -241,7 +241,7 @@ class MainWindowActionsMixin:
 		raise NotImplementedError
 
 	def fullScreen(self):
-		if self.presentation_mode: return
+		#if self.presentation_mode: return
 		if not self.fscreen_mode:
 			self.showFullScreen()
 			self.fscreen_mode = True
