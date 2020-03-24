@@ -21,7 +21,7 @@ from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
 from zencad.util import deg, angle_pair, points, vectors
-from zencad.convert import *
+from zencad.convert.api import *
 import types
 
 moduledir = os.path.dirname(__file__)
