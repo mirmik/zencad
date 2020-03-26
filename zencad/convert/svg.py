@@ -176,8 +176,8 @@ if __name__ == "__main__":
 
 	mapping = True
 
-	#zencad.disp(shp)
-	#zencad.show()
+	zencad.disp(shp)
+	zencad.show()
 
 	print(shape_to_svg_string(shp, color=clr, mapping=mapping))
 	shape_to_svg("test.svg", shp, color=clr, mapping=mapping)
