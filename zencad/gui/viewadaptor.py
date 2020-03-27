@@ -192,7 +192,7 @@ class DisplayWidget(QGLWidget):
 			self.MarkerQController.hide(True)
 			self.MarkerWController.hide(True)
 
-			self.count_of_helped_shapes += 2
+			self.count_of_helped_shapes += 2 + 3 + 1
 
 	def set_perspective(self, en):
 		self.perspective_mode = en
