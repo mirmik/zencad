@@ -89,6 +89,11 @@ def unify(shp):
     return pyservoce.unify(shp)
 
 
+@lazy
+def triangulation(shp, defl):
+    return pyservoce.triangulation(shp, defl)
+
+
 zencad.color = pyservoce.color
 
 zencad.color.white =     zencad.color(1,1,1)
