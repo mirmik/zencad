@@ -130,7 +130,7 @@ pre
 	background: url("./images/blacktocat.png") 0 0 no-repeat; 
 }
 
-.codehilite 	   { background: #fff; }
+.codehilite 	   { background: #fff; font-size: 12px; }
 .codehilite .c     { color: #998; font-style: italic } /* Comment */
 .codehilite .err   { color: #a61717; background-color: #e3d2d2 } /* Error */
 .codehilite .k     { font-weight: bold } /* Keyword */

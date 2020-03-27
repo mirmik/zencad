@@ -90,7 +90,7 @@ def unify(shp):
 
 
 @lazy
-def triangulation(shp, defl):
+def triangulate(shp, defl):
     return pyservoce.triangulation(shp, defl)
 
 
