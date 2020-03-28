@@ -43,6 +43,7 @@ setup(
             "bird.jpg",
             "techpriest.jpg",
             "geom/*",
+            "convert/*",
             "libs/*",
             "gui/*",
             "internal_models/*",

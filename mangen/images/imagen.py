@@ -1087,3 +1087,56 @@ doscreen(
     path="unify1.png",
     size=wsize
 )
+
+
+m=sphere(10)
+nodes, triangles = triangulate(m, 0.1)
+doscreen(
+    model=polyhedron(nodes, triangles),
+    path="polyhedron0.png",
+    size=wsize
+)
+
+
+POINTS = [
+    (0,0,0),
+    (0,0,20),
+    (0,20,40),
+    (-90,20,40),
+    (-90,20,20),
+    (0,20,0),
+]
+spine = rounded_polysegment(POINTS, r=10)
+doscreen(
+    model=tube(spine, r=5) ,
+    path="tube0.png",
+    size=wsize,
+    yaw=deg(120)
+)
+
+POINTS = [ (0,0,0), (20,0,40) ]
+TANGS = [ (0,0,1), (1,0,1) ]
+
+spine = interpolate(POINTS, TANGS)
+doscreen(
+    model=tube(spine, r=5, maxdegree=8) ,
+    path="tube1.png",
+    size=wsize,
+    yaw=deg(120)
+)
+
+
+pnts = points([
+    (0,0,0),
+    (1,0,0),
+    (1,1,0),
+    (0,1,0),
+    (0.5,0.5,1),
+])
+
+doscreen(
+    model=convex_hull_shape(pnts),
+    path="convex_hull0.png",
+    size=wsize,
+    yaw=deg(120)
+)

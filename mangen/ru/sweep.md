@@ -45,6 +45,33 @@ extrude(textshape(text="TextShape", fontpath=FONTPATH, size=100), 20)
 ![](../images/generic/extrude2.png)
 ![](../images/generic/extrude3.png)
 
+--------------------------
+## Труба.
+Строит на основе траектории _spine_ и профиля круглого сечения радиуса _r_.
+_maxdegree_ максимальная степень bspline поверхности.
+_maxsegm_ - ?
+_bounds_ - при установке этой опции операция возвращает кортеж из резултьата, а также профилей в первой и последней позициях.
+ 
+Сигнатура:
+```python
+tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
+```
+
+Примеры:
+```python
+POINTS = [ (0,0,0), (0,0,20), (0,20,40),
+	(-90,20,40), (-90,20,20), (0,20,0) ]
+spine = rounded_polysegment(POINTS, r=10)
+a = tube(spine, r=5) 
+
+POINTS = [ (0,0,0), (20,0,40) ]
+TANGS = [ (0,0,1), (1,0,1) ]
+spine = interpolate(POINTS, TANGS)
+b = tube(spine, r=5, maxdegree=8)
+```
+![](../images/generic/tube0.png)
+![](../images/generic/tube1.png)
+
 ---
 ## Развёртка профиля по траектории. Развёртка с изменяемым профилем.
 Операция строит тело по одному профилю или набору сменяющих друг друга профилей _profiles_, вытянутых по траектории _spine_.

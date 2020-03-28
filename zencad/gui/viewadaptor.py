@@ -133,7 +133,7 @@ class DisplayWidget(QGLWidget):
 		self.orient = 2
 
 	def autoscale(self):
-		self.view.fit_all(0.2)
+		self.view.fit_all(0.07)
 
 	def reset_orient(self):
 		self.reset_orient1()
@@ -192,7 +192,7 @@ class DisplayWidget(QGLWidget):
 			self.MarkerQController.hide(True)
 			self.MarkerWController.hide(True)
 
-			self.count_of_helped_shapes += 2
+			self.count_of_helped_shapes += 2 + 3 + 1
 
 	def set_perspective(self, en):
 		self.perspective_mode = en
@@ -475,6 +475,10 @@ class DisplayWidget(QGLWidget):
 		
 		elif event.key() == Qt.Key_F6:
 			self.move_back()
+			return
+
+		elif event.key() == Qt.Key_F8:
+			self.autoscale()
 			return
 
 		elif event.key() == Qt.Key_PageUp:

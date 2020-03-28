@@ -5,7 +5,6 @@ import zencad
 import zencad.gui.console
 import zencad.gui.texteditor
 import zencad.gui.viewadaptor
-import zencad.gui.nqueue
 from zencad.gui.inotifier import InotifyThread
 from zencad.gui.infolabel import InfoWidget
 
@@ -227,7 +226,6 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.client_finalization_list = []
 		self.communicator_dictionary = {}
 
-		self.nqueue = zencad.gui.nqueue.nqueue()
 		self.client_communicator = client_communicator
 		
 		if self.client_communicator:
@@ -636,12 +634,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 			чем прошлый открываемый скрипт отчитался об успешном завершении"""
 			self.client_communicator.kill()
 			self.client_finalization_list.append(self.client_communicator)
-			#self.open_in_progress = False
-		#	self.client_communicator.stop_listen()
-		#	time.sleep(0.05)
-		#	self.client_communicator.kill()
-		#	self.nqueue.add(self.client_communicator)
-		#	self.client_communicator = None
+
 		if another_file:
 			self.screen_saver.drop_background()
 
@@ -650,41 +643,11 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 				self.client_communicator.send({"cmd":"screenshot"})
 			self.client_communicator.send({"cmd":"stop_activity"})
 			self.client_finalization_list.append(self.client_communicator)
-			#if self.client_communicator.subproc is not None:
-			#	self.opened_subproc = self.client_communicator.subproc.pid
-			#if success:
-			#	self.openlock.unlock()
-			#	return
 
 		trace("planned to finalize:", len(self.client_finalization_list))
 
-	#	self.openlock.unlock()
-	#	self.open_bottom_half(None)
-
-	#def open_bottom_half(self, subproc):
-	#	trace("open_bottom_half")
-	#	print("open_bottom_half")
-
 		self.console.clear()
-
-	#	if not self.openlock.tryLock():
-	#		return
-
 		path = self.current_opened
-
-		#if 0:
-		#	if self.client_communicator:
-		#		if self.client_communicator is not zencad.gui.application.MAIN_COMMUNICATOR:
-		#			self.client_communicator.send({"cmd": "stopworld"})
-		#			self.client_communicator.stop_listen()
-		#			time.sleep(0.05)
-		#			self.client_communicator.kill()
-		#			if sys.platform != "win32" and sys.platform != "win64":
-		#				os.wait()
-	#
-		#		else:
-		#			self.client_communicator.send({"cmd": "smooth_stopworld"})
-		#			time.sleep(0.05)
 		
 		try:
 			self.session_id += 1
