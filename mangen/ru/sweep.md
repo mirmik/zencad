@@ -45,6 +45,7 @@ extrude(textshape(text="TextShape", fontpath=FONTPATH, size=100), 20)
 ![](../images/generic/extrude2.png)
 ![](../images/generic/extrude3.png)
 
+--------------------------
 ## Труба.
 Строит на основе траектории _spine_ и профиля круглого сечения радиуса _r_.
 _maxdegree_ максимальная степень bspline поверхности.

@@ -1124,3 +1124,19 @@ doscreen(
     size=wsize,
     yaw=deg(120)
 )
+
+
+pnts = points([
+    (0,0,0),
+    (1,0,0),
+    (1,1,0),
+    (0,1,0),
+    (0.5,0.5,1),
+])
+
+doscreen(
+    model=convex_hull_shape(pnts),
+    path="convex_hull0.png",
+    size=wsize,
+    yaw=deg(120)
+)
