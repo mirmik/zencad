@@ -20,69 +20,95 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="scriptcad.html">Script CAD</a></li>
-<li><a href="caching.html">Кэширование</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
-</ul></li>
-<li>Базовые примитивы и операции
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
 </ul></li>
-<li>Преобразования
+<li>Basic primitives and utilities
 <ul>
-<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
-<li><a href="trans1.html">Комбинации преобразований</a>  </li>
-<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li>Графический интерфейс
+<li>Transformations, geometric operations
 <ul>
-<li><a href="gui.html">Вводные моменты</a></li>
-<li><a href="navigation.html">Навигация</a></li>
-<li><a href="markers.html">Маркеры</a></li>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
 </ul></li>
-<li><a href="animate.html">Анимация</a></li>
-<li>Библиотеки</li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1>Объёмные тела.</h1>
+      <article class="article">English version in preparation. COMMING SOON.<h1>Solid shapes.</h1>
 
-<p>В этом разделе приводятся базовые примитивы CSG геометрии.</p>
+<p>This section provides basic CSG geometry primitives.</p>
 
 <hr />
 
-<h2>Box</h2>
+<h2>Box.</h2>
 
-<p>Объёмное тело - параллелипипед. Задаётся с указанием трёх размеров. При указании одного размера <code>a</code> генерируется куб <code>(a,a,a)</code>. Установка опции center совмещает геометрический центр тела с началом координат.</p>
+<p>Box shape. It is specified with three sizes <em>x</em>, <em>y</em>, <em>z</em>. When specifying a single size <em>a</em>, a cube <em>(a, a, a)</em> is generated. Setting the boolean option <em>center</em> combines the geometric center of the body with the origin.</p>
 
-<p>Варианты использования.</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">box</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
-<span class="n">box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
-<span class="n">box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
+<div class="codehilite"><pre><span></span><code><span class="n">box</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span> 
 </code></pre></div>
 
-<p><img src="../images/generic/box.png" alt="box.png" /></p>
+<p>Examples:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="c1"># alternate</span>
+<span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/box0.png" alt="box0.png" />
+<img src="../images/generic/box1.png" alt="box1.png" /></p>
 
 <hr />
 
-<h2>Sphere</h2>
+<h2>Sphere.</h2>
 
-<p>Объёмное тело - сфера. Задаётся с указанием радиуса. Возможно построение сектора сферы с использованием параметров yaw, pitch.</p>
+<p>Sphere shape. <em>r</em> is radius. It is possible to build a sector of the sphere using the optional parameters <em>yaw</em>, <em>pitch</em>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
-<span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">)</span>
-<span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">minPitch</span><span class="p">,</span> <span class="n">maxPitch</span><span class="p">))</span>
-<span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">minPitch</span><span class="p">,</span> <span class="n">maxPitch</span><span class="p">))</span>
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">minPitch</span><span class="p">,</span> <span class="n">maxPitch</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Examples:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)))</span>
+<span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">),</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)))</span>
 </code></pre></div>
 
 <p><img src="../images/generic/sphere0.png" alt="" />
@@ -92,27 +118,45 @@
 
 <hr />
 
-<h2>Cylinder</h2>
+<h2>Cylinder.</h2>
 
-<p>Объёмное тело - цилиндр. Задаётся с указанием радиуса и высоты. Возможно построение сектора цилиндра с использованием параметра yaw. Установка опции center совмещает геометрический центр тела с началом координат.</p>
+<p>Cylinder shape. Set with radius and height. It is possible to build a cylinder sector using the optional parameter <em>yaw</em>. Setting the <em>center</em> option aligns the geometric center of the body with the origin.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Examples:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/cylinder0.png" alt="" />
-<img src="../images/generic/cylinder1.png" alt="" />  </p>
+<img src="../images/generic/cylinder1.png" alt="" /> <br />
+<img src="../images/generic/cylinder2.png" alt="" />
+<img src="../images/generic/cylinder3.png" alt="" /></p>
 
 <hr />
 
-<h2>Cone</h2>
+<h2>Cone.</h2>
 
-<p>Объёмное тело - конус. Задаётся с указанием нижнего радиуса, верхнего радиуса и высоты. Возможно построение сектора цилиндра с использованием параметра yaw. Установка опции center совмещает геометрический центр тела с началом координат.</p>
+<p>Cone shape. Set with the lower radius <em>r1</em>, upper radius <em>r2</em> and height. It is possible to build a cone sector using the optional parameter <em>yaw</em>. Setting the <em>center</em> option aligns the geometric center of the body with the origin. Radii <em>r1</em> and <em>r2</em> can be zero, which corresponds to a pointed cone.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">topRadius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
-<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">topRadius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
-<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">topRadius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
-<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">);</span>
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">botRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">topRadius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Examples:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/cone0.png" alt="" />
@@ -122,14 +166,25 @@
 
 <hr />
 
-<h2>Torus</h2>
+<h2>Torus.</h2>
 
-<p>Объёмное тело - тор. Задаётся с указанием нижнего радиуса, верхнего радиуса и высоты. Возможно построение сектора цилиндра с использованием параметра yaw. </p>
+<p>Torus shape. Set with the indication of the central radius <em>r1</em> and the local radius <em>r2</em>. It is possible to build torus sectors using the optional parameters <em>yaw</em>, <em>pitch</em>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">centralRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">localRadius</span><span class="p">);</span>
-<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">centralRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">localRadius</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">);</span>
-<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">centralRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">localRadius</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">minPitch</span><span class="p">,</span> <span class="n">maxPitch</span><span class="p">));</span>
-<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">centralRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">localRadius</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">minPitch</span><span class="p">,</span> <span class="n">maxPitch</span><span class="p">));</span>
+<p>In the case where the angle interval <em>pitch</em> does not contain an inner region, a corresponding cylindrical insert is formed in the center. If the angle interval <em>pitch</em> does not contain an outer region, the corresponding part of the torus is limited by a plane.</p>
+
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">centralRadius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">localRadius</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">minPitch</span><span class="p">,</span> <span class="n">maxPitch</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Examples:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">))</span>
+<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)))</span>
+<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)),</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">))</span>
+<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="o">-</span><span class="mi">140</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">140</span><span class="p">)),</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">))</span>
+<span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">190</span><span class="p">)),</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">))</span>
 </code></pre></div>
 
 <p><img src="../images/generic/torus0.png" alt="" />
@@ -141,9 +196,16 @@
 
 <hr />
 
-<h2>Halfspace</h2>
+<h2>Halfspace.</h2>
 
-<p>Специальное объёмное тело, представляющее собой нижнее полупространство. Так же как и остальные объёмные тела, поддерживает трансформации и с использованием их может представлять любое возможное полупространство. В отличии от обычных тел не может быть отображено непосредственно. Используется вместе с операциями разности и пересечения.</p>
+<p>Special volumetric body representing the lower half-space. Like other volumetric bodies, it supports transformations and using them can represent any possible half-space. Unlike ordinary bodies, it cannot be displayed directly. Used with difference and intersection operations.</p>
+
+<p>Signatures:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">halfspace</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Examples:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">halfspace</span><span class="p">()</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">150</span><span class="p">))</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">^</span> <span class="n">halfspace</span><span class="p">()</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">150</span><span class="p">))</span>
@@ -151,6 +213,113 @@
 
 <p><img src="../images/generic/halfspace0.png" alt="" />
 <img src="../images/generic/halfspace1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Platonic solids</h2>
+
+<p>Library based on https://github.com/qalle2/plato.scad</p>
+
+<table>
+<thead>
+<tr>
+  <th>Regular polyhedron</th>
+  <th>Number of vertices</th>
+  <th>Number of edges</th>
+  <th>Number of faces</th>
+  <th>Number of edges at the face</th>
+  <th>Number of edges adjacent to the vertex</th>
+  <th>Type of spatial symmetry</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Tetrahedron</td>
+  <td>4</td>
+  <td>6</td>
+  <td>4</td>
+  <td>3</td>
+  <td>3</td>
+  <td>Td</td>
+</tr>
+<tr>
+  <td>Hexahedron</td>
+  <td>8</td>
+  <td>12</td>
+  <td>6</td>
+  <td>4</td>
+  <td>3</td>
+  <td>Oh</td>
+</tr>
+<tr>
+  <td>Oktohedron</td>
+  <td>6</td>
+  <td>12</td>
+  <td>8</td>
+  <td>3</td>
+  <td>4</td>
+  <td>Oh</td>
+</tr>
+<tr>
+  <td>Dodecahedron</td>
+  <td>20</td>
+  <td>30</td>
+  <td>12</td>
+  <td>5</td>
+  <td>3</td>
+  <td>Ih</td>
+</tr>
+<tr>
+  <td>Icosahedron</td>
+  <td>12</td>
+  <td>30</td>
+  <td>20</td>
+  <td>3</td>
+  <td>5</td>
+  <td>Ih</td>
+</tr>
+</tbody>
+</table>
+
+<p>The library allows you to specify the dimensions of the bodies through the radius of the circumscribed circle <em>r</em> or through the length of the rib <em>a</em>.</p>
+
+<p>Signatures:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">tetrahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">hexahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">octahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">dodecahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">icosahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># Альтернативный синтаксис</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="n">nfaces</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Через радиус:</span>
+<span class="n">tetrahedron</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">hexahedron</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">octahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">dodecahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">icosahedron</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Через длину ребра:</span>
+<span class="n">icosahedron</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Альтернативный синтакис:</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/platonic0.png" alt="" />
+<img src="../images/generic/platonic1.png" alt="" /> <br />
+<img src="../images/generic/platonic2.png" alt="" />
+<img src="../images/generic/platonic3.png" alt="" /> <br />
+<img src="../images/generic/platonic4.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
