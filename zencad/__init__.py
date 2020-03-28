@@ -38,6 +38,8 @@ from zencad.showapi import default_scene
 from zencad.geom.curve3 import extract_curve
 from zencad.version import __version__
 
+from zencad.platonic import *
+
 import zencad.reflect 
 
 def interactive_object(obj, color=None):

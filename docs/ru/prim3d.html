@@ -63,12 +63,6 @@
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
-<li>Библиотеки
-<ul>
-<li><a href="platonic.html">Платоновы тела</a></li>
-<li><a href="kinematic.html">kinematic</a></li>
-<li><a href="nut.html">nut</a></li>
-</ul></li>
 </ul>
 </nav>
       <article class="article"><h1>Объёмные тела.</h1>
@@ -210,6 +204,114 @@
 
 <p><img src="../images/generic/halfspace0.png" alt="" />
 <img src="../images/generic/halfspace1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Платоновы тела</h2>
+
+<p>Построение платоновых тел.
+Библиотека основана на https://github.com/qalle2/plato.scad</p>
+
+<table>
+<thead>
+<tr>
+  <th>Правильный многогранник</th>
+  <th>Число вершин</th>
+  <th>Число рёбер</th>
+  <th>Число граней</th>
+  <th>Число сторон у грани</th>
+  <th>Число рёбер примыкающих к вершине</th>
+  <th>Тип пространственной симметрии</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Тетраэдр</td>
+  <td>4</td>
+  <td>6</td>
+  <td>4</td>
+  <td>3</td>
+  <td>3</td>
+  <td>Td</td>
+</tr>
+<tr>
+  <td>Гексаэдр</td>
+  <td>8</td>
+  <td>12</td>
+  <td>6</td>
+  <td>4</td>
+  <td>3</td>
+  <td>Oh</td>
+</tr>
+<tr>
+  <td>Октаэдр</td>
+  <td>6</td>
+  <td>12</td>
+  <td>8</td>
+  <td>3</td>
+  <td>4</td>
+  <td>Oh</td>
+</tr>
+<tr>
+  <td>Додекаэдр</td>
+  <td>20</td>
+  <td>30</td>
+  <td>12</td>
+  <td>5</td>
+  <td>3</td>
+  <td>Ih</td>
+</tr>
+<tr>
+  <td>Икосаэдр</td>
+  <td>12</td>
+  <td>30</td>
+  <td>20</td>
+  <td>3</td>
+  <td>5</td>
+  <td>Ih</td>
+</tr>
+</tbody>
+</table>
+
+<p>Библиотека позволяет указывать размеры тел через радиус описанной окружности <em>r</em> или через длину ребра <em>a</em>.</p>
+
+<p>Сигнатуры:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">tetrahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">hexahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">octahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">dodecahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">icosahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># Альтернативный синтаксис</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="n">nfaces</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Через радиус:</span>
+<span class="n">tetrahedron</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">hexahedron</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">octahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">dodecahedron</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">icosahedron</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Через длину ребра:</span>
+<span class="n">icosahedron</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Альтернативный синтакис:</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">platonic</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/platonic0.png" alt="" />
+<img src="../images/generic/platonic1.png" alt="" /> <br />
+<img src="../images/generic/platonic2.png" alt="" />
+<img src="../images/generic/platonic3.png" alt="" /> <br />
+<img src="../images/generic/platonic4.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
