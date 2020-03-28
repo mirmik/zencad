@@ -15,6 +15,7 @@ if "TRAVIS_OS_NAME" in os.environ:
 	print("Travis. Filter examples.")
 	examples = [ e for e in examples if not "Embeded" in e ]
 	examples = [ e for e in examples if not "Integration" in e ]
+	examples = [ e for e in examples if not "Models/logo" in e ]
 
 
 for epath in examples:
