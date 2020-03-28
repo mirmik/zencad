@@ -1,24 +1,33 @@
-* Основные концепции
-	* [Main page](index.html)
-	* [Script CAD](scriptcad.html)
-	* [Кэширование](caching.html)
-	* [Разбор HelloWorld](helloworld.html)
-* Базовые примитивы и операции
-    * [Объёмные примитивы](prim3d.html)  
-    * [Плоские примитивы](prim2d.html)  
-    * [Создание линий](prim1d.html)  
-    * [Точки, вектора, утилиты](prim0d.html)
-    * [Линии и циклы](lincycle.html)  
-    * [Топологически зависимые преобразования](fillet.html)  
-    * [Ссылочная геометрия](ops3d.html)  
-* Преобразования
-	* [Синтаксис преобразований](trans0.html)  
-	* [Комбинации преобразований](trans1.html)  
-	* [Булевы операции](bool.html)
-* [Экспорт/Импорт](expimp.html)
-* Графический интерфейс
-	* [Вводные моменты](gui.html)
-	* [Навигация](navigation.html)
-	* [Маркеры](markers.html)
-* [Анимация](animate.html)
-* Библиотеки
+* [Main page](index.html)
+* [Helloworld example](helloworld.html)
+* [Installation](installation.html)
+* Basic conceptions
+	* [Scripting CAD](scriptcad.html)
+	* [Boundary representation](geomcore.html)
+	* [Lazy evaluations](caching.html)
+* Basic primitives and utilities
+	* [Solid primitives](prim3d.html)  
+	* [Plane primitives](prim2d.html)  
+	* [Lines and cycles](prim1d.html)  
+	* [Points, vectors, utilities](prim0d.html)
+* Transformations, geometric operations
+	* [Aphine transform](trans0.html)  
+	* [Boolean operations](bool.html)
+	* [Topologically dependent operations](fillet.html)  
+	* [Reference geometry](ops3d.html)
+	* [Sweep operations](sweep.html)
+	* [Triangulate and meshing](trimesh.html)
+	* [Other operations](other.html)
+* Reflection and analysis
+	* [Geometric reflection](reflect.html)
+	* [Curve analysis](crvalgo.html)
+	* [Surface analysis](surfalgo.html)
+	* [Geometric properties](geomprop.html)
+* Visualization
+	* [Displaying](show.html)
+	* [Interactive object](interactive_object.html)  
+	* [Hierarchical models](assemble.html)
+	* [Animation](animate.html)
+* [Graphical user interface](gui.html)
+* [Export/Import](expimp.html)
+* [Internal ZenCad's kitchen](internal.html)

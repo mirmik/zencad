@@ -20,67 +20,111 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="scriptcad.html">Script CAD</a></li>
-<li><a href="caching.html">Кэширование</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
-</ul></li>
-<li>Базовые примитивы и операции
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
 </ul></li>
-<li>Преобразования
+<li>Basic primitives and utilities
 <ul>
-<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
-<li><a href="trans1.html">Комбинации преобразований</a>  </li>
-<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li>Графический интерфейс
+<li>Transformations, geometric operations
 <ul>
-<li><a href="gui.html">Вводные моменты</a></li>
-<li><a href="navigation.html">Навигация</a></li>
-<li><a href="markers.html">Маркеры</a></li>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
 </ul></li>
-<li><a href="animate.html">Анимация</a></li>
-<li>Библиотеки</li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
       <article class="article">English version in preparation. COMMING SOON.<h1>Ссылочная геометрия</h1>
 
-<h2>Linear extrude</h2>
+<hr />
 
-<p>Операция линейной экструзии. Самый часто используемый метод придания объёма плоскому объекту.
-Задаётся плоским объектом <code>face</code> и вектором <code>vec</code> вдоль которого будет выполнено растяжение. Если вместо вектора указать одну координату, модель будет вытянута в положительном направлении оси Z.
-При указании опции center, после выполнения операции модель будет транслирована в направлении обратном vec на его половинную длину.</p>
+<h2>Cмещение.</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="n">linear_extrude</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">linear_extrude</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span> <span class="c1">#equal: vec=(0,0,z)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<p>Путём смещения оболочек, строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/extrude0.png" alt="" />
-<img src="../images/generic/extrude1.png" alt="" /> <br />
-<img src="../images/generic/extrude2.png" alt="" />
-<img src="../images/generic/extrude3.png" alt="" />  </p>
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/offset0.png" alt="" /></p>
 
 <hr />
 
-<h2>Loft</h2>
+<h2>Линейчатая поверхность.</h2>
 
-<p>Операция натягивает 3д поверхность на масив каркасных линий <code>wires</code>. <br />
-TODO: Добавить больше параметров в алгоритм сглаживания.</p>
+<p>Строит грань, задаваемую линейчатое поверхностью, опирающейся на линии <em>a</em>, <em>b</em>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">wires</span><span class="p">)</span>
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span>
+    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
+    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/ruled0.png" alt="" />
+<img src="../images/generic/ruled1.png" alt="" /> <br />
+<img src="../images/generic/ruled2.png" alt="" /> 
+<img src="../images/generic/ruled3.png" alt="" /></p>
+
+<hr />
+
+<h2>Увязка</h2>
+
+<p>Построение оболочки на масиве каркасных линий <em>profiles</em>. При активации опции <em>shell</em> вместо твёрдого тела строится оболочка. Активации опции <em>smooth</em> изменяет режим линейчатой поверхности на гладкую апроксимацию. При активной апроксимации опция <em>maxdegree</em> ограничивает максимальную степень полинома.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code>
 </code></pre></div>
 
 <p><img src="../images/generic/loft0.png" alt="" />
@@ -89,36 +133,6 @@ TODO: Добавить больше параметров в алгоритм с�
 <img src="../images/generic/loft3.png" alt="" /> <br />
 <img src="../images/generic/loft4.png" alt="" />
 <img src="../images/generic/loft5.png" alt="" />  </p>
-
-<hr />
-
-<h2>Sweep</h2>
-
-<p>Операция выдавливания тела <code>shp</code> по траектории. В текущей реализации профиль задаётся замкнутым контуром. Путь <code>traj</code> задаётся линией. При установке опции frenet меняется алгоритм расчета поворота сечения от поворота траектории. Эту опцию рекомендуется устанавливать для спирального свипа (см. <a href="https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas">https://en.wikipedia.org/wiki/Frenet-Serret_formulas</a>).  </p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">sweep</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span> <span class="n">traj</span><span class="o">=</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/sweep0.png" alt="" />
-<img src="../images/generic/sweep1.png" alt="" /> <br />
-<img src="../images/generic/sweep2.png" alt="" />
-<img src="../images/generic/sweep3.png" alt="" /> <br />
-<img src="../images/generic/sweep4.png" alt="" /></p>
-
-<hr />
-
-<h2>Revol</h2>
-
-<p>Операция создания тела вращения. Задаётся с указанием вращаемого тела. При необходимости создания сектора задаётся угол.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
-<span class="n">revol</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
-</code></pre></div>
-
-<p><img src="../images/generic/revol0.png" alt="" />
-<img src="../images/generic/revol1.png" alt="" /> <br />
-<img src="../images/generic/revol2.png" alt="" />
-<img src="../images/generic/revol3.png" alt="" />  </p>
 </article>
     </div>
     <div id="footer"></div>

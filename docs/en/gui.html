@@ -20,41 +20,89 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="scriptcad.html">Script CAD</a></li>
-<li><a href="caching.html">Кэширование</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
-</ul></li>
-<li>Базовые примитивы и операции
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
 </ul></li>
-<li>Преобразования
+<li>Basic primitives and utilities
 <ul>
-<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
-<li><a href="trans1.html">Комбинации преобразований</a>  </li>
-<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li>Графический интерфейс
+<li>Transformations, geometric operations
 <ul>
-<li><a href="gui.html">Вводные моменты</a></li>
-<li><a href="navigation.html">Навигация</a></li>
-<li><a href="markers.html">Маркеры</a></li>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
 </ul></li>
-<li><a href="animate.html">Анимация</a></li>
-<li>Библиотеки</li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<p></p>
+      <article class="article">English version in preparation. COMMING SOON.<h1>Графический интерфейс, основные моменты.</h1>
+
+<p><img src="../images/gui.png" alt="gui.png" /></p>
+
+<h2>Вызов</h2>
+
+<p>Окно графического интерфейса может быть вызвано следующими способами:</p>
+
+<ul>
+<li>Вызов <code>zencad.show()</code> в интерпретаторе python.  </li>
+<li>Выполнение <code>python3 -m pip zencad</code> в среде терминала. (usage: <code>python3 -m pip zencad [filepath]</code>)  </li>
+<li>Вызов утилиты командной строки <code>zencad</code> (usage: <code>zencad [filepath]</code>)  </li>
+</ul>
+
+<h2>Обновление модели по обновлению файла источника</h2>
+
+<p>Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Следует учесть, что реализация этой функциональности выполняется путём изменения работы функции <code>zencad.show()</code> (То есть, есть разница в запуске скрипта из терминала, или из программы визуализатора).  </p>
+
+<h2>Встроенный текстовый редактор</h2>
+
+<p>Визуализатор имеет встроенный виджет текстового редактора, который может быть использован для быстрого редактирования или проведения экспериментов. Отображение редактора <code>View/'Hide editor'</code></p>
+
+<h2>Встроенная консоль</h2>
+
+<p>ZenCad также ретранслирует вывод терминала на встроенную консоль. Отображение консоли <code>View/'Hide console'</code>.
+Это может использоваться в случае, когда вывод основного терминала недоступен.</p>
+
+<h2>Маркеры, определение координат</h2>
+
+<p>Для установки маркеров следует используются клавиши <code>Q(F1)</code>, <code>W(F2)</code>. После установки координаты маркера выводятся в соответствующем поле. Если установлены оба маркера, дистанция между ними отображается в поле Distance.</p>
+
+<h2>3D навигация</h2>
+
+<p>Вращение: MouseLeftClick/Alt + MouseMove <br />
+Смещение: MouseRightClick/Shift + MouseMove <br />
+Масштабирование: PgUp/PgDown/MouseWheel  </p>
+
+<p>Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - <code>Navigation/'Axionometric view'</code>, <code>Navigation/'Free rotation view'</code></p>
 </article>
     </div>
     <div id="footer"></div>

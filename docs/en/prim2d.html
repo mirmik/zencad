@@ -20,49 +20,62 @@
     </div>
     <div id="content">
       <nav class="nav"><ul>
-<li>Основные концепции
-<ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="scriptcad.html">Script CAD</a></li>
-<li><a href="caching.html">Кэширование</a></li>
-<li><a href="helloworld.html">Разбор HelloWorld</a></li>
-</ul></li>
-<li>Базовые примитивы и операции
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Создание линий</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li><a href="lincycle.html">Линии и циклы</a>  </li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
-<li><a href="ops3d.html">Ссылочная геометрия</a>  </li>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
 </ul></li>
-<li>Преобразования
+<li>Basic primitives and utilities
 <ul>
-<li><a href="trans0.html">Синтаксис преобразований</a>  </li>
-<li><a href="trans1.html">Комбинации преобразований</a>  </li>
-<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li>Графический интерфейс
+<li>Transformations, geometric operations
 <ul>
-<li><a href="gui.html">Вводные моменты</a></li>
-<li><a href="navigation.html">Навигация</a></li>
-<li><a href="markers.html">Маркеры</a></li>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
 </ul></li>
-<li><a href="animate.html">Анимация</a></li>
-<li>Библиотеки</li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1>Плоские примитивы</h1>
+      <article class="article">English version in preparation. COMMING SOON.<h1>Плоские примитивы.</h1>
 
 <p>В этом разделе приводятся плоские примитивы. Обычно они используются совместно с 3д операциями для построения тел со сложной геометрией.</p>
 
 <hr />
 
-<h2>Rectangle</h2>
+<h2>Прямоугольник.</h2>
 
-<p>Плоский примитив - прямоугольник. Задаётся двумя сторонами. Если задать только одну сторону, будет построен квадрат. Установка опции <code>center</code> совмещает геометрический центр тела с началом координат. При установке опции <code>wire</code> вместо залитой грани будет сгенерирован каркас.</p>
+<p>Плоский примитив - прямоугольник. Задаётся двумя сторонами. Допустимо не указывать вторую сторону, что будет соответствовать построению квадрата. Установка опции <em>center</em> совмещает геометрический центр тела с началом координат. При установке опции <em>wire</em> вместо залитой грани будет сгенерирован цикл прямоугольника.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">rectangle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 <span class="n">rectangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
@@ -76,10 +89,12 @@
 
 <hr />
 
-<h2>Circle</h2>
+<h2>Окружность/Круг.</h2>
 
-<p>Плоский примитив - окружность/круг. Задаётся радиусом. Также можно построить сектор, указав угол или пару углов.
-При установке опции <code>wire</code> вместо залитой грани будет сгенерирован каркас.</p>
+<p>Окружность задаётся радиусом <em>r</em>. Установка необязательной опции <em>angle</em> позволяет сгенерировать сектор круга / дугу окружности.
+При установке опции <em>wire</em> вместо залитой грани круга будет сгенерирована каркасная окружность.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
@@ -93,10 +108,12 @@
 
 <hr />
 
-<h2>Ellipse</h2>
+<h2>Элипс.</h2>
 
-<p>Плоский примитив - эллипс. Задаётся двумя радиусами, причем <code>r1</code> должен быть больше <code>r2</code>. Также можно построить сектор, указав угол или пару углов.
-При установке опции <code>wire</code> вместо залитой грани будет сгенерирован каркас.</p>
+<p>Плоский примитив - эллипс. Задаётся двумя радиусами, причем <em>r1</em> должен быть больше <em>r2</em>. Также можно построить сектор, указав угол или пару углов как необязательный параметр <em>angle</em>.
+При установке опции <em>wire</em> вместо залитой грани будет сгенерирован каркас.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 <span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
@@ -110,14 +127,15 @@
 
 <hr />
 
-<h2>Polygon</h2>
+<h2>Полигон.</h2>
 
 <p>Плоский примитив - полигон. Строится по точкам вершин.
-При установке опции <code>wire</code> вместо залитой грани будет сгенерирован каркас.
-<code>pnts</code> - массив точек.</p>
+При установке опции <em>wire</em> вместо залитой грани будет сгенерирован каркас (что аналогично закрытому полисегменту.).
+<em>pnts</em> - массив точек вершин.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">polygon</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="n">pnts</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">polygon</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)],</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/polygon0.png" alt="" />
@@ -125,10 +143,12 @@
 
 <hr />
 
-<h2>Ngon</h2>
+<h2>Правильный многоугольник.</h2>
 
 <p>Плоский примитив - правильный многоугольник. Задаются радиус и количество вершин.
-При установке опции <code>wire</code> вместо залитой грани будет сгенерирован каркас.</p>
+При установке опции <em>wire</em> вместо залитой грани будет сгенерирован каркас.</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">vertexCount</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
@@ -142,15 +162,80 @@
 
 <hr />
 
-<h2>Textshape</h2>
+<h2>Textshape.</h2>
 
 <p>Плоский примитив - текст. Создаёт грань на основе строки и шрифта. Шрифт указывается в виде пути на файл формата ttf (FreeType).</p>
+
+<p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">textString</span><span class="p">,</span> <span class="n">fontpath</span><span class="o">=</span><span class="n">pathToFont</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fontSize</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/textshape0.png" alt="" />
 <img src="../images/generic/textshape1.png" alt="" />  </p>
+
+<hr />
+
+<h2>Бесконечная плоскость.</h2>
+
+<p>Бесконечная плоскость - специальный геометрический объект, который может использоваться в некоторых операцих над другими объектами.
+Бесконечная плоскость не может быть отображена непосредственно.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">infplane</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Пример (Построение конических сечений):</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/infplane01.png" alt="" />
+<img src="../images/generic/infplane0.png" alt="" /> <br />
+<img src="../images/generic/infplane1.png" alt="" />
+<img src="../images/generic/infplane2.png" alt="" />  </p>
+
+<hr />
+
+<h2>Fill</h2>
+
+<p>Данная операция применяется к плоской замкнутой линии <em>wire</em> и превращает ее в грань.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
+<span class="n">wire</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span> <span class="c1">#alternate</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">wire</span> <span class="o">=</span> <span class="n">sew</span><span class="p">([</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
+    <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+  <th>До</th>
+  <th>После</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/fill0.png" alt="" /></td>
+  <td><img src="../images/generic/fill1.png" alt="" /></td>
+</tr>
+</tbody>
+</table>
 </article>
     </div>
     <div id="footer"></div>

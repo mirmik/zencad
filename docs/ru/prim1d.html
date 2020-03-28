@@ -261,13 +261,11 @@
 
 <h3>Построение отрезка:</h3>
 
-<p>Строит отрезок до точки <em>pnt</em>. <em>сlose</em> строит отрезок до точки старта.</p>
+<p>Строит отрезок до точки <em>pnt</em>. </p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">wb</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">wb</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-
-<span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
 
 <div class="codehilite"><pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># рисуем квадрат</span>
@@ -290,6 +288,13 @@
 Установка опции <em>approx</em> вычисляет <em>curtang</em> в значение направления кривой в конце прошлого участка.  </p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">curtang</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">approx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Замыкание</h2>
+
+<p><em>сlose</em> строит участок кривой до точки старта. <em>approx_a</em>, <em>approx_b</em> позволяют сделать интерполяцию в точках замыкания.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">approx_a</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">approx_b</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 </article>
     </div>
