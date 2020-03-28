@@ -1,5 +1,6 @@
 ## 0.32.0
 	Модуль platonic интегрирован в prim3d
+	Add wire_builder
 
 ## 0.31.0
 	Add triangulate, convex_hell

@@ -56,6 +56,9 @@ def vector3(*arg):
     if isinstance(args[0], pyservoce.vector3):
         return args[0]
 
+    if isinstance(args[0], pyservoce.point3):
+        return pyservoce.vector3(args[0].x, args[0].y, args[0].z)
+
     return pyservoce.vector3(*args)
 
 
@@ -129,3 +132,24 @@ def set_process_name(name):
     #if sys.platform != "win32":
     #    import setproctitle
     #    setproctitle.setproctitle(name)  
+
+    
+
+def restore_shapetype(shp):
+    if len(shp.solids()) == 1:
+        return shp.solids()[0]
+
+    if len(shp.shells()) == 1:
+        return shp.shells()[0]
+
+    elif len(shp.faces()) == 1:
+        return shp.faces()[0]
+
+    elif len(shp.wires()) == 1:
+        return shp.wires()[0]
+
+    elif len(shp.edges()) == 1:
+        return shp.edges()[0]
+
+    else:
+        raise Exception("type is not supported")

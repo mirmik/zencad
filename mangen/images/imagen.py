@@ -1163,3 +1163,10 @@ doscreen(
     triedron=False,
     pitch=math.pi/2
 )
+
+
+doscreen(
+    model=wire_builder(defrel=True).l(10,0).l(0,10).l(-10,0).close().doit(),
+    path="wb_segment0.png",
+    size=wsize
+)

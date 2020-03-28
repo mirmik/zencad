@@ -129,26 +129,6 @@ def to_vector(arg):
 def to_point(arg):
     return zencad.util.point3(arg)
 
-
-def restore_shapetype(shp):
-    if len(shp.solids()) == 1:
-        return shp.solids()[0]
-
-    if len(shp.shells()) == 1:
-        return shp.shells()[0]
-
-    elif len(shp.faces()) == 1:
-        return shp.faces()[0]
-
-    elif len(shp.wires()) == 1:
-        return shp.wires()[0]
-
-    elif len(shp.edges()) == 1:
-        return shp.edges()[0]
-
-    else:
-        raise Exception("type is not supported")
-
 def wire_edges_orientation(edges):
     pairs = [ e.endpoints() for e in edges ]
 
@@ -168,3 +148,5 @@ def wire_edges_orientation(edges):
             reverse[i+1] = True
 
     return zip(edges, reverse)
+
+from zencad.geom.wire_builder import wire_builder
