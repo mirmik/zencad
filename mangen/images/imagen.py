@@ -1140,3 +1140,27 @@ doscreen(
     size=wsize,
     yaw=deg(120)
 )
+
+
+crv = circle(r=5, wire=True, angle=deg(270))
+s,f = crv.endpoints()
+doscreen(
+    model=[crv, s, f],
+    path="endpoints0.png",
+    size=wsize,
+    yaw=deg(120),
+    triedron=False
+)
+
+
+crv = circle(r=5, wire=True, angle=deg(270))
+pnts = crv.uniform_points(8, math.pi/4, math.pi)
+
+doscreen(
+    model=pnts + [crv],
+    path="uniform_points0.png",
+    size=wsize,
+    yaw=deg(120),
+    triedron=False,
+    pitch=math.pi/2
+)
