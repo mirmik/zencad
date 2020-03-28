@@ -1,11 +1,11 @@
 # Скриптовые CAD системы.
 
-Script CAD stand apart from the generally accepted interactive CAD. If in interactive CAD you create a model with the mouse and a set of tools on the left or on the panel, then in script CAD you write the program on which your model is built. Thus, the generated model defaults to good parameterizability and regularization. If, when changing basic geometry parameters in interactive CAD, you may need to redraw the entire model, in script CAD you just need to replace a couple of constants.
+Скриптовые CAD стоят особняком от общепринятых интерактивных CAD. Если в интерактивном CAD вы создаёте модель при помощи мыши и набора инструментов на панели слева или сверху, то в скриптовом CAD вы пишете программу, по которой строится ваша модель. Таким образом генерируемая модель по умолчанию получает хорошую параметрируемость и регуляризацию. Если при смене базовых параметров геометрии в интерактивном CAD вам может потребоваться перекроить всю модель, в скриптовом CAD вам потребуется просто заменить пару констант. 
 
-On the other hand, scripted CAD may not be very user friendly. You need to have a certain skill to read the model in the form of program code. Nevertheless, the success of OpenScad shows the need for humanity in tools of this type.
+С другой стороны скриптовый CAD может быть не очень дружелюбен к пользователю. Нужно иметь определённый навык для чтения модели в виде програмного кода. Тем не менее, успех OpenScad показывает необходимость человечества в инструментах такого типа.
 
-Script CAD is good at writing machine parts and other products with precisely aligned and well-grounded surfaces. But an attempt to draw on it the Venus de Milo will not lead to anything good. For artistic purposes there is another class of systems.
+Скриптовый CAD хорош в написании деталей машин и прочих изделиях с точно выверенными и обоснованными поверхностями. А вот попытка нарисовать на нем Венеру Милосскую ни к чему хорошему не приведет. Для художественных целей существует другой класс систем.
 
-Strictly speaking, although the “CAD system for righteous zen programmers” is written in the ZenCad motto, ZenCad by design is more a library with cad functionality than a complete CAD system. ZenCad was designed as a tool that can integrate with the libraries of the python ecosystem in order to solve problems of building analytic surfaces, visualizing data from a semi-natural modeling, and more.
+Строго говоря, хотя в девизе zencad написано "CAD system for righteous programmers", zencad by design является в большей степени библиотекой с функциональность cad, нежели законченной CAD системой. zencad проектировался как инструмент, который может интегрироваться с библиотеками экосистемы python с целью решения задач построения аналитических поверхностей, визуализации данных полунатурного моделирования и прочих задач, предполагающих интеграцию с зоопарком библиотек экосистемы python.
 
 ![](../images/car.png)

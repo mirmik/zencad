@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZenCad</title>
+    <link href="../main.css" rel="stylesheet">
+  </head>
+  <body>
+    <meta charset="utf-8">
+    <div class="header" id="header">
+      <h1>
+        <a class="header_ref" href="index.html">ZenCad</a>
+      </h1>
+      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
+        <span class="icon"></span>
+      </a>
+      <p>
+        <a href="../ru/geomcore.html">Ru</a>
+        <a href="../en/geomcore.html">En</a>
+      </p>
+    </div>
+    <div id="content">
+      <nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+</ul>
+</nav>
+      <article class="article">English version in preparation. COMMING SOON.<h1>Введение в BREP представление геометрических моделей.</h1>
+
+<p>Библиотека ZenCad основана на функциональных возможностях и объектной структуре геометрического ядра OpenCascade, использующего для работы с геометрическими моделями BREP (boundary representation/граничное представление).</p>
+
+<p>Для более полного понимания работы библиотеки и использования продвинутых функций требуется хотя бы поверхностное понимание BREP и топологической структуры геометрических объектов в используемом геометрическом ядре.</p>
+
+<hr />
+
+<h2>BREP представление.</h2>
+
+<p>Граничное представление (ан. Boundary representation) есть способ представления тел через описание их границ.</p>
+
+<p>Объект в граничном представлении задаётся топологически (с помощью набора ссылок на ограничивающие его объекты) и геометрически (с помощью порождающего его форму геометрического правила). Ограничивающие объекты в свою очередь задаются исходя из тех же соображений.</p>
+
+<p>Так, например, куб является объёмным телом, порождённым внутренним пространством оболочки, образованной 6-ю гранями. Каждая грань геометрически задана уравнением плоскости и ограничена 4-мя объектами рёбер. Каждое ребро геометрически задано уравнением прямой и ограничено двумя вершинами.</p>
+
+<p>В разных библиотеках, использующих BREP представление, разделение на классы объектов может выполняться с определённой спецификой, но общая идея будет неизменной. ZenCad использует систему классов ядра OpenCascade.</p>
+
+<hr />
+
+<h2>Классы геометрических объектов.</h2>
+
+<table>
+<thead>
+<tr>
+  <th>ZenCad</th>
+  <th>OpenCascade</th>
+  <th>Составной</th>
+  <th>Мерность</th>
+  <th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Shape</td>
+  <td>TopoDS_Shape</td>
+  <td>неопр.</td>
+  <td>неопр.</td>
+  <td>Абстрактный геометрический объект</td>
+</tr>
+<tr>
+  <td>Vertex*</td>
+  <td>TopoDS_Vertex</td>
+  <td>нет</td>
+  <td>0</td>
+  <td>Вершина</td>
+</tr>
+<tr>
+  <td>Edge</td>
+  <td>TopoDS_Edge</td>
+  <td>нет</td>
+  <td>1</td>
+  <td>Ребро</td>
+</tr>
+<tr>
+  <td>Wire</td>
+  <td>TopoDS_Wire</td>
+  <td>да</td>
+  <td>1</td>
+  <td>Сложное ребро</td>
+</tr>
+<tr>
+  <td>Face</td>
+  <td>TopoDS_Face</td>
+  <td>нет</td>
+  <td>2</td>
+  <td>Грань</td>
+</tr>
+<tr>
+  <td>Shell</td>
+  <td>TopoDS_Shell</td>
+  <td>да</td>
+  <td>2</td>
+  <td>Оболочка</td>
+</tr>
+<tr>
+  <td>Solid</td>
+  <td>TopoDS_Solid</td>
+  <td>нет</td>
+  <td>3</td>
+  <td>Твёрдое тело</td>
+</tr>
+<tr>
+  <td>CompSolid</td>
+  <td>TopoDS_CompSolid</td>
+  <td>да</td>
+  <td>3</td>
+  <td>Множество твёрдых тел</td>
+</tr>
+<tr>
+  <td>Compound</td>
+  <td>TopoDS_Compound</td>
+  <td>да</td>
+  <td>неопр.</td>
+  <td>Составной объект</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="spoiler">
+  <ul>
+  <li>В zencad практически всегда вместо Vertex используется эквивалентный объект точки point3. </li>
+  </ul>
+</blockquote>
+
+<hr />
+
+<h2>Более подробно о ядре.</h2>
+
+<p>Ядро OpenCascade довольно обширно, имеет бесчисленное количество инструментов и потому врядли возможно сколь-нибудь передать его суть в рамках этой маленькой справки.</p>
+
+<p>За подробной информацией о геометрическом ядре OpenCascade следует обратиться к документации: <br />
+<a href="https://www.opencascade.com/doc/occt-7.3.0/overview/html/index.html">Technology Overview</a> <br />
+<a href="https://www.opencascade.com/doc/occt-7.3.0/refman/html/index.html">Reference Manual</a></p>
+</article>
+    </div>
+    <div id="footer"></div>
+  </body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZenCad</title>
+    <link href="../main.css" rel="stylesheet">
+  </head>
+  <body>
+    <meta charset="utf-8">
+    <div class="header" id="header">
+      <h1>
+        <a class="header_ref" href="index.html">ZenCad</a>
+      </h1>
+      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
+        <span class="icon"></span>
+      </a>
+      <p>
+        <a href="../ru/assemble.html">Ru</a>
+        <a href="../en/assemble.html">En</a>
+      </p>
+    </div>
+    <div id="content">
+      <nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+</ul>
+</nav>
+      <article class="article">English version in preparation. COMMING SOON.<h1>Иерархические сборки.</h1>
+
+<p>При отображении сложной или анимированной сцены необъходимо работать с большим количеством связанных интерактивных объектов, перемещающихся друг относительно друга по определённым законам.</p>
+
+<p>Для облегчения реализации такого поведения в zencad представлена библиотека zencad.assemble и её основное средство zencad.assemble.unit.</p>
+
+<hr />
+
+<h2>Сборочный юнит (zencad.assemble.unit).</h2>
+
+<p>Сборочный юнит - это объект, имеющий собственную локальную систему координат, относительно которой позиционируются связанные с этим юнитом интерактивные объекты и другие юниты. Юниты могут создавать структуру дерева, отсчитывая своё положение относительно положения юнита-предка (unit.parent). Если юнит не имеет предка, его положение отсчитывается от глобальной системы координат.</p>
+
+<p>Юнит содержит имеет два объекта координатного преобразования - location и global_location. </p>
+
+<ul>
+<li>location - задаёт положение юнита относительно положения юнита предка. location может быть обновлён или непосредственно, или с помощью метода relocate.</li>
+<li>global<em>location - это положение юнита относительно глобальной системы координат. global</em>location используется при отрисовке объекта. global<em>location строится на основе дерева unit.location и может быть обновлён с помощью метода location</em>update, relocate и, с помощью других операций.</li>
+</ul>
+
+<hr />
+
+<h2>Добавление объекта.</h2>
+
+<p>Создаёт и связывает с юнитом интерактивный объект на основе переданного геометрического объекта <em>obj</em>.</p>
+
+<p>Если в качестве параметра передан интерактивный объект, юнит берёт его под управление. (Примечание: юнит управляет расположением интерактивного объекта).</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<pre><code>m = box(10)
+i = interactive_object(box(10).right(20))
+u.add(m)
+u.add(i)
+</code></pre>
+
+<h2>Добавление юнита-потомка.</h2>
+
+<p>Устанавливает объект <em>u</em> предком для объекта <em>child</em>.
+Теперь положение объектов в юните <em>child</em> (и его потомках) будет расчитываться с учётом положения объекта <em>u</em>.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">***</span>
+</code></pre></div>
+
+<h2>Обновить глобальное расположение.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Обновить глобальное расположение объекта согласно данным о его текущем положении и объекту глобального положения предка. 
+view - если объект отображен, перерисовать его, исходя из нового положения.
+deep - применить рекурсивно всех потомков объекта.</p>
+
+<h2>Изменить локальное положение.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Изменить текущее положение на объект location и применить процедуру location_update с опциями deep, view.</p>
+
+<h2>Отобразить на сцене.</h2>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">bind_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+</code></pre></div>
+
+<p>Добавить юнит в сцену scene. Все объекты, цвета которых не установлены, будут окрашены в default_color. Если deep, рекурсивно добавить в сцену все зависимые юниты.</p>
+</article>
+    </div>
+    <div id="footer"></div>
+  </body>
+</html>
