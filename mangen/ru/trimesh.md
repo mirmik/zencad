@@ -29,9 +29,9 @@ print("first_five_triangles:", triangles[:5])
 #first_five_triangles: [[237, 227, 200], [486, 482, 470], [237, 200, 211], [487, 472, 477], [238, 201, 212]]
 ```
 
---- 
+-----------------------------
 ## Полигедрон
-Объёмное тело, состоящее из полских граней, заданное точками вершин _pnts_ и массивом кортежей индексов точек, задающих грани.
+Объёмное тело, состоящее из плоских граней, заданное точками вершин _pnts_ и массивом кортежей индексов точек, задающих грани.
 
 Сигнатура:
 ```python
@@ -46,3 +46,36 @@ disp(polyhedron(nodes, triangles))
 ```
 ![](../images/generic/polyhedron0.png)
 
+----------------------------------------------
+## Выпуклая оболочка
+Построение выпуклой оболочки множества точек.
+Используется процедура scipy.spatial.ConvexHull
+
+_convex_hull_ вычисляет массив индексов точек полигонов выпуклой оболочки.
+_convex_hull_shape_ строит выпуклую оболочку, используя процедуру _polyhedron_.
+
+Опции:
+_incremental_ и _qhull_options_ являются опциями scipy.spatial.ConvexHull (см. документацию scipy).
+_shell_ - создать оболочку вместо тела.
+
+Сигнатура:
+```python
+convex_hull(pnts, incremental=False, qhull_options=None)
+convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None)
+```
+
+Пример:
+```python
+pnts = points([
+	(0,0,0),
+	(1,0,0),
+	(1,1,0),
+	(0,1,0),
+	(0.5,0.5,1),
+])
+
+print(convex_hull(pnts))
+disp(convex_hull_shape(pnts))
+```
+
+![](../images/generic/convex_hull0.png)

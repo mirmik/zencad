@@ -1,7 +1,8 @@
 ## 0.31.0
-	Add triangulate function
+	Add triangulate, convex_hell
 	Add tube function to manual
-	Svg convert tool
+
+	Experimental: Add svg tool
 
 ## 0.30.0
 	Add array producing option for multitransforms.

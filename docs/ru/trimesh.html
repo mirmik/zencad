@@ -108,7 +108,7 @@
 
 <h2>Полигедрон</h2>
 
-<p>Объёмное тело, состоящее из полских граней, заданное точками вершин <em>pnts</em> и массивом кортежей индексов точек, задающих грани.</p>
+<p>Объёмное тело, состоящее из плоских граней, заданное точками вершин <em>pnts</em> и массивом кортежей индексов точек, задающих грани.</p>
 
 <p>Сигнатура:</p>
 
@@ -123,6 +123,42 @@
 </code></pre></div>
 
 <p><img src="../images/generic/polyhedron0.png" alt="" /></p>
+
+<hr />
+
+<h2>Выпуклая оболочка</h2>
+
+<p>Построение выпуклой оболочки множества точек.
+Используется процедура scipy.spatial.ConvexHull</p>
+
+<p><em>convex</em>hull_ вычисляет массив индексов точек полигонов выпуклой оболочки.
+<em>convex</em>hull<em>shape</em> строит выпуклую оболочку, используя процедуру <em>polyhedron</em>.</p>
+
+<p>Опции:
+<em>incremental</em> и <em>qhull</em>options_ являются опциями scipy.spatial.ConvexHull (см. документацию scipy).
+<em>shell</em> - создать оболочку вместо тела.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">pnts</span> <span class="o">=</span> <span class="n">points</span><span class="p">([</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+</code></pre></div>
+
+<p><img src="../images/generic/convex_hull0.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>
