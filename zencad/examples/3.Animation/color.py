@@ -7,9 +7,7 @@ last update: 13.10.2019
 from zencad import *
 import random
 
-import zencad.platonic
-
-s = zencad.platonic.icosahedron(10)
+s = zencad.icosahedron(10)
 #s = zencad.platonic.dodecahedron(10)
 #s = zencad.platonic.icosahedron(10).fillet(2)
 

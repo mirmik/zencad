@@ -33,3 +33,9 @@ def from_brep(path):
     obj = f(path)
     evalcache.nocache(obj)
     return obj
+
+
+
+from zencad.convert.svg import shape_to_svg_string
+from zencad.convert.svg import shape_to_svg
+from zencad.convert.svg import svg_to_shape

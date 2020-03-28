@@ -31,7 +31,3 @@
 * [Графический интерфейс](gui.html)
 * [Экспорт/Импорт](expimp.html)
 * [Внутренняя кухня ZenCad](internal.html)
-* Библиотеки
-	* [Платоновы тела](platonic.html)
-	* [kinematic](kinematic.html)
-	* [nut](nut.html)
