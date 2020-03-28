@@ -6,7 +6,6 @@ import os
 
 import zencad.visual
 import zencad.internal_models
-import zencad.platonic
 import pyservoce
 
 # lazy.diag = True
@@ -925,31 +924,31 @@ doscreen(
 )
 
 doscreen(
-    model=zencad.platonic.platonic(4,10),
+    model=zencad.platonic(4,10),
     path="platonic0.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic.platonic(6,10),
+    model=zencad.platonic(6,10),
     path="platonic1.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic.platonic(8,10),
+    model=zencad.platonic(8,10),
     path="platonic2.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic.platonic(12,10),
+    model=zencad.platonic(12,10),
     path="platonic3.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic.platonic(20,10),
+    model=zencad.platonic(20,10),
     path="platonic4.png",
     size=wsize
 )
@@ -1163,4 +1162,11 @@ doscreen(
     yaw=deg(120),
     triedron=False,
     pitch=math.pi/2
+)
+
+
+doscreen(
+    model=wire_builder(defrel=True).l(10,0).l(0,10).l(-10,0).close().doit(),
+    path="wb_segment0.png",
+    size=wsize
 )

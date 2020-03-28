@@ -4,6 +4,9 @@ import svgwrite
 import evalcache
 import math
 
+import xml.etree.ElementTree as ET
+import zencad.util
+
 def color_convert(zclr):
 	r,g,b,a = zclr.r, zclr.g, zclr.b, zclr.a
 	r,g,b,a = ( x * 100 for x in (r,g,b,a))
@@ -115,7 +118,7 @@ class SvgWriter:
 
 
 	def push_shape(self, shp, color):
-		shp = zencad.restore_shapetype(shp)
+		shp = zencad.util.restore_shapetype(shp)
 
 		if shp.shapetype() == "face":
 			fill_opacity = 1
@@ -135,7 +138,17 @@ class SvgWriter:
 
 
 		self.dwg.add(self.path)
-	
+
+
+
+class SvgReader:
+	def __init__(self):
+		pass
+
+	def read_string(self, str):
+		self.root = ET.fromstring(str)
+		print(self.root.tag)
+		print(self.root.attrib)
 
 
 def shape_to_svg(fpath, shape, color, mapping):
@@ -160,6 +173,13 @@ def shape_to_svg_string(shape, color, mapping):
 	writer.push_shape(shape, color=color)
 
 	return writer.dwg.tostring()
+
+
+
+def svg_to_shape(svg):
+	reader = SvgReader()
+	reader.read_string(svg)
+
 
 
 if __name__ == "__main__":
