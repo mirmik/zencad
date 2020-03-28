@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZenCad</title>
+    <link href="../main.css" rel="stylesheet">
+  </head>
+  <body>
+    <meta charset="utf-8">
+    <div class="header" id="header">
+      <h1>
+        <a class="header_ref" href="index.html">ZenCad</a>
+      </h1>
+      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
+        <span class="icon"></span>
+      </a>
+      <p>
+        <a href="../ru/reflect.html">Ru</a>
+        <a href="../en/reflect.html">En</a>
+      </p>
+    </div>
+    <div id="content">
+      <nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a>  </li>
+<li><a href="prim2d.html">Plane primitives</a>  </li>
+<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+</ul>
+</nav>
+      <article class="article">English version in preparation. COMMING SOON.<h1>Рефлексия</h1>
+
+<p>Сложные геометрические объекты состоят из более простых. Данная группа функций и методов позволяет расскладывать сложные объекты на образующие их компоненты.</p>
+
+<p>Для работы с эими фунциями рекомендуется изучить топологическое устройство brep моделей в ядре <em>OpenCascade</em>. (Начать ознаклмление можно с раздела <a href="geomcore.html">Введение в BREP представление геометрических моделей</a>)</p>
+
+<hr />
+
+<h2>Массивы базовых объектов</h2>
+
+<p>Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. </p>
+
+<p>Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция <em>filter</em> позволяет отфильтровать выборку по необходимому условию.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
+</code></pre></div>
+
+<hr />
+
+<h2>Взятие базового объекта по методу ближайшей точки</h2>
+
+<p>Иногда требуется извлечь из сложного объекта конкретный базовый объект. 
+В этом случае можно использовать метод базовой точки.  </p>
+
+<p>Следующие функции реализуют метод ближайшей точке и возвращают ближайший к <em>pnt</em> базовый объект соответствующего типа, принадлежащий сложному объекту <em>shp</em>.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Edge</span>
+<span class="n">near_face</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Face</span>
+<span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; point3</span>
+</code></pre></div>
+</article>
+    </div>
+    <div id="footer"></div>
+  </body>
+</html>
