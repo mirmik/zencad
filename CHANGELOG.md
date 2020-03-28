@@ -1,3 +1,9 @@
+## 0.31.0
+	Add triangulate, convex_hell
+	Add tube function to manual
+
+	Experimental: Add svg tool
+
 ## 0.30.0
 	Add array producing option for multitransforms.
 	Improve pipe_shell instrument. Add pipe_shell for arrays.

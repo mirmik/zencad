@@ -21,7 +21,7 @@ from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
 from zencad.util import deg, angle_pair, points, vectors
-from zencad.convert import *
+from zencad.convert.api import *
 import types
 
 moduledir = os.path.dirname(__file__)
@@ -89,6 +89,11 @@ def unify(shp):
     return pyservoce.unify(shp)
 
 
+@lazy
+def triangulate(shp, defl):
+    return pyservoce.triangulation(shp, defl)
+
+
 zencad.color = pyservoce.color
 
 zencad.color.white =     zencad.color(1,1,1)
@@ -121,3 +126,43 @@ def to_vector(arg):
 
 def to_point(arg):
     return zencad.util.point3(arg)
+
+
+def restore_shapetype(shp):
+    if len(shp.solids()) == 1:
+        return shp.solids()[0]
+
+    if len(shp.shells()) == 1:
+        return shp.shells()[0]
+
+    elif len(shp.faces()) == 1:
+        return shp.faces()[0]
+
+    elif len(shp.wires()) == 1:
+        return shp.wires()[0]
+
+    elif len(shp.edges()) == 1:
+        return shp.edges()[0]
+
+    else:
+        raise Exception("type is not supported")
+
+def wire_edges_orientation(edges):
+    pairs = [ e.endpoints() for e in edges ]
+
+    reverse = [False] * len(pairs) 
+    for i in range(len(edges) - 1):
+        if pairs[i][0].early(pairs[i+1][0]):
+            reverse[i] = True
+            reverse[i+1] = False
+        elif pairs[i][0].early(pairs[i+1][1]):
+            reverse[i] = True
+            reverse[i+1] = True
+        elif pairs[i][1].early(pairs[i+1][0]):
+            reverse[i] = False
+            reverse[i+1] = False
+        elif pairs[i][1].early(pairs[i+1][1]):
+            reverse[i] = False
+            reverse[i+1] = True
+
+    return zip(edges, reverse)

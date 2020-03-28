@@ -1,6 +1,6 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
-from zencad.util import angle_pair, deg
+from zencad.util import angle_pair, deg, points
 
 @lazy.lazy(cls=nocached_shape_generator)
 def nullshape():
@@ -129,6 +129,7 @@ def halfspace():
 
 @lazy.lazy(cls=nocached_shape_generator)
 def polyhedron(pnts, faces, shell=False):
+    pnts = points(pnts)
     shl = pyservoce.polyhedron_shell(pnts, faces)
 
     if shell:
@@ -139,3 +140,20 @@ def polyhedron(pnts, faces, shell=False):
 @lazy.lazy(cls=nocached_shape_generator)
 def make_solid(*args, **kwargs):
     return pyservoce.make_solid(*args, **kwargs)
+
+@lazy.lazy
+def convex_hull(pnts, incremental=False, qhull_options=None):
+    from scipy.spatial import ConvexHull
+
+    faces = ConvexHull(pnts, incremental=False, qhull_options=None).simplices
+
+    return faces
+
+@lazy.lazy(cls=shape_generator)
+def convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None):
+    from scipy.spatial import ConvexHull
+
+    faces = ConvexHull(pnts, incremental, qhull_options).simplices
+    m = polyhedron(pnts, faces, shell=shell)
+
+    return m

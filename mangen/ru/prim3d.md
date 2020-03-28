@@ -122,12 +122,3 @@ sphere(r=10) ^ halfspace().rotateX(deg(150))
 ```
 ![](../images/generic/halfspace0.png)
 ![](../images/generic/halfspace1.png)  
-
---- 
-## Полигедрон
-Объёмное тело, состоящее из полских граней, заданное точками вершин _pnts_ и массивом кортежей индексов точек, задающих грани.
-
-Сигнатура:
-```python
-polyhedron(pnts, faces, shell=False)
-```

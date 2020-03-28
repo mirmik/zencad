@@ -241,7 +241,7 @@ class MainWindowActionsMixin:
 		raise NotImplementedError
 
 	def fullScreen(self):
-		if self.presentation_mode: return
+		#if self.presentation_mode: return
 		if not self.fscreen_mode:
 			self.showFullScreen()
 			self.fscreen_mode = True
@@ -281,17 +281,7 @@ class MainWindowActionsMixin:
 			self.mHideEditor.setChecked(True)
 
 	def displayMode(self):
-		if self.texteditor.isHidden() and self.console.isHidden():
-			self.hideEditor(False)
-			self.hideConsole(False)
-			self.mHideConsole.setChecked(False)
-			self.mHideEditor.setChecked(False)			
-
-		else:
-			self.hideEditor(True)
-			self.hideConsole(True)
-			self.mHideConsole.setChecked(True)
-			self.mHideEditor.setChecked(True)
+		self.display_mode_enable(not (self.texteditor.isHidden() or self.console.isHidden()))		
 
 	def coordsDifferenceMode(self, en):
 		self.info_widget.coords_difference_mode = en

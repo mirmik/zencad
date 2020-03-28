@@ -43,6 +43,7 @@
 <li><a href="fillet.html">Топологически зависимые преобразования</a>  </li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
+<li><a href="trimesh.html">Триангуляция и меш</a></li>
 <li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
@@ -121,6 +122,36 @@
 <img src="../images/generic/extrude1.png" alt="" /> <br />
 <img src="../images/generic/extrude2.png" alt="" />
 <img src="../images/generic/extrude3.png" alt="" /></p>
+
+<hr />
+
+<h2>Труба.</h2>
+
+<p>Строит на основе траектории <em>spine</em> и профиля круглого сечения радиуса <em>r</em>.
+<em>maxdegree</em> максимальная степень bspline поверхности.
+<em>maxsegm</em> - ?
+<em>bounds</em> - при установке этой опции операция возвращает кортеж из резултьата, а также профилей в первой и последней позициях.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">tube</span><span class="p">(</span><span class="n">spine</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">cont</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">maxsegm</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+</code></pre></div>
+
+<p>Примеры:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">POINTS</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span>
+    <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="p">]</span>
+<span class="n">spine</span> <span class="o">=</span> <span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">POINTS</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">tube</span><span class="p">(</span><span class="n">spine</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> 
+
+<span class="n">POINTS</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span> <span class="p">]</span>
+<span class="n">TANGS</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
+<span class="n">spine</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">POINTS</span><span class="p">,</span> <span class="n">TANGS</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tube</span><span class="p">(</span><span class="n">spine</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/tube0.png" alt="" />
+<img src="../images/generic/tube1.png" alt="" /></p>
 
 <hr />
 
