@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import svgwrite
+try:
+	import svgwrite
+except:
+	pass
+
 import evalcache
 import math
 
