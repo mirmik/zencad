@@ -31,8 +31,8 @@ class Settings():
 		},
 		"memory" : {
 			"recents" : [],
-			"hsplitter_position": None,
-			"vsplitter_position": None,
+			"hsplitter_position": (300,500),
+			"vsplitter_position": (500,300),
 			"console_hidden": False,
 			"texteditor_hidden": False,
 			"wsize": None,
@@ -122,6 +122,10 @@ class Settings():
 
 	@classmethod
 	def get_recent(self):
+		# Перестраховка.
+		if self.list_of_settings["memory"]["recents"] is None:
+			self.list_of_settings["memory"]["recents"] = []
+
 		self.clear_deleted_recent()
 		return self.list_of_settings["memory"]["recents"]
 
