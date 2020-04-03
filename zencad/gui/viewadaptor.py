@@ -576,6 +576,8 @@ class DisplayWidget(QGLWidget):
 		self.view.redraw()
 
 	def closeEvent(self, ev):
+		self.view.remove()
+		pyservoce.close_display_connection()
 		self.widget_closed.emit()
 
 	def set_location(self, dct):
