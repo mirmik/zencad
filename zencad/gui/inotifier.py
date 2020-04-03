@@ -29,6 +29,9 @@ class InotifyThread(QThread):
 	def stop(self):
 		self.stop_token = True
 
+	def finish(self):
+		self.stop_token = True
+
 	def run(self):
 		while 1:
 			if self.stop_token:

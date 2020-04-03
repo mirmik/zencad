@@ -139,15 +139,15 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	if zencad.gui.application.MAIN_COMMUNICATOR:
 		zencad.gui.application.MAIN_COMMUNICATOR.stop_listen()
 
-	time.sleep(0.05)
-
-	trace("terminate process")
-	procs = psutil.Process().children()	
-	for p in procs:
-		try:
-			p.terminate()
-		except psutil.NoSuchProcess:
-			pass
+#	time.sleep(0.05)
+#
+#	trace("terminate process")
+#	procs = psutil.Process().children()	
+#	for p in procs:
+#		try:
+#			p.terminate()
+#		except psutil.NoSuchProcess:
+#			pass
 
 
 def start_application(tgtpath, debug):

@@ -556,11 +556,17 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		if zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION and self.sleeped_client:
 			trace("send sleeped optimization stopworld")
 			self.sleeped_client.send({"cmd":"stopworld"})
+
+		self.client_communicator.stop_listen()
+		self.sleeped_client.stop_listen()
+		self.notifier.finish()
 		
 		time.sleep(0.05)
 		trace("closeEvent...terminate")
 	
 		procs = psutil.Process().children()	
+		trace(procs)
+
 		for p in procs:
 			try:
 				p.terminate()
