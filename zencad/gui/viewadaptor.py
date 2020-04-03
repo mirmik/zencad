@@ -206,7 +206,7 @@ class DisplayWidget(QGLWidget):
 
 			self.viewer = self.scene.viewer
 			self.scene_max0 = self.scene.bbox().max0()
-			
+
 			if self.view is None:
 				self.view = self.viewer.create_view()
 
@@ -577,6 +577,7 @@ class DisplayWidget(QGLWidget):
 
 	def closeEvent(self, ev):
 		self.view.remove()
+		self.viewer.remove()
 		pyservoce.close_display_connection()
 		self.widget_closed.emit()
 
