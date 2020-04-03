@@ -47,6 +47,9 @@ class wire_builder:
 		return self.segment(*args, **kwargs)
 
 	def close(self, approx_a=False, approx_b=False):
+		if self.current.distance(self.start) < 1e-5:
+			return
+
 		if approx_a is None and approx_b is None: 
 			self.edges.append(segment(self.current, self.start))
 		
@@ -88,4 +91,6 @@ class wire_builder:
 		return self
 
 	def doit(self):
+		if len(self.edges) == 0:
+			raise Exception("WireBuilder: No one edge here.")
 		return sew(self.edges)

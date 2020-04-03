@@ -59,8 +59,6 @@ class SvgWriter:
 		self.push_wire(edge)
 
 	def push_wire(self, wire):
-		print("push_wire")
-		print(wire.edges())
 		if wire.shapetype() == "wire":
 			edges = wire.edges()
 		else:
@@ -72,7 +70,6 @@ class SvgWriter:
 			edges = [( edges[0], False )]
 
 		edges = list(edges)
-		print(edges)
 
 		strt = edges[0][0].endpoints()[1 if edges[0][1] else 0]
 		strt = self.proj(strt) 
@@ -115,8 +112,6 @@ class SvgWriter:
 			self.path.push("Z")
 
 	def push_face(self, face):
-		print("push_face")
-
 		for w in face.wires():
 			self.push_wire(w)
 
@@ -149,10 +144,93 @@ class SvgReader:
 	def __init__(self):
 		pass
 
-	def read_string(self, str):
-		self.root = ET.fromstring(str)
+	def read_path_final_wb(self):
+		if self.wb is not None:
+			self.wires.append(self.wb.doit())
+			self.wb = None
+
+	def read_path_M(self):
+		self.read_path_final_wb()
+
+		self.wb = zencad.wire_builder(start=(
+			float(next(self.iter)),
+			float(next(self.iter)))
+		)
+
+	def read_path_A(self):
+		rx=float(next(self.iter))
+		ry=float(next(self.iter)) 
+		x_axis_rotation=float(next(self.iter))
+		large_arc_flag=float(next(self.iter)) 
+		sweep_flag=float(next(self.iter)) 
+		x=float(next(self.iter)) 
+		y=float(next(self.iter))
+
+	def read_path_Z(self):
+		self.wb.close()
+
+	def read_path_L(self):
+		x=float(next(self.iter)) 
+		y=float(next(self.iter))
+
+		self.wb.l(x,y)
+
+	def read_path(self, el):
+		d = el["d"]
+
+		fill_opacity = None
+		fill = None
+
+		if hasattr(el, "fill"): fill = el["fill"]
+		if hasattr(el, "fill_opacity"): fill_opacity = el["fill_opacity"]
+
+		tokens = d.split()
+		print(tokens)
+
+		self.wb = None
+		self.wires = []
+		self.iter = iter(tokens)
+
+		while 1:
+			try:
+				cmd = next(self.iter)
+			except:
+				self.read_path_final_wb()
+				break
+
+			if cmd == "M": self.read_path_M()
+			elif cmd == "A": self.read_path_A()
+			elif cmd == "L": self.read_path_L()
+			elif cmd == "Z": self.read_path_Z()
+			else:
+				raise Exception("svgreader:path:undefined_command", cmd)
+
+		if fill is not None:
+			return zencad.make_shape()
+
+		else:
+			return zencad.union(self.wires)
+
+
+	def read_string(self, svgstring):
+		self.root = ET.fromstring(svgstring)
 		print(self.root.tag)
 		print(self.root.attrib)
+
+		self.shapes = []
+
+		for a in self.root:
+			print()
+			print(a)
+			print("attrib:", a.attrib)
+			print("tag:", a.tag)
+
+			if a.tag[-4:] == "path":
+				shp = self.read_path(a.attrib)
+				self.shapes.append(shp)
+
+		return self.shapes
+
 
 
 def shape_to_svg(fpath, shape, color, mapping):
@@ -180,28 +258,33 @@ def shape_to_svg_string(shape, color, mapping):
 
 
 
-def svg_to_shape(svg):
+def svg_to_shape(path):
 	reader = SvgReader()
-	reader.read_string(svg)
+	return reader.read_string(open(path, "r").read())
 
 
 
 if __name__ == "__main__":
 	import zencad
+	zencad.lazy.fastdo = True
 
-	shp = zencad.unify(
-		zencad.rectangle(10,20) 
-		+ zencad.rectangle(10,20,center=True)
-		+ zencad.circle(r=10)
-		#- zencad.rectangle(2)
-		-zencad.circle(5)
-	)
+	#shp = zencad.unify(
+	#	zencad.rectangle(10,20) 
+	#	+ zencad.rectangle(10,20,center=True)
+	#	+ zencad.circle(r=10)
+	#	#- zencad.rectangle(2)
+	#	-zencad.circle(5)
+	#)
+
+	shp = zencad.rectangle(10,20, wire=True)
+
 	clr = zencad.color(0.5,0,0.5)
 
 	mapping = True
 
-	zencad.disp(shp)
-	zencad.show()
-
-	print(shape_to_svg_string(shp, color=clr, mapping=mapping))
 	shape_to_svg("test.svg", shp, color=clr, mapping=mapping)
+
+	m = svg_to_shape("test.svg")
+	print(m)
+	zencad.disp(m)
+	zencad.show()
