@@ -91,3 +91,8 @@ def chamfer2d(shp, r, refs=None):
         return pyservoce.chamfer2d(shp, r)
     else:
         return pyservoce.chamfer2d(shp, r, points(refs))
+
+
+@lazy.lazy(cls=shape_generator)
+def fix_face(f):
+    return pyservoce.fix_face(f)

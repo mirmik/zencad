@@ -6,6 +6,8 @@ except:
 	pass
 
 import evalcache
+import re
+import pyservoce
 import math
 
 import xml.etree.ElementTree as ET
@@ -18,11 +20,14 @@ def color_convert(zclr):
 
 def box_size(shape, mapping):
 	box = shape.bbox()
+	print("BBOX", box)
 
 	if mapping:
-		off = (-box.xmin, -box.ymin)
+		off = (box.xmin, -box.ymax)
 	else:
 		off = (0,0)
+
+	print("OFF", off)
 
 	return (
 		str(box.xmax - box.xmin),
@@ -44,7 +49,7 @@ class SvgWriter:
 		epsillon = 1e-5
 		if abs(pnt.z) > epsillon:
 			raise Exception("z coord is not zero") 
-		return pnt.x + self.off_x, pnt.y + self.off_y
+		return pnt.x - self.off_x, pnt.y - self.off_y
 
 	def begin(self):
 		pass
@@ -63,6 +68,8 @@ class SvgWriter:
 			edges = wire.edges()
 		else:
 			edges = [wire]
+
+		edges = zencad.sort_wire_edges(edges)
 
 		if len(edges) > 1:
 			edges = zencad.wire_edges_orientation(edges)
@@ -91,33 +98,42 @@ class SvgWriter:
 			elif e.curvetype() == "circle":
 				angle = e.range()[1] - e.range()[0]
 				c,r,x,y = e.circle_parameters()
+				sweep = 1 if (x.cross(y)).z > 0 else 0
 
 				c = self.proj(c)
 				
 				if (abs(angle - math.pi * 2) < 1e-5):
 					d = (f[0] - c[0], f[1] - c[1])
-					self.path.push(f"A {r} {r} {0} {0} {0} {c[0] - d[0]} {c[1] - d[1]}")
-					self.path.push(f"A {r} {r} {0} {0} {0} {f[0]} {f[1]}")
+					self.path.push(f"A {r} {r} {0} {0} {sweep} {c[0] - d[0]} {c[1] - d[1]}")
+					self.path.push(f"A {r} {r} {0} {0} {sweep} {f[0]} {f[1]}")
 
 				else:
 					large_arc = 1 if angle > math.pi else 0
-					sweep = 1 if (x.cross(y)).z > 0 else 0
 					self.path.push(f"A {r} {r} {0} {large_arc} {sweep} {f[0]} {f[1]}")
 
 			else: 
 				raise Exception(f"svg:wire : curvetype is not supported: {e.curvetype()} ")
 
-		closed=True
-		if closed:
-			self.path.push("Z")
+		print(self.path.tostring())
+
+#		closed=True
+#		if closed:
+#			self.path.push("Z")
 
 	def push_face(self, face):
-		for w in face.wires():
+		face = zencad.fix_face(face)
+		wires = zencad.sort_wires_by_face_area(face.wires())
+		for w in wires:
 			self.push_wire(w)
 
 
 	def push_shape(self, shp, color):
+		shp = zencad.unify(shp)
+
 		shp = zencad.util.restore_shapetype(shp)
+		shp = shp.mirrorX()
+
+		#scale_translate = "scale(1 -1)"
 
 		if shp.shapetype() == "face":
 			fill_opacity = 1
@@ -146,6 +162,7 @@ class SvgReader:
 
 	def read_path_final_wb(self):
 		if self.wb is not None:
+			print("make_wire")
 			self.wires.append(self.wb.doit())
 			self.wb = None
 
@@ -161,10 +178,19 @@ class SvgReader:
 		rx=float(next(self.iter))
 		ry=float(next(self.iter)) 
 		x_axis_rotation=float(next(self.iter))
-		large_arc_flag=float(next(self.iter)) 
-		sweep_flag=float(next(self.iter)) 
+		large_arc_flag=float(next(self.iter)) >0.5
+		sweep_flag=float(next(self.iter)) >0.5
 		x=float(next(self.iter)) 
 		y=float(next(self.iter))
+
+		zencad.disp(self.wb.current)
+		zencad.disp(zencad.point3(x,y))
+
+		if abs(rx-ry) < 1e-5:
+			self.wb.plane_circle_arc(rx, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
+
+		else:
+			self.wb.plane_eliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 	def read_path_Z(self):
 		self.wb.close()
@@ -181,12 +207,10 @@ class SvgReader:
 		fill_opacity = None
 		fill = None
 
-		if hasattr(el, "fill"): fill = el["fill"]
-		if hasattr(el, "fill_opacity"): fill_opacity = el["fill_opacity"]
+		if "fill" in el: fill = el["fill"]
+		if "fill_opacity" in el: fill_opacity = el["fill_opacity"]
 
 		tokens = d.split()
-		print(tokens)
-
 		self.wb = None
 		self.wires = []
 		self.iter = iter(tokens)
@@ -206,7 +230,10 @@ class SvgReader:
 				raise Exception("svgreader:path:undefined_command", cmd)
 
 		if fill is not None:
-			return zencad.make_shape()
+			#zencad.disp(self.wires[0])
+			#zencad.show()
+
+			return zencad.make_face(self.wires)
 
 		else:
 			return zencad.union(self.wires)
@@ -214,20 +241,59 @@ class SvgReader:
 
 	def read_string(self, svgstring):
 		self.root = ET.fromstring(svgstring)
-		print(self.root.tag)
-		print(self.root.attrib)
-
 		self.shapes = []
 
 		for a in self.root:
-			print()
-			print(a)
-			print("attrib:", a.attrib)
-			print("tag:", a.tag)
-
+			shp =None
 			if a.tag[-4:] == "path":
 				shp = self.read_path(a.attrib)
+				
+
+			if shp is not None:
+				if "transform" in a.attrib:
+					s = a.attrib["transform"]
+					f = re.findall(r"\w* *\(.*\)", s)
+
+					trans = zencad.nulltrans()
+
+					for f in f:
+						sf = f
+						f = re.search(r"\(.*\)", s).group(0)
+						f = f[1:-1]
+
+						if "," in f:
+							vals = f.split(",")
+						else:
+							vals = f.split(" ")
+
+						if sf.startswith("scale"):
+							x = float(vals[0])
+							y = float(vals[1])
+
+							if abs(abs(x) - 1) < 1e-5 and abs(abs(y) - 1) < 1e-5:
+								if abs(x + 1) < 1e-5 and abs(y + 1) < 1e-5:
+									trans = trans * pyservoce.mirrorO()
+
+								elif abs(x + 1) < 1e-5:
+									trans = trans * pyservoce.mirrorY()
+
+								elif abs(y + 1) < 1e-5:
+									trans = trans * pyservoce.mirrorX()
+								else:
+									raise Exception("wrong mirror")
+							else:
+								trans = trans * pyservoce.scaleXYZ(x,y,1)
+						else:
+							raise Exception("unresolved trans", sf)
+
+
+					shp = trans(shp)
+
+
+				shp=shp.mirrorX() # svg coord system is reversed by Y	
 				self.shapes.append(shp)
+
+
 
 		return self.shapes
 
@@ -266,25 +332,33 @@ def svg_to_shape(path):
 
 if __name__ == "__main__":
 	import zencad
+	import zencad.gutil
+
 	zencad.lazy.fastdo = True
 
-	#shp = zencad.unify(
-	#	zencad.rectangle(10,20) 
-	#	+ zencad.rectangle(10,20,center=True)
-	#	+ zencad.circle(r=10)
-	#	#- zencad.rectangle(2)
-	#	-zencad.circle(5)
-	#)
+	shp = \
+	(
+		zencad.rectangle(10,20) 
+		+ zencad.rectangle(10,20,center=True)
+		+ zencad.circle(r=10)
+		#- zencad.rectangle(2)
+		-zencad.circle(5)
+	)
 
-	shp = zencad.rectangle(10,20, wire=True)
+	#shp = zencad.rectangle(10,20, wire=True)
+	#shp = zencad.rectangle(10,20,center=True) - zencad.rectangle(5,10,center=True)
+	#shp = zencad.rectangle(10,20,center=True) - zencad.circle(3)
+
+	#shp=zencad.circle(r=10, wire=True, angle=zencad.deg(-270)).move(10,10)
+	#print("EP", shp.endpoints())
 
 	clr = zencad.color(0.5,0,0.5)
 
-	mapping = True
+	mapping = False
 
 	shape_to_svg("test.svg", shp, color=clr, mapping=mapping)
 
 	m = svg_to_shape("test.svg")
-	print(m)
+	zencad.hl(shp.up(4))
 	zencad.disp(m)
 	zencad.show()

@@ -20,7 +20,7 @@ from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
-from zencad.util import deg, angle_pair, points, vectors
+from zencad.util import deg, deg2rad, rad2deg, angle_pair, points, vectors
 from zencad.convert.api import *
 import types
 
@@ -148,5 +148,28 @@ def wire_edges_orientation(edges):
             reverse[i+1] = True
 
     return zip(edges, reverse)
+
+def sort_wire_edges(edges):
+    res = []
+
+    res.append(edges[0])
+
+    lst = list(edges)
+    del lst[0]
+    
+    while len(lst) > 0:
+        ls, lf = res[-1].endpoints()
+        for i in range(len(lst)):
+            s, f = lst[i].endpoints()
+            if s.early(ls) or s.early(lf) or f.early(ls) or f.early(lf):
+                res.append(lst[i])
+                del lst[i]
+                break
+
+    return res
+
+
+def sort_wires_by_face_area(cycles):
+    return sorted(cycles, key=lambda c: c.fill().mass(), reverse=True)
 
 from zencad.geom.wire_builder import wire_builder
