@@ -25,11 +25,21 @@ def execfile(path):
 def deg(grad):
     return float(grad) / 180.0 * math.pi
 
+def deg2rad(d):
+    return deg(d)
+
+def rad2deg(d):
+    return float(d) * 180.0 / math.pi
+
 
 def angle_pair(arg):
     if isinstance(arg, tuple) or isinstance(arg, list):
         return arg
-    return (0, arg)
+
+    if (arg >= 0):
+        return (0, arg)
+    else:
+        return (arg, 0)
 
 
 def point3(*arg):
