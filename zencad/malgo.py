@@ -3,6 +3,21 @@ import math
 import numpy
 import time
 
+
+
+def kinematic_backpack(senses, target, current):
+	sens = [ s.to_array() for s in senses]
+	target = (current.inverse() * target).to_array()
+	return zencad.malgo.svd_backpack(target, sens)
+
+
+def kinematic_backpack_translation_only(senses, target):
+	sens = [ s.lin for s in senses]
+	return zencad.malgo.svd_backpack(target, sens)
+
+
+
+
 def normalize(v):
 	n = numpy.linalg.norm(v)
 	if n == 0:

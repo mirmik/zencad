@@ -1,4 +1,5 @@
 import zencad.assemble
+import zencad.libs.screw
 import pyservoce
 
 from abc import ABC, abstractmethod
@@ -33,6 +34,11 @@ class kinematic_chain:
 	#	for l in self.parametered_links:
 	#		arr.append(l.coord)
 	#	return arr
+
+	def apply(self, speeds, delta):
+		for i in range(len(speeds)):
+			k = self.kinematic_pairs[len(self.kinematic_pairs) - i - 1]
+			k.set_coord(k.coord + speeds[i] * delta)
 
 	@staticmethod
 	def collect_chain(finallink, startlink = None):
@@ -142,5 +148,7 @@ class kinematic_chain:
 			#trsf =  trsf.inverse()
 
 			senses = [ (trsf(w), trsf(v)) for w, v in senses ]
+
+		senses = [ zencad.libs.screw.screw(ang=s[0], lin=s[1]) for s in senses ]
 
 		return list(reversed(senses))

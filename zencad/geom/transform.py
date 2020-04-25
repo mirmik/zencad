@@ -59,8 +59,8 @@ def back(*args, **kwargs):
 
 
 #@lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)
-def rotate(a, v):
-	return pyservoce.rotate(a, vector3(v))
+def rotate(v, a):
+	return pyservoce.rotate(v=vector3(v), a=a)
 
 
 #@lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)

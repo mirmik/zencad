@@ -60,6 +60,11 @@ class screw:
 			lin = self.lin + self.ang.cross(arm),
 			ang = self.ang )
 
+	#def inverse_kinematic_carry(self, arm):
+	#	return screw( 
+	#		lin = self.lin - self.ang.cross(-arm),
+	#		ang = self.ang )
+
 	def angular_carry(self, arm):
 		return self.kinematic_carry(arm)
 
