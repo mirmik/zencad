@@ -377,14 +377,13 @@ def common_unbouded_proc(scene,
 		MAIN_COMMUNICATOR.oposite_clossed.connect(stop_world)
 		MAIN_COMMUNICATOR.smooth_stop.connect(smooth_stop_world)
 	
+	if preanimate:
+		preanimate(widget, ANIMATE_THREAD)
 		
 	if animate:
 		ANIMATE_THREAD = AnimateThread(
 			widget=widget, 
 			updater_function=animate)
-
-		if preanimate:
-			preanimate(widget, ANIMATE_THREAD)
 
 		ANIMATE_THREAD.start()
 	

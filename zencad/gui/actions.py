@@ -151,7 +151,9 @@ class MainWindowActionsMixin:
 
 		file = QFile (path)
 		file.open(QIODevice.WriteOnly)
-		screen.save(file, "PNG")
+		#screen.save(file, "PNG")
+
+		raise Exception("not implemented")
 
 		#w = self.dispw.width()
 		#h = self.dispw.height()

@@ -9,9 +9,11 @@ import zencad.gui.application
 
 try:
     default_scene = Scene()
+    default_view = default_scene.viewer.create_view()
 except Exception as ex:
     print("warning: {}".format(ex))
     default_scene = None
+    default_view = None
 
 
 SHOWMODE = "makeapp"

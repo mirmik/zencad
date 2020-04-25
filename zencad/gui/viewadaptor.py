@@ -208,7 +208,9 @@ class DisplayWidget(QGLWidget):
 			self.scene_max0 = self.scene.bbox().max0()
 
 			if self.view is None:
-				self.view = self.viewer.create_view()
+				self.view = zencad.default_view
+				#self.view = self.viewer.create_view()
+
 
 			self.set_orient1()
 			self.view.set_window(self.winId())
