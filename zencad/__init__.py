@@ -12,6 +12,7 @@ from pyservoce import Scene, View, Color
 from pyservoce import Color as color
 from pyservoce import point3 as point
 from pyservoce import vector3 as vector
+from zencad.libs.screw import screw
 
 from zencad.visual import screen
 from zencad.geom.transform import *
