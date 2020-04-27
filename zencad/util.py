@@ -60,16 +60,16 @@ def color(*arg):
     return pyservoce.color(*args)
 
 
-def vector3(*arg):
-    args = [ evalcache.unlazy_if_need(a) for a in arg ]
+def vector3(x, y=None, z=None):
+    x,y,z = [ evalcache.unlazy_if_need(a) for a in (x,y,z) ]
 
-    if isinstance(args[0], pyservoce.vector3):
-        return args[0]
+    if isinstance(x, pyservoce.vector3):
+        return x
 
-    if isinstance(args[0], pyservoce.point3):
-        return pyservoce.vector3(args[0].x, args[0].y, args[0].z)
+    if y is None and z is None:
+        return pyservoce.vector3(x[0], x[1], x[2])
 
-    return pyservoce.vector3(*args)
+    return pyservoce.vector3(x,y,z)
 
 
 def points(tpls):

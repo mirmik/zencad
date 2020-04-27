@@ -193,6 +193,10 @@ class MainWindowActionsMixin:
 		files = zencad.lazy.cache.keys()
 		for f in zencad.lazy.cache.keys():
 			del zencad.lazy.cache[f]
+		
+		if hasattr(zencad.lazy.cache, "clean_tmp"):
+			zencad.lazy.cache.clean_tmp()
+
 		print("Invalidate cache: %d files removed" % len(files))
 
 	def hideConsole(self, en):

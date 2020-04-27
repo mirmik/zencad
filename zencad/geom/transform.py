@@ -22,6 +22,18 @@ def transform_call(self, arg):
 	return native_call(self, arg)
 pyservoce.transformation.__call__ = transform_call
 
+def unlazy_each(foo):
+	def bar(*args, **kwargs):
+		args = [ evalcache.unlazy_if_need(a) for a in args ]
+		kwargs = { k:evalcache.unlazy_if_need(v) for k,v in kwargs.items() }
+		return foo(*args, **kwargs)
+
+	return bar
+
+
+@unlazy_each
+def transformation(*args, **kwargs):
+	return pyservoce.transformation(*args, **kwargs)
 
 #@lazy.lazy(cls=LazyObjectTransformGeneratorNoCached)
 def translate(*args, **kwargs):
