@@ -75,6 +75,8 @@ class DisplayWidget(QWidget):
 		self.animate_updated = threading.Event()
 		self.count_of_helped_shapes = 0
 
+		self.pan_temporary = (0,0)
+
 		self.init_navigation_state()
 		self.init_input_state_flags()
 		self.init_modes(bind_mode=bind_mode, need_prescale_mode=need_prescale)
@@ -116,7 +118,11 @@ class DisplayWidget(QWidget):
 		"""Этот слот использует поток анимации для обновления
 		виджета"""
 
-		if time.time() - self.last_redraw > 0.01:
+		if time.time() - self.last_redraw > 0.015:
+			
+			if self.pan_temporary != (0,0):
+				self.view.pan(self.pan_temporary[0], self.pan_temporary[1])
+				self.pan_temporary=(0,0)
 			self.redraw()
 		else:
 			self.animate_updated.set()
@@ -324,7 +330,7 @@ class DisplayWidget(QWidget):
 					self.pitch = -math.pi * 0.4999
 				self.set_orient1()
 				self.location_changed_handle()
-				self.view.redraw()
+				self.continuous_redraw()
 
 			if self.orient == 2:
 				self.view.rotation(thePoint.x(), thePoint.y())
@@ -337,7 +343,9 @@ class DisplayWidget(QWidget):
 			#	self.location_changed_handle()
 
 			#if self.orient == 2:
-			self.view.pan(mv.x(), -mv.y())
+			
+			self.pan_temporary = (self.pan_temporary[0] + mv.x(), self.pan_temporary[1] - mv.y())
+			self.continuous_redraw()
 			self.location_changed_handle()
 
 	def wheelEvent(self, e):
