@@ -35,7 +35,7 @@ from zencad.geom.prim2d import *
 from zencad.geom.prim1d import *
 from zencad.geom.ops3d import *
 from zencad.geom.ops1d2d import *
-from zencad.showapi import default_scene, default_view
+from zencad.showapi import default_scene
 from zencad.geom.curve3 import extract_curve
 from zencad.version import __version__
 

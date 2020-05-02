@@ -440,6 +440,7 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		self.console.write(data)
 
 	def subprocess_finalization_do(self):
+		#return
 		trace("subprocess_finalization_do")
 		for comm in self.client_finalization_list:
 			comm.send({"cmd":"stopworld"})
