@@ -275,7 +275,7 @@ class pybullet_simulation:
 		location=nulltrans(),
 		mass=None,
 		collision=None, 
-		scene=zencad.default_scene, color=zencad.default_color):
+		scene=zencad.default_scene(), color=zencad.default_color):
 
 		if collision is None:
 			collision = model
@@ -300,7 +300,7 @@ class pybullet_simulation:
 		link_locations=[], 
 		link_axes=[], 
 		link_joint_types=[],
-		scene=zencad.default_scene, color=zencad.default_color
+		scene=zencad.default_scene(), color=zencad.default_color
 		):
 
 		if base_collision is None:

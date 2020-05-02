@@ -133,7 +133,7 @@ class SettingsWidget(QDialog):
 		append(self.texteditor_edit)
 		append(self.default_color_edit)
 		append(self.not_start_widget)
-		append(self.bind_widget)
+		#append(self.bind_widget)
 		append(self.marker_size_edit)
 
 		self.vlayout.addLayout(self.hlayout)
