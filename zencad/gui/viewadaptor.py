@@ -37,7 +37,7 @@ class KeyPressEater(QObject):
 	def eventFilter(self, obj, event):
 		return False
 
-class DisplayWidget(QGLWidget):
+class DisplayWidget(QWidget):
 	tracking_info_signal = pyqtSignal(tuple)
 	markerRequestQ = pyqtSignal(tuple)
 	markerRequestW = pyqtSignal(tuple)
@@ -208,13 +208,12 @@ class DisplayWidget(QGLWidget):
 			self.scene_max0 = self.scene.bbox().max0()
 
 			if self.view is None:
-				self.view = zencad.default_view
-				#self.view = self.viewer.create_view()
-
+				self.view = self.scene.viewer.create_view()
+				self.view.set_triedron()
+				self.view.set_gradient(pyservoce.color(0.6,0.6,0.6), pyservoce.color(0.2,0.2,0.2))
 
 			self.set_orient1()
 			self.view.set_window(self.winId())
-			
 			self.create_qwmarkers()
 
 			#self.view.redraw()
@@ -578,6 +577,7 @@ class DisplayWidget(QGLWidget):
 		self.view.redraw()
 
 	def closeEvent(self, ev):
+		trace("closeEvent")
 		self.view.remove()
 		self.viewer.remove()
 		pyservoce.close_display_connection()

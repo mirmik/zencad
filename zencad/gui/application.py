@@ -288,7 +288,7 @@ def common_unbouded_proc(scene,
 
 	widget = zencad.gui.viewadaptor.DisplayWidget(
 		scene=scene, 
-		view=scene.viewer.create_view() if view is None else view, 
+		view=view, 
 		need_prescale=need_prescale,
 		bind_mode = pipes,
 		session_id = session_id,

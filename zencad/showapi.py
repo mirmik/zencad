@@ -7,14 +7,21 @@ import sys
 import zencad.assemble
 import zencad.gui.application
 
-try:
-    default_scene = Scene()
-    default_view = default_scene.viewer.create_view()
-except Exception as ex:
-    print("warning: {}".format(ex))
-    default_scene = None
-    default_view = None
+__default_scene = None
+def default_scene():
+    global __default_scene
+    if __default_scene is None:
+        __default_scene = Scene()
+    return __default_scene
 
+#__default_view = None
+#def default_view():
+#    global __default_view
+#    if __default_view is None:
+#        __default_view = default_scene.viewer.create_view()
+#        __default_view.set_triedron()
+#        __default_view.set_gradient(pyservoce.color(0.5,0.5,0.5), pyservoce.color(0.3,0.3,0.3))
+#    return __default_view
 
 SHOWMODE = "makeapp"
 PRESCALE = False
@@ -42,7 +49,7 @@ def show(scene=None, *args, sargv=sys.argv[1:], standalone=False, debug=False, *
         SHOWMODE = "widget"
 
     if scene is None:
-        scene = default_scene
+        scene = default_scene()
 
     if SHOWMODE == "makeapp":
         # Common application start
@@ -75,8 +82,11 @@ class stub_controller:
         pass
 
 
-def display(shp, color=None, deep=True, scene=default_scene):
-    if default_scene is None:
+def display(shp, color=None, deep=True, scene=None):
+    if scene is None:
+        scene = default_scene()
+
+    if default_scene() is None:
         # TODO: Add another stubs
         if isinstance(shp, evalcache.LazyObject):
             return stub_controller(shp.unlazy())
