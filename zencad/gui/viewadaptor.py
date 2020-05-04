@@ -118,7 +118,7 @@ class DisplayWidget(QWidget):
 		"""Этот слот использует поток анимации для обновления
 		виджета"""
 
-		if time.time() - self.last_redraw > 0.015:
+		if time.time() - self.last_redraw > 0.012:
 			
 			if self.pan_temporary != (0,0):
 				self.view.pan(self.pan_temporary[0], self.pan_temporary[1])
@@ -216,7 +216,9 @@ class DisplayWidget(QWidget):
 			if self.view is None:
 				self.view = self.scene.viewer.create_view()
 				self.view.set_triedron()
-				self.view.set_gradient(pyservoce.color(0.6,0.6,0.6), pyservoce.color(0.2,0.2,0.2))
+				hi = 0.55
+				lo = 0.22
+				self.view.set_gradient(pyservoce.color(hi,hi,hi), pyservoce.color(lo,lo,lo))
 
 			self.set_orient1()
 			self.view.set_window(self.winId())

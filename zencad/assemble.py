@@ -25,8 +25,8 @@ class unit(pyservoce.TransformableMixin):
 	"""
 
 	def __init__(self, 
-				parent=None,
 				parts=[],	
+				parent=None,
 				shape=None,		
 				name=None, 
 				location=pyservoce.libservoce.nulltrans()):    
@@ -91,19 +91,20 @@ class unit(pyservoce.TransformableMixin):
 	def add_object(self, d):
 		self.dispobjects.append(d)
 
-	def add(self, obj, color=None):
-		obj = evalcache.unlazy_if_need(obj)
-		
+	def add(self, obj, color=None):		
+		uo = obj.unlazy()
+
 		if isinstance(obj, zencad.assemble.unit):
 			return self.add_child(obj)
-		elif isinstance(obj, pyservoce.Shape):
+		elif isinstance(uo, pyservoce.Shape):
 			return self.add_shape(obj, color)
-		elif isinstance(obj, pyservoce.interactive_object):
+		elif isinstance(uo, pyservoce.interactive_object):
 			return self.add_object(obj)
+		else:
+			raise Exception("unresolved unit part type")
 
 	def add_shape(self, shp, color=None):
-		shp = evalcache.unlazy_if_need(shp)
-		controller = pyservoce.interactive_object(shp)
+		controller = zencad.interactive_object(shp)
 
 		if color is not None:
 			controller.set_color(pyservoce.color(color))
@@ -196,6 +197,13 @@ class unit(pyservoce.TransformableMixin):
 
 		return cpy
 
+	def union_shape(self):
+		acc = zencad.nullshape()
+		for p in self.dispobjects:
+			if isinstance(p, pyservoce.interactive_object) and p.is_shape():
+				s = p.object
+				acc += s
+		return acc
 
 class kinematic_unit(unit):
 	"""Кинематическое звено задаётся двумя системами координат,
@@ -237,13 +245,13 @@ class kinematic_unit_one_axis(kinematic_unit):
 	mul - линейный коэффициент масштабирования входной координаты.
 	"""
 	
-	def __init__(self, ax, mul=1, **kwargs):
+	def __init__(self, axis, mul=1, **kwargs):
 		super().__init__(**kwargs)
 		self.coord = 0
-		self.ax = pyservoce.vector3(ax)
-		self.ax = self.ax.normalize()
+		self.axis = pyservoce.vector3(axis)
+		self.axis = self.axis.normalize()
 		self.mul = mul
-		self.axmul = self.ax * self.mul
+		self.axmul = self.axis * self.mul
 
 	#override
 	def senses(self):
@@ -268,7 +276,7 @@ class rotator(kinematic_unit_one_axis):
 
 	def set_coord(self, coord, **kwargs):
 		self.coord = coord
-		self.output.relocate(pyservoce.rotate(v=self.ax, a=coord*self.mul), **kwargs)
+		self.output.relocate(pyservoce.rotate(v=self.axis, a=coord*self.mul), **kwargs)
 
 
 class actuator(kinematic_unit_one_axis):
@@ -279,7 +287,7 @@ class actuator(kinematic_unit_one_axis):
 
 	def set_coord(self, coord, **kwargs):
 		self.coord = coord
-		self.output.relocate(pyservoce.translate(self.ax * coord * self.mul), **kwargs)
+		self.output.relocate(pyservoce.translate(self.axis * coord * self.mul), **kwargs)
 
 
 class planemover(kinematic_unit):
