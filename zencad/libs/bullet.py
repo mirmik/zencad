@@ -40,7 +40,10 @@ def make_mesh(model):
 	write_as_obj_wavefront(meshpath, nodes, triangles)
 	return meshpath
 
-def evaluate_shape_inertia(model, mass=None):
+def evaluate_shape_inertia(model, mass=None, scale_factor=1):
+	if mass == 0:
+		return 0, nulltrans(), (0,0,0)
+
 	if mass is None:
 		mass = model.mass()
 		inertia_diagonal = model.principal_inertia_moments()
@@ -63,23 +66,45 @@ def evaluate_shape_inertia(model, mass=None):
 		inertia_frame = transformation(point3(0,0,0), inertia_axes[2], inertia_axes[0])
 		inertia_frame = translate(*model.center()) * inertia_frame
 
+	mass = mass / scale_factor**3
+	inertia_diagonal = [ i / scale_factor**5 for i in inertia_diagonal ]
+	inertia_frame = (
+		translate((inertia_frame.translation()*(1/scale_factor))) 
+		* inertia_frame.rotation().to_transformation())
+
+	#print(mass)
+	#print(inertia_diagonal)
+	#print(inertia_frame)
+
+	if mass == 0:
+		mass = 1e-6
+
 	return mass, inertia_frame, inertia_diagonal
 
 class pybullet_shape_bind:
-	def __init__(self, model, collision, location=zencad.nulltrans(), mass=None, 
+	def __init__(self, simulation, model, collision, location=zencad.nulltrans(), mass=None, 
 		link_models=[],
+		link_masses=None,
 		link_collisions=[],
 		link_locations=[],
 		link_parents=[],
 		link_axes=[],
 		link_joint_types=[]
 	):
+		self.simulation = simulation
+		SF = self.simulation.scale_factor
+
+		SF_trans = scale(1/SF, center=(0,0,0))
+		self.SF_trans = SF_trans
+		self.SF_trans_inverse = SF_trans.inverse()
+		location = SF_trans * location
+
 		if model:
 			self.model = evalcache.unlazy_if_need(model)
 			self.collision = evalcache.unlazy_if_need(collision)
 	
 			if isinstance(self.model, pyservoce.Shape):
-				self.mass, self.inertia_frame, self.inertia_diagonal = evaluate_shape_inertia(self.model, mass)
+				self.mass, self.inertia_frame, self.inertia_diagonal = evaluate_shape_inertia(self.model, mass, scale_factor = self.simulation.scale_factor)
 				self.meshpath = make_mesh(model)
 			else:
 				raise Exception("unresolved model type")
@@ -91,8 +116,8 @@ class pybullet_shape_bind:
 			else:
 				raise Exception("unresolved model type")
 
-			self.visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH, fileName=self.meshpath)
-			self.collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=self.meshpath2)
+			self.visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH, fileName=self.meshpath, meshScale=[1/SF,1/SF,1/SF])
+			self.collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=self.meshpath2, meshScale=[1/SF,1/SF,1/SF])
 		else:
 			self.model=None
 			self.mass = None
@@ -104,9 +129,11 @@ class pybullet_shape_bind:
 		self.link_locations = link_locations
 		self.link_visual_paths = []
 		self.link_collision_paths = []
-		self.link_mass = []
+		self.link_masses = []
 		self.link_inertia_frame = []
 		self.link_inertia_diagonal = []
+
+		self.link_locations = [ SF_trans * l for l in link_locations ]
 
 		self.link_models = [ evalcache.unlazy_if_need(l) for l in link_models ]
 
@@ -116,22 +143,38 @@ class pybullet_shape_bind:
 			self.link_collisions= self.link_models
 			link_collisions= link_models
 
+		need_inertia_re = link_masses is not None
+
 		for i in range(len(link_models)):
 			if isinstance(self.link_models[i], pyservoce.Shape):
-				lmass, linertia_frame, linertia_diagonal = evaluate_shape_inertia(self.link_models[i], None)
-				self.link_mass.append(lmass)
-				self.link_inertia_frame.append(linertia_frame)
-				self.link_inertia_diagonal.append(linertia_diagonal)
-				self.link_visual_paths.append(p.createVisualShape(shapeType=p.GEOM_MESH, fileName=make_mesh(link_models[i])))
+				if not link_collisions[i].is_nullshape():
+					koeff = link_masses[i] if need_inertia_re else None
+					lmass, linertia_frame, linertia_diagonal = evaluate_shape_inertia(self.link_models[i], koeff, self.simulation.scale_factor)
+					self.link_masses.append(lmass)
+					self.link_inertia_frame.append(linertia_frame)
+					self.link_inertia_diagonal.append(linertia_diagonal)
+					self.link_visual_paths.append(p.createVisualShape(shapeType=p.GEOM_MESH, fileName=make_mesh(link_models[i]), meshScale=[1/SF,1/SF,1/SF]))
+				else:
+					self.link_masses.append(0)
+					self.link_inertia_frame.append(nulltrans())
+					self.link_inertia_diagonal.append((0,0,0))
+					self.link_visual_paths.append(None)
 			else:
 				raise Exception("unresolved model type")
 	
 			if isinstance(self.link_collisions[i], pyservoce.Shape):
-				self.link_collision_paths.append(p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=make_mesh(link_collisions[i])))
+				if not link_collisions[i].is_nullshape():
+					self.link_collision_paths.append(p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=make_mesh(link_collisions[i]), meshScale=[1/SF,1/SF,1/SF]))
+				else:
+					self.link_collision_paths.append(None)
 			elif isinstance(collision, str):
 				self.link_collision_paths.append(collision)
 			else:
 				raise Exception("unresolved model type")
+
+		#scale
+		#self.mass = self.mass / self.simulation.scale_factor
+		#self.inertia_diagonal = [ v / self.simulation.scale_factor**2 for v in self.inertia_diagonal ]
 
 		if model:
 			self.boxId = p.createMultiBody(
@@ -145,14 +188,14 @@ class pybullet_shape_bind:
 	
 				linkVisualShapeIndices = self.link_visual_paths,
 				linkCollisionShapeIndices = self.link_collision_paths,
-				linkMasses = self.link_mass,
+				linkMasses = self.link_masses,
 				linkPositions = [ p.translation() for p in self.link_locations ],
 				linkOrientations = [ p.rotation() for p in self.link_locations ],
 				linkInertialFramePositions = [ p.translation() for p in self.link_inertia_frame ],
 				linkInertialFrameOrientations = [ p.rotation() for p in self.link_inertia_frame ],
 				linkParentIndices = link_parents,
-				linkJointTypes=[p.JOINT_REVOLUTE] * len(link_models),
-				linkJointAxis=[0] * len(link_models)
+				linkJointTypes=link_joint_types,
+				linkJointAxis=link_axes
 			)
 		else:
 			self.boxId = p.createMultiBody(	
@@ -161,7 +204,7 @@ class pybullet_shape_bind:
 				baseOrientation = location.rotation(),
 				linkVisualShapeIndices = self.link_visual_paths,
 				linkCollisionShapeIndices = self.link_collision_paths,
-				linkMasses = self.link_mass,
+				linkMasses = self.link_masses,
 				linkPositions = [ p.translation() for p in self.link_locations ],
 				linkOrientations = [ p.rotation() for p in self.link_locations ],
 				linkInertialFramePositions = [ p.translation() for p in self.link_inertia_frame ],
@@ -171,23 +214,62 @@ class pybullet_shape_bind:
 				linkJointAxis=link_axes
 			)
 
+		self.index_map = { i: int(p.getJointInfo(self.boxId, i)[1][5:]) - 1 for i in range(len(self.link_models)) }
+
+		#info = p.getLinkStates(self.boxId, range(len(self.link_models)))
+		#print()
+		#for i in range(len(info)):
+		#	print(info[i-1][1])
+		#for i in range(len(info)):
+		#	print(self.link_locations[i])
+		#	print(self.link_inertia_frame[i])
+		#exit()
+
+		rollingFriction = 0.04
+		spinningFriction = 0.04
+		lateralFriction = 0.04
+		anisotropicFriction=0.01
+		frictionAnchor = 0
+		jointDamping = 0.01
+		linearDamping=0.01
+		angularDamping=0.01
+
+		contactStiffness = -1
+		contactDamping = -1
 
 		if model:
 			p.changeDynamics(self.boxId, -1, 
-				linearDamping=0, 
-				angularDamping=0.005,
-				#spinningFriction=0.001,
-				#rollingFriction=0.001,
-				localInertiaDiagonal = self.inertia_diagonal,
+				#linearDamping=linearDamping, 
+				#angularDamping=angularDamping,
+				#jointDamping=jointDamping,
+				#lateralFriction = lateralFriction,
+				#spinningFriction=spinningFriction,
+				#rollingFriction=rollingFriction,
+				#frictionAnchor = frictionAnchor,
+				#anisotropicFriction=anisotropicFriction,
+				##restitution=0,
+				#contactDamping=contactDamping,
+				#contactStiffness=contactStiffness,
+				#localInertiaDiagonal = self.inertia_diagonal,
 				maxJointVelocity=1e10)
 
 		for i in range(len(link_models)):
 			p.changeDynamics(self.boxId, i, 
-				linearDamping=0, 
-				angularDamping=0.005,
+				#linearDamping=linearDamping, 
+				#angularDamping=angularDamping,
+				#jointDamping=jointDamping,
+				#lateralFriction = lateralFriction,
+				#spinningFriction=spinningFriction,
+				#rollingFriction=rollingFriction,
+				#frictionAnchor = frictionAnchor,
+				#anisotropicFriction=anisotropicFriction,
+				##restitution=0,
+				#contactDamping=contactDamping,
+				#contactStiffness=contactStiffness,
 				#spinningFriction=0.001,
 				#rollingFriction=0.001,
-				localInertiaDiagonal = self.link_inertia_diagonal[i],
+				#localInertiaDiagonal = self.link_inertia_diagonal[self.index_map[i]],
+				#localInertiaDiagonal = self.link_inertia_diagonal[i],
 				maxJointVelocity=1e10)
 
 
@@ -198,34 +280,45 @@ class pybullet_shape_bind:
 		self.link_ctr = []
 		for m in self.link_models:
 			self.link_ctr.append(disp(m, scene=scene, color=color))
+		self.update()
 		return self
 
 	def update(self):
+		self_inertia_frame = self.inertia_frame# * self.SF_trans_inverse
+
 		if self.model:
 			cubePos, cubeOrn = p.getBasePositionAndOrientation(self.boxId)
 			rot = pyservoce.quaternion(*cubeOrn).to_transformation()
 			
 			tr = (translate(*cubePos) * rot 
-			* self.inertia_frame.rotation().to_transformation().inverse() 
-			* translate(vector3(self.inertia_frame.translation())).inverse()
+			* self_inertia_frame.rotation().to_transformation().inverse() 
+			* translate(vector3(self_inertia_frame.translation())).inverse()
 			)
 			
+			#self.ctr.relocate(self.SF_trans_inverse * tr)
+			tr = translate(tr.translation() * self.simulation.scale_factor) * tr.rotation().to_transformation()
 			self.ctr.relocate(tr)
 
 		info = p.getLinkStates(self.boxId, range(len(self.link_models)))
+		#print(info.__class__)
 		#print(info)
+		#print(info[0])
+		#print(info[1])
+		#print(info[2])
 		#print(len(info))
 		#print(len(info[0]))
 		#exit()
 
 		for i in range(len(info)):
-			rot = pyservoce.quaternion(*info[i][1]).to_transformation()
+			info_node = info[self.index_map[i]]
+			rot = pyservoce.quaternion(*info_node[1]).to_transformation()
 			
-			tr = (translate(*info[i][0]) * rot 
+			tr = (translate(*info_node[0]) * rot 
 			* self.link_inertia_frame[i].rotation().to_transformation().inverse() 
 			* translate(vector3(self.link_inertia_frame[i].translation())).inverse()
 			)
 			
+			tr = translate(tr.translation() * self.simulation.scale_factor) * tr.rotation().to_transformation()
 			self.link_ctr[i].relocate(tr)
 
 
@@ -234,18 +327,27 @@ class pybullet_shape_bind:
 		return vector3(spd[0]), vector3(spd[1])
 
 	def set_velocity(self, lin=(0,0,0), ang=(0,0,0)):
+		lin = [ x/self.simulation.scale_factor for x in lin ]  
 		p.resetBaseVelocity(self.boxId, lin, ang)
 
 
 class pybullet_simulation:
-	def __init__(self, gravity=(0,0,0), plane=True, gui=False):
+	def __init__(self, scale_factor=1, gravity=(0,0,0), plane=True, gui=False, 
+			time_step=1/240, substeps=2):
+		self.scale_factor = scale_factor
+
 		if not gui:
 			self.client = p.connect(p.DIRECT)
 		else:
 			self.client = p.connect(p.GUI)
+
+		p.setPhysicsEngineParameter(
+			numSubSteps=substeps,
+			contactSlop=0,
+			useSplitImpulse=True)
 			
-		p.setRealTimeSimulation(1) 
-		#p.setTimeStep(0.01) 
+		if time_step:
+			p.setTimeStep(time_step) 
 		self.binds = []
 		self.set_gravity(gravity)
 
@@ -257,17 +359,26 @@ class pybullet_simulation:
 			self.plane_index = p.createMultiBody(
 				baseMass=0,	
 				baseCollisionShapeIndex=idx)
+			self.set_plane_friction()
 			
-	def set_plane_friction(self, koeff):
+	def set_plane_friction(self):
 		if self.plane:
 			p.changeDynamics(self.plane_index, -1, 
-				#lateralFriction = koeff
-				#spinningFriction = koeff
-				#rollingFriction = koeff
+				#linearDamping=0.01, 
+				#angularDamping=0.005#,
+				#lateralFriction = 0.0001,
+				#contactDamping=0.0001,
+				#contactStiffness=0.0001
+				#spinningFriction=0.001,
+				#rollingFriction=0.001)
 			)
+
+	def volumed_collision(self, model):
+		return volumed_collision(zencad.scale(1/self.scale_factor)(model))
 
 	def set_gravity(self, x, y=None, z=None):
 		v = zencad.util.vector3(x,y,z)
+		#v = v * self.scale_factor
 		p.setGravity(*v)
 		
 	def add_body(self, 
@@ -284,7 +395,8 @@ class pybullet_simulation:
 			model=model, 
 			collision=collision,
 			location=location,
-			mass=mass).bind_to_scene(scene,color)
+			mass=mass,
+			simulation=self).bind_to_scene(scene,color)
 
 		self.binds.append(bind)
 		return bind
@@ -293,8 +405,10 @@ class pybullet_simulation:
 		base_model=None, 
 		base_collision=None,
 		base_location=nulltrans(),
+		base_mass=None,
 
 		link_models=[],
+		link_masses = None,
 		link_collisions=[],
 		link_parents=[],
 		link_locations=[], 
@@ -310,13 +424,16 @@ class pybullet_simulation:
 			model=base_model, 
 			collision=base_collision,
 			location=base_location,
+			mass=base_mass,
 		
 			link_models=link_models,
+			link_masses=link_masses,
 			link_collisions=link_collisions,
 			link_parents=link_parents,
 			link_locations=link_locations,
 			link_axes=link_axes,
-			link_joint_types=link_joint_types
+			link_joint_types=link_joint_types,
+			simulation=self
 		).bind_to_scene(scene,color)
 
 		self.binds.append(bind)
@@ -328,6 +445,88 @@ class pybullet_simulation:
 			p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 	def step(self):
+		p.stepSimulation()
 		for o in self.binds:
 			o.update()
-		p.stepSimulation()
+
+	def _bind_assemble_tasks(self, u, tasks, parent_index, pjoint, paxis):
+		class t:
+			def __init__(self, parent, model, location,
+					joint_type, joint_axis, parent_index):
+				self.parent = parent
+				self.model = model
+				self.location = location
+				self.joint_type = joint_type
+				self.joint_axis = joint_axis
+				self.parent_index = parent_index
+
+		ubody = u.union_shape()
+		if ubody.is_nullshape() and len(u.childs) == 0:
+			raise Exception("kintranslator: finite node cannot be nullshape")
+
+		tasks.append(t(u, ubody, u.location, pjoint, paxis, parent_index))
+		current_index = len(tasks)
+
+		for c in u.childs:
+			pjoint=p.JOINT_FIXED
+			paxis=(0,0,0)
+
+			if isinstance(u, zencad.assemble.rotator):
+				pjoint=p.JOINT_REVOLUTE
+				paxis=u.axis
+
+			index = self._bind_assemble_tasks(c, tasks, current_index, pjoint=pjoint, paxis=paxis)
+
+			if isinstance(u, zencad.assemble.rotator):
+				u.simulation_hint = index
+
+		return current_index
+	
+	def _prepare_motors(self, u, ret):
+		if isinstance(u, zencad.assemble.rotator):
+			p.setJointMotorControl2(ret.boxId, ret.index_map[u.simulation_hint-1], p.VELOCITY_CONTROL, 
+				targetVelocity=0, force=0)
+
+		for c in u.childs:
+			self._prepare_motors(c, ret)
+
+	def bind_assemble(self, root): 
+		childs = root.childs
+		tasks = []
+
+		ubody = root.union_shape()	
+
+		for c in root.childs:
+			self._bind_assemble_tasks(c, tasks, parent_index=0, 
+				pjoint=p.JOINT_FIXED, paxis=(0,0,0))
+
+
+		link_models = [ t.model for t in tasks ]
+		link_locations = [ t.location for t in tasks ]
+		joint_types = [ t.joint_type for t in tasks ]
+		joint_axis = [ t.joint_axis for t in tasks ]
+		joint_parents = [ t.parent_index for t in tasks ]
+
+		#print(joint_parents)
+
+		ret = self.add_multibody(
+			base_model=ubody, 
+			base_location=root.location,
+
+			link_models = link_models,
+			link_locations = link_locations,
+
+			link_joint_types = joint_types,
+			link_axes = joint_axis,
+			link_parents = joint_parents)
+
+		for c in root.childs:
+			self._prepare_motors(c, ret)
+
+		return ret
+
+	def set_force(self, base, hint, force):
+		p.setJointMotorControl2(bodyUniqueId=base.boxId, 
+			jointIndex=base.index_map[hint-1],
+			controlMode=p.TORQUE_CONTROL,
+			force =force)

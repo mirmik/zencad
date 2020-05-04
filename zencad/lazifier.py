@@ -20,6 +20,7 @@ lazy = evalcache.Lazy(
     algo=algo, 
     onbool=True,
     onstr=True,
+    pedantic=True
 #    status_notify=True
 )
 

@@ -121,10 +121,10 @@ def mirrorZ(*args, **kwargs):
 
 
 #@lazy.lazy(cls=LazyObjectTransformGeneratorCached)
-def scale(factor, center):
+def scale(factor, center=(0,0,0)):
 	if factor is list or factor is tuple:
 		return pyservoce.scaleXYZ(factor[0], factor[1], factor[2])
-	return pyservoce.scale(factor, point3(center).to_servoce())
+	return pyservoce.scale(factor, point3(center))
 
 
 #@lazy.lazy(cls=LazyObjectTransformGeneratorCached)

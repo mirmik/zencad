@@ -43,11 +43,16 @@ from zencad.platonic import *
 
 import zencad.reflect 
 
-def interactive_object(obj, color=None):
-    if color == None:
-        color = zencad.default_color
-        
-    return pyservoce.interactive_object(evalcache.unlazy_if_need(obj), color, *args, **kwargs)
+class interactive_object(pyservoce.interactive_object):
+    def __init__(self, obj, color=None):
+        if color == None:
+            color = zencad.default_color
+            
+        super().__init__(
+            evalcache.unlazy_if_need(obj), 
+            pyservoce.color(color)
+        )
+        self.object = obj
 
 
 def gr(grad):
