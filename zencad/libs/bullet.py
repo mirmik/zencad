@@ -225,14 +225,14 @@ class pybullet_shape_bind:
 		#	print(self.link_inertia_frame[i])
 		#exit()
 
-		rollingFriction = 0.04
-		spinningFriction = 0.04
-		lateralFriction = 0.04
-		anisotropicFriction=0.01
+		rollingFriction = 0.004
+		spinningFriction = 0.004
+		lateralFriction = 0.004
+		anisotropicFriction=0.001
 		frictionAnchor = 0
-		jointDamping = 0.01
-		linearDamping=0.01
-		angularDamping=0.01
+		jointDamping = 0.001
+		linearDamping=0.001
+		angularDamping=0.001
 
 		contactStiffness = -1
 		contactDamping = -1
@@ -490,7 +490,7 @@ class pybullet_simulation:
 		for c in u.childs:
 			self._prepare_motors(c, ret)
 
-	def bind_assemble(self, root): 
+	def bind_assemble(self, root, fixed_base=False): 
 		childs = root.childs
 		tasks = []
 
@@ -509,9 +509,15 @@ class pybullet_simulation:
 
 		#print(joint_parents)
 
+		mass = None
+		if fixed_base:
+			mass = 0
+
+
 		ret = self.add_multibody(
 			base_model=ubody, 
 			base_location=root.location,
+			base_mass =mass,
 
 			link_models = link_models,
 			link_locations = link_locations,
