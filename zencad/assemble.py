@@ -261,6 +261,9 @@ class kinematic_unit_one_axis(kinematic_unit):
 	def set_coords(self, coords, **kwargs):
 		self.set_coord(coords[0], **kwargs)
 
+	def update_coord(self, coord):
+		self.coord = coord
+
 	def sensivity(self):
 		raise NotImplementedError
 
@@ -276,7 +279,7 @@ class rotator(kinematic_unit_one_axis):
 
 	def set_coord(self, coord, **kwargs):
 		self.coord = coord
-		self.output.relocate(pyservoce.rotate(v=self.axis, a=coord*self.mul), **kwargs)
+		self.output.relocate(pyservoce.rotate(a=coord*self.mul, v=self.axis), **kwargs)
 
 
 class actuator(kinematic_unit_one_axis):
@@ -340,3 +343,9 @@ class spherical_rotator(kinematic_unit):
 
 	def update_position(self, **kwargs):
 		self.output.relocate(pyservoce.rotateZ(self._yaw) * pyservoce.rotateY(self._pitch))
+
+
+def for_each_unit(u, foo):
+	foo(u)
+	for c in u.childs:
+		for_each_unit(c, foo)

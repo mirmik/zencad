@@ -20,6 +20,7 @@ class AnimationState:
 
 	def timestamp(self, time):
 		self.time = time 
+		self.loctime = time - self.start_time
 		self.delta = time - self.last_time
 		self.last_time = time
 

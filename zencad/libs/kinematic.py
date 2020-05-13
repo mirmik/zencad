@@ -1,6 +1,7 @@
 import zencad.assemble
 import zencad.libs.screw
 import pyservoce
+import numpy
 
 from abc import ABC, abstractmethod
 
@@ -152,3 +153,45 @@ class kinematic_chain:
 		senses = [ zencad.libs.screw.screw(ang=s[0], lin=s[1]) for s in senses ]
 
 		return list(reversed(senses))
+
+
+	def decompose(self, vec, use_base_frame=False):
+		sens = self.sensivity(self.chain[-1] if use_base_frame else None)
+		#sens = self.sensivity(None)
+		sens = [ s.to_array() for s in sens]
+		target = vec.to_array()
+		return zencad.malgo.svd_backpack(target, sens)[0]
+
+	def decompose_linear(self, vec, use_base_frame=False, maxsig=2, maxnorm=1):
+		sens = self.sensivity(self.chain[-1] if use_base_frame else None)
+		#sens = self.sensivity(None)
+		sens = [ s.lin for s in sens]
+		target = vec
+
+		#for i in range(len(sens)):
+		#	print(abs(sens[i].dot(target)))
+			#if abs(sens[i].dot(target)) > 10:
+			#	sens[i] = (0,0,0)
+		#print(sens)
+		sigs = zencad.malgo.svd_backpack(target, sens)[0]
+		#print(sigs)
+		#print(sigs)
+
+		#norm = numpy.linalg.norm(sigs)
+		#if norm > maxnorm:
+		#	sigs = sigs / norm * maxnorm
+		#print(sigs)
+		#if norm > maxnorm:
+		#	sigs = sigs / norm * maxnorm
+
+		#ssigs = list(sigs)
+		#print(ssigs)
+		#for i in range(len(sigs)):
+		#	if abs(ssigs[i]) > maxsig:
+		#		ssigs[i] = 0
+
+		return sigs
+
+
+	def kunit(self, num):
+		return self.kinematic_pairs[-num-1]

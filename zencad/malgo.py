@@ -121,14 +121,16 @@ def fast_backpack(target, vectors):
 
 	target = numpy.array(target)
 	vectors = [ numpy.array(v) for v in vectors ]
+	vectors_normalized = [ normalize(v) for v in vectors ]
+	vectors_norms = [ numpy.linalg.norm(v) for v in vectors ]
 
 	tgtnorm = numpy.linalg.norm(target)
 
 	coords = numpy.zeros(len(vectors), dtype=numpy.float64)
 
 	for i in range(len(coords)):
-		vnorm = numpy.linalg.norm(vectors[i])
-		coords[i] = target.dot(vectors[i]) / math.sqrt(tgtnorm * vnorm)
+		#vnorm = numpy.linalg.norm(vectors_normalized[i])
+		coords[i] = target.dot(vectors_normalized[i]) / vectors_norms[i]  # / math.sqrt(tgtnorm * vnorm)
 
 	return coords, 1
 
