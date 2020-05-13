@@ -89,8 +89,12 @@ class pybullet_shape_bind:
 		link_locations=[],
 		link_parents=[],
 		link_axes=[],
-		link_joint_types=[]
+		link_joint_types=[],
+		interactives=None,
+		base_interactive=None
 	):
+		self.interactives = interactives
+		self.base_interactive=base_interactive
 		self.simulation = simulation
 		SF = self.simulation.scale_factor
 
@@ -225,62 +229,72 @@ class pybullet_shape_bind:
 		#	print(self.link_inertia_frame[i])
 		#exit()
 
-		rollingFriction = 0.004
+		rollingFriction = 40
 		spinningFriction = 0.004
 		lateralFriction = 0.004
 		anisotropicFriction=0.001
 		frictionAnchor = 0
-		jointDamping = 0.001
-		linearDamping=0.001
-		angularDamping=0.001
+		jointDamping = 0.1
+		linearDamping=0.1
+		angularDamping=0.1
 
 		contactStiffness = -1
 		contactDamping = -1
 
 		if model:
 			p.changeDynamics(self.boxId, -1, 
-				#linearDamping=linearDamping, 
-				#angularDamping=angularDamping,
-				#jointDamping=jointDamping,
+				linearDamping=linearDamping, 
+				angularDamping=angularDamping,
+				jointDamping=jointDamping,
 				#lateralFriction = lateralFriction,
 				#spinningFriction=spinningFriction,
 				#rollingFriction=rollingFriction,
 				#frictionAnchor = frictionAnchor,
 				#anisotropicFriction=anisotropicFriction,
-				##restitution=0,
-				#contactDamping=contactDamping,
-				#contactStiffness=contactStiffness,
-				#localInertiaDiagonal = self.inertia_diagonal,
-				maxJointVelocity=1e10)
+				restitution=0,
+				contactDamping=contactDamping,
+				contactStiffness=contactStiffness,
+				localInertiaDiagonal = self.inertia_diagonal,
+				maxJointVelocity=20)
 
 		for i in range(len(link_models)):
-			p.changeDynamics(self.boxId, i, 
-				#linearDamping=linearDamping, 
-				#angularDamping=angularDamping,
-				#jointDamping=jointDamping,
+			p.changeDynamics(self.boxId, self.index_map[i], 
+				linearDamping=linearDamping, 
+				angularDamping=angularDamping,
+				jointDamping=jointDamping,
 				#lateralFriction = lateralFriction,
 				#spinningFriction=spinningFriction,
 				#rollingFriction=rollingFriction,
 				#frictionAnchor = frictionAnchor,
 				#anisotropicFriction=anisotropicFriction,
-				##restitution=0,
-				#contactDamping=contactDamping,
-				#contactStiffness=contactStiffness,
+				restitution=0,
+				contactDamping=contactDamping,
+				contactStiffness=contactStiffness,
 				#spinningFriction=0.001,
-				#rollingFriction=0.001,
-				#localInertiaDiagonal = self.link_inertia_diagonal[self.index_map[i]],
+				#rollingFriction=rollingFriction,
+				localInertiaDiagonal = self.link_inertia_diagonal[i],
 				#localInertiaDiagonal = self.link_inertia_diagonal[i],
-				maxJointVelocity=1e10)
+				maxJointVelocity=20)
 
 
 
 	def bind_to_scene(self, scene, color=zencad.default_color):
-		if self.model:
-			self.ctr = disp(self.model, scene=scene, color=color)
-		self.link_ctr = []
-		for m in self.link_models:
-			self.link_ctr.append(disp(m, scene=scene, color=color))
-		self.update()
+		if self.base_interactive:
+			self.ctr=disp(self.base_interactive)
+			#self.link_ctr = []
+			for u in self.interactives: 
+				if isinstance(u, zencad.assemble.kinematic_unit):
+					u.simulation_start_pose = u.coord
+			#	self.link_ctr.append(self.interactives[i])
+
+		else:
+			if self.model:
+				self.ctr = disp(self.model, scene=scene, color=color)
+			self.link_ctr = []
+			for m in self.link_models:
+				self.link_ctr.append(disp(m, scene=scene, color=color))
+			self.update()
+			
 		return self
 
 	def update(self):
@@ -299,27 +313,30 @@ class pybullet_shape_bind:
 			tr = translate(tr.translation() * self.simulation.scale_factor) * tr.rotation().to_transformation()
 			self.ctr.relocate(tr)
 
-		info = p.getLinkStates(self.boxId, range(len(self.link_models)))
-		#print(info.__class__)
-		#print(info)
-		#print(info[0])
-		#print(info[1])
-		#print(info[2])
-		#print(len(info))
-		#print(len(info[0]))
-		#exit()
+		if self.base_interactive is None:
+			info = p.getLinkStates(self.boxId, range(len(self.link_models)))
+	
+			for i in range(len(info)):
+				info_node = info[self.index_map[i]]
+				rot = pyservoce.quaternion(*info_node[1]).to_transformation()
+				
+				tr = (translate(*info_node[0]) * rot 
+				* self.link_inertia_frame[i].rotation().to_transformation().inverse() 
+				* translate(vector3(self.link_inertia_frame[i].translation())).inverse()
+				)
+				
+				tr = translate(tr.translation() * self.simulation.scale_factor) * tr.rotation().to_transformation()
+				self.link_ctr[i].relocate(tr)
 
-		for i in range(len(info)):
-			info_node = info[self.index_map[i]]
-			rot = pyservoce.quaternion(*info_node[1]).to_transformation()
-			
-			tr = (translate(*info_node[0]) * rot 
-			* self.link_inertia_frame[i].rotation().to_transformation().inverse() 
-			* translate(vector3(self.link_inertia_frame[i].translation())).inverse()
-			)
-			
-			tr = translate(tr.translation() * self.simulation.scale_factor) * tr.rotation().to_transformation()
-			self.link_ctr[i].relocate(tr)
+		else:
+			def set_kinematic_pose(u):
+				if isinstance(u, zencad.assemble.kinematic_unit):
+					info = p.getJointState(u.pybullet_base.boxId, u.simulation_hint2)
+					pose=info[0]
+					u.set_coord(pose + u.simulation_start_pose)
+			zencad.assemble.for_each_unit(self.base_interactive, set_kinematic_pose)
+
+			self.base_interactive.location_update()
 
 
 	def velocity(self):
@@ -331,8 +348,8 @@ class pybullet_shape_bind:
 		p.resetBaseVelocity(self.boxId, lin, ang)
 
 
-class pybullet_simulation:
-	def __init__(self, scale_factor=1, gravity=(0,0,0), plane=True, gui=False, 
+class simulation:
+	def __init__(self, scale_factor=1, gravity=(0,0,0), plane=False, gui=False, 
 			time_step=1/240, substeps=2):
 		self.scale_factor = scale_factor
 
@@ -414,6 +431,8 @@ class pybullet_simulation:
 		link_locations=[], 
 		link_axes=[], 
 		link_joint_types=[],
+		interactives=None,
+		base_interactive=None,
 		scene=zencad.default_scene(), color=zencad.default_color
 		):
 
@@ -433,7 +452,9 @@ class pybullet_simulation:
 			link_locations=link_locations,
 			link_axes=link_axes,
 			link_joint_types=link_joint_types,
-			simulation=self
+			simulation=self,
+			interactives=interactives,
+			base_interactive=base_interactive
 		).bind_to_scene(scene,color)
 
 		self.binds.append(bind)
@@ -449,7 +470,7 @@ class pybullet_simulation:
 		for o in self.binds:
 			o.update()
 
-	def _bind_assemble_tasks(self, u, tasks, parent_index, pjoint, paxis):
+	def _bind_assemble_tasks(self, u, tasks, parent_index, pjoint, paxis, root):
 		class t:
 			def __init__(self, parent, model, location,
 					joint_type, joint_axis, parent_index):
@@ -467,15 +488,19 @@ class pybullet_simulation:
 		tasks.append(t(u, ubody, u.location, pjoint, paxis, parent_index))
 		current_index = len(tasks)
 
+		u.current_index = current_index
+
 		for c in u.childs:
 			pjoint=p.JOINT_FIXED
 			paxis=(0,0,0)
 
 			if isinstance(u, zencad.assemble.rotator):
 				pjoint=p.JOINT_REVOLUTE
-				paxis=u.axis
+				paxis=vector3(u.axis) #u.location(vector3(u.axis))
 
-			index = self._bind_assemble_tasks(c, tasks, current_index, pjoint=pjoint, paxis=paxis)
+			index = self._bind_assemble_tasks(c, tasks, current_index, 
+				pjoint=pjoint, paxis=paxis,
+				root=root)
 
 			if isinstance(u, zencad.assemble.rotator):
 				u.simulation_hint = index
@@ -484,21 +509,29 @@ class pybullet_simulation:
 	
 	def _prepare_motors(self, u, ret):
 		if isinstance(u, zencad.assemble.rotator):
-			p.setJointMotorControl2(ret.boxId, ret.index_map[u.simulation_hint-1], p.VELOCITY_CONTROL, 
+			p.setJointMotorControl2(ret.boxId, 
+				ret.index_map[u.simulation_hint-1], 
+				p.VELOCITY_CONTROL, 
 				targetVelocity=0, force=0)
+
+			u.simulation_hint2 = ret.index_map[u.simulation_hint - 1]
+			u.pybullet_base=ret
+
+		u.current_index2 = ret.index_map[u.current_index - 1]
 
 		for c in u.childs:
 			self._prepare_motors(c, ret)
 
-	def bind_assemble(self, root, fixed_base=False): 
+	def add_assemble(self, root, fixed_base=False): 
 		childs = root.childs
 		tasks = []
 
+		root.location_update()
 		ubody = root.union_shape()	
 
 		for c in root.childs:
 			self._bind_assemble_tasks(c, tasks, parent_index=0, 
-				pjoint=p.JOINT_FIXED, paxis=(0,0,0))
+				pjoint=p.JOINT_FIXED, paxis=(0,0,0), root=root)
 
 
 		link_models = [ t.model for t in tasks ]
@@ -506,6 +539,8 @@ class pybullet_simulation:
 		joint_types = [ t.joint_type for t in tasks ]
 		joint_axis = [ t.joint_axis for t in tasks ]
 		joint_parents = [ t.parent_index for t in tasks ]
+		interactives = [ t.parent for t in tasks ]
+		base_interactive = root
 
 		#print(joint_parents)
 
@@ -524,11 +559,15 @@ class pybullet_simulation:
 
 			link_joint_types = joint_types,
 			link_axes = joint_axis,
-			link_parents = joint_parents)
+			link_parents = joint_parents,
+
+			interactives = interactives,
+			base_interactive=base_interactive)
 
 		for c in root.childs:
 			self._prepare_motors(c, ret)
 
+		ret.links_number = len(link_models)
 		return ret
 
 	def set_force(self, base, hint, force):

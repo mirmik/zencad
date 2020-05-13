@@ -179,3 +179,4 @@ def sort_wires_by_face_area(cycles):
     return sorted(cycles, key=lambda c: c.fill().mass(), reverse=True)
 
 from zencad.geom.wire_builder import wire_builder
+import zencad.bullet
