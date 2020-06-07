@@ -21,7 +21,8 @@ from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
-from zencad.util import deg, deg2rad, rad2deg, angle_pair, points, points2, vectors
+from zencad.util import *
+from zencad.util2 import *
 from zencad.convert.api import *
 import types
 

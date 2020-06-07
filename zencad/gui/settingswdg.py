@@ -122,6 +122,7 @@ class SettingsWidget(QDialog):
 		self.not_start_widget = Checker("Показывать стартовый экран", path=["gui", "start_widget"])
 		self.bind_widget = Checker("Линковать виджет", path=["gui", "bind_widget"])
 		self.marker_size_edit = TextFieldChanger(path=["markers", "size"], label="Marker size:")
+		self.chordial_deflection_edit = TextFieldChanger(path=["view", "default_chordial_deviation"], label="Chordial deflection:")
 		
 		self.appliers = []
 		self.vlayout = QVBoxLayout()
@@ -135,6 +136,7 @@ class SettingsWidget(QDialog):
 		append(self.not_start_widget)
 		#append(self.bind_widget)
 		append(self.marker_size_edit)
+		append(self.chordial_deflection_edit)
 
 		self.vlayout.addLayout(self.hlayout)
 

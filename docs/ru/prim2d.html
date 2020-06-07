@@ -281,11 +281,12 @@
 
 <h2 id="-10">Интерполяция поверхности по массиву точек</h2>
 
-<p>Строит bspline поверхность интерполируя 2д массив точек. Масив задаётся двумерным списком.</p>
+<p>Строит bspline поверхность интерполируя 2д массив точек. Масив задаётся двумерным списком.
+degmin и degmax задают минимальную и максимальную степени интерполяционного полинома, соответственно.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">interpolate2</span><span class="p">(</span><span class="n">pnts</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">interpolate2</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">degmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degmax</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>

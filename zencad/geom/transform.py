@@ -234,7 +234,7 @@ def rotate_array2(n, r=None, yaw=(0,deg(360)), roll=(0,0), endpoint=False, array
 	return multitrans(transes, array=array, unit=unit)
 
 def short_rotate(f, t):
-	_f, _t = vector3(f), vector3(t)
-	if _f.early(_t, 0.000000000001):
+	_f, _t = vector3(f).normalize(), vector3(t).normalize()
+	if _f.early(_t, 1e-5):
 		return nulltrans()
 	return pyservoce.short_rotate(t=_t, f=_f)

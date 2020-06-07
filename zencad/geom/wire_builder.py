@@ -119,10 +119,10 @@ class wire_builder:
 			tangb= (0,0,0)
 
 			if approx_a:
-				_, tanga = self.edges[-1].d1(self.edges[-1].range()[1])
+				tanga = self.edges[-1].d1(self.edges[-1].range()[1])
 			
 			if approx_b:
-				_, tangb = self.edges[0].d1(self.edges[0].range()[0])
+				tangb = self.edges[0].d1(self.edges[0].range()[0])
 
 			self.edges.append(interpolate([self.current, self.start], [tanga, tangb]))
 

@@ -28,6 +28,7 @@ class Settings():
 			"default_color_green" : pre_default_color[1],
 			"default_color_blue" : pre_default_color[2],
 			"default_color_alpha" : pre_default_color[3],
+			"default_chordial_deviation" : 0.003
 		},
 		"memory" : {
 			"recents" : [],
@@ -145,10 +146,24 @@ def hsplitter_position_get():
 def vsplitter_position_get():
 	return Settings.list_of_settings["memory"]["vsplitter_position"]
 	
+def _restore_type(val):
+	if val == "true": return True
+	if val == "false": return False
+	
+	if isinstance(val, str):
+		try:
+			if float(val): return float(val)
+		except:
+			pass
+		
+	return val
+
 def get(path):
 	it = Settings.list_of_settings
 	for p in path:
 		it = it[p]
+
+	it = _restore_type(it)
 	return it
 
 def set(path, value):

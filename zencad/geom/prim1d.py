@@ -80,8 +80,8 @@ def rounded_polysegment(pnts, r, closed=False):
 		a = pyservoce.segment(pnts[i], pnts[i+1])
 		b = pyservoce.segment(pnts[i+1], pnts[i+2])
 
-		_, ad1 = a.d1(a.range()[1])
-		_, bd1 = b.d1(b.range()[0])
+		ad1 = a.d1(a.range()[1])
+		bd1 = b.d1(b.range()[0])
 
 		n = bd1.cross(ad1)
 
