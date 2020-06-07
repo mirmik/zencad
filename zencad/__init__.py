@@ -21,7 +21,7 @@ from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.lazifier import disable_cache, test_mode
 import evalcache
 
-from zencad.util import deg, deg2rad, rad2deg, angle_pair, points, vectors
+from zencad.util import deg, deg2rad, rad2deg, angle_pair, points, points2, vectors
 from zencad.convert.api import *
 import types
 
@@ -179,4 +179,4 @@ def sort_wires_by_face_area(cycles):
     return sorted(cycles, key=lambda c: c.fill().mass(), reverse=True)
 
 from zencad.geom.wire_builder import wire_builder
-import zencad.bullet
+#import zencad.bullet

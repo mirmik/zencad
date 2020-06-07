@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,11 +105,11 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Ссылочная геометрия</h1>
+      <article class="article"><h1 id="-1">Ссылочная геометрия</h1>
 
 <hr />
 
-<h2>Cмещение.</h2>
+<h2 id="c">Cмещение.</h2>
 
 <p>Путём смещения оболочек, строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
 
@@ -87,7 +127,7 @@
 
 <hr />
 
-<h2>Линейчатая поверхность.</h2>
+<h2 id="-2">Линейчатая поверхность.</h2>
 
 <p>Строит грань, задаваемую линейчатое поверхностью, опирающейся на линии <em>a</em>, <em>b</em>.</p>
 
@@ -98,8 +138,8 @@
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
-<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
 <span class="n">ruled</span><span class="p">(</span>
     <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
     <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
@@ -113,13 +153,13 @@
 
 <hr />
 
-<h2>Увязка</h2>
+<h2 id="-3">Увязка</h2>
 
 <p>Построение оболочки на масиве каркасных линий <em>profiles</em>. При активации опции <em>shell</em> вместо твёрдого тела строится оболочка. Активации опции <em>smooth</em> изменяет режим линейчатой поверхности на гладкую апроксимацию. При активной апроксимации опция <em>maxdegree</em> ограничивает максимальную степень полинома.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>

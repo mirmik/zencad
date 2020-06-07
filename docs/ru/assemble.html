@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,7 +105,7 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Иерархические сборки.</h1>
+      <article class="article"><h1 id="-1">Иерархические сборки.</h1>
 
 <p>При отображении сложной или анимированной сцены необъходимо работать с большим количеством связанных интерактивных объектов, перемещающихся друг относительно друга по определённым законам.</p>
 
@@ -73,7 +113,7 @@
 
 <hr />
 
-<h2>Сборочный юнит (zencad.assemble.unit).</h2>
+<h2 id="zencadassembleunit">Сборочный юнит (zencad.assemble.unit).</h2>
 
 <p>Сборочный юнит - это объект, имеющий собственную локальную систему координат, относительно которой позиционируются связанные с этим юнитом интерактивные объекты и другие юниты. Юниты могут создавать структуру дерева, отсчитывая своё положение относительно положения юнита-предка (unit.parent). Если юнит не имеет предка, его положение отсчитывается от глобальной системы координат.</p>
 
@@ -86,7 +126,7 @@
 
 <hr />
 
-<h2>Добавление объекта.</h2>
+<h2 id="-2">Добавление объекта.</h2>
 
 <p>Создаёт и связывает с юнитом интерактивный объект на основе переданного геометрического объекта <em>obj</em>.</p>
 
@@ -105,7 +145,7 @@ u.add(m)
 u.add(i)
 </code></pre>
 
-<h2>Добавление юнита-потомка.</h2>
+<h2 id="-">Добавление юнита-потомка.</h2>
 
 <p>Устанавливает объект <em>u</em> предком для объекта <em>child</em>.
 Теперь положение объектов в юните <em>child</em> (и его потомках) будет расчитываться с учётом положения объекта <em>u</em>.</p>
@@ -120,31 +160,31 @@ u.add(i)
 <div class="codehilite"><pre><span></span><code><span class="o">***</span>
 </code></pre></div>
 
-<h2>Обновить глобальное расположение.</h2>
+<h2 id="-3">Обновить глобальное расположение.</h2>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Обновить глобальное расположение объекта согласно данным о его текущем положении и объекту глобального положения предка. 
 view - если объект отображен, перерисовать его, исходя из нового положения.
 deep - применить рекурсивно всех потомков объекта.</p>
 
-<h2>Изменить локальное положение.</h2>
+<h2 id="-4">Изменить локальное положение.</h2>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Изменить текущее положение на объект location и применить процедуру location_update с опциями deep, view.</p>
 
-<h2>Отобразить на сцене.</h2>
+<h2 id="-5">Отобразить на сцене.</h2>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">bind_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">bind_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </code></pre></div>
 
 <p>Добавить юнит в сцену scene. Все объекты, цвета которых не установлены, будут окрашены в default_color. Если deep, рекурсивно добавить в сцену все зависимые юниты.</p>

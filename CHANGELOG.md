@@ -1,3 +1,7 @@
+## 0.33.0
+	Add points2, interpolate2
+	Add clossed option to rounded_polysegment
+
 ## 0.32.0
 	Модуль platonic интегрирован в prim3d
 	Add wire_builder

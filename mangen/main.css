@@ -151,7 +151,7 @@ pre
 .codehilite .gs    { font-weight: bold } /* Generic.Strong */
 .codehilite .gu    { color: #aaa } /* Generic.Subheading */
 .codehilite .gt    { color: #a00 } /* Generic.Traceback */
-.codehilite .kc    { font-weight: bold } /* Keyword.Constant */
+.codehilite .kc    { font-weight: bold; color: #704C93; } /* Keyword.Constant */
 .codehilite .kd    { font-weight: bold } /* Keyword.Declaration */
 .codehilite .kp    { font-weight: bold } /* Keyword.Pseudo */
 .codehilite .kr    { font-weight: bold } /* Keyword.Reserved */

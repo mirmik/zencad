@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,9 +105,9 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Отображение</h1>
+      <article class="article"><h1 id="-1">Отображение</h1>
 
-<h2>Scene</h2>
+<h2 id="scene">Scene</h2>
 
 <p>Scene - это контейнер, хранящий модели и закреплённые за ними цвета. </p>
 
@@ -80,12 +120,12 @@
 
 <p>zencad.default_scene - объект сцены, используемый операциями связанными с отбражением, если не указано иное. </p>
 
-<h2>zencad.display</h2>
+<h2 id="zencaddisplay">zencad.display</h2>
 
 <p>Инструмент для добавления геометрии в сцену.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
 
 <span class="n">zencad</span><span class="o">.</span><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># alternate</span>
@@ -96,7 +136,7 @@
 Для assemble.unit - вызывает процедуру bind</em>to_scene, возвращает None
 Для list/tuple - вызывает итеративно display для элементов списка, возвращает список результатов.</p>
 
-<h2>zencad.highlight</h2>
+<h2 id="zencadhighlight">zencad.highlight</h2>
 
 <p>Специальный вариант функции display, используемый для отладки конструируемой
 геометрии.</p>
@@ -111,7 +151,7 @@
 <div class="codehilite"><pre><span></span><code><span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">hl</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">100500</span><span class="p">))</span>
 </code></pre></div>
 
-<h2>color</h2>
+<h2 id="color">color</h2>
 
 <p>Объект, содержащий информацию о цвете в формате rgba. Диапазон значений параметров [0,1].</p>
 
@@ -132,10 +172,10 @@
 <span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">transmech</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
 </code></pre></div>
 
-<h2>show</h2>
+<h2 id="show">show</h2>
 
 <div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">,</span> 
-            <span class="n">animate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">preanimate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">close_handle</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+            <span class="n">animate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">preanimate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">close_handle</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Функция show инициирует отображение программы визуализатора. Если функция вызывается без аргументов, отображается сцена по умолчанию (zencad.default_scene).</p>

@@ -975,8 +975,8 @@ import zencad.draw as draw
 doscreen(
     model=(
         zencad.internal_models.knight(), 
-        draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
-        draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
+        zencad.lazy(draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), transparent=True), 
+        zencad.lazy(draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None), transparent=True)),
     path="short_rotate0.png",
     size=wsize
 )
@@ -984,8 +984,8 @@ doscreen(
 doscreen(
     model=( 
         short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight()), 
-        draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), 
-        draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None)),
+        zencad.lazy(draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), transparent=True), 
+        zencad.lazy(draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None), transparent=True)),
     path="short_rotate1.png",
     size=wsize
 )
@@ -1168,5 +1168,23 @@ doscreen(
 doscreen(
     model=wire_builder(defrel=True).l(10,0).l(0,10).l(-10,0).close().doit(),
     path="wb_segment0.png",
+    size=wsize
+)
+
+
+POINTS = points2([
+        [(0,0,0), (10,0,7), (20,0,5)],
+        [(0,5,0), (10,5,7.5), (20,5,7)],
+        [(0,10,2), (10,10,8), (20,10,5)],
+        [(0,15,1.3), (10,15,8.5), (20,15,6)],
+    ])
+
+m = interpolate2(POINTS)
+merged_list = []
+for l in POINTS:
+    merged_list += l
+doscreen(
+    model=(m, *merged_list),
+    path="interpolate20.png",
     size=wsize
 )

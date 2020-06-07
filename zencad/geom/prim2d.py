@@ -122,3 +122,8 @@ def tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
 @lazy.lazy(cls=shape_generator)
 def make_face(*args, **kwargs):
     return pyservoce.make_face(*args, **kwargs)
+
+@lazy.lazy(cls=shape_generator)
+def interpolate2(lst):
+    lst = [ points(l) for l in lst ]
+    return pyservoce.interpolate2(lst)

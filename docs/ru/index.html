@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -76,7 +116,7 @@
 
 <hr />
 
-<h2>Что это?</h2>
+<h2 id="-1">Что это?</h2>
 
 <p><em>ZenCad</em> - это библиотека параметрического 3д моделирования. библиотека исповедует идею создания 3д модели путём написания скрипта и ноги её растут из системы <em>OpenScad</em>. В отличие от <em>OpenScad</em>, библиотека использует геометрическое ядро граничного представления <em>OpenCascade</em> и язык общего назначения <em>Python</em>.</p>
 
@@ -84,18 +124,18 @@
 
 <hr />
 
-<h1>Быстрый старт.</h1>
+<h1 id="-2">Быстрый старт.</h1>
 
 <hr />
 
-<h2>Установка.</h2>
+<h2 id="-3">Установка.</h2>
 
 <div class="codehilite"><pre><span></span><code>python3 -m pip install zencad
 </code></pre></div>
 
 <hr />
 
-<h2>Запуск графической оболочки.</h2>
+<h2 id="-4">Запуск графической оболочки.</h2>
 
 <div class="codehilite"><pre><span></span><code>zencad
 
@@ -105,14 +145,14 @@ python3 -m pip zencad
 
 <hr />
 
-<h2>HelloWorld</h2>
+<h2 id="helloworld">HelloWorld</h2>
 
 <div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1">#coding: utf-8</span>
 
 <span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">sphere1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
 <span class="n">sphere2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
 
@@ -124,7 +164,7 @@ python3 -m pip zencad
 
 <hr />
 
-<h2>Ссылки</h2>
+<h2 id="-5">Ссылки</h2>
 
 <p>github: <a href="https://github.com/mirmik/zencad">https://github.com/mirmik/zencad</a> <br />
 pypi: <a href="https://pypi.org/project/zencad">https://pypi.org/project/zencad</a>  </p>

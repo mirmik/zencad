@@ -61,48 +61,69 @@ def bspline(pnts, knots, muls, degree, periodic=False, check_rational=True, weig
 
 
 @lazy.lazy(cls=shape_generator)
-def rounded_polysegment(pnts, r):
-    pnts = points(pnts)
-    cpnts = pnts[1:-1]
+def rounded_polysegment(pnts, r, closed=False):
+	pnts = points(pnts)
 
-    pairs = []
-    pairs_tangs = []
-    pairs.append((None, pnts[0]))
+	# Для того, чтобы закрыть контур, не теряя скругления, перекрёстно добавляем две точки,
+	# Две в начале, другую в конце.
+	if closed:
+		pnts.insert(0, pnts[-1])
+		pnts.append(pnts[1])
 
-    for i in range(len(cpnts)):
-        a = pyservoce.segment(pnts[i], pnts[i+1])
-        b = pyservoce.segment(pnts[i+1], pnts[i+2])
+	cpnts = pnts[1:-1]
 
-        _, ad1 = a.d1(a.range()[1])
-        _, bd1 = b.d1(b.range()[0])
+	pairs = []
+	pairs_tangs = []
+	pairs.append((None, pnts[0]))
 
-        n = bd1.cross(ad1)
+	for i in range(len(cpnts)):
+		a = pyservoce.segment(pnts[i], pnts[i+1])
+		b = pyservoce.segment(pnts[i+1], pnts[i+2])
 
-        if n.iszero():
-            pairs.append((cpnts[i], cpnts[i]))
-            pairs_tangs.append(None)
-            continue
+		_, ad1 = a.d1(a.range()[1])
+		_, bd1 = b.d1(b.range()[0])
 
-        abn = ad1.cross(n)
-        bbn = bd1.cross(n)
+		n = bd1.cross(ad1)
 
-        bn = (abn + bbn).normalize() * r
+		if n.iszero():
+			pairs.append((cpnts[i], cpnts[i]))
+			pairs_tangs.append(None)
+			continue
 
-        c = cpnts[i] + bn
+		abn = ad1.cross(n)
+		bbn = bd1.cross(n)
 
-        ca = pyservoce.project(c, a)
-        cb = pyservoce.project(c, b)
+		bn = (abn + bbn).normalize() * r
 
-        pairs.append((ca,cb))
-        pairs_tangs.append((ad1,bd1))
+		c = cpnts[i] + bn
 
-    pairs.append((pnts[-1], None))
+		ca = pyservoce.project(c, a)
+		cb = pyservoce.project(c, b)
 
-    nodes = []
-    for i in range(len(cpnts)):
-        nodes.append(pyservoce.segment(pairs[i][1], pairs[i+1][0]))
-        if pairs_tangs[i] is not None:
-            nodes.append(pyservoce.interpolate(pnts=[pairs[i+1][0],pairs[i+1][1]], tang=[pairs_tangs[i][0],pairs_tangs[i][1]]))
-    nodes.append(pyservoce.segment(pairs[-2][1], pairs[-1][0]))
+		pairs.append((ca,cb))
+		pairs_tangs.append((ad1,bd1))
 
-    return pyservoce.make_wire(nodes)
+	pairs.append((pnts[-1], None))
+
+	nodes = []
+	for i in range(len(cpnts)):
+		nodes.append(pyservoce.segment(pairs[i][1], pairs[i+1][0]))
+		if pairs_tangs[i] is not None:
+			nodes.append(pyservoce.interpolate(pnts=[pairs[i+1][0],pairs[i+1][1]], tang=[pairs_tangs[i][0],pairs_tangs[i][1]]))
+	nodes.append(pyservoce.segment(pairs[-2][1], pairs[-1][0]))
+
+	# Для замыкания необходимо удалить крайние сегменты.
+	if closed:
+		del nodes[0]
+		del nodes[-1]
+
+	result = pyservoce.make_wire(nodes)
+
+	# И, наконец, зашиваем прореху.
+	if closed:
+		result = pyservoce.make_wire([
+			result,
+			pyservoce.segment(result.endpoints()[0], result.endpoints()[1])
+		])
+
+	return result

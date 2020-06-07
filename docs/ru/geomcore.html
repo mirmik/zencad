@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,7 +105,7 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Введение в BREP представление геометрических моделей.</h1>
+      <article class="article"><h1 id="brep">Введение в BREP представление геометрических моделей.</h1>
 
 <p>Библиотека ZenCad основана на функциональных возможностях и объектной структуре геометрического ядра OpenCascade, использующего для работы с геометрическими моделями BREP (boundary representation/граничное представление).</p>
 
@@ -73,7 +113,7 @@
 
 <hr />
 
-<h2>BREP представление.</h2>
+<h2 id="brep-2">BREP представление.</h2>
 
 <p>Граничное представление (ан. Boundary representation) есть способ представления тел через описание их границ.</p>
 
@@ -85,7 +125,7 @@
 
 <hr />
 
-<h2>Классы геометрических объектов.</h2>
+<h2 id="-1">Классы геометрических объектов.</h2>
 
 <table>
 <thead>
@@ -164,15 +204,13 @@
 </tbody>
 </table>
 
-<blockquote class="spoiler">
-  <ul>
-  <li>В zencad практически всегда вместо Vertex используется эквивалентный объект точки point3. </li>
-  </ul>
+<blockquote>
+  <p>! * В zencad практически всегда вместо Vertex используется эквивалентный объект точки point3. </p>
 </blockquote>
 
 <hr />
 
-<h2>Более подробно о ядре.</h2>
+<h2 id="-2">Более подробно о ядре.</h2>
 
 <p>Ядро OpenCascade довольно обширно, имеет бесчисленное количество инструментов и потому врядли возможно сколь-нибудь передать его суть в рамках этой маленькой справки.</p>
 

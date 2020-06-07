@@ -65,7 +65,7 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1>Рефлексия</h1>
+      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Рефлексия</h1>
 
 <p>Сложные геометрические объекты состоят из более простых. Данная группа функций и методов позволяет расскладывать сложные объекты на образующие их компоненты.</p>
 
@@ -73,25 +73,25 @@
 
 <hr />
 
-<h2>Массивы базовых объектов</h2>
+<h2 id="-2">Массивы базовых объектов</h2>
 
 <p>Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. </p>
 
 <p>Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция <em>filter</em> позволяет отфильтровать выборку по необходимому условию.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
-<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
 </code></pre></div>
 
 <hr />
 
-<h2>Взятие базового объекта по методу ближайшей точки</h2>
+<h2 id="-3">Взятие базового объекта по методу ближайшей точки</h2>
 
 <p>Иногда требуется извлечь из сложного объекта конкретный базовый объект. 
 В этом случае можно использовать метод базовой точки.  </p>
