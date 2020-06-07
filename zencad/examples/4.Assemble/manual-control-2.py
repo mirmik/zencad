@@ -33,20 +33,20 @@ class Slider(QSlider):
 
 
 class link(zencad.assemble.unit):
-	def __init__(self, h=40, ax=(0,1,0)):
+	def __init__(self, h=40, axis=(0,1,0)):
 		super().__init__()
-		if ax != (0,0,1):
-			self.add_shape(cylinder(5,h) + cylinder(6,10,center=True).transform(up(h) * short_rotate((0,0,1), ax)))
+		if axis != (0,0,1):
+			self.add_shape(cylinder(5,h) + cylinder(6,10,center=True).transform(up(h) * short_rotate((0,0,1), axis)))
 		else:
 			self.add_shape(cylinder(5,h))	
-		self.rotator = zencad.assemble.rotator(parent=self, ax=ax, location=up(h))
+		self.rotator = zencad.assemble.rotator(parent=self, axis=axis, location=up(h))
 
-r = zencad.assemble.rotator(ax=(0,0,1))
-a = link(ax=(0,1,0))
-b = link(ax=(1,0,0))
-c = link(ax=(0,1,0))
-d = link(ax=(1,0,0))
-e = link(ax=(0,1,0))
+r = zencad.assemble.rotator(axis=(0,0,1))
+a = link(axis=(0,1,0))
+b = link(axis=(1,0,0))
+c = link(axis=(0,1,0))
+d = link(axis=(1,0,0))
+e = link(axis=(0,1,0))
 
 r.link(a)
 a.rotator.link(b)

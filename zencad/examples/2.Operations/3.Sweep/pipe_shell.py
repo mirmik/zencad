@@ -22,10 +22,6 @@ spine = interpolate(
 
 uniform = spine.uniform(len(proto_wires))
 
-print(uniform)
-for u in uniform:
-	print(spine.d1(u))
-
 wires = [
 	(move(*spine.d0(uniform[i])) * short_rotate((0,0,1), spine.d1(uniform[i])))(
 		p) for i,p in enumerate(proto_wires)]

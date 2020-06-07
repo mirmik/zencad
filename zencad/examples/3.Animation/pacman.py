@@ -8,8 +8,8 @@ import time
 class Pacman(zencad.assemble.unit):
 	def __init__(self):
 		super().__init__()
-		self.rot0 = zencad.assemble.rotator(ax=(0,1,0), parent=self)
-		self.rot1 = zencad.assemble.rotator(ax=(0,1,0), parent=self)
+		self.rot0 = zencad.assemble.rotator(axis=(0,1,0), parent=self)
+		self.rot1 = zencad.assemble.rotator(axis=(0,1,0), parent=self)
 
 		self.part0 = zencad.assemble.unit()
 		self.part1 = zencad.assemble.unit()

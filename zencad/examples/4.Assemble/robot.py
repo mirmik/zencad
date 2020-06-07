@@ -52,7 +52,7 @@ class Robot(zencad.assemble.unit):
         head = HeadAssemble()
 
         # print("HEAD_CONNECTOR!!!")
-        self.head_connector = zencad.assemble.rotator(parent=self, location=up(self.h), ax=(0,0,1))
+        self.head_connector = zencad.assemble.rotator(parent=self, location=up(self.h), axis=(0,0,1))
         self.head_connector.link(head)
 
 
