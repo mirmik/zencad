@@ -43,13 +43,13 @@ matrix:
       install: 
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         - sudo apt-get update
-        
+
         - git clone https://github.com/pybind/pybind11
         - cd pybind11
         - python3 ./setup.py install
         - cd ..
 
-        - python3 -m pip install licant
+        - python3 -m pip install licant pybind11
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
         - python3 -m pip install scikit-image
 
@@ -58,7 +58,7 @@ matrix:
         - git clone https://github.com/mirmik/servoce-third-libs servoce-third-libs-travis
         - mkdir pyservoce/libs 
         - cp servoce-third-libs-travis/linux-7.4/* pyservoce/libs/
-        - python3 ./setup.py install
+        - sudo python3 ./setup.py install
         - cd ..
 
         - python3 ./setup.py install
