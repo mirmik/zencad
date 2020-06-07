@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,13 +105,13 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Точка, вектор, вспомогательные функции.</h1>
+      <article class="article"><h1 id="-1">Точка, вектор, вспомогательные функции.</h1>
 
 <p>В библиотеки ZenCad есть некоторые вспомогательные математические объекты и функции для работы с ними.</p>
 
 <hr />
 
-<h2>Точка.</h2>
+<h2 id="-2">Точка</h2>
 
 <p>Некоторые функции ZenCad используют в качестве параметров точки или массивы точек. Для создания объекта точки можно использовать функцию <code>point3</code>. Кроме того, часто функция может сама сформировать точки по списку или кортежу координат.</p>
 
@@ -87,7 +127,7 @@
 
 <hr />
 
-<h2>Вектор.</h2>
+<h2 id="-3">Вектор</h2>
 
 <p>Иногда кроме указаний точек используются объекты-векторы для указания направлений. Принцип работы с векторами аналогичен работе с точками.</p>
 
@@ -96,11 +136,36 @@
 <span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
 </code></pre></div>
 
-<p>Вектор не может быть отображен непосредственно.</p>
+<p>Вектор не может быть отображен непосредственно. <br />
+В отличии от точки вектор игнорирует трансляцию при преобразованиях.</p>
 
 <hr />
 
-<h2>Операции над точками и векторами.</h2>
+<h2 id="-4">Масивы точек и векторов</h2>
+
+<p>Функции vectors и points явно создают массивы точек из массивов координат.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
+<span class="n">vectors</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="-5">Инкрементальный масив точек</h2>
+
+<p>Создаёт массив точек на основе смещений.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">points_incremental</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
+<span class="c1"># Создаёт масив точек:</span>
+<span class="c1"># (0,2,0)</span>
+<span class="c1"># (0,2,10)</span>
+<span class="c1"># (5,2,10)</span>
+<span class="c1"># (10,2,10)</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="-6">Операции над точками и векторами</h2>
 
 <p>Точки и вектора могут использоваться в математических операциях в соответствиями с правилами линейной алгебры.</p>
 
@@ -112,17 +177,7 @@
 
 <hr />
 
-<h2>Функции vectors, points.</h2>
-
-<p>Функции vectors и points явно создают массивы точек из массивов координат.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
-<span class="n">vectors</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
-</code></pre></div>
-
-<hr />
-
-<h2>Пустое примитив. nullshape.</h2>
+<h2 id="nullshape">Пустое примитив. nullshape</h2>
 
 <p>Пустой примитив. Может участвовать в булевых операциях.  </p>
 
@@ -137,15 +192,35 @@
 
 <hr />
 
-<h2>Функция deg.</h2>
+<h2 id="-7">Перевод угловых величин. Радианы и градусы</h2>
 
-<p>API ZenCad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg: <br />
+<p>API zencad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg (синоним deg2rad): <br />
 <code>deg(180)</code> соответствует <code>math.pi</code>.</p>
 
-<p>Код функции deg:</p>
+<p>Обратное преобразование выполняется функцией rad2deg.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
+<p>Сигнатуры:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Convert degrees to radians:</span>
+<span class="k">def</span> <span class="nf">deg2rad</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+
+<span class="c1"># Convert radians to degrees:</span>
+<span class="k">def</span> <span class="nf">rad2deg</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Код функции deg2rad, rad2deg:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deg2rad</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+
+<span class="k">def</span> <span class="nf">rad2deg</span><span class="p">(</span><span class="n">rad</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+</code></pre></div>
+
+<p>Пример:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
 </code></pre></div>
 </article>
     </div>

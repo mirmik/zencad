@@ -41,16 +41,6 @@ def angle_pair(arg):
     else:
         return (arg, 0)
 
-
-def point3(*arg):
-    args = [ evalcache.unlazy_if_need(a) for a in arg ]
-
-    if isinstance(args[0], pyservoce.point3):
-        return args[0]
-
-    return pyservoce.point3(*args)
-
-
 def color(*arg):
     args = [ evalcache.unlazy_if_need(a) for a in arg ]
 
@@ -59,22 +49,29 @@ def color(*arg):
 
     return pyservoce.color(*args)
 
+def point3(*args):
+    args = [ evalcache.unlazy_if_need(a) for a in args ]
+    if len(args) == 1:
+        return point3(*args[0])
+    return pyservoce.point3(*args)
 
-def vector3(x, y=None, z=None):
-    x,y,z = [ evalcache.unlazy_if_need(a) for a in (x,y,z) ]
-
-    if isinstance(x, pyservoce.vector3):
-        return x
-
-    if y is None and z is None:
-        return pyservoce.vector3(x[0], x[1], x[2])
-
-    return pyservoce.vector3(x,y,z)
-
+def vector3(*args):
+    args = [ evalcache.unlazy_if_need(a) for a in args ]
+    if len(args) == 1:
+        return vector3(*args[0])
+    return pyservoce.vector3(*args)
 
 def points(tpls):
     return [point3(*t) for t in tpls]
 
+def points2(tpls):
+    return [points(t) for t in tpls]
+
+def points_incremental(tpls):
+    lst = [point3(tpls[0])]
+    for i in range(1, len(tpls)): 
+        lst.append(lst[-1] + vector3(tpls[i]))
+    return lst
 
 def vectors(tpls):
     return [vector3(*t) for t in tpls]

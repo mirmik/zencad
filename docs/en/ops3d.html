@@ -65,11 +65,11 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1>Ссылочная геометрия</h1>
+      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Ссылочная геометрия</h1>
 
 <hr />
 
-<h2>Cмещение.</h2>
+<h2 id="c">Cмещение.</h2>
 
 <p>Путём смещения оболочек, строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
 
@@ -87,7 +87,7 @@
 
 <hr />
 
-<h2>Линейчатая поверхность.</h2>
+<h2 id="-2">Линейчатая поверхность.</h2>
 
 <p>Строит грань, задаваемую линейчатое поверхностью, опирающейся на линии <em>a</em>, <em>b</em>.</p>
 
@@ -98,8 +98,8 @@
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
-<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
 <span class="n">ruled</span><span class="p">(</span>
     <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
     <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
@@ -113,13 +113,13 @@
 
 <hr />
 
-<h2>Увязка</h2>
+<h2 id="-3">Увязка</h2>
 
 <p>Построение оболочки на масиве каркасных линий <em>profiles</em>. При активации опции <em>shell</em> вместо твёрдого тела строится оболочка. Активации опции <em>smooth</em> изменяет режим линейчатой поверхности на гладкую апроксимацию. При активной апроксимации опция <em>maxdegree</em> ограничивает максимальную степень полинома.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>

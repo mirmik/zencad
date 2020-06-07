@@ -165,6 +165,7 @@ class servo_controller2(force_controller):
 		self.position_target = 0
 		self.filtered_force = 0
 		self.spd2 = 0
+		self.filtered_spd2 = 0
 
 	def init(self):
 		self.position_target = self.coord()
@@ -180,7 +181,8 @@ class servo_controller2(force_controller):
 		self.spd2 = spd2
 
 	def serve(self, delta):
-		self.position_target += self.spd2 * delta
+		self.filtered_spd2 += (self.spd2 - self.filtered_spd2) * delta
+		self.position_target += self.filtered_spd2 * delta
 
 		spdsig = self.speed()
 		possig = self.coord()
@@ -214,6 +216,7 @@ class servo_controller3(force_controller):
 		self.spd2 = 0
 		self.filtered_spdsig = 0
 		self.filtered_possig = 0
+		self.filtered_spd2 = 0
 
 	def init(self):
 		self.position_target = self.coord()
@@ -229,7 +232,8 @@ class servo_controller3(force_controller):
 		self.spd2 = spd2
 
 	def serve(self, delta):
-		self.position_target += self.spd2 * delta
+		self.filtered_spd2 += (self.spd2 - self.filtered_spd2) * 1
+		self.position_target += self.filtered_spd2 * delta
 
 		spdsig = self.speed()
 		possig = self.coord()
@@ -247,7 +251,13 @@ class servo_controller3(force_controller):
 
 		self.filtered_force += (evaluated_force - self.filtered_force) * self.filter
 
-		self.set_force(self.filtered_force)
+		final_force = self.filtered_force
+
+		if self.maxforce:
+			if abs(final_force) > self.maxforce: final_force = final_force / abs(final_force) * self.maxforce		
+
+		self.set_force(final_force)
+
 		super().serve(delta)
 
 	def serve_spd_only(self, delta):
@@ -257,13 +267,14 @@ class servo_controller3(force_controller):
 		self.pidspd.serve(spderr, delta)
 		evaluated_force = self.pidspd.value()
 
-		self.filtered_force += (evaluated_force - self.filtered_force) * self.filter
-#		self.filtered_force2 += (evaluated_force - self.filtered_force2) * 1
-		
-		self.set_force(self.filtered_force)
+		final_force = self.filtered_force
+		if self.maxforce:
+			if abs(final_force) > self.maxforce: final_force = final_force / abs(final_force) * self.maxforce		
+		self.set_force(final_force)
 		super().serve(delta)
 
-	def set_regs(self, pidspd, pidpos, filt=1):
+	def set_regs(self, pidspd, pidpos, filt=1, maxforce=None):
 		self.pidspd = pidspd	
 		self.pidpos = pidpos
 		self.filter = filt
+		self.maxforce = maxforce

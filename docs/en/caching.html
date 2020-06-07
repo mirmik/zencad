@@ -65,34 +65,34 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1>Кэширование и ленивые объекты.</h1>
+      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Кэширование и ленивые объекты.</h1>
 
 <p>Особенностью скриптового cad является необходимость перезапуска скрипта генерации геометрии при каждом обновлении модели. С ростом размера модели это приводит к значительному росту времени, требующегося на расчёт и отрисовку геометрии. С целью решения этой проблемы вычислительно ёмкие операции ZenCad закешированы и ленифицированы силами библиотеки <a href="https://github.com/mirmik/evalcache">evalcache</a>. </p>
 
 <p>Вместо непосредственного расчета, evalcache строит дерево построения модели на основе хэшключей генерируемых объектов. Библиотека сохраняет в кэше на жестком диске все произведенные вычисления и в случае, если объект уже был расчитан ранее, достаёт его из кэша. evalcache отслеживает изменения параметров в дереве модели и на лету обновляет переставшие быть актуальными объекты вычисления.</p>
 
-<h3>Отладка в условиях работы с ленивыми вычислениями.</h3>
+<h3 id="-2">Отладка в условиях работы с ленивыми вычислениями.</h3>
 
 <p>Так как evalcache выполняет вычисления только в момент, когда объект в действительности запрошен, а не тогда, когда он объявлен, могут возникать проблемы с пониманием точки возникновения возможной ошибки. Также могут возникать проблемы из-за неявного раскрытия ленивых объектов на некоторых операциях.</p>
 
 <p>Для отладки и понимания точки возникновения ошибки можно применять следующие опции:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">diag</span><span class="o">=</span><span class="bp">True</span> <span class="c1"># Активировать вывод информации об операциях библиотеки кеширования.</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">fastdo</span><span class="o">=</span><span class="bp">True</span> <span class="c1"># Выполнять запрос объекта в момент его создания.</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">encache</span><span class="o">=</span><span class="bp">False</span> <span class="c1"># Запретить сохранение в кэш.</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">decache</span><span class="o">=</span><span class="bp">False</span> <span class="c1"># Запретить загрузку из кэша.</span>
+<div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">diag</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Активировать вывод информации об операциях библиотеки кеширования.</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">fastdo</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Выполнять запрос объекта в момент его создания.</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">encache</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить сохранение в кэш.</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">decache</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить загрузку из кэша.</span>
 
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onbool</span><span class="o">=</span><span class="bp">False</span> <span class="c1"># Запретить автоматическое раскрытие на булевых операциях</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onstr</span><span class="o">=</span><span class="bp">False</span> <span class="c1"># Запретить автоматическое раскрытие при преобразовании к строке.</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onbool</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить автоматическое раскрытие на булевых операциях</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onstr</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить автоматическое раскрытие при преобразовании к строке.</span>
 
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onplace</span><span class="o">=</span><span class="bp">True</span> <span class="c1"># Раскрывать объект в момент его создания (не рекомендуется, может нарушать логику).</span>
+<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onplace</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Раскрывать объект в момент его создания (не рекомендуется, может нарушать логику).</span>
 </code></pre></div>
 
 <p>Дополнительные опции можно найти в документации к коду библиотеки evalcache.</p>
 
 <hr />
 
-<h3>Где лежит кэш?</h3>
+<h3 id="-3">Где лежит кэш?</h3>
 
 <p>По умолчанию кеш располагается по локальному адресу <code>~/.zencadcache</code>, где <em>~</em> - домашний директорий пользователя.</p>
 </article>

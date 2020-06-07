@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,7 +105,7 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Триангуляция и меш</h1>
+      <article class="article"><h1 id="-1">Триангуляция и меш</h1>
 
 <p><strong>EXPERIMENTAL</strong></p>
 
@@ -73,7 +113,7 @@
 
 <hr />
 
-<h2>Триангуляция</h2>
+<h2 id="-2">Триангуляция</h2>
 
 <p>Построение полигональной сетки в формате (<em>nodes</em>, <em>triangles</em>), где <em>pnts</em> - массив точек, а <em>triangles</em> - массив 3-кортежей, индексов точек.
 Параметр <em>deflection</em> отвечает за разрешение разбиения. </p>
@@ -88,11 +128,11 @@
 <div class="codehilite"><pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">triangulate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 
 <span class="c1">#count_of_nodes: 699</span>
 <span class="c1">#count_of_triangles: 1362</span>
@@ -102,13 +142,13 @@
 
 <hr />
 
-<h2>Полигедрон</h2>
+<h2 id="-3">Полигедрон</h2>
 
 <p>Объёмное тело, состоящее из плоских граней, заданное точками вершин <em>pnts</em> и массивом кортежей индексов точек, задающих грани.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -122,7 +162,7 @@
 
 <hr />
 
-<h2>Выпуклая оболочка</h2>
+<h2 id="-4">Выпуклая оболочка</h2>
 
 <p>Построение выпуклой оболочки множества точек.
 Используется процедура scipy.spatial.ConvexHull</p>
@@ -136,8 +176,8 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -150,7 +190,7 @@
     <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
 <span class="p">])</span>
 
-<span class="k">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
 </code></pre></div>
 

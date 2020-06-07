@@ -42,7 +42,7 @@ def page_generate(path, title, mdpath, navpath, comming=False):
         if comming:
             article.add("English version in preparation. COMMING SOON.")
         dominate.util.raw(
-            markdown2.markdown(open(mdpath).read(), extras=["spoiler","fenced-code-blocks", "tables"])
+            markdown2.markdown(open(mdpath).read(), extras=["fenced-code-blocks", "tables", "header-ids"])
         )
 
     writer.build_file(path, page)

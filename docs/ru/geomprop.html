@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,7 +105,7 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Геометрические характеристики.</h1>
+      <article class="article"><h1 id="-1">Геометрические характеристики.</h1>
 
 <p>Раздел посвящен измерению геометрических характеристик конструируемой геометрии.</p>
 
@@ -73,38 +113,38 @@
 
 <hr />
 
-<h2>Встроенные методы</h2>
+<h2 id="-2">Встроенные методы</h2>
 
 <p>Shape имеет ряд методов, позволяющих запросить геометрическую информацию.</p>
 
-<h3>Центр масс.</h3>
+<h3 id="-3">Центр масс.</h3>
 
 <p>shape.center() -> point3
 shape.cmradius() -> vector3</p>
 
-<h3>Объём.</h3>
+<h3 id="-4">Объём.</h3>
 
 <p>shape.mass() -> float</p>
 
-<h3>Матрица инерции.</h3>
+<h3 id="-5">Матрица инерции.</h3>
 
 <p>shape.matrix<em>of</em>inertia() -> matrix33</p>
 
-<h3>Статические моменты.</h3>
+<h3 id="-6">Статические моменты.</h3>
 
 <p>shape.static_moments() -> float, float, float</p>
 
-<h3>Момент инерции относительно оси.</h3>
+<h3 id="-7">Момент инерции относительно оси.</h3>
 
 <p>UNDER_CONSTRUCT</p>
 
-<h3>Радиус инерции.</h3>
+<h3 id="-8">Радиус инерции.</h3>
 
 <p>UNDER_CONSTRUCT</p>
 
 <hr />
 
-<h2>Измерение систем тел</h2>
+<h2 id="-9">Измерение систем тел</h2>
 
 <p>UNDER_CONSTRUCT</p>
 </article>

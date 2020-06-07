@@ -31,10 +31,50 @@
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
-<li><a href="prim3d.html">Объёмные примитивы</a>  </li>
-<li><a href="prim2d.html">Плоские примитивы</a>  </li>
-<li><a href="prim1d.html">Линии и циклы</a>  </li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+<li><a href="prim3d.html">Объёмные примитивы</a>
+<ul>
+<li><a href="prim3d.html#-2">параллелепипед</a></li>
+<li><a href="prim3d.html#-3">сфера</a></li>
+<li><a href="prim3d.html#-4">цилиндр</a></li>
+<li><a href="prim3d.html#-5">конус</a></li>
+<li><a href="prim3d.html#-6">тор</a></li>
+<li><a href="prim3d.html#-7">полупространство</a></li>
+<li><a href="prim3d.html#-8">платоновы тела</a></li>
+</ul></li>
+<li><a href="prim2d.html">Плоские примитивы</a> <br />
+<ul>
+<li><a href="prim2d.html#-2">прямоугольник</a>  </li>
+<li><a href="prim2d.html#-3">окружность/круг</a>  </li>
+<li><a href="prim2d.html#-4">эллипс</a>  </li>
+<li><a href="prim2d.html#-5">полигон</a>  </li>
+<li><a href="prim2d.html#-6">правильный многоугольник</a>  </li>
+<li><a href="prim2d.html#-7">текст</a>  </li>
+<li><a href="prim2d.html#-8">бесконечная плоскость</a> </li>
+<li><a href="prim2d.html#-9">заполнение контура</a>   </li>
+<li><a href="prim2d.html#-10">интерполяционная поверхность</a>   </li>
+</ul></li>
+<li><a href="prim1d.html">Линии и циклы</a> <br />
+<ul>
+<li><a href="prim1d.html#-2">сегмент</a> </li>
+<li><a href="prim1d.html#-3">полисегмент</a> </li>
+<li><a href="prim1d.html#-4">интерполяция</a> </li>
+<li><a href="prim1d.html#-5">дуга окружности</a> </li>
+<li><a href="prim1d.html#-6">спираль</a> </li>
+<li><a href="prim1d.html#-7">кривая безье</a> </li>
+<li><a href="prim1d.html#bspline">b-сплайн</a> </li>
+<li><a href="prim1d.html#-8">скруглённый полисегмент</a> </li>
+<li><a href="prim1d.html#-9">сложная кривая</a></li>
+<li><a href="prim1d.html#-10">Конструктор сложной кривой</a></li>
+</ul></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a>
+<ul>
+<li><a href="prim0d.html#-2">точка</a></li>
+<li><a href="prim0d.html#-3">вектор</a></li>
+<li><a href="prim0d.html#-4">массивы точек и векторов</a></li>
+<li><a href="prim0d.html#-5">алгебра точек и векторов</a></li>
+<li><a href="prim0d.html#nullsphape">пустой примитив</a></li>
+<li><a href="prim0d.html#-6">перевод угловых величин</a></li>
+</ul></li>
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
@@ -65,7 +105,7 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1>Интерактивный объект</h1>
+      <article class="article"><h1 id="-1">Интерактивный объект</h1>
 
 <p>Интерактивный объект - есть единица отображения в zencad.</p>
 
@@ -73,7 +113,7 @@
 
 <hr />
 
-<h2>Геометрические интерактивные объекты.</h2>
+<h2 id="-2">Геометрические интерактивные объекты.</h2>
 
 <p>Механизм интерактивных объектов используется для отображения геометрических форм, обрабатываемых zencad.</p>
 
@@ -98,11 +138,11 @@
 
 <hr />
 
-<h2>Графические интерактивные объекты.</h2>
+<h2 id="-3">Графические интерактивные объекты.</h2>
 
 <p>Помимо интерактивных объектов геометрических форм существуют интерактивные объекты, которые могут использоваться для передачи дополненительной информации на рабочей сцене:</p>
 
-<h3>Стрелка:</h3>
+<h3 id="-4">Стрелка:</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">arrow</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
 </code></pre></div>
@@ -110,7 +150,7 @@
 <p>Отобразить стрелку, соответствующую вектору <em>vec</em>, ведущему из точки <em>pnt</em>, размер головы стрелки определяется параметром <em>arrlen</em>, толщина линии параметром <em>width</em>.
 Если параметр scene не None, объект сразу добавляется в scene.</p>
 
-<h3>Линия:</h3>
+<h3 id="-5">Линия:</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">line</span><span class="p">(</span><span class="n">apnt</span><span class="p">,</span> <span class="n">bpnt</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
 </code></pre></div>
@@ -120,23 +160,23 @@
 
 <hr />
 
-<h2>Методы класса interactive_object:</h2>
+<h2 id="interactive_object">Методы класса interactive_object:</h2>
 
-<h3>Переразмещение</h3>
+<h3 id="-6">Переразмещение</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Переразмещает объект в положение <em>trans</em> относительно исходного расположения. </p>
 
-<h3>Скрытие</h3>
+<h3 id="-7">Скрытие</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">hide</span><span class="p">(</span><span class="n">en</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Скрыть или же вновь отобразить объект. Скрытый объект не удаляется из памяти.</p>
 
-<h3>Установка цвета</h3>
+<h3 id="-8">Установка цвета</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
 

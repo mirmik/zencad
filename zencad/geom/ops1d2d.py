@@ -14,55 +14,73 @@ def fill(*args, **kwargs):
 def interpolate(pnts, tangs=[], closed=False):
     return pyservoce.interpolate(points(pnts), vectors(tangs), closed)
 
+def _sort_wires(lst):
+    lst = evalcache.unlazy_if_need(lst)
+    size = len(lst)
+
+    res = [lst[0]]
+    strt = lst[0].endpoints()[0]
+    fini = lst[0].endpoints()[1]
+    del lst[0]
+
+    stubiter = 0
+    while len(res) != size:
+        for i, l in enumerate(lst):
+            l_strt = l.endpoints()[0]
+            l_fini = l.endpoints()[1]
+
+            # TODO: Fix point3 equality in servoce library and change equalities to early methods.
+            if strt.early(l_strt, 1e-5):
+                strt = l_fini
+                del lst[i]
+                res.insert(0, l)
+                break
+
+            elif strt.early(l_fini, 1e-5):
+                strt = l_strt
+                del lst[i]
+                res.insert(0, l)
+                break
+
+            elif fini.early(l_strt, 1e-5):
+                fini = l_fini
+                del lst[i]
+                res.append(l)
+                break
+
+            elif fini.early(l_fini, 1e-5):
+                fini = l_strt
+                del lst[i]
+                res.append(l)
+                break
+
+        else:
+            stubiter += 1
+
+        if stubiter >= 3:
+            raise Exception("sew:sorting: Failed to wires sorting")
+
+    return res
+
+def _wires_to_edges(lst):
+    ret = []
+
+    for l in lst:
+        if l.shapetype() == "edge":
+            ret.append(l)
+        elif l.shapetype() == "wire":
+            ret.extend(l.edges())
+        else:
+            raise Exception("_wires_to_edges : unresolved input type")
+
+    return ret
+
 def _sew_wire(lst, sort=True):
     lst = evalcache.unlazy_if_need(lst)
+    lst = _wires_to_edges(lst)
 
     if sort:
-        size = len(lst)
-
-        res = [lst[0]]
-        strt = lst[0].endpoints()[0]
-        fini = lst[0].endpoints()[1]
-        lst.remove(lst[0])
-
-        stubiter = 0
-        while len(res) != size:
-            for l in lst:
-                l_strt = l.endpoints()[0]
-                l_fini = l.endpoints()[1]
-
-                # TODO: Fix point3 equality in servoce library and change equalities to early methods.
-                if strt == l_strt:
-                    strt = l_fini
-                    lst.remove(l)
-                    res.insert(0, l)
-                    break
-
-                elif strt == l_fini:
-                    strt = l_strt
-                    lst.remove(l)
-                    res.insert(0, l)
-                    break
-
-                elif fini == l_strt:
-                    fini = l_fini
-                    lst.remove(l)
-                    res.append(l)
-                    break
-
-                elif fini == l_fini:
-                    fini = l_fini
-                    lst.remove(l)
-                    res.append(l)
-                    break
-
-            else:
-                stubiter += 1
-
-            if stubiter >= 3:
-                raise Exception("sew:sorting: Failed to wires sorting")
-
-        lst = res
+        lst = _sort_wires(lst)
 
     return pyservoce.make_wire(lst)
 

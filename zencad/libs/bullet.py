@@ -255,7 +255,7 @@ class pybullet_shape_bind:
 				contactDamping=contactDamping,
 				contactStiffness=contactStiffness,
 				localInertiaDiagonal = self.inertia_diagonal,
-				maxJointVelocity=20)
+				maxJointVelocity=10e5)
 
 		for i in range(len(link_models)):
 			p.changeDynamics(self.boxId, self.index_map[i], 
@@ -274,7 +274,7 @@ class pybullet_shape_bind:
 				#rollingFriction=rollingFriction,
 				localInertiaDiagonal = self.link_inertia_diagonal[i],
 				#localInertiaDiagonal = self.link_inertia_diagonal[i],
-				maxJointVelocity=20)
+				maxJointVelocity=10e5)
 
 
 
