@@ -49,6 +49,8 @@ matrix:
         - python3 ./setup.py install
         - cd ..
 
+        - sudo python3 -m pip install licant pybind11 wheel
+
         - python3 -m pip install licant pybind11 wheel
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
         - python3 -m pip install scikit-image
