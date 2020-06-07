@@ -15,10 +15,10 @@ matrix:
 
       install: 
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        - sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
-        - sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
+        #- sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
+        #- sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
         - sudo apt-get update
-        - sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
+        #- sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
         - sudo apt install -y python3-pybind11
 
         - python3 -m pip install licant
@@ -27,6 +27,9 @@ matrix:
 
         - git clone https://github.com/mirmik/servoce --recursive
         - cd servoce 
+        - git clone https://github.com/mirmik/servoce-third-libs servoce-third-libs-travis
+        - mkdir pyservoce/libs 
+        - cp servoce-third-libs-travis/linux-7.4/* pyservoce/libs/
         - python3 ./setup.py install
         - cd ..
 
@@ -48,10 +51,10 @@ matrix:
 
       install: 
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        - sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
-        - sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
+        #- sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
+        #- sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
         - sudo apt-get update
-        - sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
+        #- sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
         - sudo apt install -y python3-pybind11
 
         - python3 -m pip install licant
@@ -60,6 +63,9 @@ matrix:
 
         - git clone https://github.com/mirmik/servoce --recursive -b dev
         - cd servoce 
+        - git clone https://github.com/mirmik/servoce-third-libs servoce-third-libs-travis
+        - mkdir pyservoce/libs 
+        - cp servoce-third-libs-travis/linux-7.4/* pyservoce/libs/
         - python3 ./setup.py install
         - cd ..
 
