@@ -23,7 +23,6 @@ matrix:
         - python3 -m pip install pyservoce
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
         - python3 -m pip install scikit-image
-        - python3 -m pip install servoce
 
         - python3 ./setup.py install
 
@@ -43,10 +42,7 @@ matrix:
 
       install: 
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        #- sudo add-apt-repository ppa:freecad-maintainers/occt-releases -y
-        #- sudo add-apt-repository ppa:freecad-maintainers/freecad-stable -y
         - sudo apt-get update
-        #- sudo apt install -y libocct-foundation-7.3 libocct-ocaf-7.3 libocct-data-exchange-7.3 libocct-foundation-dev libocct-ocaf-dev libocct-data-exchange-dev
         - sudo apt install -y python3-pybind11
 
         - python3 -m pip install licant
