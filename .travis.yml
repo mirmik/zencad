@@ -58,7 +58,7 @@ matrix:
         - git clone https://github.com/mirmik/servoce-third-libs servoce-third-libs-travis
         - mkdir pyservoce/libs 
         - cp servoce-third-libs-travis/linux-7.4/* pyservoce/libs/
-        - sudo python3 ./setup.py install
+        - python3 ./setup.py install
         - cd ..
 
         - python3 ./setup.py install
