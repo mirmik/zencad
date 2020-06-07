@@ -1,33 +1,43 @@
 #!/usr/bin/env python3
 """
-ZenCad API example: revol2
+ZenCad API example: pipe_shell
 """
 
 from zencad import *
 
 a=circle(r=20)
-#b=ngon(10, n=5).up(40)
 b = circle(r=10).up(10)
 
-#disp(extrude(a,5))
-#disp(extrude(b,5))
-
-#show()
-
-#print(a.normal())
-#print(b.normal())
-
-wires = [
-	circle(r=10, wire=True).up(0),
-	circle(r=10, wire=True).up(10),
-	circle(r=10, wire=True).up(20),
-	circle(r=10, wire=True).up(40),
-	circle(r=10, wire=True).up(50)
+proto_wires = [
+	circle(  10,     wire=True),
+	ellipse( 10, 16, wire=True),
+	ellipse( 10, 20, wire=True),
+	ellipse( 10, 13, wire=True),
+	circle(  10,     wire=True)
 ]
 
-spine = interpolate([(0,0,0), (0,0,10), (20,0,50)])
+spine = interpolate(
+	[(0,0,0), (40,0,50), (80,0,100)], 
+	tangs=[(0,0,1), None, (0,0,1)])
 
-m = pipe_shell(wires, spine, frenet=True, transition=1)
+uniform = spine.uniform(len(proto_wires))
 
-disp(m)
+print(uniform)
+for u in uniform:
+	print(spine.d1(u))
+
+wires = [
+	(move(*spine.d0(uniform[i])) * short_rotate((0,0,1), spine.d1(uniform[i])))(
+		p) for i,p in enumerate(proto_wires)]
+
+m0 = pipe_shell(wires, spine, solid=True)
+m1 = pipe_shell(wires, spine, solid=False)
+
+disp(wires, color.red)
+disp(spine, color.red)
+disp([ w.forw(50) for w in wires], color.red)
+
+disp(m0.forw(50))
+disp(m1.forw(100))
+
 show()

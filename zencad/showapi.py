@@ -12,6 +12,7 @@ def default_scene():
     global __default_scene
     if __default_scene is None:
         __default_scene = Scene()
+        __default_scene.set_chordial_deviation(False, zencad.settings.get(["view", "default_chordial_deviation"]))
     return __default_scene
 
 #__default_view = None

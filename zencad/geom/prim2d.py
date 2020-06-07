@@ -1,6 +1,7 @@
 import pyservoce
 from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 from zencad.util import angle_pair, points
+import math
 
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -48,7 +49,8 @@ def ellipse(r1, r2, angle=None, wire=False):
         foo = pyservoce.ellipse
 
     if r1 < r2:
-        raise ValueError("In ellipse r1 must be greater then r2")
+        return ellipse(r2, r1, angle, wire).rotateZ(math.pi/2)
+        #raise ValueError("In ellipse r1 must be greater then r2")
 
     if angle is not None:
         angle = angle_pair(angle)
@@ -124,6 +126,10 @@ def make_face(*args, **kwargs):
     return pyservoce.make_face(*args, **kwargs)
 
 @lazy.lazy(cls=shape_generator)
-def interpolate2(lst):
-    lst = [ points(l) for l in lst ]
-    return pyservoce.interpolate2(lst)
+def interpolate2(lst, degmin=3, degmax=7):
+
+    if isinstance(lst[0][0], pyservoce.point3):
+        return pyservoce.interpolate2(lst, degmin=degmin, degmax=degmax)
+    else:   
+        lst = [ points(l) for l in lst ]
+        return pyservoce.interpolate2(lst, degmin=degmin, degmax=degmax)

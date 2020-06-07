@@ -302,6 +302,7 @@ class MainWindowActionsMixin:
 
 		if status == 1 and zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION:
 			self.remake_sleeped_thread()
+			self.reopen_current()
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
