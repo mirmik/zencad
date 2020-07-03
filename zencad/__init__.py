@@ -10,8 +10,8 @@ from pyservoce import unify
 from pyservoce import point3, vector3
 from pyservoce import Scene, View, Color
 from pyservoce import Color as color
-from pyservoce import point3 as point
-from pyservoce import vector3 as vector
+from zencad.util import point3 as point
+from zencad.util import vector3 as vector
 from zencad.libs.screw import screw
 
 from zencad.visual import screen
