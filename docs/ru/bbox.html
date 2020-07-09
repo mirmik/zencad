@@ -14,8 +14,8 @@
         <span class="icon"></span>
       </a>
       <p>
-        <a href="../ru/gui.html">Ru</a>
-        <a href="../en/gui.html">En</a>
+        <a href="../ru/bbox.html">Ru</a>
+        <a href="../en/bbox.html">En</a>
       </p>
     </div>
     <div id="content">
@@ -142,44 +142,40 @@
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Графический интерфейс, основные моменты.</h1>
+      <article class="article"><h1 id="-1">Ограничивающая коробка</h1>
 
-<p><img src="../images/gui.png" alt="gui.png" /></p>
+<p>Ограничивающая коробка - это это минимальный основанный на осях Ox, Oy, Oz параллелепипед, описывающий геометрическую форму shape.</p>
 
-<h2 id="-2">Вызов</h2>
+<hr />
 
-<p>Окно графического интерфейса может быть вызвано следующими способами:</p>
+<h2 id="shapebbox">shape.bbox</h2>
 
-<ul>
-<li>Вызов <code>zencad.show()</code> в интерпретаторе python.  </li>
-<li>Выполнение <code>python3 -m pip zencad</code> в среде терминала. (usage: <code>python3 -m pip zencad [filepath]</code>)  </li>
-<li>Вызов утилиты командной строки <code>zencad</code> (usage: <code>zencad [filepath]</code>)  </li>
-</ul>
+<p>Построить ограничивающую коробку на основе формы shape.</p>
 
-<h2 id="-3">Обновление модели по обновлению файла источника</h2>
+<p>Пример</p>
 
-<p>Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Следует учесть, что реализация этой функциональности выполняется путём изменения работы функции <code>zencad.show()</code> (То есть, есть разница в запуске скрипта из терминала, или из программы визуализатора).  </p>
+<div class="codehilite"><pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+</code></pre></div>
 
-<h2 id="-4">Встроенный текстовый редактор</h2>
+<h2 id="-2">Поля</h2>
 
-<p>Визуализатор имеет встроенный виджет текстового редактора, который может быть использован для быстрого редактирования или проведения экспериментов. Отображение редактора <code>View/'Hide editor'</code></p>
+<div class="codehilite"><pre><span></span><code><span class="n">bbox</span><span class="o">.</span><span class="n">xmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">xmax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmax</span>
+</code></pre></div>
 
-<h2 id="-5">Встроенная консоль</h2>
+<h2 id="-3">Построить коробку как форму</h2>
 
-<p>ZenCad также ретранслирует вывод терминала на встроенную консоль. Отображение консоли <code>View/'Hide console'</code>.
-Это может использоваться в случае, когда вывод основного терминала недоступен.</p>
+<p>Пример</p>
 
-<h2 id="-6">Маркеры, определение координат</h2>
-
-<p>Для установки маркеров следует используются клавиши <code>Q(F1)</code>, <code>W(F2)</code>. После установки координаты маркера выводятся в соответствующем поле. Если установлены оба маркера, дистанция между ними отображается в поле Distance.</p>
-
-<h2 id="3d">3D навигация</h2>
-
-<p>Вращение: MouseLeftClick/Alt + MouseMove <br />
-Смещение: MouseRightClick/Shift + MouseMove <br />
-Масштабирование: PgUp/PgDown/MouseWheel  </p>
-
-<p>Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - <code>Navigation/'Axionometric view'</code>, <code>Navigation/'Free rotation view'</code></p>
+<div class="codehilite"><pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">shape</span><span class="p">())</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>
