@@ -124,6 +124,7 @@
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
+<li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
 <li>Визуализация <br />
 <ul>
@@ -160,7 +161,7 @@
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">is_nullshape</span><span class="p">()</span> <span class="c1"># True</span>
 </code></pre></div>
@@ -173,14 +174,14 @@
 
 <p>Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция <em>filter</em> позволяет отфильтровать выборку по необходимому условию.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
-<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
 </code></pre></div>
 
 <hr />
