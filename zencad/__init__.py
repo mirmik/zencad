@@ -97,7 +97,6 @@ def near_vertex_shape(shp, pnt):
 def unify(shp):
     return pyservoce.unify(shp)
 
-
 @lazy
 def triangulate(shp, defl):
     return pyservoce.triangulation(shp, defl)

@@ -3,6 +3,9 @@ from zencad.lazifier import lazy, shape_generator, nocached_shape_generator
 
 from zencad.util import points, point3
 
+@lazy.lazy(cls=nocached_shape_generator)
+def vertex(pnt):
+    return pyservoce.vertex(pnt)
 
 @lazy.lazy(cls=nocached_shape_generator)
 def segment(pnt0, pnt1):
