@@ -128,6 +128,9 @@ class unit(pyservoce.TransformableMixin):
 	def set_color(self, *args, **kwargs):
 		self.color = pyservoce.color(*args, **kwargs)
 
+		for o in self.dispobjects:
+			o.set_color(self.color)
+
 	def print_tree(self, tr=0):
 		s = "\t" * tr + str(self) 
 		print(s)
