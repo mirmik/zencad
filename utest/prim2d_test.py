@@ -53,8 +53,8 @@ class Prim2dprobe(unittest.TestCase):
         zencad.ellipse(r1=radius, r2=radius2, angle=angle, wire=False)
         zencad.ellipse(r1=radius, r2=radius2, angle=(start, stop), wire=False)
 
-        with self.assertRaises(Exception):
-            zencad.ellipse(r1=radius2, r2=radius, wire=True)
+        #with self.assertRaises(Exception):
+        #    zencad.ellipse(r1=radius2, r2=radius, wire=True)
 
     def test_polygon_probe(self):
         pnts = [(0, 0), (0, 10), (10, 0)]

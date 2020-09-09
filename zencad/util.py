@@ -144,23 +144,3 @@ def set_process_name(name):
 	#    import setproctitle
 	#    setproctitle.setproctitle(name)  
 
-	
-
-def restore_shapetype(shp):
-	if len(shp.solids()) == 1:
-		return shp.solids()[0]
-
-	if len(shp.shells()) == 1:
-		return shp.shells()[0]
-
-	elif len(shp.faces()) == 1:
-		return shp.faces()[0]
-
-	elif len(shp.wires()) == 1:
-		return shp.wires()[0]
-
-	elif len(shp.edges()) == 1:
-		return shp.edges()[0]
-
-	else:
-		raise Exception("type is not supported")

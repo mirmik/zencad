@@ -397,7 +397,7 @@ class LazyObjectShape(evalcache.LazyObject):
 
     def edges(self, *args, **kwargs):
         return self.lazyinvoke(
-            pyservoce.Shape.wires,
+            pyservoce.Shape.edges,
             (self, *args),
             kwargs,
             encache=False,
@@ -417,7 +417,7 @@ class LazyObjectShape(evalcache.LazyObject):
 
     def faces(self, *args, **kwargs):
         return self.lazyinvoke(
-            pyservoce.Shape.wires,
+            pyservoce.Shape.faces,
             (self, *args),
             kwargs,
             encache=False,
@@ -427,7 +427,7 @@ class LazyObjectShape(evalcache.LazyObject):
 
     def solids(self, *args, **kwargs):
         return self.lazyinvoke(
-            pyservoce.Shape.wires,
+            pyservoce.Shape.solids,
             (self, *args),
             kwargs,
             encache=False,
@@ -437,7 +437,7 @@ class LazyObjectShape(evalcache.LazyObject):
 
     def compsolids(self, *args, **kwargs):
         return self.lazyinvoke(
-            pyservoce.Shape.wires,
+            pyservoce.Shape.compsolids,
             (self, *args),
             kwargs,
             encache=False,
@@ -447,7 +447,7 @@ class LazyObjectShape(evalcache.LazyObject):
 
     def compounds(self, *args, **kwargs):
         return self.lazyinvoke(
-            pyservoce.Shape.wires,
+            pyservoce.Shape.compounds,
             (self, *args),
             kwargs,
             encache=False,
