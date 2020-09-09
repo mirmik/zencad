@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ZenCad API example: widecurve
+ZenCad API example: widewire
 """
 
 from zencad import *
@@ -8,12 +8,6 @@ from zencad import *
 zencad.lazy.fastdo = True
 zencad.lazy.encache = False
 zencad.lazy.decache = False
-
-#w = interpolate([
-#	point3(0,0),
-#	point3(10,0),
-#	point3(20,10),
-#])
 
 wr = wire_builder()
 wr.line(10,10)
@@ -28,7 +22,7 @@ wr.interpolate([
 	[60, -110]
 ])
 
-w = widecurve(wr.doit(), 5)
+w = widewire(wr.doit(), 5)
 
 disp(wr.doit(), zencad.color.red)
 disp(w)
