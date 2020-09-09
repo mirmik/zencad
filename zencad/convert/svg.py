@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+SVGWRITE_IS_NOT_INSTALLED = False
+
 try:
 	import svgwrite
 except:
-	pass
+	SVGWRITE_IS_NOT_INSTALLED = True
 
 import evalcache
 import re
@@ -37,6 +39,13 @@ def box_size(shape, mapping):
 
 class SvgWriter:
 	def __init__(self, fpath = None, size=None, off=None, **extras):
+		if SVGWRITE_IS_NOT_INSTALLED:
+			print("please install 'svgwrite' module for work with svg")
+			print()
+			print("python3 -m pip install svgwrite")
+			print()
+			exit(0)
+
 		if fpath is None:
 			self.dwg =  svgwrite.Drawing(size=size, **extras)
 		else:
@@ -130,7 +139,9 @@ class SvgWriter:
 	def push_shape(self, shp, color):
 		shp = zencad.unify(shp)
 
-		shp = zencad.util.restore_shapetype(shp)
+		print(shp.faces())
+
+		shp = zencad.util2.restore_shapetype(shp)
 		shp = shp.mirrorX()
 
 		#scale_translate = "scale(1 -1)"
@@ -158,7 +169,12 @@ class SvgWriter:
 
 class SvgReader:
 	def __init__(self):
-		pass
+		if SVGWRITE_IS_NOT_INSTALLED:
+			print("please install 'svgwrite' module for work with svg")
+			print()
+			print("python3 -m pip install svgwrite")
+			print()
+			exit(0)
 
 	def read_path_final_wb(self):
 		if self.wb is not None:
@@ -300,7 +316,7 @@ class SvgReader:
 
 
 def shape_to_svg(fpath, shape, color, mapping):
-	shape = evalcache.unlazy_if_need(shape)
+	#shape = evalcache.unlazy_if_need(shape)
 	color = color_convert(color)
 	size, off = box_size(shape, mapping)
 	writer = SvgWriter(fpath=fpath, off=off, size=size)
@@ -344,6 +360,9 @@ if __name__ == "__main__":
 		#- zencad.rectangle(2)
 		-zencad.circle(5)
 	)
+
+	#zencad.disp(shp)
+	#zencad.show()
 
 	#shp = zencad.rectangle(10,20, wire=True)
 	#shp = zencad.rectangle(10,20,center=True) - zencad.rectangle(5,10,center=True)
