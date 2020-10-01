@@ -122,6 +122,7 @@ class pybullet_shape_bind:
 
 			self.visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH, fileName=self.meshpath, meshScale=[1/SF,1/SF,1/SF])
 			self.collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=self.meshpath2, meshScale=[1/SF,1/SF,1/SF])
+			
 		else:
 			self.model=None
 			self.mass = None
@@ -366,7 +367,7 @@ class simulation:
 		if time_step:
 			p.setTimeStep(time_step) 
 		self.binds = []
-		self.set_gravity(gravity)
+		self.set_gravity(*gravity)
 
 		self.library_included = False
 
