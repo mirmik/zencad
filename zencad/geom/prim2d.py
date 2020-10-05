@@ -49,6 +49,9 @@ def ellipse(r1, r2, angle=None, wire=False):
         foo = pyservoce.ellipse
 
     if r1 < r2:
+        if angle is not None:
+            angle = angle_pair(angle)
+            angle = (angle[0] - math.pi/2, angle[1] - math.pi/2)
         return ellipse(r2, r1, angle, wire).rotateZ(math.pi/2)
         #raise ValueError("In ellipse r1 must be greater then r2")
 
