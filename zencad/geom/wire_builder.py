@@ -125,7 +125,46 @@ class wire_builder:
 				trimmed = full_edge.trim(finish_point_parameter, start_point_parameter)
 
 			self.edges.append(trimmed)
+			self.current = target
 
+	def svg_circle_arc(self, 
+		r, 
+		x_axis_angle, 
+		large, 
+		sweep, 
+		x, 
+		y):
+
+		centers = zencad.gutil.restore_circle_centers(
+			self.current, point3(x,y), r)
+		target = point3(x,y)
+
+		for cent in centers:
+			full_edge = zencad.circle(r, wire=True) \
+				.rotZ(x_axis_angle)            \
+				.mov(cent)
+	
+			start_point_parameter = full_edge.project(self.current)
+			finish_point_parameter = full_edge.project(target)
+
+			diff = finish_point_parameter - start_point_parameter
+
+			while diff >  math.pi: diff -= 2*math.pi
+			while diff < -math.pi: diff += 2*math.pi
+
+			small_angle = abs(diff)
+			_sweep_for_small = diff < 0
+			_sweep = not _sweep_for_small if large else _sweep_for_small
+
+			if _sweep != sweep:
+				continue
+
+			if not sweep:
+				trimmed = full_edge.trim(start_point_parameter, finish_point_parameter)
+			else:
+				trimmed = full_edge.trim(finish_point_parameter, start_point_parameter)
+
+			self.edges.append(trimmed)
 
 		self.current = target
 

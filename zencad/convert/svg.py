@@ -185,10 +185,6 @@ class SvgReader:
 
 	def read_path_final_wb(self):
 		if self.wb is not None:
-
-			zencad.disp(self.wb.edges)
-			zencad.show()
-
 			print("make_wire")
 			self.wires.append(self.wb.doit())
 			self.wb = None
@@ -210,11 +206,14 @@ class SvgReader:
 		x=float(next(self.iter)) 
 		y=float(next(self.iter))
 
+		# инверсия ???
+		sweep_flag = not sweep_flag
+
 		if abs(rx-ry) < 1e-5:
-			self.wb.plane_circle_arc(rx, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
+			self.wb.svg_circle_arc(rx, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 		else:
-			self.wb.plane_elliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
+			self.wb.svg_elliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 	def read_path_Z(self):
 		self.wb.close()
@@ -388,6 +387,6 @@ if __name__ == "__main__":
 	shape_to_svg("test.svg", shp, color=clr, mapping=mapping)
 
 	m = svg_to_shape("test.svg")
-	zencad.hl(shp.up(4))
+	#zencad.hl(shp.up(4))
 	zencad.disp(m)
 	zencad.show()
