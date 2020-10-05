@@ -68,8 +68,27 @@ def gear_profile(r, r_zub, N_zub, x_zub, paz_deep=None, n_tochek=20):
 			wires.append(segment(abases[k+1], bbases[k]))
 	
 	else:
+		spaz = None
+		if isinstance(paz_deep, tuple):
+			spaz = paz_deep[0]
+			paz_deep = paz_deep[1]
+		
+			scl0 = scale((r_zub-spaz)/r_zub)
+			
+			abases2 = [ scl0(a) for a in abases ]
+			bbases2 = [ scl0(b) for b in bbases ]
+
+			for k in range(N_zub):
+				wires.append(segment(abases[k], abases2[k]))
+				wires.append(segment(bbases[k], bbases2[k]))	
+
+			abases = abases2
+			bbases = bbases2
+			scl = scale((r_zub-paz_deep-spaz)/r_zub)
+		else:
+			scl = scale((r_zub-paz_deep)/r_zub)	
+
 		# Добавляем проточку между основанием зубьев 
-		scl = scale((r_zub-paz_deep)/r_zub)
 		abases2 = [ scl(a) for a in abases ]
 		bbases2 = [ scl(b) for b in bbases ]
 

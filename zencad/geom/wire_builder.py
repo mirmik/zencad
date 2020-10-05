@@ -109,23 +109,33 @@ class wire_builder:
 
 			diff = finish_point_parameter - start_point_parameter
 
-			while diff >  math.pi: diff -= 2*math.pi
-			while diff < -math.pi: diff += 2*math.pi
+			if not sweep:
+				if diff < 0: diff += 2*math.pi
+				if start_point_parameter > finish_point_parameter:
+					start_point_parameter -= 2*math.pi
 
-			small_angle = abs(diff)
-			_sweep_for_small = diff < 0
-			_sweep = not _sweep_for_small if large else _sweep_for_small
+				assert start_point_parameter < finish_point_parameter
+			else:
+				if diff > 0: diff -= 2*math.pi
+				if start_point_parameter < finish_point_parameter:
+					start_point_parameter += 2*math.pi
 
-			if _sweep != sweep:
+				assert start_point_parameter > finish_point_parameter
+				
+			if abs(diff) < math.pi and large:
+				continue 
+				
+			if abs(diff) > math.pi and not large:
 				continue
-
 			if not sweep:
 				trimmed = full_edge.trim(start_point_parameter, finish_point_parameter)
 			else:
 				trimmed = full_edge.trim(finish_point_parameter, start_point_parameter)
 
 			self.edges.append(trimmed)
-			self.current = target
+			break
+
+		self.current = target
 
 	def svg_circle_arc(self, 
 		r, 
@@ -149,14 +159,23 @@ class wire_builder:
 
 			diff = finish_point_parameter - start_point_parameter
 
-			while diff >  math.pi: diff -= 2*math.pi
-			while diff < -math.pi: diff += 2*math.pi
+			if not sweep:
+				if diff < 0: diff += 2*math.pi
+				if start_point_parameter > finish_point_parameter:
+					start_point_parameter -= 2*math.pi
 
-			small_angle = abs(diff)
-			_sweep_for_small = diff < 0
-			_sweep = not _sweep_for_small if large else _sweep_for_small
+				assert start_point_parameter < finish_point_parameter
+			else:
+				if diff > 0: diff -= 2*math.pi
+				if start_point_parameter < finish_point_parameter:
+					start_point_parameter += 2*math.pi
 
-			if _sweep != sweep:
+				assert start_point_parameter > finish_point_parameter
+				
+			if abs(diff) < math.pi and large:
+				continue 
+				
+			if abs(diff) > math.pi and not large:
 				continue
 
 			if not sweep:
@@ -165,6 +184,7 @@ class wire_builder:
 				trimmed = full_edge.trim(finish_point_parameter, start_point_parameter)
 
 			self.edges.append(trimmed)
+			break
 
 		self.current = target
 

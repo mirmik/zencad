@@ -22,14 +22,11 @@ def color_convert(zclr):
 
 def box_size(shape, mapping):
 	box = shape.bbox()
-	print("BBOX", box)
 
 	if mapping:
 		off = (box.xmin, -box.ymax)
 	else:
 		off = (0,0)
-
-	print("OFF", off)
 
 	return (
 		str(box.xmax - box.xmin),
@@ -130,12 +127,6 @@ class SvgWriter:
 			else: 
 				raise Exception(f"svg:wire : curvetype is not supported: {e.curvetype()} ")
 
-		print(self.path.tostring())
-
-#		closed=True
-#		if closed:
-#			self.path.push("Z")
-
 	def push_face(self, face):
 		face = zencad.fix_face(face)
 		wires = zencad.sort_wires_by_face_area(face.wires())
@@ -146,12 +137,8 @@ class SvgWriter:
 	def push_shape(self, shp, color):
 		shp = zencad.unify(shp)
 
-		print(shp.faces())
-
 		shp = zencad.util2.restore_shapetype(shp)
 		shp = shp.mirrorX()
-
-		#scale_translate = "scale(1 -1)"
 
 		if shp.shapetype() == "face":
 			fill_opacity = 1
@@ -185,7 +172,6 @@ class SvgReader:
 
 	def read_path_final_wb(self):
 		if self.wb is not None:
-			print("make_wire")
 			self.wires.append(self.wb.doit())
 			self.wb = None
 
@@ -253,9 +239,6 @@ class SvgReader:
 				raise Exception("svgreader:path:undefined_command", cmd)
 
 		if fill is not None:
-			#zencad.disp(self.wires[0])
-			#zencad.show()
-
 			return zencad.make_face(self.wires)
 
 		else:
@@ -364,21 +347,11 @@ if __name__ == "__main__":
 		zencad.rectangle(10,20) 
 		+ zencad.rectangle(10,20,center=True)
 		+ zencad.ellipse(10,8)
-		#- zencad.rectangle(2)
 		-zencad.circle(5)
 	)
 
 	zencad.hl(shp.down(2))
 
-	#zencad.disp(shp)
-	#zencad.show()
-
-	#shp = zencad.rectangle(10,20, wire=True)
-	#shp = zencad.rectangle(10,20,center=True) - zencad.rectangle(5,10,center=True)
-	#shp = zencad.rectangle(10,20,center=True) - zencad.circle(3)
-
-	#shp=zencad.circle(r=10, wire=True, angle=zencad.deg(-270)).move(10,10)
-	#print("EP", shp.endpoints())
 
 	clr = zencad.color(0.5,0,0.5)
 
@@ -387,6 +360,5 @@ if __name__ == "__main__":
 	shape_to_svg("test.svg", shp, color=clr, mapping=mapping)
 
 	m = svg_to_shape("test.svg")
-	#zencad.hl(shp.up(4))
 	zencad.disp(m)
 	zencad.show()
