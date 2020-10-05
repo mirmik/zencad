@@ -104,21 +104,28 @@ class SvgWriter:
 			if e.curvetype() == "line":
 				self.path.push(f"L {f[0]} {f[1]}")
 
-			elif e.curvetype() == "circle":
+			elif e.curvetype() == "circle" or e.curvetype() == "ellipse":
 				angle = e.range()[1] - e.range()[0]
-				c,r,x,y = e.circle_parameters()
+				
+				if e.curvetype() == "circle":
+					c,r,x,y = e.circle_parameters()
+					r1 = r2 = r
+				elif e.curvetype() == "ellipse":
+					c,r1,r2,x,y = e.ellipse_parameters()				
+
 				sweep = 1 if (x.cross(y)).z > 0 else 0
 
 				c = self.proj(c)
 				
 				if (abs(angle - math.pi * 2) < 1e-5):
 					d = (f[0] - c[0], f[1] - c[1])
-					self.path.push(f"A {r} {r} {0} {0} {sweep} {c[0] - d[0]} {c[1] - d[1]}")
-					self.path.push(f"A {r} {r} {0} {0} {sweep} {f[0]} {f[1]}")
+					self.path.push(f"A {r1} {r2} {0} {0} {sweep} {c[0] - d[0]} {c[1] - d[1]}")
+					self.path.push(f"A {r1} {r2} {0} {0} {sweep} {f[0]} {f[1]}")
 
 				else:
 					large_arc = 1 if angle > math.pi else 0
-					self.path.push(f"A {r} {r} {0} {large_arc} {sweep} {f[0]} {f[1]}")
+					self.path.push(f"A {r1} {r2} {0} {large_arc} {sweep} {f[0]} {f[1]}")
+
 
 			else: 
 				raise Exception(f"svg:wire : curvetype is not supported: {e.curvetype()} ")
@@ -178,6 +185,10 @@ class SvgReader:
 
 	def read_path_final_wb(self):
 		if self.wb is not None:
+
+			zencad.disp(self.wb.edges)
+			zencad.show()
+
 			print("make_wire")
 			self.wires.append(self.wb.doit())
 			self.wb = None
@@ -199,14 +210,11 @@ class SvgReader:
 		x=float(next(self.iter)) 
 		y=float(next(self.iter))
 
-		zencad.disp(self.wb.current)
-		zencad.disp(zencad.point3(x,y))
-
 		if abs(rx-ry) < 1e-5:
 			self.wb.plane_circle_arc(rx, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 		else:
-			self.wb.plane_eliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
+			self.wb.plane_elliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 	def read_path_Z(self):
 		self.wb.close()
@@ -356,10 +364,12 @@ if __name__ == "__main__":
 	(
 		zencad.rectangle(10,20) 
 		+ zencad.rectangle(10,20,center=True)
-		+ zencad.circle(r=10)
+		+ zencad.ellipse(10,8)
 		#- zencad.rectangle(2)
 		-zencad.circle(5)
 	)
+
+	zencad.hl(shp.down(2))
 
 	#zencad.disp(shp)
 	#zencad.show()
