@@ -2,7 +2,7 @@
 from pyservoce import point3, rotateZ 
 from math import sqrt
 
-def restore_elipse_centers(apnt, bpnt, r1, r2, phi):
+def restore_ellipse_centers(apnt, bpnt, r1, r2, phi):
 	"""
 		Поиск центра двумерного элипса по радиусам, углу наклона главной оси и двум точкам.
 	"""
@@ -49,5 +49,6 @@ def restore_circle_centers(apnt, bpnt, r):
 
 	return restore_elipse_centers(apnt, bpnt, r, r, 0)
 
+## TEST
 if __name__ == "__main__":
 	print(restore_elipse_centers(point3(15,10), point3(5,10), 5, 5, 0))
