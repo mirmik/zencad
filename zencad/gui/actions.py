@@ -46,11 +46,15 @@ class MainWindowActionsMixin:
 				"<p>Widget for display zencad geometry."
 				"<pre>{}\n"
 				"{}\n"
+				"ZenCad version: {}\n"
 				"Based on OpenCascade geometric core.<pre/>"
 				"<p><h3>Feedback</h3>"
 				"<pre>email: mirmikns@yandex.ru\n"
 				"github: https://github.com/mirmik/zencad\n"
-				"2018-2020<pre/>".format(BANNER_TEXT, ABOUT_TEXT)
+				"2018-2020<pre/>".format(
+					BANNER_TEXT, 
+					ABOUT_TEXT, 
+					zencad.__version__)
 			),
 		)
 
