@@ -47,8 +47,8 @@ def restore_circle_centers(apnt, bpnt, r):
 		Поиск центра двумерной окружности по радиусу, углу наклона главной оси и двум точкам.
 	"""
 
-	return restore_elipse_centers(apnt, bpnt, r, r, 0)
+	return restore_ellipse_centers(apnt, bpnt, r, r, 0)
 
 ## TEST
 if __name__ == "__main__":
-	print(restore_elipse_centers(point3(15,10), point3(5,10), 5, 5, 0))
+	print(restore_ellipse_centers(point3(15,10), point3(5,10), 5, 5, 0))
