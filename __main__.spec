@@ -20,8 +20,8 @@ print(datas)
 extra_dll_dir = "../servoce/pyservoce/libs"
 os.environ['PATH'] += os.pathsep + extra_dll_dir
 
-a = Analysis(['zencad\\__main__.py'],
-             pathex=['C:\\Users\\mirmik\\project\\zencad'],
+a = Analysis(['zencad/__main__.py'],
+             pathex=['~/project/zencad'],
              binaries=[],
              hiddenimports=[],
              hookspath=[],
