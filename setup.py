@@ -11,7 +11,7 @@ import os
 directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
-        "evalcache>=1.12.3",
+        "evalcache>=1.13.0",
         "pyservoce>=1.23.0",
         "numpy",
         "pillow",
@@ -46,6 +46,7 @@ setup(
             "convert/*",
             "libs/*",
             "gui/*",
+            "convert/*",
             "internal_models/*",
             "examples/*",
             "examples/**/*",
