@@ -85,4 +85,5 @@
 * [Экспорт/Импорт](expimp.html)
 	* [STL](expimp.html#-2)
 	* [BREP](expimp.html#-3)
+	* [SVG](expimp.html#-4)
 * [Внутренняя кухня ZenCad](internal.html)

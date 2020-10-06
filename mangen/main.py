@@ -7,7 +7,7 @@ import writer
 import os
 
 
-def page_generate(path, title, mdpath, navpath, comming=False):
+def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
     page = dominate.document(title=title)
     with page:
         dominate.tags.meta(charset=u"utf-8")
@@ -35,7 +35,7 @@ def page_generate(path, title, mdpath, navpath, comming=False):
             dominate.tags.a("Ru", href="../ru/" + path.split("/")[1])
             dominate.tags.a("En", href="../en/" + path.split("/")[1])
 
-    with nav:
+    with nav: 
         dominate.util.raw(markdown2.markdown(open(navpath).read()))
 
     with article:
@@ -50,12 +50,12 @@ def page_generate(path, title, mdpath, navpath, comming=False):
 
 for f in os.listdir("ru"):
     target = os.path.splitext(f)[0] + ".html"
-    page_generate("ru/" + target, "ZenCad", os.path.join("ru", f), "ru/nav.md")
+    page_generate("ru/" + target, "ZenCad", os.path.join("ru", f), "ru/nav.md", lang="ru")
 
 for f in os.listdir("en"):
     target = os.path.splitext(f)[0] + ".html"
     page_generate(
-        "en/" + target, "ZenCad", os.path.join("en", f), "en/nav.md", comming=True
+        "en/" + target, "ZenCad", os.path.join("en", f), "en/nav.md", comming=True, lang="en"
     )
 
 redirect_page = dominate.document()
