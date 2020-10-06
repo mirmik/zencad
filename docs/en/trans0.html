@@ -96,14 +96,14 @@
 <p>Методы трансформируемых геометрических объектов: </p>
 
 <div class="codehilite"><pre><span></span><code><span class="c1"># Основной синтаксис:</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotateY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 
 <span class="c1"># Сокращенный синтаксис:</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -112,7 +112,7 @@
 
 <p>Создание объекта трансформации:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">rotateX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">rotateY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -416,7 +416,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -454,7 +454,7 @@
 
 <p>Сигнатура и код преобразования:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="n">lspace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span>
     <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">lspace</span>  <span class="p">]</span>
     <span class="k">return</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
@@ -463,7 +463,7 @@
 <p>Примеры:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
-<span class="n">rotate_array</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rotate_array</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </code></pre></div>
 
 <table>
@@ -495,9 +495,9 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
-    <span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
     <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> 
-    <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -507,8 +507,8 @@
     <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
     <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">)),</span> 
     <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> 
-    <span class="n">array</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span>
-        <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">array</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span>
+        <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="p">)</span>
 </code></pre></div>
 
