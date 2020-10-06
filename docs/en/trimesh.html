@@ -88,11 +88,11 @@
 <div class="codehilite"><pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">triangulate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 
 <span class="c1">#count_of_nodes: 699</span>
 <span class="c1">#count_of_triangles: 1362</span>
@@ -108,7 +108,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -136,8 +136,8 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -150,7 +150,7 @@
     <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
 <span class="p">])</span>
 
-<span class="k">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
 </code></pre></div>
 
