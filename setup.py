@@ -12,7 +12,7 @@ directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
         "evalcache>=1.12.3",
-        "pyservoce>=1.23.0",
+        "pyservoce>=1.23.2",
         "numpy",
         "pillow",
         "pyopengl",
