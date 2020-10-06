@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 import zencad.util
 
 def color_convert(zclr):
+	zclr = pyservoce.color(zclr)
 	r,g,b,a = zclr.r, zclr.g, zclr.b, zclr.a
 	r,g,b,a = ( x * 100 for x in (r,g,b,a))
 	return svgwrite.rgb(r,g,b,'%')
@@ -136,7 +137,6 @@ class SvgWriter:
 
 	def push_shape(self, shp, color):
 		shp = zencad.unify(shp)
-
 		shp = zencad.util2.restore_shapetype(shp)
 		shp = shp.mirrorX()
 
@@ -299,14 +299,9 @@ class SvgReader:
 				shp=shp.mirrorX() # svg coord system is reversed by Y	
 				self.shapes.append(shp)
 
-
-
-		return self.shapes
-
-
+		return zencad.union(self.shapes)
 
 def shape_to_svg(fpath, shape, color, mapping):
-	#shape = evalcache.unlazy_if_need(shape)
 	color = color_convert(color)
 	size, off = box_size(shape, mapping)
 	writer = SvgWriter(fpath=fpath, off=off, size=size)
@@ -318,7 +313,6 @@ def shape_to_svg(fpath, shape, color, mapping):
 
 
 def shape_to_svg_string(shape, color, mapping):
-	shape = evalcache.unlazy_if_need(shape)
 	color = color_convert(color)
 	size, off = box_size(shape,mapping)
 	writer = SvgWriter(size=size, off=off)

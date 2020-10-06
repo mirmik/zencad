@@ -175,7 +175,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/polysegment0.png" alt="" />
@@ -189,7 +189,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[],</span> <span class="n">closed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[],</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/interpolate0.png" alt="" />
@@ -217,7 +217,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/helix0.png" alt="" />
@@ -250,12 +250,12 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">,</span> <span class="n">check_rational</span><span class="o">=</span><span class="bp">False</span><span class="o">/</span><span class="bp">True</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="o">/</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="o">/</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_rational</span><span class="o">=</span><span class="kc">False</span><span class="o">/</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">default</span><span class="p">:</span> 
-    <span class="n">periodic</span><span class="o">=</span><span class="bp">False</span>
-    <span class="n">check_rational</span><span class="o">=</span><span class="bp">True</span>
+    <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">check_rational</span><span class="o">=</span><span class="kc">True</span>
 </code></pre></div>
 
 <p><img src="../images/generic/bspline0.png" alt="" />
@@ -270,7 +270,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -294,7 +294,7 @@
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="bp">True</span><span class="p">])</span>
+<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">])</span>
 </code></pre></div>
 
 <p>Пример:</p>
@@ -319,7 +319,7 @@
 <em>start</em> - начальная точка
 <em>defrel</em> - режим по умолчанию</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span> <span class="o">=</span> <span class="n">wire_builder</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">defrel</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span> <span class="o">=</span> <span class="n">wire_builder</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">defrel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <hr />
@@ -328,7 +328,7 @@
 
 <p>Перезагрузка инструмента с новой точки. Сбрасывает список рёбер.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
 <div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">point3</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
@@ -341,12 +341,12 @@
 
 <p>Строит отрезок до точки <em>pnt</em>. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="n">wb</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="n">wb</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">wb</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">wb</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># рисуем квадрат</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># рисуем квадрат</span>
 </code></pre></div>
 
 <p><img src="../images/generic/wb_segment0.png" alt="" /></p>
@@ -355,7 +355,7 @@
 
 <h3 id="-13">Построение дуги окружности по точкам:</h3>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">arc_by_points</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">arc_by_points</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
 <hr />
@@ -365,14 +365,14 @@
 <p><em>curtang</em> позволяет задать направление кривой в стартовой точке.
 Установка опции <em>approx</em> вычисляет <em>curtang</em> в значение направления кривой в конце прошлого участка.  </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">curtang</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">approx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">curtang</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">approx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
 <h3 id="-15">Замыкание</h3>
 
 <p><em>сlose</em> строит участок кривой до точки старта. <em>approx_a</em>, <em>approx_b</em> позволяют сделать интерполяцию в точках замыкания.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">approx_a</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">approx_b</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">approx_a</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">approx_b</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 </article>
     </div>
