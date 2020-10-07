@@ -8,6 +8,7 @@ import zencad.configure
 
 import pyservoce
 import hashlib
+import operator
 import os
 
 from zencad.util import points, vector3, point3
@@ -59,6 +60,19 @@ def _scale_do(self, factor, center=pyservoce.libservoce.point3(0,0,0)):
     if isinstance(factor, (list, tuple)):
         return pyservoce.Shape.scaleXYZ(self, factor[0], factor[1], factor[2])
     return pyservoce.Shape.scale(self, factor, point3(center))
+
+class LazyObjectShapeArray(evalcache.LazyObject):
+    def __init__(self, *args, **kwargs):
+        evalcache.LazyObject.__init__(self, *args, **kwargs)
+
+    def __getitem__(self, item):
+        return self.lazyinvoke(
+            operator.__getitem__, (self, item), 
+            encache=False, 
+            decache=False,
+            cls=LazyObjectShape,            
+        )
+
 
 class LazyObjectShape(evalcache.LazyObject):
     def __init__(self, *args, **kwargs):
@@ -124,6 +138,45 @@ class LazyObjectShape(evalcache.LazyObject):
             cls=LazyObjectShape,
         )
 
+    def move(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.move,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShape,
+        )
+
+    def moveX(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.moveX,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShape,
+        )
+
+    def moveY(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.moveY,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShape,
+        )
+
+    def moveZ(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.moveZ,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShape,
+        )
     def rotate(self, ax, angle):
         return self.lazyinvoke(
             pyservoce.Shape.rotate,
@@ -302,6 +355,104 @@ class LazyObjectShape(evalcache.LazyObject):
             encache=True,
             decache=True,
             cls=LazyObjectShape,
+        )
+
+    # geomprops некешируем
+    def props1(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.props1,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False
+        )
+
+    def props2(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.props2,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False
+        )
+
+    def props3(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.props3,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False
+        )
+
+    #def vertices(self, *args, **kwargs):
+    #    return self.lazyinvoke(
+    #        pyservoce.Shape.wires,
+    #        (self, *args),
+    #        kwargs,
+    #        encache=False,
+    #        decache=False,
+    #        cls=LazyObjectShapeArray
+    #    )
+
+    def edges(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.edges,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShapeArray
+        )
+
+    def wires(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.wires,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShapeArray
+        )
+
+    def faces(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.faces,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShapeArray
+        )
+
+    def solids(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.solids,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShapeArray
+        )
+
+    def compsolids(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.compsolids,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShapeArray
+        )
+
+    def compounds(self, *args, **kwargs):
+        return self.lazyinvoke(
+            pyservoce.Shape.compounds,
+            (self, *args),
+            kwargs,
+            encache=False,
+            decache=False,
+            cls=LazyObjectShapeArray
         )
 
 class nocached_shape_generator(evalcache.LazyObject):

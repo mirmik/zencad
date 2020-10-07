@@ -10,6 +10,8 @@
 to_stl(model, path, delta)
 ```
 
+Импортирование МАЛОПОЛИГОНАЛЬНЫХ stl и прочих форматов mesh сетей возможно с применением сторонних библиотек, таких как trimesh. (см. examples/Integration/trimesh)
+
 ---
 ## BREP
 Создать файл brep представления формата BREP, находящийся по пути `path`, из твердотельной модели `model`. 
@@ -21,3 +23,21 @@ to_brep(model, path)
 ```python3
 m = from_brep(path)
 ```
+
+---
+## SVG
+("0.34.0: На текущий момент поддержка ограничена. Поддерживаются не все типы кривых.")
+
+Создать/считать svg файл из плоского тела `model`, находящийся по пути `path`. 
+
+```python3
+to_svg(model, path)
+model = from_svg(path)
+```
+
+Создать/считать строку svg представления плоского тела `model`. 
+```python3
+svg = to_svg_string(model)
+model = from_svg_string(svg)
+```
+

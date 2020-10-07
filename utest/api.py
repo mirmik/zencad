@@ -37,6 +37,7 @@ try:
     import rigidity_test
     import curve3_test
     import curve2_test
+    import reflection
 except Exception as ex:
     print(ex)
     traceback.print_exc()
@@ -68,3 +69,4 @@ if __name__ == "__main__":
     execute_test(rigidity_test)
     execute_test(curve3_test)
     execute_test(curve2_test)
+    execute_test(reflection)

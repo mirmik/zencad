@@ -75,6 +75,7 @@
 	* [Анализ кривых](crvalgo.html)
 	* [Анализ поверхностей](surfalgo.html)
 	* [Геометрические характеристики](geomprop.html)
+	* [Ограничивающая коробка](bbox.html)
 * Визуализация  
 	* [Отображение](show.html)
 	* [Интерактивный объект](interactive_object.html)  
@@ -84,4 +85,5 @@
 * [Экспорт/Импорт](expimp.html)
 	* [STL](expimp.html#-2)
 	* [BREP](expimp.html#-3)
+	* [SVG](expimp.html#-4)
 * [Внутренняя кухня ZenCad](internal.html)

@@ -654,6 +654,8 @@ class MainWindow(QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
 		trace("planned to finalize:", len(self.client_finalization_list))
 
 		self.console.clear()
+		print("{}: {} {}".format(time.time(), "evaluate script", self.current_opened))
+
 		path = self.current_opened
 		
 		try:

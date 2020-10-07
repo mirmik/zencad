@@ -1,3 +1,7 @@
+## 0.34.0
+	Add svg format converter
+	Add version number to about window
+
 ## 0.33.0
 	Add points2, interpolate2
 	Add clossed option to rounded_polysegment
