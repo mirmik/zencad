@@ -97,7 +97,6 @@ def near_vertex_shape(shp, pnt):
 def unify(shp):
     return pyservoce.unify(shp)
 
-
 @lazy
 def triangulate(shp, defl):
     return pyservoce.triangulation(shp, defl)
@@ -120,10 +119,10 @@ zencad.color.orange =    zencad.color(1, 0xa5/255, 0)
 default_color = zencad.settings.Settings.get_default_color()
 
 
-pyservoce.Shape.move = pyservoce.Shape.translate
-pyservoce.Shape.moveX = pyservoce.Shape.right
-pyservoce.Shape.moveY = pyservoce.Shape.forw
-pyservoce.Shape.moveZ = pyservoce.Shape.up
+#pyservoce.Shape.move = pyservoce.Shape.translate
+#pyservoce.Shape.moveX = pyservoce.Shape.right
+#pyservoce.Shape.moveY = pyservoce.Shape.forw
+#pyservoce.Shape.moveZ = pyservoce.Shape.up
 
 zencad.move = zencad.translate
 zencad.moveX = zencad.right

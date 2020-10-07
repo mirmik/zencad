@@ -85,28 +85,146 @@ class wire_builder:
 
 				if angle < 0 and sweep is False:
 					self.arc(c, r, angle)
-					
+	
+	def svg_elliptic_arc(self, 
+		rx, 
+		ry, 
+		x_axis_angle, 
+		large, 
+		sweep, 
+		x, 
+		y):
 
+		centers = zencad.gutil.restore_ellipse_centers(
+			self.current, point3(x,y), rx, ry, x_axis_angle)
+		target = point3(x,y)
 
+		for cent in centers:
+			full_edge = zencad.ellipse(rx, ry, wire=True) \
+				.rotZ(x_axis_angle)            \
+				.mov(cent)
+	
+			start_point_parameter = full_edge.project(self.current)
+			finish_point_parameter = full_edge.project(target)
 
-#		else:
-#			for c in centers:
-#				a = (self.current - c).cross(target - self.current)
+			diff = finish_point_parameter - start_point_parameter
 
-			#	if a.length() < 1e-5:
-			#		cent = c
-			#		break
+			if not sweep:
+				if diff < 0: diff += 2*math.pi
+				if start_point_parameter > finish_point_parameter:
+					start_point_parameter -= 2*math.pi
 
+				assert start_point_parameter < finish_point_parameter
+			else:
+				if diff > 0: diff -= 2*math.pi
+				if start_point_parameter < finish_point_parameter:
+					start_point_parameter += 2*math.pi
 
+				assert start_point_parameter > finish_point_parameter
+				
+			if abs(diff) < math.pi and large:
+				continue 
+				
+			if abs(diff) > math.pi and not large:
+				continue
+			if not sweep:
+				trimmed = full_edge.trim(start_point_parameter, finish_point_parameter)
+			else:
+				trimmed = full_edge.trim(finish_point_parameter, start_point_parameter)
 
+			self.edges.append(trimmed)
+			break
 
+		self.current = target
 
+	def svg_circle_arc(self, 
+		r, 
+		x_axis_angle, 
+		large, 
+		sweep, 
+		x, 
+		y):
 
+		centers = zencad.gutil.restore_circle_centers(
+			self.current, point3(x,y), r)
+		target = point3(x,y)
 
+		for cent in centers:
+			full_edge = zencad.circle(r, wire=True) \
+				.rotZ(x_axis_angle)            \
+				.mov(cent)
+	
+			start_point_parameter = full_edge.project(self.current)
+			finish_point_parameter = full_edge.project(target)
 
-	def plane_eliptic_arc(self, rx, ry, angle, large, sweep, x, y):
-		centers = zencad.gutil.restore_elipse_centers(self.current, point3(x,y), rx, ry, angle)
+			diff = finish_point_parameter - start_point_parameter
 
+			if not sweep:
+				if diff < 0: diff += 2*math.pi
+				if start_point_parameter > finish_point_parameter:
+					start_point_parameter -= 2*math.pi
+
+				assert start_point_parameter < finish_point_parameter
+			else:
+				if diff > 0: diff -= 2*math.pi
+				if start_point_parameter < finish_point_parameter:
+					start_point_parameter += 2*math.pi
+
+				assert start_point_parameter > finish_point_parameter
+				
+			if abs(diff) < math.pi and large:
+				continue 
+				
+			if abs(diff) > math.pi and not large:
+				continue
+
+			if not sweep:
+				trimmed = full_edge.trim(start_point_parameter, finish_point_parameter)
+			else:
+				trimmed = full_edge.trim(finish_point_parameter, start_point_parameter)
+
+			self.edges.append(trimmed)
+			break
+
+		self.current = target
+
+	# @angle - x-axis rotation
+	#def plane_elliptic_arc(self, rx, ry, x_axis_angle, large, sweep, x, y):
+	#	centers = zencad.gutil.restore_ellipse_centers(self.current, point3(x,y), rx, ry, x_axis_angle)
+	#	target = point3(x,y)
+#
+	#	print("CENTERS", centers)
+#
+	#	cent = None
+#
+	#	if centers[0].early(centers[1]):
+	#		cent = centers[0]
+#
+	#		if sweep:
+	#			self.elliptic_arc(cent, rx, ry, deg(180))
+	#		else:
+	#			self.elliptic_arc(cent, rx, ry, -deg(180))
+#
+	#	else:
+	#		for c in centers:
+	#			cv = self.current - c
+	#			tv = target - c
+#
+	#			angle = cv.angle(tv)
+	#			if cv.cross(tv).z < 0: angle = -angle
+#
+	#			if large:
+	#				if angle <= 0:
+	#					angle += math.pi * 2
+	#				else:
+	#					angle -= math.pi * 2
+#
+	#			if angle >= 0 and sweep is True:
+	#				self.elliptic_arc(c, rx, ry, angle, x_axis_angle)
+#
+	#			if angle < 0 and sweep is False:
+	#				self.elliptic_arc(c, rx, ry, angle, x_axis_angle)
+		
 	def close(self, approx_a=False, approx_b=False):
 		if self.current.distance(self.start) < 1e-5:
 			return
@@ -148,6 +266,22 @@ class wire_builder:
 		self.current = ep[1] if angle >= 0 else ep[0]
 		return self
 
+	def elliptic_arc(self, c, r1, r2, angle, rotate, rel=None):
+		c, = self.prepare([c], rel)
+		v = self.current - c
+
+		vangle = v.angle()
+		print(vangle)
+		if zencad.vector3(1,0,0).cross(v).z < 0:
+			vangle = - vangle 
+
+		shp = (zencad.ellipse(r1, r2, angle=angle, wire=True)
+			.rotZ(vangle).mov(vector3(c)))
+		
+		self.edges.append(shp)
+		ep = shp.endpoints().unlazy()
+		self.current = ep[1] if angle >= 0 else ep[0]
+		return self
 
 	def interpolate(self, pnts, tangs=None, curtang=(0,0,0), approx=False, rel=None):
 		if tangs is None:

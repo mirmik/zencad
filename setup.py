@@ -11,8 +11,8 @@ import os
 directory = os.path.dirname(os.path.realpath(__file__))
 
 requires = [
-        "evalcache>=1.12.3",
-        "pyservoce>=1.23.0",
+        "evalcache>=1.13.0",
+        "pyservoce>=1.23.2",
         "numpy",
         "pillow",
         "pyopengl",
@@ -26,7 +26,7 @@ requires = [
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.33.1",
+    version="0.34.0",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
@@ -46,6 +46,7 @@ setup(
             "convert/*",
             "libs/*",
             "gui/*",
+            "convert/*",
             "internal_models/*",
             "examples/*",
             "examples/**/*",

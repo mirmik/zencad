@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+SVGWRITE_IS_NOT_INSTALLED = False
+
 try:
 	import svgwrite
 except:
-	pass
+	SVGWRITE_IS_NOT_INSTALLED = True
 
 import evalcache
 import re
@@ -14,20 +16,18 @@ import xml.etree.ElementTree as ET
 import zencad.util
 
 def color_convert(zclr):
+	zclr = pyservoce.color(zclr)
 	r,g,b,a = zclr.r, zclr.g, zclr.b, zclr.a
 	r,g,b,a = ( x * 100 for x in (r,g,b,a))
 	return svgwrite.rgb(r,g,b,'%')
 
 def box_size(shape, mapping):
 	box = shape.bbox()
-	print("BBOX", box)
 
 	if mapping:
 		off = (box.xmin, -box.ymax)
 	else:
 		off = (0,0)
-
-	print("OFF", off)
 
 	return (
 		str(box.xmax - box.xmin),
@@ -37,6 +37,13 @@ def box_size(shape, mapping):
 
 class SvgWriter:
 	def __init__(self, fpath = None, size=None, off=None, **extras):
+		if SVGWRITE_IS_NOT_INSTALLED:
+			print("please install 'svgwrite' module for work with svg")
+			print()
+			print("python3 -m pip install svgwrite")
+			print()
+			exit(0)
+
 		if fpath is None:
 			self.dwg =  svgwrite.Drawing(size=size, **extras)
 		else:
@@ -95,30 +102,31 @@ class SvgWriter:
 			if e.curvetype() == "line":
 				self.path.push(f"L {f[0]} {f[1]}")
 
-			elif e.curvetype() == "circle":
+			elif e.curvetype() == "circle" or e.curvetype() == "ellipse":
 				angle = e.range()[1] - e.range()[0]
-				c,r,x,y = e.circle_parameters()
+				
+				if e.curvetype() == "circle":
+					c,r,x,y = e.circle_parameters()
+					r1 = r2 = r
+				elif e.curvetype() == "ellipse":
+					c,r1,r2,x,y = e.ellipse_parameters()				
+
 				sweep = 1 if (x.cross(y)).z > 0 else 0
 
 				c = self.proj(c)
 				
 				if (abs(angle - math.pi * 2) < 1e-5):
 					d = (f[0] - c[0], f[1] - c[1])
-					self.path.push(f"A {r} {r} {0} {0} {sweep} {c[0] - d[0]} {c[1] - d[1]}")
-					self.path.push(f"A {r} {r} {0} {0} {sweep} {f[0]} {f[1]}")
+					self.path.push(f"A {r1} {r2} {0} {0} {sweep} {c[0] - d[0]} {c[1] - d[1]}")
+					self.path.push(f"A {r1} {r2} {0} {0} {sweep} {f[0]} {f[1]}")
 
 				else:
 					large_arc = 1 if angle > math.pi else 0
-					self.path.push(f"A {r} {r} {0} {large_arc} {sweep} {f[0]} {f[1]}")
+					self.path.push(f"A {r1} {r2} {0} {large_arc} {sweep} {f[0]} {f[1]}")
+
 
 			else: 
 				raise Exception(f"svg:wire : curvetype is not supported: {e.curvetype()} ")
-
-		print(self.path.tostring())
-
-#		closed=True
-#		if closed:
-#			self.path.push("Z")
 
 	def push_face(self, face):
 		face = zencad.fix_face(face)
@@ -129,11 +137,8 @@ class SvgWriter:
 
 	def push_shape(self, shp, color):
 		shp = zencad.unify(shp)
-
-		shp = zencad.util.restore_shapetype(shp)
+		shp = zencad.util2.restore_shapetype(shp)
 		shp = shp.mirrorX()
-
-		#scale_translate = "scale(1 -1)"
 
 		if shp.shapetype() == "face":
 			fill_opacity = 1
@@ -158,11 +163,15 @@ class SvgWriter:
 
 class SvgReader:
 	def __init__(self):
-		pass
+		if SVGWRITE_IS_NOT_INSTALLED:
+			print("please install 'svgwrite' module for work with svg")
+			print()
+			print("python3 -m pip install svgwrite")
+			print()
+			exit(0)
 
 	def read_path_final_wb(self):
 		if self.wb is not None:
-			print("make_wire")
 			self.wires.append(self.wb.doit())
 			self.wb = None
 
@@ -183,14 +192,14 @@ class SvgReader:
 		x=float(next(self.iter)) 
 		y=float(next(self.iter))
 
-		zencad.disp(self.wb.current)
-		zencad.disp(zencad.point3(x,y))
+		# инверсия ???
+		sweep_flag = not sweep_flag
 
 		if abs(rx-ry) < 1e-5:
-			self.wb.plane_circle_arc(rx, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
+			self.wb.svg_circle_arc(rx, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 		else:
-			self.wb.plane_eliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
+			self.wb.svg_elliptic_arc(rx, ry, zencad.util.deg2rad(x_axis_rotation), large_arc_flag, sweep_flag, x, y)
 
 	def read_path_Z(self):
 		self.wb.close()
@@ -230,9 +239,6 @@ class SvgReader:
 				raise Exception("svgreader:path:undefined_command", cmd)
 
 		if fill is not None:
-			#zencad.disp(self.wires[0])
-			#zencad.show()
-
 			return zencad.make_face(self.wires)
 
 		else:
@@ -293,14 +299,9 @@ class SvgReader:
 				shp=shp.mirrorX() # svg coord system is reversed by Y	
 				self.shapes.append(shp)
 
-
-
-		return self.shapes
-
-
+		return zencad.union(self.shapes)
 
 def shape_to_svg(fpath, shape, color, mapping):
-	shape = evalcache.unlazy_if_need(shape)
 	color = color_convert(color)
 	size, off = box_size(shape, mapping)
 	writer = SvgWriter(fpath=fpath, off=off, size=size)
@@ -312,7 +313,6 @@ def shape_to_svg(fpath, shape, color, mapping):
 
 
 def shape_to_svg_string(shape, color, mapping):
-	shape = evalcache.unlazy_if_need(shape)
 	color = color_convert(color)
 	size, off = box_size(shape,mapping)
 	writer = SvgWriter(size=size, off=off)
@@ -340,17 +340,12 @@ if __name__ == "__main__":
 	(
 		zencad.rectangle(10,20) 
 		+ zencad.rectangle(10,20,center=True)
-		+ zencad.circle(r=10)
-		#- zencad.rectangle(2)
+		+ zencad.ellipse(10,8)
 		-zencad.circle(5)
 	)
 
-	#shp = zencad.rectangle(10,20, wire=True)
-	#shp = zencad.rectangle(10,20,center=True) - zencad.rectangle(5,10,center=True)
-	#shp = zencad.rectangle(10,20,center=True) - zencad.circle(3)
+	zencad.hl(shp.down(2))
 
-	#shp=zencad.circle(r=10, wire=True, angle=zencad.deg(-270)).move(10,10)
-	#print("EP", shp.endpoints())
 
 	clr = zencad.color(0.5,0,0.5)
 
@@ -359,6 +354,5 @@ if __name__ == "__main__":
 	shape_to_svg("test.svg", shp, color=clr, mapping=mapping)
 
 	m = svg_to_shape("test.svg")
-	zencad.hl(shp.up(4))
 	zencad.disp(m)
 	zencad.show()
