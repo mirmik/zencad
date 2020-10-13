@@ -130,7 +130,7 @@ class servo_controller(force_controller):
 		self.maxforce = maxforce
 		
 class pid:
-	def __init__(self, kp, ki, kd=0, dkoeff=0):
+	def __init__(self, kp, ki, kd=0, dkoeff=0, clamp=None):
 		self.kp = kp 
 		self.ki = ki
 		self.kd = kd
@@ -138,15 +138,21 @@ class pid:
 		self.aper = 0
 		self.integral = 0
 		self.last = 0
+		self.clamp = clamp
 
 	def serve(self, input, delta):
 		self.integral += input * delta
+		if self.clamp:
+			if self.integral > self.clamp:
+				self.integral = self.clamp
+			elif self.integral < -self.clamp:
+				self.integral = - self.clamp
 		#diff = input - self.aper
 		#self.aper += diff * self.dkoeff
 		diff = input - self.last
 		self._value = input * self.kp + self.integral * self.ki + diff * self.kd
 		self.last = input
-		self.error = diff
+		#self.error = diff
 
 	def value(self):
 		return self._value
@@ -243,10 +249,12 @@ class servo_controller3(force_controller):
 		self.filtered_possig += (possig - self.filtered_possig) * 1
 
 		poserr = self.position_target - self.filtered_possig
+		self.poserr =poserr
 		self.pidpos.serve(poserr, delta)
 		self.set_speed_target( self.pidpos.value() )
 
 		spderr = self.speed_target - self.filtered_spdsig
+		self.spderr = spderr
 		self.pidspd.serve(spderr, delta)
 		evaluated_force = self.pidspd.value()
 

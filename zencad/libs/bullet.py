@@ -235,9 +235,9 @@ class pybullet_shape_bind:
 		lateralFriction = 0.004
 		anisotropicFriction=0.001
 		frictionAnchor = 0
-		jointDamping = 0.1
-		linearDamping=0.1
-		angularDamping=0.1
+		jointDamping = 0.0001
+		linearDamping=0.0001
+		angularDamping=0.0001
 
 		contactStiffness = -1
 		contactDamping = -1
@@ -350,7 +350,7 @@ class pybullet_shape_bind:
 
 
 class simulation:
-	def __init__(self, scale_factor=1, gravity=(0,0,0), plane=False, gui=False, 
+	def __init__(self, scale_factor=1000, gravity=(0,0,-10), plane=True, gui=False, 
 			time_step=1/240, substeps=2):
 		self.scale_factor = scale_factor
 
