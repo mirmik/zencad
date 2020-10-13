@@ -146,6 +146,7 @@ class pid:
 		diff = input - self.last
 		self._value = input * self.kp + self.integral * self.ki + diff * self.kd
 		self.last = input
+		self.error = diff
 
 	def value(self):
 		return self._value
@@ -267,7 +268,8 @@ class servo_controller3(force_controller):
 		self.pidspd.serve(spderr, delta)
 		evaluated_force = self.pidspd.value()
 
-		final_force = self.filtered_force
+		#final_force = self.filtered_force
+		final_force = evaluated_force
 		if self.maxforce:
 			if abs(final_force) > self.maxforce: final_force = final_force / abs(final_force) * self.maxforce		
 		self.set_force(final_force)

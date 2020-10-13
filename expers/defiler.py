@@ -17,21 +17,21 @@ class defiler(zencad.assemble.unit):
 			h=20
 			r=1
 
-			def __init__(self, ax=(0,1,0)):
+			def __init__(self, axis=(0,1,0)):
 				super().__init__()
 				self.add_shape(cylinder(r=self.r, h=self.h))
-				self.rot=zencad.libs.kinematic.rotator(ax=ax, location=up(self.h))
+				self.rot=zencad.assemble.rotator(axis=axis, location=up(self.h))
 				self.link(self.rot)
 
 		def __init__(self):
 			super().__init__()
-			self.arm_node_0 = self.arm_node(ax=(1,0,0))
-			self.arm_node_1 = self.arm_node(ax=(1,0,0))
-			#self.arm_node_2 = self.arm_node(ax=(0,1,0))
-			#self.arm_node_3 = self.arm_node(ax=(1,0,0))
-			#self.arm_node_4 = self.arm_node(ax=(0,1,0))
-			#self.arm_node_5 = self.arm_node(ax=(0,1,0))
-			#self.arm_node_6 = self.arm_node(ax=(1,0,0))
+			self.arm_node_0 = self.arm_node(axis=(1,0,0))
+			self.arm_node_1 = self.arm_node(axis=(1,0,0))
+			#self.arm_node_2 = self.arm_node(axis=(0,1,0))
+			#self.arm_node_3 = self.arm_node(axis=(1,0,0))
+			#self.arm_node_4 = self.arm_node(axis=(0,1,0))
+			#self.arm_node_5 = self.arm_node(axis=(0,1,0))
+			#self.arm_node_6 = self.arm_node(axis=(1,0,0))
 
 			self.link(self.arm_node_0)
 			self.arm_node_0.rot.link(self.arm_node_1)
@@ -59,23 +59,23 @@ class defiler(zencad.assemble.unit):
 
 
 
-		self.brot_00 = zencad.libs.kinematic.rotator(location=move( self.x/4,self.y/2,0), ax=(0,0,1))
-		self.brot_01 = zencad.libs.kinematic.rotator(location=move(        0,self.y/2,0), ax=(0,0,1))
-		self.brot_02 = zencad.libs.kinematic.rotator(location=move(-self.x/4,self.y/2,0), ax=(0,0,1))
-		self.brot_03 = zencad.libs.kinematic.rotator(location=move(-self.x/4*2,self.y/2,0), ax=(0,0,1))
-		self.brot_10 = zencad.libs.kinematic.rotator(location=move( self.x/4,-self.y/2,0), ax=(0,0,1))
-		self.brot_11 = zencad.libs.kinematic.rotator(location=move(        0,-self.y/2,0), ax=(0,0,1))
-		self.brot_12 = zencad.libs.kinematic.rotator(location=move(-self.x/4,-self.y/2,0), ax=(0,0,1))
-		self.brot_13 = zencad.libs.kinematic.rotator(location=move(-self.x/4*2,-self.y/2,0), ax=(0,0,1))
+		self.brot_00 = zencad.assemble.rotator(location=move( self.x/4,self.y/2,0), axis=(0,0,1))
+		self.brot_01 = zencad.assemble.rotator(location=move(        0,self.y/2,0), axis=(0,0,1))
+		self.brot_02 = zencad.assemble.rotator(location=move(-self.x/4,self.y/2,0), axis=(0,0,1))
+		self.brot_03 = zencad.assemble.rotator(location=move(-self.x/4*2,self.y/2,0), axis=(0,0,1))
+		self.brot_10 = zencad.assemble.rotator(location=move( self.x/4,-self.y/2,0), axis=(0,0,1))
+		self.brot_11 = zencad.assemble.rotator(location=move(        0,-self.y/2,0), axis=(0,0,1))
+		self.brot_12 = zencad.assemble.rotator(location=move(-self.x/4,-self.y/2,0), axis=(0,0,1))
+		self.brot_13 = zencad.assemble.rotator(location=move(-self.x/4*2,-self.y/2,0), axis=(0,0,1))
 
-		self.rot_00 = zencad.libs.kinematic.rotator(ax=(1,0,0))
-		self.rot_01 = zencad.libs.kinematic.rotator(ax=(1,0,0))
-		self.rot_02 = zencad.libs.kinematic.rotator(ax=(1,0,0))
-		self.rot_03 = zencad.libs.kinematic.rotator(ax=(1,0,0))
-		self.rot_10 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
-		self.rot_11 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
-		self.rot_12 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
-		self.rot_13 = zencad.libs.kinematic.rotator(ax=(-1,0,0))
+		self.rot_00 = zencad.assemble.rotator(axis=(1,0,0))
+		self.rot_01 = zencad.assemble.rotator(axis=(1,0,0))
+		self.rot_02 = zencad.assemble.rotator(axis=(1,0,0))
+		self.rot_03 = zencad.assemble.rotator(axis=(1,0,0))
+		self.rot_10 = zencad.assemble.rotator(axis=(-1,0,0))
+		self.rot_11 = zencad.assemble.rotator(axis=(-1,0,0))
+		self.rot_12 = zencad.assemble.rotator(axis=(-1,0,0))
+		self.rot_13 = zencad.assemble.rotator(axis=(-1,0,0))
 		
 		self.arms = [self.arm_00, self.arm_01, self.arm_02, self.arm_03, self.arm_10, self.arm_11, self.arm_12, self.arm_13]
 		self.rots = [self.rot_00, self.rot_01, self.rot_02, self.rot_03, self.rot_10, self.rot_11, self.rot_12, self.rot_13]
