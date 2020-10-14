@@ -14,15 +14,16 @@ from pybullet import JOINT_REVOLUTE, JOINT_PRISMATIC, JOINT_SPHERICAL, JOINT_FIX
 @zencad.lazifier.lazy.file_creator("outpath")
 def volumed_collision_do(model, inpath, outpath, logpath, alpha=0.05, resolution=100000):			
 	p.vhacd(inpath, outpath, logpath, 
-		alpha = 0.0005,
-		resolution=10000) 
+		alpha = alpha,
+		resolution=resolution, 
 	#	convexhullApproximation=0,
 	#	mode = 0,
 	#	convexhullDownsampling=16,
 	#	planeDownsampling=16,
 	#	depth=32,
 	#	beta = 0.0005,
-	#	gamma= 0.0005 )
+	#	gamma= 0.0005 
+	)
 
 def volumed_collision(model, alpha=0.05, resolution=100000):
 	inpath = os.path.join(zencad.lazifier.lazy.cache.tmpdir(), model.__lazyhexhash__[12:] + "collision" + ".obj")

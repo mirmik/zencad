@@ -1,4 +1,5 @@
 import zencad.assemble
+import zencad.malgo
 import zencad.libs.screw
 import pyservoce
 import numpy
@@ -163,48 +164,20 @@ class kinematic_chain:
 		target = vec.to_array()
 		return zencad.malgo.svd_backpack(target, sens)[0]
 
-	def decompose_linear(self, vec, use_base_frame=False, maxsig=2, maxnorm=1, 
-			priority=None):
-		a = time.time()
+	def decompose_linear(self, vec, use_base_frame=False, maxnorm=1, priority=None):
 		sens = self.sensivity(self.chain[-1] if use_base_frame else None)
-		b = time.time()
-		#sens = self.sensivity(None)
 		sens = [ s.lin for s in sens]
 		target = vec
-
 
 		if priority:
 			for i in range(len(sens)):
 				sens[i] = sens[i] * priority[i]
 
-		#for i in range(len(sens)):
-		#	print(abs(sens[i].dot(target)))
-			#if abs(sens[i].dot(target)) > 10:
-			#	sens[i] = (0,0,0)
-		#print(sens)
 		sigs = zencad.malgo.svd_backpack(target, sens)[0]
-		c = time.time()
 
 		if priority:
 			for i in range(len(sens)):
 				sigs[i] = sigs[i] * priority[i]
-		#print(sigs)
-		#print(sigs)
-
-		#norm = numpy.linalg.norm(sigs)
-		#if norm > maxnorm:
-		#	sigs = sigs / norm * maxnorm
-		#print(sigs)
-		#if norm > maxnorm:
-		#	sigs = sigs / norm * maxnorm
-
-		#ssigs = list(sigs)
-		#print(ssigs)
-		#for i in range(len(sigs)):
-		#	if abs(ssigs[i]) > maxsig:
-		#		ssigs[i] = 0
-
-		#print(b-a, c-b)
 
 		return sigs
 
