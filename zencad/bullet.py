@@ -330,15 +330,22 @@ def get_force_torque_sensor(u, idx=None):
 	global_force = _world_orient(_local_force)
 	global_torque = _world_orient(_local_torque)
 
-	arm = vector3(0.00181*2,0,0) 
+	#arm = vector3(0.00181*2,0,0) 
 
 	scr = zencad.libs.screw.screw(ang=global_torque, lin=global_force)
-	scr = scr.force_carry(arm)
+	#scr = scr.force_carry(arm)
 
 	#print("LIN", scr.lin)
 	#print("ANG", scr.ang)
 
 	return scr
+
+def get_force_signal(u, idx=None):
+	if idx == None:
+		idx = u.current_index2
+
+	return p.getJointState(u.pybullet_base.boxId, 
+		jointIndex=idx)
 
 
 def get_link_state(u, idx=None):
