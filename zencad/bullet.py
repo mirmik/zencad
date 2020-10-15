@@ -288,3 +288,64 @@ class servo_controller3(force_controller):
 		self.pidpos = pidpos
 		self.filter = filt
 		self.maxforce = maxforce
+
+
+def enable_force_torque_sensor(u, idx=None):
+	pass
+	#if idx == None:
+	#	idx = u.current_index2
+
+	#print(u.current_index2)
+	#ret = pybullet.enableJointForceTorqueSensor(bodyUniqueId=u.pybullet_base.boxId, 
+	#	jointIndex=idx,
+	#	enableSensor=True)
+
+	#print(ret)
+	#exit()
+
+
+
+def get_force_torque_sensor(u, idx=None):
+	if idx == None:
+		idx = u.current_index2
+
+	out_state = pybullet.getJointState(bodyUniqueId=u.pybullet_base.boxId, 
+		jointIndex=idx)
+	#print("STATE:", out_state)
+
+	ret = out_state[2]
+
+	_local_force = pyservoce.vector3(ret[0], ret[1], ret[2])
+	_local_torque = pyservoce.vector3(ret[3], ret[4], ret[5])
+
+	out_link = pybullet.getLinkState(
+		bodyUniqueId=u.pybullet_base.boxId, 
+		linkIndex=idx)
+	#print("LINK:", out_link)
+
+	_world_orient =  pyservoce.quaternion(out_link[1]).to_transformation()
+
+	#print("VAR1:", _world_orient(_local_force), _world_orient(_local_torque))
+	
+	global_force = _world_orient(_local_force)
+	global_torque = _world_orient(_local_torque)
+
+	arm = vector3(0.00181*2,0,0) 
+
+	scr = zencad.libs.screw.screw(ang=global_torque, lin=global_force)
+	scr = scr.force_carry(arm)
+
+	#print("LIN", scr.lin)
+	#print("ANG", scr.ang)
+
+	return scr
+
+
+def get_link_state(u, idx=None):
+	if idx == None:
+		idx = u.current_index2
+
+	ret = pybullet.getLinkState(bodyUniqueId=u.pybullet_base.boxId, 
+		linkIndex=idx)
+
+	return ret
