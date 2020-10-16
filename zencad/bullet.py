@@ -325,7 +325,7 @@ def get_force_torque_sensor(u, idx=None):
 
 	_world_orient =  pyservoce.quaternion(out_link[1]).to_transformation()
 
-	#print("VAR1:", _world_orient(_local_force), _world_orient(_local_torque))
+	print("VAR1:", _local_force, _local_torque)
 	
 	global_force = _world_orient(_local_force)
 	global_torque = _world_orient(_local_torque)
