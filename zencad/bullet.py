@@ -321,14 +321,33 @@ def get_force_torque_sensor(u, idx=None):
 	out_link = pybullet.getLinkState(
 		bodyUniqueId=u.pybullet_base.boxId, 
 		linkIndex=idx)
-	#print("LINK:", out_link)
+	print("LINK:", out_link)
 
-	_world_orient =  pyservoce.quaternion(out_link[1]).to_transformation()
+	_orient0 =  pyservoce.quaternion(out_link[1]).to_transformation()
+	_orient1 =  pyservoce.quaternion(out_link[3]).to_transformation()
+	_orient2 =  pyservoce.quaternion(out_link[5]).to_transformation()
+	#_orient =  pyservoce.quaternion(out_link[3]).to_transformation()
 
+	_orient = _orient0
 	print("VAR1:", _local_force, _local_torque)
 	
-	global_force = _world_orient(_local_force)
-	global_torque = _world_orient(_local_torque)
+	print("A", _orient0(_local_force))
+	print("B", _orient0.inverse()(_local_force))
+	print("C", _orient1(_local_force))
+	print("D", _orient1.inverse()(_local_force))
+	print("E", _orient2(_local_force))
+	print("F", _orient2.inverse()(_local_force))
+
+	print("A", u.global_location.inverse()(_local_force))
+	print("A", u.global_location.inverse()(_orient0(_local_force)))
+	print("B", u.global_location.inverse()(_orient0.inverse()(_local_force)))
+	print("C", u.global_location.inverse()(_orient1(_local_force)))
+	print("D", u.global_location.inverse()(_orient1.inverse()(_local_force)))
+	print("E", u.global_location.inverse()(_orient2(_local_force)))
+	print("F", u.global_location.inverse()(_orient2.inverse()(_local_force)))
+
+	global_force = _orient(_local_force)
+	global_torque = _orient(_local_torque)
 
 	#arm = vector3(0.00181*2,0,0) 
 
