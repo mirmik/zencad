@@ -71,7 +71,10 @@ def start_main_application(tgtpath=None, presentation=False, display_mode=False,
 	trace("start_main_application", tgtpath, presentation, display_mode, console_retrans)	
 
 	def signal_sigchild(a,b):
-		os.wait()
+		try:
+			os.wait()
+		except ChildProcessError as ex:
+			pass
 
 	if sys.platform == "linux":
 		signal.signal(signal.SIGCHLD, signal_sigchild) 
