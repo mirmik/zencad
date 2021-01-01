@@ -14,15 +14,16 @@ from pybullet import JOINT_REVOLUTE, JOINT_PRISMATIC, JOINT_SPHERICAL, JOINT_FIX
 @zencad.lazifier.lazy.file_creator("outpath")
 def volumed_collision_do(model, inpath, outpath, logpath, alpha=0.05, resolution=100000):			
 	p.vhacd(inpath, outpath, logpath, 
-		alpha = 0.0005,
-		resolution=10000) 
+		alpha = alpha,
+		resolution=resolution, 
 	#	convexhullApproximation=0,
 	#	mode = 0,
 	#	convexhullDownsampling=16,
 	#	planeDownsampling=16,
 	#	depth=32,
 	#	beta = 0.0005,
-	#	gamma= 0.0005 )
+	#	gamma= 0.0005 
+	)
 
 def volumed_collision(model, alpha=0.05, resolution=100000):
 	inpath = os.path.join(zencad.lazifier.lazy.cache.tmpdir(), model.__lazyhexhash__[12:] + "collision" + ".obj")
@@ -221,6 +222,12 @@ class pybullet_shape_bind:
 
 		self.index_map = { i: int(p.getJointInfo(self.boxId, i)[1][5:]) - 1 for i in range(len(self.link_models)) }
 
+		#print(self.index_map)
+		#print(p.getJointInfo(self.boxId, i))
+		
+		#for i in range(len(self.link_models)):
+		#	self.link_models[i].joint_index = i
+
 		#info = p.getLinkStates(self.boxId, range(len(self.link_models)))
 		#print()
 		#for i in range(len(info)):
@@ -278,6 +285,11 @@ class pybullet_shape_bind:
 				maxJointVelocity=10e5)
 
 
+		for i in range(p.getNumJoints(self.boxId)):
+			p.enableJointForceTorqueSensor(bodyUniqueId=self.boxId, 
+				jointIndex=i,
+				enableSensor=True)
+
 
 	def bind_to_scene(self, scene, color=zencad.default_color):
 		if self.base_interactive:
@@ -333,6 +345,7 @@ class pybullet_shape_bind:
 			def set_kinematic_pose(u):
 				if isinstance(u, zencad.assemble.kinematic_unit):
 					info = p.getJointState(u.pybullet_base.boxId, u.simulation_hint2)
+					#print(info)
 					pose=info[0]
 					u.set_coord(pose + u.simulation_start_pose)
 			zencad.assemble.for_each_unit(self.base_interactive, set_kinematic_pose)
@@ -472,6 +485,9 @@ class simulation:
 			o.update()
 
 	def _bind_assemble_tasks(self, u, tasks, parent_index, pjoint, paxis, root):
+		"""В коде явная ошибка в присвоении коээффициентов.
+		Если rotator имеет двух потомков, они перезаписывают индексы"""
+
 		class t:
 			def __init__(self, parent, model, location,
 					joint_type, joint_axis, parent_index):
@@ -489,6 +505,7 @@ class simulation:
 		tasks.append(t(u, ubody, u.location, pjoint, paxis, parent_index))
 		current_index = len(tasks)
 
+		# Записываем номер текущего объекта
 		u.current_index = current_index
 
 		for c in u.childs:
@@ -504,6 +521,7 @@ class simulation:
 				root=root)
 
 			if isinstance(u, zencad.assemble.rotator):
+				# Записываем номер того, кого вращает rotator.
 				u.simulation_hint = index
 
 		return current_index
@@ -516,7 +534,7 @@ class simulation:
 				targetVelocity=0, force=0)
 
 			u.simulation_hint2 = ret.index_map[u.simulation_hint - 1]
-			u.pybullet_base=ret
+		u.pybullet_base=ret
 
 		u.current_index2 = ret.index_map[u.current_index - 1]
 
