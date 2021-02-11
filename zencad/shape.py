@@ -8,6 +8,8 @@ import trans
 from lazifier2 import *
 
 class Shape:
+	""" Basic zencad type. """
+
 	def __init__(self, arg):
 		if not isinstance(arg, TopoDS_Shape):
 			raise Exception("Wrong Shape constructor invoke")
@@ -73,10 +75,16 @@ class Shape:
 
 # Support lazy methods
 class LazyObjectShape(evalcache.LazyObject):
+	""" Lazy object specification for Shape class.
+		It control methods lazyfying. And add some checks.
+		All Shapes wrappers must use LazyShapeObject. 
+	"""
+
 	def __init__(self, *args, **kwargs):
 		evalcache.LazyObject.__init__(self, *args, **kwargs)
 
 	def unlazy(self):
+		"""Test wrapped object type equality."""
 		obj = super().unlazy()
 		if not isinstance(obj, Shape):
 			raise Exception(f"LazyObjectShape wraped type is not Shape: class:{obj.__class__}")
@@ -119,6 +127,9 @@ for item in LazyObjectShape.cached_methods:
 
 
 class nocached_shape_generator(evalcache.LazyObject):
+	"""	Decorator for heavy functions.
+		It use caching for lazy data restoring."""
+
 	def __init__(self, *args, **kwargs):
 		evalcache.LazyObject.__init__(self, *args, **kwargs)
 
@@ -128,6 +139,9 @@ class nocached_shape_generator(evalcache.LazyObject):
 		)
 
 class shape_generator(evalcache.LazyObject):
+	"""	Decorator for lightweight functions.
+		It prevent caching."""
+	
 	def __init__(self, *args, **kwargs):
 		evalcache.LazyObject.__init__(self, *args, **kwargs)
 
