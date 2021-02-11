@@ -5,7 +5,7 @@ from interactive_object import ShapeInteractiveObject
 from interactive_object import create_interactive_object
 
 from axis               import Axis
-from shape              import Shape
+from shape              import Shape, LazyObjectShape
 
 import evalcache
 
@@ -16,7 +16,13 @@ class Scene:
 		self.display = None
 
 	def add(self, obj, color=None):
-		if isinstance(obj, evalcache.lazy.LazyObject):
+		if isinstance(obj, LazyObjectShape):
+			obj = obj.unlazy()
+
+		if isinstance(obj, evalcache.LazyObject):
+			if isinstance(obj, Shape):
+				if False:
+					print("Warning: Scene.add: wrong wrapped object")
 			obj = obj.unlazy()
 
 		if isinstance(obj, (Shape,Axis)):

@@ -18,13 +18,11 @@ import pickle
 
 import showapi2
 
-a = box(20,20,20)
-a.unlazy()
+a = box(20,20,20) + box(10,20,30)
+r=a.move(10,10,1)
 
-b= box(10,10,10)
-b.unlazy()
+r.unlazy()
 
-m = (a + b).move(5,5,10)
-m.unlazy()
-#showapi2.disp(m)
+#r.unwrap()
+#showapi2.disp(r)
 #showapi2.show(display_only=True)
