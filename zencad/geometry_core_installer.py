@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import random
+import string
 import tempfile
 import requests
 import tarfile
@@ -34,6 +36,17 @@ python_occ_precompiled_packages = {
 	}
 }
 
+occt_precompiled_libraries = {
+	"linux-64": 
+	{
+		"7.4.0": "https://github.com/zencad/x86_64-linux64-occt7.4.0/raw/master/bin/x86_64-linux64-occt7.4.0.tar.gz"
+	},
+	"win-64": 
+	{
+		"7.4.0": None
+	}
+}
+
 def download_repo(url, path):
 	"""Just file downloading"""
 	with requests.get(url, stream=True) as r:
@@ -57,7 +70,8 @@ def download_repo(url, path):
 
 def download_repo_to_temporary_directory(url) -> str:
 	"""Download repo and return its temporary path"""
-	path = os.path.join(tempfile.gettempdir(), os.path.basename(url))
+	addname = "".join(random.choice(string.ascii_lowercase) for i in range(12))
+	path = os.path.join(tempfile.gettempdir(), addname + "." + os.path.basename(url))
 	download_repo(url=url, path=path)
 	return path
 
@@ -85,13 +99,21 @@ def extract_archive(path, extract_directory=None):
 	return extract_directory
 
 def user_site_packages_directory():
-	return site.USER_SITE
+	if os.getusername != "root":
+		return site.USER_SITE
+	else:
+		return site.getsitepackages()[0]
+
+def get_platform() :
+	if sys.platform == "linux":
+		return "linux-64"
+	elif sys.platform == "win32":
+		return "win-64"
+	else:
+		raise Exception("Unresolved architecture")
 
 def install_precompiled_python_occ(occversion="7.4.1"):
-	if sys.platform == "linux":
-		systref = "linux-64"
-	elif sys.platform == "win32":
-		systref = "win-64"
+	systref = get_platform()	
 
 	ver = sys.version[:3]
 	python_name = "python" + ver
@@ -110,11 +132,36 @@ def install_precompiled_python_occ(occversion="7.4.1"):
 	target_directory = os.path.join(user_site_packages_directory(), 
 		"OCC")
 	print(f"Source: {source_directory}")
-	print(f"Target: {source_directory}")
+	print(f"Target: {target_directory}")
 	shutil.copytree(source_directory, target_directory, dirs_exist_ok=True)	
 	print("Copying status: Success")
 
 	print(f"Precomiled OCC succesfually installed in {target_directory}")
+
+def install_precompiled_occt_library(occt_version = "7.4.0"):
+	architecture = get_platform()
+
+	# Downloading precompiled repo
+	url = occt_precompiled_libraries[architecture][occt_version]
+	path = download_repo_to_temporary_directory(url)
+
+	#Extraction
+	extract_directory = extract_archive(path)
+
+	if architecture in ("linux-64"):
+		target_directory = "/usr/local/lib"
+
+	print("Copy libs to system libs directory")
+	source_directory = os.path.join(extract_directory)
+	target_directory = os.path.join(target_directory)
+	print(f"Source: {source_directory}")
+	print(f"Target: {target_directory}")
+	for item in os.listdir(source_directory):
+		shutil.copy(
+			os.path.join(source_directory, item),
+			os.path.join(target_directory, item)
+		)
+	print("Copying status: Success")	
 
 def test_third_libraries():
 	try:
@@ -138,10 +185,21 @@ def test_third_libraries():
 		"pythonocc":OCC.__file__,
 	}
 
-def console_third_libraries_installer_utility():
+def ask_yes_no(question):
 	yes = ['yes', 'y', '', "ye"]
 	no = ['n', 'no']
 
+	while True:
+		inp = input(question).lower()
+		if inp in yes:
+			return True
+		elif inp in no:
+			return False
+		else:
+			print("Unresolved answer")
+	
+
+def console_third_libraries_installer_utility():
 	while True:
 		third_libraries_status = test_third_libraries()
 		print(third_libraries_status)
@@ -155,23 +213,24 @@ def console_third_libraries_installer_utility():
 		if third_libraries_status["pythonocc"] is False:
 			print("Module pythonocc is not found")
 			
-			while True:
-				inp = input("Are you want to install it from repository? [Y/n]").lower()
-				if inp in yes:
-					answer = True
-					break
-				elif inp in no:
-					answer = False
-					return False
-				else:
-					print("Unresolved answer")
-	
+			answer = ask_yes_no("Are you want to install it from repository? [Y/n]")
+
 			if answer:
 				install_precompiled_python_occ()
 				continue
+			else:
+				return False
 
 		if third_libraries_status["occt"] is False:
-			pass
+			print("OCCT library is not found")
+			
+			answer = ask_yes_no("Are you want to install it from repository? [Y/n]")
+	
+			if answer:
+				install_precompiled_occt_library()
+				continue
+			else:
+				return False
 
 		break
 
@@ -179,4 +238,3 @@ def console_third_libraries_installer_utility():
 
 if __name__ == "__main__":
 	sts = console_third_libraries_installer_utility()
-	print(sts)

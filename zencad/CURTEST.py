@@ -16,14 +16,15 @@ from trans                    import *
 from util3 import *
 import pickle
 
-scene = Scene()
+import showapi2
 
-ddd = cylinder(r=10, h=40)# ^ box(10,10,10)
-trsf = move(10,20,30) #* rotate([1,1,0], deg(20))
-ddd = trsf(ddd)
+a = box(20,20,20)
+a.unlazy()
 
-scene.add(ddd, mech)
+b= box(10,10,10)
+b.unlazy()
 
-gui.display_only.init_display_only_mode()
-gui.display_only.DISPLAY.attach_scene(scene)
-gui.display_only.exec_display_only_mode()
+m = (a + b).move(5,5,10)
+m.unlazy()
+#showapi2.disp(m)
+#showapi2.show(display_only=True)

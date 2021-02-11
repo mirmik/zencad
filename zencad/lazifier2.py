@@ -14,7 +14,10 @@ lazy = evalcache.Lazy(
     algo=algo, 
     onbool=True,
     onstr=True,
-    pedantic=True,
+    #pedantic=True,
+    diag=True,
+    diag_values=True,
+    #print_invokes=True
 
     #fastdo = True
 )

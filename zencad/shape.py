@@ -4,6 +4,7 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.TopoDS import TopoDS_Shape
 from OCC.Core.BinTools import BinTools_ShapeSet
 from geom2.boolops import *
+import trans
 from lazifier2 import *
 
 class Shape:
@@ -13,22 +14,14 @@ class Shape:
 
 		self._shp = arg
 
-	@lazy
 	def __add__(self, oth):
 		return Shape(occ_pair_union(self._shp, oth._shp))
 
-	@lazy
 	def __sub__(self, oth):
 		return Shape(occ_pair_difference(self._shp, oth._shp))
 
-	@lazy
 	def __xor__(self, oth):
 		return Shape(occ_pair_intersect(self._shp, oth._shp))
-
-	@lazy
-	def transform(self, trans):
-		shp = BRepBuilderAPI_Transform(self._shp, trans._trsf, True).Shape();
-		return Shape(shp)
 
 	def __getstate__(self):
 		return { 
@@ -37,3 +30,11 @@ class Shape:
 
 	def __setstate__(self, dct):
 		self._shp = dct["shape"]
+
+	#@lazy.lazy(nocache=1)
+	def transform(self, trans):
+		shp = BRepBuilderAPI_Transform(self._shp, trans._trsf, True).Shape();
+		return Shape(shp)
+
+	@lazy.lazy(nocache=1)
+	def move(self, *args): return trans.move(*args)(self)
