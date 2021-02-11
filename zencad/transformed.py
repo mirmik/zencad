@@ -1,4 +1,4 @@
-import trans
+import zencad.trans as trans
 
 class Transformed:
 	def move(self, *args): return trans.move(*args)(self)

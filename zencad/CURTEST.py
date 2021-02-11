@@ -19,10 +19,6 @@ import pickle
 
 import showapi2
 
-a = polygon([
-	(20,20,0), 
-	(123,15,12),
-	(123,1300,12),
-])
+a = circle(10, yaw=(0,deg(145)))
 showapi2.disp(a)
 showapi2.show(display_only=True)

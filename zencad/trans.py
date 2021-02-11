@@ -1,11 +1,11 @@
-import util3
-from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Pnt, gp_Dir, gp_Quaternion
-from lazifier2 import *
-
 import sys
 import numpy
 import pickle
 import base64 as b64
+
+from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_Quaternion
+
+import zencad.util3
 
 class Transformation:
 	def __init__(self, trsf):
@@ -42,7 +42,7 @@ class Transformation:
 		return b64.b64encode(pickle.dumps(self)).decode("utf-8")
 
 def move(*args):
-	xyz = util3.as_indexed(args)
+	xyz = zencad.util3.as_indexed(args)
 	trsf = gp_Trsf()
 	trsf.SetTranslation(gp_Vec(args[0], args[1], args[2]))
 	return Transformation(trsf)
@@ -50,17 +50,40 @@ def move(*args):
 def translate(*args):
 	return move(*args)
 
+
+def right(x):return move(x,0,0)
+def forw(y): return move(0,y,0)
+def up(z):   return move(0,0,z)
+def left(x): return move(-x,0,0)
+def back(y): return move(0,-y,0)
+def down(z): return move(0,0,-z)
+
 def moveX(x): return move(x,0,0)
 def moveY(y): return move(0,y,0)
 def moveZ(z): return move(0,0,z)
 def movX(x): return move(x,0,0)
 def movY(y): return move(0,y,0)
 def movZ(z): return move(0,0,z)
+
 def translateX(x): return move(x,0,0)
 def translateY(y): return move(0,y,0)
 def translateZ(z): return move(0,0,z)
+
+def rotateX(a): return rotate([1,0,0],a)
+def rotateY(a): return rotate([0,1,0],a)
+def rotateZ(a): return rotate([0,0,1],a)
+
 
 def rotate(axis, angle):
 	trsf = gp_Trsf();
 	trsf.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(gp_Vec(axis[0], axis[1], axis[2]))), angle);
 	return Transformation(trsf);
+
+def mirror_plane(ax, ay, az):
+	trsf = gp_Trsf()
+	trsf.SetMirror(gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(ax, ay, az)))
+	return Transformation(trsf);
+
+def mirrorXY(): return mirror_plane(0,0,1)
+def mirrorYZ(): return mirror_plane(1,0,0)
+def mirrorXZ(): return mirror_plane(0,1,0)

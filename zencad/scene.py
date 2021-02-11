@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
-from interactive_object import InteractiveObject
-from interactive_object import ShapeInteractiveObject
-from interactive_object import create_interactive_object
-
-from axis               import Axis
-from shape              import Shape, LazyObjectShape
-
 import evalcache
+
+from zencad.interactive_object import InteractiveObject
+from zencad.interactive_object import ShapeInteractiveObject
+from zencad.interactive_object import create_interactive_object
+
+from zencad.axis               import Axis
+from zencad.shape              import Shape, LazyObjectShape
+
 
 class Scene:
 	def __init__(self):

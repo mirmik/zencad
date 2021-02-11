@@ -1,28 +1,67 @@
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut, BRepAlgoAPI_Common
+from OCC.Core.TopoDS import TopoDS_Shape
 
-def occ_pair_union(a,b):
-	algo = BRepAlgoAPI_Fuse(a, b)
-	algo.Build()
-	if not algo.IsDone():
-		print("warn: union algotithm failed\n")
-		algo.GetReport().Dump(sys.stdout)
+from zencad.shape import shape_generator, Shape
+from zencad.lazifier2 import lazy
+from zencad.geom2.boolops_base import occ_pair_union, occ_pair_difference, occ_pair_intersect
 
-	return algo.Shape()
+@lazy.lazy(cls=shape_generator)
+def union(lst):
+	if len(lst) == 1: 
+		return Shape(lst[0])
 
-def occ_pair_difference(a,b):
-	algo = BRepAlgoAPI_Cut(a, b)
-	algo.Build()
-	if not algo.IsDone():
-		print("warn: union algotithm failed\n")
-		algo.GetReport().Dump(sys.stdout)
+	nrsize = 0
+	rsize = len(lst) // 2 + len(lst) % 2
 
-	return algo.Shape()
+	narr = [ TopoDS_Shape() for i in range(rsize) ]
 
-def occ_pair_intersect(a,b):
-	algo = BRepAlgoAPI_Common(a, b)
-	algo.Build()
-	if not algo.IsDone():
-		print("warn: union algotithm failed\n")
-		algo.GetReport().Dump(sys.stdout)
+	for i in range(len(lst) // 2):
+		narr[i] = occ_pair_union(lst[i].Shape(), lst[len(lst) - i - 1].Shape())
 
-	return algo.Shape()
+	if len(lst) % 2:
+		narr[rsize - 1] = lst[len(lst) // 2].Shape()
+
+	while rsize != 1:
+		nrsize = rsize // 2 + rsize % 2
+
+		for i in range(rsize // 2):
+			narr[i] = occ_pair_union(narr[i], narr[rsize - i - 1]);
+
+		if rsize % 2:
+			narr[nrsize - 1] = narr[rsize // 2]
+
+		rsize = nrsize
+
+	return Shape(narr[0])
+
+@lazy.lazy(cls=shape_generator)
+def difference(lst):
+	pass
+
+@lazy.lazy(cls=shape_generator)
+def intersect(lst):
+	pass
+#servoce::shape servoce::make_difference(const std::lsttor<const servoce::shape*>& lst)
+#{
+#	TopoDS_Shape ret = lst[0]->Shape();
+#
+#	for (unsigned int i = 1; i < lst.size(); ++i)
+#	{
+#		ret = __make_difference(ret, lst[i]->Shape());
+#	}
+#
+#	return ret;
+#}
+#
+#servoce::shape servoce::make_intersect(const std::lsttor<const servoce::shape*>& lst)
+#{
+#	TopoDS_Shape ret = lst[0]->Shape();
+#
+#	for (unsigned int i = 1; i < lst.size(); ++i)
+#	{
+#		ret = __make_intersect(ret, lst[i]->Shape());
+#	}
+#
+#	return ret;
+#}
+#

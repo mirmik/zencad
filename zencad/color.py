@@ -31,17 +31,17 @@ class Color:
 	def __str__(self):
 		return f"({self.r},{self.g},{self.b},{self.a})"
 
-white =     Color(1,1,1)
-black =     Color(0,0,0)
-red =       Color(1,0,0)
-green =     Color(0,1,0)
-blue =      Color(0,0,1)
-yellow =    Color(1,1,0)
-magenta =   Color(1,0,1)
-cian =      Color(0,1,1)
-mech =      Color(0.6, 0.6, 0.8)
-transmech = Color(0.6, 0.6, 0.8, 0.8)
-orange =    Color(1, 0xa5/255, 0)
+Color.white =     Color(1,1,1)
+Color.black =     Color(0,0,0)
+Color.red =       Color(1,0,0)
+Color.green =     Color(0,1,0)
+Color.blue =      Color(0,0,1)
+Color.yellow =    Color(1,1,0)
+Color.magenta =   Color(1,0,1)
+Color.cian =      Color(0,1,1)
+Color.mech =      Color(0.6, 0.6, 0.8)
+Color.transmech = Color(0.6, 0.6, 0.8, 0.8)
+Color.orange =    Color(1, 0xa5/255, 0)
 
 def default_color():
-	return mech
+	return Color.mech

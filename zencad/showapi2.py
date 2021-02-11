@@ -1,4 +1,4 @@
-from scene import Scene
+from zencad.scene import Scene
 
 __default_scene = Scene()
 
@@ -16,7 +16,14 @@ def show(scene=None, display_only=False):
 		scene = __default_scene
 
 	if display_only:
-		import gui.display_only
-		gui.display_only.init_display_only_mode()
-		gui.display_only.DISPLAY.attach_scene(scene)
-		gui.display_only.exec_display_only_mode()
+		import zencad.gui.display_only
+		zencad.gui.display_only.init_display_only_mode()
+		zencad.gui.display_only.DISPLAY.attach_scene(scene)
+		zencad.gui.display_only.exec_display_only_mode()
+
+	else:
+		print("TODO: GUI mode")
+		import zencad.gui.display_only
+		zencad.gui.display_only.init_display_only_mode()
+		zencad.gui.display_only.DISPLAY.attach_scene(scene)
+		zencad.gui.display_only.exec_display_only_mode()

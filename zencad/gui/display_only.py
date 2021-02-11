@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import gui.display
+import zencad.gui.display
 import sys
 
 from OCC.Display.backend import get_qt_modules
@@ -11,7 +11,7 @@ QtCore, QtGui, QtWidgets, QtOpenGL = get_qt_modules()
 QAPP = None
 DISPLAY = None
 
-def init_display_only_mode() -> gui.display.DisplayWidget:
+def init_display_only_mode() -> zencad.gui.display.DisplayWidget:
 	global QAPP
 	global DISPLAY
 
@@ -19,7 +19,7 @@ def init_display_only_mode() -> gui.display.DisplayWidget:
 		raise Exception("QApplication is inited early")
 
 	QAPP = QtWidgets.QApplication(sys.argv[1:])
-	DISPLAY = gui.display.DisplayWidget()
+	DISPLAY = zencad.gui.display.DisplayWidget()
 
 def exec_display_only_mode():
 	DISPLAY.show()

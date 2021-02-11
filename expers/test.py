@@ -2,7 +2,7 @@
 
 from zencad import *
 
-m = bezier(pnts = [(0,0,0),(1,0,0),(1,1,0)])
-
+m = box(10)
 disp(m)
 show()
+

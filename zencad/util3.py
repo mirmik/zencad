@@ -13,3 +13,13 @@ def deg2rad(d):
 
 def rad2deg(d):
 	return float(d) * 180.0 / math.pi
+
+def angle_pair(arg):
+	print("angle_pair")
+	if isinstance(arg, tuple) or isinstance(arg, list):
+		return arg
+
+	if (arg >= 0):
+		return (0, arg)
+	else:
+		return (arg, 0)

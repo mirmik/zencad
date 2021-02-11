@@ -3,9 +3,9 @@ from OCC.Core.Prs3d import Prs3d_LineAspect
 from OCC.Core.Quantity import Quantity_NOC_BLACK, Quantity_Color, Quantity_TOC_RGB
 from OCC.Core.Aspect import Aspect_TOL_SOLID
 
-from shape import Shape
-from color import Color, default_color, black
-from axis  import Axis
+from zencad.shape import Shape
+from zencad.color import Color, default_color
+from zencad.axis  import Axis
 
 class InteractiveObject:
 	def __init__(self, iobj):

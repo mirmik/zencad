@@ -3,15 +3,16 @@
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.TopoDS import TopoDS_Shape
 from OCC.Core.BinTools import BinTools_ShapeSet
-from geom2.boolops import *
-
+from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire
 from OCC.Core.TopoDS import topods
-import trans
-import transformed
 
-from lazifier2 import *
+from zencad.geom2.boolops_base import *
+from zencad.lazifier2 import *
+import zencad.trans
+import zencad.transformed
 
-class Shape(transformed.Transformed):
+class Shape(zencad.transformed.Transformed):
 	""" Basic zencad type. """
 
 	def __init__(self, arg):
@@ -20,11 +21,20 @@ class Shape(transformed.Transformed):
 
 		self._shp = arg
 
-	def Shape(self):
-		return self._shp
+	def Shape(self): return self._shp
+	def Wire(self):  return topods.Wire(self._shp)
+	def Edge(self):  return topods.Edge(self._shp)
+	def Vertex(self):  return topods.Vertex(self._shp)
+	def Shell(self):  return topods.Shell(self._shp)
+	def Solid(self):  return topods.Solid(self._shp)
+	def Compound(self):  return topods.Compound(self._shp)
+	def CompSolid(self):  return topods.CompSolid(self._shp)
 
-	def Wire(self):
-		return topods.Wire(self._shp)
+	def Wire_orEdgeToWire(self):
+		if (self.Shape().ShapeType() == TopAbs_WIRE):
+			return Wire();
+		else:
+			return BRepBuilderAPI_MakeWire(self.Edge()).Wire();
 
 	def __add__(self, oth):
 		return Shape(occ_pair_union(self._shp, oth._shp))
@@ -76,6 +86,15 @@ class LazyObjectShape(evalcache.LazyObject):
 
 		return foo
 
+	def _generic_unlazy(name):
+		def foo(self, *args, **kwargs):
+			return getattr(Shape, name)(self.unlazy(), *args, **kwargs)
+		return foo
+
+	nolazy_methods = [
+		"Shape", "Vertex", "Wire", "Edge", "Solid", "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire"
+	]
+
 	cached_methods = [
 		"__add__", "__sub__", "__xor__",
 		"scaleX", "scaleY", "scaleZ", "scaleXYZ"
@@ -92,6 +111,9 @@ class LazyObjectShape(evalcache.LazyObject):
 
 		#"props1", "props2", "props3"	
 	]
+
+for item in LazyObjectShape.nolazy_methods:
+	setattr(LazyObjectShape, item, LazyObjectShape._generic_unlazy(item))
 
 for item in LazyObjectShape.nocached_methods:
 	setattr(LazyObjectShape, item, LazyObjectShape._generic(item, False))
@@ -124,12 +146,12 @@ class shape_generator(evalcache.LazyObject):
 
 A = ( 
 	set(Shape.__dict__.keys()).union(
-	set(transformed.Transformed.__dict__.keys())))
+	set(zencad.transformed.Transformed.__dict__.keys())))
 
 B = set(LazyObjectShape.__dict__.keys())
 
 C = B.difference(A).difference({
-	"cached_methods", "nocached_methods", "unlazy", "_generic"
+	"cached_methods", "nocached_methods", "unlazy", "_generic", "_generic_unlazy", "nolazy_methods"
 })
 
 D = A.difference(B).difference({
