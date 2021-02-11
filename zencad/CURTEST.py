@@ -22,7 +22,7 @@ ddd = cylinder(r=10, h=40)# ^ box(10,10,10)
 trsf = move(10,20,30) #* rotate([1,1,0], deg(20))
 ddd = trsf(ddd)
 
-scene.add(ddd, green)
+scene.add(ddd, mech)
 
 gui.display_only.init_display_only_mode()
 gui.display_only.DISPLAY.attach_scene(scene)

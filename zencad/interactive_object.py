@@ -1,12 +1,20 @@
 from OCC.Core.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Axis
+from OCC.Core.Prs3d import Prs3d_LineAspect
+from OCC.Core.Quantity import Quantity_NOC_BLACK, Quantity_Color, Quantity_TOC_RGB
+from OCC.Core.Aspect import Aspect_TOL_SOLID
 
 from shape import Shape
-from color import Color, default_color
+from color import Color, default_color, black
 from axis  import Axis
 
 class InteractiveObject:
 	def __init__(self, iobj):
 		self.ais_object = iobj
+
+		aspect = self.ais_object.Attributes().LineAspect()
+		aspect.SetColor(Quantity_Color(0,0,0,Quantity_TOC_RGB))
+		#Prs3d_LineAspect(Quantity_NOC_BLACK, Aspect_TOL_SOLID, 1)
+		self.ais_object.Attributes().SetFaceBoundaryAspect(aspect);
 
 class ShapeInteractiveObject(InteractiveObject):
 	def __init__(self, shape, color):
