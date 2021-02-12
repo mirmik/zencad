@@ -11,8 +11,8 @@ import OCC.Core.Addons
 from zencad.lazy import *
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
-import zencad.util
-from zencad.util import deg
+import zencad.util 
+from zencad.util import deg, point3
 import zencad.geom.wire as wire_module
 import zencad.geom.wire as wire
 import zencad.geom.curve as curve
@@ -88,15 +88,16 @@ def circle(r, angle=None, wire=False):
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def ngon(r, n):
+def ngon(r, n, wire=False):
 	pnts = [0] * n
-	pntsvec = []
 
 	for i in range(n):
-		angle = 2 * M_PI / n * i
+		angle = 2 * math.pi / n * i
 		pnts[i] = point3(r * math.cos(angle), r * math.sin(angle), 0);
 
-	return polygon(pntsvec, True)
+	if wire:
+		return wire_module.polysegment(pnts, closed=True)
+	return polygon(pnts, True)
 
 def register_font(fontpath):
 	OCC.Core.Addons.register_font(fontpath)
@@ -130,9 +131,10 @@ def ellipse(r1, r2, angle=None, wire=True):
 
 		if not wire:
 			ret = edg
-		else:
-			p1 = crv.d0(angle[0])
-			p2 = crv.d0(angle[1])
+		else:	
+			ucrv = crv.unlazy()
+			p1 = ucrv.d0(angle[0])
+			p2 = ucrv.d0(angle[1])
 
 			wr = wire_module.sew([edg, 
 				wire_module.segment(p1,(0,0)), 

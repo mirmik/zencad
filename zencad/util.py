@@ -2,7 +2,7 @@ import math
 import os
 import numpy
 
-from OCC.Core.gp import gp_Pnt, gp_Vec
+from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
 from OCC.Core.TopoDS import TopoDS_Vertex
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
@@ -35,21 +35,20 @@ def angle_pair(arg):
 
 class point3(numpy.ndarray, zencad.transformable.Transformable):
 	def __new__(cls, *args, info=None):
-		if hasattr(args[0], "__getitem__"):
+		if isinstance(args[0], gp_Pnt):
+			input_array = (args[0].X(), args[0].Y(), args[0].Z())
+
+		elif hasattr(args[0], "__getitem__"):
 			input_array = args[0]
 		else:
 			input_array = args
 
-		if isinstance(input_array, gp_Pnt):
-			input_array = ((input_array.X(), input_array.Y(), input_array.Z()))
-
-		else:
-			if len(input_array) == 1:
-				input_array = ((input_array[0], 0, 0))
-			elif len(input_array) == 2:
-				input_array = ((input_array[0], input_array[1], 0))
-			elif len(input_array) == 3:
-				input_array = ((input_array[0], input_array[1], input_array[2]))
+		if len(input_array) == 1:
+			input_array = ((input_array[0], 0, 0))
+		elif len(input_array) == 2:
+			input_array = ((input_array[0], input_array[1], 0))
+		elif len(input_array) == 3:
+			input_array = ((input_array[0], input_array[1], input_array[2]))
 
 		obj = numpy.asarray(input_array).view(cls)
 		obj.info = info
@@ -70,19 +69,46 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 		return point3(self.Pnt().Transformed(t))
 
 
-def vector3(pnt):
-	if len(pnt) == 1:
-		return numpy.array((pnt[0], 0, 0))
-	if len(pnt) == 2:
-		return numpy.array((pnt[0], pnt[1], 0))
-	if len(pnt) == 3:
-		return numpy.array((pnt[0], pnt[1], pnt[2]))
+class vector3(numpy.ndarray, zencad.transformable.Transformable):
+	def __new__(cls, *args, info=None):
+		if isinstance(args[0], gp_Pnt):
+			input_array = (args[0].X(), args[0].Y(), args[0].Z())
+
+		elif hasattr(args[0], "__getitem__"):
+			input_array = args[0]
+		else:
+			input_array = args
+
+		if len(input_array) == 1:
+			input_array = ((input_array[0], 0, 0))
+		elif len(input_array) == 2:
+			input_array = ((input_array[0], input_array[1], 0))
+		elif len(input_array) == 3:
+			input_array = ((input_array[0], input_array[1], input_array[2]))
+
+		obj = numpy.asarray(input_array).view(cls)
+		obj.info = info
+		return obj
+
+	@property
+	def x(self): return self[0]
+	@property
+	def y(self): return self[1]
+	@property
+	def z(self): return self[2]
+
+	def Vec(self):
+		return gp_Vec(float(self[0]), float(self[1]), float(self[2]))
+
+	def transform(self, trsf):
+		t = trsf._trsf
+		return point3(self.Pnt().Transformed(t))
 
 def points(pnts):
 	return [ point3(item) for item in pnts ]
 
 def to_numpy(arg):
-	if isinstance(arg, (gp_Vec, gp_Pnt)):
+	if isinstance(arg, (gp_Vec, gp_Pnt, gp_Dir)):
 		return numpy.array([arg.X(), arg.Y(), arg.Z()])
 	elif isinstance(arg, (TopoDS_Vertex)):
 		arg = BRep_Tool.Pnt(arg)

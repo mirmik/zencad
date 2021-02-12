@@ -3,19 +3,20 @@
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Vertex
 from OCC.Core.BinTools import BinTools_ShapeSet
-from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
+from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeFace
 from OCC.Core.TopoDS import topods
-from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
+from OCC.Core.BRepAdaptor import BRepAdaptor_Curve, BRepAdaptor_Surface
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.gp import gp_Pnt, gp_Vec
 from OCC.Core.TopExp import topexp, TopExp_Explorer
+from OCC.Core.BRepLProp import BRepLProp_SLProps
 
 from zencad.geom.boolops_base import *
 from zencad.lazy import *
 import zencad.trans
 import zencad.transformable
-from zencad.util import to_numpy, point3
+from zencad.util import to_numpy, point3, vector3
 
 import numpy
 
@@ -31,6 +32,7 @@ class Shape(zencad.transformable.Transformable):
 	def Shape(self): return self._shp
 	def Wire(self):  return topods.Wire(self._shp)
 	def Edge(self):  return topods.Edge(self._shp)
+	def Face(self):  return topods.Face(self._shp)
 	def Vertex(self):  return topods.Vertex(self._shp)
 	def Shell(self):  return topods.Shell(self._shp)
 	def Solid(self):  return topods.Solid(self._shp)
@@ -59,6 +61,14 @@ class Shape(zencad.transformable.Transformable):
 	def extrude(self, z):
 		print("NotReleased")
 		return self
+
+	def _SLProps(self, u, v): 
+		prop = BRepLProp_SLProps(self.AdaptorSurface(), u, v, 1, 1e-5)
+		return prop
+
+	def normal(self, u=0, v=0):
+		assert(self.is_face())
+		return vector3(self._SLProps(u,v).Normal());
 
 	def __getstate__(self):
 		return { 
@@ -105,9 +115,25 @@ class Shape(zencad.transformable.Transformable):
 
 		return ret
 
+	def vertices(self):
+		ret = []
+
+		ex = TopExp_Explorer(self.Shape(), TopAbs_VERTEX)
+		while ex.More():
+			obj = topods.Vertex(ex.Current())
+			ret.append(Shape(obj))
+			ex.Next()
+
+		return ret
+
 	def fill(self):
 		assert(self.is_wire_or_edge())
 		return Shape(BRepBuilderAPI_MakeFace(self.Wire()).Face())
+
+	# TODO: Вынести в surface_algo
+	def AdaptorSurface(self):
+		assert(self.is_face())
+		return BRepAdaptor_Surface(self.Face())		
 
 	# TODO: Вынести в curve_algo
 	def AdaptorCurve(self):
