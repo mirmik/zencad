@@ -84,7 +84,18 @@ class Shape(zencad.transformed.Transformed):
 			ret.append(Shape(obj))
 			ex.Next()
 
-		return ret;
+		return ret
+
+	def wires(self):
+		ret = []
+
+		ex = TopExp_Explorer(self.Shape(), TopAbs_WIRE)
+		while ex.More():
+			obj = topods.Wire(ex.Current())
+			ret.append(Shape(obj))
+			ex.Next()
+
+		return ret
 
 	def fill(self):
 		assert(self.is_wire_or_edge())

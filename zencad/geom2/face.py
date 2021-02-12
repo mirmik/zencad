@@ -39,37 +39,33 @@ def rectangle(a,b, center=False, wire=False):
 		return fill(wr)
 
 @lazy.lazy(cls=nocached_shape_generator)
-def circle_edge(r, yaw=None):
-	print("HERE2")
-	if yaw is None:
+def circle_edge(r, angle=None):
+	if angle is None:
 		EL = gp_Circ(gp.XOY(), r)
 		anCircle = GC_MakeCircle(EL).Value();
 		return Shape(BRepBuilderAPI_MakeEdge( anCircle ).Edge())
 
 	else:
-		yaw = util3.angle_pair(yaw)
+		angle = zencad.util3.angle_pair(angle)
 		EL = gp_Circ(gp.XOY(), r)
 		anCircle = GC_MakeCircle(EL).Value();
-		return Shape(BRepBuilderAPI_MakeEdge( anCircle, yaw[0], yaw[1] ).Edge())
+		return Shape(BRepBuilderAPI_MakeEdge( anCircle, angle[0], angle[1] ).Edge())
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def circle(r, yaw=None, wire=False):
-	print("HERE")
+def circle(r, angle=None, wire=False):
 	if wire is True:
-		return circle_edge(r, yaw)
+		return circle_edge(r, angle)
 
 	else:
-		if yaw is None:
+		if angle is None:
 			return fill(circle_edge(r))
 
 		else:
-			yaw = util3.angle_pair(yaw)
-			print("HEERERDFASsd")
-			a1, a2 = yaw[0], yaw[1]
+			angle = zencad.util3.angle_pair(angle)
+			a1, a2 = angle[0], angle[1]
 
-			print(123213)
-			aEdge = circle_edge(r, yaw).Edge()
+			aEdge = circle_edge(r, angle).Edge()
 			aEdge1 = BRepBuilderAPI_MakeEdge( gp_Pnt(0, 0, 0), gp_Pnt(r * math.cos(a1), r * math.sin(a1), 0) ).Edge()
 			aEdge2 = BRepBuilderAPI_MakeEdge( gp_Pnt(0, 0, 0), gp_Pnt(r * math.cos(a2), r * math.sin(a2), 0) ).Edge()
 			aCircle = BRepBuilderAPI_MakeWire( aEdge, aEdge1, aEdge2 ).Wire()
