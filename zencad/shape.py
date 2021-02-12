@@ -11,11 +11,11 @@ from OCC.Core.BRep import BRep_Tool
 from OCC.Core.gp import gp_Pnt, gp_Vec
 from OCC.Core.TopExp import topexp, TopExp_Explorer
 
-from zencad.geom2.boolops_base import *
-from zencad.lazifier2 import *
+from zencad.geom.boolops_base import *
+from zencad.lazy import *
 import zencad.trans
 import zencad.transformed
-from zencad.util3 import to_numpy
+from zencad.util import to_numpy
 
 import numpy
 

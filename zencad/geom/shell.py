@@ -2,9 +2,9 @@ from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_Sewing
 from OCC.Core.ShapeFix import ShapeFix_Shell, ShapeFix_Solid
 from OCC.Core.TopoDS import TopoDS_Solid
 
-import zencad.util3
-from zencad.geom2.face import polygon
-from zencad.lazifier2 import *
+import zencad.util
+from zencad.geom.face import polygon
+from zencad.lazy import *
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
 
 @lazy.lazy(cls=nocached_shape_generator)

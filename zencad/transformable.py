@@ -1,6 +1,6 @@
 import zencad.trans as trans
 
-class Transformed:
+class Transformable:
 	def move(self, *args): return trans.move(*args)(self)
 	def moveX(self, *args): return trans.moveX(*args)(self)
 	def moveY(self, *args): return trans.moveY(*args)(self)

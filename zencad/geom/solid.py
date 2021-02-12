@@ -1,11 +1,11 @@
 from zencad.shape import Shape, nocached_shape_generator
-from zencad.util3 import as_indexed, angle_pair
+from zencad.util import as_indexed, angle_pair
 import OCC.Core.BRepPrimAPI
 from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
 from OCC.Core.BRepLib import BRepLib_MakeFace
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
 
-from zencad.lazifier2 import *
+from zencad.lazy import *
 
 @lazy.lazy(cls=nocached_shape_generator)
 def box(size, y=None, z=None, center=None):

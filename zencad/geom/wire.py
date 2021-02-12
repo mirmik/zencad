@@ -1,5 +1,5 @@
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
-from zencad.util3 import as_indexed
+from zencad.util import as_indexed
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
 
 from OCC.Core.gp import gp_Pnt
@@ -7,11 +7,11 @@ from OCC.Core.GeomAPI import GeomAPI_Interpolate
 from OCC.Core.TColgp import TColgp_HArray1OfPnt, TColgp_Array1OfVec
 from OCC.Core.TColStd import TColStd_HArray1OfBoolean
 
-from zencad.lazifier2 import *
-from zencad.geom2.sew import sew
-from zencad.util3 import points, to_Pnt, to_Vec
+from zencad.lazy import *
+from zencad.geom.sew import sew
+from zencad.util import points, to_Pnt, to_Vec
 
-from zencad.geom2.project import project
+from zencad.geom.project import project
 
 
 import numpy

@@ -8,7 +8,7 @@ from zencad.interactive_object import create_interactive_object
 
 from zencad.axis               import Axis
 from zencad.shape              import Shape, LazyObjectShape
-from zencad.util3              import to_Vertex, to_GeomPoint
+from zencad.util              import to_Vertex, to_GeomPoint
 
 import numpy
 

@@ -5,7 +5,7 @@ import base64 as b64
 
 from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_Quaternion
 
-import zencad.util3
+import zencad.util
 
 class Transformation:
 	def __init__(self, trsf):
@@ -42,7 +42,7 @@ class Transformation:
 		return b64.b64encode(pickle.dumps(self)).decode("utf-8")
 
 def move(*args):
-	xyz = zencad.util3.as_indexed(args)
+	xyz = zencad.util.as_indexed(args)
 	trsf = gp_Trsf()
 	trsf.SetTranslation(gp_Vec(args[0], args[1], args[2]))
 	return Transformation(trsf)

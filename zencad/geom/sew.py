@@ -1,11 +1,11 @@
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
-from zencad.util3 import as_indexed
+from zencad.util import as_indexed
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
 
 from OCC.Core.gp import gp_Pnt
 
-from zencad.lazifier2 import *
+from zencad.lazy import *
 import numpy
 
 def __make_wire(lst):

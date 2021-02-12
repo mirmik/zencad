@@ -6,11 +6,11 @@ from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 from OCC.Core.gp import gp_Circ, gp, gp_Pnt
 from OCC.Core.GC import GC_MakeCircle
 
-from zencad.lazifier2 import *
+from zencad.lazy import *
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
-from zencad.util3 import as_indexed
-import zencad.util3
-import zencad.geom2.wire as wire
+from zencad.util import as_indexed
+import zencad.util
+import zencad.geom.wire as wire
 
 @lazy.lazy(cls=nocached_shape_generator)
 def fill(shp):
@@ -52,7 +52,7 @@ def circle_edge(r, angle=None):
 		return Shape(BRepBuilderAPI_MakeEdge( anCircle ).Edge())
 
 	else:
-		angle = zencad.util3.angle_pair(angle)
+		angle = zencad.util.angle_pair(angle)
 		EL = gp_Circ(gp.XOY(), r)
 		anCircle = GC_MakeCircle(EL).Value();
 		return Shape(BRepBuilderAPI_MakeEdge( anCircle, angle[0], angle[1] ).Edge())
@@ -68,7 +68,7 @@ def circle(r, angle=None, wire=False):
 			return fill(circle_edge(r))
 
 		else:
-			angle = zencad.util3.angle_pair(angle)
+			angle = zencad.util.angle_pair(angle)
 			a1, a2 = angle[0], angle[1]
 
 			aEdge = circle_edge(r, angle).Edge()
