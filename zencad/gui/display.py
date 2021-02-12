@@ -4,6 +4,7 @@ import sys
 import os
 
 from OCC.Core.AIS import AIS_Axis, AIS_Shaded
+from OCC.Core.Aspect import Aspect_GFM_VER
 from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
@@ -41,6 +42,10 @@ class qtBaseViewer(QtOpenGL.QGLWidget):
 		self.setAttribute(QtCore.Qt.WA_NoSystemBackground)
 
 		self.setAutoFillBackground(False)
+		
+		color1= Quantity_Color(.5,.5,.5, Quantity_TOC_RGB)
+		color2= Quantity_Color(.6,.6,.6, Quantity_TOC_RGB)
+		self._display.View.SetBgGradientColors(color1, color2, Aspect_GFM_VER, True)
 
 	def resizeEvent(self, event):
 		super(qtBaseViewer, self).resizeEvent(event)

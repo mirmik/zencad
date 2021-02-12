@@ -31,12 +31,18 @@ def rectangle_wire(a,b,center):
 		return wire.polysegment([(0, 0, 0), (a, 0, 0), (a, b, 0), (0, b, 0)], True)
 
 @lazy.lazy(cls=nocached_shape_generator)
-def rectangle(a,b, center=False, wire=False):
+def rectangle(a,b=None, center=False, wire=False):
+	if b is None:
+		b = a
+
 	wr = rectangle_wire(a,b,center)
 	if wire:
 		return wr
 	else:
 		return fill(wr)
+
+def square(*args, **kwargs):
+	return rectangle(*args, **kwargs)
 
 @lazy.lazy(cls=nocached_shape_generator)
 def circle_edge(r, angle=None):
