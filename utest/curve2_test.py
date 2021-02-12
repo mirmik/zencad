@@ -1,6 +1,5 @@
 import unittest
 import zencad
-import zencad.libs.rigidity
 import numpy
 import math
 

@@ -1,6 +1,5 @@
 import unittest
 import zencad
-import zencad.geom.curve3
 import numpy
 import math
 
@@ -11,8 +10,8 @@ class Curve3(unittest.TestCase):
 		zencad.lazy.fastdo = True
 
 	def test_api(self):
-		a = zencad.geom.curve3.interpolate([(0,0,0), (0,0,1)],[(0,0,1), (0,0,1)], closed=False)
-		b = zencad.geom.curve3.interpolate([(0,0,0), (0,0,1)], closed=False)
+		a = zencad.interpolate([(0,0,0), (0,0,1)],[(0,0,1), (0,0,1)], closed=False)
+		b = zencad.interpolate([(0,0,0), (0,0,1)], closed=False)
 
 		self.assertEqual( a.value(0), zencad.point3(0,0,0) )
 		self.assertEqual( a.value(1), zencad.point3(0,0,1) )

@@ -34,7 +34,6 @@ try:
     import boolean_test
     import math_test
     import trans_test
-    import rigidity_test
     import curve3_test
     import curve2_test
     import reflection

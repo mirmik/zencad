@@ -6,23 +6,36 @@ from OCC.Core.gp import gp_Pnt
 from OCC.Core.GeomAPI import GeomAPI_Interpolate
 from OCC.Core.TColgp import TColgp_HArray1OfPnt, TColgp_Array1OfVec
 from OCC.Core.TColStd import TColStd_HArray1OfBoolean
+from OCC.Core.GC import GC_MakeArcOfCircle
 
 from zencad.lazy import *
 from zencad.geom.sew import sew
 from zencad.util import points, to_Pnt, to_Vec
-
 from zencad.geom.project import project
-
+import zencad.geom.curve as curve
 
 import numpy
 
 @lazy.lazy(cls=nocached_shape_generator)
-def fill(shp):
+def make_edge(crv, interval=None) -> Shape:
+	aCurve = crv.Curve();
+	if interval is None:
+		return Shape(BRepBuilderAPI_MakeEdge(aCurve).Edge())
+	else:
+		return Shape(BRepBuilderAPI_MakeEdge(aCurve, interval[0], interval[1]).Edge())
+
+@lazy.lazy(cls=nocached_shape_generator)
+def circle_arc(p1, p2, p3) -> Shape:
+	aArcOfCircle = GC_MakeArcOfCircle(to_Pnt(p1), to_Pnt(p2), to_Pnt(p3))
+	return Shape(BRepBuilderAPI_MakeEdge(aArcOfCircle.Value()).Edge())
+
+@lazy.lazy(cls=nocached_shape_generator)
+def fill(shp) -> Shape:
 	assert(shp.Shape().ShapeType() == TopAbs_WIRE);
 	return Shape(BRepBuilderAPI_MakeFace(shp.Wire()).Face())
 
 @lazy.lazy(cls=nocached_shape_generator)
-def polysegment(pnts, closed=False):
+def polysegment(pnts, closed=False) -> Shape:
 	if len(pnts) <= 1:
 		raise Exception("Need at least two points for polysegment");
 
@@ -37,42 +50,40 @@ def polysegment(pnts, closed=False):
 	return Shape(mkWire.Wire())
 
 @lazy.lazy(cls=nocached_shape_generator)
-def polygon(pnts):
-	return fill(polysegment(pnts, closed=True))
-
-@lazy.lazy(cls=nocached_shape_generator)
-def segment(a,b):
+def segment(a,b) -> Shape:
 	a, b = points((a, b))
 	return Shape(BRepBuilderAPI_MakeEdge(to_Pnt(a), to_Pnt(b)).Edge())
 
 @lazy.lazy(cls=shape_generator)
-def interpolate(pnts, tang=None, closed=False):
-	print(pnts)
-	print(tang)
+def interpolate(pnts, tang=None, closed=False) -> Shape:
+	return make_edge(
+		curve.interpolate(pnts=pnts, tang=tang, closed=closed))
 
-	_pnts = TColgp_HArray1OfPnt(1, len(pnts))
-	for i in range(len(pnts)):
-		_pnts.SetValue(i + 1, gp_Pnt(*pnts[i]))
+@lazy.lazy(cls=nocached_shape_generator)
+def bezier(pnts, weights=None) -> Shape:
+	return make_edge(curve.bezier(pnts, weights))
 
-	algo = GeomAPI_Interpolate(_pnts, closed, 0.0000001);
-
-	if tang is not None:
-		if (len(tang) != 0):
-			_tang = TColgp_Array1OfVec(1, len(tang))
-			_bools = TColStd_HArray1OfBoolean(1, len(tang))
-	
-			for i in range(len(pnts)): _tang.SetValue(i + 1, to_Vec(tang[i]))
-			for i in range(len(pnts)): 
-				_bools.SetValue(i + 1, bool(numpy.linalg.norm(tang[i]) != 0))
-	
-			algo.Load(_tang, _bools);
-		
-	algo.Perform();
-	return Shape(BRepBuilderAPI_MakeEdge(algo.Curve()).Edge())
-
+@lazy.lazy(cls=nocached_shape_generator)
+def bspline(
+	poles,
+	knots,
+	muls,
+	degree : int,
+	periodic : bool = False,
+	weights = None,
+	check_rational : bool = None 
+) -> Shape:
+	return make_edge(curve.bspline(
+		poles = poles, 
+		knots = knots,
+		muls = muls, 
+		degree = degree, 
+		periodic = periodic, 
+		weights = weights, 
+		check_rational = check_rational))
 
 @lazy.lazy(cls=shape_generator)
-def rounded_polysegment(pnts, r, closed=False):
+def rounded_polysegment(pnts, r, closed=False) -> Shape:
 	# Для того, чтобы закрыть контур, не теряя скругления, перекрёстно добавляем две точки,
 	# Две в начале, другую в конце.
 	pnts = points(pnts)

@@ -55,7 +55,7 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 
 	def transform(self, trsf):
 		t = trsf._trsf
-		return point3(self.Pnt().Transformable(t))
+		return point3(self.Pnt().Transformed(t))
 
 
 def vector3(pnt):
@@ -79,7 +79,10 @@ def to_numpy(arg):
 		raise Exception("unresolved type", arg.__class__)
 
 def to_Pnt(arg):
-	return gp_Pnt(float(arg[0]), float(arg[1]), float(arg[2]))
+	if len(arg) == 2:
+		return gp_Pnt(float(arg[0]), float(arg[1]), 0)
+	else:
+		return gp_Pnt(float(arg[0]), float(arg[1]), float(arg[2]))
 
 def to_Vec(arg):
 	return gp_Vec(float(arg[0]), float(arg[1]), float(arg[2]))

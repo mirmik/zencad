@@ -14,12 +14,12 @@ from OCC.Core.TopExp import topexp, TopExp_Explorer
 from zencad.geom.boolops_base import *
 from zencad.lazy import *
 import zencad.trans
-import zencad.transformed
+import zencad.transformable
 from zencad.util import to_numpy
 
 import numpy
 
-class Shape(zencad.transformed.Transformed):
+class Shape(zencad.transformable.Transformable):
 	""" Basic zencad type. """
 
 	def __init__(self, arg):
@@ -233,7 +233,7 @@ class shape_generator(evalcache.LazyObject):
 
 A = ( 
 	set(Shape.__dict__.keys()).union(
-	set(zencad.transformed.Transformed.__dict__.keys())))
+	set(zencad.transformable.Transformable.__dict__.keys())))
 
 B = set(LazyObjectShape.__dict__.keys())
 

@@ -11,6 +11,7 @@ from zencad.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
 import zencad.util
 import zencad.geom.wire as wire
+import zencad.geom.curve as curve
 
 @lazy.lazy(cls=nocached_shape_generator)
 def fill(shp):
@@ -47,15 +48,17 @@ def square(*args, **kwargs):
 @lazy.lazy(cls=nocached_shape_generator)
 def circle_edge(r, angle=None):
 	if angle is None:
-		EL = gp_Circ(gp.XOY(), r)
-		anCircle = GC_MakeCircle(EL).Value();
-		return Shape(BRepBuilderAPI_MakeEdge( anCircle ).Edge())
+		#EL = gp_Circ(gp.XOY(), r)
+		#anCircle = GC_MakeCircle(EL).Value();
+		#return Shape(BRepBuilderAPI_MakeEdge( anCircle ).Edge())
+		return wire.make_edge(curve.circle(r))
 
 	else:
 		angle = zencad.util.angle_pair(angle)
-		EL = gp_Circ(gp.XOY(), r)
-		anCircle = GC_MakeCircle(EL).Value();
-		return Shape(BRepBuilderAPI_MakeEdge( anCircle, angle[0], angle[1] ).Edge())
+		#EL = gp_Circ(gp.XOY(), r)
+		#anCircle = GC_MakeCircle(EL).Value();
+		#return Shape(BRepBuilderAPI_MakeEdge( anCircle, angle[0], angle[1] ).Edge())
+		return wire.make_edge(curve.circle(r), angle)
 
 
 @lazy.lazy(cls=nocached_shape_generator)

@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
 # Geometry API
-from zencad.geom.solid import box, sphere, torus, cone, cylinder, halfspace
-from zencad.geom.wire import segment, polysegment, rounded_polysegment
+from zencad.geom.solid import \
+	box, sphere, torus, cone, cylinder, halfspace
+
+from zencad.geom.wire import \
+	segment, polysegment, rounded_polysegment, interpolate, \
+	circle_arc, bezier, bspline
+
 from zencad.geom.face import circle, rectangle, square
 from zencad.geom.shell import polyhedron
 from zencad.geom.boolops import union, difference, intersect

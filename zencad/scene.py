@@ -40,6 +40,9 @@ class Scene:
 			iobj = create_interactive_object(to_GeomPoint(obj))
 			self.add_interactive_object(iobj)
 
+		elif isinstance(obj, list):
+			iobj = [self.add(item, color) for item in obj]
+
 		else:
 			raise Exception(f"Unresolved object type, __class__:{obj.__class__}")
 

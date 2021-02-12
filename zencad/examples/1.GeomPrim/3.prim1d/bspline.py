@@ -10,7 +10,7 @@ from zencad import *
 
 knots_total = 5
 m0 = bspline(
-	pnts = points([(0, 0, 0), (0, 10, 0), (10, 10)]),
+	poles = points([(0, 0, 0), (0, 10, 0), (10, 10)]),
 	knots = [ i * 1 / (knots_total-1) for i in range(knots_total) ],
 	muls = [1] * knots_total,
 	degree=1
@@ -18,7 +18,7 @@ m0 = bspline(
 
 knots_total = 6
 m1 = bspline(
-	pnts = points([(0, -10, 0), (0, 10, 0), (20, 10)]),
+	poles = points([(0, -10, 0), (0, 10, 0), (20, 10)]),
 	knots = [ i * 1 / (knots_total-1) for i in range(knots_total) ],
 	muls = [1,1,1,1,1,1],
 	degree=2
@@ -26,7 +26,7 @@ m1 = bspline(
 
 knots_total = 7
 m2 = bspline(
-	pnts = points([(0, -10), (0, 10), (10, 10), (10, 30)]),
+	poles = points([(0, -10), (0, 10), (10, 10), (10, 30)]),
 	knots = [ i * 1 / (knots_total-1) for i in range(knots_total) ],
 	muls = [1]*knots_total,
 	degree=2
