@@ -5,6 +5,10 @@ class Transformed:
 	def moveX(self, *args): return trans.moveX(*args)(self)
 	def moveY(self, *args): return trans.moveY(*args)(self)
 	def moveZ(self, *args): return trans.moveZ(*args)(self)
+	def mov(self, *args): return trans.move(*args)(self)
+	def movX(self, *args): return trans.moveX(*args)(self)
+	def movY(self, *args): return trans.moveY(*args)(self)
+	def movZ(self, *args): return trans.moveZ(*args)(self)
 
 	def translate(self, *args): return trans.translate(*args)(self)
 	def translateX(self, *args): return trans.translateX(*args)(self)
@@ -15,6 +19,10 @@ class Transformed:
 	def rotateX(self, *args): return trans.rotateX(*args)(self)
 	def rotateY(self, *args): return trans.rotateY(*args)(self)
 	def rotateZ(self, *args): return trans.rotateZ(*args)(self)
+	def rot(self, *args): return trans.rotate(*args)(self)
+	def rotX(self, *args): return trans.rotateX(*args)(self)
+	def rotY(self, *args): return trans.rotateY(*args)(self)
+	def rotZ(self, *args): return trans.rotateZ(*args)(self)
 
 	def scale(self, *args): return trans.scale(*args)(self)
 	def scaleX(self, *args): return trans.scaleX(*args)(self)

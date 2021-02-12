@@ -1,7 +1,9 @@
-from OCC.Core.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Axis
+from OCC.Core.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Axis, AIS_Point
 from OCC.Core.Prs3d import Prs3d_LineAspect
 from OCC.Core.Quantity import Quantity_NOC_BLACK, Quantity_Color, Quantity_TOC_RGB
 from OCC.Core.Aspect import Aspect_TOL_SOLID
+from OCC.Core.TopoDS import TopoDS_Vertex
+from OCC.Core.Geom import Geom_CartesianPoint
 
 from zencad.shape import Shape
 from zencad.color import Color, default_color
@@ -23,10 +25,11 @@ class ShapeInteractiveObject(InteractiveObject):
 		
 		ais_object = AIS_Shape(self.shape._shp)
 
-		if self.color is not None:
-			ais_object.SetColor(self.color.to_Quantity_Color())
-		else:
-			ais_object.SetColor(default_color().to_Quantity_Color())	
+		if self.color is None:
+			self.color = default_color()
+
+		ais_object.SetColor(self.color.to_Quantity_Color())
+		ais_object.SetTransparency(self.color.a)
 
 		super().__init__(ais_object)
 
@@ -42,6 +45,17 @@ class AxisInteractiveObject(InteractiveObject):
 
 		super().__init__(ais_object)
 
+class PointInteractiveObject(InteractiveObject):
+	def __init__(self, point, color):
+		self.point = point
+		self.color = color
+
+		ais_object = AIS_Point(point)
+
+		if self.color is not None:
+			ais_object.SetColor(self.color.to_Quantity_Color())
+
+		super().__init__(ais_object)
 		
 def create_interactive_object(obj, color=None):
 	if isinstance(color, (tuple,list)):
@@ -51,4 +65,8 @@ def create_interactive_object(obj, color=None):
 		return ShapeInteractiveObject(obj, color)
 	elif isinstance(obj, Axis):
 		return AxisInteractiveObject(obj, color)
+	elif isinstance(obj, Geom_CartesianPoint):
+		return PointInteractiveObject(obj, color)
 
+	else:
+		raise Exception("unresolved type", obj.__class__)

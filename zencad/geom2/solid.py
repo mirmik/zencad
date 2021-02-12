@@ -1,5 +1,5 @@
 from zencad.shape import Shape, nocached_shape_generator
-from zencad.util3 import as_indexed
+from zencad.util3 import as_indexed, angle_pair
 import OCC.Core.BRepPrimAPI
 from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
 from OCC.Core.BRepLib import BRepLib_MakeFace
@@ -23,15 +23,23 @@ def box(size, y=None, z=None, center=None):
 
 	if center:
 		ax2 = gp_Ax2(gp_Pnt(-x / 2, -y / 2, -z / 2), gp_Dir(0, 0, 1))
-		print(size)
 		return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(ax2, *size).Shape())
 	else:
-		print(size)
 		return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
 	
 @lazy.lazy(cls=nocached_shape_generator)
 def sphere(r, yaw=None, pitch=None):
-	raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r).Shape()
+	if yaw is None and pitch is None:
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r).Shape()
+	elif yaw is None and pitch is not None:
+		pitch= angle_pair(pitch)
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r, pitch[0], pitch[1]).Shape()
+	elif yaw is not None and pitch is None:
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r, yaw).Shape()
+	else:
+		pitch= angle_pair(pitch)
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r, pitch[0], pitch[1], yaw).Shape()
+
 	return Shape(raw)
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -55,8 +63,18 @@ def cone(r1, r2, h, yaw=None, center=False):
 		return Shape(raw)
 
 @lazy.lazy(cls=nocached_shape_generator)
-def torus(r1, r2, yaw=None, pitch=None):
-	raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1,r2).Shape()
+def torus(r1, r2, yaw=None, pitch=None):	
+	if yaw is None and pitch is None:
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2).Shape()
+	elif yaw is None and pitch is not None:
+		pitch= angle_pair(pitch)
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2, pitch[0], pitch[1]).Shape()
+	elif yaw is not None and pitch is None:
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2, yaw).Shape()
+	else:
+		pitch= angle_pair(pitch)
+		raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2, pitch[0], pitch[1], yaw).Shape()
+
 	return Shape(raw)
 
 

@@ -8,7 +8,9 @@ from zencad.interactive_object import create_interactive_object
 
 from zencad.axis               import Axis
 from zencad.shape              import Shape, LazyObjectShape
+from zencad.util3              import to_Vertex, to_GeomPoint
 
+import numpy
 
 class Scene:
 	def __init__(self):
@@ -32,6 +34,10 @@ class Scene:
 		
 		elif isinstance(obj, InteractiveObject):
 			iobj = obj
+			self.add_interactive_object(iobj)
+
+		elif isinstance(obj, numpy.ndarray):
+			iobj = create_interactive_object(to_GeomPoint(obj))
 			self.add_interactive_object(iobj)
 
 		else:

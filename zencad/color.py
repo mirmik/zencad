@@ -7,7 +7,7 @@ class Color:
 		if val < 0 or val > 1:
 			raise Exception(f"Wrong color parameter. It must be in range [0..1]. val={val}")
 
-	def __init__(self, r, g, b, a=1):
+	def __init__(self, r, g, b, a=0):
 		self.r = r
 		self.g = g
 		self.b = b
