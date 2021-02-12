@@ -2,11 +2,17 @@ from zencad.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
 
-from OCC.Core.gp import gp_Pnt
+from OCC.Core.GCE2d import GCE2d_MakeSegment
+from OCC.Core.Geom2d import Geom2d_Line, Geom2d_TrimmedCurve
+from OCC.Core.Geom import Geom_CylindricalSurface, Geom_ConicalSurface
+from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Ax2d, gp_Ax3, gp_DZ, gp_Pnt2d, gp_Dir2d
 from OCC.Core.GeomAPI import GeomAPI_Interpolate
 from OCC.Core.TColgp import TColgp_HArray1OfPnt, TColgp_Array1OfVec
 from OCC.Core.TColStd import TColStd_HArray1OfBoolean
 from OCC.Core.GC import GC_MakeArcOfCircle
+from OCC.Core.Precision import precision_Confusion
+from OCC.Core.TopoDS import TopoDS_Edge, TopoDS_Wire
+from OCC.Core.BRepLib import breplib
 
 from zencad.lazy import *
 from zencad.geom.sew import sew
@@ -14,6 +20,7 @@ from zencad.util import points, to_Pnt, to_Vec
 from zencad.geom.project import project
 import zencad.geom.curve as curve
 
+import math
 import numpy
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -42,10 +49,10 @@ def polysegment(pnts, closed=False) -> Shape:
 	mkWire = BRepBuilderAPI_MakeWire()
 
 	for i in range(len(pnts)-1):
-		mkWire.Add(BRepBuilderAPI_MakeEdge(gp_Pnt(*pnts[i]), gp_Pnt(*pnts[i + 1])).Edge())
+		mkWire.Add(BRepBuilderAPI_MakeEdge(to_Pnt(pnts[i]), to_Pnt(pnts[i + 1])).Edge())
 
 	if (closed):
-		mkWire.Add(BRepBuilderAPI_MakeEdge(gp_Pnt(*pnts[len(pnts) - 1]), gp_Pnt(*pnts[0])).Edge())
+		mkWire.Add(BRepBuilderAPI_MakeEdge(to_Pnt(pnts[len(pnts) - 1]), to_Pnt(pnts[0])).Edge())
 
 	return Shape(mkWire.Wire())
 
@@ -152,3 +159,267 @@ def rounded_polysegment(pnts, r, closed=False) -> Shape:
 		])
 
 	return result
+
+
+
+#***********
+# makeLongHelix is a workaround for an OCC problem found in helices with more than
+# some magic number of turns.  See Mantis #0954. (FreeCad)
+#***********
+@lazy.lazy(cls=shape_generator)
+def helix(r, h, step=None, pitch=None, angle=0, left=False):
+	radius = r
+	height = h
+
+	if pitch:
+		pitch = math.sin(pitch) * 2 *math.pi*r 
+	else:
+		pitch = step
+
+	if pitch < precision_Confusion():
+		raise Exception("Pitch of helix too small")
+
+	if height < precision_Confusion():
+		raise Exception("Height of helix too small")
+
+	cylAx2 = gp_Ax2(gp_Pnt(0.0, 0.0, 0.0), gp_DZ())
+
+	if abs(angle) < precision_Confusion():
+		# Cylindrical helix
+		if radius < precision_Confusion():
+			raise Exception("Radius of helix too small")
+
+		surf = Geom_CylindricalSurface(gp_Ax3(cylAx2), radius)
+		isCylinder = True
+	else:                
+	    # Conical helix
+		if abs(angle) < precision_Confusion():
+			raise Exception("Angle of helix too small")
+
+		surf = Geom_ConicalSurface(gp_Ax3(cylAx2), angle, radius)
+		isCylinder = False
+
+	turns = height / pitch
+	wholeTurns = math.floor(turns)
+	partTurn = turns - wholeTurns
+
+	aPnt = gp_Pnt2d(0, 0)
+	aDir = gp_Dir2d(2. * math.pi, pitch)
+	coneDir = 1.0
+
+	if left:
+		aDir.SetCoord(-2. * math.pi, pitch)
+		coneDir = -1.0
+
+	aAx2d = gp_Ax2d(aPnt, aDir)
+	line = Geom2d_Line(aAx2d)
+	beg = line.Value(0)
+	
+	mkWire = BRepBuilderAPI_MakeWire()
+
+	for i in range(wholeTurns):
+		if isCylinder:
+			end = line.Value(math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * (i + 1))
+		else:
+			u = coneDir * (i + 1) * 2.0 * math.pi
+			v = ((i + 1) * pitch) / math.cos(angle)
+			end = gp_Pnt2d(u, v)
+
+		segm = GCE2d_MakeSegment(beg , end).Value()
+		edgeOnSurf = BRepBuilderAPI_MakeEdge(segm, surf).Edge()
+		mkWire.Add(edgeOnSurf)
+		beg = end
+
+	if partTurn > precision_Confusion():
+		if (isCylinder):
+			end = line.Value(math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * turns);
+		else:
+			u = coneDir * turns * 2.0 * math.pi
+			v = height / math.cos(angle)
+			end = gp_Pnt2d(u, v)
+
+		segm = GCE2d_MakeSegment(beg , end).Value()
+		edgeOnSurf = BRepBuilderAPI_MakeEdge(segm, surf).Edge()
+		mkWire.Add(edgeOnSurf)
+
+	shape = mkWire.Wire()
+	breplib.BuildCurves3d(shape)
+	return Shape(shape)
+
+
+
+
+
+#//Взято в коде FreeCad.
+#servoce::shape servoce::make_helix(
+#    double pitch, double height, double radius,
+#    double angle, bool leftHanded, bool newStyle
+#)
+#{
+#	if (fabs(pitch) < Precision::Confusion())
+#		Standard_Failure::Raise("Pitch of helix too small");
+#
+#	if (fabs(height) < Precision::Confusion())
+#		Standard_Failure::Raise("Height of helix too small");
+#
+#	if ((height > 0 && pitch < 0) || (height < 0 && pitch > 0))
+#		Standard_Failure::Raise("Pitch and height of helix not compatible");
+#
+#	gp_Ax2 cylAx2(gp_Pnt(0.0, 0.0, 0.0) , gp::DZ());
+#	Handle(Geom_Surface) surf;
+#
+#	if (angle < Precision::Confusion())
+#	{
+#		if (radius < Precision::Confusion())
+#			Standard_Failure::Raise("Radius of helix too small");
+#
+#		surf = new Geom_CylindricalSurface(cylAx2, radius);
+#	}
+#	else
+#	{
+#		angle = to_radian(angle);
+#
+#		if (angle < Precision::Confusion())
+#			Standard_Failure::Raise("Angle of helix too small");
+#
+#		surf = new Geom_ConicalSurface(gp_Ax3(cylAx2), angle, radius);
+#	}
+#
+#	gp_Pnt2d aPnt(0, 0);
+#	gp_Dir2d aDir(2. * M_PI, pitch);
+#	Standard_Real coneDir = 1.0;
+#
+#	if (leftHanded)
+#	{
+#		aDir.SetCoord(-2. * M_PI, pitch);
+#		coneDir = -1.0;
+#	}
+#
+#	gp_Ax2d aAx2d(aPnt, aDir);
+#
+#	Handle(Geom2d_Line) line = new Geom2d_Line(aAx2d);
+#	gp_Pnt2d beg = line->Value(0);
+#	gp_Pnt2d end = line->Value(sqrt(4.0 * M_PI * M_PI + pitch * pitch) * (height / pitch));
+#
+#	if (newStyle)
+#	{
+#		// See discussion at 0001247: Part Conical Helix Height/Pitch Incorrect
+#		if (angle >= Precision::Confusion())
+#		{
+#			// calculate end point for conical helix
+#			Standard_Real v = height / cos(angle);
+#			Standard_Real u = coneDir * (height / pitch) * 2.0 * M_PI;
+#			gp_Pnt2d cend(u, v);
+#			end = cend;
+#		}
+#	}
+#
+#	Handle(Geom2d_TrimmedCurve) segm = GCE2d_MakeSegment(beg , end);
+#
+#	TopoDS_Edge edgeOnSurf = BRepBuilderAPI_MakeEdge(segm , surf);
+#	TopoDS_Wire shape = BRepBuilderAPI_MakeWire(edgeOnSurf);
+#	BRepLib::BuildCurves3d(shape);
+#	return shape;
+#}
+#
+#//***********
+#// makeLongHelix is a workaround for an OCC problem found in helices with more than
+#// some magic number of turns.  See Mantis #0954. (FreeCad)
+#//***********
+#servoce::shape servoce::make_long_helix(double pitch, double height,
+#                                        double radius, double angle,
+#                                        bool leftHanded)
+#{
+#	if (pitch < Precision::Confusion())
+#		Standard_Failure::Raise("Pitch of helix too small");
+#
+#	if (height < Precision::Confusion())
+#		Standard_Failure::Raise("Height of helix too small");
+#
+#	gp_Ax2 cylAx2(gp_Pnt(0.0, 0.0, 0.0) , gp::DZ());
+#	Handle(Geom_Surface) surf;
+#	Standard_Boolean isCylinder;
+#
+#	if (std::abs(angle) < Precision::Confusion())     // Cylindrical helix
+#	{
+#		if (radius < Precision::Confusion())
+#			Standard_Failure::Raise("Radius of helix too small");
+#
+#		surf = new Geom_CylindricalSurface(cylAx2, radius);
+#		isCylinder = true;
+#	}
+#	else                                    // Conical helix
+#	{
+#		//angle = to_radian(angle);
+#		if (std::abs(angle) < Precision::Confusion())
+#			Standard_Failure::Raise("Angle of helix too small");
+#
+#		surf = new Geom_ConicalSurface(gp_Ax3(cylAx2), angle, radius);
+#		isCylinder = false;
+#	}
+#
+#	Standard_Real turns = height / pitch;
+#	unsigned long wholeTurns = floor(turns);
+#	Standard_Real partTurn = turns - wholeTurns;
+#
+#	gp_Pnt2d aPnt(0, 0);
+#	gp_Dir2d aDir(2. * M_PI, pitch);
+#	Standard_Real coneDir = 1.0;
+#
+#	if (leftHanded)
+#	{
+#		aDir.SetCoord(-2. * M_PI, pitch);
+#		coneDir = -1.0;
+#	}
+#
+#	gp_Ax2d aAx2d(aPnt, aDir);
+#	Handle(Geom2d_Line) line = new Geom2d_Line(aAx2d);
+#	gp_Pnt2d beg = line->Value(0);
+#	gp_Pnt2d end;
+#	Standard_Real u, v;
+#	BRepBuilderAPI_MakeWire mkWire;
+#	Handle(Geom2d_TrimmedCurve) segm;
+#	TopoDS_Edge edgeOnSurf;
+#
+#	for (unsigned long i = 0; i < wholeTurns; i++)
+#	{
+#		if (isCylinder)
+#		{
+#			end = line->Value(sqrt(4.0 * M_PI * M_PI + pitch * pitch) * (i + 1));
+#		}
+#		else
+#		{
+#			u = coneDir * (i + 1) * 2.0 * M_PI;
+#			v = ((i + 1) * pitch) / cos(angle);
+#			end = gp_Pnt2d(u, v);
+#		}
+#
+#		segm = GCE2d_MakeSegment(beg , end);
+#		edgeOnSurf = BRepBuilderAPI_MakeEdge(segm , surf);
+#		mkWire.Add(edgeOnSurf);
+#		beg = end;
+#	}
+#
+#	if (partTurn > Precision::Confusion())
+#	{
+#		if (isCylinder)
+#		{
+#			end = line->Value(sqrt(4.0 * M_PI * M_PI + pitch * pitch) * turns);
+#		}
+#		else
+#		{
+#			u = coneDir * turns * 2.0 * M_PI;
+#			v = height / cos(angle);
+#			end = gp_Pnt2d(u, v);
+#		}
+#
+#		segm = GCE2d_MakeSegment(beg , end);
+#		edgeOnSurf = BRepBuilderAPI_MakeEdge(segm , surf);
+#		mkWire.Add(edgeOnSurf);
+#	}
+#
+#	TopoDS_Wire shape = mkWire.Wire();
+#	BRepLib::BuildCurves3d(shape);
+#	return shape;
+#}
+#

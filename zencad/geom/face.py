@@ -5,13 +5,18 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_Make
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 from OCC.Core.gp import gp_Circ, gp, gp_Pnt
 from OCC.Core.GC import GC_MakeCircle
+import OCC.Core.Addons
+
 
 from zencad.lazy import *
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
 import zencad.util
+from zencad.util import deg
+import zencad.geom.wire as wire_module
 import zencad.geom.wire as wire
 import zencad.geom.curve as curve
+from zencad.trans import rotateZ
 
 @lazy.lazy(cls=nocached_shape_generator)
 def fill(shp):
@@ -19,8 +24,9 @@ def fill(shp):
 	return Shape(BRepBuilderAPI_MakeFace(shp.Wire_orEdgeToWire()).Face())
 
 @lazy.lazy(cls=nocached_shape_generator)
-def polygon(pnts):
-	return fill(wire.polysegment(pnts, closed=True))
+def polygon(pnts, wire=False):
+	wr = wire_module.polysegment(pnts, closed=True)
+	return wr if wire else fill(wr)
 
 @lazy.lazy(cls=nocached_shape_generator)
 def rectangle_wire(a,b,center):
@@ -81,3 +87,63 @@ def circle(r, angle=None, wire=False):
 			return Shape(BRepBuilderAPI_MakeFace(aCircle).Face())
 
 
+@lazy.lazy(cls=nocached_shape_generator)
+def ngon(r, n):
+	pnts = [0] * n
+	pntsvec = []
+
+	for i in range(n):
+		angle = 2 * M_PI / n * i
+		pnts[i] = point3(r * math.cos(angle), r * math.sin(angle), 0);
+
+	return polygon(pntsvec, True)
+
+def register_font(fontpath):
+	OCC.Core.Addons.register_font(fontpath)
+
+@lazy.lazy(cls=nocached_shape_generator)
+def textshape(text, fontname, size, composite_curve=False):
+	aspect = OCC.Core.Addons.Font_FA_Regular
+	textshp = OCC.Core.Addons.text_to_brep(text, fontname, 
+		aspect, size, composite_curve)
+
+	return Shape(textshp)
+
+
+
+
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def ellipse(r1, r2, angle=None, wire=True):
+	if r2 > r1:
+		inversed_sizes = True
+		r1,r2 = r2,r1
+	else:
+		inversed_sizes = False
+
+	crv = curve.ellipse(r1, r2)
+
+	if angle:
+		angle = zencad.util.angle_pair(angle)
+		edg = wire_module.make_edge(crv, angle)
+
+		if not wire:
+			ret = edg
+		else:
+			p1 = crv.d0(angle[0])
+			p2 = crv.d0(angle[1])
+
+			wr = wire_module.sew([edg, 
+				wire_module.segment(p1,(0,0)), 
+				wire_module.segment(p2,(0,0))])
+			ret = fill(wr)
+
+	else:
+		edg = wire_module.make_edge(crv)
+		ret = edg if wire else fill(edg)
+
+	if inversed_sizes:
+		return rotateZ(deg(90))(ret)
+	else:
+		return ret

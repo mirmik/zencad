@@ -34,7 +34,12 @@ def angle_pair(arg):
 		return (arg, 0)
 
 class point3(numpy.ndarray, zencad.transformable.Transformable):
-	def __new__(cls, input_array, info=None):
+	def __new__(cls, *args, info=None):
+		if hasattr(args[0], "__getitem__"):
+			input_array = args[0]
+		else:
+			input_array = args
+
 		if isinstance(input_array, gp_Pnt):
 			input_array = ((input_array.X(), input_array.Y(), input_array.Z()))
 
@@ -49,6 +54,13 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 		obj = numpy.asarray(input_array).view(cls)
 		obj.info = info
 		return obj
+
+	@property
+	def x(self): return self[0]
+	@property
+	def y(self): return self[1]
+	@property
+	def z(self): return self[2]
 
 	def Pnt(self):
 		return gp_Pnt(float(self[0]), float(self[1]), float(self[2]))

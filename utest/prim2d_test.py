@@ -72,8 +72,9 @@ class Prim2dprobe(unittest.TestCase):
     def test_textshape_probe(self):
         text = "HelloWorld"
         directory = os.path.dirname(__file__) 
+        zencad.register_font(os.path.join(directory, "../zencad/examples/fonts/testfont.ttf"))
         zencad.textshape(
-            text=text, fontpath=os.path.join(directory, "../zencad/examples/fonts/testfont.ttf"), size=20
+            text=text, fontname="Ubuntu Mono", size=20
         )
 
 

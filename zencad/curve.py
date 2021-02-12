@@ -1,5 +1,10 @@
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+from OCC.Core.gp import gp_Pnt, gp_Vec
+
+from zencad.util import point3
+
 import evalcache
+
 
 class Curve:
 	def __init__(self, crv):
@@ -12,6 +17,13 @@ class Curve:
 	def edge(self, interval=None):
 		import zencad.geom.wire
 		return zencad.geom.wire.make_edge(self, interval)
+
+	def d0(self, arg):
+		#adaptor = self.AdaptorCurve()
+		pnt = gp_Pnt()#, vec = gp_Pnt(), gp_Vec()
+		self._crv.D0(arg, pnt)
+		return point3(pnt)
+
 
 class nocached_curve_generator(evalcache.LazyObject):
 	"""	Decorator for heavy functions.

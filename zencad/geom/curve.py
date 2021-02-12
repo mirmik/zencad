@@ -1,7 +1,7 @@
 from zencad.curve import Curve, nocached_curve_generator
 
 from OCC.Core.gp import gp
-from OCC.Core.Geom import Geom_Line, Geom_Circle, Geom_BezierCurve, Geom_BSplineCurve
+from OCC.Core.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_BezierCurve, Geom_BSplineCurve
 from OCC.Core.GeomAPI import GeomAPI_Interpolate
 
 from zencad.opencascade_types import *
@@ -17,6 +17,10 @@ def line(pnt, dir) -> Curve:
 @lazy.lazy(cls=nocached_curve_generator)
 def circle(radius) -> Curve: 
 	return Curve(Geom_Circle(gp.XOY(), radius))
+
+@lazy.lazy(cls=nocached_curve_generator)
+def ellipse(r1, r2) -> Curve: 
+	return Curve(Geom_Ellipse(gp.XOY(), r1, r2))
 
 @lazy.lazy(cls=nocached_curve_generator)
 def interpolate(pnts, tang=None, closed=False) -> Curve:

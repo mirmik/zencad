@@ -12,8 +12,11 @@ zencad_example_directory = zencad.moduledir + "/examples"
 testfont = os.path.join(zencad_example_directory, "fonts/testfont.ttf")
 mandarinc = os.path.join(zencad_example_directory, "fonts/mandarinc.ttf")
 
-m0 = textshape(text="ZenCad", fontpath=testfont, size=100)
-m1 = textshape(text="ZenCad", fontpath=mandarinc, size=100)
+register_font(testfont)
+register_font(mandarinc)
+
+m0 = textshape(text="ZenCad", fontname="Ubuntu Mono", size=100)
+m1 = textshape(text="ZenCad", fontname="Mandarinc", size=100)
 
 disp(m0, color.white)
 disp(m0.rotateX(deg(90)).translate(0, 70, 0))

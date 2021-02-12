@@ -15,7 +15,7 @@ from zencad.geom.boolops_base import *
 from zencad.lazy import *
 import zencad.trans
 import zencad.transformable
-from zencad.util import to_numpy
+from zencad.util import to_numpy, point3
 
 import numpy
 
@@ -51,6 +51,14 @@ class Shape(zencad.transformable.Transformable):
 
 	def __xor__(self, oth):
 		return Shape(occ_pair_intersect(self._shp, oth._shp))
+
+	def center(self):
+		print("NotReleased")
+		return point3(0,0,0)
+
+	def extrude(self, z):
+		print("NotReleased")
+		return self
 
 	def __getstate__(self):
 		return { 
@@ -187,7 +195,7 @@ class LazyObjectShape(evalcache.LazyObject):
 		"rot", "rotX", "rotY", "rotZ",
 		"mirror", "mirrorX", "mirrorY", "mirrorZ",
 		"mirrorYZ", "mirrorXY", "mirrorXZ",
-		"scale", "transform",
+		"scale", "transform", "center"
 
 		#"props1", "props2", "props3"	
 	]
