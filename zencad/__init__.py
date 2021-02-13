@@ -14,7 +14,14 @@ from zencad.geom.face import \
 
 from zencad.geom.shell import polyhedron
 
+from zencad.geom.sweep import extrude, linear_extrude
+
 from zencad.geom.boolops import union, difference, intersect
+
+from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
+	rotate_array, rotate_array2, short_rotate, nulltrans
+
+from zencad.geom.unify import unify
 
 # Display API
 from zencad.showapi import display, disp, show
@@ -23,6 +30,19 @@ from zencad.showapi import display, disp, show
 from zencad.util import *
 from zencad.color import Color as color
 from zencad.lazy import lazy
+
+# Transes
+from zencad.trans import move, moveX, moveY, moveZ, \
+	translate, translateX, translateY, translateZ, \
+	rotate, rotateX, rotateY, rotateZ, \
+	mirror_axis, mirrorX, mirrorY, mirrorZ, \
+	mirror_plane, mirrorXY, mirrorYZ, mirrorXZ, \
+	mirrorO, \
+	scale 
+	# scaleX, scaleY, scaleZ
+
+from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
+	rotate_array, rotate_array2, short_rotate, nulltrans
 
 
 moduledir = os.path.dirname(__file__)

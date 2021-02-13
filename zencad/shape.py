@@ -58,9 +58,9 @@ class Shape(zencad.transformable.Transformable):
 		print("NotReleased")
 		return point3(0,0,0)
 
-	def extrude(self, z):
-		print("NotReleased")
-		return self
+	def extrude(self, vec):
+		from zencad.geom.sweep import extrude
+		return extrude(self, vec)
 
 	def _SLProps(self, u, v): 
 		prop = BRepLProp_SLProps(self.AdaptorSurface(), u, v, 1, 1e-5)

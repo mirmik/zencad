@@ -55,11 +55,11 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 		return obj
 
 	@property
-	def x(self): return self[0]
+	def x(self): return float(self[0])
 	@property
-	def y(self): return self[1]
+	def y(self): return float(self[1])
 	@property
-	def z(self): return self[2]
+	def z(self): return float(self[2])
 
 	def Pnt(self):
 		return gp_Pnt(float(self[0]), float(self[1]), float(self[2]))
@@ -67,6 +67,9 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 	def transform(self, trsf):
 		t = trsf._trsf
 		return point3(self.Pnt().Transformed(t))
+
+	def __eq__(self, oth):
+		return self.x == oth.x and self.y == oth.y and self.z == oth.z
 
 
 class vector3(numpy.ndarray, zencad.transformable.Transformable):
@@ -91,11 +94,11 @@ class vector3(numpy.ndarray, zencad.transformable.Transformable):
 		return obj
 
 	@property
-	def x(self): return self[0]
+	def x(self): return float(self[0])
 	@property
-	def y(self): return self[1]
+	def y(self): return float(self[1])
 	@property
-	def z(self): return self[2]
+	def z(self): return float(self[2])
 
 	def Vec(self):
 		return gp_Vec(float(self[0]), float(self[1]), float(self[2]))

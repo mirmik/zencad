@@ -47,6 +47,7 @@ setup(
             "convert/*",
             "libs/*",
             "gui/*",
+            "draw/*",
             "convert/*",
             "internal_models/*",
             "examples/*",

@@ -42,9 +42,9 @@ class Transformation:
 		return b64.b64encode(pickle.dumps(self)).decode("utf-8")
 
 def move(*args):
-	xyz = zencad.util.as_indexed(args)
+	xyz = zencad.util.vector3(args)
 	trsf = gp_Trsf()
-	trsf.SetTranslation(gp_Vec(args[0], args[1], args[2]))
+	trsf.SetTranslation(gp_Vec(xyz.x, xyz.y, xyz.z))
 	return Transformation(trsf)
 
 def translate(*args):
@@ -73,11 +73,15 @@ def rotateX(a): return rotate([1,0,0],a)
 def rotateY(a): return rotate([0,1,0],a)
 def rotateZ(a): return rotate([0,0,1],a)
 
+def rotate(axis, angle=None):
+	if angle is None:
+		angle = np.linalg.norm(axis)
+		axis = axis / angle
 
-def rotate(axis, angle):
 	trsf = gp_Trsf();
 	trsf.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(gp_Vec(axis[0], axis[1], axis[2]))), angle);
 	return Transformation(trsf);
+
 
 def mirror_plane(ax, ay, az):
 	trsf = gp_Trsf()
@@ -87,3 +91,23 @@ def mirror_plane(ax, ay, az):
 def mirrorXY(): return mirror_plane(0,0,1)
 def mirrorYZ(): return mirror_plane(1,0,0)
 def mirrorXZ(): return mirror_plane(0,1,0)
+
+def mirror_axis(ax, ay, az):
+	trsf = gp_Trsf()
+	trsf.SetMirror(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(gp_Vec(ax, ay, az))))
+	return Transformation(trsf)
+
+def mirrorX(x): return mirror_axis(x)
+def mirrorY(y): return mirror_axis(y)
+def mirrorZ(z): return mirror_axis(z)
+
+def mirrorO(x=0, y=0, z=0):
+	trsf = gp_Trsf()
+	trsf.SetMirror(gp_Pnt(x,y,z))
+	return Transformation(trsf)
+
+
+def scale(s, center=(0,0,0)):
+	trsf = gp_Trsf()
+	trsf.SetScale(to_Pnt(center), s)
+	return Transformation(trsf)

@@ -22,7 +22,7 @@ u = 20
 
 # Parameters
 angle = deg(60)
-arrl, arrw, arrh = 2, 2, 15
+arrl, arrw, arrh = 2, 1, 15
 
 src = points([
 	(-1,-2, 1),
@@ -57,7 +57,7 @@ for t in tgt_cyls:
 
 # Draw arrows
 for i in range(len(src)):
-	arr = zencad.draw.arrow(pnt=src[i], vec=tgt[i]-src[i], arrlen=arrl, width=arrw, clr=clr[i])
+	arr = zencad.draw.arrow(src[i], tgt[i], arrlen=arrl, width=arrw, clr=clr[i])
 	disp(arr)
 
 # Draw white cube.

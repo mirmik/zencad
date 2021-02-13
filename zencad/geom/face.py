@@ -97,7 +97,7 @@ def ngon(r, n, wire=False):
 
 	if wire:
 		return wire_module.polysegment(pnts, closed=True)
-	return polygon(pnts, True)
+	return polygon(pnts)
 
 def register_font(fontpath):
 	OCC.Core.Addons.register_font(fontpath)
@@ -109,11 +109,6 @@ def textshape(text, fontname, size, composite_curve=False):
 		aspect, size, composite_curve)
 
 	return Shape(textshp)
-
-
-
-
-
 
 @lazy.lazy(cls=nocached_shape_generator)
 def ellipse(r1, r2, angle=None, wire=True):

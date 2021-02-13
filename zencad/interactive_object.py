@@ -10,52 +10,35 @@ from zencad.color import Color, default_color
 from zencad.axis  import Axis
 
 class InteractiveObject:
-	def __init__(self, iobj):
+	def __init__(self, iobj, color):
 		self.ais_object = iobj
+		self.color = color if color is not None else default_color()
 
 		aspect = self.ais_object.Attributes().LineAspect()
-		aspect.SetColor(Quantity_Color(0,0,0,Quantity_TOC_RGB))
-		#Prs3d_LineAspect(Quantity_NOC_BLACK, Aspect_TOL_SOLID, 1)
-		self.ais_object.Attributes().SetFaceBoundaryAspect(aspect);
+		self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
+
+		self.set_color(color)
+
+	def set_color(self, color):
+		self.ais_object.SetColor(self.color.to_Quantity_Color())
+		self.ais_object.SetTransparency(self.color.a)
 
 class ShapeInteractiveObject(InteractiveObject):
 	def __init__(self, shape, color):
 		self.shape = shape
-		self.color = color
-		
-		ais_object = AIS_Shape(self.shape._shp)
-
-		if self.color is None:
-			self.color = default_color()
-
-		ais_object.SetColor(self.color.to_Quantity_Color())
-		ais_object.SetTransparency(self.color.a)
-
-		super().__init__(ais_object)
+		super().__init__(AIS_Shape(self.shape._shp), color=color)
 
 class AxisInteractiveObject(InteractiveObject):
 	def __init__(self, axis, color):
 		self.axis = axis
-		self.color = color
-
-		ais_object = AIS_Axis(axis.to_Geom_Line())
-
-		if self.color is not None:
-			ais_object.SetColor(self.color.to_Quantity_Color())
-
-		super().__init__(ais_object)
+		super().__init__(AIS_Axis(axis.to_Geom_Line()), color=color)
+	
 
 class PointInteractiveObject(InteractiveObject):
 	def __init__(self, point, color):
 		self.point = point
-		self.color = color
+		super().__init__(AIS_Point(point), color=color)
 
-		ais_object = AIS_Point(point)
-
-		if self.color is not None:
-			ais_object.SetColor(self.color.to_Quantity_Color())
-
-		super().__init__(ais_object)
 		
 def create_interactive_object(obj, color=None):
 	if isinstance(color, (tuple,list)):
