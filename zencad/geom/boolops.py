@@ -5,8 +5,7 @@ from zencad.shape import shape_generator, Shape
 from zencad.lazy import lazy
 from zencad.geom.boolops_base import occ_pair_union, occ_pair_difference, occ_pair_intersect
 
-@lazy.lazy(cls=shape_generator)
-def union(lst):
+def _union(lst):
 	if len(lst) == 1: 
 		return Shape(lst[0])
 
@@ -34,34 +33,31 @@ def union(lst):
 
 	return Shape(narr[0])
 
+def _difference(lst):
+	ret = lst[0].Shape()
+
+	for i in range(len(lst)):
+		ret = occ_pair_difference(ret, lst[i].Shape())
+
+	return Shape(ret)
+
+def _intersect(lst):
+	ret = lst[0].Shape()
+
+	for i in range(len(lst)):
+		ret = occ_pair_intersect(ret, lst[i].Shape())
+
+	return Shape(ret)
+
+
 @lazy.lazy(cls=shape_generator)
-def difference(lst):
-	pass
+def union(lst):
+	return _union(lst)
 
 @lazy.lazy(cls=shape_generator)
 def intersect(lst):
-	pass
-#servoce::shape servoce::make_difference(const std::lsttor<const servoce::shape*>& lst)
-#{
-#	TopoDS_Shape ret = lst[0]->Shape();
-#
-#	for (unsigned int i = 1; i < lst.size(); ++i)
-#	{
-#		ret = __make_difference(ret, lst[i]->Shape());
-#	}
-#
-#	return ret;
-#}
-#
-#servoce::shape servoce::make_intersect(const std::lsttor<const servoce::shape*>& lst)
-#{
-#	TopoDS_Shape ret = lst[0]->Shape();
-#
-#	for (unsigned int i = 1; i < lst.size(); ++i)
-#	{
-#		ret = __make_intersect(ret, lst[i]->Shape());
-#	}
-#
-#	return ret;
-#}
-#
+	return _intersect(lst)
+
+@lazy.lazy(cls=shape_generator)
+def difference(lst):
+	return _difference(lst)

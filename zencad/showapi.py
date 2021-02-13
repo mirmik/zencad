@@ -6,7 +6,7 @@ def display(shp, color=None, deep=True, scene=None):
 	if scene is None:
 		scene = __default_scene
 
-	__default_scene.add(shp, color)
+	return __default_scene.add(shp, color)
 
 def disp(*args, **kwargs):
 	return display(*args, **kwargs)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from zencad.trans import rotateZ, rotate, right, rotateX
+from zencad.trans import rotateZ, rotate, right, rotateX, translate
 from zencad.util import deg, vector3
 from zencad.geom.boolops import union
 
@@ -87,4 +87,4 @@ def short_rotate(f, t):
 	dot_product = np.dot(f, t)
 	angle = np.arccos(dot_product)
 
-	return rotate(axis, angle);
+	return rotate(axis, angle)

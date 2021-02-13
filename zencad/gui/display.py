@@ -43,8 +43,8 @@ class qtBaseViewer(QtOpenGL.QGLWidget):
 
 		self.setAutoFillBackground(False)
 		
-		color1= Quantity_Color(.5,.5,.5, Quantity_TOC_RGB)
-		color2= Quantity_Color(.6,.6,.6, Quantity_TOC_RGB)
+		color1= Quantity_Color(.55,.55,.55, Quantity_TOC_RGB)
+		color2= Quantity_Color(.22,.22,.22, Quantity_TOC_RGB)
 		self._display.View.SetBgGradientColors(color1, color2, Aspect_GFM_VER, True)
 
 	def resizeEvent(self, event):
@@ -94,6 +94,7 @@ class DisplayWidget(qtBaseViewer):
 		scene.display = self
 
 		for iobj in scene.interactives:
+			iobj.bind_context(self._display.GetContext())
 			self._display.GetContext().Display(iobj.ais_object, True)
 
 	def autoscale(self, koeff=0.07):

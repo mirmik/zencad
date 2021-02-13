@@ -45,3 +45,7 @@ Color.orange =    Color(1, 0xa5/255, 0)
 
 def default_color():
 	return Color.mech
+
+def default_wire_color():
+	return Color(1,1,1)
+	#return Color(int("0x92",0)/255, int("0x6E",0)/255, int("0xAE",0)/255)

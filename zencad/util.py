@@ -74,7 +74,10 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 
 class vector3(numpy.ndarray, zencad.transformable.Transformable):
 	def __new__(cls, *args, info=None):
-		if isinstance(args[0], gp_Pnt):
+		if isinstance(args[0], (point3, vector3, list, tuple, numpy.ndarray)):
+			input_array = args[0]
+
+		elif isinstance(args[0], gp_Pnt):
 			input_array = (args[0].X(), args[0].Y(), args[0].Z())
 
 		elif hasattr(args[0], "__getitem__"):

@@ -42,7 +42,7 @@ class Transformation:
 		return b64.b64encode(pickle.dumps(self)).decode("utf-8")
 
 def move(*args):
-	xyz = zencad.util.vector3(args)
+	xyz = zencad.util.vector3(*args)
 	trsf = gp_Trsf()
 	trsf.SetTranslation(gp_Vec(xyz.x, xyz.y, xyz.z))
 	return Transformation(trsf)

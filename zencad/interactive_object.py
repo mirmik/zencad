@@ -4,29 +4,74 @@ from OCC.Core.Quantity import Quantity_NOC_BLACK, Quantity_Color, Quantity_TOC_R
 from OCC.Core.Aspect import Aspect_TOL_SOLID
 from OCC.Core.TopoDS import TopoDS_Vertex
 from OCC.Core.Geom import Geom_CartesianPoint
+from OCC.Core.TopLoc import TopLoc_Location
 
 from zencad.shape import Shape
-from zencad.color import Color, default_color
+from zencad.color import Color, default_color, default_wire_color
 from zencad.axis  import Axis
+from zencad.trans  import Transformation 
+from zencad.geom.exttrans import nulltrans
+import zencad.transformable
 
-class InteractiveObject:
-	def __init__(self, iobj, color):
+class InteractiveObject(zencad.transformable.Transformable):
+	def __init__(self, iobj, color, border_color=None, wire_color=None):
 		self.ais_object = iobj
-		self.color = color if color is not None else default_color()
+		self._location = nulltrans()
+		self._context = None
+		if border_color is None: border_color = color
+		
+		self.set_color(
+			color = color, 
+			border_color = border_color, 
+			wire_color = wire_color)
 
-		aspect = self.ais_object.Attributes().LineAspect()
-		self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
 
-		self.set_color(color)
+	def set_color(self, color, border_color=Color(0,0,0), wire_color=None):
+		if color is None: color = default_color()
+		if wire_color is None: wire_color = default_wire_color()
 
-	def set_color(self, color):
+		self.color = color
+		self.border_color = border_color
+		self.wire_color = wire_color
+
 		self.ais_object.SetColor(self.color.to_Quantity_Color())
 		self.ais_object.SetTransparency(self.color.a)
 
+		aspect = self.ais_object.Attributes().LineAspect()
+		aspect.SetColor(border_color.to_Quantity_Color())
+		self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
+
+		aspect = self.ais_object.Attributes().WireAspect()
+		aspect.SetColor(wire_color.to_Quantity_Color())
+		self.ais_object.Attributes().SetWireAspect(aspect)
+
+	def relocate(self, trsf):
+		self._location = trsf
+		if self._context:
+			loc = TopLoc_Location(trsf._trsf)
+			self._context.SetLocation(self.ais_object, loc);
+
+	def location(self):
+		if self._context:
+			return Transformation(self._context.Location(self.ais_object).Transformation())
+		else:
+			return self._location
+
+	def transform(self, trans):
+		self.relocate(self.location() * trans)
+		return self
+
+	def bind_context(self, context):
+		self._context = context
+		self.relocate(self._location)
+
 class ShapeInteractiveObject(InteractiveObject):
-	def __init__(self, shape, color):
-		self.shape = shape
-		super().__init__(AIS_Shape(self.shape._shp), color=color)
+	def __init__(self, shape, color, border_color=Color(0,0,0), wire_color=None):
+		self.shape = shape		
+		super().__init__(AIS_Shape(self.shape._shp), 
+			color=color, 
+			border_color=border_color,
+			wire_color = wire_color)
 
 class AxisInteractiveObject(InteractiveObject):
 	def __init__(self, axis, color):

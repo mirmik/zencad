@@ -24,17 +24,17 @@ m3 = s1 + s2 + s3
 ystep = 240
 xstep = 240
 
-fontpath = os.path.join(zencad.moduledir, "examples/fonts/testfont.ttf")
+fontname = "FreeSans"
 
-t1 = textshape("difference", fontpath, 40)
+t1 = textshape("difference", fontname, 40)
 t1c = t1.center()
 t1 = t1.translate(-t1c.x, -t1c.y, 0).rotateZ(deg(45))
 
-t2 = textshape("intersect", fontpath, 40)
+t2 = textshape("intersect", fontname, 40)
 t2c = t2.center()
 t2 = t2.translate(-t2c.x, -t2c.y, 0).rotateZ(deg(45))
 
-t3 = textshape("union", fontpath, 40)
+t3 = textshape("union", fontname, 40)
 t3c = t3.center()
 t3 = t3.translate(-t3c.x, -t3c.y, 0).rotateZ(deg(45))
 
@@ -48,16 +48,16 @@ display(m1.back(ystep))
 display(m2.left(xstep).back(ystep))
 display(m3.right(xstep).back(ystep))
 
-display(t1.back(ystep).up(c3), Color(1, 1, 0))
-display(t2.left(xstep).back(ystep).up(c3), Color(1, 1, 0))
-display(t3.right(xstep).back(ystep).up(c3), Color(1, 1, 0))
+display(t1.back(ystep).up(c3), color=(1, 1, 0))
+display(t2.left(xstep).back(ystep).up(c3), color=(1, 1, 0))
+display(t3.right(xstep).back(ystep).up(c3), color=(1, 1, 0))
 
-disp(s1.left(xstep).back(ystep), Color(0.5, 0, 0, 0.95))
-disp(s2.left(xstep).back(ystep), Color(0.5, 0, 0, 0.95))
-disp(s3.left(xstep).back(ystep), Color(0.5, 0, 0, 0.95))
+disp(s1.left(xstep).back(ystep), color=(0.5, 0, 0, 0.95))
+disp(s2.left(xstep).back(ystep), color=(0.5, 0, 0, 0.95))
+disp(s3.left(xstep).back(ystep), color=(0.5, 0, 0, 0.95))
 
-disp(s1.back(ystep), Color(0.5, 0, 0, 0.95))
-disp(s2.back(ystep), Color(0.5, 0, 0, 0.95))
-disp(s3.back(ystep), Color(0.5, 0, 0, 0.95))
+disp(s1.back(ystep), color=(0.5, 0, 0, 0.95))
+disp(s2.back(ystep), color=(0.5, 0, 0, 0.95))
+disp(s3.back(ystep), color=(0.5, 0, 0, 0.95))
 
 show()

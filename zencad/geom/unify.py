@@ -1,34 +1,48 @@
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.lazy import *
+from zencad.geom.boolops import _union
+
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_Sewing
 from OCC.Core.TopoDS import TopoDS_Compound, TopoDS_Solid
 from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
+from OCC.Core.GeomAbs import GeomAbs_Plane
+from OCC.Core.Geom import Geom_Plane
+from OCC.Core.gp import gp_Pnt
+from OCC.Core.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
+
+def _unify_face(proto):
+	USD = ShapeUpgrade_UnifySameDomain(proto.Shape(), True, True, True)
+	USD.Build();
+	return Shape(USD.Shape())
 
 def _unify_faces_array(input):
 	ret = []
 	fset = {}
 
 	for i in input:
-		surface = breptool.Surface(i)
+		surface = BRep_Tool.Surface(i.Face())
 
 		adaptor_surface = BRepAdaptor_Surface(i.Face())
 		surface_type = adaptor_surface.GetType()
 
 		if surface_type == GeomAbs_Plane:
-			pln = Handle(Geom_Plane).DownCast(surface)
+			pln = Geom_Plane.DownCast(surface)
 			pln0 = pln.Pln()
 
 			found = False
 
 			for key, arr in fset.items():
-				pnt = key.D0(0, 0);
-				pln1 = key.Pln();
+				pnt = gp_Pnt()
+				key.D0(0, 0, pnt)
+				pln1 = key.Pln()
 
-				dir0 = pln0.Axis().Direction();
-				dir1 = pln1.Axis().Direction();
+				dir0 = pln0.Axis().Direction()
+				dir1 = pln1.Axis().Direction()
 
 				if (dir0.IsEqual(dir1, 0.00001) and
 				    abs(pln0.Distance(pln1.Axis().Location())) < 0.0000001 and
@@ -39,17 +53,17 @@ def _unify_faces_array(input):
 					break;
 
 			if found == False:
-				fset.append((pln, [i]))
+				fset[pln] = [i]
 
 		else:
 			ret.append(i)
 			continue;
 
 	for key, arr in fset.items():
-		farr = _make_union(pr.second)
-		ret.emplace_back(_unify_face(farr))
+		farr = _union(arr)
+		ret.append(_unify_face(farr))
 
-	return ret;
+	return ret
 
 def _unify_shell(proto):
 	faces = []
@@ -60,7 +74,7 @@ def _unify_shell(proto):
 		mkShell.Add(n.Shape());
 
 	mkShell.Perform();
-	return mkShell.SewedShape()
+	return Shape(mkShell.SewedShape())
 
 
 def _unify_solid(proto):
@@ -73,7 +87,7 @@ def _unify_solid(proto):
 		explorer.Next()
 
 	mkSolid.Build()
-	return mkSolid.Shape();
+	return Shape(mkSolid.Shape())
 
 def _unify_compound(proto):
 	builder = BRep_Builder()
@@ -103,17 +117,26 @@ def _unify_compound(proto):
 	for f in faces_new:
 		builder.Add(comp, f.Shape())
 
-	return comp
+	return Shape(comp)
 	
 
 @lazy.lazy(cls=shape_generator)
 def unify(proto):
 	_Shape = proto.Shape()
 
-	if _Shape.IsNull(): raise Exception("Cannot remove splitter from empty shape");
-	elif _Shape.ShapeType() == TopAbs_SOLID: return _unify_solid(proto)
-	elif _Shape.ShapeType() == TopAbs_SHELL: return _unify_shell(proto)
-	elif _Shape.ShapeType() == TopAbs_FACE:	return _unify_face(proto)
-	elif _Shape.ShapeType() == TopAbs_COMPOUND: return _unify_compound(proto)
+	if _Shape.IsNull(): 
+		raise Exception("Cannot remove splitter from empty shape");
+	
+	elif _Shape.ShapeType() == TopAbs_SOLID: 
+		return _unify_solid(proto)
+	
+	elif _Shape.ShapeType() == TopAbs_SHELL: 
+		return _unify_shell(proto)
+	
+	elif _Shape.ShapeType() == TopAbs_FACE:	
+		return _unify_face(proto)
+	
+	elif _Shape.ShapeType() == TopAbs_COMPOUND: 
+		return _unify_compound(proto)
 	
 	raise Exception("TODO");

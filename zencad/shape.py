@@ -25,7 +25,7 @@ class Shape(zencad.transformable.Transformable):
 
 	def __init__(self, arg):
 		if not isinstance(arg, TopoDS_Shape):
-			raise Exception("Wrong Shape constructor invoke")
+			raise Exception(f"Wrong Shape constructor invoke. Invoked with type: {arg.__class__}")
 
 		self._shp = arg
 
@@ -92,40 +92,23 @@ class Shape(zencad.transformable.Transformable):
 	def is_vertex(self): return self.Shape().ShapeType() == TopAbs_VERTEX
 	def is_wire_or_edge(self): return self.is_edge() or self.is_wire()
 
-
-	def edges(self):
+	def reflection_elements(self, getter, topabs):
 		ret = []
-
-		ex = TopExp_Explorer(self.Shape(), TopAbs_EDGE)
+		ex = TopExp_Explorer(self.Shape(), topabs)
 		while ex.More():
-			obj = topods.Edge(ex.Current())
+			obj = getter(ex.Current())
 			ret.append(Shape(obj))
 			ex.Next()
-
 		return ret
 
-	def wires(self):
-		ret = []
-
-		ex = TopExp_Explorer(self.Shape(), TopAbs_WIRE)
-		while ex.More():
-			obj = topods.Wire(ex.Current())
-			ret.append(Shape(obj))
-			ex.Next()
-
-		return ret
-
-	def vertices(self):
-		ret = []
-
-		ex = TopExp_Explorer(self.Shape(), TopAbs_VERTEX)
-		while ex.More():
-			obj = topods.Vertex(ex.Current())
-			ret.append(Shape(obj))
-			ex.Next()
-
-		return ret
-
+	def edges(self):     return self.reflection_elements(topods.Edge, TopAbs_EDGE)
+	def wires(self):     return self.reflection_elements(topods.Wire, TopAbs_WIRE)
+	def faces(self):     return self.reflection_elements(topods.Face, TopAbs_FACE)
+	def vertices(self):  return self.reflection_elements(topods.Vertex, TopAbs_VERTEX)
+	def solids(self):    return self.reflection_elements(topods.Solid, TopAbs_SOLIDS)
+	def compounds(self): return self.reflection_elements(topods.Compound, TopAbs_COMPOUND)
+	def shells(self):    return self.reflection_elements(topods.Shell, TopAbs_SHELL)
+	
 	def fill(self):
 		assert(self.is_wire_or_edge())
 		return Shape(BRepBuilderAPI_MakeFace(self.Wire()).Face())
@@ -186,7 +169,7 @@ class LazyObjectShape(evalcache.LazyObject):
 			raise Exception(f"LazyObjectShape wraped type is not Shape: class:{obj.__class__}")
 		return obj
 
-	def _generic(name, cached, cls):
+	def _generic(name, cached, cls, prevent=None):
 		def foo(self, *args, **kwargs):
 			return self.lazyinvoke(
 				getattr(Shape, name),
@@ -194,6 +177,7 @@ class LazyObjectShape(evalcache.LazyObject):
 				kwargs,
 				cached=cached,
 				cls=cls,
+				prevent=prevent
 			)	
 
 		return foo
@@ -204,12 +188,18 @@ class LazyObjectShape(evalcache.LazyObject):
 		return foo
 
 	nolazy_methods = [
-		"Shape", "Vertex", "Wire", "Edge", "Solid", "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire"
+		"Shape", "Vertex", "Wire", "Edge", "Solid", "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
+		"reflection_elements"
 	]
 
+	transparent_methods = [
+		"extrude"
+	]
+	
 	cached_methods = [
 		"__add__", "__sub__", "__xor__",
-		"scaleX", "scaleY", "scaleZ", "scaleXYZ", "fill"
+		"scaleX", "scaleY", "scaleZ", "scaleXYZ", "fill",
+		"edges", "wires", "faces", "vertices", "shells", "solids", "compounds"
 	]
 
 	nocached_methods = [
@@ -221,7 +211,8 @@ class LazyObjectShape(evalcache.LazyObject):
 		"rot", "rotX", "rotY", "rotZ",
 		"mirror", "mirrorX", "mirrorY", "mirrorZ",
 		"mirrorYZ", "mirrorXY", "mirrorXZ",
-		"scale", "transform", "center"
+		"scale", "transform", "center",
+		"extrude"
 
 		#"props1", "props2", "props3"	
 	]
@@ -241,6 +232,10 @@ for item in LazyObjectShape.standart_methods:
 
 for item in LazyObjectShape.cached_methods:
 	setattr(LazyObjectShape, item, LazyObjectShape._generic(item, True, cls=LazyObjectShape))
+
+for item in LazyObjectShape.transparent_methods:
+	setattr(LazyObjectShape, item, LazyObjectShape._generic(
+		item, False, cls=evalcache.LazyObject, prevent=["self"]))
 
 
 class nocached_shape_generator(evalcache.LazyObject):
