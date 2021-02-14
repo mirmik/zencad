@@ -14,7 +14,7 @@ from zencad.geom.face import \
 
 from zencad.geom.shell import polyhedron
 
-from zencad.geom.sweep import extrude, linear_extrude
+from zencad.geom.sweep import *
 
 from zencad.geom.boolops import union, difference, intersect
 
@@ -22,6 +22,7 @@ from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
 	rotate_array, rotate_array2, short_rotate, nulltrans
 
 from zencad.geom.unify import unify
+from zencad.geom.offset import *
 
 # Display API
 from zencad.showapi import display, disp, show
@@ -43,6 +44,8 @@ from zencad.trans import move, moveX, moveY, moveZ, \
 
 from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
 	rotate_array, rotate_array2, short_rotate, nulltrans
+
+from zencad.version import __version__
 
 
 moduledir = os.path.dirname(__file__)

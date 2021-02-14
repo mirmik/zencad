@@ -104,7 +104,6 @@ def rounded_polysegment(pnts, r, closed=False) -> Shape:
 	pairs_tangs = []
 	pairs.append((None, pnts[0]))
 
-	print(000)
 	for i in range(len(cpnts)):
 		a = segment(pnts[i], pnts[i+1]).unlazy()
 		b = segment(pnts[i+1], pnts[i+2]).unlazy()
@@ -112,7 +111,6 @@ def rounded_polysegment(pnts, r, closed=False) -> Shape:
 		ad1 = a.d1(a.range()[1])
 		bd1 = b.d1(b.range()[0])
 
-		print(111)
 		n = numpy.cross(bd1, ad1)
 
 		if numpy.linalg.norm(n) == 0:
@@ -120,7 +118,6 @@ def rounded_polysegment(pnts, r, closed=False) -> Shape:
 			pairs_tangs.append(None)
 			continue
 
-		print(222)
 		abn = numpy.cross(ad1,n)
 		bbn = numpy.cross(bd1,n)
 

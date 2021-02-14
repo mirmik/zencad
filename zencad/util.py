@@ -1,6 +1,7 @@
 import math
 import os
 import numpy
+import sys
 
 from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
 from OCC.Core.TopoDS import TopoDS_Vertex
@@ -9,6 +10,12 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCC.Core.Geom import Geom_CartesianPoint
 
 import zencad.transformable
+
+def print_to_stderr(*args):
+	sys.stderr.write("STDERR {}: ".format(os.getpid()))
+	sys.stderr.write(str(args))
+	sys.stderr.write("\r\n")
+	sys.stderr.flush()
 
 def as_indexed(arg):
 	if len(arg) != 1:
@@ -63,6 +70,9 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
 
 	def Pnt(self):
 		return gp_Pnt(float(self[0]), float(self[1]), float(self[2]))
+
+	def Vtx(self):
+		return to_Vertex(self)
 
 	def transform(self, trsf):
 		t = trsf._trsf

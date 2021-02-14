@@ -41,6 +41,9 @@ class Transformation:
 	def __repr__(self):
 		return b64.b64encode(pickle.dumps(self)).decode("utf-8")
 
+	def __str__(self):
+		return super().__str__()
+
 def move(*args):
 	xyz = zencad.util.vector3(*args)
 	trsf = gp_Trsf()

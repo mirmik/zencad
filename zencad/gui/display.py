@@ -10,17 +10,10 @@ from OCC.Core.Geom import Geom_Line
 from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
 
 from OCC.Display import OCCViewer
-from OCC.Display.backend import load_pyqt5, load_backend
 from OCC.Display.backend import get_qt_modules
 
 import OCC.Core.BRepPrimAPI
 
-# check for pyqt5
-if not load_pyqt5():
-	print("pyqt5 required to run this test")
-	sys.exit()
-
-load_backend("qt-pyqt5")
 QtCore, QtGui, QtWidgets, QtOpenGL = get_qt_modules()
 
 class qtBaseViewer(QtOpenGL.QGLWidget):
@@ -62,10 +55,16 @@ class DisplayWidget(qtBaseViewer):
 	#if HAVE_PYQT_SIGNAL:
 	#    sig_topods_selected = QtCore.pyqtSignal(list)
 
-	def __init__(self, axis_triedron=True, *kargs):
-		qtBaseViewer.__init__(self, *kargs)
-
+	def __init__(self, 
+		axis_triedron=True,
+		bind_mode=False,
+		communicator = None):
+		
+		qtBaseViewer.__init__(self)
 		self.setObjectName("qt_viewer_3d")
+
+		self._bind_mode = bind_mode
+		self._communicator = communicator
 
 		self._drawbox = False
 		self._zoom_area = False
@@ -155,6 +154,18 @@ class DisplayWidget(qtBaseViewer):
 	def paintEvent(self, event):
 		if not self._inited:
 			self.InitDriver()
+
+			if self._bind_mode:
+				self._communicator.send({
+					"cmd":"bindwin", 
+					"id":int(self.winId()), 
+					"pid":os.getpid(), 
+					#"session_id":self.session_id
+				})
+
+				QtGui.QWindow.fromWinId(self.winId()).setFlags(
+					QtGui.QWindow.fromWinId(self.winId()).flags() | 
+					QtCore.Qt.SubWindow) 
 
 		self._display.Context.UpdateCurrentViewer()
 

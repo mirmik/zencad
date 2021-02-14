@@ -1,5 +1,8 @@
 from zencad.scene import Scene
 
+UNBOUND_MODE = False # Устанавливается из zencad.gui.display_unbounded
+                     # сигнализирует об активации подчинённого режима работы
+
 __default_scene = Scene()
 
 def display(shp, color=None, deep=True, scene=None):
@@ -15,7 +18,12 @@ def show(scene=None, display_only=False):
 	if scene is None:
 		scene = __default_scene
 
-	if display_only:
+	if UNBOUND_MODE:
+		import zencad.gui.display_unbounded
+		zencad.gui.display_unbounded.unbound_worker_bottom_half(
+			scene=scene)
+
+	elif display_only:
 		import zencad.gui.display_only
 		zencad.gui.display_only.init_display_only_mode()
 		zencad.gui.display_only.DISPLAY.attach_scene(scene)

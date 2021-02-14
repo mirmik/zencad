@@ -18,15 +18,18 @@ import zencad.geom.wire as wire
 import zencad.geom.curve as curve
 from zencad.trans import rotateZ
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def fill(shp):
 	assert(shp.Shape().ShapeType() in (TopAbs_WIRE, TopAbs_EDGE));
 	return Shape(BRepBuilderAPI_MakeFace(shp.Wire_orEdgeToWire()).Face())
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def polygon(pnts, wire=False):
 	wr = wire_module.polysegment(pnts, closed=True)
 	return wr if wire else fill(wr)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def rectangle_wire(a,b,center):
@@ -36,6 +39,7 @@ def rectangle_wire(a,b,center):
 		return wire.polysegment([(-x, -y, 0), (x, -y, 0), (x, y, 0), (-x, y, 0)], True)
 	else:
 		return wire.polysegment([(0, 0, 0), (a, 0, 0), (a, b, 0), (0, b, 0)], True)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def rectangle(a,b=None, center=False, wire=False):
@@ -50,6 +54,7 @@ def rectangle(a,b=None, center=False, wire=False):
 
 def square(*args, **kwargs):
 	return rectangle(*args, **kwargs)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def circle_edge(r, angle=None):
@@ -99,8 +104,10 @@ def ngon(r, n, wire=False):
 		return wire_module.polysegment(pnts, closed=True)
 	return polygon(pnts)
 
+
 def register_font(fontpath):
 	OCC.Core.Addons.register_font(fontpath)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def textshape(text, fontname, size, composite_curve=False):
@@ -109,6 +116,7 @@ def textshape(text, fontname, size, composite_curve=False):
 		aspect, size, composite_curve)
 
 	return Shape(textshp)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def ellipse(r1, r2, angle=None, wire=True):
