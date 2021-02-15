@@ -45,7 +45,8 @@ matrix:
         - sudo apt-get update
         - sudo apt-get install libx11-dev mesa-common-dev libglu1-mesa-dev
 
-        - python3 -m pip install licant wheel requests 
+        - sudo python3 -m pip install requests psutil
+        - python3 -m pip install licant wheel requests psutil
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
         - python3 -m pip install scikit-image
         
