@@ -50,7 +50,7 @@ matrix:
         - python3 -m pip install scikit-image
         
         - python3 ./setup.py install
-        - sudo -H python3 -m zencad --install-occt-force
+        - python3 -m zencad --install-occt-force=utest
         - python3 -m zencad --install-pythonocc-force
 
       script:

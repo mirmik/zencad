@@ -18,7 +18,7 @@ def console_options_handle():
 	parser = argparse.ArgumentParser()
 
 	parser.add_argument("--install-libs", action="store_true", help="Console dialog for install third-libraries")
-	parser.add_argument("--install-occt-force", action="store_true", help="Download and install libocct")
+	parser.add_argument("--install-occt-force", default=True, help="Download and install libocct")
 	parser.add_argument("--install-pythonocc-force", action="store_true", help="Download and install pythonocc package")
 	parser.add_argument("--yes", action="store_true")
 	
@@ -96,7 +96,8 @@ def main():
 	if pargs.install_occt_force:
 		from zencad.geometry_core_installer import install_precompiled_occt_library
 		print("Start")
-		install_precompiled_occt_library()
+		path = pargs.install_occt_force if isinstance(pargs.install_occt_force, str) else None
+		install_precompiled_occt_library(tgtpath=path)
 		print("Finish")
 		sys.exit()
 

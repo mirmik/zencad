@@ -140,7 +140,7 @@ def install_precompiled_python_occ(occversion="7.4.1"):
 
 	print(f"Precomiled OCC succesfually installed in {target_directory}")
 
-def install_precompiled_occt_library(occt_version = "7.4.0"):
+def install_precompiled_occt_library(tgtpath=None, occt_version = "7.4.0"):
 	architecture = get_platform()
 
 	# Downloading precompiled repo
@@ -151,7 +151,7 @@ def install_precompiled_occt_library(occt_version = "7.4.0"):
 	extract_directory = extract_archive(path)
 
 	if architecture in ("linux-64"):
-		target_directory = "/usr/local/lib"
+		target_directory = "/usr/local/lib" if tgtpath is None else tgtpath
 
 	print("Copy libs to system libs directory")
 	source_directory = os.path.join(extract_directory)
