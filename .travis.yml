@@ -49,19 +49,9 @@ matrix:
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
         - python3 -m pip install scikit-image
         
-        - git clone https://github.com/pybind/pybind11
-
-        - git clone https://github.com/mirmik/servoce --recursive -b dev
-        - cd servoce 
-        - git clone https://github.com/pybind/pybind11
-        - git clone https://github.com/mirmik/servoce-third-libs servoce-third-libs-travis
-        - mkdir pyservoce/libs 
-        - cp servoce-third-libs-travis/linux-7.4/* pyservoce/libs/
-        
         - python3 ./setup.py install
-        - cd ..
-
-        - python3 ./setup.py install
+        - python3 -m zencad --install-occt-force
+        - python3 -m zencad --install-pythonocc-force
 
       script:
         - cd utest

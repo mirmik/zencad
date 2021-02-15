@@ -9,8 +9,6 @@ import psutil
 import traceback
 import runpy
 
-from zencad.util import print_to_stderr
-
 def protect_path(s):
 	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
 		return s[1:-1]
@@ -19,6 +17,11 @@ def protect_path(s):
 def console_options_handle():
 	parser = argparse.ArgumentParser()
 
+	parser.add_argument("--install-libs", action="store_true", help="Console dialog for install third-libraries")
+	parser.add_argument("--install-occt-force", action="store_true", help="Download and install libocct")
+	parser.add_argument("--install-pythonocc-force", action="store_true", help="Download and install pythonocc package")
+	parser.add_argument("--yes", action="store_true")
+	
 	parser.add_argument("--none", action="store_true")
 	parser.add_argument("--unbound", action="store_true")
 	parser.add_argument("--display", action="store_true")
@@ -77,6 +80,25 @@ def finish_procedure():
 
 def main():
 	pargs = console_options_handle()
+
+	if pargs.install_libs:
+		from zencad.geometry_core_installer import console_third_libraries_installer_utility
+		console_third_libraries_installer_utility(yes=pargs.yes)
+		sys.exit()
+
+	if pargs.install_pythonocc_force:
+		from zencad.geometry_core_installer import install_precompiled_python_occ
+		print("Start")
+		install_precompiled_python_occ()
+		print("Finish")
+		sys.exit()
+
+	if pargs.install_occt_force:
+		from zencad.geometry_core_installer import install_precompiled_occt_library
+		print("Start")
+		install_precompiled_occt_library()
+		print("Finish")
+		sys.exit()
 
 	try:
 		# Удаляем кавычки из пути, если он есть

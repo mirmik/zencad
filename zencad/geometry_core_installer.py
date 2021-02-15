@@ -99,7 +99,9 @@ def extract_archive(path, extract_directory=None):
 	return extract_directory
 
 def user_site_packages_directory():
-	if os.getusername != "root":
+	user = os.environ.get('USER') # TODO: Win?
+
+	if user != "root":
 		return site.USER_SITE
 	else:
 		return site.getsitepackages()[0]
@@ -199,7 +201,7 @@ def ask_yes_no(question):
 			print("Unresolved answer")
 	
 
-def console_third_libraries_installer_utility():
+def console_third_libraries_installer_utility(yes=False):
 	while True:
 		third_libraries_status = test_third_libraries()
 		print(third_libraries_status)
@@ -213,7 +215,7 @@ def console_third_libraries_installer_utility():
 		if third_libraries_status["pythonocc"] is False:
 			print("Module pythonocc is not found")
 			
-			answer = ask_yes_no("Are you want to install it from repository? [Y/n]")
+			answer = ask_yes_no("Are you want to install it from repository? [Y/n]") if not yes else True
 
 			if answer:
 				install_precompiled_python_occ()
@@ -224,7 +226,7 @@ def console_third_libraries_installer_utility():
 		if third_libraries_status["occt"] is False:
 			print("OCCT library is not found")
 			
-			answer = ask_yes_no("Are you want to install it from repository? [Y/n]")
+			answer = ask_yes_no("Are you want to install it from repository? [Y/n]") if not yes else True
 	
 			if answer:
 				install_precompiled_occt_library()

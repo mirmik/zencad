@@ -7,6 +7,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 class InotifyThread(QThread):
+	"""InotifyThread следит за переданным ему списком файлов
+	и бросает сигналы в случае обноружения модификации одного из файлов"""
+
 	changed = pyqtSignal()
 
 	class Record:
@@ -77,7 +80,7 @@ class InotifyThread(QThread):
 				return
 
 			# порядок мьютексов важен.
-			# пока control_lock захвачен targets_list можно менять, т.к.
+			# пока control_lock захвачен, targets_list можно менять, т.к.
 			# lock не захвачен
 			self._control_lock.acquire()
 			self._lock.acquire()

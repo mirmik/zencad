@@ -11,9 +11,6 @@ import zencad.gui.util
 import zencad.gui.settingswdg
 import zencad.settings
 
-#import zencad.gui.settingswdg
-#from zencad.gui.inotifier import InotifyThread
-
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
 	"███████╗███████╗███╗   ██╗ ██████╗ █████╗ ██████╗ \n"
