@@ -8,7 +8,7 @@ class PreventLibraryLoading(Exception): pass
 try:
 	# Если активировано опция переустановки библиотек, 
 	# не даём интерпретатору линковать имеющиеся
-	if ("--install-occt-force" in sys.argv):
+	if ("--install-occt-force" in " ".join(sys.argv)):
 		raise PreventLibraryLoading()
 
 	# Geometry API
