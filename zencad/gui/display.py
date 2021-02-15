@@ -8,11 +8,12 @@ from OCC.Core.Aspect import Aspect_GFM_VER
 from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+import OCC.Core.BRepPrimAPI
 
 from OCC.Display import OCCViewer
 from OCC.Display.backend import get_qt_modules
 
-import OCC.Core.BRepPrimAPI
+from zencad.util import print_to_stderr
 
 QtCore, QtGui, QtWidgets, QtOpenGL = get_qt_modules()
 
@@ -58,7 +59,8 @@ class DisplayWidget(qtBaseViewer):
 	def __init__(self, 
 		axis_triedron=True,
 		bind_mode=False,
-		communicator = None):
+		communicator = None,
+		init_size = None):
 		
 		qtBaseViewer.__init__(self)
 		self.setObjectName("qt_viewer_3d")
@@ -66,10 +68,12 @@ class DisplayWidget(qtBaseViewer):
 		self._bind_mode = bind_mode
 		self._communicator = communicator
 
+		self._init_size = init_size
 		self._drawbox = False
 		self._zoom_area = False
 		self._select_area = False
-		self._inited = False
+		self._inited0 = False
+		self._inited1 = False
 		self._leftisdown = False
 		self._middleisdown = False
 		self._rightisdown = False
@@ -130,42 +134,93 @@ class DisplayWidget(qtBaseViewer):
 		self._display.GetContext().SetDisplayMode(AIS_Shaded, False);
 		self._display.GetContext().DefaultDrawer().SetFaceBoundaryDraw(True);
 
-		self._inited = True
-		
-		self.autoscale()
+		if self._init_size:
+			self.resize(*self._init_size)
+			self._display.GetView().MustBeResized()
 
+		self.autoscale()
+	
 	def keyPressEvent(self, event):
-		code = event.key()
-		if code in self._key_map:
-			self._key_map[code]()
-		elif code in range(256):
-			log.info('key: "%s"(code %i) not mapped to any function' % (chr(code), code))
-		else:
-			log.info('key: code %i not mapped to any function' % code)
+		MOVE_SCALE = 0.05
+		modifiers = event.modifiers()#QApplication.keyboardModifiers()
+
+		if event.key() == QtCore.Qt.Key_F3:
+			self.markerQPressed()
+			return
+		
+		elif event.key() == QtCore.Qt.Key_F4:
+			self.markerWPressed()
+			return
+		
+		elif event.key() == QtCore.Qt.Key_F5:
+			self.move_forw()
+			return
+		
+		elif event.key() == QtCore.Qt.Key_F6:
+			self.move_back()
+			return
+
+		elif event.key() == QtCore.Qt.Key_F8:
+			self.autoscale()
+			return
+
+		elif event.key() == QtCore.Qt.Key_PageUp:
+			self.zoom_up(self.zoom_koeff_key)
+			return
+		
+		elif event.key() == QtCore.Qt.Key_PageDown:
+			self.zoom_down(self.zoom_koeff_key)
+			return
+
+		elif event.key() == QtCore.Qt.Key_W and (self.mousedown or self.keyboard_retranslate_mode is False):
+			self.move_forw(MOVE_SCALE)
+			return
+		elif event.key() == QtCore.Qt.Key_S and (self.mousedown or self.keyboard_retranslate_mode is False):
+			self.move_back(MOVE_SCALE)
+			return
+
+		elif event.key() == QtCore.Qt.Key_D and (self.mousedown or self.keyboard_retranslate_mode is False):
+			self.move_left(MOVE_SCALE)
+			return
+		elif event.key() == QtCore.Qt.Key_A and (self.mousedown or self.keyboard_retranslate_mode is False):
+			self.move_right(MOVE_SCALE)
+			return
+
+
+		print_to_stderr(event.key())
+		print_to_stderr(modifiers)
+		print_to_stderr(event.text())
+
+		# If signal not handling here, translate it onto top level
+		self._communicator.send({
+			"cmd":"keypressed_raw", 
+			"key": event.key(), 
+			"modifiers": "", 
+			"text": event.text()})
 
 	def focusInEvent(self, event):
-		if self._inited:
+		if self._inited1:
 			self._display.Repaint()
 
 	def focusOutEvent(self, event):
-		if self._inited:
+		if self._inited1:
 			self._display.Repaint()
 
-	def paintEvent(self, event):
-		if not self._inited:
+	def showEvent(self, event):
+		if not self._inited0:
 			self.InitDriver()
 
-			if self._bind_mode:
-				self._communicator.send({
-					"cmd":"bindwin", 
-					"id":int(self.winId()), 
-					"pid":os.getpid(), 
-					#"session_id":self.session_id
-				})
 
-				QtGui.QWindow.fromWinId(self.winId()).setFlags(
-					QtGui.QWindow.fromWinId(self.winId()).flags() | 
-					QtCore.Qt.SubWindow) 
+			self._inited0 = True
+
+	def paintEvent(self, event):
+		if not self._inited1:
+
+			QtGui.QWindow.fromWinId(self.winId()).setFlags(
+				QtGui.QWindow.fromWinId(self.winId()).flags() | 
+				QtCore.Qt.SubWindow) 
+
+			self._inited1 = True
 
 		self._display.Context.UpdateCurrentViewer()
 

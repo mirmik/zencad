@@ -2,7 +2,6 @@
 # coding: utf-8
 
 from zencad import *
-from zencad.platonic import *
 
 tetra = tetrahedron(10)
 hexa = hexahedron(10)

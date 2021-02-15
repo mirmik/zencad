@@ -5,7 +5,11 @@ import os
 import sys
 import time
 import argparse
+import psutil
+import traceback
 import runpy
+
+from zencad.util import print_to_stderr
 
 def protect_path(s):
 	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
@@ -14,41 +18,34 @@ def protect_path(s):
 
 def console_options_handle():
 	parser = argparse.ArgumentParser()
-	#parser.add_argument("-i", "--info", action="store_true")
-	#parser.add_argument('-v', "--debug", action="store_true")
-	#parser.add_argument("--version", action="store_true")
-	#parser.add_argument("--pyservoce-version", action="store_true")
-	#parser.add_argument("-I", "--mpath", action="store_true")
-	#parser.add_argument("-m", "--module", default="zencad")
-	#parser.add_argument("--subproc", action="store_true")
+
+	parser.add_argument("--none", action="store_true")
 	parser.add_argument("--unbound", action="store_true")
 	parser.add_argument("--display", action="store_true")
 	parser.add_argument("--prescale", action="store_true")
+	parser.add_argument("--comdebug", action="store_true")
 	parser.add_argument("--sleeped", action="store_true", help="Don't use manualy. Create sleeped thread.")
-	#parser.add_argument("--no-show", action="store_true")
-	#parser.add_argument("--no-sleeped", action="store_true")
-	#parser.add_argument("--no-screen", action="store_true")
-	#parser.add_argument("--no-evalcache-notify", action="store_true")
-	#parser.add_argument("--no-embed", action="store_true")
-	#parser.add_argument("--no-cache", action="store_true")
 	parser.add_argument("--size")
-	#parser.add_argument("--no-restore", action="store_true")
-	#parser.add_argument("--tgtpath")
-	#parser.add_argument("--debugcomm", action="store_true")
-	#parser.add_argument("--session_id", type=int, default=0)
 	parser.add_argument("--no-communicator-pickle", action="store_true")
 	parser.add_argument("paths", type=str, nargs="*", help="runned file")
+
 	pargs = parser.parse_args()
 
-	print("pargs", pargs)
+	if pargs.comdebug:
+		import zencad.gui.communicator
+		zencad.gui.communicator.COMMUNICATOR_TRACE = True
+
 	return pargs
 
-def exec_main_window_process(openpath):
+def exec_main_window_process(openpath, none=False):
 	"""	Запускает графическую оболочку, которая управляет.
 		Потоками с виджетами отображения. """
 
 	import zencad.gui.mainwindow
-	zencad.gui.mainwindow.start_application(openpath=openpath)
+	import zencad.util
+
+	zencad.util.set_debug_process_name("MAIN")
+	zencad.gui.mainwindow.start_application(openpath=openpath, none=none)
 
 def exec_display_only(pargs):
 	""" Режим запускает один единственный виджет.
@@ -66,30 +63,42 @@ def exec_display_unbound(pargs):
 	if len(pargs.paths) != 1:
 		raise Exception("Display unbound mode invoked without path")
 
+	size = (float(a) for a in pargs.size.split(","))
+
 	from zencad.gui.display_unbounded import unbound_worker_exec
-	unbound_worker_exec(pargs.paths[0], pargs.prescale, pargs.size, 
-		no_communicator_pickle = pargs.no_communicator_pickle)
+	unbound_worker_exec(pargs.paths[0], pargs.prescale, size, 
+		no_communicator_pickle = pargs.no_communicator_pickle,
+		sleeped = pargs.sleeped)
 	
+def finish_procedure():	
+	procs = psutil.Process().children()
+	for p in procs:
+		p.terminate()
+
 def main():
-	print("Main Function")
 	pargs = console_options_handle()
 
-	# Удаляем кавычки из пути, если он есть
-	if len(pargs.paths) > 0:
-		pargs.paths[0] = protect_path(pargs.paths[0])
+	try:
+		# Удаляем кавычки из пути, если он есть
+		if len(pargs.paths) > 0:
+			pargs.paths[0] = protect_path(pargs.paths[0])
 
-	if pargs.display:
-		exec_display_only(pargs)
-		return
+		if pargs.display:
+			exec_display_only(pargs)
 
-	elif pargs.unbound:
-		exec_display_unbound(pargs)
-		return
+		elif pargs.unbound:
+			exec_display_unbound(pargs)
 
-	else:
-		path = pargs.paths[0] if len(pargs.paths) > 0 else None
-		exec_main_window_process(openpath=path)
-		return
+		else:
+			path = pargs.paths[0] if len(pargs.paths) > 0 else None
+			exec_main_window_process(openpath=path, none=pargs.none)
+	
+	except Exception as ex:
+		print_to_stderr(f"Finished with exception", ex)
+		print_to_stderr(f"Exception class: {ex.__class__}")
+		traceback.print_exc()
+
+	finish_procedure()
 
 if __name__ == "__main__":
 	main()

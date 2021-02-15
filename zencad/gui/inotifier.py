@@ -85,10 +85,9 @@ class InotifyThread(QThread):
 				for path, record in self.targets_list.items():
 					if os.stat(record.path).st_mtime != record.mtime:
 						if time.time() - self.emit_time > 0.75:
-							self.last_mtime = os.stat(self.path).st_mtime
+							self.last_mtime = os.stat(path).st_mtime
 							self.changed.emit()
 							self.emit_time = time.time()
-							print("Emit")
 							break
 			except FileNotFoundError:
 				pass

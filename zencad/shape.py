@@ -16,7 +16,7 @@ from zencad.geom.boolops_base import *
 from zencad.lazy import *
 import zencad.trans
 import zencad.transformable
-from zencad.util import to_numpy, point3, vector3
+from zencad.util import to_numpy, point3, vector3, print_to_stderr
 
 import numpy
 
@@ -55,7 +55,7 @@ class Shape(zencad.transformable.Transformable):
 		return Shape(occ_pair_intersect(self._shp, oth._shp))
 
 	def center(self):
-		print("NotReleased")
+		print_to_stderr("Warning: NotReleased")
 		return point3(0,0,0)
 
 	def extrude(self, vec):
@@ -188,8 +188,10 @@ class LazyObjectShape(evalcache.LazyObject):
 		return foo
 
 	nolazy_methods = [
-		"Shape", "Vertex", "Wire", "Edge", "Solid", "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
-		"reflection_elements"
+		"Shape", "Vertex", "Wire", "Edge", "Solid", "Face", 
+		"Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
+		"reflection_elements", "AdaptorSurface", "AdaptorCurve",
+		"_SLProps", "Curve"
 	]
 
 	transparent_methods = [
@@ -199,7 +201,9 @@ class LazyObjectShape(evalcache.LazyObject):
 	cached_methods = [
 		"__add__", "__sub__", "__xor__",
 		"scaleX", "scaleY", "scaleZ", "scaleXYZ", "fill",
-		"edges", "wires", "faces", "vertices", "shells", "solids", "compounds"
+		"edges", "wires", "faces", "vertices", 
+		"shells", "solids", "compounds",
+		"d1", "normal", "range", "endpoints"
 	]
 
 	nocached_methods = [
@@ -218,7 +222,8 @@ class LazyObjectShape(evalcache.LazyObject):
 	]
 
 	standart_methods = [
-		"is_wire", "is_compsolid", "is_edge", "is_face", "is_shell", "is_wire_or_edge", "is_solid"
+		"is_wire", "is_compsolid", "is_edge", "is_compound", "is_vertex", 
+		"is_face", "is_shell", "is_wire_or_edge", "is_solid"
 	]
 
 for item in LazyObjectShape.nocached_methods:
@@ -267,7 +272,7 @@ A = (
 B = set(LazyObjectShape.__dict__.keys())
 
 C = B.difference(A).difference({
-	"cached_methods", "standart_methods", "nocached_methods", "unlazy", "_generic", "_generic_unlazy", "nolazy_methods"
+	"transparent_methods", "cached_methods", "standart_methods", "nocached_methods", "unlazy", "_generic", "_generic_unlazy", "nolazy_methods"
 })
 
 D = A.difference(B).difference({
@@ -275,9 +280,9 @@ D = A.difference(B).difference({
 })
 
 if len(D) != 0:
-	print("Warning: LazyShapeObject has not wrappers for methods:")
-	print(D)
+	print_to_stderr("Warning: LazyShapeObject has not wrappers for methods:")
+	print_to_stderr(D)
 
 if len(C) != 0:
-	print("Warning: LazyShapeObject has wrappers for unexisted methods:")
-	print(C)
+	print_to_stderr("Warning: LazyShapeObject has wrappers for unexisted methods:")
+	print_to_stderr(C)

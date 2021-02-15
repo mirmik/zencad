@@ -4,7 +4,7 @@ import os
 import sys
 import io
 import base64
-import pickle
+import json
 import threading
 import traceback
 
@@ -16,12 +16,14 @@ import os
 import signal
 from zencad.util import print_to_stderr
 
+COMMUNICATOR_TRACE = False
+
 class Communicator(QObject):
 	smooth_stop = pyqtSignal()
 	oposite_clossed = pyqtSignal()
 
 	class Listener(QThread):
-		newdata = pyqtSignal(bytes, int)
+		newdata = pyqtSignal(dict, int)
 		def __init__(self, ifile, parent):
 			super().__init__()
 			self.parent = parent
@@ -35,30 +37,18 @@ class Communicator(QObject):
 
 		def run(self):
 			checks = 0
-			oposite_pid = lambda : self.parent.subproc_pid()
-			
-			try:
-				readFile = self.ifile
-			except Exception as ex:
-				self.parent.stop_listen_nowait()
-				return
 			
 			while(True):
 				try:
-					inputdata = readFile.readline()
+					inputdata = self.ifile.readline()
 
 				except Exception as ex:
-					print("read error: error on read", ex)
+					print_to_stderr("read error: error on read", ex)
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
 				
 				if len(inputdata) == 0:
-					checks += 1
-					if checks < 3:
-						continue
-					print("read error: len(inputdata)==0")
-			
 					self.parent._stop_listen_nowait()
 					self.parent.oposite_clossed.emit()
 					return
@@ -66,32 +56,28 @@ class Communicator(QObject):
 				checks = 0
 
 				try:
-					data_base64 = base64.b64decode(bytes(inputdata, "utf-8"))
+					data_unpickled = json.loads(inputdata)
 				except:
-					print(f"warning: decode b64: len:{len(inputdata)}, data:{inputdata}")
+					print_to_stderr("warning: decode pickle:", inputdata)
 					continue
 
-				try:
-					data_unpickled = pickle.loads(data_base64)
-				except:
-					print("warning: decode pickle:", data_base64)
-					continue
-
-				print_to_stderr("recv", data_unpickled)
+				if COMMUNICATOR_TRACE:
+					print_to_stderr("recv", data_unpickled)
 
 				if data_unpickled == "unwait":
 					self.unwait()
 					continue
 
-				if data_unpickled["cmd"] == "smooth_stopworld":
-					self.parent.smooth_stop.emit()
-					continue
+				#elif data_unpickled["cmd"] == "smooth_stopworld":
+				#	self.parent.smooth_stop.emit()
+				#	continue
 
 				if data_unpickled["cmd"] == "set_opposite_pid":
 					self.parent.declared_opposite_pid = data_unpickled["data"]
 					continue
 				
-				self.newdata.emit(data_base64, self.parent.subproc_pid())
+				else:
+					self.newdata.emit(data_unpickled, self.parent.subproc_pid())
 
 	def __init__(self, ifile, ofile, no_communicator_pickle=False):
 		super().__init__()
@@ -108,8 +94,12 @@ class Communicator(QObject):
 
 		self.send({"cmd":"set_opposite_pid", "data":os.getpid()})
 
-	def naive_connect(self, handle):
-		pass
+	def simple_read(self):		
+		inputdata = self.ifile.readline()
+		return inputdata
+
+	def bind_handler(self, function):
+		self.newdata.connect(function)
 
 	def start_listen(self):
 		if self.listen_started:
@@ -135,16 +125,12 @@ class Communicator(QObject):
 		else:
 			if not self.closed_fds:
 				try:
-					#trace("close ifile", self.ifile.fileno(), self.subproc_pid())
 					pass
-					#self.ifile.close()
 				except (OSError, ValueError) as ex:
 					trace(ex)
 	
 				try:
-					#trace("close ofile", self.ofile.fileno(), self.subproc_pid())
 					pass
-					#self.ofile.close()
 				except (OSError, ValueError) as ex:
 					trace(ex)
 
@@ -168,17 +154,19 @@ class Communicator(QObject):
 		self.closed = True
 
 	def send(self, obj):
-		print_to_stderr("send", obj)
+		if COMMUNICATOR_TRACE:
+			print_to_stderr("send", obj)
+
 		if not self.no_communicator_pickle:
-			sendstr_bytes = base64.b64encode(pickle.dumps(obj)) + b"\n"
-			sendstr = sendstr_bytes.decode("utf-8")
+			sendstr = json.dumps(obj) + "\n"
+			#sendstr = sendstr_bytes.decode("utf-8")
 		else:
 			sendstr = str(obj) + "\r\n"
+
 		try:
 			self.ofile.write(sendstr)
 			self.ofile.flush()
 			return True
-		
 		except Exception as ex:
 			self.stop_listen()
 			return False
@@ -193,15 +181,6 @@ class Communicator(QObject):
 	def unwait_local(self):
 		self.listener_thr.event.unwait()
 	
-	def kill(self):
-		raise Exception("kill?")
-		#trace("kill")
-		#try:
-		#	if self.subproc:
-		#		self.subproc.terminate()
-		#except:
-		#	pass
-
 	def rpc_buffer(self):
 		return self.listener_thr.buffer
 

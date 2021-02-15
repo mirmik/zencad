@@ -8,6 +8,7 @@ import subprocess
 import signal
 
 import zencad.gui.util
+import zencad.gui.settingswdg
 import zencad.settings
 
 #import zencad.gui.settingswdg
@@ -53,7 +54,7 @@ class MainWindowActionsMixin:
 				"<p><h3>Feedback</h3>"
 				"<pre>email: mirmikns@yandex.ru\n"
 				"github: https://github.com/mirmik/zencad\n"
-				"2018-2020<pre/>".format(
+				"2018-2021<pre/>".format(
 					BANNER_TEXT, 
 					ABOUT_TEXT, 
 					zencad.__version__)
@@ -87,7 +88,7 @@ class MainWindowActionsMixin:
 			"#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nm=box(10)\ndisp(m)\n\nshow()\n"
 		)
 		f.close()
-		self._open_routine(path)
+		self.open(path)
 
 	def createNewAction(self):
 		filters = "*.py;;*.*"
@@ -107,9 +108,10 @@ class MainWindowActionsMixin:
 		self.create_new_do(tmpfl)
 
 	def openAction(self):
+		curopen = self.current_opened()
 		path = zencad.gui.util.open_file_dialog(
 			self, 
-			directory=os.path.dirname(self.current_opened()))
+			directory=None if curopen is None else os.path.dirname(curopen))
 
 		if path[0] == "":
 			return
@@ -214,10 +216,7 @@ class MainWindowActionsMixin:
 		self.texteditor.setEnabled(not en)
 		self.texteditor.setHidden(en)
 
-		self.client_communicator.send({"cmd":"keyboard_retranslate", "en": not en})
-
-	#def testAction(self):
-	#	raise NotImplementedError
+		self._current_client_communicator.send({"cmd":"keyboard_retranslate", "en": not en})
 
 	def cacheInfoAction(self):
 		def get_size(start_path="."):
@@ -255,24 +254,19 @@ class MainWindowActionsMixin:
 		raise NotImplementedError
 
 	def fullScreen(self):
-		#if self.presentation_mode: return
-		if not self.fscreen_mode:
+		if not self._fscreen_mode:
 			self.showFullScreen()
-			self.fscreen_mode = True
+			self._fscreen_mode = True
 		else:
 			self.showNormal()
-			self.fscreen_mode = False
+			self._fscreen_mode = False
 
 	def view_only(self, en):
 		if en:	
 			self.menu_bar_height = self.menuBar().height()
-			#self.texteditor.setHidden(True)
-			#self.console.setHidden(True)
 			self.menuBar().setFixedHeight(0)
 			self.info_widget.setHidden(True)
 		else:
-			#self.texteditor.setHidden(False)
-			#self.console.setHidden(False)
 			self.menuBar().setFixedHeight(self.menu_bar_height)
 			self.info_widget.setHidden(False)
 
@@ -301,20 +295,17 @@ class MainWindowActionsMixin:
 		self.info_widget.coords_difference_mode = en
 		self.info_widget.update_dist()
 
-#	def reopen_current(self):
-#		self._open_routine(self.current_opened)
-
 	def settings(self):
 		wdg = zencad.gui.settingswdg.SettingsWidget()
 		status = wdg.exec()
 
-		if status == 1 and zencad.configure.CONFIGURE_SLEEPED_OPTIMIZATION:
-			self.remake_sleeped_thread()
+		if status == 1 and self._sleeped_optimization:
+			self.make_sleeped_thread()
 			self.reopen_current()
 
 	def _add_open_action(self, menu, name, path):
 		def callback():
-			self._open_routine(path)
+			self.open(path)
 
 		menu.addAction(self.create_action(name, callback, path))
 
@@ -339,7 +330,7 @@ class MainWindowActionsMixin:
 	def _init_recent_menu(self, menu):
 		def _add_open_action(menu, name, path):
 			def callback():
-				self._open_routine(path)
+				self.open(path)
 
 			menu.addAction(self.create_action(name, callback, path))
 
@@ -421,16 +412,12 @@ class MainWindowActionsMixin:
 
 		self.perspective_checkbox_state = zencad.settings.get(["memory","perspective"])=='true'
 
-		#self.mTestAction = self.create_action(
-		#	"TestAction", self.testAction, "TestAction"
-		#)
 		self.mInvalCache = self.create_action(
 			"Invalidate cache", self.invalidateCacheAction, "Invalidate cache"
 		)
 		self.mCacheInfo = self.create_action(
 			"Cache info", self.cacheInfoAction, "Cache info"
 		)
-		# self.mFinishSub = 	self.create_action("Finish subprocess", self.finishSubProcess, 			"Finish subprocess")
 		self.mDebugInfo = self.create_action(
 			"Debug info", self.debugInfoAction, "Debug info"
 		)
@@ -517,10 +504,8 @@ class MainWindowActionsMixin:
 		self.mUtilityMenu.addSeparator()
 		self.mUtilityMenu.addAction(self.mCacheInfo)
 		self.mUtilityMenu.addAction(self.mInvalCache)
-		# self.mUtilityMenu.addAction(self.mFinishSub)
 
 		self.mViewMenu = self.menuBar().addMenu(self.tr("&View"))
-		# self.mViewMenu.addAction(self.mDisplayFullScreen)
 		self.mViewMenu.addAction(self.mFullScreen)
 		self.mViewMenu.addAction(self.mDisplayMode)
 		self.mViewMenu.addAction(self.mViewOnly)

@@ -4,6 +4,8 @@
 from zencad.geom.solid import \
 	box, sphere, torus, cone, cylinder, halfspace
 
+from zencad.geom.platonic import * 
+
 from zencad.geom.wire import \
 	segment, polysegment, rounded_polysegment, interpolate, \
 	circle_arc, bezier, bspline, helix
