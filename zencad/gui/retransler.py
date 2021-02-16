@@ -10,6 +10,11 @@ PREVENT_OUTPUT_START = ' ###### 3D rendering pipe initialisation #####\n'
 PREVENT_OUTPUT_STOP = ' ########################################\n'
 
 class ConsoleRetransler(QThread):
+    """Ретранслятор перехватывает поток вывода на файловый дескриптор принадлежащий @stdout и читает данные из него в отдельном потоке, перенаправляя их на дескриптор @new_desc.
+
+    Это позволяет перехватывать стандартный вывод в подчинённых процессах и перенаправлять его на встроенную консоль.
+"""
+
 	def __init__(self, stdout, new_desc=None):
 		super().__init__()
 		self.communicator = None

@@ -19,6 +19,13 @@ from zencad.util import print_to_stderr
 COMMUNICATOR_TRACE = False
 
 class Communicator(QObject):
+    """Объект обеспечивает связь между процессами, позволяя передавать комманды и отладочный вывод между оболочком и инстансами рабочих процессов.
+
+Связь обеспечивается через входной файл @ifile и выходной @ofile.
+
+TODO: вынести subproc из коммуникатора.
+    """
+
 	smooth_stop = pyqtSignal()
 	oposite_clossed = pyqtSignal()
 
