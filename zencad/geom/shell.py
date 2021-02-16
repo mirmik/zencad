@@ -7,39 +7,42 @@ from zencad.geom.face import polygon
 from zencad.lazy import *
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def make_shell(vec):
-	algo = BRepOffsetAPI_Sewing()
-	for a in vec:
-		algo.Add(a.Shape())
-	algo.Perform();
+    algo = BRepOffsetAPI_Sewing()
+    for a in vec:
+        algo.Add(a.Shape())
+    algo.Perform()
 
-	if len(vec) > 1:
-		fixer = ShapeFix_Shell(algo.SewedShape())
-		fixer.Perform()
-		return Shape(fixer.Shell())
-	else:
-		return Shape(algo.SewedShape())
+    if len(vec) > 1:
+        fixer = ShapeFix_Shell(algo.SewedShape())
+        fixer.Perform()
+        return Shape(fixer.Shell())
+    else:
+        return Shape(algo.SewedShape())
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def polyhedron_shell(pnts, faces_no):
-	faces = []
+    faces = []
 
-	for nums in faces_no:
-		fpnts = []
+    for nums in faces_no:
+        fpnts = []
 
-		for i in nums:
-			fpnts.append(pnts[i])
+        for i in nums:
+            fpnts.append(pnts[i])
 
-		faces.append(polygon(fpnts))
+        faces.append(polygon(fpnts))
 
-	return make_shell(faces)
+    return make_shell(faces)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def fill3d(shp):
-	algo = ShapeFix_Solid()
-	return Shape(algo.SolidFromShell(shp.Shell()))
-	
+    algo = ShapeFix_Solid()
+    return Shape(algo.SolidFromShell(shp.Shell()))
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def polyhedron(pnts, faces, shell=False):
@@ -48,4 +51,4 @@ def polyhedron(pnts, faces, shell=False):
     if shell:
         return shl
     else:
-        return fill3d(shl)    
+        return fill3d(shl)

@@ -7,35 +7,35 @@ import evalcache
 
 
 class Curve:
-	def __init__(self, crv):
-		self._crv = crv
+    def __init__(self, crv):
+        self._crv = crv
 
-	def Curve(self):
-		return self._crv
+    def Curve(self):
+        return self._crv
 
-	# TODO: Add unlazy wrapper
-	def edge(self, interval=None):
-		import zencad.geom.wire
-		return zencad.geom.wire.make_edge(self, interval)
+    # TODO: Add unlazy wrapper
+    def edge(self, interval=None):
+        import zencad.geom.wire
+        return zencad.geom.wire.make_edge(self, interval)
 
-	def d0(self, arg):
-		#adaptor = self.AdaptorCurve()
-		pnt = gp_Pnt()#, vec = gp_Pnt(), gp_Vec()
-		self._crv.D0(arg, pnt)
-		return point3(pnt)
+    def d0(self, arg):
+        #adaptor = self.AdaptorCurve()
+        pnt = gp_Pnt()  # , vec = gp_Pnt(), gp_Vec()
+        self._crv.D0(arg, pnt)
+        return point3(pnt)
 
 
 class nocached_curve_generator(evalcache.LazyObject):
-	"""	Decorator for heavy functions.
-		It use caching for lazy data restoring."""
+    """	Decorator for heavy functions.
+            It use caching for lazy data restoring."""
 
-	def __init__(self, *args, **kwargs):
-		evalcache.LazyObject.__init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        evalcache.LazyObject.__init__(self, *args, **kwargs)
 
-	def __call__(self, *args, **kwargs):
-		return self.lazyinvoke(
-			self, args, kwargs, 
-			encache=False, 
-			decache=False, 
-			cls=evalcache.LazyObject
-		)
+    def __call__(self, *args, **kwargs):
+        return self.lazyinvoke(
+            self, args, kwargs,
+            encache=False,
+            decache=False,
+            cls=evalcache.LazyObject
+        )

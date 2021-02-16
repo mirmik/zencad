@@ -9,130 +9,136 @@ import psutil
 import traceback
 import runpy
 
+
 def protect_path(s):
-	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
-		return s[1:-1]
-	return s
+    if s[0] == s[-1] and (s[0] == "'" or s[0] == '"'):
+        return s[1:-1]
+    return s
+
 
 def console_options_handle():
-	parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
-	parser.add_argument("--install-libs", action="store_true", help="Console dialog for install third-libraries")
-	parser.add_argument("--install-occt-force", nargs="*", default=None, help="Download and install libocct")
-	parser.add_argument("--install-pythonocc-force", action="store_true", help="Download and install pythonocc package")
-	parser.add_argument("--yes", action="store_true")
-	
-	parser.add_argument("--none", action="store_true")
-	parser.add_argument("--unbound", action="store_true")
-	parser.add_argument("--display", action="store_true")
-	parser.add_argument("--prescale", action="store_true")
-	parser.add_argument("--comdebug", action="store_true")
-	parser.add_argument("--sleeped", action="store_true", help="Don't use manualy. Create sleeped thread.")
-	parser.add_argument("--size")
-	parser.add_argument("--no-communicator-pickle", action="store_true")
-	parser.add_argument("paths", type=str, nargs="*", help="runned file")
+    parser.add_argument("--install-libs", action="store_true",
+                        help="Console dialog for install third-libraries")
+    parser.add_argument("--install-occt-force", nargs="*",
+                        default=None, help="Download and install libocct")
+    parser.add_argument("--install-pythonocc-force", action="store_true",
+                        help="Download and install pythonocc package")
+    parser.add_argument("--yes", action="store_true")
 
-	pargs = parser.parse_args()
+    parser.add_argument("--none", action="store_true")
+    parser.add_argument("--unbound", action="store_true")
+    parser.add_argument("--display", action="store_true")
+    parser.add_argument("--prescale", action="store_true")
+    parser.add_argument("--comdebug", action="store_true")
+    parser.add_argument("--sleeped", action="store_true",
+                        help="Don't use manualy. Create sleeped thread.")
+    parser.add_argument("--size")
+    parser.add_argument("--no-communicator-pickle", action="store_true")
+    parser.add_argument("paths", type=str, nargs="*", help="runned file")
 
-	if pargs.comdebug:
-		import zencad.gui.communicator
-		zencad.gui.communicator.COMMUNICATOR_TRACE = True
+    pargs = parser.parse_args()
 
-	return pargs
+    if pargs.comdebug:
+        import zencad.gui.communicator
+        zencad.gui.communicator.COMMUNICATOR_TRACE = True
+
+    return pargs
+
 
 def exec_main_window_process(openpath, none=False):
-	"""	Запускает графическую оболочку, которая управляет.
-		Потоками с виджетами отображения. """
+    """	Запускает графическую оболочку, которая управляет.
+            Потоками с виджетами отображения. """
 
-	import zencad.gui.mainwindow
-	import zencad.util
+    import zencad.gui.mainwindow
+    import zencad.util
 
-	zencad.util.set_debug_process_name("MAIN")
-	zencad.gui.mainwindow.start_application(openpath=openpath, none=none)
+    zencad.util.set_debug_process_name("MAIN")
+    zencad.gui.mainwindow.start_application(openpath=openpath, none=none)
+
 
 def exec_display_only(pargs):
-	""" Режим запускает один единственный виджет.
-	    Простой режим, никакой ретрансляции команд, никаких биндов. """
+    """ Режим запускает один единственный виджет.
+        Простой режим, никакой ретрансляции команд, никаких биндов. """
 
-	if len(pargs.paths) != 1:
-		raise Exception("Display mode invoked without path")
+    if len(pargs.paths) != 1:
+        raise Exception("Display mode invoked without path")
 
-	runpy.run_path(pargs.paths[0], run_name="__main__")
-	
+    runpy.run_path(pargs.paths[0], run_name="__main__")
+
+
 def exec_display_unbound(pargs):
-	""" Запускает виджет отображения, зависимый от графической
-		оболочки."""
+    """ Запускает виджет отображения, зависимый от графической
+            оболочки."""
 
-	if len(pargs.paths) != 1:
-		raise Exception("Display unbound mode invoked without path")
+    if len(pargs.paths) != 1:
+        raise Exception("Display unbound mode invoked without path")
 
-	size = (float(a) for a in pargs.size.split(","))
+    size = (float(a) for a in pargs.size.split(","))
 
-	from zencad.gui.display_unbounded import unbound_worker_exec
-	unbound_worker_exec(pargs.paths[0], pargs.prescale, size, 
-		no_communicator_pickle = pargs.no_communicator_pickle,
-		sleeped = pargs.sleeped)
-	
-def finish_procedure():	
-	procs = psutil.Process().children()
-	for p in procs:
-		p.terminate()
+    from zencad.gui.display_unbounded import unbound_worker_exec
+    unbound_worker_exec(pargs.paths[0], pargs.prescale, size,
+                        no_communicator_pickle=pargs.no_communicator_pickle,
+                        sleeped=pargs.sleeped)
+
+
+def finish_procedure():
+    procs = psutil.Process().children()
+    for p in procs:
+        p.terminate()
+
 
 def main():
-	pargs = console_options_handle()
+    pargs = console_options_handle()
 
-	if pargs.install_libs:
-		from zencad.geometry_core_installer import console_third_libraries_installer_utility
-		console_third_libraries_installer_utility(yes=pargs.yes)
-		sys.exit()
+    if pargs.install_libs:
+        from zencad.geometry_core_installer import console_third_libraries_installer_utility
+        console_third_libraries_installer_utility(yes=pargs.yes)
+        sys.exit()
 
-	if pargs.install_pythonocc_force:
-		from zencad.geometry_core_installer import install_precompiled_python_occ
-		print("Start")
-		install_precompiled_python_occ()
-		print("Finish")
-		sys.exit()
+    if pargs.install_pythonocc_force:
+        from zencad.geometry_core_installer import install_precompiled_python_occ
+        print("Start")
+        install_precompiled_python_occ()
+        print("Finish")
+        sys.exit()
 
-	if pargs.install_occt_force is not None:
-		from zencad.geometry_core_installer import install_precompiled_occt_library
-		print("Start")
-		path = pargs.install_occt_force[0] if len(pargs.install_occt_force)>0 else None
-		install_precompiled_occt_library(tgtpath=path)
-		print("Finish")
-		sys.exit()
+    if pargs.install_occt_force is not None:
+        from zencad.geometry_core_installer import install_precompiled_occt_library
+        print("Start")
+        path = pargs.install_occt_force[0] if len(
+            pargs.install_occt_force) > 0 else None
+        install_precompiled_occt_library(tgtpath=path)
+        print("Finish")
+        sys.exit()
 
-	try:
-		# Удаляем кавычки из пути, если он есть
-		if len(pargs.paths) > 0:
-			pargs.paths[0] = protect_path(pargs.paths[0])
+    try:
+        # Удаляем кавычки из пути, если он есть
+        if len(pargs.paths) > 0:
+            pargs.paths[0] = protect_path(pargs.paths[0])
 
-		if pargs.display:
-			exec_display_only(pargs)
+        if pargs.display:
+            exec_display_only(pargs)
 
-		elif pargs.unbound:
-			exec_display_unbound(pargs)
+        elif pargs.unbound:
+            exec_display_unbound(pargs)
 
-		else:
-			path = pargs.paths[0] if len(pargs.paths) > 0 else None
-			exec_main_window_process(openpath=path, none=pargs.none)
-	
-	except Exception as ex:
-		from zencad.util import print_to_stderr
-		print_to_stderr(f"Finished with exception", ex)
-		print_to_stderr(f"Exception class: {ex.__class__}")
-		traceback.print_exc()
+        else:
+            path = pargs.paths[0] if len(pargs.paths) > 0 else None
+            exec_main_window_process(openpath=path, none=pargs.none)
 
-	finish_procedure()
+    except Exception as ex:
+        from zencad.util import print_to_stderr
+        print_to_stderr(f"Finished with exception", ex)
+        print_to_stderr(f"Exception class: {ex.__class__}")
+        traceback.print_exc()
+
+    finish_procedure()
+
 
 if __name__ == "__main__":
-	main()
-
-
-
-
-
-
-
+    main()
 
 
 #import zencad
@@ -159,13 +165,13 @@ if __name__ == "__main__":
 #
 #import zencad.configure
 
-#def trace(*args):
-#	if zencad.configure.CONFIGURE_MAIN_TRACE: 
+# def trace(*args):
+#	if zencad.configure.CONFIGURE_MAIN_TRACE:
 #		sys.stderr.write(str(args))
 #		sys.stderr.write("\r\n")
 #		sys.stderr.flush()
 #
-#def finish_procedure():
+# def finish_procedure():
 #	trace("MAIN FINISH")
 #
 #	trace("MAIN: Wait childs ...")
@@ -173,10 +179,10 @@ if __name__ == "__main__":
 #
 #	if zencad.gui.application.CONSOLE_RETRANS_THREAD:
 #		zencad.gui.application.CONSOLE_RETRANS_THREAD.finish()
-#	
+#
 #	def on_terminate(proc):
 #		trace("process {} finished with exit code {}".format(proc, proc.returncode))
-#	
+#
 #	procs = psutil.Process().children()
 #	psutil.wait_procs(procs, callback=on_terminate)
 #	#for p in procs:
@@ -186,12 +192,12 @@ if __name__ == "__main__":
 #	#    p.kill()
 #	trace("MAIN: Wait childs ... OK")
 #
-#def protect_path(s):
+# def protect_path(s):
 #	if s[0]==s[-1] and (s[0] == "'" or s[0] == '"'):
 #		return s[1:-1]
 #	return s
 #
-#def do_main():
+# def do_main():
 #	#os.closerange(3, 100)
 #
 #	OPPOSITE_PID_SAVE = None
@@ -276,7 +282,7 @@ if __name__ == "__main__":
 #
 #	pargs.nodaemon = True
 #
-#	# Подчинённый режим работы gui. 
+#	# Подчинённый режим работы gui.
 #	# Используется при создании gui из в ходе работы интерпретатора.
 #	if pargs.subproc:
 #		if pargs.tgtpath == None:
@@ -284,20 +290,20 @@ if __name__ == "__main__":
 #			exit(0)
 #
 #		trace("start_main_application")
-#		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)	
+#		zencad.gui.application.start_main_application(pargs.tgtpath, display_mode=True, console_retrans=True)
 #		trace("start_main_application ... ok")
 #		return
 #
 #	retrans_out_file = None
 #	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
-#		# Теперь можно сделать поток для обработки данных, которые программа собирается 
+#		# Теперь можно сделать поток для обработки данных, которые программа собирается
 #		# посылать в stdout
 #		zencad.gui.application.CONSOLE_RETRANS_THREAD = zencad.gui.retransler.console_retransler(sys.stdout)
 #		zencad.gui.application.CONSOLE_RETRANS_THREAD.start()
 #		retrans_out_file = zencad.gui.application.CONSOLE_RETRANS_THREAD.new_file
 #
 #	if pargs.sleeped:
-#		# Эксперементальная функциональность для ускорения обновления модели. 
+#		# Эксперементальная функциональность для ускорения обновления модели.
 #		# Процесс для обновления модели создаётся заранее и ждёт, пока его пнут со стороны сервера.
 #		zencad.util.PROCNAME = f"sl({os.getpid()})"
 #		readFile = os.fdopen(zencad.gui.application.STDIN_FILENO)
@@ -310,12 +316,12 @@ if __name__ == "__main__":
 #				trace("SLEEPED THREAD RECV:", data)
 #			except:
 #				print_to_stderr("Unpickle error", rawdata)
-#				sys.exit(0)			
-#	
+#				sys.exit(0)
+#
 #			if "cmd" in data and data["cmd"] == "stopworld":
 #				sys.exit(0)
 #				return
-#	
+#
 #			if "cmd" in data and data["cmd"] == "set_opposite_pid":
 #				OPPOSITE_PID_SAVE = data["data"]
 #				continue
@@ -330,27 +336,27 @@ if __name__ == "__main__":
 #			print_to_stderr("Unpickle error_2", data)
 #			exit(0)
 #
-#		zencad.settings.restore()			
+#		zencad.settings.restore()
 #
 #	if pargs.replace and zencad.configure.CONFIGURE_CONSOLE_RETRANSLATE:
-#		# Теперь можно сделать поток для обработки данных, которые программа собирается 
+#		# Теперь можно сделать поток для обработки данных, которые программа собирается
 #		# посылать в stdout
 #		zencad.gui.application.MAIN_COMMUNICATOR = zencad.gui.communicator.Communicator(
 #			ifile=sys.stdin, ofile=retrans_out_file)
 #		zencad.gui.application.MAIN_COMMUNICATOR.start_listen()
 #		#zencad.gui.application.MAIN_COMMUNICATOR.newdata.connect(hard_finish_checker)
-#		
+#
 #		if OPPOSITE_PID_SAVE is not None:
 #			zencad.gui.application.MAIN_COMMUNICATOR.set_opposite_pid(OPPOSITE_PID_SAVE)
 #
 #		zencad.lazifier.install_evalcahe_notication(zencad.gui.application.MAIN_COMMUNICATOR)
 #
 #		#zencad.gui.application.MAIN_COMMUNICATOR.send({"cmd":"clientpid", "pid":int(os.getpid())})
-#	
+#
 #
 #
 #	if len(pargs.paths) == 0 and not pargs.sleeped:
-#		# Если программа вызывается без указания файла, создаём gui. 
+#		# Если программа вызывается без указания файла, создаём gui.
 #		# Режим презентации указывает gui, что оно предоставлено само себе
 #		# и ему следует развлечь публику самостоятельно, не ожидая бинда виджета.
 #		if pargs.nodaemon:
@@ -360,10 +366,10 @@ if __name__ == "__main__":
 #			print("TODO ?")
 #			sys.exit(0)
 #			#subprocess.Popen("nohup python3 -m zencad --nodaemon > /dev/null 2>&1&", shell=True, stdout=None, stderr=None)
-#		
+#
 #	else:
 #		# Режим работы, когда указан файл.
-#		# Политика такова, что начало исполняется вычисляемый 
+#		# Политика такова, что начало исполняется вычисляемый
 #		# скрипт, а потом, после вызова zencad.show,
 #		# применяются указанные варианты вызова.
 #		# информация отсюда транслируется функции show
@@ -378,21 +384,21 @@ if __name__ == "__main__":
 #		if os.path.splitext(pargs.paths[0])[1] == ".brep":
 #			zencad.gui.viewadaptor.brep_hot_open(pargs.paths[0])
 #			return
-#	
+#
 #		# Устанавливаем рабочей директорией дирректорию,
 #		# содержащую целевой файл.
 #		# TODO: Возможно, так делать нужно только
 #		# при загрузке через GUI. Вынести флаг?
 #		directory = os.path.dirname(os.path.abspath(path))
 #		os.chdir(directory)
-#		
+#
 #		sys.path.append(directory)
-#		
+#
 #		# По умолчанию приложение работает в режиме,
-#		# предполагающем вызов указанного скрипта. 
+#		# предполагающем вызов указанного скрипта.
 #		# Далее скрипт сам должен создать GUI через showapi.
 #		zencad.showapi.SHOWMODE = "makeapp"
-#		
+#
 #		# Специальный режим, устанавливаемый GUI при загрузке скрипта.
 #		# Делает ребинд модели в уже открытом gui.
 #		# Информация об окне передаётся основному процессу через пайп.
@@ -400,7 +406,7 @@ if __name__ == "__main__":
 #			zencad.showapi.PRESCALE = pargs.prescale
 #			zencad.showapi.SESSION_ID = int(pargs.session_id)
 #			zencad.showapi.SHOWMODE = "replace"
-#	
+#
 #		# Режим работы в котором виджет работает отдельно и не биндится в gui:
 #		if pargs.widget:
 #			zencad.showapi.SHOWMODE = "widget"
@@ -423,19 +429,18 @@ if __name__ == "__main__":
 #			return -1
 #
 #	return 0
-#	
+#
 #	trace("AFTER RUNPY")
 #
-#def main():
+# def main():
 #	sts = do_main()
 #	finish_procedure()
 #	trace("EXIT")
 #	sys.exit(sts)
 #
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #	zencad.util.set_process_name("zencad")
 #	main()
 #
-#	
 #
-
+#

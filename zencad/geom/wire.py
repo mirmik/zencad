@@ -23,236 +23,246 @@ import zencad.geom.curve as curve
 import math
 import numpy
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def make_edge(crv, interval=None) -> Shape:
-	aCurve = crv.Curve();
-	if interval is None:
-		return Shape(BRepBuilderAPI_MakeEdge(aCurve).Edge())
-	else:
-		return Shape(BRepBuilderAPI_MakeEdge(aCurve, interval[0], interval[1]).Edge())
+    aCurve = crv.Curve()
+    if interval is None:
+        return Shape(BRepBuilderAPI_MakeEdge(aCurve).Edge())
+    else:
+        return Shape(BRepBuilderAPI_MakeEdge(aCurve, interval[0], interval[1]).Edge())
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def circle_arc(p1, p2, p3) -> Shape:
-	aArcOfCircle = GC_MakeArcOfCircle(to_Pnt(p1), to_Pnt(p2), to_Pnt(p3))
-	return Shape(BRepBuilderAPI_MakeEdge(aArcOfCircle.Value()).Edge())
+    aArcOfCircle = GC_MakeArcOfCircle(to_Pnt(p1), to_Pnt(p2), to_Pnt(p3))
+    return Shape(BRepBuilderAPI_MakeEdge(aArcOfCircle.Value()).Edge())
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def fill(shp) -> Shape:
-	assert(shp.Shape().ShapeType() == TopAbs_WIRE);
-	return Shape(BRepBuilderAPI_MakeFace(shp.Wire()).Face())
+    assert(shp.Shape().ShapeType() == TopAbs_WIRE)
+    return Shape(BRepBuilderAPI_MakeFace(shp.Wire()).Face())
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def polysegment(pnts, closed=False) -> Shape:
-	if len(pnts) <= 1:
-		raise Exception("Need at least two points for polysegment");
+    if len(pnts) <= 1:
+        raise Exception("Need at least two points for polysegment")
 
-	mkWire = BRepBuilderAPI_MakeWire()
+    mkWire = BRepBuilderAPI_MakeWire()
 
-	for i in range(len(pnts)-1):
-		mkWire.Add(BRepBuilderAPI_MakeEdge(to_Pnt(pnts[i]), to_Pnt(pnts[i + 1])).Edge())
+    for i in range(len(pnts)-1):
+        mkWire.Add(BRepBuilderAPI_MakeEdge(
+            to_Pnt(pnts[i]), to_Pnt(pnts[i + 1])).Edge())
 
-	if (closed):
-		mkWire.Add(BRepBuilderAPI_MakeEdge(to_Pnt(pnts[len(pnts) - 1]), to_Pnt(pnts[0])).Edge())
+    if (closed):
+        mkWire.Add(BRepBuilderAPI_MakeEdge(
+            to_Pnt(pnts[len(pnts) - 1]), to_Pnt(pnts[0])).Edge())
 
-	return Shape(mkWire.Wire())
+    return Shape(mkWire.Wire())
+
 
 @lazy.lazy(cls=nocached_shape_generator)
-def segment(a,b) -> Shape:
-	a, b = points((a, b))
-	return Shape(BRepBuilderAPI_MakeEdge(to_Pnt(a), to_Pnt(b)).Edge())
+def segment(a, b) -> Shape:
+    a, b = points((a, b))
+    return Shape(BRepBuilderAPI_MakeEdge(to_Pnt(a), to_Pnt(b)).Edge())
+
 
 @lazy.lazy(cls=shape_generator)
 def interpolate(pnts, tang=None, closed=False) -> Shape:
-	return make_edge(
-		curve.interpolate(pnts=pnts, tang=tang, closed=closed))
+    return make_edge(
+        curve.interpolate(pnts=pnts, tang=tang, closed=closed))
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def bezier(pnts, weights=None) -> Shape:
-	return make_edge(curve.bezier(pnts, weights))
+    return make_edge(curve.bezier(pnts, weights))
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def bspline(
-	poles,
-	knots,
-	muls,
-	degree : int,
-	periodic : bool = False,
-	weights = None,
-	check_rational : bool = None 
+        poles,
+        knots,
+        muls,
+        degree: int,
+        periodic: bool = False,
+        weights=None,
+        check_rational: bool = None
 ) -> Shape:
-	return make_edge(curve.bspline(
-		poles = poles, 
-		knots = knots,
-		muls = muls, 
-		degree = degree, 
-		periodic = periodic, 
-		weights = weights, 
-		check_rational = check_rational))
+    return make_edge(curve.bspline(
+        poles=poles,
+        knots=knots,
+        muls=muls,
+        degree=degree,
+        periodic=periodic,
+        weights=weights,
+        check_rational=check_rational))
+
 
 @lazy.lazy(cls=shape_generator)
 def rounded_polysegment(pnts, r, closed=False) -> Shape:
-	# Для того, чтобы закрыть контур, не теряя скругления, перекрёстно добавляем две точки,
-	# Две в начале, другую в конце.
-	pnts = points(pnts)
-	if closed:
-		pnts.insert(0, pnts[-1])
-		pnts.append(pnts[1])
+    # Для того, чтобы закрыть контур, не теряя скругления, перекрёстно добавляем две точки,
+    # Две в начале, другую в конце.
+    pnts = points(pnts)
+    if closed:
+        pnts.insert(0, pnts[-1])
+        pnts.append(pnts[1])
 
-	cpnts = pnts[1:-1]
+    cpnts = pnts[1:-1]
 
-	pairs = []
-	pairs_tangs = []
-	pairs.append((None, pnts[0]))
+    pairs = []
+    pairs_tangs = []
+    pairs.append((None, pnts[0]))
 
-	for i in range(len(cpnts)):
-		a = segment(pnts[i], pnts[i+1]).unlazy()
-		b = segment(pnts[i+1], pnts[i+2]).unlazy()
+    for i in range(len(cpnts)):
+        a = segment(pnts[i], pnts[i+1]).unlazy()
+        b = segment(pnts[i+1], pnts[i+2]).unlazy()
 
-		ad1 = a.d1(a.range()[1])
-		bd1 = b.d1(b.range()[0])
+        ad1 = a.d1(a.range()[1])
+        bd1 = b.d1(b.range()[0])
 
-		n = numpy.cross(bd1, ad1)
+        n = numpy.cross(bd1, ad1)
 
-		if numpy.linalg.norm(n) == 0:
-			pairs.append((cpnts[i], cpnts[i]))
-			pairs_tangs.append(None)
-			continue
+        if numpy.linalg.norm(n) == 0:
+            pairs.append((cpnts[i], cpnts[i]))
+            pairs_tangs.append(None)
+            continue
 
-		abn = numpy.cross(ad1,n)
-		bbn = numpy.cross(bd1,n)
+        abn = numpy.cross(ad1, n)
+        bbn = numpy.cross(bd1, n)
 
-		temp = (abn + bbn)
-		bn = temp/numpy.linalg.norm(temp) * r
+        temp = (abn + bbn)
+        bn = temp/numpy.linalg.norm(temp) * r
 
-		c = cpnts[i] + bn
+        c = cpnts[i] + bn
 
-		ca = project(c, a)
-		cb = project(c, b)
+        ca = project(c, a)
+        cb = project(c, b)
 
-		pairs.append((ca,cb))
-		pairs_tangs.append((ad1,bd1))
+        pairs.append((ca, cb))
+        pairs_tangs.append((ad1, bd1))
 
-	pairs.append((pnts[-1], None))
+    pairs.append((pnts[-1], None))
 
-	nodes = []
-	for i in range(len(cpnts)):
-		nodes.append(segment(pairs[i][1], pairs[i+1][0]))
-		if pairs_tangs[i] is not None:
-			nodes.append(interpolate(pnts=[pairs[i+1][0],pairs[i+1][1]], tang=[pairs_tangs[i][0],pairs_tangs[i][1]]))
-	nodes.append(segment(pairs[-2][1], pairs[-1][0]))
+    nodes = []
+    for i in range(len(cpnts)):
+        nodes.append(segment(pairs[i][1], pairs[i+1][0]))
+        if pairs_tangs[i] is not None:
+            nodes.append(interpolate(
+                pnts=[pairs[i+1][0], pairs[i+1][1]], tang=[pairs_tangs[i][0], pairs_tangs[i][1]]))
+    nodes.append(segment(pairs[-2][1], pairs[-1][0]))
 
-	# Для замыкания необходимо удалить крайние сегменты.
-	if closed:
-		del nodes[0]
-		del nodes[-1]
+    # Для замыкания необходимо удалить крайние сегменты.
+    if closed:
+        del nodes[0]
+        del nodes[-1]
 
-	result = sew(nodes)
+    result = sew(nodes)
 
-	# И, наконец, зашиваем прореху.
-	if closed:
-		result = sew([
-			result,
-			segment(result.endpoints()[0], result.endpoints()[1])
-		])
+    # И, наконец, зашиваем прореху.
+    if closed:
+        result = sew([
+            result,
+            segment(result.endpoints()[0], result.endpoints()[1])
+        ])
 
-	return result
+    return result
 
 
-
-#***********
+# ***********
 # makeLongHelix is a workaround for an OCC problem found in helices with more than
 # some magic number of turns.  See Mantis #0954. (FreeCad)
-#***********
+# ***********
 @lazy.lazy(cls=shape_generator)
 def helix(r, h, step=None, pitch=None, angle=0, left=False):
-	radius = r
-	height = h
+    radius = r
+    height = h
 
-	if pitch:
-		pitch = math.sin(pitch) * 2 *math.pi*r 
-	else:
-		pitch = step
+    if pitch:
+        pitch = math.sin(pitch) * 2 * math.pi*r
+    else:
+        pitch = step
 
-	if pitch < precision_Confusion():
-		raise Exception("Pitch of helix too small")
+    if pitch < precision_Confusion():
+        raise Exception("Pitch of helix too small")
 
-	if height < precision_Confusion():
-		raise Exception("Height of helix too small")
+    if height < precision_Confusion():
+        raise Exception("Height of helix too small")
 
-	cylAx2 = gp_Ax2(gp_Pnt(0.0, 0.0, 0.0), gp_DZ())
+    cylAx2 = gp_Ax2(gp_Pnt(0.0, 0.0, 0.0), gp_DZ())
 
-	if abs(angle) < precision_Confusion():
-		# Cylindrical helix
-		if radius < precision_Confusion():
-			raise Exception("Radius of helix too small")
+    if abs(angle) < precision_Confusion():
+        # Cylindrical helix
+        if radius < precision_Confusion():
+            raise Exception("Radius of helix too small")
 
-		surf = Geom_CylindricalSurface(gp_Ax3(cylAx2), radius)
-		isCylinder = True
-	else:                
-	    # Conical helix
-		if abs(angle) < precision_Confusion():
-			raise Exception("Angle of helix too small")
+        surf = Geom_CylindricalSurface(gp_Ax3(cylAx2), radius)
+        isCylinder = True
+    else:
+        # Conical helix
+        if abs(angle) < precision_Confusion():
+            raise Exception("Angle of helix too small")
 
-		surf = Geom_ConicalSurface(gp_Ax3(cylAx2), angle, radius)
-		isCylinder = False
+        surf = Geom_ConicalSurface(gp_Ax3(cylAx2), angle, radius)
+        isCylinder = False
 
-	turns = height / pitch
-	wholeTurns = math.floor(turns)
-	partTurn = turns - wholeTurns
+    turns = height / pitch
+    wholeTurns = math.floor(turns)
+    partTurn = turns - wholeTurns
 
-	aPnt = gp_Pnt2d(0, 0)
-	aDir = gp_Dir2d(2. * math.pi, pitch)
-	coneDir = 1.0
+    aPnt = gp_Pnt2d(0, 0)
+    aDir = gp_Dir2d(2. * math.pi, pitch)
+    coneDir = 1.0
 
-	if left:
-		aDir.SetCoord(-2. * math.pi, pitch)
-		coneDir = -1.0
+    if left:
+        aDir.SetCoord(-2. * math.pi, pitch)
+        coneDir = -1.0
 
-	aAx2d = gp_Ax2d(aPnt, aDir)
-	line = Geom2d_Line(aAx2d)
-	beg = line.Value(0)
-	
-	mkWire = BRepBuilderAPI_MakeWire()
+    aAx2d = gp_Ax2d(aPnt, aDir)
+    line = Geom2d_Line(aAx2d)
+    beg = line.Value(0)
 
-	for i in range(wholeTurns):
-		if isCylinder:
-			end = line.Value(math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * (i + 1))
-		else:
-			u = coneDir * (i + 1) * 2.0 * math.pi
-			v = ((i + 1) * pitch) / math.cos(angle)
-			end = gp_Pnt2d(u, v)
+    mkWire = BRepBuilderAPI_MakeWire()
 
-		segm = GCE2d_MakeSegment(beg , end).Value()
-		edgeOnSurf = BRepBuilderAPI_MakeEdge(segm, surf).Edge()
-		mkWire.Add(edgeOnSurf)
-		beg = end
+    for i in range(wholeTurns):
+        if isCylinder:
+            end = line.Value(
+                math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * (i + 1))
+        else:
+            u = coneDir * (i + 1) * 2.0 * math.pi
+            v = ((i + 1) * pitch) / math.cos(angle)
+            end = gp_Pnt2d(u, v)
 
-	if partTurn > precision_Confusion():
-		if (isCylinder):
-			end = line.Value(math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * turns);
-		else:
-			u = coneDir * turns * 2.0 * math.pi
-			v = height / math.cos(angle)
-			end = gp_Pnt2d(u, v)
+        segm = GCE2d_MakeSegment(beg, end).Value()
+        edgeOnSurf = BRepBuilderAPI_MakeEdge(segm, surf).Edge()
+        mkWire.Add(edgeOnSurf)
+        beg = end
 
-		segm = GCE2d_MakeSegment(beg , end).Value()
-		edgeOnSurf = BRepBuilderAPI_MakeEdge(segm, surf).Edge()
-		mkWire.Add(edgeOnSurf)
+    if partTurn > precision_Confusion():
+        if (isCylinder):
+            end = line.Value(
+                math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * turns)
+        else:
+            u = coneDir * turns * 2.0 * math.pi
+            v = height / math.cos(angle)
+            end = gp_Pnt2d(u, v)
 
-	shape = mkWire.Wire()
-	breplib.BuildCurves3d(shape)
-	return Shape(shape)
+        segm = GCE2d_MakeSegment(beg, end).Value()
+        edgeOnSurf = BRepBuilderAPI_MakeEdge(segm, surf).Edge()
+        mkWire.Add(edgeOnSurf)
+
+    shape = mkWire.Wire()
+    breplib.BuildCurves3d(shape)
+    return Shape(shape)
 
 
-
-
-
-#//Взято в коде FreeCad.
-#servoce::shape servoce::make_helix(
+# //Взято в коде FreeCad.
+# servoce::shape servoce::make_helix(
 #    double pitch, double height, double radius,
 #    double angle, bool leftHanded, bool newStyle
-#)
-#{
+# )
+# {
 #	if (fabs(pitch) < Precision::Confusion())
 #		Standard_Failure::Raise("Pitch of helix too small");
 #
@@ -317,16 +327,16 @@ def helix(r, h, step=None, pitch=None, angle=0, left=False):
 #	TopoDS_Wire shape = BRepBuilderAPI_MakeWire(edgeOnSurf);
 #	BRepLib::BuildCurves3d(shape);
 #	return shape;
-#}
+# }
 #
-#//***********
-#// makeLongHelix is a workaround for an OCC problem found in helices with more than
-#// some magic number of turns.  See Mantis #0954. (FreeCad)
-#//***********
-#servoce::shape servoce::make_long_helix(double pitch, double height,
+# //***********
+# // makeLongHelix is a workaround for an OCC problem found in helices with more than
+# // some magic number of turns.  See Mantis #0954. (FreeCad)
+# //***********
+# servoce::shape servoce::make_long_helix(double pitch, double height,
 #                                        double radius, double angle,
 #                                        bool leftHanded)
-#{
+# {
 #	if (pitch < Precision::Confusion())
 #		Standard_Failure::Raise("Pitch of helix too small");
 #
@@ -418,5 +428,5 @@ def helix(r, h, step=None, pitch=None, angle=0, left=False):
 #	TopoDS_Wire shape = mkWire.Wire();
 #	BRepLib::BuildCurves3d(shape);
 #	return shape;
-#}
+# }
 #

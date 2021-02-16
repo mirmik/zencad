@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 
 import sys
 
+
 class ConsoleWidget(QTextEdit):
     append_signal = pyqtSignal(str)
 
