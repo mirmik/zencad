@@ -98,13 +98,13 @@ def extract_archive(path, extract_directory=None):
 
 	return extract_directory
 
-def user_site_packages_directory():
-	user = os.environ.get('USER') # TODO: Win?
+def user_site_packages_directories():
+	#user = os.environ.get('USER') # TODO: Win?
 
-	if user != "root":
-		return site.USER_SITE
-	else:
-		return site.getsitepackages()[0]
+	#if user != "root":
+	#	return site.USER_SITE
+	#else:
+	return site.getsitepackages() + [site.USER_SITE]
 
 def get_platform() :
 	if sys.platform == "linux":
@@ -131,13 +131,22 @@ def install_precompiled_python_occ(occversion="7.4.1"):
 	print("Copy package to site-packages")
 	source_directory = os.path.join(extract_directory, 
 		"lib", python_name, "site-packages", "OCC")
-	target_directory = os.path.join(user_site_packages_directory(), 
-		"OCC")
-	print(f"Source: {source_directory}")
-	print(f"Target: {target_directory}")
-	shutil.copytree(source_directory, target_directory)	
-	print("Copying status: Success")
 
+	for t in user_site_packages_directories():
+		try:
+			target_directory = os.path.join(t, 
+				"OCC")
+			print(f"Source: {source_directory}")
+			print(f"Target: {target_directory}")
+			shutil.copytree(source_directory, target_directory)	
+			break
+		except Exception as ex:
+			print("Fault", ex)
+	else:
+		print("Copying status: Fault")
+		return
+	
+	print("Copying status: Success")
 	print(f"Precomiled OCC succesfually installed in {target_directory}")
 
 def install_precompiled_occt_library(tgtpath=None, occt_version = "7.4.0"):
