@@ -7,6 +7,7 @@ import os
 import time
 import subprocess
 import runpy
+import signal
 import json
 
 from zencad.util import print_to_stderr
@@ -54,11 +55,24 @@ PRESCALE_SIZE = None
 BIND_MODE = True
 
 
+def qt_sigterm_handle(a,b):
+    from zencad.util import print_to_stderr
+    print_to_stderr("QSIGTERM", a, b)
+    sys.exit()
+
+
+def qt_setup_signal_handling():
+    from zencad.util import print_to_stderr
+    print_to_stderr("QProcess set handler")
+    signal.signal(signal.SIGTERM, qt_sigterm_handle)
+    signal.signal(signal.SIGINT, qt_sigterm_handle)
+
 def unbound_worker_exec(path, prescale, size,
                         no_communicator_pickle=False,
                         sleeped=False):
     global COMMUNICATOR, PRESCALE_SIZE
     QAPP = QtWidgets.QApplication([])
+    qt_setup_signal_handling()
 
     PRESCALE_SIZE = size
 
@@ -123,7 +137,11 @@ def unbound_worker_bottom_half(scene):
 
     display.show()
     time.sleep(0.05)
-
+    
+    timer = QtCore.QTimer()
+    timer.start(500)  # You may change this if you wish.
+    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+    
     QtWidgets.QApplication.instance().exec()
 
 

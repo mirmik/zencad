@@ -8,6 +8,7 @@ import argparse
 import psutil
 import traceback
 import runpy
+import signal
 
 
 def protect_path(s):
@@ -86,10 +87,26 @@ def exec_display_unbound(pargs):
 def finish_procedure():
     procs = psutil.Process().children()
     for p in procs:
+        from zencad.util import print_to_stderr
+        #print_to_stderr("finterm", p, p.pid)
         p.terminate()
 
 
+#def sigterm_handle(a,b):
+#    from zencad.util import print_to_stderr
+#    print_to_stderr("SIGTERM", a, b)
+#    sys.exit()
+
+
+#def setup_signal_handling():
+#    from zencad.util import print_to_stderr
+#    print_to_stderr("Process set handler")
+#    signal.signal(signal.SIGTERM, sigterm_handle)
+#    signal.signal(signal.SIGINT, sigterm_handle)
+
+
 def main():
+#    setup_signal_handling()
     pargs = console_options_handle()
 
     if pargs.install_libs:
@@ -136,9 +153,12 @@ def main():
 
     finish_procedure()
 
+    from zencad.util import print_to_stderr
+    print_to_stderr(f"Process {os.getpid()} is finished")
 
 if __name__ == "__main__":
     main()
+
 
 
 #import zencad

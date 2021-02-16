@@ -1,5 +1,7 @@
 import sys
+import os
 import time
+import signal
 from zencad.util import print_to_stderr
 
 import zencad.gui.actions
@@ -153,7 +155,9 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
     def finalize_subprocess(self, communicator):
         pid = communicator.subproc_pid()
-        communicator.subproc.terminate()
+        #print_to_stderr("terminate process", communicator.subproc.pid)
+        #print_to_stderr("terminate process", communicator.subproc)
+        os.kill(communicator.subproc.pid, signal.SIGTERM)
 
     def subprocess_finalization_do(self):
         to_delete = []

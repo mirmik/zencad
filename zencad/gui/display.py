@@ -21,7 +21,7 @@ class BaseViewer(QtOpenGL.QGLWidget):
     '''
 
     def __init__(self, parent=None):
-        super(qtBaseViewer, self).__init__(parent)
+        super().__init__(parent)
         self._display = OCCViewer.Viewer3d()
         self._inited = False
 
@@ -43,7 +43,7 @@ class BaseViewer(QtOpenGL.QGLWidget):
             color1, color2, Aspect_GFM_VER, True)
 
     def resizeEvent(self, event):
-        super(qtBaseViewer, self).resizeEvent(event)
+        super().resizeEvent(event)
         self._display.View.MustBeResized()
 
     def paintEngine(self):
