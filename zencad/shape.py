@@ -21,7 +21,7 @@ from zencad.util import to_numpy, point3, vector3, print_to_stderr
 import numpy
 
 class Shape(zencad.transformable.Transformable):
-	""" Basic zencad type. """
+	""" Basic zencad type. Является оболочкой для объекта геометрической формы TopoDS_Shape."""
 
 	def __init__(self, arg):
 		if not isinstance(arg, TopoDS_Shape):
@@ -154,7 +154,7 @@ class Shape(zencad.transformable.Transformable):
 
 # Support lazy methods
 class LazyObjectShape(evalcache.LazyObject):
-	""" Lazy object specification for Shape class.
+	""" Lazy object wrapper for Shape class.
 		It control methods lazyfying. And add some checks.
 		All Shapes wrappers must use LazyShapeObject. 
 	"""
