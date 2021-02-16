@@ -117,6 +117,7 @@ def main():
 			exec_main_window_process(openpath=path, none=pargs.none)
 	
 	except Exception as ex:
+		from zencad.util import print_to_stderr
 		print_to_stderr(f"Finished with exception", ex)
 		print_to_stderr(f"Exception class: {ex.__class__}")
 		traceback.print_exc()
