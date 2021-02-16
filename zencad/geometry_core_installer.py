@@ -151,7 +151,7 @@ def user_site_packages_directories():
 
 	print("SDIR", sdir)
 
-	return [site.USER_SITE, sdir]
+	return [sdir, site.USER_SITE]
 
 def get_platform() :
 	if sys.platform == "linux":
