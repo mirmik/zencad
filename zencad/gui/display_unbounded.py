@@ -103,6 +103,7 @@ def unbound_worker_exec(path, prescale, size,
     # Показываем ретранслятору его коммуникатор.
     RETRANSLER.set_communicator(COMMUNICATOR)
 
+    print_to_stderr("HERE", sleeped)
     if sleeped:
         # Спящий процесс оптимизирует время загрузки скрипта.
         # этот процесс повисает в цикле чтения и дожидается,
@@ -112,12 +113,8 @@ def unbound_worker_exec(path, prescale, size,
             dct0 = json.loads(COMMUNICATOR.simple_read())  # set_oposite_pid
             dct1 = json.loads(COMMUNICATOR.simple_read())  # unwait
         except Exception as ex:
-            print_to_stderr("err0")
-            #COMMUNICATOR.join()
-            print_to_stderr("err1")
-            #RETRANSLER.join()
-            print_to_stderr("err2")
-            sys.exit()
+            print_to_stderr("sleeped thread finished with exception")
+            print_to_stderr(ex)
 
         COMMUNICATOR.declared_opposite_pid = int(dct0["data"])
         path = dct1["path"]

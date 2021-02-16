@@ -35,56 +35,56 @@ class Communicator(QObject):
     oposite_clossed = pyqtSignal()
     newdata = pyqtSignal(dict, int)
 
-    class Listener(QThread):
-        newdata = pyqtSignal(dict, int)
+#   class Listener(QThread):
+#       newdata = pyqtSignal(dict, int)
 
-        def __init__(self, ifile, parent):
-            super().__init__()
-            self.parent = parent
-            self.ifile = ifile
+#       def __init__(self, ifile, parent):
+#           super().__init__()
+#           self.parent = parent
+#           self.ifile = ifile
 
-        def run(self):
-            self.foo()
-            print_to_stderr("communicator listener returned")
+#       def run(self):
+#           self.foo()
+#           print_to_stderr("communicator listener returned")
 
-        def foo(self):
-            checks = 0
+#       def foo(self):
+#           checks = 0
 
-            while(True):
-                try:
-                    inputdata = self.ifile.readline()
-                    #while some_criterium and not time_limit:
-                    #    poll_result = select([scan_process.stdout], [], [], time_limit)[0]
+#           while(True):
+#               try:
+#                   inputdata = self.ifile.readline()
+#                   #while some_criterium and not time_limit:
+#                   #    poll_result = select([scan_process.stdout], [], [], time_limit)[0]
 
-                except Exception as ex:
-                    print_to_stderr("read error: error on read", ex)
-                    self.parent._stop_listen_nowait()
-                    self.parent.oposite_clossed.emit()
-                    return
+#               except Exception as ex:
+#                   print_to_stderr("read error: error on read", ex)
+#                   self.parent._stop_listen_nowait()
+#                   self.parent.oposite_clossed.emit()
+#                   return
 
-                if len(inputdata) == 0:
-                    self.parent._stop_listen_nowait()
-                    self.parent.oposite_clossed.emit()
-                    return
+#               if len(inputdata) == 0:
+#                   self.parent._stop_listen_nowait()
+#                   self.parent.oposite_clossed.emit()
+#                   return
 
-                checks = 0
+#               checks = 0
 
-                try:
-                    data_unpickled = json.loads(inputdata)
-                except:
-                    print_to_stderr("warning: decode pickle:", inputdata)
-                    continue
+#               try:
+#                   data_unpickled = json.loads(inputdata)
+#               except:
+#                   print_to_stderr("warning: decode pickle:", inputdata)
+#                   continue
 
-                if COMMUNICATOR_TRACE:
-                    print_to_stderr("recv", data_unpickled)
+#               if COMMUNICATOR_TRACE:
+#                   print_to_stderr("recv", data_unpickled)
 
-                if data_unpickled["cmd"] == "set_opposite_pid":
-                    self.parent.declared_opposite_pid = data_unpickled["data"]
-                    continue
+#               if data_unpickled["cmd"] == "set_opposite_pid":
+#                   self.parent.declared_opposite_pid = data_unpickled["data"]
+#                   continue
 
-                else:
-                    self.newdata.emit(
-                        data_unpickled, self.parent.subproc_pid())
+#               else:
+#                   self.newdata.emit(
+#                       data_unpickled, self.parent.subproc_pid())
 
     def __init__(self, ifile, ofile, no_communicator_pickle=False):
         super().__init__()
@@ -93,22 +93,22 @@ class Communicator(QObject):
         self.subproc = None
         self.ifile = ifile
         self.ofile = ofile
-        #self.listener_thr = self.Listener(ifile=ifile, parent=self)
-        #self.newdata = self.listener_thr.newdata
+
+        # TODO:
         self.listen_started = False
         self.closed = False
 
         self.send({"cmd": "set_opposite_pid", "data": os.getpid()})
 
     def socket_notifier_handle(self, a):
-        #pass
-        print_to_stderr("socket_notifier_handle", a)
         inputdata = self.ifile.readline()
-        print_to_stderr(inputdata)
-        #self.sock_notifier.setEnabled(False)
-        self.newdata.emit(json.loads(inputdata), self.subproc_pid())
+        unwraped_data = json.loads(inputdata)
 
+        if unwraped_data["cmd"] == "set_opposite_pid":
+            self.declared_opposite_pid = unwraped_data["data"]
+            return
 
+        self.newdata.emit(unwraped_data, self.subproc_pid())
 
     def simple_read(self):
         """Чтение из входного файла. Не должно вызываться после
@@ -122,11 +122,6 @@ class Communicator(QObject):
         self.newdata.connect(function)
 
     def start_listen(self):
-        #if self.listen_started:
-        #    pass
-        #else:
-        #    self.listen_started = True
-        #    self.listener_thr.start()
         self.sock_notifier = QtCore.QSocketNotifier(
             self.ifile.fileno(),
             QtCore.QSocketNotifier.Read,
@@ -150,24 +145,6 @@ class Communicator(QObject):
             os.close(self.subproc.stdin.fileno())
             os.close(self.subproc.stdout.fileno())
 
-    def stop_listen(self):
-        print_to_stderr("stop_listen")
-        if self.closed:
-            return
-
-        print_to_stderr("stop_listen2")
-        self.close_pipes()
-        print_to_stderr("stop_listen3")
-        self.closed = True
-        print_to_stderr("stop_listen4")
-
-    def _stop_listen_nowait(self):
-        if self.closed:
-            return
-
-        self.close_pipes()
-        self.closed = True
-
     def send(self, obj):
         if COMMUNICATOR_TRACE:
             print_to_stderr("send", obj)
@@ -186,8 +163,3 @@ class Communicator(QObject):
             self.stop_listen()
             return False
 
-    # def rpc_buffer(self):
-    #	return self.listener_thr.buffer
-
-    def set_opposite_pid(self, pid):
-        self.declared_opposite_pid = pid
