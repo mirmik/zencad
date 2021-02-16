@@ -12,6 +12,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import PyQt5.QtCore as QtCore
+
 import os
 import signal
 from zencad.util import print_to_stderr
@@ -31,6 +33,7 @@ class Communicator(QObject):
 
     smooth_stop = pyqtSignal()
     oposite_clossed = pyqtSignal()
+    newdata = pyqtSignal(dict, int)
 
     class Listener(QThread):
         newdata = pyqtSignal(dict, int)
@@ -41,11 +44,17 @@ class Communicator(QObject):
             self.ifile = ifile
 
         def run(self):
+            self.foo()
+            print_to_stderr("communicator listener returned")
+
+        def foo(self):
             checks = 0
 
             while(True):
                 try:
                     inputdata = self.ifile.readline()
+                    #while some_criterium and not time_limit:
+                    #    poll_result = select([scan_process.stdout], [], [], time_limit)[0]
 
                 except Exception as ex:
                     print_to_stderr("read error: error on read", ex)
@@ -84,12 +93,22 @@ class Communicator(QObject):
         self.subproc = None
         self.ifile = ifile
         self.ofile = ofile
-        self.listener_thr = self.Listener(ifile=ifile, parent=self)
-        self.newdata = self.listener_thr.newdata
+        #self.listener_thr = self.Listener(ifile=ifile, parent=self)
+        #self.newdata = self.listener_thr.newdata
         self.listen_started = False
         self.closed = False
 
         self.send({"cmd": "set_opposite_pid", "data": os.getpid()})
+
+    def socket_notifier_handle(self, a):
+        #pass
+        print_to_stderr("socket_notifier_handle", a)
+        inputdata = self.ifile.readline()
+        print_to_stderr(inputdata)
+        #self.sock_notifier.setEnabled(False)
+        self.newdata.emit(json.loads(inputdata), self.subproc_pid())
+
+
 
     def simple_read(self):
         """Чтение из входного файла. Не должно вызываться после
@@ -103,11 +122,19 @@ class Communicator(QObject):
         self.newdata.connect(function)
 
     def start_listen(self):
-        if self.listen_started:
-            pass
-        else:
-            self.listen_started = True
-            self.listener_thr.start()
+        #if self.listen_started:
+        #    pass
+        #else:
+        #    self.listen_started = True
+        #    self.listener_thr.start()
+        self.sock_notifier = QtCore.QSocketNotifier(
+            self.ifile.fileno(),
+            QtCore.QSocketNotifier.Read,
+            self
+        )
+
+        self.sock_notifier.activated.connect(self.socket_notifier_handle)
+
 
     def subproc_pid(self):
         """ PID процесса на той стороне можно узнать двумя путями.
@@ -120,16 +147,19 @@ class Communicator(QObject):
 
     def close_pipes(self):
         if self.subproc is not None:
-            self.subproc.stdin.close()
-            self.subproc.stdout.close()
+            os.close(self.subproc.stdin.fileno())
+            os.close(self.subproc.stdout.fileno())
 
     def stop_listen(self):
+        print_to_stderr("stop_listen")
         if self.closed:
             return
 
+        print_to_stderr("stop_listen2")
         self.close_pipes()
-        self.listener_thr.event.set()
+        print_to_stderr("stop_listen3")
         self.closed = True
+        print_to_stderr("stop_listen4")
 
     def _stop_listen_nowait(self):
         if self.closed:
@@ -155,10 +185,6 @@ class Communicator(QObject):
         except Exception as ex:
             self.stop_listen()
             return False
-
-    def wait(self):
-        self.listener_thr.event.wait()
-        self.listener_thr.event.clear()
 
     # def rpc_buffer(self):
     #	return self.listener_thr.buffer

@@ -50,14 +50,26 @@ def start_unbounded_worker(path, need_prescale, size, sleeped=False, ):
     return communicator
 
 
-COMMUNICATOR = None  # используется только в этом файле
+COMMUNICATOR = None
+RETRANSLER = None
 PRESCALE_SIZE = None
 BIND_MODE = True
 
 
 def qt_sigterm_handle(a,b):
     from zencad.util import print_to_stderr
-    print_to_stderr("QSIGTERM", a, b)
+    #print_to_stderr("111")
+    #RETRANSLER.finish()
+    #try:
+    #    COMMUNICATOR.stop_listen()
+    #except Exception as ex:
+    #    print_to_stderr(ex)
+    #print_to_stderr("222")
+    #print_to_stderr("QSIGTERM", a, b)
+    #COMMUNICATOR.listener_thr.wait()
+    #RETRANSLER.wait()
+
+    time.sleep(1)
     sys.exit()
 
 
@@ -70,7 +82,7 @@ def qt_setup_signal_handling():
 def unbound_worker_exec(path, prescale, size,
                         no_communicator_pickle=False,
                         sleeped=False):
-    global COMMUNICATOR, PRESCALE_SIZE
+    global COMMUNICATOR, PRESCALE_SIZE, RETRANSLER
     QAPP = QtWidgets.QApplication([])
     qt_setup_signal_handling()
 
@@ -79,25 +91,33 @@ def unbound_worker_exec(path, prescale, size,
     # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
     # через ретранслятор. Теперь все консольные сообщения будуут обвешиваться
     # тегами и поступать на коммуникатор.
-    retransler = ConsoleRetransler(sys.stdout)
-    retransler.start()
+    RETRANSLER = ConsoleRetransler(sys.stdout)
+    RETRANSLER.start()
 
     # Коммуникатор будет слать сообщения на скрытый файл,
     # тоесть, на истинный stdout
     COMMUNICATOR = Communicator(
-        ifile=sys.stdin, ofile=retransler.new_file,
+        ifile=sys.stdin, ofile=RETRANSLER.new_file,
         no_communicator_pickle=no_communicator_pickle)
 
     # Показываем ретранслятору его коммуникатор.
-    retransler.set_communicator(COMMUNICATOR)
+    RETRANSLER.set_communicator(COMMUNICATOR)
 
     if sleeped:
         # Спящий процесс оптимизирует время загрузки скрипта.
         # этот процесс повисает в цикле чтения и дожидается,
         # пока ему не передадут задание на выполнение.
         # оптимизация достигается за счёт предварительной загрузки библиотек.
-        dct0 = json.loads(COMMUNICATOR.simple_read())  # set_oposite_pid
-        dct1 = json.loads(COMMUNICATOR.simple_read())  # unwait
+        try:
+            dct0 = json.loads(COMMUNICATOR.simple_read())  # set_oposite_pid
+            dct1 = json.loads(COMMUNICATOR.simple_read())  # unwait
+        except Exception as ex:
+            print_to_stderr("err0")
+            #COMMUNICATOR.join()
+            print_to_stderr("err1")
+            #RETRANSLER.join()
+            print_to_stderr("err2")
+            sys.exit()
 
         COMMUNICATOR.declared_opposite_pid = int(dct0["data"])
         path = dct1["path"]

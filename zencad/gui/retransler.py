@@ -29,6 +29,10 @@ class ConsoleRetransler(QThread):
         self.communicator = comm
 
     def run(self):
+        self.foo()
+        print_to_stderr("retransler listener returned")
+
+    def foo(self):
         try:
             self.pid = os.getpid()
             self.readFile = self.r_file
@@ -43,7 +47,11 @@ class ConsoleRetransler(QThread):
             if self.stop_token:
                 return
             try:
+                print_to_stderr("start_readile")
                 inputdata = self.readFile.readline()
+                print_to_stderr("stop_readile")
+                #while some_criterium and not time_limit:
+                #    poll_result = select([scan_process.stdout], [], [], time_limit)[0]
 
                 # pythonocc спамит некоторое количество сообщений
                 # при активации виджета
@@ -59,6 +67,7 @@ class ConsoleRetransler(QThread):
                         continue
 
             except:
+                print_to_stderr("exception")
                 return
 
             if not self.communicator:
@@ -67,7 +76,19 @@ class ConsoleRetransler(QThread):
             self.communicator.send({"cmd": "console", "data": inputdata})
 
     def finish(self):
-        self.stop_token = True
+        print_to_stderr("retransler finish")
+        try:
+            #print_to_stderr("retransler finish1")
+            os.close(self.r_fd)
+            #self.w_file.close()
+            #print_to_stderr("retransler finish2")
+            #self.w_file.write("\n")
+            #print_to_stderr("retransler finish3")
+            self.stop_token = True
+        except ex as Exception:
+            print_to_stderr(ex)
+
+        print_to_stderr("retransler finish...ok")
 
     def do_retrans(self, old_file, new_desc=None):
         old_desc = old_file.fileno()
@@ -77,6 +98,7 @@ class ConsoleRetransler(QThread):
             new_desc = os.dup(old_desc)
 
         r, w = os.pipe()
+        self.r_fd, self.w_fd = r, w
         self.r_file = os.fdopen(r, "r")
         self.w_file = os.fdopen(w, "w")
         self.old_desc = old_desc

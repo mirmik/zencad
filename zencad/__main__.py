@@ -85,12 +85,18 @@ def exec_display_unbound(pargs):
 
 
 def finish_procedure():
+    from zencad.util import print_to_stderr
+
     procs = psutil.Process().children()
     for p in procs:
-        from zencad.util import print_to_stderr
-        #print_to_stderr("finterm", p, p.pid)
+        print_to_stderr("finterm", p, p.pid)
         p.terminate()
 
+    print_to_stderr("start wait")
+    for p in procs:
+        p.wait()
+
+    print_to_stderr("finish wait")
 
 #def sigterm_handle(a,b):
 #    from zencad.util import print_to_stderr
