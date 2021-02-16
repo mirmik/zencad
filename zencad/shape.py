@@ -70,6 +70,7 @@ class Shape(zencad.transformable.Transformable):
 
     def normal(self, u=0, v=0):
         assert(self.is_face())
+        print(self._SLProps(u,v))
         return vector3(self._SLProps(u, v).Normal())
 
     def __getstate__(self):
@@ -212,10 +213,7 @@ class LazyObjectShape(evalcache.LazyObject):
 
     cached_methods = [
         "__add__", "__sub__", "__xor__",
-        "scaleX", "scaleY", "scaleZ", "scaleXYZ", "fill",
-        "edges", "wires", "faces", "vertices",
-        "shells", "solids", "compounds",
-        "d1", "normal", "range", "endpoints"
+        "scaleX", "scaleY", "scaleZ", "scaleXYZ", "fill"
     ]
 
     nocached_methods = [
@@ -233,9 +231,13 @@ class LazyObjectShape(evalcache.LazyObject):
         #"props1", "props2", "props3"
     ]
 
+    # Методы, которые возвращают не shape
     standart_methods = [
         "is_wire", "is_compsolid", "is_edge", "is_compound", "is_vertex",
-        "is_face", "is_shell", "is_wire_or_edge", "is_solid"
+        "is_face", "is_shell", "is_wire_or_edge", "is_solid",
+        "edges", "wires", "faces", "vertices",
+        "shells", "solids", "compounds",
+        "d1", "normal", "range", "endpoints"
     ]
 
 

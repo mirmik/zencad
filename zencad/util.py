@@ -56,7 +56,7 @@ def angle_pair(arg):
 
 class point3(numpy.ndarray, zencad.transformable.Transformable):
     def __new__(cls, *args, info=None):
-        if isinstance(args[0], gp_Pnt):
+        if isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
 
         elif hasattr(args[0], "__getitem__"):
@@ -101,7 +101,7 @@ class vector3(numpy.ndarray, zencad.transformable.Transformable):
         if isinstance(args[0], (point3, vector3, list, tuple, numpy.ndarray)):
             input_array = args[0]
 
-        elif isinstance(args[0], gp_Pnt):
+        elif isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
 
         elif hasattr(args[0], "__getitem__"):
