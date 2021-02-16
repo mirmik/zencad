@@ -6,7 +6,7 @@ from zencad.geom.reflect_helpers import shape_types
 from zencad.util import *
 
 from zencad.shape import Shape, shape_generator
-from zencad.lazy import *
+from zencad.lazifier import *
 
 
 def _near_part(shp, pnt, topabs):

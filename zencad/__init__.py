@@ -47,7 +47,7 @@ try:
     # Utility
     from zencad.util import *
     from zencad.color import Color as color
-    from zencad.lazy import lazy
+    from zencad.lazifier import lazy
 
     # Transes
     from zencad.trans import move, moveX, moveY, moveZ, \

@@ -68,6 +68,13 @@ class InteractiveObject(zencad.transformable.Transformable):
         self._context = context
         self.relocate(self._location)
 
+    def hide(self, en):
+        if self._context:
+            if en:
+                self._context.Erase(self.ais_object, False)
+            else:
+                self._context.Display(self.ais_object, False)
+
 
 class ShapeInteractiveObject(InteractiveObject):
     def __init__(self, shape, color, border_color=Color(0, 0, 0), wire_color=None):

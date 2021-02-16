@@ -2,7 +2,7 @@ from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut, BRepAlgoAPI_
 from OCC.Core.TopoDS import TopoDS_Shape
 
 from zencad.shape import shape_generator, Shape
-from zencad.lazy import lazy
+from zencad.lazifier import lazy
 from zencad.geom.boolops_base import occ_pair_union, occ_pair_difference, occ_pair_intersect
 
 

@@ -2,6 +2,7 @@ import unittest
 import zencad
 import os
 
+
 class Prim2dprobe(unittest.TestCase):
     def setUp(self):
         zencad.lazy.encache = False
@@ -53,7 +54,7 @@ class Prim2dprobe(unittest.TestCase):
         zencad.ellipse(r1=radius, r2=radius2, angle=angle, wire=False)
         zencad.ellipse(r1=radius, r2=radius2, angle=(start, stop), wire=False)
 
-        #with self.assertRaises(Exception):
+        # with self.assertRaises(Exception):
         #    zencad.ellipse(r1=radius2, r2=radius, wire=True)
 
     def test_polygon_probe(self):
@@ -71,12 +72,12 @@ class Prim2dprobe(unittest.TestCase):
 
     def test_textshape_probe(self):
         text = "HelloWorld"
-        directory = os.path.dirname(__file__) 
-        zencad.register_font(os.path.join(directory, "../zencad/examples/fonts/testfont.ttf"))
+        directory = os.path.dirname(__file__)
+        zencad.register_font(os.path.join(
+            directory, "../zencad/examples/fonts/testfont.ttf"))
         zencad.textshape(
             text=text, fontname="Ubuntu Mono", size=20
         )
-
 
     def test_normales(self):
         self.assertGreater(zencad.circle(r=10).normal().z, 0)
@@ -86,6 +87,7 @@ class Prim2dprobe(unittest.TestCase):
         self.assertGreater(zencad.ngon(r=10, n=12).normal().z, 0)
         self.assertGreater(zencad.ngon(r=10, n=28).normal().z, 0)
         self.assertGreater(zencad.rectangle(a=10, b=20).normal().z, 0)
-        self.assertGreater(zencad.rectangle(a=10, b=20, center=True).normal().z, 0)
+        self.assertGreater(zencad.rectangle(
+            a=10, b=20, center=True).normal().z, 0)
         self.assertGreater(zencad.square(a=10).normal().z, 0)
         self.assertGreater(zencad.square(a=10, center=True).normal().z, 0)

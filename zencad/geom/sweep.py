@@ -1,5 +1,5 @@
 from zencad.shape import Shape, shape_generator
-from zencad.lazy import *
+from zencad.lazifier import *
 from zencad.util import vector3
 from zencad.trans import translate
 

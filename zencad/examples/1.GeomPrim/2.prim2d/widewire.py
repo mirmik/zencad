@@ -5,9 +5,9 @@ ZenCad API example: widewire
 
 from zencad import *
 
-zencad.lazy.fastdo = True
-zencad.lazy.encache = False
-zencad.lazy.decache = False
+zencad.lazifier.fastdo = True
+zencad.lazifier.encache = False
+zencad.lazifier.decache = False
 
 wr = wire_builder()
 wr.line(10,10)

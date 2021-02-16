@@ -13,7 +13,7 @@ from OCC.Core.TopExp import topexp, TopExp_Explorer
 from OCC.Core.BRepLProp import BRepLProp_SLProps
 
 from zencad.geom.boolops_base import *
-from zencad.lazy import *
+from zencad.lazifier import *
 import zencad.trans
 import zencad.transformable
 from zencad.util import to_numpy, point3, vector3, print_to_stderr
@@ -106,10 +106,13 @@ class Shape(zencad.transformable.Transformable):
     def edges(self): return self.reflection_elements(topods.Edge, TopAbs_EDGE)
     def wires(self): return self.reflection_elements(topods.Wire, TopAbs_WIRE)
     def faces(self): return self.reflection_elements(topods.Face, TopAbs_FACE)
+
     def vertices(self): return self.reflection_elements(
         topods.Vertex, TopAbs_VERTEX)
+
     def solids(self): return self.reflection_elements(
         topods.Solid, TopAbs_SOLIDS)
+
     def compounds(self): return self.reflection_elements(
         topods.Compound, TopAbs_COMPOUND)
 

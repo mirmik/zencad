@@ -38,4 +38,4 @@ class Prim1dProbber(unittest.TestCase):
         zencad.helix(r, h, step, angle=angle, left=False)
 
     def test_bezier_probe(self):
-        zencad.bezier([(0,0,0),(0,1,0),(1,1,0)])
+        zencad.bezier([(0, 0, 0), (0, 1, 0), (1, 1, 0)])

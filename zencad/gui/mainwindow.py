@@ -155,8 +155,6 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
     def finalize_subprocess(self, communicator):
         pid = communicator.subproc_pid()
-        #print_to_stderr("terminate process", communicator.subproc.pid)
-        #print_to_stderr("terminate process", communicator.subproc)
         os.kill(communicator.subproc.pid, signal.SIGTERM)
 
     def subprocess_finalization_do(self):
@@ -187,37 +185,35 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             return
 
         # TODO: Переделать в словарь
-        if cmd == "hello":
-            print("HelloWorld")
-        elif cmd == 'bindwin':
+        if cmd == 'bindwin':
             self.bind_window(winid=data['id'], pid=data["pid"])
-        elif cmd == 'setopened':
-            self.set_current_opened(path=data['path'])
-        elif cmd == 'clientpid':
-            self.clientpid = data['pid']
+        # elif cmd == 'setopened':
+        #    self.set_current_opened(path=data['path'])
+        # elif cmd == 'clientpid':
+        #    self.clientpid = data['pid']
         elif cmd == "qmarker":
             self.marker_handler("q", data)
         elif cmd == "wmarker":
             self.marker_handler("w", data)
-        elif cmd == "location":
-            self.location_update_handle(data["loc"])
-        elif cmd == "keypressed":
-            self.internal_key_pressed(data["key"])
+        # elif cmd == "location":
+        #    self.location_update_handle(data["loc"])
+        # elif cmd == "keypressed":
+        #    self.internal_key_pressed(data["key"])
         elif cmd == "keypressed_raw":
             self.internal_key_pressed_raw(
                 data["key"], data["modifiers"], data["text"])
-        elif cmd == "keyreleased_raw":
-            self.internal_key_released_raw(data["key"], data["modifiers"])
+        # elif cmd == "keyreleased_raw":
+        #    self.internal_key_released_raw(data["key"], data["modifiers"])
         elif cmd == "console":
             self.internal_console_request(data["data"])
-        elif cmd == "trackinfo":
-            self.info_widget.set_tracking_info(data["data"])
-        elif cmd == "finish_screen":
-            self.finish_screen(data["data"][0], data["data"][1], procpid)
-        elif cmd == "fault":
-            self.open_fault()
-        elif cmd == "evalcache":
-            self.evalcache_notification(data)
+        # elif cmd == "trackinfo":
+        #    self.info_widget.set_tracking_info(data["data"])
+        # elif cmd == "finish_screen":
+        #    self.finish_screen(data["data"][0], data["data"][1], procpid)
+        # elif cmd == "fault":
+        #    self.open_fault()
+        # elif cmd == "evalcache":
+        #    self.evalcache_notification(data)
         else:
             print("Warn: unrecognized command", data)
 

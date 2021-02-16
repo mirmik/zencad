@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
+import zencad.draw as draw
 from zencad import *
 import os
 
@@ -12,7 +13,9 @@ import pyservoce
 
 wsize = (300, 200)
 
-dock = lambda sz: box(sz,sz,2,center=True).down(1)
+
+def dock(sz): return box(sz, sz, 2, center=True).down(1)
+
 
 if not os.path.exists("generic"):
     os.makedirs("generic")
@@ -29,10 +32,10 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
     except:
         for m in model:
             if isinstance(m, (tuple, list)):
-                c=m[1]
-                m=m[0]
+                c = m[1]
+                m = m[0]
             else:
-                c=zencad.default_color
+                c = zencad.default_color
 
             mod = m
             if isinstance(mod, evalcache.LazyObject):
@@ -45,7 +48,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
                 scn.add(mod, c)
 
     viewer = scn.viewer
-    if triedron: # Always add triedron 
+    if triedron:  # Always add triedron
         viewer.set_triedron_axes()
     view = viewer.create_view()
     view.set_triedron(False)
@@ -91,7 +94,8 @@ doscreen(model=box(10, center=True), path="box1.png", size=wsize)
 
 doscreen(model=sphere(r=10), path="sphere0.png", size=wsize)
 doscreen(model=sphere(r=10, yaw=deg(120)), path="sphere1.png", size=wsize)
-doscreen(model=sphere(r=10, pitch=(deg(20), deg(60))), path="sphere2.png", size=wsize)
+doscreen(model=sphere(r=10, pitch=(deg(20), deg(60))),
+         path="sphere2.png", size=wsize)
 doscreen(
     model=sphere(r=10, yaw=deg(120), pitch=(deg(20), deg(60))),
     path="sphere3.png",
@@ -99,14 +103,19 @@ doscreen(
 )
 
 doscreen(model=cylinder(r=10, h=20), path="cylinder0.png", size=wsize)
-doscreen(model=cylinder(r=10, h=20, yaw=deg(45)), path="cylinder1.png", size=wsize)
-doscreen(model=cylinder(r=10, h=20, center=True), path="cylinder2.png", size=wsize)
-doscreen(model=cylinder(r=10, h=20, yaw=deg(45), center=True), path="cylinder3.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, yaw=deg(45)),
+         path="cylinder1.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, center=True),
+         path="cylinder2.png", size=wsize)
+doscreen(model=cylinder(r=10, h=20, yaw=deg(45), center=True),
+         path="cylinder3.png", size=wsize)
 
 doscreen(model=cone(r1=20, r2=10, h=20), path="cone0.png", size=wsize)
-doscreen(model=cone(r1=20, r2=10, h=20, yaw=deg(45)), path="cone1.png", size=wsize)
+doscreen(model=cone(r1=20, r2=10, h=20, yaw=deg(45)),
+         path="cone1.png", size=wsize)
 doscreen(model=cone(r1=0, r2=20, h=20), path="cone2.png", size=wsize)
-doscreen(model=cone(r1=20, r2=0, h=20, center=True), path="cone3.png", size=wsize)
+doscreen(model=cone(r1=20, r2=0, h=20, center=True),
+         path="cone3.png", size=wsize)
 
 doscreen(model=torus(r1=20, r2=5), path="torus0.png", size=wsize)
 doscreen(model=torus(r1=20, r2=5, yaw=deg(120)), path="torus1.png", size=wsize)
@@ -331,14 +340,16 @@ doscreen(
 )
 
 doscreen(
-    model=[segment((10, 10, 10), (20, 10, 10)), point3(10, 10, 10), point3(20, 10, 10)],
+    model=[segment((10, 10, 10), (20, 10, 10)),
+           point3(10, 10, 10), point3(20, 10, 10)],
     path="segment0.png",
     size=wsize,
 )
 
 doscreen(
     model=[
-        polysegment([(0, 0, 0), (0, 10, 10), (0, 10, 20), (0, -10, 20), (0, -10, 10)]),
+        polysegment([(0, 0, 0), (0, 10, 10), (0, 10, 20),
+                     (0, -10, 20), (0, -10, 10)]),
         point3(0, 0, 0),
         point3(0, 10, 10),
         point3(0, 10, 20),
@@ -376,9 +387,12 @@ doscreen(
 )
 
 doscreen(model=helix(r=10, h=20, step=1), path="helix0.png", size=wsize)
-doscreen(model=helix(r=10, h=20, step=1, left=True), path="helix1.png", size=wsize)
-doscreen(model=helix(r=10, h=20, step=1, angle=deg(10)), path="helix2.png", size=wsize)
-doscreen(model=helix(r=10, h=20, step=1, angle=-deg(10)), path="helix3.png", size=wsize)
+doscreen(model=helix(r=10, h=20, step=1, left=True),
+         path="helix1.png", size=wsize)
+doscreen(model=helix(r=10, h=20, step=1, angle=deg(10)),
+         path="helix2.png", size=wsize)
+doscreen(model=helix(r=10, h=20, step=1, angle=-deg(10)),
+         path="helix3.png", size=wsize)
 
 
 yaw = -math.pi / 4
@@ -509,7 +523,8 @@ doscreen(
 # tangs = [(1,1), (1,1), (0,0), (0,0), (0,0), (0,0)]
 pnts = [(0, 0), (0, 10), (10, 20)]
 tangs = [(0, 0), (0, 0), (1, 0)]
-doscreen(model=[*points(pnts), interpolate(pnts)], path="interpolate0.png", size=wsize)
+doscreen(model=[*points(pnts), interpolate(pnts)],
+         path="interpolate0.png", size=wsize)
 doscreen(
     model=[*points(pnts), interpolate(pnts, tangs=tangs)],
     path="interpolate1.png",
@@ -573,7 +588,8 @@ doscreen(model=cube(10).chamfer(2), path="chamfer2.png", size=wsize)
 
 pnts = points([(0, 0, 20), (20, 0, 20)])
 doscreen(
-    model=[(cylinder(r=10, h=20) - cylinder(r=5, h=20)).chamfer(r=1, refs=pnts), *pnts],
+    model=[(cylinder(r=10, h=20) - cylinder(r=5, h=20)
+            ).chamfer(r=1, refs=pnts), *pnts],
     path="chamfer3.png",
     size=wsize,
 )
@@ -680,7 +696,8 @@ wires2 = [
     square(30, center=True, wire=True),
 ]
 
-doscreen(model=wires, path="loft0.png", size=wsize, triedron=True, yaw=yaw, pitch=pitch)
+doscreen(model=wires, path="loft0.png", size=wsize,
+         triedron=True, yaw=yaw, pitch=pitch)
 doscreen(
     model=loft(wires, smooth=False),
     path="loft1.png",
@@ -725,7 +742,8 @@ tang = vectors([(1, 1), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0)])
 ps = [(20, 0, 0), (20, 0, 10), (30, 0, 5)]
 
 spine = interpolate(pnts, tang).rotateX(deg(90))
-profile = circle(3, wire=True).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
+profile = circle(3, wire=True).rotateY(
+    deg(45)).translate(pnts[0].x, 0, pnts[0].y)
 handle = pipe(path=spine, proto=profile)
 
 pitch = math.pi * -0.20
@@ -765,7 +783,8 @@ doscreen(
     pitch=pitch,
 )
 doscreen(
-    model=sweep(polysegment(ps, closed=True), helix(h=100, r=20, step=30), frenet=True),
+    model=sweep(polysegment(ps, closed=True), helix(
+        h=100, r=20, step=30), frenet=True),
     path="sweep4.png",
     size=wsize,
     triedron=True,
@@ -774,13 +793,13 @@ doscreen(
 )
 
 doscreen(
-    model=bezier([(0,0,0),(0,10,0),(0,10,10)]),
+    model=bezier([(0, 0, 0), (0, 10, 0), (0, 10, 10)]),
     path="bezier0.png",
     size=wsize
 )
 
 doscreen(
-    model=bezier([(0,0,0),(0,10,0),(0,10,10)], [1,2,1]),
+    model=bezier([(0, 0, 0), (0, 10, 0), (0, 10, 10)], [1, 2, 1]),
     path="bezier1.png",
     size=wsize
 )
@@ -811,18 +830,18 @@ doscreen(
 )
 
 doscreen(
-    model=(multitransform([ 
-        translate(-20,20,0) * rotateZ(deg(60)),
-        translate(-20,-20,0) * rotateZ(deg(120)),
-        translate(20,20,0) * rotateZ(deg(180)),
+    model=(multitransform([
+        translate(-20, 20, 0) * rotateZ(deg(60)),
+        translate(-20, -20, 0) * rotateZ(deg(120)),
+        translate(20, 20, 0) * rotateZ(deg(180)),
         nulltrans()
     ])(m), dock(80)),
     path="multitrans1.png",
     size=wsize
 )
 
-P=-deg(60)
-D=60
+P = -deg(60)
+D = 60
 
 m = zencad.internal_models.knight()
 doscreen(
@@ -897,73 +916,74 @@ doscreen(
 
 m = cone(r1=5, r2=0, h=10, center=True).rotX(deg(45))
 doscreen(
-    model=((m, (1,0,0,0.6)), m ^ infplane()),
+    model=((m, (1, 0, 0, 0.6)), m ^ infplane()),
     path="infplane0.png",
     size=wsize
 )
 
 m = cone(r1=5, r2=0, h=10, center=True)
 doscreen(
-    model=((m, (1,0,0,0.6)), m ^ infplane()),
+    model=((m, (1, 0, 0, 0.6)), m ^ infplane()),
     path="infplane01.png",
     size=wsize
 )
 
 m = cone(r1=5, r2=0, h=10, center=True)
 doscreen(
-    model=((m, (1,0,0,0.6)), m ^ infplane().rotX(deg(45))),
+    model=((m, (1, 0, 0, 0.6)), m ^ infplane().rotX(deg(45))),
     path="infplane1.png",
     size=wsize
 )
 
 m = cone(r1=5, r2=0, h=10, center=True)
 doscreen(
-    model=((m, (1,0,0,0.6)), m ^ infplane().rotY(deg(90)).right(2)),
+    model=((m, (1, 0, 0, 0.6)), m ^ infplane().rotY(deg(90)).right(2)),
     path="infplane2.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic(4,10),
+    model=zencad.platonic(4, 10),
     path="platonic0.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic(6,10),
+    model=zencad.platonic(6, 10),
     path="platonic1.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic(8,10),
+    model=zencad.platonic(8, 10),
     path="platonic2.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic(12,10),
+    model=zencad.platonic(12, 10),
     path="platonic3.png",
     size=wsize
 )
 
 doscreen(
-    model=zencad.platonic(20,10),
+    model=zencad.platonic(20, 10),
     path="platonic4.png",
     size=wsize
 )
 
 
 doscreen(
-    model=offset(cone(r1=15,r2=10,h=20), r=5),
+    model=offset(cone(r1=15, r2=10, h=20), r=5),
     path="offset0.png",
     size=wsize
 )
 
 doscreen(
     model=(
-        rounded_polysegment([(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)], 10), 
-        *points([(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)])
+        rounded_polysegment(
+            [(0, 0, 0), (20, 0, 0), (20, 20, 40), (-40, 20, 40), (-40, 20, 0)], 10),
+        *points([(0, 0, 0), (20, 0, 0), (20, 20, 40), (-40, 20, 40), (-40, 20, 0)])
     ),
     path="rounded_polysegment0.png",
     size=wsize,
@@ -971,21 +991,22 @@ doscreen(
 )
 
 
-import zencad.draw as draw
 doscreen(
     model=(
-        zencad.internal_models.knight(), 
-        zencad.lazy(draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), transparent=True), 
-        zencad.lazy(draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None), transparent=True)),
+        zencad.internal_models.knight(),
+        zencad.lazy(draw.arrow((0, 0, 0), vector3(1, 1, 1).normalize()
+                               * 30, clr=color.blue, scene=None), transparent=True),
+        zencad.lazy(draw.arrow((0, 0, 0), vector3(0, 0, 1).normalize()*30, clr=color.green, scene=None), transparent=True)),
     path="short_rotate0.png",
     size=wsize
 )
 
 doscreen(
-    model=( 
-        short_rotate((0,0,1), (1,1,1))(zencad.internal_models.knight()), 
-        zencad.lazy(draw.arrow((0,0,0), vector3(1,1,1).normalize()*30, clr=color.blue, scene=None), transparent=True), 
-        zencad.lazy(draw.arrow((0,0,0), vector3(0,0,1).normalize()*30, clr=color.green, scene=None), transparent=True)),
+    model=(
+        short_rotate((0, 0, 1), (1, 1, 1))(zencad.internal_models.knight()),
+        zencad.lazy(draw.arrow((0, 0, 0), vector3(1, 1, 1).normalize()
+                               * 30, clr=color.blue, scene=None), transparent=True),
+        zencad.lazy(draw.arrow((0, 0, 0), vector3(0, 0, 1).normalize()*30, clr=color.green, scene=None), transparent=True)),
     path="short_rotate1.png",
     size=wsize
 )
@@ -1000,7 +1021,8 @@ doscreen(
 
 
 doscreen(
-    model=ruled(circle(r=20, wire=True), circle(r=20, wire=True).rotZ(math.pi/2*3).up(20)),
+    model=ruled(circle(r=20, wire=True), circle(
+        r=20, wire=True).rotZ(math.pi/2*3).up(20)),
     path="ruled1.png",
     size=wsize,
     pitch=deg(A)
@@ -1009,9 +1031,9 @@ doscreen(
 
 doscreen(
     model=ruled(
-        interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
-        interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
-        ),
+        interpolate([(0, 0), (-4, 10), (4, 20), (-6, 30), (6, 40)]),
+        interpolate([(0, 0), (-2, 10), (2, 20), (-4, 30), (4, 40)]).up(20),
+    ),
     path="ruled2.png",
     size=wsize,
     pitch=deg(A),
@@ -1020,9 +1042,9 @@ doscreen(
 
 doscreen(
     model=ruled(
-        interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
-        interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
-        ),
+        interpolate([(0, 0), (-4, 10), (4, 20), (-6, 30), (6, 40)]),
+        interpolate([(0, 0), (-2, 10), (2, 20), (-4, 30), (4, 40)]).up(20),
+    ),
     path="ruled3.png",
     size=wsize,
     pitch=deg(A),
@@ -1031,13 +1053,13 @@ doscreen(
 
 knight = zencad.internal_models.knight()
 doscreen(
-    model=knight.move(20,20),
+    model=knight.move(20, 20),
     path="rotate_array0.png",
     size=wsize
 )
 
 doscreen(
-    model=rotate_array(6, yaw=deg(270), endpoint=True)(knight.move(20,20)),
+    model=rotate_array(6, yaw=deg(270), endpoint=True)(knight.move(20, 20)),
     path="rotate_array1.png",
     size=wsize
 )
@@ -1051,44 +1073,46 @@ doscreen(
 )
 
 doscreen(
-    model=rotate_array2(n=60, r=20, yaw=(0,deg(270)), roll=(0,deg(360)), array=True)(square(10, center=True, wire=True)),
+    model=rotate_array2(n=60, r=20, yaw=(0, deg(270)), roll=(
+        0, deg(360)), array=True)(square(10, center=True, wire=True)),
     path="rotate_array21.png",
     size=wsize
 )
 
 knight = zencad.internal_models.knight()
 doscreen(
-    model=knight.move(20,30),
+    model=knight.move(20, 30),
     path="sqrmirror0.png",
     size=wsize
 )
 
 doscreen(
-    model=sqrmirror()(knight.move(20,30)),
+    model=sqrmirror()(knight.move(20, 30)),
     path="sqrmirror1.png",
     size=wsize
 )
 
 doscreen(
-    model=revol2(profile=square(10, center=True), r=20, n=60, yaw=(0,deg(360)), roll=(0,deg(360))),
+    model=revol2(profile=square(10, center=True), r=20, n=60,
+                 yaw=(0, deg(360)), roll=(0, deg(360))),
     path="revol20.png",
     size=wsize
 )
 
 doscreen(
-    model=cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5,5),
+    model=cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5, 5),
     path="unify0.png",
     size=wsize
 )
 
 doscreen(
-    model=unify(cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5,5)),
+    model=unify(cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5, 5)),
     path="unify1.png",
     size=wsize
 )
 
 
-m=sphere(10)
+m = sphere(10)
 nodes, triangles = triangulate(m, 0.1)
 doscreen(
     model=polyhedron(nodes, triangles),
@@ -1098,27 +1122,27 @@ doscreen(
 
 
 POINTS = [
-    (0,0,0),
-    (0,0,20),
-    (0,20,40),
-    (-90,20,40),
-    (-90,20,20),
-    (0,20,0),
+    (0, 0, 0),
+    (0, 0, 20),
+    (0, 20, 40),
+    (-90, 20, 40),
+    (-90, 20, 20),
+    (0, 20, 0),
 ]
 spine = rounded_polysegment(POINTS, r=10)
 doscreen(
-    model=tube(spine, r=5) ,
+    model=tube(spine, r=5),
     path="tube0.png",
     size=wsize,
     yaw=deg(120)
 )
 
-POINTS = [ (0,0,0), (20,0,40) ]
-TANGS = [ (0,0,1), (1,0,1) ]
+POINTS = [(0, 0, 0), (20, 0, 40)]
+TANGS = [(0, 0, 1), (1, 0, 1)]
 
 spine = interpolate(POINTS, TANGS)
 doscreen(
-    model=tube(spine, r=5, maxdegree=8) ,
+    model=tube(spine, r=5, maxdegree=8),
     path="tube1.png",
     size=wsize,
     yaw=deg(120)
@@ -1126,11 +1150,11 @@ doscreen(
 
 
 pnts = points([
-    (0,0,0),
-    (1,0,0),
-    (1,1,0),
-    (0,1,0),
-    (0.5,0.5,1),
+    (0, 0, 0),
+    (1, 0, 0),
+    (1, 1, 0),
+    (0, 1, 0),
+    (0.5, 0.5, 1),
 ])
 
 doscreen(
@@ -1142,7 +1166,7 @@ doscreen(
 
 
 crv = circle(r=5, wire=True, angle=deg(270))
-s,f = crv.endpoints()
+s, f = crv.endpoints()
 doscreen(
     model=[crv, s, f],
     path="endpoints0.png",
@@ -1166,18 +1190,18 @@ doscreen(
 
 
 doscreen(
-    model=wire_builder(defrel=True).l(10,0).l(0,10).l(-10,0).close().doit(),
+    model=wire_builder(defrel=True).l(10, 0).l(0, 10).l(-10, 0).close().doit(),
     path="wb_segment0.png",
     size=wsize
 )
 
 
 POINTS = points2([
-        [(0,0,0), (10,0,7), (20,0,5)],
-        [(0,5,0), (10,5,7.5), (20,5,7)],
-        [(0,10,2), (10,10,8), (20,10,5)],
-        [(0,15,1.3), (10,15,8.5), (20,15,6)],
-    ])
+    [(0, 0, 0), (10, 0, 7), (20, 0, 5)],
+    [(0, 5, 0), (10, 5, 7.5), (20, 5, 7)],
+    [(0, 10, 2), (10, 10, 8), (20, 10, 5)],
+    [(0, 15, 1.3), (10, 15, 8.5), (20, 15, 6)],
+])
 
 m = interpolate2(POINTS)
 merged_list = []

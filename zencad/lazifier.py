@@ -18,6 +18,6 @@ lazy = evalcache.Lazy(
 
     # diag=True,
     # diag_values=True,
-    # print_invokes=True
-    fastdo=True
+    # print_invokes=True,
+    # fastdo=True
 )

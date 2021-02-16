@@ -5,7 +5,7 @@ from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_FACE, TopAbs_SOLID,
 
 from OCC.Core.gp import gp_Pnt
 
-from zencad.lazy import *
+from zencad.lazifier import *
 import numpy
 
 
@@ -98,9 +98,13 @@ def _sew_shell(lst):
     return __make_shell(lst)
 
 
-@lazy.lazy(cls=shape_generator)
-def sew(lst, sort=True):
+def _sew(lst, sort=True):
     if lst[0].is_face() or lst[0].is_shell():
         return Shape(_sew_shell(lst))
     else:
         return Shape(_sew_wire(lst, sort))
+
+
+@lazy.lazy(cls=shape_generator)
+def sew(lst, sort=True):
+    return _sew(lst, sort)

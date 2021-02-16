@@ -59,7 +59,8 @@ class Prim3dprobe(unittest.TestCase):
         zencad.cone(r1=botRadius, r2=0, h=height, center=True)
 
         zencad.cone(r1=botRadius, r2=topRadius, h=height, center=False)
-        zencad.cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=False)
+        zencad.cone(r1=botRadius, r2=topRadius,
+                    h=height, yaw=yaw, center=False)
         zencad.cone(r1=0, r2=topRadius, h=height, center=False)
         zencad.cone(r1=botRadius, r2=0, h=height, center=False)
 
@@ -73,9 +74,11 @@ class Prim3dprobe(unittest.TestCase):
 
         zencad.torus(r1=centralRadius, r2=localRadius)
         zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw)
-        zencad.torus(r1=centralRadius, r2=localRadius, pitch=(minPitch, maxPitch))
+        zencad.torus(r1=centralRadius, r2=localRadius,
+                     pitch=(minPitch, maxPitch))
         zencad.torus(
-            r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch)
+            r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(
+                minPitch, maxPitch)
         )
         zencad.torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=maxPitch)
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
+import sys
+import traceback
 print("api.py")
 
-import traceback
-import sys
 
 sys.path.insert(0, "..")
 
@@ -43,6 +43,7 @@ except Exception as ex:
 
 
 print("import ... finish")
+
 
 def execute_test(test):
     print()

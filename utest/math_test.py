@@ -16,7 +16,8 @@ class MathTest(unittest.TestCase):
     def test_math(self):
         self.assertTrue(
             early(
-                zencad.point3(1, 2, 3) + zencad.vector3(7, 6, 5), zencad.point3(8, 8, 8)
+                zencad.point3(1, 2, 3) + zencad.vector3(7,
+                                                        6, 5), zencad.point3(8, 8, 8)
             )
         )
         self.assertTrue(
@@ -43,8 +44,10 @@ class MathTest(unittest.TestCase):
                 zencad.vector3(-6, -4, -2),
             )
         )
-        self.assertTrue(early(zencad.vector(3, 6, 9) * 3, zencad.vector3(9, 18, 27)))
-        self.assertTrue(early(zencad.vector(3, 6, 9) / 3, zencad.vector3(1, 2, 3)))
+        self.assertTrue(early(zencad.vector(3, 6, 9) *
+                              3, zencad.vector3(9, 18, 27)))
+        self.assertTrue(early(zencad.vector(3, 6, 9) /
+                              3, zencad.vector3(1, 2, 3)))
 
         with self.assertRaises(TypeError):
             zencad.point(1, 2, 3) * 3

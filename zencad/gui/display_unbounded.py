@@ -56,18 +56,18 @@ PRESCALE_SIZE = None
 BIND_MODE = True
 
 
-def qt_sigterm_handle(a,b):
+def qt_sigterm_handle(a, b):
     from zencad.util import print_to_stderr
-    #print_to_stderr("111")
-    #RETRANSLER.finish()
-    #try:
+    # print_to_stderr("111")
+    # RETRANSLER.finish()
+    # try:
     #    COMMUNICATOR.stop_listen()
-    #except Exception as ex:
+    # except Exception as ex:
     #    print_to_stderr(ex)
-    #print_to_stderr("222")
+    # print_to_stderr("222")
     #print_to_stderr("QSIGTERM", a, b)
-    #COMMUNICATOR.listener_thr.wait()
-    #RETRANSLER.wait()
+    # COMMUNICATOR.listener_thr.wait()
+    # RETRANSLER.wait()
 
     time.sleep(1)
     sys.exit()
@@ -75,9 +75,9 @@ def qt_sigterm_handle(a,b):
 
 def qt_setup_signal_handling():
     from zencad.util import print_to_stderr
-    print_to_stderr("QProcess set handler")
     signal.signal(signal.SIGTERM, qt_sigterm_handle)
     signal.signal(signal.SIGINT, qt_sigterm_handle)
+
 
 def unbound_worker_exec(path, prescale, size,
                         no_communicator_pickle=False,
@@ -103,7 +103,6 @@ def unbound_worker_exec(path, prescale, size,
     # Показываем ретранслятору его коммуникатор.
     RETRANSLER.set_communicator(COMMUNICATOR)
 
-    print_to_stderr("HERE", sleeped)
     if sleeped:
         # Спящий процесс оптимизирует время загрузки скрипта.
         # этот процесс повисает в цикле чтения и дожидается,
@@ -115,6 +114,7 @@ def unbound_worker_exec(path, prescale, size,
         except Exception as ex:
             print_to_stderr("sleeped thread finished with exception")
             print_to_stderr(ex)
+            sys.exit()
 
         COMMUNICATOR.declared_opposite_pid = int(dct0["data"])
         path = dct1["path"]
@@ -145,6 +145,8 @@ def unbound_worker_bottom_half(scene):
         init_size=PRESCALE_SIZE)
     display.attach_scene(scene)
 
+    COMMUNICATOR.bind_handler(display.external_communication_command)
+
     if BIND_MODE:
         COMMUNICATOR.send({
             "cmd": "bindwin",
@@ -154,11 +156,11 @@ def unbound_worker_bottom_half(scene):
 
     display.show()
     time.sleep(0.05)
-    
+
     timer = QtCore.QTimer()
     timer.start(500)  # You may change this if you wish.
     timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
-    
+
     QtWidgets.QApplication.instance().exec()
 
 

@@ -35,57 +35,6 @@ class Communicator(QObject):
     oposite_clossed = pyqtSignal()
     newdata = pyqtSignal(dict, int)
 
-#   class Listener(QThread):
-#       newdata = pyqtSignal(dict, int)
-
-#       def __init__(self, ifile, parent):
-#           super().__init__()
-#           self.parent = parent
-#           self.ifile = ifile
-
-#       def run(self):
-#           self.foo()
-#           print_to_stderr("communicator listener returned")
-
-#       def foo(self):
-#           checks = 0
-
-#           while(True):
-#               try:
-#                   inputdata = self.ifile.readline()
-#                   #while some_criterium and not time_limit:
-#                   #    poll_result = select([scan_process.stdout], [], [], time_limit)[0]
-
-#               except Exception as ex:
-#                   print_to_stderr("read error: error on read", ex)
-#                   self.parent._stop_listen_nowait()
-#                   self.parent.oposite_clossed.emit()
-#                   return
-
-#               if len(inputdata) == 0:
-#                   self.parent._stop_listen_nowait()
-#                   self.parent.oposite_clossed.emit()
-#                   return
-
-#               checks = 0
-
-#               try:
-#                   data_unpickled = json.loads(inputdata)
-#               except:
-#                   print_to_stderr("warning: decode pickle:", inputdata)
-#                   continue
-
-#               if COMMUNICATOR_TRACE:
-#                   print_to_stderr("recv", data_unpickled)
-
-#               if data_unpickled["cmd"] == "set_opposite_pid":
-#                   self.parent.declared_opposite_pid = data_unpickled["data"]
-#                   continue
-
-#               else:
-#                   self.newdata.emit(
-#                       data_unpickled, self.parent.subproc_pid())
-
     def __init__(self, ifile, ofile, no_communicator_pickle=False):
         super().__init__()
         self.no_communicator_pickle = no_communicator_pickle
@@ -94,21 +43,22 @@ class Communicator(QObject):
         self.ifile = ifile
         self.ofile = ofile
 
-        # TODO:
-        self.listen_started = False
-        self.closed = False
-
         self.send({"cmd": "set_opposite_pid", "data": os.getpid()})
 
     def socket_notifier_handle(self, a):
-        inputdata = self.ifile.readline()
-        unwraped_data = json.loads(inputdata)
+        try:
+            inputdata = self.ifile.readline()
+            unwraped_data = json.loads(inputdata)
 
-        if unwraped_data["cmd"] == "set_opposite_pid":
-            self.declared_opposite_pid = unwraped_data["data"]
-            return
+            if unwraped_data["cmd"] == "set_opposite_pid":
+                self.declared_opposite_pid = unwraped_data["data"]
+                return
 
-        self.newdata.emit(unwraped_data, self.subproc_pid())
+            self.newdata.emit(unwraped_data, self.subproc_pid())
+
+        except Exception as ex:
+            print(ex)
+            sys.exit()
 
     def simple_read(self):
         """Чтение из входного файла. Не должно вызываться после
@@ -130,7 +80,6 @@ class Communicator(QObject):
 
         self.sock_notifier.activated.connect(self.socket_notifier_handle)
 
-
     def subproc_pid(self):
         """ PID процесса на той стороне можно узнать двумя путями.
         Либо это pid связанный с объектом subprocess, связанным с ним, 
@@ -140,18 +89,12 @@ class Communicator(QObject):
         через subprocess и никто не успел уведомить коммуникатор о его pid."""
         return self.subproc.pid if self.subproc else self.declared_opposite_pid
 
-    def close_pipes(self):
-        if self.subproc is not None:
-            os.close(self.subproc.stdin.fileno())
-            os.close(self.subproc.stdout.fileno())
-
     def send(self, obj):
         if COMMUNICATOR_TRACE:
             print_to_stderr("send", obj)
 
         if not self.no_communicator_pickle:
             sendstr = json.dumps(obj) + "\n"
-            #sendstr = sendstr_bytes.decode("utf-8")
         else:
             sendstr = str(obj) + "\r\n"
 
@@ -162,4 +105,3 @@ class Communicator(QObject):
         except Exception as ex:
             self.stop_listen()
             return False
-

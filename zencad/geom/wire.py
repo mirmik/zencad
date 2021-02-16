@@ -14,7 +14,7 @@ from OCC.Core.Precision import precision_Confusion
 from OCC.Core.TopoDS import TopoDS_Edge, TopoDS_Wire
 from OCC.Core.BRepLib import breplib
 
-from zencad.lazy import *
+from zencad.lazifier import *
 from zencad.geom.sew import sew
 from zencad.util import points, to_Pnt, to_Vec
 from zencad.geom.project import project
@@ -24,13 +24,17 @@ import math
 import numpy
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def make_edge(crv, interval=None) -> Shape:
+def _make_edge(crv, interval=None) -> Shape:
     aCurve = crv.Curve()
     if interval is None:
         return Shape(BRepBuilderAPI_MakeEdge(aCurve).Edge())
     else:
         return Shape(BRepBuilderAPI_MakeEdge(aCurve, interval[0], interval[1]).Edge())
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def make_edge(crv, interval=None) -> Shape:
+    return _make_edge(crv, interval)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -63,10 +67,14 @@ def polysegment(pnts, closed=False) -> Shape:
     return Shape(mkWire.Wire())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def segment(a, b) -> Shape:
+def _segment(a, b) -> Shape:
     a, b = points((a, b))
     return Shape(BRepBuilderAPI_MakeEdge(to_Pnt(a), to_Pnt(b)).Edge())
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def segment(a, b) -> Shape:
+    return _segment(a, b)
 
 
 @lazy.lazy(cls=shape_generator)

@@ -1,5 +1,5 @@
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
-from zencad.lazy import *
+from zencad.lazifier import *
 from zencad.geom.boolops import _union
 
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID

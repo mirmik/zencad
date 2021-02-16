@@ -89,22 +89,22 @@ def finish_procedure():
 
     procs = psutil.Process().children()
     for p in procs:
-        print_to_stderr("finterm", p, p.pid)
+        #        print_to_stderr("finterm", p, p.pid)
         p.terminate()
 
-    print_to_stderr("start wait")
+#    print_to_stderr("start wait")
     for p in procs:
         p.wait()
 
-    print_to_stderr("finish wait")
+#    print_to_stderr("finish wait")
 
-#def sigterm_handle(a,b):
+# def sigterm_handle(a,b):
 #    from zencad.util import print_to_stderr
 #    print_to_stderr("SIGTERM", a, b)
 #    sys.exit()
 
 
-#def setup_signal_handling():
+# def setup_signal_handling():
 #    from zencad.util import print_to_stderr
 #    print_to_stderr("Process set handler")
 #    signal.signal(signal.SIGTERM, sigterm_handle)
@@ -112,7 +112,7 @@ def finish_procedure():
 
 
 def main():
-#    setup_signal_handling()
+    #    setup_signal_handling()
     pargs = console_options_handle()
 
     if pargs.install_libs:
@@ -122,18 +122,18 @@ def main():
 
     if pargs.install_pythonocc_force:
         from zencad.geometry_core_installer import install_precompiled_python_occ
-        print("Start")
+    #    print("Start")
         install_precompiled_python_occ()
-        print("Finish")
+    #    print("Finish")
         sys.exit()
 
     if pargs.install_occt_force is not None:
         from zencad.geometry_core_installer import install_precompiled_occt_library
-        print("Start")
+    #    print("Start")
         path = pargs.install_occt_force[0] if len(
             pargs.install_occt_force) > 0 else None
         install_precompiled_occt_library(tgtpath=path)
-        print("Finish")
+    #    print("Finish")
         sys.exit()
 
     try:
@@ -159,12 +159,12 @@ def main():
 
     finish_procedure()
 
-    from zencad.util import print_to_stderr
-    print_to_stderr(f"Process {os.getpid()} is finished")
+    #from zencad.util import print_to_stderr
+    #print_to_stderr(f"Process {os.getpid()} is finished")
+
 
 if __name__ == "__main__":
     main()
-
 
 
 #import zencad

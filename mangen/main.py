@@ -35,14 +35,15 @@ def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
             dominate.tags.a("Ru", href="../ru/" + path.split("/")[1])
             dominate.tags.a("En", href="../en/" + path.split("/")[1])
 
-    with nav: 
+    with nav:
         dominate.util.raw(markdown2.markdown(open(navpath).read()))
 
     with article:
         if comming:
             article.add("English version in preparation. COMMING SOON.")
         dominate.util.raw(
-            markdown2.markdown(open(mdpath).read(), extras=["fenced-code-blocks", "tables", "header-ids"])
+            markdown2.markdown(open(mdpath).read(), extras=[
+                               "fenced-code-blocks", "tables", "header-ids"])
         )
 
     writer.build_file(path, page)
@@ -50,7 +51,8 @@ def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
 
 for f in os.listdir("ru"):
     target = os.path.splitext(f)[0] + ".html"
-    page_generate("ru/" + target, "ZenCad", os.path.join("ru", f), "ru/nav.md", lang="ru")
+    page_generate("ru/" + target, "ZenCad",
+                  os.path.join("ru", f), "ru/nav.md", lang="ru")
 
 for f in os.listdir("en"):
     target = os.path.splitext(f)[0] + ".html"
@@ -67,7 +69,8 @@ redirect_page.add(
     )
 )
 with redirect_page:
-    dominate.tags.p("Если ваш браузер не поддерживает redirect, перейдите по ссылке:")
+    dominate.tags.p(
+        "Если ваш браузер не поддерживает redirect, перейдите по ссылке:")
     with dominate.tags.p():
         dominate.tags.a("ZenCad/ru", href="ru/index.html")
     with dominate.tags.p():

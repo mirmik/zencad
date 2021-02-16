@@ -16,7 +16,8 @@ class Ops1d2dProbe(unittest.TestCase):
         zencad.interpolate([(0, 0, 0), (1, 1, 0), (1, 1, 1)])
         zencad.interpolate(pnts=[(0, 0, 0), (1, 1, 0), (1, 1, 1)], closed=True)
         zencad.interpolate(
-            [(0, 0, 0), (1, 1, 0), (1, 1, 1)], [(0, 0, 0), (1, 1, 0), (1, 1, 1)]
+            [(0, 0, 0), (1, 1, 0), (1, 1, 1)], [
+                (0, 0, 0), (1, 1, 0), (1, 1, 1)]
         )
         zencad.interpolate(
             pnts=[(0, 0, 0), (1, 1, 0), (1, 1, 1)],

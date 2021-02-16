@@ -128,17 +128,17 @@ class MainWindowActionsMixin:
         self.texteditor.save_as(path)
 
     def exportStlAction(self):
-        self.client_communicator.send({"cmd": "exportstl"})
+        self._current_client_communicator.send({"cmd": "exportstl"})
 
     def exportBrepAction(self):
-        self.client_communicator.send({"cmd": "exportbrep"})
+        self._current_client_communicator.send({"cmd": "exportbrep"})
 
     def externalTextEditorOpen(self):
         cmd = zencad.settings.get_external_editor_command()
-        subprocess.Popen(cmd.format(path=self.current_opened), shell=True)
+        subprocess.Popen(cmd.format(path=self.current_opened()), shell=True)
 
     def to_freecad_action(self):
-        self.client_communicator.send({"cmd": "to_freecad"})
+        self._current_client_communicator.send({"cmd": "to_freecad"})
 
     def screenshotAction(self):
         # TODO: Востановить алгоритм взятия скриншота с дампом view буффера.
@@ -179,23 +179,23 @@ class MainWindowActionsMixin:
         # image.save(path)
 
     def resetAction(self):
-        self.client_communicator.send({"cmd": "resetview"})
+        self._current_client_communicator.send({"cmd": "resetview"})
 
     def centeringAction(self):
-        self.client_communicator.send({"cmd": "centering"})
+        self._current_client_communicator.send({"cmd": "centering"})
 
     def autoscaleAction(self):
-        self.client_communicator.send({"cmd": "autoscale"})
+        self._current_client_communicator.send({"cmd": "autoscale"})
 
     def trackingAction(self, en):
-        self.client_communicator.send({"cmd": "tracking", "en": en})
+        self._current_client_communicator.send({"cmd": "tracking", "en": en})
         self.info_widget.set_tracking_info_status(en)
 
     def orient1(self):
-        self.client_communicator.send({"cmd": "orient1"})
+        self._current_client_communicator.send({"cmd": "orient1"})
 
     def orient2(self):
-        self.client_communicator.send({"cmd": "orient2"})
+        self._current_client_communicator.send({"cmd": "orient2"})
 
     def invalidateCacheAction(self):
         files = zencad.lazy.cache.keys()
@@ -242,8 +242,8 @@ class MainWindowActionsMixin:
             "<p>Files: {}"
             "<p>Size: {}".format(
                 zencad.lazifier.cachepath,
-                zencad.lazy.algo().name,
-                len(zencad.lazy.cache.keys()),
+                zencad.lazifier.algo().name,
+                len(zencad.lazifier.lazy.cache.keys()),
                 sizeof_fmt(get_size(zencad.lazifier.cachepath)),
             )
         )
@@ -460,7 +460,8 @@ class MainWindowActionsMixin:
         )
 
     def set_center_visible(self, en):
-        self.client_communicator.send({"cmd": "set_center_visible", "en": en})
+        self._current_client_communicator.send(
+            {"cmd": "set_center_visible", "en": en})
 
     def createMenus(self):
         self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -527,15 +528,16 @@ class MainWindowActionsMixin:
         pass
 
     def set_perspective(self, en):
-        if self.client_communicator:
-            self.client_communicator.send({"cmd": "set_perspective", "en": en})
+        if self._current_client_communicator:
+            self._current_client_communicator.send(
+                {"cmd": "set_perspective", "en": en})
         self.perspective_checkbox_state = en
 
         zencad.settings.set(["memory", "perspective"],
                             "true" if en else "false")
 
     def first_person_mode(self):
-        self.client_communicator.send({"cmd": "first_person_mode"})
+        self._current_client_communicator.send({"cmd": "first_person_mode"})
 
     def auto_update(self, en):
         if en:

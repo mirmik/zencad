@@ -3,7 +3,7 @@ from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakeThickSolid, BRepOffsetAPI_M
 
 from zencad.geom.near import _near_face
 from zencad.shape import Shape, shape_generator
-from zencad.lazy import *
+from zencad.lazifier import *
 
 
 def _thicksolid(proto, refs, t):

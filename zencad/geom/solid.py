@@ -5,7 +5,7 @@ from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
 from OCC.Core.BRepLib import BRepLib_MakeFace
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
 
-from zencad.lazy import *
+from zencad.lazifier import *
 
 
 @lazy.lazy(cls=nocached_shape_generator)

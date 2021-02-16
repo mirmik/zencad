@@ -18,6 +18,11 @@ class Curve:
         import zencad.geom.wire
         return zencad.geom.wire.make_edge(self, interval)
 
+    def _d0(self, arg):
+        pnt = gp_Pnt()
+        self._crv.D0(arg, pnt)
+        return point3(pnt)
+
     def d0(self, arg):
         #adaptor = self.AdaptorCurve()
         pnt = gp_Pnt()  # , vec = gp_Pnt(), gp_Vec()
