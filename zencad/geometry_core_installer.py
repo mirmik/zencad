@@ -135,7 +135,7 @@ def install_precompiled_python_occ(occversion="7.4.1"):
 		"OCC")
 	print(f"Source: {source_directory}")
 	print(f"Target: {target_directory}")
-	shutil.copytree(source_directory, target_directory, dirs_exist_ok=True)	
+	shutil.copytree(source_directory, target_directory)	
 	print("Copying status: Success")
 
 	print(f"Precomiled OCC succesfually installed in {target_directory}")
