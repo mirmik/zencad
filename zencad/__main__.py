@@ -71,11 +71,10 @@ def exec_display_only(pargs):
     runpy.run_path(pargs.paths[0], run_name="__main__")
 
 
-def main_unbound_process()
-
-
-spawn_main_process()
-
+def exec_main_unbound_process():
+    import zencad.gui.mainwindow
+    # start_application
+    pass
 
 def exec_display_unbound(pargs):
     """ Запускает виджет отображения, зависимый от графической
