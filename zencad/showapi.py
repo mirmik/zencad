@@ -38,8 +38,5 @@ def show(scene=None, display_only=False):
         zencad.gui.display_only.exec_display_only_mode()
 
     else:
-        print("TODO: GUI mode")
-        import zencad.gui.display_only
-        zencad.gui.display_only.init_display_only_mode()
-        zencad.gui.display_only.DISPLAY.attach_scene(scene)
-        zencad.gui.display_only.exec_display_only_mode()
+        import zencad.gui.main_unbound
+        zencad.gui.main_unbound._show(scene=scene)

@@ -70,7 +70,7 @@ class Shape(zencad.transformable.Transformable):
 
     def normal(self, u=0, v=0):
         assert(self.is_face())
-        print(self._SLProps(u,v))
+        print(self._SLProps(u, v))
         return vector3(self._SLProps(u, v).Normal())
 
     def __getstate__(self):

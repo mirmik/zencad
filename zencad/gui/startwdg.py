@@ -1,10 +1,11 @@
+import os
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import zencad.gui.util
 import zencad.settings
-import os
 
 
 class StartDialog(QDialog):

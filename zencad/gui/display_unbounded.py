@@ -57,19 +57,6 @@ BIND_MODE = True
 
 
 def qt_sigterm_handle(a, b):
-    from zencad.util import print_to_stderr
-    # print_to_stderr("111")
-    # RETRANSLER.finish()
-    # try:
-    #    COMMUNICATOR.stop_listen()
-    # except Exception as ex:
-    #    print_to_stderr(ex)
-    # print_to_stderr("222")
-    #print_to_stderr("QSIGTERM", a, b)
-    # COMMUNICATOR.listener_thr.wait()
-    # RETRANSLER.wait()
-
-    time.sleep(1)
     sys.exit()
 
 
@@ -145,6 +132,7 @@ def unbound_worker_bottom_half(scene):
         init_size=PRESCALE_SIZE)
     display.attach_scene(scene)
 
+    # todo: почему не внутри?
     COMMUNICATOR.bind_handler(display.external_communication_command)
 
     if BIND_MODE:
