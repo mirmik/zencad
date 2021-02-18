@@ -18,7 +18,7 @@ import os
 import signal
 from zencad.util import print_to_stderr
 
-COMMUNICATOR_TRACE = False
+import zencad.configuration
 
 
 class Communicator(QObject):
@@ -31,13 +31,11 @@ class Communicator(QObject):
     TODO: вынести subproc из коммуникатора.
     """
 
-    smooth_stop = pyqtSignal()
     oposite_clossed = pyqtSignal()
     newdata = pyqtSignal(dict, int)
 
-    def __init__(self, ifile, ofile, no_communicator_pickle=False):
+    def __init__(self, ifile, ofile):
         super().__init__()
-        self.no_communicator_pickle = no_communicator_pickle
         self.declared_opposite_pid = None
         self.subproc = None
         self.ifile = ifile
@@ -48,6 +46,13 @@ class Communicator(QObject):
     def socket_notifier_handle(self, a):
         try:
             inputdata = self.ifile.readline()
+            if len(inputdata) == 0:
+                self.oposite_clossed.emit()
+                return
+
+            if zencad.configuration.COMMUNICATOR_TRACE:
+                print_to_stderr("recv", inputdata)
+
             unwraped_data = json.loads(inputdata)
 
             if unwraped_data["cmd"] == "set_opposite_pid":
@@ -57,7 +62,7 @@ class Communicator(QObject):
             self.newdata.emit(unwraped_data, self.subproc_pid())
 
         except Exception as ex:
-            print(ex)
+            print_to_stderr(ex)
             sys.exit()
 
     def simple_read(self):
@@ -90,18 +95,14 @@ class Communicator(QObject):
         return self.subproc.pid if self.subproc else self.declared_opposite_pid
 
     def send(self, obj):
-        if COMMUNICATOR_TRACE:
+        if zencad.configuration.COMMUNICATOR_TRACE:
             print_to_stderr("send", obj)
 
-        if not self.no_communicator_pickle:
-            sendstr = json.dumps(obj) + "\n"
-        else:
-            sendstr = str(obj) + "\r\n"
+        sendstr = json.dumps(obj) + "\n"
 
         try:
             self.ofile.write(sendstr)
             self.ofile.flush()
             return True
         except Exception as ex:
-            self.stop_listen()
             return False

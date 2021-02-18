@@ -1,6 +1,3 @@
-from zencad.gui.retransler import ConsoleRetransler
-from zencad.gui.communicator import Communicator
-from zencad.gui.display import DisplayWidget
 import sys
 import io
 import os
@@ -10,10 +7,17 @@ import runpy
 import signal
 import json
 
+from zencad.gui.retransler import ConsoleRetransler
+from zencad.gui.communicator import Communicator
+from zencad.gui.display import DisplayWidget
+
 from zencad.util import print_to_stderr
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
-QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
+
+import zencad.configuration
+if zencad.configuration.FILTER_QT_WARNINGS:
+    QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
 
 def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=None):
@@ -67,7 +71,6 @@ def qt_setup_signal_handling():
 
 
 def unbound_worker_exec(path, prescale, size,
-                        no_communicator_pickle=False,
                         sleeped=False):
     global COMMUNICATOR, PRESCALE_SIZE, RETRANSLER
     QAPP = QtWidgets.QApplication([])
@@ -84,8 +87,7 @@ def unbound_worker_exec(path, prescale, size,
     # Коммуникатор будет слать сообщения на скрытый файл,
     # тоесть, на истинный stdout
     COMMUNICATOR = Communicator(
-        ifile=sys.stdin, ofile=RETRANSLER.new_file,
-        no_communicator_pickle=no_communicator_pickle)
+        ifile=sys.stdin, ofile=RETRANSLER.new_file)
 
     # Показываем ретранслятору его коммуникатор.
     RETRANSLER.set_communicator(COMMUNICATOR)
@@ -96,8 +98,12 @@ def unbound_worker_exec(path, prescale, size,
         # пока ему не передадут задание на выполнение.
         # оптимизация достигается за счёт предварительной загрузки библиотек.
         try:
-            dct0 = json.loads(COMMUNICATOR.simple_read())  # set_oposite_pid
-            dct1 = json.loads(COMMUNICATOR.simple_read())  # unwait
+            data0 = COMMUNICATOR.simple_read()
+            data1 = COMMUNICATOR.simple_read()
+            print_to_stderr("slep", data0)
+            print_to_stderr("slep", data1)
+            dct0 = json.loads(data0)  # set_oposite_pid
+            dct1 = json.loads(data1)  # unwait
         except Exception as ex:
             print_to_stderr("sleeped thread finished with exception")
             print_to_stderr(ex)
@@ -115,6 +121,7 @@ def unbound_worker_exec(path, prescale, size,
     zencad.showapi.UNBOUND_MODE = True
 
     # Меняем директорию, чтобы скрипт мог подключать зависимые модули.
+    path = os.path.abspath(path)
     directory = os.path.dirname(os.path.abspath(path))
     os.chdir(directory)
     sys.path.append(directory)

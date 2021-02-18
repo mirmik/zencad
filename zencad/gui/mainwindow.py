@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import signal
+import json
 from zencad.util import print_to_stderr
 
 import zencad.gui.actions
@@ -13,15 +14,22 @@ from zencad.gui.text_editor import TextEditor
 from zencad.gui.display_unbounded import start_unbounded_worker, spawn_sleeped_worker
 from zencad.gui.startwdg import StartDialog
 
+
+from zencad.gui.retransler import ConsoleRetransler
+from zencad.gui.communicator import Communicator
+
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
-QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
+
+import zencad.configuration
+if zencad.configuration.FILTER_QT_WARNINGS:
+    QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
 
 class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
                  title="ZenCad",
-                 sleeped_optimization=True,
-                 keep_alive_pids=[]
+                 sleeped_optimization=zencad.configuration.SLEEPED_OPTIMIZATION,
+                 initial_process_communicator=None
                  ):
 
         super().__init__()
@@ -32,9 +40,10 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
         self.info_widget = InfoWidget()
         self.notifier = InotifyThread(self)
         self.screen_saver = ScreenSaverWidget()
+        self.initial_process_communicator = initial_process_communicator
 
         # Init variables
-        self._keep_alive_pids = keep_alive_pids
+        self._keep_alive_pids = []
         self._inited0 = False
         self._bind_mode = True
         self._sleeped_optimization = sleeped_optimization
@@ -62,6 +71,12 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
         if self._sleeped_optimization:
             self.make_sleeped_thread()
+
+        if initial_process_communicator:
+            print_to_stderr("initial_process_communicator", initial_process_communicator.subproc_pid())
+            self._current_client_communicator = initial_process_communicator
+            self._client_communicators[initial_process_communicator.subproc_pid()] = initial_process_communicator
+            self._keep_alive_pids.append(initial_process_communicator.subproc_pid())
 
     def make_sleeped_thread(self, kill_prev=True):
         if self._sleeped_communicator and kill_prev:
@@ -147,11 +162,14 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
         self._current_client_communicator.oposite_clossed.connect(
             self.delete_communicator)
-        self._current_client_communicator.newdata.connect(
-            self.new_worker_message)
+        self._current_client_communicator.bind_handler(self.new_worker_message)
         self._current_client_communicator.start_listen()
 
         self._openlock.unlock()
+
+    def open_declared(self, path):
+        self._current_opened = path
+        self.texteditor.open(path)
 
     def finalize_subprocess(self, communicator):
         pid = communicator.subproc_pid()
@@ -296,10 +314,31 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
         QtGui.QGuiApplication.postEvent(self.texteditor, event)
 
 
-def start_application(openpath=None, none=False):
+def start_application(openpath=None, none=False, unbound=False):
     QAPP = QtWidgets.QApplication(sys.argv[1:])
+    initial_process_communicator = None
 
-    if openpath is None and not none:
+    if unbound:
+        # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
+        # через ретранслятор. Теперь все консольные сообщения будуут обвешиваться
+        # тегами и поступать на коммуникатор.
+        retransler = ConsoleRetransler(sys.stdout)
+        retransler.start()
+    
+        # Коммуникатор будет слать сообщения на скрытый файл,
+        # тоесть, на истинный stdout
+        initial_process_communicator = Communicator(
+            ifile=sys.stdin, ofile=retransler.new_file)
+
+        # Показываем ретранслятору его коммуникатор.
+        retransler.set_communicator(initial_process_communicator)
+
+        data = initial_process_communicator.simple_read()
+        dct0 = json.loads(data)
+
+        initial_process_communicator.declared_opposite_pid = int(dct0["data"])
+
+    if openpath is None and not none and not unbound:
         if zencad.settings.list()["gui"]["start_widget"] == "true":
             strt_dialog = zencad.gui.startwdg.StartDialog()
             strt_dialog.exec()
@@ -313,10 +352,18 @@ def start_application(openpath=None, none=False):
             openpath = zencad.gui.util.create_temporary_file(
                 zencad_template=True)
 
-    MAINWINDOW = MainWindow()
+    MAINWINDOW = MainWindow(
+        initial_process_communicator=initial_process_communicator)
+
+    if unbound:
+        initial_process_communicator.bind_handler(MAINWINDOW.new_worker_message)
+        initial_process_communicator.start_listen()
 
     if openpath:
-        MAINWINDOW.open(openpath)
+        if not unbound:
+            MAINWINDOW.open(openpath)
+        else:
+            MAINWINDOW.open_declared(openpath)
 
     MAINWINDOW.show()
     QAPP.exec()

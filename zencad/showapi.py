@@ -38,5 +38,5 @@ def show(scene=None, display_only=False):
         zencad.gui.display_only.exec_display_only_mode()
 
     else:
-        import zencad.gui.main_unbound
-        zencad.gui.main_unbound._show(scene=scene)
+        import zencad.gui.main_unbounded
+        zencad.gui.main_unbounded._show(scene=scene)

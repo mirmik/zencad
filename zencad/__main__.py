@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
-from zencad.gui.main_unbound import spawn_main_process
 import os
 import sys
 import time
@@ -38,7 +37,6 @@ def console_options_handle():
     parser.add_argument("--sleeped", action="store_true",
                         help="Don't use manualy. Create sleeped thread.")
     parser.add_argument("--size")
-    parser.add_argument("--no-communicator-pickle", action="store_true")
     parser.add_argument("paths", type=str, nargs="*", help="runned file")
 
     pargs = parser.parse_args()
@@ -50,7 +48,7 @@ def console_options_handle():
     return pargs
 
 
-def exec_main_window_process(openpath, none=False):
+def exec_main_window_process(openpath, none=False, unbound=False):
     """	Запускает графическую оболочку, которая управляет.
             Потоками с виджетами отображения. """
 
@@ -58,7 +56,10 @@ def exec_main_window_process(openpath, none=False):
     import zencad.util
 
     zencad.util.set_debug_process_name("MAIN")
-    zencad.gui.mainwindow.start_application(openpath=openpath, none=none)
+    zencad.gui.mainwindow.start_application(
+    	openpath=openpath, 
+    	none=none,
+    	unbound=unbound)
 
 
 def exec_display_only(pargs):
@@ -71,11 +72,6 @@ def exec_display_only(pargs):
     runpy.run_path(pargs.paths[0], run_name="__main__")
 
 
-def exec_main_unbound_process():
-    import zencad.gui.mainwindow
-    # start_application
-    pass
-
 def exec_display_unbound(pargs):
     """ Запускает виджет отображения, зависимый от графической
             оболочки."""
@@ -86,9 +82,11 @@ def exec_display_unbound(pargs):
     size = (float(a) for a in pargs.size.split(","))
 
     from zencad.gui.display_unbounded import unbound_worker_exec
-    unbound_worker_exec(pargs.paths[0], pargs.prescale, size,
-                        no_communicator_pickle=pargs.no_communicator_pickle,
-                        sleeped=pargs.sleeped)
+    unbound_worker_exec(
+    	path=pargs.paths[0], 
+    	prescale=pargs.prescale, 
+    	size=size,
+        sleeped=pargs.sleeped)
 
 
 def finish_procedure():
@@ -133,12 +131,12 @@ def main():
         elif pargs.unbound:
             exec_display_unbound(pargs)
 
-        elif pargs.mainunbound:
-            exec_main_unbound_process()
-
         else:
             path = pargs.paths[0] if len(pargs.paths) > 0 else None
-            exec_main_window_process(openpath=path, none=pargs.none)
+            exec_main_window_process(
+            	openpath=path, 
+            	none=pargs.none,
+            	unbound=pargs.mainunbound)
 
     except Exception as ex:
         from zencad.util import print_to_stderr
