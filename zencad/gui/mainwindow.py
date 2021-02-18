@@ -73,7 +73,6 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             self.make_sleeped_thread()
 
         if initial_process_communicator:
-            print_to_stderr("initial_process_communicator", initial_process_communicator.subproc_pid())
             self._current_client_communicator = initial_process_communicator
             self._client_communicators[initial_process_communicator.subproc_pid()] = initial_process_communicator
             self._keep_alive_pids.append(initial_process_communicator.subproc_pid())
@@ -190,8 +189,6 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             del self._client_communicators[pid]
             del self._embededs_holder[pid]
 
-        assert(len(self._client_communicators) == len(self._embededs_holder))
-
     def new_worker_message(self, data, procpid):
         try:
             cmd = data["cmd"]
@@ -209,6 +206,8 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
         #    self.set_current_opened(path=data['path'])
         # elif cmd == 'clientpid':
         #    self.clientpid = data['pid']
+        elif cmd == "except":
+            print("!!!Exception:", data["header"])
         elif cmd == "qmarker":
             self.marker_handler("q", data)
         elif cmd == "wmarker":
@@ -279,7 +278,7 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
         self._openlock.lock()
 
         comm = self.sender()
-        comm.stop_listen()
+        #comm.stop_listen()
         #
         # if comm in self.client_finalization_list:
         #	self.client_finalization_list.remove(comm)

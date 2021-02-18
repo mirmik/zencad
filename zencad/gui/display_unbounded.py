@@ -16,6 +16,7 @@ from zencad.util import print_to_stderr
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
 import zencad.configuration
+COMMUNICATOR_TRACE = zencad.configuration.COMMUNICATOR_TRACE
 if zencad.configuration.FILTER_QT_WARNINGS:
     QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
@@ -100,8 +101,10 @@ def unbound_worker_exec(path, prescale, size,
         try:
             data0 = COMMUNICATOR.simple_read()
             data1 = COMMUNICATOR.simple_read()
-            print_to_stderr("slep", data0)
-            print_to_stderr("slep", data1)
+
+            if COMMUNICATOR_TRACE:
+                print_to_stderr("slep", data0)
+                print_to_stderr("slep", data1)
             dct0 = json.loads(data0)  # set_oposite_pid
             dct1 = json.loads(data1)  # unwait
         except Exception as ex:
@@ -113,6 +116,7 @@ def unbound_worker_exec(path, prescale, size,
         path = dct1["path"]
         PRESCALE_SIZE = (int(a) for a in dct1["size"].split(","))
 
+    COMMUNICATOR.oposite_clossed.connect(QtWidgets.QApplication.instance().quit)
     COMMUNICATOR.start_listen()
 
     # Устанавливаем флаг в модуль showapi, чтобы процедура show
@@ -127,7 +131,11 @@ def unbound_worker_exec(path, prescale, size,
     sys.path.append(directory)
 
     # Совершив подготовительные процедуры, запускаем скрипт.
-    runpy.run_path(path, run_name="__main__")
+    try:
+        runpy.run_path(path, run_name="__main__")
+    except Exception as ex:
+        COMMUNICATOR.send({"cmd":"except", "header":str(ex)})
+
 
 
 def unbound_worker_bottom_half(scene):

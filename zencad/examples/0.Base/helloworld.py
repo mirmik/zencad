@@ -3,6 +3,7 @@
 
 from zencad import *
 
+print("Hello")
 a = box(200, 200, 200, center=True)
 b = sphere(120)
 c = sphere(60)

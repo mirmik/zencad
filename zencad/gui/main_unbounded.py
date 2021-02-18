@@ -7,6 +7,7 @@ from zencad import print_to_stderr
 
 #from zencad.gui.retransler import ConsoleRetransler
 from zencad.gui.communicator import Communicator
+from zencad.gui.retransler import ConsoleRetransler
 from zencad.gui.display import DisplayWidget
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
@@ -44,6 +45,8 @@ BIND_MODE = True
 
 def _show(scene):    
     QAPP = QtWidgets.QApplication([])
+    CONSOLE_FILTER = ConsoleRetransler(sys.stdout)
+    CONSOLE_FILTER.start2()
     
     maincomm = start_unbounded_main(sys.argv[0])
     

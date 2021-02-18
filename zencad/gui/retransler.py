@@ -37,6 +37,15 @@ class ConsoleRetransler(QObject):
 
         self.sock_notifier.activated.connect(self.socket_notifier_handle)
 
+    def start2(self):
+        self.sock_notifier = QtCore.QSocketNotifier(
+            self.r_file.fileno(),
+            QtCore.QSocketNotifier.Read,
+            self
+        )
+
+        self.sock_notifier.activated.connect(self.socket_notifier_handle2)
+
     def socket_notifier_handle(self, a):
         inputdata = self.r_file.readline()
 
@@ -54,6 +63,24 @@ class ConsoleRetransler(QObject):
                 return
 
         self.communicator.send({"cmd": "console", "data": inputdata})
+
+    def socket_notifier_handle2(self, a):
+        inputdata = self.r_file.readline()
+
+        # pythonocc спамит некоторое количество сообщений
+        # при активации виджета
+        # Этот костыль их скрывает.
+        if ENABLE_PREVENT_MODE:
+            if inputdata == PREVENT_OUTPUT_START:
+                self.prevent_mode = True
+
+            if self.prevent_mode:
+                if inputdata == PREVENT_OUTPUT_STOP:
+                    self.prevent_mode = False
+
+                return
+
+        print(inputdata)
 
     def do_retrans(self, old_file, new_desc=None):
         old_desc = old_file.fileno()
