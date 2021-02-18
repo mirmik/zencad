@@ -187,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
         for pid in to_delete:
             del self._client_communicators[pid]
-            del self._embededs_holder[pid]
+            if pid in self._embededs_holder: del self._embededs_holder[pid]
 
     def new_worker_message(self, data, procpid):
         try:

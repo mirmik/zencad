@@ -11,6 +11,7 @@ from OCC.Core.Aspect import Aspect_GFM_VER
 from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+from OCC.Core.Graphic3d import Graphic3d_Camera
 import OCC.Core.BRepPrimAPI
 
 from OCC.Display import OCCViewer
@@ -81,6 +82,7 @@ class DisplayWidget(BaseViewer):
         self._middleisdown = False
         self._rightisdown = False
         self._drawtext = True
+        self._perspective_mode = False
         self.mousedown = False
         self.keyboard_retranslate_mode = True
 
@@ -104,6 +106,15 @@ class DisplayWidget(BaseViewer):
 
         self.set_center_visible(False)
 
+    def set_perspective(self, en):
+        self._perspective_mode = en
+        if en:
+            self._display.View.Camera().SetProjectionType(Graphic3d_Camera.Projection_Perspective)
+        else:
+            self._display.View.Camera().SetProjectionType(Graphic3d_Camera.Projection_Orthographic)
+
+        self.redraw()
+
     def reset_orient1(self):
         self._orient = 1
         self.yaw = STARTED_YAW
@@ -111,6 +122,11 @@ class DisplayWidget(BaseViewer):
         self.set_orient1()
         # self.set_orient1()
         # self.update_orient1_from_view()
+        self.redraw()
+
+    def reset_orient2(self):
+        self._orient = 2
+        self.set_orient2()
         self.redraw()
 
     def reset_orient(self):
@@ -126,6 +142,9 @@ class DisplayWidget(BaseViewer):
             math.sin(self.pitch)
         ))
         self._display.View.Camera().SetUp(gp_Dir(0, 0, 1))
+
+    def set_orient2(self):
+        pass
 
     def update_orient1_from_view(self):
         """Read actual camera orientation data from view"""
@@ -424,7 +443,7 @@ class DisplayWidget(BaseViewer):
     def external_communication_command(self, data):
         cmd = data["cmd"]
 
-        print_to_stderr("Dcmd:", data)
+        #print_to_stderr("Dcmd:", data)
 
         if cmd == "autoscale":
             self.autoscale()
