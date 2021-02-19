@@ -57,9 +57,9 @@ def exec_main_window_process(openpath, none=False, unbound=False):
 
     zencad.util.set_debug_process_name("MAIN")
     zencad.gui.mainwindow.start_application(
-    	openpath=openpath, 
-    	none=none,
-    	unbound=unbound)
+        openpath=openpath,
+        none=none,
+        unbound=unbound)
 
 
 def exec_display_only(pargs):
@@ -83,9 +83,9 @@ def exec_display_unbound(pargs):
 
     from zencad.gui.display_unbounded import unbound_worker_exec
     unbound_worker_exec(
-    	path=pargs.paths[0], 
-    	prescale=pargs.prescale, 
-    	size=size,
+        path=pargs.paths[0],
+        prescale=pargs.prescale,
+        size=size,
         sleeped=pargs.sleeped)
 
 
@@ -134,9 +134,9 @@ def main():
         else:
             path = pargs.paths[0] if len(pargs.paths) > 0 else None
             exec_main_window_process(
-            	openpath=path, 
-            	none=pargs.none,
-            	unbound=pargs.mainunbound)
+                openpath=path,
+                none=pargs.none,
+                unbound=pargs.mainunbound)
 
     except Exception as ex:
         from zencad.util import print_to_stderr

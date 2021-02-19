@@ -109,9 +109,11 @@ class DisplayWidget(BaseViewer):
     def set_perspective(self, en):
         self._perspective_mode = en
         if en:
-            self._display.View.Camera().SetProjectionType(Graphic3d_Camera.Projection_Perspective)
+            self._display.View.Camera().SetProjectionType(
+                Graphic3d_Camera.Projection_Perspective)
         else:
-            self._display.View.Camera().SetProjectionType(Graphic3d_Camera.Projection_Orthographic)
+            self._display.View.Camera().SetProjectionType(
+                Graphic3d_Camera.Projection_Orthographic)
 
         self.redraw()
 

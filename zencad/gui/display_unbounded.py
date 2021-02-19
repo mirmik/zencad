@@ -116,7 +116,8 @@ def unbound_worker_exec(path, prescale, size,
         path = dct1["path"]
         PRESCALE_SIZE = (int(a) for a in dct1["size"].split(","))
 
-    COMMUNICATOR.oposite_clossed.connect(QtWidgets.QApplication.instance().quit)
+    COMMUNICATOR.oposite_clossed.connect(
+        QtWidgets.QApplication.instance().quit)
     COMMUNICATOR.start_listen()
 
     # Устанавливаем флаг в модуль showapi, чтобы процедура show
@@ -134,8 +135,7 @@ def unbound_worker_exec(path, prescale, size,
     try:
         runpy.run_path(path, run_name="__main__")
     except Exception as ex:
-        COMMUNICATOR.send({"cmd":"except", "header":str(ex)})
-
+        COMMUNICATOR.send({"cmd": "except", "header": str(ex)})
 
 
 def unbound_worker_bottom_half(scene):

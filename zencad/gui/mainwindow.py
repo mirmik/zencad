@@ -24,6 +24,7 @@ import zencad.configuration
 if zencad.configuration.FILTER_QT_WARNINGS:
     QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
+
 class ZenClient:
     def __init__(self, communicator):
         self.communicator = communicator
@@ -37,21 +38,22 @@ class ZenClient:
     def pid(self):
         return self.communicator.subproc_pid()
 
+
 class ZenFrame(QtWidgets.QMainWindow):
-    def __init__(self, 
-        title,
-        sleeped_optimization=False,
-        initial_communicator=None
-    ):
+    def __init__(self,
+                 title,
+                 sleeped_optimization=False,
+                 initial_communicator=None
+                 ):
         super().__init__()
         self.setWindowTitle(title)
 
         self._initial_client = None
         self._current_client = None
         self._sleeped_client = None
-        
+
         self._sleeped_optimization = sleeped_optimization
-        
+
         self.notifier = InotifyThread(self)
 
         self._keep_alive_pids = []
@@ -74,7 +76,7 @@ class ZenFrame(QtWidgets.QMainWindow):
         self.console = ConsoleWidget()
         self.texteditor = TextEditor()
         self.screen_saver = ScreenSaverWidget()
-        
+
         self.cw = QtWidgets.QWidget()
         self.cw_layout = QtWidgets.QVBoxLayout()
         self.hsplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
@@ -126,7 +128,8 @@ class ZenFrame(QtWidgets.QMainWindow):
 
         for pid in to_delete:
             del self._clients[pid]
-            
+
+
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
                  title="ZenCad",
@@ -140,7 +143,7 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
         # Init objects
         self.info_widget = InfoWidget()
-        
+
         # Init variables
         self._inited0 = False
         self._bind_mode = True
@@ -156,14 +159,14 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self.createToolbars()
 
         self.init_central_widget()
-        
+
         # Bind signals
         self.init_changes_notifier(self.reopen_current)
 
     def init_central_widget(self):
         self.init_zen_central_widget()
         self.central_widget_layout().addWidget(self.info_widget)
-        
+
         self.resize(640, 480)
 
     def showEvent(self, event):
@@ -212,8 +215,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
         else:
             client = ZenClient(start_unbounded_worker(path=openpath,
-                                                         need_prescale=need_prescale,
-                                                         size=self.vsplitter.widget(0).size()))
+                                                      need_prescale=need_prescale,
+                                                      size=self.vsplitter.widget(0).size()))
 
         self._current_client = client
         self._clients[client.pid()] = client
@@ -343,7 +346,7 @@ def start_application(openpath=None, none=False, unbound=False):
         # тегами и поступать на коммуникатор.
         retransler = ConsoleRetransler(sys.stdout)
         retransler.start()
-    
+
         # Коммуникатор будет слать сообщения на скрытый файл,
         # тоесть, на истинный stdout
         initial_communicator = Communicator(
