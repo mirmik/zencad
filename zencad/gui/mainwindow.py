@@ -24,73 +24,63 @@ import zencad.configuration
 if zencad.configuration.FILTER_QT_WARNINGS:
     QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
+class ZenClient:
+    def __init__(self, communicator):
+        self.communicator = communicator
+        self.embeded_window = None
+        self.embeded_widget = None
 
-class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixin):
-    def __init__(self,
-                 title="ZenCad",
-                 sleeped_optimization=zencad.configuration.SLEEPED_OPTIMIZATION,
-                 initial_process_communicator=None
-                 ):
+    def set_embed(self, window, widget):
+        self.embeded_window = window
+        self.embeded_widget = widget
 
+    def pid(self):
+        return self.communicator.subproc_pid()
+
+class ZenFrame(QtWidgets.QMainWindow):
+    def __init__(self, 
+        title,
+        sleeped_optimization=False,
+        initial_communicator=None
+    ):
         super().__init__()
+        self.setWindowTitle(title)
 
-        # Init objects
-        self.console = ConsoleWidget()
-        self.texteditor = TextEditor()
-        self.info_widget = InfoWidget()
-        self.notifier = InotifyThread(self)
-        self.screen_saver = ScreenSaverWidget()
-        self.initial_process_communicator = initial_process_communicator
-
-        # Init variables
-        self._keep_alive_pids = []
-        self._inited0 = False
-        self._bind_mode = True
+        self._initial_client = None
+        self._current_client = None
+        self._sleeped_client = None
+        
         self._sleeped_optimization = sleeped_optimization
-        self._current_opened = None
-        self._openlock = QtCore.QMutex(QtCore.QMutex.Recursive)
-        self._current_client_communicator = None
-        self._sleeped_communicator = None
+        
+        self.notifier = InotifyThread(self)
 
-        # Modes
-        self._fscreen_mode = False
+        self._keep_alive_pids = []
 
         # Reference Holder
-        self._embededs_holder = {}
-        self._client_communicators = {}
+        self._clients = {}
 
-        # Init Gui
-        self.setWindowTitle(title)
-        self.createActions()
-        self.createMenus()
-        self.createToolbars()
-        self.init_central_widget()
+        if initial_communicator:
+            self._initial_client = ZenClient(initial_communicator)
+            self._current_client = self._initial_client
 
-        # Bind signals
-        self.notifier.changed.connect(self.reopen_current)
+            initial_pid = self._initial_client.pid()
+            self._clients[initial_pid] = self._initial_client
+            self._keep_alive_pids.append(initial_pid)
 
         if self._sleeped_optimization:
             self.make_sleeped_thread()
 
-        if initial_process_communicator:
-            self._current_client_communicator = initial_process_communicator
-            self._client_communicators[initial_process_communicator.subproc_pid()] = initial_process_communicator
-            self._keep_alive_pids.append(initial_process_communicator.subproc_pid())
-
-    def make_sleeped_thread(self, kill_prev=True):
-        if self._sleeped_communicator and kill_prev:
-            self._sleeped_communicator.subproc.terminate()
-
-        self._sleeped_communicator = spawn_sleeped_worker()
-
-    def init_central_widget(self):
+    def init_zen_central_widget(self):
+        self.console = ConsoleWidget()
+        self.texteditor = TextEditor()
+        self.screen_saver = ScreenSaverWidget()
+        
         self.cw = QtWidgets.QWidget()
         self.cw_layout = QtWidgets.QVBoxLayout()
         self.hsplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.vsplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
         self.cw_layout.addWidget(self.hsplitter)
-        self.cw_layout.addWidget(self.info_widget)
         self.cw.setLayout(self.cw_layout)
 
         self.hsplitter.addWidget(self.texteditor)
@@ -104,6 +94,76 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
         self.setCentralWidget(self.cw)
         self.update()
 
+    def make_sleeped_thread(self, kill_prev=True):
+        if self._sleeped_client and kill_prev:
+            self._sleeped_client.subproc.terminate()
+
+        self._sleeped_client = ZenClient(spawn_sleeped_worker())
+
+    def central_widget_layout(self):
+        return self.cw_layout
+
+    def central_widget(self):
+        return self.cw
+
+    def init_changes_notifier(self, handler):
+        self.notifier.changed.connect(handler)
+
+    def finalize_subprocess(self, client):
+        pid = client.pid()
+        os.kill(pid, signal.SIGTERM)
+
+    def subprocess_finalization_do(self):
+        to_delete = []
+        current_pid = self._current_client.pid()
+        for pid in self._clients:
+            if (
+                    not pid == current_pid and
+                    not pid in self._keep_alive_pids):
+                self.finalize_subprocess(
+                    client=self._clients[pid])
+                to_delete.append(pid)
+
+        for pid in to_delete:
+            del self._clients[pid]
+            
+class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
+    def __init__(self,
+                 title="ZenCad",
+                 initial_communicator=None
+                 ):
+
+        super().__init__(
+            title=title,
+            sleeped_optimization=zencad.configuration.SLEEPED_OPTIMIZATION,
+            initial_communicator=initial_communicator)
+
+        # Init objects
+        self.info_widget = InfoWidget()
+        
+        # Init variables
+        self._inited0 = False
+        self._bind_mode = True
+        self._current_opened = None
+        self._openlock = QtCore.QMutex(QtCore.QMutex.Recursive)
+
+        # Modes
+        self._fscreen_mode = False
+
+        # Init Gui
+        self.createActions()
+        self.createMenus()
+        self.createToolbars()
+
+        self.init_central_widget()
+        
+        # Bind signals
+        self.init_changes_notifier(self.reopen_current)
+
+    def init_central_widget(self):
+        self.init_zen_central_widget()
+        self.central_widget_layout().addWidget(self.info_widget)
+        
         self.resize(640, 480)
 
     def showEvent(self, event):
@@ -138,10 +198,10 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
         need_prescale = False
 
         if self._sleeped_optimization:
-            client_communicator = self._sleeped_communicator
+            client = self._sleeped_client
             size = self.vsplitter.widget(0).size()
             size = "{},{}".format(size.width(), size.height())
-            client_communicator.send({
+            client.communicator.send({
                 "cmd": "unsleep",
                 "path": openpath,
                 "need_prescale": need_prescale,
@@ -151,43 +211,21 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             self.make_sleeped_thread(False)
 
         else:
-            client_communicator = start_unbounded_worker(path=openpath,
+            client = ZenClient(start_unbounded_worker(path=openpath,
                                                          need_prescale=need_prescale,
-                                                         size=self.vsplitter.widget(0).size())
+                                                         size=self.vsplitter.widget(0).size()))
 
-        self._current_client_communicator = client_communicator
-        self._client_communicators[
-            client_communicator.subproc.pid] = client_communicator
+        self._current_client = client
+        self._clients[client.pid()] = client
 
-        self._current_client_communicator.oposite_clossed.connect(
-            self.delete_communicator)
-        self._current_client_communicator.bind_handler(self.new_worker_message)
-        self._current_client_communicator.start_listen()
+        self._current_client.communicator.bind_handler(self.new_worker_message)
+        self._current_client.communicator.start_listen()
 
         self._openlock.unlock()
 
     def open_declared(self, path):
         self._current_opened = path
         self.texteditor.open(path)
-
-    def finalize_subprocess(self, communicator):
-        pid = communicator.subproc_pid()
-        os.kill(communicator.subproc.pid, signal.SIGTERM)
-
-    def subprocess_finalization_do(self):
-        to_delete = []
-        current_pid = self._current_client_communicator.subproc_pid()
-        for pid in self._client_communicators:
-            if (
-                    not pid == current_pid and
-                    not pid in self._keep_alive_pids):
-                self.finalize_subprocess(
-                    communicator=self._client_communicators[pid])
-                to_delete.append(pid)
-
-        for pid in to_delete:
-            del self._client_communicators[pid]
-            if pid in self._embededs_holder: del self._embededs_holder[pid]
 
     def new_worker_message(self, data, procpid):
         try:
@@ -196,7 +234,7 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             print("Warn: new_worker_message: message without 'cmd' field")
             returna
 
-        if procpid != self._current_client_communicator.subproc_pid() and data["cmd"] != "finish_screen":
+        if procpid != self._current_client.pid() and data["cmd"] != "finish_screen":
             return
 
         # TODO: Переделать в словарь
@@ -235,7 +273,7 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             print("Warn: unrecognized command", data)
 
     def bind_window(self, winid, pid):
-        if self._current_client_communicator.subproc_pid() != pid:
+        if self._current_client.pid() != pid:
             """Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
             то бинд уже неактуален."""
             print("Nonactual bind")
@@ -246,15 +284,16 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
         try:
             if self._bind_mode:
-                self.embeded_window = QtGui.QWindow.fromWinId(winid)
-                self.embeded_window_container = QtWidgets.QWidget.createWindowContainer(
-                    self.embeded_window)
-                self.vsplitter.replaceWidget(0, self.embeded_window_container)
+                window = QtGui.QWindow.fromWinId(winid)
+                container = QtWidgets.QWidget.createWindowContainer(
+                    window)
+                self._current_client.set_embed(
+                    window=window,
+                    widget=container)
+                self.vsplitter.replaceWidget(0, container)
 
             # Удерживаем ссылки на объекты, чтобы избежать
             # произвола от сборщика мусора
-            self._embededs_holder[pid] = (
-                (self.embeded_window, self.embeded_window_container))
             self.setWindowTitle(self._current_opened)
 
             #self.open_in_progress = False
@@ -271,25 +310,6 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
             raise ex
 
         self.subprocess_finalization_do()
-        self._openlock.unlock()
-
-    def delete_communicator(self):
-        """Вызывается по сигналу об окончании сеанса"""
-        self._openlock.lock()
-
-        comm = self.sender()
-        #comm.stop_listen()
-        #
-        # if comm in self.client_finalization_list:
-        #	self.client_finalization_list.remove(comm)
-        #
-        #del self.communicator_dictionary[comm.subproc.pid]
-        #
-        # clean client_finalization_list from uncostistent nodes
-        # for comm in self.client_finalization_list:
-        #	if comm not in self.communicator_dictionary.values():
-        #		self.client_finalization_list.remove(comm)
-
         self._openlock.unlock()
 
     def closeEvent(self, event):
@@ -315,7 +335,7 @@ class MainWindow(QtWidgets.QMainWindow, zencad.gui.actions.MainWindowActionsMixi
 
 def start_application(openpath=None, none=False, unbound=False):
     QAPP = QtWidgets.QApplication(sys.argv[1:])
-    initial_process_communicator = None
+    initial_communicator = None
 
     if unbound:
         # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
@@ -326,16 +346,16 @@ def start_application(openpath=None, none=False, unbound=False):
     
         # Коммуникатор будет слать сообщения на скрытый файл,
         # тоесть, на истинный stdout
-        initial_process_communicator = Communicator(
+        initial_communicator = Communicator(
             ifile=sys.stdin, ofile=retransler.new_file)
 
         # Показываем ретранслятору его коммуникатор.
-        retransler.set_communicator(initial_process_communicator)
+        retransler.set_communicator(initial_communicator)
 
-        data = initial_process_communicator.simple_read()
+        data = initial_communicator.simple_read()
         dct0 = json.loads(data)
 
-        initial_process_communicator.declared_opposite_pid = int(dct0["data"])
+        initial_communicator.declared_opposite_pid = int(dct0["data"])
 
     if openpath is None and not none and not unbound:
         if zencad.settings.list()["gui"]["start_widget"] == "true":
@@ -352,11 +372,11 @@ def start_application(openpath=None, none=False, unbound=False):
                 zencad_template=True)
 
     MAINWINDOW = MainWindow(
-        initial_process_communicator=initial_process_communicator)
+        initial_communicator=initial_communicator)
 
     if unbound:
-        initial_process_communicator.bind_handler(MAINWINDOW.new_worker_message)
-        initial_process_communicator.start_listen()
+        initial_communicator.bind_handler(MAINWINDOW.new_worker_message)
+        initial_communicator.start_listen()
 
     if openpath:
         if not unbound:
