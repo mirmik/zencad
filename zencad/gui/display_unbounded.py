@@ -9,15 +9,15 @@ import json
 
 from zencad.gui.retransler import ConsoleRetransler
 from zencad.gui.communicator import Communicator
+from zencad.gui.client import Client
 from zencad.gui.display import DisplayWidget
 
 from zencad.util import print_to_stderr
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-import zencad.configuration
-COMMUNICATOR_TRACE = zencad.configuration.COMMUNICATOR_TRACE
-if zencad.configuration.FILTER_QT_WARNINGS:
+from zencad.configuration import Configuration
+if Configuration.FILTER_QT_WARNINGS:
     QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
 
@@ -39,7 +39,7 @@ def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=No
         raise ex
 
 
-def start_unbounded_worker(path, need_prescale, size, sleeped=False, ):
+def start_unbounded_worker(path, need_prescale, size, sleeped=False):
     subproc = start_worker(
         path=path,
         sleeped=sleeped,
@@ -50,9 +50,9 @@ def start_unbounded_worker(path, need_prescale, size, sleeped=False, ):
     stdin = io.TextIOWrapper(subproc.stdin, line_buffering=True)
 
     communicator = Communicator(ifile=stdout, ofile=stdin)
-    communicator.subproc = subproc
+    client = Client(communicator=communicator, subprocess=subproc)
 
-    return communicator
+    return client
 
 
 COMMUNICATOR = None
@@ -102,7 +102,7 @@ def unbound_worker_exec(path, prescale, size,
             data0 = COMMUNICATOR.simple_read()
             data1 = COMMUNICATOR.simple_read()
 
-            if COMMUNICATOR_TRACE:
+            if Configuration.COMMUNICATOR_TRACE:
                 print_to_stderr("slep", data0)
                 print_to_stderr("slep", data1)
             dct0 = json.loads(data0)  # set_oposite_pid
@@ -114,7 +114,7 @@ def unbound_worker_exec(path, prescale, size,
 
         COMMUNICATOR.declared_opposite_pid = int(dct0["data"])
         path = dct1["path"]
-        PRESCALE_SIZE = (int(a) for a in dct1["size"].split(","))
+        PRESCALE_SIZE = list((int(a) for a in dct1["size"].split(",")))
 
     COMMUNICATOR.oposite_clossed.connect(
         QtWidgets.QApplication.instance().quit)

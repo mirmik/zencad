@@ -7,12 +7,12 @@ from OCC.Display.backend import load_pyqt5, load_backend
 from OCC.Display.backend import get_qt_modules
 import OCC.Core.BRepPrimAPI
 
-if not load_pyqt5():
-    print("pyqt5 required to run this test")
-    sys.exit()
+from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-load_backend("qt-pyqt5")
-QtCore, QtGui, QtWidgets, QtOpenGL = get_qt_modules()
+from zencad.configuration import Configuration
+if Configuration.FILTER_QT_WARNINGS:
+    QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
+
 
 
 QAPP = None

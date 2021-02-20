@@ -86,6 +86,8 @@ class DisplayWidget(BaseViewer):
         self.mousedown = False
         self.keyboard_retranslate_mode = True
 
+        self.resize(init_size[0], init_size[1])
+
         self.last_redraw = time.time()
         self.animate_updated = threading.Event()
 
@@ -442,10 +444,12 @@ class DisplayWidget(BaseViewer):
             self._display.View.Pan(dx, -dy)
             self.location_changed_handle()
 
+    def _resize_external(self, size):
+        if self._inited0:
+            self.resize(QtCore.QSize(*size))
+            
     def external_communication_command(self, data):
         cmd = data["cmd"]
-
-        #print_to_stderr("Dcmd:", data)
 
         if cmd == "autoscale":
             self.autoscale()
@@ -454,7 +458,7 @@ class DisplayWidget(BaseViewer):
         elif cmd == "redraw":
             self.redraw()
         elif cmd == "resize":
-            self.resize_addon(size=QSize(data["size"][0], data["size"][1]))
+            self._resize_external(size=(data["size"][0], data["size"][1]))
         elif cmd == "orient1":
             self.reset_orient1()
         elif cmd == "orient2":

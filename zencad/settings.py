@@ -38,7 +38,7 @@ class Settings():
             "vsplitter_position": (500, 300),
             "console_hidden": False,
             "texteditor_hidden": False,
-            "wsize": None,
+            "wsize": (640,480),
             "perspective": False
         },
         "markers": {
@@ -137,6 +137,32 @@ class Settings():
     @classmethod
     def get_settings(self):
         return self.list_of_settings
+
+
+    @classmethod
+    def _restore_type(self, val):
+        if val == "true":
+            return True
+        if val == "false":
+            return False
+
+        if isinstance(val, str):
+            try:
+                if float(val):
+                    return float(val)
+            except:
+                pass
+
+        return val
+
+    @classmethod
+    def get(self, path):
+        it = self.list_of_settings
+        for p in path:
+            it = it[p]
+
+        it = self._restore_type(it)
+        return it
 
 
 Settings.restore()

@@ -214,7 +214,7 @@ class MainWindowActionsMixin:
         self.texteditor.setEnabled(not en)
         self.texteditor.setHidden(en)
 
-        self._current_client_communicator.send(
+        self._current_client.send(
             {"cmd": "keyboard_retranslate", "en": not en})
 
     def cacheInfoAction(self):
@@ -300,7 +300,7 @@ class MainWindowActionsMixin:
         status = wdg.exec()
 
         if status == 1 and self._sleeped_optimization:
-            self.make_sleeped_thread()
+            self.remake_sleeped_thread()
             self.reopen_current()
 
     def _add_open_action(self, menu, name, path):

@@ -18,8 +18,8 @@ import os
 import signal
 from zencad.util import print_to_stderr
 
-import zencad.configuration
-
+from zencad.configuration import Configuration
+ 
 
 class Communicator(QObject):
     """Объект обеспечивает связь между процессами, позволяя 
@@ -37,7 +37,6 @@ class Communicator(QObject):
     def __init__(self, ifile, ofile):
         super().__init__()
         self.declared_opposite_pid = None
-        self.subproc = None
         self.ifile = ifile
         self.ofile = ofile
 
@@ -50,7 +49,7 @@ class Communicator(QObject):
                 self.oposite_clossed.emit()
                 return
 
-            if zencad.configuration.COMMUNICATOR_TRACE:
+            if Configuration.COMMUNICATOR_TRACE:
                 print_to_stderr("recv", inputdata)
 
             unwraped_data = json.loads(inputdata)
@@ -59,7 +58,7 @@ class Communicator(QObject):
                 self.declared_opposite_pid = unwraped_data["data"]
                 return
 
-            self.newdata.emit(unwraped_data, self.subproc_pid())
+            self.newdata.emit(unwraped_data, self.declared_opposite_pid)
 
         except Exception as ex:
             print_to_stderr(ex)
@@ -85,17 +84,8 @@ class Communicator(QObject):
 
         self.sock_notifier.activated.connect(self.socket_notifier_handle)
 
-    def subproc_pid(self):
-        """ PID процесса на той стороне можно узнать двумя путями.
-        Либо это pid связанный с объектом subprocess, связанным с ним, 
-        либо, если этот объект отсутствует, можно воспользоваться
-        переданной кем-либо информацией о таком процессе. 
-        Иногда процедура возвращает None. Это значит, что процесс на той стороне не был создан
-        через subprocess и никто не успел уведомить коммуникатор о его pid."""
-        return self.subproc.pid if self.subproc else self.declared_opposite_pid
-
     def send(self, obj):
-        if zencad.configuration.COMMUNICATOR_TRACE:
+        if Configuration.COMMUNICATOR_TRACE:
             print_to_stderr("send", obj)
 
         sendstr = json.dumps(obj) + "\n"
@@ -105,4 +95,5 @@ class Communicator(QObject):
             self.ofile.flush()
             return True
         except Exception as ex:
+            print_to_stderr(ex)
             return False
