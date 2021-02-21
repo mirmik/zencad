@@ -5,9 +5,6 @@ from PyQt5.QtCore import *
 import pyservoce
 import sys
 
-restored = False
-pre_default_color = (0.6, 0.6, 0.8, 0)
-
 
 def default_text_editor_os():
     if sys.platform == "linux":
@@ -17,42 +14,15 @@ def default_text_editor_os():
     else:
         return ""
 
+class BaseSettings:
+    def __init__(self, name, subname, default):
+        self.name = name
+        self.subname = subname  
+        self.list_of_settings = default
+        self.restored=False
 
-class Settings():
-    list_of_settings = {
-        "gui": {
-            "text_editor": default_text_editor_os(),
-            "start_widget": True,
-            "bind_widget": True
-        },
-        "view": {
-            "default_color_red": pre_default_color[0],
-            "default_color_green": pre_default_color[1],
-            "default_color_blue": pre_default_color[2],
-            "default_color_alpha": pre_default_color[3],
-            "default_chordial_deviation": 0.003
-        },
-        "memory": {
-            "recents": [],
-            "hsplitter_position": (300, 500),
-            "vsplitter_position": (500, 300),
-            "console_hidden": False,
-            "texteditor_hidden": False,
-            "wsize": (640,480),
-            "perspective": False
-        },
-        "markers": {
-            "size": 1
-        }
-
-    }
-
-    # def __init__(self):
-    #	super().__init__()
-
-    @classmethod
     def store(self):
-        settings = QSettings("ZenCad", "settings")
+        settings = QSettings(self.name, self.subname)
 
         for g in self.list_of_settings:
             settings.beginGroup(g)
@@ -60,14 +30,13 @@ class Settings():
                 settings.setValue(k, self.list_of_settings[g][k])
             settings.endGroup()
 
-    @classmethod
     def restore(self):
         global restored
 
-        if restored:
+        if self.restored:
             return
 
-        settings = QSettings("ZenCad", "settings")
+        settings = QSettings(self.name, self.subname)
 
         for g in self.list_of_settings:
             settings.beginGroup(g)
@@ -78,12 +47,38 @@ class Settings():
 
         restored = True
 
-    @classmethod
+class ZencadSettings(BaseSettings):
+    def __init__(self):
+        list_of_settings = {
+            "gui": {
+                "text_editor": default_text_editor_os(),
+                "start_widget": True,
+                "bind_widget": True
+            },
+            "view": {
+                "default_color": (0.6, 0.6, 0.8, 0),
+                "default_chordial_deviation": 0.003
+            },
+            "memory": {
+                "recents": [],
+                "hsplitter_position": (300, 500),
+                "vsplitter_position": (500, 300),
+                "console_hidden": False,
+                "texteditor_hidden": False,
+                "wsize": (640,480),
+                "perspective": False
+            },
+            "markers": {
+                "size": 1
+            }
+        }
+
+        super().__init__("ZenCad", "settings", list_of_settings)
+
     def set_editor(self, editor):
         self.list_of_settings["gui"]["text_editor"] = editor
         self.store()
 
-    @classmethod
     def set_default_color(self, r, g, b, a):
         self.list_of_settings["view"]["default_color_red"] = r
         self.list_of_settings["view"]["default_color_green"] = g
@@ -91,7 +86,6 @@ class Settings():
         self.list_of_settings["view"]["default_color_alpha"] = a
         self.store()
 
-    @classmethod
     def get_default_color(self):
         return (
             float(self.list_of_settings["view"]["default_color_red"]),
@@ -100,7 +94,6 @@ class Settings():
             float(self.list_of_settings["view"]["default_color_alpha"])
         )
 
-    @classmethod
     def add_recent(self, added):
         while added in self.list_of_settings["memory"]["recents"]:
             self.list_of_settings["memory"]["recents"].remove(added)
@@ -112,7 +105,6 @@ class Settings():
 
         self.store()
 
-    @classmethod
     def clear_deleted_recent(self):
         recents = self.list_of_settings["memory"]["recents"]
         need_store = False
@@ -125,7 +117,6 @@ class Settings():
         if need_store:
             self.store()
 
-    @classmethod
     def get_recent(self):
         # Перестраховка.
         if self.list_of_settings["memory"]["recents"] is None:
@@ -134,12 +125,10 @@ class Settings():
         self.clear_deleted_recent()
         return self.list_of_settings["memory"]["recents"]
 
-    @classmethod
     def get_settings(self):
         return self.list_of_settings
 
 
-    @classmethod
     def _restore_type(self, val):
         if val == "true":
             return True
@@ -155,7 +144,6 @@ class Settings():
 
         return val
 
-    @classmethod
     def get(self, path):
         it = self.list_of_settings
         for p in path:
@@ -164,7 +152,7 @@ class Settings():
         it = self._restore_type(it)
         return it
 
-
+Settings = ZencadSettings()
 Settings.restore()
 
 
