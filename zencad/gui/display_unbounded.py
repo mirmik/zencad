@@ -61,22 +61,10 @@ PRESCALE_SIZE = None
 BIND_MODE = True
 
 
-def qt_sigterm_handle(a, b):
-    sys.exit()
-
-
-def qt_setup_signal_handling():
-    from zencad.util import print_to_stderr
-    signal.signal(signal.SIGTERM, qt_sigterm_handle)
-    signal.signal(signal.SIGINT, qt_sigterm_handle)
-
-
 def unbound_worker_exec(path, prescale, size,
                         sleeped=False):
     global COMMUNICATOR, PRESCALE_SIZE, RETRANSLER
     QAPP = QtWidgets.QApplication([])
-    qt_setup_signal_handling()
-
     PRESCALE_SIZE = size
 
     # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
