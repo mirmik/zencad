@@ -38,6 +38,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self._initial_client = None
         self._current_client = None
         self._sleeped_client = None
+        self._retransler= None
         self.notifier = InotifyThread(self)
         
         self._sleeped_optimization = sleeped_optimization
@@ -70,6 +71,9 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self.init_changes_notifier(self.reopen_current)
 
         setup_finish_handler(self.close)
+
+    def set_retransler(self, retransler):
+        self.retransler = retransler
 
     def is_reopen_mode(self):
         return self._reopen_mode
@@ -242,6 +246,9 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         if self._initial_client:
             self._initial_client.send({"cmd":"main_finished"})
             self._initial_client.communicator.stop_listen()
+
+        if self.retransler:
+            self.retransler.stop_listen()
 
 
     def enable_display_changed_mode(self):

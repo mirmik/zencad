@@ -194,7 +194,7 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
 
         setup_finish_handler(handler)
         setup_interrupt_handlers()
-        
+
 
     if openpath is None and not none and not unbound:
         if Settings.get(["gui", "start_widget"]) == "true":
@@ -218,6 +218,8 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
     if unbound:
         initial_communicator.bind_handler(MAINWINDOW.new_worker_message)
         initial_communicator.start_listen()
+
+        MAINWINDOW.set_retransler(retransler)
 
     if openpath:
         if not unbound:
