@@ -13,7 +13,7 @@ from zencad.frame.communicator import Communicator
 from zencad.frame.client import Client
 
 from zencad.gui.display import DisplayWidget
-from zencad.frame.finisher import setup_finish_handler
+from zencad.frame.finisher import setup_finish_handler, setup_interrupt_handlers
 
 from zencad.frame.util import print_to_stderr
 from zencad.lazifier import install_evalcahe_notication
@@ -84,6 +84,13 @@ def unbound_worker_exec(path, prescale, size,
     # Показываем ретранслятору его коммуникатор.
     RETRANSLER.set_communicator(COMMUNICATOR)
 
+    def stop_handler():
+        COMMUNICATOR.stop_listen()
+        RETRANSLER.stop_listen()
+
+    setup_finish_handler(stop_handler)
+    setup_interrupt_handlers()
+    
     if sleeped:
         # Спящий процесс оптимизирует время загрузки скрипта.
         # этот процесс повисает в цикле чтения и дожидается,
@@ -112,11 +119,6 @@ def unbound_worker_exec(path, prescale, size,
     COMMUNICATOR.oposite_clossed.connect(
         QtWidgets.QApplication.instance().quit)
 
-    def stop_handler():
-        COMMUNICATOR.stop_listen()
-        RETRANSLER.stop_listen()
-
-    setup_finish_handler(stop_handler)
     COMMUNICATOR.start_listen()
 
     # Устанавливаем флаг в модуль showapi, чтобы процедура show

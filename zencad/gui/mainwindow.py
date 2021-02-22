@@ -76,8 +76,7 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         try:
             cmd = data["cmd"]
         except:
-            print("Warn: new_worker_message: message without 'cmd' field")
-            returna
+            return
 
         if procpid != self._current_client.pid() and data["cmd"] != "finish_screen":
             return
@@ -119,10 +118,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         else:
             print("Warn: unrecognized command", data)
 
-    def closeEvent(self, ev):
-        self.notifier.finish()
-        self.notifier.wait()
-        super().closeEvent(ev)
+    #def closeEvent(self, ev):
+    #    super().closeEvent(ev)
 
     def internal_console_request(self, data):
         self.console.write(data)
@@ -216,5 +213,9 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         else:
             MAINWINDOW.open_declared(openpath)
 
+    timer = QtCore.QTimer()
+    timer.start(500)  # You may change this if you wish.
+    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+    
     MAINWINDOW.show()
     QAPP.exec()

@@ -2,7 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import os
 from zencad.settings import Settings
+import zencad.frame.util
 
 class ZenFrameActionsMixin:
     def create_action(self, text, action, tip, shortcut=None, checkbox=False, defcheck=False):

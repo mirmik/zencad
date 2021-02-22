@@ -32,7 +32,7 @@ class ConsoleRetransler(QObject):
 
     def start_listen(self):
         self._listener = Listener(self.r_file, self)
-        self._listener.newdata.connect(self.newdata_handler)
+        self._listener.stream_handler = self.newdata_handler
         self._listener.start()
 
     def stop_listen(self):
@@ -44,6 +44,7 @@ class ConsoleRetransler(QObject):
         # pythonocc спамит некоторое количество сообщений
         # при активации виджета
         # Этот костыль их скрывает.
+
         if ENABLE_PREVENT_MODE:
             if inputdata == PREVENT_OUTPUT_START:
                 self.prevent_mode = True

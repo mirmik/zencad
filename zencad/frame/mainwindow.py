@@ -2,6 +2,7 @@ import os
 import sys
 import signal
 import tempfile
+import time
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
@@ -226,6 +227,12 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         Settings.store()
 
     def closeEvent(self, ev):
+        self.notifier.finish()
+        self.notifier.wait()
+        
+        if self._sleeped_client:
+            self._sleeped_client.terminate()
+
         self._current_client.communicator.stop_listen()
         self.store_gui_state()
 

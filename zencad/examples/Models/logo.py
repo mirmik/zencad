@@ -45,8 +45,8 @@ nut = (
     + linear_extrude(ngon(r=7.1, n=6), (0, 0, 5.3))
 )
 
-fontpath = os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf")
-m = textshape("ZenCad", fontpath, 20)
+fontpath = register_font("examples/fonts/mandarinc.ttf")
+m = textshape("ZenCad", "Mandarinc", 20)
 
 w = 64.68
 h = 13.5
@@ -69,22 +69,10 @@ m3 = m.forw(h * 1.5)
 m = m - base
 m2 = m.rotateX(deg(180)).up(20)
 
-try:
-    scn = zencad.Scene()
-except:
-    print("Display missing?")
-    sys.exit(0)
+disp(base)
 
-view = scn.viewer.create_view()
-view.set_triedron(False)
-#view.set_background(pyservoce.color(0,0,0.6))
-scn.viewer.set_triedron_axes(False)
+disp(m.unlazy(), Color(0.6, 1, 1, 0.3))
+disp(m2.unlazy(), Color(1, 0.6, 1,0))
+disp(m3.unlazy(), Color(1, 1, 1,0))
 
-scn.add(base.unlazy())
-
-alpha = 0.3
-scn.add(m.unlazy(), Color(0.6, 1, 1,alpha))
-scn.add(m2.unlazy(), Color(1, 0.6, 1,0))
-scn.add(m3.unlazy(), Color(1, 1, 1,0))
-
-show(scn, view=view)
+show()

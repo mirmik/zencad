@@ -43,6 +43,7 @@ try:
 
     # Display API
     from zencad.showapi import display, disp, show
+    from zencad.scene import Scene
 
     # Utility
     from zencad.util import *

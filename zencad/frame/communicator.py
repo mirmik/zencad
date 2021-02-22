@@ -41,6 +41,7 @@ class Communicator(QObject):
         self.declared_opposite_pid = None
         self.ifile = ifile
         self.ofile = ofile
+        self._listener = None
 
         self.send({"cmd": "set_opposite_pid", "data": os.getpid()})
 
@@ -74,7 +75,7 @@ class Communicator(QObject):
 
     def start_listen(self):
         self._listener = Listener(self.ifile, self)
-        self._listener.newdata.connect(self.newdata_handler)
+        self._listener.stream_handler = self.newdata_handler
         self._listener.start()
 
     def stop_listen(self):

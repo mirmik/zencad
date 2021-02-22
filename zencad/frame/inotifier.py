@@ -75,6 +75,9 @@ class InotifyThread(QThread):
         # снимается им же при завершении
         self.control_unlock()
 
+        if self._lock.locked():
+            self._lock.release()
+
     def run(self):
         while 1:
             if self.stop_token:
@@ -97,6 +100,7 @@ class InotifyThread(QThread):
                 pass
 
             self._lock.release()
-            self._control_lock.release()
+            if self._control_lock.locked():
+                self._control_lock.release()
 
-            time.sleep(0.01)
+            time.sleep(0.05)

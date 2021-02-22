@@ -16,6 +16,7 @@ class Listener(QtCore.QThread):
 		super().__init__(parent)
 		self._file= file		
 		self._stop_token = False
+		self.stream_handler = None
 
 	def stop(self):
 		self._stop_token = True
@@ -38,10 +39,14 @@ class Listener(QtCore.QThread):
 					break
 				self.newdata.emit(data)
 
+				if self.stream_handler:
+					self.stream_handler(data)
+
 if __name__ == "__main__":
 	APP = QtCore.QCoreApplication([])
 
 	def hanler(a,b):
+		exit()
 		APP.quit()
 	
 	signal.signal(signal.SIGINT, hanler)
@@ -78,4 +83,5 @@ if __name__ == "__main__":
 	timer2.start(5000)
 	timer2.timeout.connect(stop) 
 
-	APP.exec()
+	while True: pass
+	#APP.exec()
