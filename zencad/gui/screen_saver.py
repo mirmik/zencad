@@ -7,6 +7,7 @@ import random
 import time
 import os
 
+from zencad.settings import Settings
 
 class ScreenSaverWidget(QWidget):
     def __init__(self, text=None, color=QColor(137, 40, 151)):
@@ -130,7 +131,7 @@ class ScreenSaverWidget(QWidget):
         font.setPointSize(12)
         painter.setFont(font)
 
-        bind_widget_flag = zencad.settings.get(["gui", "bind_widget"])
+        bind_widget_flag = Settings.get(["gui", "bind_widget"])
         if not bind_widget_flag == "false":
             message = self.text
 

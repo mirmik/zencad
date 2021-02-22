@@ -9,7 +9,8 @@ import signal
 
 import zencad.gui.util
 import zencad.gui.settingswdg
-import zencad.settings
+
+from zencad.settings import Settings
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -407,15 +408,14 @@ class MainWindowActionsMixin:
         )
 
         self.mPerspective = self.create_action(
-            "Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=zencad.settings.get(["memory", "perspective"]) == 'true'
+            "Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=Settings.get(["memory", "perspective"])
         )
 
         self.mVisCenter = self.create_action(
             "Visible center", self.set_center_visible, "Visible center", checkbox=True, defcheck=False
         )
 
-        self.perspective_checkbox_state = zencad.settings.get(
-            ["memory", "perspective"]) == 'true'
+        self.perspective_checkbox_state = Settings.get(["memory", "perspective"])
 
         self.mInvalCache = self.create_action(
             "Invalidate cache", self.invalidateCacheAction, "Invalidate cache"

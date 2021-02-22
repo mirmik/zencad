@@ -177,11 +177,11 @@ class ZenFrame(QtWidgets.QMainWindow):
         })
 
     def restore_gui_state(self):
-        hsplitter_position = zencad.settings.hsplitter_position_get()
-        vsplitter_position = zencad.settings.vsplitter_position_get()
-        texteditor_hidden = zencad.settings.get(["memory", "texteditor_hidden"]) == 'true'
-        console_hidden = zencad.settings.get(["memory", "console_hidden"]) == 'true'
-        wsize = zencad.settings.get(["memory","wsize"])
+        hsplitter_position = Settings.get(["memory","hsplitter_position"])
+        vsplitter_position = Settings.get(["memory","vsplitter_position"])
+        texteditor_hidden =  Settings.get(["memory", "texteditor_hidden"])
+        console_hidden = Settings.get(["memory", "console_hidden"])
+        wsize = Settings.get(["memory","wsize"])
         if hsplitter_position: self.hsplitter.setSizes([int(s) for s in hsplitter_position])
         if vsplitter_position: self.vsplitter.setSizes([int(s) for s in vsplitter_position])
         if texteditor_hidden: self.hideEditor(True)
@@ -201,12 +201,12 @@ class ZenFrame(QtWidgets.QMainWindow):
         hsplitter_position = self.hsplitter.sizes()
         vsplitter_position = self.vsplitter.sizes()
         wsize = self.geometry()
-        zencad.settings.set(["memory","texteditor_hidden"], self.texteditor.isHidden())
-        zencad.settings.set(["memory","console_hidden"], self.console.isHidden())
-        zencad.settings.set(["memory","hsplitter_position"], hsplitter_position)
-        zencad.settings.set(["memory","vsplitter_position"], vsplitter_position)
-        zencad.settings.set(["memory","wsize"], wsize)
-        zencad.settings.store()
+        Settings.set(["memory","texteditor_hidden"], self.texteditor.isHidden())
+        Settings.set(["memory","console_hidden"], self.console.isHidden())
+        Settings.set(["memory","hsplitter_position"], hsplitter_position)
+        Settings.set(["memory","vsplitter_position"], vsplitter_position)
+        Settings.set(["memory","wsize"], wsize)
+        Settings.store()
 
     def closeEvent(self, ev):
         self.store_gui_state()
@@ -416,7 +416,7 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         initial_communicator.declared_opposite_pid = int(dct0["data"])
 
     if openpath is None and not none and not unbound:
-        if zencad.settings.list()["gui"]["start_widget"] == "true":
+        if Settings.get(["gui", "start_widget"]) == "true":
             strt_dialog = zencad.gui.startwdg.StartDialog()
             strt_dialog.exec()
 
