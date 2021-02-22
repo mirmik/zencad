@@ -1,10 +1,12 @@
 import os
 import io
+import fcntl
 import sys
 
 import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import QObject
 from zencad.frame.util import print_to_stderr
+from zencad.frame.listener import Listener
 
 ENABLE_PREVENT_MODE = True
 PREVENT_OUTPUT_START = ' ###### 3D rendering pipe initialisation #####\n'
@@ -28,59 +30,31 @@ class ConsoleRetransler(QObject):
     def set_communicator(self, comm):
         self.communicator = comm
 
-    def start(self):
-        self.sock_notifier = QtCore.QSocketNotifier(
-            self.r_file.fileno(),
-            QtCore.QSocketNotifier.Read,
-            self
-        )
+    def start_listen(self):
+        self._listener = Listener(self.r_file, self)
+        self._listener.newdata.connect(self.newdata_handler)
+        self._listener.start()
 
-        self.sock_notifier.activated.connect(self.socket_notifier_handle)
+    def stop_listen(self):
+        if self._listener:
+            self._listener.stop()
+            self._listener.wait()
 
-    def start2(self):
-        self.sock_notifier = QtCore.QSocketNotifier(
-            self.r_file.fileno(),
-            QtCore.QSocketNotifier.Read,
-            self
-        )
-
-        self.sock_notifier.activated.connect(self.socket_notifier_handle2)
-
-    def socket_notifier_handle(self, a):
-        inputdata = self.r_file.readline()
-
+    def newdata_handler(self, inputdata):
         # pythonocc спамит некоторое количество сообщений
         # при активации виджета
         # Этот костыль их скрывает.
         if ENABLE_PREVENT_MODE:
             if inputdata == PREVENT_OUTPUT_START:
                 self.prevent_mode = True
-
+    
             if self.prevent_mode:
                 if inputdata == PREVENT_OUTPUT_STOP:
                     self.prevent_mode = False
-
+    
                 return
-
+    
         self.communicator.send({"cmd": "console", "data": inputdata})
-
-    def socket_notifier_handle2(self, a):
-        inputdata = self.r_file.readline()
-
-        # pythonocc спамит некоторое количество сообщений
-        # при активации виджета
-        # Этот костыль их скрывает.
-        if ENABLE_PREVENT_MODE:
-            if inputdata == PREVENT_OUTPUT_START:
-                self.prevent_mode = True
-
-            if self.prevent_mode:
-                if inputdata == PREVENT_OUTPUT_STOP:
-                    self.prevent_mode = False
-
-                return
-
-        print(inputdata)
 
     def do_retrans(self, old_file, new_desc=None):
         old_desc = old_file.fileno()

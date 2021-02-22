@@ -21,4 +21,5 @@ class Client:
         return self.communicator.send(*args, **kwargs)
 
     def terminate(self):
+        self.communicator.stop_listen()
         self.subprocess.terminate()

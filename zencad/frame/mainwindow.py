@@ -11,6 +11,7 @@ from zencad.frame.console import ConsoleWidget
 from zencad.frame.text_editor import TextEditor
 
 import zencad.frame.util
+from zencad.frame.util import print_to_stderr
 import zencad.frame.worker
 
 from zencad.gui.display_unbounded import spawn_sleeped_worker
@@ -43,6 +44,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self._clients = {}
         self._fscreen_mode = False  # Full screen mode enabled/disabled
         self.view_mode = False
+        self._reopen_mode = False
 
         if initial_communicator:
             self._initial_client = Client(initial_communicator)
@@ -66,6 +68,9 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self.init_changes_notifier(self.reopen_current)
 
         setup_finish_handler(self.close)
+
+    def is_reopen_mode(self):
+        return self._reopen_mode
 
     def spawn(self, sleeped = None):
         zencad.frame.util.print_to_stderr("Warning: Spawn is not reimplemented")
@@ -109,11 +114,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
 
     def init_changes_notifier(self, handler):
         self.notifier.changed.connect(handler)
-
-    def finalize_subprocess(self, client):
-        pid = client.pid()
-        os.kill(pid, signal.SIGTERM)
-
+ 
     def subprocess_finalization_do(self):
         to_delete = []
         current_pid = self._current_client.pid()
@@ -121,8 +122,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
             if (
                     not pid == current_pid and
                     not pid in self._keep_alive_pids):
-                self.finalize_subprocess(
-                    client=self._clients[pid])
+                self._clients[pid].terminate()
                 to_delete.append(pid)
 
         for pid in to_delete:
@@ -226,10 +226,18 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         Settings.store()
 
     def closeEvent(self, ev):
+        self._current_client.communicator.stop_listen()
         self.store_gui_state()
+
+    def enable_display_changed_mode(self):
+        if self.vsplitter.widget(0) is not self.screen_saver:
+            self.vsplitter.replaceWidget(0, self.screen_saver)
+
 
     def open(self, openpath, update_texteditor=True):
         self._openlock.lock()
+
+        self._reopen_mode = openpath == self._current_opened
 
         self._current_opened = openpath
         if update_texteditor:
@@ -238,8 +246,6 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self.notifier.clear()
         self.notifier.add_target(openpath)
 
-        need_prescale = True
-
         if self._sleeped_optimization:
             client = self._sleeped_client
             size = self.vsplitter.widget(0).size()
@@ -247,7 +253,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
             client.communicator.send({
                 "cmd": "unsleep",
                 "path": openpath,
-                "need_prescale": need_prescale,
+                "need_prescale": self._bind_mode,
                 "size": size
             })
 
@@ -256,7 +262,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         else:
             size = self.vsplitter.widget(0).size()
             size = (size[0], size[1])
-            client = self.spawn(path=openpath, need_prescale=need_prescale, size=size)
+            client = self.spawn(path=openpath, need_prescale=self._bind_mode, size=size)
 
         self._current_client = client
         self._clients[client.pid()] = client
@@ -264,11 +270,8 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self._current_client.communicator.bind_handler(self.new_worker_message)
         self._current_client.communicator.start_listen()
 
+        self.enable_display_changed_mode()
         self._openlock.unlock()
-
-
-
-
 
 
 def start_application(openpath=None, none=False, unbound=False, norestore=False, sleeped_optimization=True):

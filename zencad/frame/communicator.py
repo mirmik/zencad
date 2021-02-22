@@ -5,6 +5,7 @@ import sys
 import io
 import base64
 import json
+import fcntl
 import threading
 import traceback
 
@@ -18,6 +19,7 @@ import os
 import signal
 from zencad.frame.util import print_to_stderr
 
+from zencad.frame.listener import Listener
 from zencad.configuration import Configuration
 
 
@@ -42,22 +44,17 @@ class Communicator(QObject):
 
         self.send({"cmd": "set_opposite_pid", "data": os.getpid()})
 
-    def socket_notifier_handle(self, a):
-        try:
-            inputdata = self.ifile.readline()
-            if len(inputdata) == 0:
-                self.oposite_clossed.emit()
-                return
+    def newdata_handler(self, inputdata):  
+        if Configuration.COMMUNICATOR_TRACE:
+            print_to_stderr("recv", inputdata)
 
-            if Configuration.COMMUNICATOR_TRACE:
-                print_to_stderr("recv", inputdata)
-
+        try:   
             unwraped_data = json.loads(inputdata)
-
+    
             if unwraped_data["cmd"] == "set_opposite_pid":
                 self.declared_opposite_pid = unwraped_data["data"]
                 return
-
+    
             self.newdata.emit(unwraped_data, self.declared_opposite_pid)
 
         except Exception as ex:
@@ -76,19 +73,31 @@ class Communicator(QObject):
         self.newdata.connect(function)
 
     def start_listen(self):
-        self.sock_notifier = QtCore.QSocketNotifier(
-            self.ifile.fileno(),
-            QtCore.QSocketNotifier.Read,
-            self
-        )
+        self._listener = Listener(self.ifile, self)
+        self._listener.newdata.connect(self.newdata_handler)
+        self._listener.start()
 
-        self.sock_notifier.activated.connect(self.socket_notifier_handle)
+    def stop_listen(self):
+        if self._listener:
+            self._listener.stop()
+            self._listener.wait()
+
+    #    flag = fcntl.fcntl(self.ifile.fileno(), fcntl.F_GETFL)
+    #    fcntl.fcntl(self.ifile.fileno(), fcntl.F_SETFL, flag | os.O_NONBLOCK)
+    #    
+    #    self.sock_notifier = QtCore.QSocketNotifier(
+    #        self.ifile.fileno(),
+    #        QtCore.QSocketNotifier.Read,
+    #        self
+    #    )
+#
+    #    self.sock_notifier.activated.connect(self.socket_notifier_handle)
 
     def send(self, obj):
         if Configuration.COMMUNICATOR_TRACE:
             print_to_stderr("send", obj)
 
-        sendstr = json.dumps(obj) + "\n"
+        sendstr = json.dumps(obj) + "\r\n"
 
         try:
             self.ofile.write(sendstr)

@@ -144,7 +144,7 @@ class ZenFrameActionsMixin:
 
     def openAction(self):
         curopen = self.current_opened()
-        path = zencad.gui.util.open_file_dialog(
+        path = zencad.frame.util.open_file_dialog(
             self,
             directory=None if curopen is None else os.path.dirname(curopen))
 
@@ -157,7 +157,7 @@ class ZenFrameActionsMixin:
         self.texteditor.save()
 
     def saveAsAction(self):
-        path, template = zencad.gui.util.save_file_dialog(self)
+        path, template = zencad.frame.util.save_file_dialog(self)
 
         if path == "":
             return

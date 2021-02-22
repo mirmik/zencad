@@ -197,6 +197,12 @@ class DisplayWidget(BaseViewer):
     def center(self):
         return point3(self._display.View.Camera().Center())
 
+    def scale(self):
+        return self._display.View.Camera().Scale()
+
+    def set_scale(self, scl):
+        return self._display.View.Camera().SetScale(scl)
+
     def centering(self):
         self.set_center(point3(0, 0, 0))
 
@@ -232,11 +238,34 @@ class DisplayWidget(BaseViewer):
             self._display.GetContext().Erase(self.y_axis, True)
             self._display.GetContext().Erase(self.z_axis, True)
 
+    def restore_location(self, dct):
+        scale = dct["scale"]
+        eye = point3(dct["eye"])
+        center = point3(dct["center"])
+
+        self.set_center(center)
+        self.set_eye(eye)
+        self.set_scale(scale)
+        self.redraw()
+
+        self.update_orient1_from_view()
+        self.location_changed_handle()
+
+    def store_location(self):
+        return {
+            "scale": self.scale(),
+            "eye": self.eye().to_tuple(),
+            "center": self.center().to_tuple()
+        }
+
     def location_changed_handle(self):
         # self.camera_center_mark.relocate(pyservoce.translate(*self.view.center()))
         for c in self.camera_center_axes:
             c.relocate(zencad.trans.translate(self.center()))
-        # self.locationChanged.emit(self.location())
+        
+        if self._communicator:
+            loc = self.store_location()
+            self._communicator.send({"cmd": "location",  "loc": loc })
 
     def InitDriver(self):
         self._display.Create(window_handle=int(self.winId()), parent=self)
@@ -258,6 +287,10 @@ class DisplayWidget(BaseViewer):
     def keyPressEvent(self, event):
         MOVE_SCALE = 0.05
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
+
+        #print(event.key())
+
+
 
         if event.key() == QtCore.Qt.Key_F3:
             self.markerQPressed()
@@ -299,6 +332,10 @@ class DisplayWidget(BaseViewer):
             return
         elif event.key() == QtCore.Qt.Key_A and (self.mousedown or self.keyboard_retranslate_mode is False):
             self.move_right(MOVE_SCALE)
+            return
+
+        elif event.key() == QtCore.Qt.Key_Alt:
+            self.temporary1 = self.mapFromGlobal(QtGui.QCursor.pos())
             return
 
         # If signal not handling here, translate it onto top level
@@ -348,6 +385,7 @@ class DisplayWidget(BaseViewer):
         else:
             zoom_factor = 1/mul
         self._display.ZoomFactor(zoom_factor)
+        self.location_changed_handle()
 
     def mousePressEvent(self, event):
         self.setFocus()
@@ -356,6 +394,7 @@ class DisplayWidget(BaseViewer):
         self.dragStartPosY = ev.y()
         self._display.StartRotation(self.dragStartPosX, self.dragStartPosY)
         self.temporary1 = event.pos()
+        #print(self.temporary1)
         self.mousedown = True
 
     def mouseReleaseEvent(self, event):
@@ -426,6 +465,8 @@ class DisplayWidget(BaseViewer):
             elif self._orient == 2:
                 self._display.Rotation(pt.x(), pt.y())
 
+            self.location_changed_handle()
+    
         # DYNAMIC ZOOM
         elif (buttons == QtCore.Qt.MidButton and
               not modifiers == QtCore.Qt.ShiftModifier):
@@ -435,6 +476,7 @@ class DisplayWidget(BaseViewer):
                                       abs(pt.y()))
             self.dragStartPosX = pt.x()
             self.dragStartPosY = pt.y()
+            self.location_changed_handle()
 
         # PAN
         elif buttons == QtCore.Qt.RightButton:
@@ -445,52 +487,56 @@ class DisplayWidget(BaseViewer):
             self._display.View.Pan(dx, -dy)
             self.location_changed_handle()
 
+
+
     def _resize_external(self, size):
         if self._inited0:
             self.resize(QtCore.QSize(*size))
 
     def external_communication_command(self, data):
         cmd = data["cmd"]
-
-        if cmd == "autoscale":
-            self.autoscale()
-        elif cmd == "resetview":
-            self.reset_orient()
-        elif cmd == "redraw":
-            self.redraw()
-        elif cmd == "resize":
-            self._resize_external(size=(data["size"][0], data["size"][1]))
-        elif cmd == "orient1":
-            self.reset_orient1()
-        elif cmd == "orient2":
-            self.reset_orient2()
-        elif cmd == "centering":
-            self.centering()
-        elif cmd == "location":
-            self.set_location(data["dct"])
-        elif cmd == "set_perspective":
-            self.set_perspective(data["en"])
-        elif cmd == "set_center_visible":
-            self.set_center_visible(data["en"])
-        elif cmd == "first_person_mode":
-            self.first_person_mode()
-        elif cmd == "exportstl":
-            self.addon_exportstl()
-        elif cmd == "exportbrep":
-            self.addon_exportbrep()
-        elif cmd == "to_freecad":
-            self.addon_to_freecad_action()
-        elif cmd == "tracking":
-            self.tracking_mode_enable(data["en"])
-        elif cmd == "keyboard_retranslate":
-            self.keyboard_retranslate_mode = data["en"]
-        elif cmd == "screenshot":
-            self.addon_screenshot_upload()
-        elif cmd == "console":
-            sys.stdout.write(data["data"])
-
-        else:
-            print("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
+        try:
+            if cmd == "autoscale":
+                self.autoscale()
+            elif cmd == "resetview":
+                self.reset_orient()
+            elif cmd == "redraw":
+                self.redraw()
+            elif cmd == "resize":
+                self._resize_external(size=(data["size"][0], data["size"][1]))
+            elif cmd == "orient1":
+                self.reset_orient1()
+            elif cmd == "orient2":
+                self.reset_orient2()
+            elif cmd == "centering":
+                self.centering()
+            elif cmd == "location":
+                self.restore_location(data["loc"])
+            elif cmd == "set_perspective":
+                self.set_perspective(data["en"])
+            elif cmd == "set_center_visible":
+                self.set_center_visible(data["en"])
+            elif cmd == "first_person_mode":
+                self.first_person_mode()
+            elif cmd == "exportstl":
+                self.addon_exportstl()
+            elif cmd == "exportbrep":
+                self.addon_exportbrep()
+            elif cmd == "to_freecad":
+                self.addon_to_freecad_action()
+            elif cmd == "tracking":
+                self.tracking_mode_enable(data["en"])
+            elif cmd == "keyboard_retranslate":
+                self.keyboard_retranslate_mode = data["en"]
+            elif cmd == "screenshot":
+                self.addon_screenshot_upload()
+            elif cmd == "console":
+                sys.stdout.write(data["data"])
+    
+            else:
+                print_to_stderr("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
+        except Exception as ex:
+            print_to_stderr("Error on external command handling", repr(ex))
 
     def move_back(self, koeff=1):
         print("move_back")

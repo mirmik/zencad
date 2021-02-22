@@ -56,7 +56,8 @@ try:
         mirror_axis, mirrorX, mirrorY, mirrorZ, \
         mirror_plane, mirrorXY, mirrorYZ, mirrorXZ, \
         mirrorO, \
-        scale
+        scale, \
+        up, down, left, right, forw, back
     # scaleX, scaleY, scaleZ
 
     from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \

@@ -10,6 +10,7 @@ import traceback
 import runpy
 import signal
 
+from zencad.configuration import Configuration
 from zencad.frame.finisher import setup_interrupt_handlers, finish_procedure
 
 def protect_path(s):
@@ -35,7 +36,6 @@ def console_options_handle():
     parser.add_argument("--display", action="store_true")
     parser.add_argument("--mainunbound", action="store_true")
     parser.add_argument("--prescale", action="store_true")
-    parser.add_argument("--comdebug", action="store_true")
     parser.add_argument("--sleeped", action="store_true",
                         help="Don't use manualy. Create sleeped thread.")
     parser.add_argument("--size")
@@ -46,11 +46,6 @@ def console_options_handle():
                         help="Disable sleeped optimization")
 
     pargs = parser.parse_args()
-
-    if pargs.comdebug:
-        import zencad.frame.communicator
-        zencad.frame.communicator.COMMUNICATOR_TRACE = True
-
     return pargs
 
 
@@ -101,6 +96,10 @@ def exec_display_unbound(pargs):
 def main():
     setup_interrupt_handlers()
     pargs = console_options_handle()
+
+    if Configuration.TRACE_EXEC_OPTION:
+        from zencad.frame.util import print_to_stderr
+        print_to_stderr(pargs)
 
     # TEST ZENFRAME
     if (pargs.zenframe): 

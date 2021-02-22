@@ -49,7 +49,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
         # Устанавливается при открытии файла, если при следующем бинде
         # нужно/ненужно произвести восстановить параметры камеры.
-        self._need_prescale = False
         self._last_location = None
 
         # Modes
@@ -98,8 +97,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self.marker_handler("q", data)
         elif cmd == "wmarker":
             self.marker_handler("w", data)
-        # elif cmd == "location":
-        #    self.location_update_handle(data["loc"])
+        elif cmd == "location":
+            self._last_location = data["loc"]
         # elif cmd == "keypressed":
         #    self.internal_key_pressed(data["key"])
         elif cmd == "keypressed_raw":
@@ -115,8 +114,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         #    self.finish_screen(data["data"][0], data["data"][1], procpid)
         # elif cmd == "fault":
         #    self.open_fault()
-        # elif cmd == "evalcache":
-        #    self.evalcache_notification(data)
+        elif cmd == "evalcache":
+            self.evalcache_notification(data)
         else:
             print("Warn: unrecognized command", data)
 
@@ -146,16 +145,22 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             Пересылаем на ту сторону информацию об опциях интерфейса.
         """
 
-        super().synchronize_subprocess_state()
-
-        if not self._need_prescale and self._last_location is not None:
-            self.client_communicator.send(
-                {"cmd": "location", "dct": self.last_location})
-            info("restore saved eye location")
-
+        if self.is_reopen_mode() and self._last_location is not None:
+            self._current_client.send(
+                {"cmd": "location", "loc": self._last_location})
+            
         self._current_client.send(
             {"cmd": "set_perspective", "en": self.perspective_checkbox_state})
         self._current_client.send({"cmd": "redraw"})
+        super().synchronize_subprocess_state()
+
+
+    def evalcache_notification(self, data):
+        if data["subcmd"] == "newtree":
+            self.screen_saver.set_subtext(0, "Eval tree: objs:{objs} root:{root}".format(root=data["root"][:8], objs=data["len"]))
+        if data["subcmd"] == "progress":
+            self.screen_saver.set_subtext(1, "to load: {}".format(data["toload"]))
+            self.screen_saver.set_subtext(2, "to eval: {}".format(data["toeval"]))
 
 
 def start_application(openpath=None, none=False, unbound=False, norestore=False, sleeped_optimization=True):

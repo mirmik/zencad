@@ -13,8 +13,10 @@ from zencad.frame.communicator import Communicator
 from zencad.frame.client import Client
 
 from zencad.gui.display import DisplayWidget
+from zencad.frame.finisher import setup_finish_handler
 
 from zencad.frame.util import print_to_stderr
+from zencad.lazifier import install_evalcahe_notication
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
@@ -72,7 +74,7 @@ def unbound_worker_exec(path, prescale, size,
     # через ретранслятор. Теперь все консольные сообщения будуут обвешиваться
     # тегами и поступать на коммуникатор.
     RETRANSLER = ConsoleRetransler(sys.stdout)
-    RETRANSLER.start()
+    RETRANSLER.start_listen()
 
     # Коммуникатор будет слать сообщения на скрытый файл,
     # тоесть, на истинный stdout
@@ -105,8 +107,16 @@ def unbound_worker_exec(path, prescale, size,
         path = dct1["path"]
         PRESCALE_SIZE = list((int(a) for a in dct1["size"].split(",")))
 
+    install_evalcahe_notication(COMMUNICATOR)
+
     COMMUNICATOR.oposite_clossed.connect(
         QtWidgets.QApplication.instance().quit)
+
+    def stop_handler():
+        COMMUNICATOR.stop_listen()
+        RETRANSLER.stop_listen()
+
+    setup_finish_handler(stop_handler)
     COMMUNICATOR.start_listen()
 
     # Устанавливаем флаг в модуль showapi, чтобы процедура show

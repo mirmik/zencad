@@ -74,6 +74,9 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
     def Vtx(self):
         return to_Vertex(self)
 
+    def to_tuple(self):
+        return (self.x, self.y, self.z)
+
     def transform(self, trsf):
         t = trsf._trsf
         return point3(self.Pnt().Transformed(t))
