@@ -447,7 +447,7 @@ class DisplayWidget(BaseViewer):
     def _resize_external(self, size):
         if self._inited0:
             self.resize(QtCore.QSize(*size))
-            
+
     def external_communication_command(self, data):
         cmd = data["cmd"]
 

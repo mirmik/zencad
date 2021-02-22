@@ -14,12 +14,13 @@ def default_text_editor_os():
     else:
         return ""
 
+
 class BaseSettings:
     def __init__(self, name, subname, default):
         self.name = name
-        self.subname = subname  
+        self.subname = subname
         self.list_of_settings = default
-        self.restored=False
+        self.restored = False
 
     def store(self):
         settings = QSettings(self.name, self.subname)
@@ -31,8 +32,6 @@ class BaseSettings:
             settings.endGroup()
 
     def restore(self):
-        global restored
-
         if self.restored:
             return
 
@@ -45,8 +44,7 @@ class BaseSettings:
                     k, self.list_of_settings[g][k])
             settings.endGroup()
 
-        restored = True
-
+        self.restored = True
 
     def _restore_type(self, val):
         if val == "true":
@@ -64,12 +62,13 @@ class BaseSettings:
         return val
 
     def get(self, path):
-       it = self.list_of_settings
-       for p in path:
-           it = it[p]
+        it = self.list_of_settings
+        for p in path:
+            it = it[p]
 
-       it = self._restore_type(it)
-       return it
+        it = self._restore_type(it)
+        return it
+
 
 class ZencadSettings(BaseSettings):
     def __init__(self):
@@ -89,7 +88,7 @@ class ZencadSettings(BaseSettings):
                 "vsplitter_position": (500, 300),
                 "console_hidden": False,
                 "texteditor_hidden": False,
-                "wsize": (640,480),
+                "wsize": (640, 480),
                 "perspective": False
             },
             "markers": {
@@ -109,12 +108,12 @@ class ZencadSettings(BaseSettings):
     def clear_deleted_recent(self):
         recents = self.list_of_settings["memory"]["recents"]
         need_store = False
- 
+
         for r in recents:
             if not os.path.exists(r) or not os.path.isfile(r):
                 self.list_of_settings["memory"]["recents"].remove(r)
                 need_store = True
- 
+
         if need_store:
             self.store()
 
@@ -123,6 +122,7 @@ class ZencadSettings(BaseSettings):
         for p in path[:-1]:
             it = it[p]
         it[path[-1]] = value
+
 
 Settings = ZencadSettings()
 Settings.restore()

@@ -34,7 +34,7 @@ class ZenFrame(QtWidgets.QMainWindow):
                  title,
                  sleeped_optimization=False,
                  initial_communicator=None,
-                 restore_gui = True
+                 restore_gui=True
                  ):
         super().__init__()
         self.setWindowTitle(title)
@@ -127,7 +127,6 @@ class ZenFrame(QtWidgets.QMainWindow):
     def current_opened(self):
         return self._current_opened
 
-
     def bind_window(self, winid, pid):
         if self._current_client.pid() != pid:
             """Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
@@ -143,13 +142,13 @@ class ZenFrame(QtWidgets.QMainWindow):
                 window = QtGui.QWindow.fromWinId(winid)
                 container = QtWidgets.QWidget.createWindowContainer(
                     window)
-                
+
                 # Удерживаем ссылки на объекты, чтобы избежать
                 # произвола от сборщика мусора
                 self._current_client.set_embed(
                     window=window,
                     widget=container)
-                
+
                 self.vsplitter.replaceWidget(0, container)
 
             self.setWindowTitle(self._current_opened)
@@ -167,31 +166,38 @@ class ZenFrame(QtWidgets.QMainWindow):
         size = self.vsplitter.widget(0).size()
         if self._bind_mode:
             self._current_client.communicator.send({
-                "cmd":"resize", 
-                "size":(size.width(), size.height())
+                "cmd": "resize",
+                "size": (size.width(), size.height())
             })
-        
+
         self._current_client.communicator.send({
-            "cmd":"keyboard_retranslate", 
+            "cmd": "keyboard_retranslate",
             "en": not self.texteditor.isHidden()
         })
 
     def restore_gui_state(self):
-        hsplitter_position = Settings.get(["memory","hsplitter_position"])
-        vsplitter_position = Settings.get(["memory","vsplitter_position"])
-        texteditor_hidden =  Settings.get(["memory", "texteditor_hidden"])
+        hsplitter_position = Settings.get(["memory", "hsplitter_position"])
+        vsplitter_position = Settings.get(["memory", "vsplitter_position"])
+        texteditor_hidden = Settings.get(["memory", "texteditor_hidden"])
         console_hidden = Settings.get(["memory", "console_hidden"])
-        wsize = Settings.get(["memory","wsize"])
-        if hsplitter_position: self.hsplitter.setSizes([int(s) for s in hsplitter_position])
-        if vsplitter_position: self.vsplitter.setSizes([int(s) for s in vsplitter_position])
-        if texteditor_hidden: self.hideEditor(True)
-        if console_hidden: self.hideConsole(True)
-        if wsize: self.setGeometry(wsize)
+        wsize = Settings.get(["memory", "wsize"])
+        if hsplitter_position:
+            self.hsplitter.setSizes([int(s) for s in hsplitter_position])
+        if vsplitter_position:
+            self.vsplitter.setSizes([int(s) for s in vsplitter_position])
+        if texteditor_hidden:
+            self.hideEditor(True)
+        if console_hidden:
+            self.hideConsole(True)
+        if wsize:
+            self.setGeometry(wsize)
 
         w = self.hsplitter.width()
         h = self.vsplitter.height()
-        if hsplitter_position[0]=="0" or hsplitter_position[0]=="1": self.hsplitter.setSizes([0.382*w, 0.618*w])
-        if vsplitter_position[0]=="0" or vsplitter_position[1]=="0": self.vsplitter.setSizes([0.618*h, 0.382*h])
+        if hsplitter_position[0] == "0" or hsplitter_position[0] == "1":
+            self.hsplitter.setSizes([0.382*w, 0.618*w])
+        if vsplitter_position[0] == "0" or vsplitter_position[1] == "0":
+            self.vsplitter.setSizes([0.618*h, 0.382*h])
 
         self.hsplitter.refresh()
         self.vsplitter.refresh()
@@ -201,21 +207,23 @@ class ZenFrame(QtWidgets.QMainWindow):
         hsplitter_position = self.hsplitter.sizes()
         vsplitter_position = self.vsplitter.sizes()
         wsize = self.geometry()
-        Settings.set(["memory","texteditor_hidden"], self.texteditor.isHidden())
-        Settings.set(["memory","console_hidden"], self.console.isHidden())
-        Settings.set(["memory","hsplitter_position"], hsplitter_position)
-        Settings.set(["memory","vsplitter_position"], vsplitter_position)
-        Settings.set(["memory","wsize"], wsize)
+        Settings.set(["memory", "texteditor_hidden"],
+                     self.texteditor.isHidden())
+        Settings.set(["memory", "console_hidden"], self.console.isHidden())
+        Settings.set(["memory", "hsplitter_position"], hsplitter_position)
+        Settings.set(["memory", "vsplitter_position"], vsplitter_position)
+        Settings.set(["memory", "wsize"], wsize)
         Settings.store()
 
     def closeEvent(self, ev):
         self.store_gui_state()
 
+
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
                  title="ZenCad",
                  initial_communicator=None,
-                 restore_gui = True,
+                 restore_gui=True,
                  sleeped_optimization=True
                  ):
 
@@ -226,14 +234,14 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             title=title,
             sleeped_optimization=sleeped_optimization,
             initial_communicator=initial_communicator,
-            restore_gui = restore_gui)
+            restore_gui=restore_gui)
 
         # Init variables
         self._openlock = QtCore.QMutex(QtCore.QMutex.Recursive)
-        self._inited0 = False # Show event was invoked first time
+        self._inited0 = False  # Show event was invoked first time
 
-        self._current_opened = None # Путь с именем текщего открытого/открываемого файла.
-        
+        # Путь с именем текщего открытого/открываемого файла.
+        self._current_opened = None
 
         # Устанавливается при открытии файла, если при следующем бинде
         # нужно/ненужно произвести восстановить параметры камеры.
@@ -241,8 +249,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self._last_location = None
 
         # Modes
-        self._fscreen_mode = False # Full screen mode enabled/disabled
-        self._bind_mode = True # Bind widget to embed window
+        self._fscreen_mode = False  # Full screen mode enabled/disabled
+        self._bind_mode = True  # Bind widget to embed window
 
         # Init Gui
         self.createActions()
@@ -293,8 +301,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
         else:
             client = start_unbounded_worker(path=openpath,
-                                                      need_prescale=need_prescale,
-                                                      size=self.vsplitter.widget(0).size())
+                                            need_prescale=need_prescale,
+                                            size=self.vsplitter.widget(0).size())
 
         self._current_client = client
         self._clients[client.pid()] = client
@@ -374,21 +382,21 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                                 key, QtCore.Qt.KeyboardModifier(modifiers))
         QtGui.QGuiApplication.postEvent(self.texteditor, event)
 
-
-
     def synchronize_subprocess_state(self):
         """
             Пересылаем на ту сторону информацию об опциях интерфейса.
         """
-        
+
         super().synchronize_subprocess_state()
-        
+
         if not self._need_prescale and self._last_location is not None:
-            self.client_communicator.send({"cmd":"location", "dct": self.last_location})
+            self.client_communicator.send(
+                {"cmd": "location", "dct": self.last_location})
             info("restore saved eye location")
-    
-        self._current_client.send({"cmd":"set_perspective", "en": self.perspective_checkbox_state})
-        self._current_client.send({"cmd":"redraw"})
+
+        self._current_client.send(
+            {"cmd": "set_perspective", "en": self.perspective_checkbox_state})
+        self._current_client.send({"cmd": "redraw"})
 
 
 def start_application(openpath=None, none=False, unbound=False, norestore=False, sleeped_optimization=True):
@@ -431,8 +439,8 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
 
     MAINWINDOW = MainWindow(
         initial_communicator=initial_communicator,
-        restore_gui = not norestore,
-        sleeped_optimization = sleeped_optimization)
+        restore_gui=not norestore,
+        sleeped_optimization=sleeped_optimization)
 
     if unbound:
         initial_communicator.bind_handler(MAINWINDOW.new_worker_message)

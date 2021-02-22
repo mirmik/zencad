@@ -415,7 +415,8 @@ class MainWindowActionsMixin:
             "Visible center", self.set_center_visible, "Visible center", checkbox=True, defcheck=False
         )
 
-        self.perspective_checkbox_state = Settings.get(["memory", "perspective"])
+        self.perspective_checkbox_state = Settings.get(
+            ["memory", "perspective"])
 
         self.mInvalCache = self.create_action(
             "Invalidate cache", self.invalidateCacheAction, "Invalidate cache"

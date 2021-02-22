@@ -14,7 +14,6 @@ if Configuration.FILTER_QT_WARNINGS:
     QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
 
-
 QAPP = None
 DISPLAY = None
 

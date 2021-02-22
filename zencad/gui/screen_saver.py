@@ -9,6 +9,7 @@ import os
 
 from zencad.settings import Settings
 
+
 class ScreenSaverWidget(QWidget):
     def __init__(self, text=None, color=QColor(137, 40, 151)):
         if text is None:

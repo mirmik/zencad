@@ -19,7 +19,7 @@ import signal
 from zencad.util import print_to_stderr
 
 from zencad.configuration import Configuration
- 
+
 
 class Communicator(QObject):
     """Объект обеспечивает связь между процессами, позволяя 

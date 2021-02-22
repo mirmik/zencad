@@ -1,7 +1,7 @@
 class Client:
     """ Хранит объекты, связанные с управлением одним клиентом. """
 
-    def __init__(self, communicator = None, subprocess = None):
+    def __init__(self, communicator=None, subprocess=None):
         self.communicator = communicator
         self.subprocess = subprocess
         self.embeded_window = None

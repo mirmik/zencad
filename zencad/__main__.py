@@ -39,9 +39,9 @@ def console_options_handle():
     parser.add_argument("--size")
     parser.add_argument("paths", type=str, nargs="*", help="runned file")
 
-
     parser.add_argument("--no-restore", action="store_true")
-    parser.add_argument("--no-sleeped", action="store_true", help = "Disable sleeped optimization")
+    parser.add_argument("--no-sleeped", action="store_true",
+                        help="Disable sleeped optimization")
 
     pargs = parser.parse_args()
 
