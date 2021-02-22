@@ -11,20 +11,6 @@ from OCC.Core.Geom import Geom_CartesianPoint
 
 import zencad.transformable
 
-DEBUG_PROCESS_NAME = os.getpid()
-
-
-def set_debug_process_name(str):
-    global DEBUG_PROCESS_NAME
-    DEBUG_PROCESS_NAME = str
-
-
-def print_to_stderr(*args):
-    sys.stderr.write(f"DEBUG {DEBUG_PROCESS_NAME}: ")
-    sys.stderr.write(str(args))
-    sys.stderr.write("\r\n")
-    sys.stderr.flush()
-
 
 def as_indexed(arg):
     if len(arg) != 1:

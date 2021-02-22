@@ -16,7 +16,7 @@ import PyQt5.QtCore as QtCore
 
 import os
 import signal
-from zencad.util import print_to_stderr
+from zencad.frame.util import print_to_stderr
 
 from zencad.configuration import Configuration
 

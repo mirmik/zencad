@@ -48,6 +48,7 @@ setup(
             "libs/*",
             "gui/*",
             "draw/*",
+            "frame/*",
             "convert/*",
             "internal_models/*",
             "examples/*",
@@ -57,5 +58,8 @@ setup(
     },
     include_package_data=True,
     install_requires=requires,
-    entry_points={"console_scripts": ["zencad=zencad.__main__:main"]},
+    entry_points={"console_scripts": [
+        "zencad=zencad.__main__:main",
+        "zenframe=zencad.frame.main:main"
+    ]},
 )

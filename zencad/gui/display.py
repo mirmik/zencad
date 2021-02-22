@@ -15,7 +15,8 @@ from OCC.Core.Graphic3d import Graphic3d_Camera
 import OCC.Core.BRepPrimAPI
 
 from OCC.Display import OCCViewer
-from zencad.util import print_to_stderr, point3, to_Pnt
+from zencad.util import point3, to_Pnt
+from zencad.frame.util import print_to_stderr
 from zencad.interactive_object import AxisInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis

@@ -4,7 +4,7 @@ import sys
 
 import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import QObject
-from zencad.util import print_to_stderr
+from zencad.frame.util import print_to_stderr
 
 ENABLE_PREVENT_MODE = True
 PREVENT_OUTPUT_START = ' ###### 3D rendering pipe initialisation #####\n'

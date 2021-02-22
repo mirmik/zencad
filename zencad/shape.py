@@ -16,7 +16,8 @@ from zencad.geom.boolops_base import *
 from zencad.lazifier import *
 import zencad.trans
 import zencad.transformable
-from zencad.util import to_numpy, point3, vector3, print_to_stderr
+from zencad.util import to_numpy, point3, vector3 
+from zencad.frame.util import print_to_stderr
 
 import numpy
 

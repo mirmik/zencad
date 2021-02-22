@@ -2,17 +2,19 @@ import sys
 import io
 import os
 import time
+import traceback
 import subprocess
 import runpy
 import signal
 import json
 
-from zencad.gui.retransler import ConsoleRetransler
-from zencad.gui.communicator import Communicator
-from zencad.gui.client import Client
+from zencad.frame.retransler import ConsoleRetransler
+from zencad.frame.communicator import Communicator
+from zencad.frame.client import Client
+
 from zencad.gui.display import DisplayWidget
 
-from zencad.util import print_to_stderr
+from zencad.frame.util import print_to_stderr
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
@@ -24,8 +26,7 @@ if Configuration.FILTER_QT_WARNINGS:
 def start_worker(path, sleeped=False, need_prescale=False, session_id=0, size=None):
     prescale = "--prescale" if need_prescale else ""
     sleeped = "--sleeped" if sleeped else ""
-    sizestr = "--size {},{}".format(size.width(),
-                                    size.height()) if size is not None else ""
+    sizestr = f"--size {size[0]},{size[1]}" if size is not None else ""
     interpreter = sys.executable
 
     cmd = f'{interpreter} -m zencad "{path}" --unbound {prescale} {sleeped} {sizestr}'
@@ -123,7 +124,8 @@ def unbound_worker_exec(path, prescale, size,
     try:
         runpy.run_path(path, run_name="__main__")
     except Exception as ex:
-        COMMUNICATOR.send({"cmd": "except", "header": str(ex)})
+        tb = traceback.format_exc()
+        COMMUNICATOR.send({"cmd": "except", "path":path, "header": repr(ex), "tb": str(tb)})
 
 
 def unbound_worker_bottom_half(scene):

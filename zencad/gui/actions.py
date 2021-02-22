@@ -11,6 +11,7 @@ import zencad.gui.util
 import zencad.gui.settingswdg
 
 from zencad.settings import Settings
+from zencad.frame.actions import ZenFrameActionsMixin
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -23,23 +24,7 @@ BANNER_TEXT = (  # "\n"
 )
 
 
-class MainWindowActionsMixin:
-    def create_action(self, text, action, tip, shortcut=None, checkbox=False, defcheck=False):
-        act = QAction(self.tr(text), self)
-        act.setStatusTip(self.tr(tip))
-
-        if shortcut is not None:
-            act.setShortcut(self.tr(shortcut))
-
-        if not checkbox:
-            act.triggered.connect(action)
-        else:
-            act.setCheckable(True)
-            act.toggled.connect(action)
-            act.setChecked(defcheck)
-
-        return act
-
+class MainWindowActionsMixin(ZenFrameActionsMixin):
     def aboutAction(self):
         QMessageBox.about(
             self,
@@ -89,54 +74,12 @@ class MainWindowActionsMixin:
         f.close()
         self.open(path)
 
-    def createNewAction(self):
-        filters = "*.py;;*.*"
-        defaultFilter = "*.py"
-
-        path = QFileDialog.getSaveFileName(
-            self, "Create New File", self.laststartpath, filters, defaultFilter
-        )
-
-        if path[0] == "":
-            return
-
-        self.create_new_do(path[0])
-
-    def createNewTemporary(self):
-        tmpfl = tempfile.mktemp(".py")
-        self.create_new_do(tmpfl)
-
-    def openAction(self):
-        curopen = self.current_opened()
-        path = zencad.gui.util.open_file_dialog(
-            self,
-            directory=None if curopen is None else os.path.dirname(curopen))
-
-        if path[0] == "":
-            return
-
-        self.open(path[0])
-
-    def saveAction(self):
-        self.texteditor.save()
-
-    def saveAsAction(self):
-        path, template = zencad.gui.util.save_file_dialog(self)
-
-        if path == "":
-            return
-
-        self.texteditor.save_as(path)
 
     def exportStlAction(self):
         self._current_client_communicator.send({"cmd": "exportstl"})
 
     def exportBrepAction(self):
         self._current_client_communicator.send({"cmd": "exportbrep"})
-
-    def externalTextEditorOpen(self):
-        cmd = zencad.settings.get_external_editor_command()
-        subprocess.Popen(cmd.format(path=self.current_opened()), shell=True)
 
     def to_freecad_action(self):
         self._current_client_communicator.send({"cmd": "to_freecad"})
@@ -208,15 +151,6 @@ class MainWindowActionsMixin:
 
         print("Invalidate cache: %d files removed" % len(files))
 
-    def hideConsole(self, en):
-        self.console.setHidden(en)
-
-    def hideEditor(self, en):
-        self.texteditor.setEnabled(not en)
-        self.texteditor.setHidden(en)
-
-        self._current_client.send(
-            {"cmd": "keyboard_retranslate", "en": not en})
 
     def cacheInfoAction(self):
         def get_size(start_path="."):
@@ -253,44 +187,6 @@ class MainWindowActionsMixin:
     def debugInfoAction(self):
         raise NotImplementedError
 
-    def fullScreen(self):
-        if not self._fscreen_mode:
-            self.showFullScreen()
-            self._fscreen_mode = True
-        else:
-            self.showNormal()
-            self._fscreen_mode = False
-
-    def view_only(self, en):
-        if en:
-            self.menu_bar_height = self.menuBar().height()
-            self.menuBar().setFixedHeight(0)
-            self.info_widget.setHidden(True)
-        else:
-            self.menuBar().setFixedHeight(self.menu_bar_height)
-            self.info_widget.setHidden(False)
-
-        self.view_mode = en
-
-    def viewOnly(self):
-        self.view_only(not self.view_mode)
-
-    def display_mode_enable(self, en):
-        if not en:
-            self.hideEditor(False)
-            self.hideConsole(False)
-            self.mHideConsole.setChecked(False)
-            self.mHideEditor.setChecked(False)
-
-        else:
-            self.hideEditor(True)
-            self.hideConsole(True)
-            self.mHideConsole.setChecked(True)
-            self.mHideEditor.setChecked(True)
-
-    def displayMode(self):
-        self.display_mode_enable(
-            not (self.texteditor.isHidden() or self.console.isHidden()))
 
     def coordsDifferenceMode(self, en):
         self.info_widget.coords_difference_mode = en
@@ -342,59 +238,54 @@ class MainWindowActionsMixin:
         self.recentMenu.clear()
         self._init_recent_menu(self.recentMenu)
 
-    def createActions(self):
-        self.mCreateAction = self.create_action(
-            "CreateNew...", self.createNewAction, "Create"
-        )
-        self.mCreateTemp = self.create_action(
-            "NewTemporary", self.createNewTemporary, "CreateTemporary", "Ctrl+N"
-        )
-        self.mOpenAction = self.create_action(
-            "Open...", self.openAction, "Open", "Ctrl+O"
-        )
-        self.mSaveAction = self.create_action(
-            "Save", self.saveAction, "Save", "Ctrl+S")
-        self.mSaveAs = self.create_action(
-            "SaveAs...", self.saveAsAction, "SaveAs...")
-        self.mTEAction = self.create_action(
-            "Open in Editor", self.externalTextEditorOpen, "Editor", "Ctrl+E"
-        )
-        self.mExitAction = self.create_action(
-            "Exit", self.close, "Exit", "Ctrl+Q")
+    def create_actions(self):
+        super().create_actions()
+
         self.mStlExport = self.create_action(
             "Export STL...",
             self.exportStlAction,
             "Export file with external STL-Mesh format",
         )
+
         self.mToFreeCad = self.create_action(
             "To FreeCad",
             self.to_freecad_action,
             "Save temporary BRep representation and save FreeCad script to clipboard to load it",
         )
+
         self.mBrepExport = self.create_action(
             "Export BREP...", self.exportBrepAction, "Export file in BREP format"
         )
+
         self.mScreen = self.create_action(
             "Screenshot...", self.screenshotAction, "Do screen..."
         )
+
         self.mAboutAction = self.create_action(
             "About", self.aboutAction, "About the application"
         )
+
         self.mNavRefer = self.create_action(
             "Navigation reference", self.navigation_reference, "Navigation reference"
         )
+
         self.mSettings = self.create_action(
             "Settings", self.settings, "GUI/View Settings"
         )
+
         self.mReset = self.create_action("Reset", self.resetAction, "Reset")
+
         self.mCentering = self.create_action(
             "Centering", self.centeringAction, "Centering"
         )
+
         self.mAutoscale = self.create_action(
             "Autoscale", self.autoscaleAction, "Autoscale", "Ctrl+A"
         )
+
         self.mOrient1 = self.create_action(
             "Axinometric view", self.orient1, "Orient1")
+
         self.mOrient2 = self.create_action(
             "Free rotation view", self.orient2, "Orient2"
         )
@@ -421,38 +312,23 @@ class MainWindowActionsMixin:
         self.mInvalCache = self.create_action(
             "Invalidate cache", self.invalidateCacheAction, "Invalidate cache"
         )
+
         self.mCacheInfo = self.create_action(
             "Cache info", self.cacheInfoAction, "Cache info"
         )
+
         self.mDebugInfo = self.create_action(
             "Debug info", self.debugInfoAction, "Debug info"
         )
-        self.mHideConsole = self.create_action(
-            "Hide console", self.hideConsole, "Hide console", checkbox=True
-        )
-        self.mHideEditor = self.create_action(
-            "Hide editor", self.hideEditor, "Hide editor", checkbox=True
-        )
-        self.mAutoUpdate = self.create_action(
-            "Restart on update", self.auto_update, "Restart on update", checkbox=True, defcheck=True,
-        )
-        self.mFullScreen = self.create_action(
-            "Full screen", self.fullScreen, "Full screen", "F11"
-        )
-        self.mDisplayMode = self.create_action(
-            "Display mode", self.displayMode, "Display mode", "F10"
-        )
-
-        self.view_mode = False
-        self.mViewOnly = self.create_action(
-            "Hide Bars", self.viewOnly, "Hide bars", "F9"
-        )
+        
         self.mReopenCurrent = self.create_action(
             "Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
         )
+        
         self.mWebManual = self.create_action(
             "Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser", "F1"
         )
+        
         self.mCoordsDiff = self.create_action(
             "Coords difference",
             self.coordsDifferenceMode,
@@ -464,14 +340,9 @@ class MainWindowActionsMixin:
         self._current_client_communicator.send(
             {"cmd": "set_center_visible", "en": en})
 
-    def createMenus(self):
+    def create_menus(self):
         self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
-        self.mFileMenu.addAction(self.mReopenCurrent)
-        self.mFileMenu.addAction(self.mOpenAction)
-        self.mFileMenu.addAction(self.mCreateTemp)
-        self.mFileMenu.addAction(self.mCreateAction)
-        self.mFileMenu.addAction(self.mSaveAction)
-        self.mFileMenu.addAction(self.mSaveAs)
+        self.add_new_create_open_standart_actions()
         self.mFileMenu.addSeparator()
         self.exampleMenu = self.mFileMenu.addMenu("Examples")
         self.recentMenu = self.mFileMenu.addMenu("Recent")
@@ -481,7 +352,7 @@ class MainWindowActionsMixin:
         self.mFileMenu.addAction(self.mToFreeCad)
         self.mFileMenu.addAction(self.mScreen)
         self.mFileMenu.addSeparator()
-        self.mFileMenu.addAction(self.mExitAction)
+        self.add_exit_standart_action()
 
         moduledir = os.path.dirname(__file__)
         self._init_example_menu(
@@ -489,7 +360,7 @@ class MainWindowActionsMixin:
         self._init_recent_menu(self.recentMenu)
 
         self.mEditMenu = self.menuBar().addMenu(self.tr("&Edit"))
-        self.mEditMenu.addAction(self.mTEAction)
+        self.add_editor_standart_action()
         self.mEditMenu.addSeparator()
         self.mEditMenu.addAction(self.mSettings)
 
@@ -540,8 +411,13 @@ class MainWindowActionsMixin:
     def first_person_mode(self):
         self._current_client_communicator.send({"cmd": "first_person_mode"})
 
-    def auto_update(self, en):
+    def view_only(self, en):
         if en:
-            self.notifier.control_unlock()
+            self.menu_bar_height = self.menuBar().height()
+            self.menuBar().setFixedHeight(0)
+            self.info_widget.setHidden(True)
         else:
-            self.notifier.control_lock()
+            self.menuBar().setFixedHeight(self.menu_bar_height)
+            self.info_widget.setHidden(False)
+
+        self.view_mode = en
