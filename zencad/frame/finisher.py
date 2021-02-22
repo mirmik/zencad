@@ -17,8 +17,6 @@ def setup_finish_handler(handler):
     FINISH_HANDLER = handler
 
 def interrupt_handler(a, b):
-    print_to_stderr(a,b)
-
     if FINISH_HANDLER:
         FINISH_HANDLER()
 

@@ -1,7 +1,7 @@
 from zencad.shape import Shape, shape_generator
 from zencad.lazifier import *
 from zencad.util import vector3
-from zencad.trans import translate
+from zencad.geom.trans import translate
 
 from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_SOLID, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakePrism, BRepPrimAPI_MakeRevol

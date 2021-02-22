@@ -17,7 +17,7 @@ from zencad.geom.sew import _sew
 import zencad.geom.wire as wire
 import zencad.geom.wire as wire_module
 import zencad.geom.curve as curve
-from zencad.trans import rotateZ
+from zencad.geom.trans import rotateZ
 
 
 def _fill(shp):

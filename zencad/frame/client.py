@@ -1,3 +1,5 @@
+from zencad.frame.util import print_to_stderr
+
 class Client:
     """ Хранит объекты, связанные с управлением одним клиентом. """
 
@@ -15,7 +17,7 @@ class Client:
         if self.subprocess:
             return self.subprocess.pid
         else:
-            self.communicator.declared_opposite_pid
+            return self.communicator.declared_opposite_pid
 
     def send(self, *args, **kwargs):
         return self.communicator.send(*args, **kwargs)

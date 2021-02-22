@@ -9,7 +9,7 @@ from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCC.Core.Geom import Geom_CartesianPoint
 
-import zencad.transformable
+import zencad.geom.transformable
 
 
 def as_indexed(arg):
@@ -40,7 +40,7 @@ def angle_pair(arg):
         return (arg, 0)
 
 
-class point3(numpy.ndarray, zencad.transformable.Transformable):
+class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
         if isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
@@ -85,7 +85,7 @@ class point3(numpy.ndarray, zencad.transformable.Transformable):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z
 
 
-class vector3(numpy.ndarray, zencad.transformable.Transformable):
+class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
         if isinstance(args[0], (point3, vector3, list, tuple, numpy.ndarray)):
             input_array = args[0]

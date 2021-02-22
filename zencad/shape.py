@@ -14,15 +14,15 @@ from OCC.Core.BRepLProp import BRepLProp_SLProps
 
 from zencad.geom.boolops_base import *
 from zencad.lazifier import *
-import zencad.trans
-import zencad.transformable
+import zencad.geom.trans
+import zencad.geom.transformable
 from zencad.util import to_numpy, point3, vector3 
 from zencad.frame.util import print_to_stderr
 
 import numpy
 
 
-class Shape(zencad.transformable.Transformable):
+class Shape(zencad.geom.transformable.Transformable):
     """ Basic zencad type. Является оболочкой для объекта геометрической формы TopoDS_Shape."""
 
     def __init__(self, arg):
@@ -288,7 +288,7 @@ class shape_generator(evalcache.LazyObject):
 
 A = (
     set(Shape.__dict__.keys()).union(
-        set(zencad.transformable.Transformable.__dict__.keys())))
+        set(zencad.geom.transformable.Transformable.__dict__.keys())))
 
 B = set(LazyObjectShape.__dict__.keys())
 

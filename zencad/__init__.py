@@ -51,7 +51,7 @@ try:
     from zencad.lazifier import lazy
 
     # Transes
-    from zencad.trans import move, moveX, moveY, moveZ, \
+    from zencad.geom.trans import move, moveX, moveY, moveZ, \
         translate, translateX, translateY, translateZ, \
         rotate, rotateX, rotateY, rotateZ, \
         mirror_axis, mirrorX, mirrorY, mirrorZ, \

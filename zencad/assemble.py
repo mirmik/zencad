@@ -1,8 +1,9 @@
-import pyservoce
 import evalcache
 import numpy
 
-import zencad.settings
+from zencad.settings import Settings
+from zencad.geom.transformable import Transformable
+from zencad.geom.trans import _nulltrans
 
 class ShapeView:
 	def __init__(self, sctrl):
@@ -17,7 +18,7 @@ class ShapeView:
 	def transform(self, trsf):
 		self.sctrl.transform(trsf)
 
-class unit(pyservoce.TransformableMixin):
+class unit(Transformable):
 	"""Базовый класс для использования в кинематических цепях и сборках
 
 	Вычисляет свою текущую позицию исходя из дерева построения.
@@ -29,7 +30,7 @@ class unit(pyservoce.TransformableMixin):
 				parent=None,
 				shape=None,		
 				name=None, 
-				location=pyservoce.libservoce.nulltrans()):    
+				location=_nulltrans()):    
 		self.parent = parent
 		self.location = evalcache.unlazy_if_need(location)
 		self.global_location = self.location

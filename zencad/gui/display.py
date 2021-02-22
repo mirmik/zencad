@@ -20,7 +20,7 @@ from zencad.frame.util import print_to_stderr
 from zencad.interactive_object import AxisInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
-import zencad.trans
+import zencad.geom.trans
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
@@ -261,7 +261,7 @@ class DisplayWidget(BaseViewer):
     def location_changed_handle(self):
         # self.camera_center_mark.relocate(pyservoce.translate(*self.view.center()))
         for c in self.camera_center_axes:
-            c.relocate(zencad.trans.translate(self.center()))
+            c.relocate(zencad.geom.trans.translate(self.center()))
         
         if self._communicator:
             loc = self.store_location()
@@ -532,9 +532,6 @@ class DisplayWidget(BaseViewer):
                 self.addon_screenshot_upload()
             elif cmd == "console":
                 sys.stdout.write(data["data"])
-    
-            else:
-                print_to_stderr("UNRECOGNIZED_COMMUNICATION_COMMAND:", cmd)
         except Exception as ex:
             print_to_stderr("Error on external command handling", repr(ex))
 

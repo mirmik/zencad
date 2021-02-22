@@ -8,9 +8,13 @@ from zencad.frame.util import print_to_stderr
 import zencad.gui.actions
 from zencad.gui.info_widget import InfoWidget
 from zencad.gui.display_unbounded import start_unbounded_worker, spawn_sleeped_worker
+from zencad.frame.finisher import setup_finish_handler, setup_interrupt_handlers
 from zencad.gui.startwdg import StartDialog
 
 from zencad.settings import Settings
+from zencad.frame.client import Client
+from zencad.frame.retransler import ConsoleRetransler
+from zencad.frame.communicator import Communicator
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
@@ -169,7 +173,7 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         # через ретранслятор. Теперь все консольные сообщения будуут обвешиваться
         # тегами и поступать на коммуникатор.
         retransler = ConsoleRetransler(sys.stdout)
-        retransler.start()
+        retransler.start_listen()
 
         # Коммуникатор будет слать сообщения на скрытый файл,
         # тоесть, на истинный stdout
@@ -183,6 +187,14 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         dct0 = json.loads(data)
 
         initial_communicator.declared_opposite_pid = int(dct0["data"])
+
+        def handler():
+            retransler.stop_listen()
+            initial_communicator.stop_listen()
+
+        setup_finish_handler(handler)
+        setup_interrupt_handlers()
+        
 
     if openpath is None and not none and not unbound:
         if Settings.get(["gui", "start_widget"]) == "true":

@@ -9,12 +9,12 @@ from OCC.Core.TopLoc import TopLoc_Location
 from zencad.shape import Shape
 from zencad.color import Color, default_color, default_wire_color
 from zencad.axis import Axis
-from zencad.trans import Transformation
+from zencad.geom.trans import Transformation
 from zencad.geom.exttrans import nulltrans
-import zencad.transformable
+import zencad.geom.transformable
 
 
-class InteractiveObject(zencad.transformable.Transformable):
+class InteractiveObject(zencad.geom.transformable.Transformable):
     def __init__(self, iobj, color, border_color=None, wire_color=None):
         self.ais_object = iobj
         self._location = nulltrans()

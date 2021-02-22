@@ -10,6 +10,7 @@ from zencad.frame.inotifier import InotifyThread
 from zencad.frame.screen_saver import ScreenSaverWidget
 from zencad.frame.console import ConsoleWidget
 from zencad.frame.text_editor import TextEditor
+from zencad.frame.client import Client
 
 import zencad.frame.util
 from zencad.frame.util import print_to_stderr
@@ -19,7 +20,7 @@ from zencad.gui.display_unbounded import spawn_sleeped_worker
 from zencad.settings import Settings
 
 from zencad.frame.actions import ZenFrameActionsMixin
-from zencad.frame.finisher import setup_finish_handler
+from zencad.frame.finisher import setup_finish_handler, setup_interrupt_handlers
 
 class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
     """Класс реализует логику общения с подчинёнными процессами,
@@ -139,6 +140,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         return self._current_opened
 
     def bind_window(self, winid, pid):
+        print_to_stderr("bind_window")
         if self._current_client.pid() != pid:
             """Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
             то бинд уже неактуален."""
@@ -236,6 +238,12 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self._current_client.communicator.stop_listen()
         self.store_gui_state()
 
+
+        if self._initial_client:
+            self._initial_client.send({"cmd":"main_finished"})
+            self._initial_client.communicator.stop_listen()
+
+
     def enable_display_changed_mode(self):
         if self.vsplitter.widget(0) is not self.screen_saver:
             self.vsplitter.replaceWidget(0, self.screen_saver)
@@ -305,7 +313,14 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
 
         initial_communicator.declared_opposite_pid = int(dct0["data"])
 
-        openpath = zencad.frame.util.create_temporary_file()
+        def handler():
+            retransler.stop_listen()
+            initial_communicator.stop_listen()
+
+        setup_finish_handler(handler)
+        setup_interrupt_handlers()
+
+    openpath = zencad.frame.util.create_temporary_file()
 
     MAINWINDOW = ZenFrame(
         title= "ZenFrame",
@@ -323,5 +338,9 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         else:
             MAINWINDOW.open_declared(openpath)
 
+    timer = QtCore.QTimer()
+    timer.start(500)  # You may change this if you wish.
+    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+    
     MAINWINDOW.show()
     QAPP.exec()

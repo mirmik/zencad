@@ -21,11 +21,12 @@ class ConsoleRetransler(QObject):
     Это позволяет перехватывать стандартный вывод в подчинённых процессах и перенаправлять его на встроенную консоль.
     """
 
-    def __init__(self, stdout, new_desc=None, parent=None):
+    def __init__(self, stdout, new_desc=None, without_wrap=False, parent=None):
         super().__init__(parent)
         self.communicator = None
         self.do_retrans(old_file=stdout, new_desc=new_desc)
         self.prevent_mode = False
+        self.without_wrap = without_wrap
 
     def set_communicator(self, comm):
         self.communicator = comm
@@ -55,7 +56,10 @@ class ConsoleRetransler(QObject):
     
                 return
     
-        self.communicator.send({"cmd": "console", "data": inputdata})
+        if self.without_wrap:
+            self.new_file.write(inputdata)
+        else:
+            self.communicator.send({"cmd": "console", "data": inputdata})
 
     def do_retrans(self, old_file, new_desc=None):
         old_desc = old_file.fileno()

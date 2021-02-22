@@ -1,4 +1,4 @@
-import zencad.trans as trans
+import zencad.geom.trans as trans
 
 
 class Transformable:
