@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import tempfile
+import subprocess
 import os
 
 from zencad.settings import Settings
@@ -169,7 +170,7 @@ class ZenFrameActionsMixin:
         self.texteditor.save_as(path)
 
     def externalTextEditorOpen(self):
-        cmd = Settings.get(["gui"]["text_editor"])
+        cmd = Settings.get(["gui", "text_editor"])
         subprocess.Popen(cmd.format(path=self.current_opened()), shell=True)
 
     def hideConsole(self, en):

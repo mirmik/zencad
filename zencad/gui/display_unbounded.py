@@ -158,8 +158,8 @@ def unbound_worker_bottom_half(scene):
     time.sleep(0.05)
 
     timer = QtCore.QTimer()
-    timer.start(500)  # You may change this if you wish.
-    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+    timer.start(Configuration.TIMER_PULSE * 1000)
+    timer.timeout.connect(lambda: None)
 
     QtWidgets.QApplication.instance().exec()
 
