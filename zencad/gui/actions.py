@@ -76,13 +76,13 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
 
 
     def exportStlAction(self):
-        self._current_client_communicator.send({"cmd": "exportstl"})
+        self._current_client.send({"cmd": "exportstl"})
 
     def exportBrepAction(self):
-        self._current_client_communicator.send({"cmd": "exportbrep"})
+        self._current_client.send({"cmd": "exportbrep"})
 
     def to_freecad_action(self):
-        self._current_client_communicator.send({"cmd": "to_freecad"})
+        self._current_client.send({"cmd": "to_freecad"})
 
     def screenshotAction(self):
         # TODO: Востановить алгоритм взятия скриншота с дампом view буффера.
@@ -123,23 +123,23 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         # image.save(path)
 
     def resetAction(self):
-        self._current_client_communicator.send({"cmd": "resetview"})
+        self._current_client.send({"cmd": "resetview"})
 
     def centeringAction(self):
-        self._current_client_communicator.send({"cmd": "centering"})
+        self._current_client.send({"cmd": "centering"})
 
     def autoscaleAction(self):
-        self._current_client_communicator.send({"cmd": "autoscale"})
+        self._current_client.send({"cmd": "autoscale"})
 
     def trackingAction(self, en):
-        self._current_client_communicator.send({"cmd": "tracking", "en": en})
+        self._current_client.send({"cmd": "tracking", "en": en})
         self.info_widget.set_tracking_info_status(en)
 
     def orient1(self):
-        self._current_client_communicator.send({"cmd": "orient1"})
+        self._current_client.send({"cmd": "orient1"})
 
     def orient2(self):
-        self._current_client_communicator.send({"cmd": "orient2"})
+        self._current_client.send({"cmd": "orient2"})
 
     def invalidateCacheAction(self):
         files = zencad.lazy.cache.keys()
@@ -337,7 +337,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         )
 
     def set_center_visible(self, en):
-        self._current_client_communicator.send(
+        self._current_client.send(
             {"cmd": "set_center_visible", "en": en})
 
     def create_menus(self):
@@ -400,8 +400,8 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         pass
 
     def set_perspective(self, en):
-        if self._current_client_communicator:
-            self._current_client_communicator.send(
+        if self._current_client:
+            self._current_client.send(
                 {"cmd": "set_perspective", "en": en})
         self.perspective_checkbox_state = en
 
@@ -409,7 +409,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
                             "true" if en else "false")
 
     def first_person_mode(self):
-        self._current_client_communicator.send({"cmd": "first_person_mode"})
+        self._current_client.send({"cmd": "first_person_mode"})
 
     def view_only(self, en):
         if en:

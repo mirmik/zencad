@@ -2,7 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import tempfile
 import os
+
 from zencad.settings import Settings
 import zencad.frame.util
 

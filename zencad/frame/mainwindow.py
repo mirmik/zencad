@@ -231,6 +231,8 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         Settings.store()
 
     def closeEvent(self, ev):
+        self.store_gui_state()
+
         if self._initial_client:
             self._initial_client.send({"cmd":"main_finished"})
         
