@@ -284,6 +284,8 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
 
         self.enable_display_changed_mode()
         
+        self.console.clear()
+        self.setWindowTitle(self._current_opened)
         self.openStartEvent(openpath)
         self._openlock.unlock()
 

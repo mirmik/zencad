@@ -240,6 +240,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
 
     def create_actions(self):
         super().create_actions()
+        self.perspective_checkbox_state = False
 
         self.mStlExport = self.create_action(
             "Export STL...",
@@ -299,15 +300,12 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         )
 
         self.mPerspective = self.create_action(
-            "Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=Settings.get(["memory", "perspective"])
+            "Perspective", self.set_perspective, "Set Perspective", checkbox=True, defcheck=False
         )
 
         self.mVisCenter = self.create_action(
             "Visible center", self.set_center_visible, "Visible center", checkbox=True, defcheck=False
         )
-
-        self.perspective_checkbox_state = Settings.get(
-            ["memory", "perspective"])
 
         self.mInvalCache = self.create_action(
             "Invalidate cache", self.invalidateCacheAction, "Invalidate cache"
@@ -404,9 +402,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
             self._current_client.send(
                 {"cmd": "set_perspective", "en": en})
         self.perspective_checkbox_state = en
-
-        zencad.settings.set(["memory", "perspective"],
-                            "true" if en else "false")
 
     def first_person_mode(self):
         self._current_client.send({"cmd": "first_person_mode"})
