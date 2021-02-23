@@ -11,7 +11,7 @@ import runpy
 import signal
 
 from zencad.configuration import Configuration
-from zencad.frame.finisher import setup_interrupt_handlers, finish_procedure
+from zencad.frame.finisher import terminate_all_subprocess, invoke_destructors, setup_interrupt_handlers
 
 def protect_path(s):
     if s[0] == s[-1] and (s[0] == "'" or s[0] == '"'):
@@ -143,7 +143,8 @@ def main():
         print_to_stderr(f"Exception class: {ex.__class__}")
         traceback.print_exc()
 
-    finish_procedure()
+    invoke_destructors()
+    terminate_all_subprocess()
 
 
 if __name__ == "__main__":

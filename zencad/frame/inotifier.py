@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from zencad.frame.finisher import register_destructor
+
 
 class InotifyThread(QThread):
     """InotifyThread следит за переданным ему списком файлов
@@ -26,6 +28,8 @@ class InotifyThread(QThread):
         self.stop_token = False
 
         self.targets_list = {}
+
+        register_destructor(id(self), self.finish)
 
     def lock(self):
         self._lock.acquire()

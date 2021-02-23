@@ -8,7 +8,7 @@ from zencad.frame.util import print_to_stderr
 import zencad.gui.actions
 from zencad.gui.info_widget import InfoWidget
 from zencad.gui.display_unbounded import start_unbounded_worker, spawn_sleeped_worker
-from zencad.frame.finisher import setup_finish_handler, setup_interrupt_handlers
+from zencad.frame.finisher import setup_interrupt_handlers
 from zencad.gui.startwdg import StartDialog
 
 from zencad.settings import Settings
@@ -163,10 +163,18 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self.screen_saver.set_subtext(1, "to load: {}".format(data["toload"]))
             self.screen_saver.set_subtext(2, "to eval: {}".format(data["toeval"]))
 
+    def openStartEvent(self, path):
+        """ Добавляем путь в список последних вызовов."""
+        Settings.add_recent(os.path.abspath(path))
+        self.update_recent_menu()
+
+
 
 def start_application(openpath=None, none=False, unbound=False, norestore=False, sleeped_optimization=True):
     QAPP = QtWidgets.QApplication(sys.argv[1:])
     initial_communicator = None
+
+    setup_interrupt_handlers()
 
     if unbound:
         # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
@@ -187,13 +195,6 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         dct0 = json.loads(data)
 
         initial_communicator.declared_opposite_pid = int(dct0["data"])
-
-        def handler():
-            retransler.stop_listen()
-            initial_communicator.stop_listen()
-
-        setup_finish_handler(handler)
-        setup_interrupt_handlers()
 
 
     if openpath is None and not none and not unbound:

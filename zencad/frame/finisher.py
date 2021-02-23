@@ -2,9 +2,26 @@ import signal
 import psutil
 from zencad.frame.util import print_to_stderr
 
-FINISH_HANDLER = None
+DESTRUCTORS = {}
 
-def finish_procedure():
+def register_destructor(obj_id, dtor):
+    DESTRUCTORS[obj_id] = dtor
+
+def remove_destructor(obj_id):
+    if obj_id in DESTRUCTORS:
+        del DESTRUCTORS[obj_id]
+
+def invoke_destructors():
+    to_delete = []
+
+    for obj_id, dtor in DESTRUCTORS.items():
+        dtor()
+        to_delete.append(obj_id)
+
+    for obj_id in to_delete:
+        remove_destructor(obj_id)
+
+def terminate_all_subprocess():
     procs = psutil.Process().children()
     for p in procs:
         p.terminate()
@@ -12,15 +29,9 @@ def finish_procedure():
     for p in procs:
         p.wait()
 
-def setup_finish_handler(handler):
-    global FINISH_HANDLER
-    FINISH_HANDLER = handler
-
 def interrupt_handler(a, b):
-    if FINISH_HANDLER:
-        FINISH_HANDLER()
-
-    finish_procedure()
+    invoke_destructors()
+    terminate_all_subprocess()
     exit()
 
 def setup_interrupt_handlers():

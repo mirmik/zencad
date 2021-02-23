@@ -20,7 +20,7 @@ from zencad.gui.display_unbounded import spawn_sleeped_worker
 from zencad.settings import Settings
 
 from zencad.frame.actions import ZenFrameActionsMixin
-from zencad.frame.finisher import setup_finish_handler, setup_interrupt_handlers
+from zencad.frame.finisher import invoke_destructors, terminate_all_subprocess, remove_destructor
 
 class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
     """Класс реализует логику общения с подчинёнными процессами,
@@ -69,8 +69,6 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         
         # Bind signals
         self.init_changes_notifier(self.reopen_current)
-
-        setup_finish_handler(self.close)
 
     def set_retransler(self, retransler):
         self.retransler = retransler
@@ -132,6 +130,7 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
                 to_delete.append(pid)
 
         for pid in to_delete:
+            remove_destructor(id(self._clients[pid].communicator))
             del self._clients[pid]
 
     def reopen_current(self):
@@ -144,7 +143,6 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         return self._current_opened
 
     def bind_window(self, winid, pid):
-        print_to_stderr("bind_window")
         if self._current_client.pid() != pid:
             """Если заявленный pid отправителя не совпадает с pid текущего коммуникатора,
             то бинд уже неактуален."""
@@ -233,25 +231,15 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         Settings.store()
 
     def closeEvent(self, ev):
-        self.notifier.finish()
-        self.notifier.wait()
-        
-        if self._sleeped_client:
-            self._sleeped_client.terminate()
-
-        self._current_client.communicator.stop_listen()
-        self.store_gui_state()
-
-
         if self._initial_client:
             self._initial_client.send({"cmd":"main_finished"})
-            self._initial_client.communicator.stop_listen()
-
-        if self.retransler:
-            self.retransler.stop_listen()
+        
+        invoke_destructors()
+        terminate_all_subprocess()
 
 
     def enable_display_changed_mode(self):
+        self.screen_saver.set_loading_state()
         if self.vsplitter.widget(0) is not self.screen_saver:
             self.vsplitter.replaceWidget(0, self.screen_saver)
 
@@ -293,13 +281,25 @@ class ZenFrame(QtWidgets.QMainWindow, ZenFrameActionsMixin):
         self._current_client.communicator.start_listen()
 
         self.enable_display_changed_mode()
+        
+        self.openStartEvent(openpath)
         self._openlock.unlock()
+
+
+    def openStartEvent(self, path):
+        pass
+
+def sigchld_handler(a, b): 
+    print_to_stderr("SIGCHLD", a, b) 
 
 
 def start_application(openpath=None, none=False, unbound=False, norestore=False, sleeped_optimization=True):
     QAPP = QtWidgets.QApplication(sys.argv[1:])
     initial_communicator = None
 
+    signal.signal(signal.SIGCHLD, sigchld_handler) # Is not worked? Why?
+    setup_interrupt_handlers()
+    
     if unbound:
         # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
         # через ретранслятор. Теперь все консольные сообщения будуут обвешиваться
@@ -319,13 +319,6 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
         dct0 = json.loads(data)
 
         initial_communicator.declared_opposite_pid = int(dct0["data"])
-
-        def handler():
-            retransler.stop_listen()
-            initial_communicator.stop_listen()
-
-        setup_finish_handler(handler)
-        setup_interrupt_handlers()
 
     openpath = zencad.frame.util.create_temporary_file()
 

@@ -12,6 +12,7 @@ ENABLE_PREVENT_MODE = True
 PREVENT_OUTPUT_START = ' ###### 3D rendering pipe initialisation #####\n'
 PREVENT_OUTPUT_STOP = ' ########################################\n'
 
+from zencad.frame.finisher import register_destructor
 
 class ConsoleRetransler(QObject):
     """Ретранслятор перехватывает поток вывода на файловый дескриптор 
@@ -27,6 +28,8 @@ class ConsoleRetransler(QObject):
         self.do_retrans(old_file=stdout, new_desc=new_desc)
         self.prevent_mode = False
         self.without_wrap = without_wrap
+
+        register_destructor(id(self), self.stop_listen)
 
     def set_communicator(self, comm):
         self.communicator = comm

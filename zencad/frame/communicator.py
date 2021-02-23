@@ -22,6 +22,7 @@ from zencad.frame.util import print_to_stderr
 from zencad.frame.listener import Listener
 from zencad.configuration import Configuration
 
+from zencad.frame.finisher import register_destructor
 
 class Communicator(QObject):
     """Объект обеспечивает связь между процессами, позволяя 
@@ -44,6 +45,8 @@ class Communicator(QObject):
         self._listener = None
 
         self.send({"cmd": "set_opposite_pid", "data": os.getpid()})
+
+        register_destructor(id(self), self.stop_listen)
 
     def newdata_handler(self, inputdata):  
         if Configuration.COMMUNICATOR_TRACE:

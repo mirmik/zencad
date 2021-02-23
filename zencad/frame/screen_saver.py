@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 import zencad
 import random
 import time
+import sys
 import os
 
 from zencad.settings import Settings
@@ -20,6 +21,7 @@ class ScreenSaverWidget(QWidget):
         self.color = color
         self.last_install_time = time.time()
         self.mode = "techpriest"
+        self.background_pixmap = None
         super().__init__()
 
     def set_background(self, bg):
@@ -51,6 +53,8 @@ class ScreenSaverWidget(QWidget):
         self.update()
 
     def black_box_paint(self, ev):
+        """Вызывается в event"""
+
         painter = QPainter(self)
         painter.setPen(Qt.white)
 
@@ -73,7 +77,7 @@ class ScreenSaverWidget(QWidget):
 
         message = self.text
 
-        if time.time() - self.last_install_time > 0.7 or self.mode == "error":
+        if True: #time.time() - self.last_install_time > 0.1 or self.mode == "error":
             painter.drawText(
                 QPoint(
                     self.width()/2 - QFontMetrics(font).width(message)/2,

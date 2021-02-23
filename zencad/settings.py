@@ -40,6 +40,16 @@ class ZencadSettings(BaseSettings):
         self.clear_deleted_recent()
         return self.list_of_settings["memory"]["recents"]
 
+    def add_recent(self, added):
+        while added in self.list_of_settings["memory"]["recents"]: 
+            self.list_of_settings["memory"]["recents"].remove(added)
+
+        self.list_of_settings["memory"]["recents"] = [ added ] + self.list_of_settings["memory"]["recents"]
+        if len(self.list_of_settings["memory"]["recents"]) > 10:
+            self.list_of_settings["memory"]["recents"] = self.list_of_settings["memory"]["recents"][:10]
+
+        self.store()
+
     def clear_deleted_recent(self):
         recents = self.list_of_settings["memory"]["recents"]
         need_store = False

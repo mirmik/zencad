@@ -80,18 +80,13 @@ def _show(scene):
     timer.start(500)  # You may change this if you wish.
     timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
 
-    def finish_handler():
-        CONSOLE_FILTER.stop_listen()
-        maincomm.stop_listen()
-
-    setup_finish_handler(finish_handler)
     setup_interrupt_handlers()
 
     def finished_listener(data):
         if data["cmd"] == "main_finished":
-            finish_handler()
+            invoke_destructors()
             os.wait()
-            #finish_procedure()
+            
             QtWidgets.QApplication.quit()        
 
     maincomm.newdata.connect(finished_listener)
