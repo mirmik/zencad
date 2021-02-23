@@ -3,16 +3,38 @@
 import os
 import sys
 
+# Libraries loading test. Starts with gui mode only.
+if (
+        (
+            sys.argv[0][-7:] == "/zencad"
+            or
+            sys.argv[0] == "zencad" 
+            or 
+            (len(sys.argv)>2 and sys.argv[1] == "-m" and sys.argv[2] == "zencad")
+        )
+        and
+        not "--display-only" in sys.argv
+    ):
+    try:
+        import OCC
+        import OCC.Core.gp
+    except:
+        import zencad.gui.libinstaller
+        zencad.gui.libinstaller.doit()
+        exit()
+
+
+from zencad.version import __occt_version__, __pythonocc_version__
 
 class PreventLibraryLoading(Exception):
     pass
 
-
 try:
     # Если активировано опция переустановки библиотек,
     # не даём интерпретатору линковать имеющиеся
-    if ("--install-occt-force" in " ".join(sys.argv) or
-            "--install-pythonocc-force" in " ".join(sys.argv)):
+    if ("--install-occt" in " ".join(sys.argv) or
+            "--install-pythonocc" in " ".join(sys.argv)):
+        print("Prevent library link.")
         raise PreventLibraryLoading()
 
     # Geometry API

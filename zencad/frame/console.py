@@ -3,14 +3,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import sys
+from zencad.frame.util import print_to_stderr
 
 
 class ConsoleWidget(QTextEdit):
     append_signal = pyqtSignal(str)
 
-    def __init__(self):
-        self.stdout = sys.stdout
-        sys.stdout = self
+    def __init__(self, rebind=True):
+        if rebind:
+            self.stdout = sys.stdout
+            sys.stdout = self
 
         QTextEdit.__init__(self)
         pallete = self.palette()
@@ -43,10 +45,12 @@ class ConsoleWidget(QTextEdit):
         self.setText("")
 
     def write(self, data):
-        #data = data.decode("utf-8")
         self.append_signal.emit(data)
         self.write_native(data)
 
     def append(self, data):
+        if data.startswith("\r"): # TODO: Update last string
+            pass 
+
         self.cursor.insertText(data)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())

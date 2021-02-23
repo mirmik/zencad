@@ -28,6 +28,7 @@ class ConsoleRetransler(QObject):
         self.do_retrans(old_file=stdout, new_desc=new_desc)
         self.prevent_mode = False
         self.without_wrap = without_wrap
+        self.newdata_stream = None
 
         register_destructor(id(self), self.stop_listen)
 
@@ -58,11 +59,17 @@ class ConsoleRetransler(QObject):
                     self.prevent_mode = False
     
                 return
-    
+
+        # TODO: Стандартизировать варианты обработки.
         if self.without_wrap:
             self.new_file.write(inputdata)
         else:
-            self.communicator.send({"cmd": "console", "data": inputdata})
+            if self.communicator:
+                self.communicator.send({"cmd": "console", "data": inputdata})
+
+        if self.newdata_stream:
+            print_to_stderr("newdata_stream")
+            self.newdata_stream(inputdata)
 
     def do_retrans(self, old_file, new_desc=None):
         old_desc = old_file.fileno()

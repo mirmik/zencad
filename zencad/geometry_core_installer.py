@@ -11,6 +11,8 @@ import site
 import shutil
 import os
 
+from zencad.version import __occt_version__, __pythonocc_version__
+
 python_occ_precompiled_packages = {
     "linux-64": {
         "python3.7": {
@@ -170,7 +172,7 @@ def get_platform():
         raise Exception("Unresolved architecture")
 
 
-def install_precompiled_python_occ(occversion="7.4.1"):
+def install_precompiled_python_occ(occversion=__pythonocc_version__):
     systref = get_platform()
 
     ver = sys.version[:3]
@@ -206,31 +208,44 @@ def install_precompiled_python_occ(occversion="7.4.1"):
     print(f"Precomiled OCC succesfually installed in {target_directory}")
 
 
-def install_precompiled_occt_library(tgtpath=None, occt_version="7.4.0"):
-    architecture = get_platform()
+def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__):
 
-    # Downloading precompiled repo
-    url = occt_precompiled_libraries[architecture][occt_version]
-    path = download_repo_to_temporary_directory(url)
+    try:
+        architecture = get_platform()
 
-    # Extraction
-    extract_directory = extract_archive(path)
+        # Downloading precompiled repo
+        url = occt_precompiled_libraries[architecture][occt_version]
+        path = download_repo_to_temporary_directory(url)
 
-    if architecture in ("linux-64"):
-        target_directory = "/usr/local/lib" if tgtpath is None else tgtpath
+        # Extraction
+        extract_directory = extract_archive(path)
 
-    print("Copy libs to system libs directory")
-    source_directory = os.path.join(extract_directory)
-    target_directory = os.path.join(target_directory)
-    print(f"Source: {source_directory}")
-    print(f"Target: {target_directory}")
-    for item in os.listdir(source_directory):
-        shutil.copy(
-            os.path.join(source_directory, item),
-            os.path.join(target_directory, item)
-        )
-    print("Copying status: Success")
+        if architecture in ("linux-64"):
+            target_directory = os.path.expanduser(f"~/.local/lib/occt-{occt_version}") if tgtpath is None else tgtpath
+            #target_directory = os.path.expanduser(f"/usr/local/lib/") if tgtpath is None else tgtpath
 
+        if not os.path.exists(target_directory):
+            os.mkdir(target_directory)
+
+        print("Copy libs to system libs directory")
+        source_directory = os.path.join(extract_directory)
+        target_directory = os.path.join(target_directory)
+        print(f"Source: {source_directory}")
+        print(f"Target: {target_directory}")
+
+        for item in os.listdir(source_directory):
+            shutil.copy(
+                os.path.join(source_directory, item),
+                os.path.join(target_directory, item)
+            )
+    
+        print("Copying status: Success")
+    
+    except Exception as ex:
+        print("Fault", ex)
+        return -1
+
+    return 0
 
 def test_third_libraries():
     try:
