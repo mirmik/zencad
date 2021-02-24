@@ -63,12 +63,6 @@ class ZencadSettings(BaseSettings):
         if need_store:
             self.store()
 
-    def set(self, path, value):
-        it = self.list_of_settings
-        for p in path[:-1]:
-            it = it[p]
-        it[path[-1]] = value
-
 
 Settings = ZencadSettings()
 Settings.restore()
