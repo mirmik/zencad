@@ -229,8 +229,8 @@ def start_application(openpath=None, none=False, unbound=False, norestore=False,
             MAINWINDOW.open_declared(openpath)
 
     timer = QtCore.QTimer()
-    timer.start(500)  # You may change this if you wish.
-    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+    timer.start(Configuration.TIMER_PULSE * 1000)
+    timer.timeout.connect(lambda: None) 
     
     MAINWINDOW.show()
     QAPP.exec()
