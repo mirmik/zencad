@@ -26,7 +26,7 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
         super().__init__(
             title=title,
-            application_name = "zencad",
+            application_name="zencad",
             initial_communicator=initial_communicator,
             restore_gui=restore_gui)
 
