@@ -338,6 +338,12 @@ class DisplayWidget(BaseViewer):
             self.temporary1 = self.mapFromGlobal(QtGui.QCursor.pos())
             return
 
+        elif event.key() == QtCore.Qt.Key_Shift:
+            ev = self.mapFromGlobal(QtGui.QCursor.pos())
+            self.dragStartPosX = ev.x()
+            self.dragStartPosY = ev.y()
+            return
+
         # If signal not handling here, translate it onto top level
         if self._communicator:
             self._communicator.send({
@@ -468,8 +474,7 @@ class DisplayWidget(BaseViewer):
             self.location_changed_handle()
     
         # DYNAMIC ZOOM
-        elif (buttons == QtCore.Qt.MidButton and
-              not modifiers == QtCore.Qt.ShiftModifier):
+        elif (buttons == QtCore.Qt.MidButton):
             self._display.Repaint()
             self._display.DynamicZoom(abs(self.dragStartPosX),
                                       abs(self.dragStartPosY), abs(pt.x()),
@@ -479,7 +484,8 @@ class DisplayWidget(BaseViewer):
             self.location_changed_handle()
 
         # PAN
-        elif buttons == QtCore.Qt.RightButton:
+        elif (buttons == QtCore.Qt.RightButton or 
+                modifiers == QtCore.Qt.ShiftModifier):
             dx = pt.x() - self.dragStartPosX
             dy = pt.y() - self.dragStartPosY
             self.dragStartPosX = pt.x()
