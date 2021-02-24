@@ -5,6 +5,7 @@ import sys
 from PyQt5.QtCore import *
 from zenframe.settings import BaseSettings, default_text_editor_os
 
+
 class ZencadSettings(BaseSettings):
     def __init__(self):
         list_of_settings = {
@@ -40,10 +41,11 @@ class ZencadSettings(BaseSettings):
         return self.list_of_settings["memory"]["recents"]
 
     def add_recent(self, added):
-        while added in self.list_of_settings["memory"]["recents"]: 
+        while added in self.list_of_settings["memory"]["recents"]:
             self.list_of_settings["memory"]["recents"].remove(added)
 
-        self.list_of_settings["memory"]["recents"] = [ added ] + self.list_of_settings["memory"]["recents"]
+        self.list_of_settings["memory"]["recents"] = [
+            added] + self.list_of_settings["memory"]["recents"]
         if len(self.list_of_settings["memory"]["recents"]) > 10:
             self.list_of_settings["memory"]["recents"] = self.list_of_settings["memory"]["recents"][:10]
 

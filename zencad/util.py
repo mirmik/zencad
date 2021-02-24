@@ -127,8 +127,10 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
 def points(pnts):
     return [point3(item) for item in pnts]
 
+
 def vectors(pnts):
     return [vector3(item) for item in pnts]
+
 
 def to_numpy(arg):
     if isinstance(arg, (gp_Vec, gp_Pnt, gp_Dir)):

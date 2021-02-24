@@ -1,11 +1,11 @@
 from zencad.scene import Scene
 from zenframe.unbound import (
-    is_unbound_mode, 
+    is_unbound_mode,
     unbound_worker_bottom_half,
     unbound_frame_summon
 )
-        
-#UNBOUND_MODE = False  # Устанавливается из zencad.gui.display_unbounded
+
+# UNBOUND_MODE = False  # Устанавливается из zencad.gui.display_unbounded
 # сигнализирует об активации подчинённого режима работы
 
 __default_scene = Scene()  # Сцена, с которой работают команды
@@ -22,6 +22,7 @@ def display(shp, color=None, deep=True, scene=None):
 def disp(*args, **kwargs):
     return display(*args, **kwargs)
 
+
 def widget_creator(communicator, scene):
     from zencad.gui.display import DisplayWidget
     display = DisplayWidget(
@@ -32,6 +33,7 @@ def widget_creator(communicator, scene):
     # todo: почему не внутри?
     communicator.bind_handler(display.external_communication_command)
     return display
+
 
 def show(scene=None, display_only=False):
     if scene is None:
@@ -51,6 +53,6 @@ def show(scene=None, display_only=False):
         zencad.gui.display_only.exec_display_only_mode()
 
     else:
-        # Запускаем оболочку как подчинённый процесс 
+        # Запускаем оболочку как подчинённый процесс
         import zencad.gui.main_unbounded
         unbound_frame_summon(widget_creator, "zencad", scene=scene)

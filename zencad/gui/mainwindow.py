@@ -14,6 +14,7 @@ from zenframe.unbound import start_unbounded_worker
 from zenframe.mainwindow import ZenFrame
 from zenframe.util import print_to_stderr
 
+
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
                  title="ZenCad",
@@ -45,13 +46,13 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         # Modes
         self._bind_mode = True  # Bind widget to embed window
 
-    def spawn(self, sleeped=False, openpath="", need_prescale=False, size=(640,480)):
+    def spawn(self, sleeped=False, openpath="", need_prescale=False, size=(640, 480)):
         return start_unbounded_worker(
-                               path=openpath,
-                               application_name="zencad",
-                               need_prescale=need_prescale,
-                               size=size,
-                               sleeped=sleeped)
+            path=openpath,
+            application_name="zencad",
+            need_prescale=need_prescale,
+            size=size,
+            sleeped=sleeped)
 
     def init_central_widget(self):
         super().init_central_widget()
@@ -82,7 +83,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         # elif cmd == 'clientpid':
         #    self.clientpid = data['pid']
         elif cmd == "except":
-            print(f"Exception in subprocess with executable path: {data['path']}")
+            print(
+                f"Exception in subprocess with executable path: {data['path']}")
             print(data["header"])
             print(data["tb"])
         elif cmd == "qmarker":
@@ -111,7 +113,7 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         else:
             print("Warn: unrecognized command", data)
 
-    #def closeEvent(self, ev):
+    # def closeEvent(self, ev):
     #    super().closeEvent(ev)
 
     def internal_console_request(self, data):
@@ -138,23 +140,23 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         if self.is_reopen_mode() and self._last_location is not None:
             self._current_client.send(
                 {"cmd": "location", "loc": self._last_location})
-            
+
         self._current_client.send(
             {"cmd": "set_perspective", "en": self.perspective_checkbox_state})
         self._current_client.send({"cmd": "redraw"})
         super().synchronize_subprocess_state()
 
-
     def evalcache_notification(self, data):
         if data["subcmd"] == "newtree":
-            self.screen_saver.set_subtext(0, "Eval tree: objs:{objs} root:{root}".format(root=data["root"][:8], objs=data["len"]))
+            self.screen_saver.set_subtext(0, "Eval tree: objs:{objs} root:{root}".format(
+                root=data["root"][:8], objs=data["len"]))
         if data["subcmd"] == "progress":
-            self.screen_saver.set_subtext(1, "to load: {}".format(data["toload"]))
-            self.screen_saver.set_subtext(2, "to eval: {}".format(data["toeval"]))
+            self.screen_saver.set_subtext(
+                1, "to load: {}".format(data["toload"]))
+            self.screen_saver.set_subtext(
+                2, "to eval: {}".format(data["toeval"]))
 
     def openStartEvent(self, path):
         """ Добавляем путь в список последних вызовов."""
         Settings.add_recent(os.path.abspath(path))
         self.update_recent_menu()
-
-

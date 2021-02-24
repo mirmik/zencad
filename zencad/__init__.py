@@ -5,16 +5,17 @@ import sys
 
 # Libraries loading test. Starts with gui mode only.
 if (
-        (
-            sys.argv[0][-7:] == "/zencad"
-            or
-            sys.argv[0] == "zencad" 
-            or 
-            (len(sys.argv)>2 and sys.argv[1] == "-m" and sys.argv[2] == "zencad")
-        )
-        and
-        not "--display-only" in sys.argv
-    ):
+    (
+        sys.argv[0][-7:] == "/zencad"
+        or
+        sys.argv[0] == "zencad"
+        or
+        (len(sys.argv) > 2 and sys.argv[1]
+         == "-m" and sys.argv[2] == "zencad")
+    )
+    and
+    not "--display-only" in sys.argv
+):
     try:
         import OCC
         import OCC.Core.gp
@@ -26,8 +27,10 @@ if (
 
 from zencad.version import __occt_version__, __pythonocc_version__
 
+
 class PreventLibraryLoading(Exception):
     pass
+
 
 try:
     # Если активировано опция переустановки библиотек,

@@ -221,7 +221,8 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
         extract_directory = extract_archive(path)
 
         if architecture in ("linux-64"):
-            target_directory = os.path.expanduser(f"~/.local/lib/occt-{occt_version}") if tgtpath is None else tgtpath
+            target_directory = os.path.expanduser(
+                f"~/.local/lib/occt-{occt_version}") if tgtpath is None else tgtpath
             #target_directory = os.path.expanduser(f"/usr/local/lib/") if tgtpath is None else tgtpath
 
         if not os.path.exists(target_directory):
@@ -238,14 +239,15 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
                 os.path.join(source_directory, item),
                 os.path.join(target_directory, item)
             )
-    
+
         print("Copying status: Success")
-    
+
     except Exception as ex:
         print("Fault", ex)
         return -1
 
     return 0
+
 
 def test_third_libraries():
     try:

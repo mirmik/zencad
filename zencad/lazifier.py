@@ -28,6 +28,7 @@ desave = None
 onplace = None
 status_notify = None
 
+
 def disable_lazy():
     global ensave, desave, onplace, diag, status_notify
     ensave = lazy.encache
@@ -41,6 +42,7 @@ def disable_lazy():
     lazy.onplace = True
     lazy.status_notify = False
 
+
 def restore_lazy():
     lazy.onplace = onplace
     lazy.encache = ensave
@@ -50,30 +52,33 @@ def restore_lazy():
 
 
 def install_evalcahe_notication(comm):
-#    if zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES:
-#        return
+    #    if zencad.configure.CONFIGURE_WITHOUT_EVALCACHE_NOTIFIES:
+    #        return
 
     lazy.status_notify_enable(True)
 
     def stcb(root):
         arr = evalcache.lazy.tree_objects(root)
-        comm.send({"cmd":"evalcache", "subcmd":"newtree", "len":len(arr), "root":root.__lazyhexhash__})
-    
+        comm.send({"cmd": "evalcache", "subcmd": "newtree",
+                   "len": len(arr), "root": root.__lazyhexhash__})
+
     def sncb(root, obj):
         disable_lazy()
         arrs = evalcache.lazy.tree_needeval(root)
-        comm.send({"cmd":"evalcache", "subcmd":"progress", "toload":len(arrs.toload), "toeval":len(arrs.toeval)})
+        comm.send({"cmd": "evalcache", "subcmd": "progress",
+                   "toload": len(arrs.toload), "toeval": len(arrs.toeval)})
         restore_lazy()
-    
+
     def ftcb(root):
         pass
-    
+
     def fncb(root, obj):
         disable_lazy()
         arrs = evalcache.lazy.tree_needeval(root)
-        comm.send({"cmd":"evalcache", "subcmd":"progress", "toload":len(arrs.toload), "toeval":len(arrs.toeval)})
+        comm.send({"cmd": "evalcache", "subcmd": "progress",
+                   "toload": len(arrs.toload), "toeval": len(arrs.toeval)})
         restore_lazy()
-    
+
     lazy.set_start_tree_evaluation_callback(stcb)
     lazy.set_start_node_evaluation_callback(sncb)
     lazy.set_fini_tree_evaluation_callback(ftcb)

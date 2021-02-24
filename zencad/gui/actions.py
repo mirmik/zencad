@@ -74,7 +74,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         f.close()
         self.open(path)
 
-
     def exportStlAction(self):
         self._current_client.send({"cmd": "exportstl"})
 
@@ -151,7 +150,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
 
         print("Invalidate cache: %d files removed" % len(files))
 
-
     def cacheInfoAction(self):
         def get_size(start_path="."):
             total_size = 0
@@ -186,7 +184,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
 
     def debugInfoAction(self):
         raise NotImplementedError
-
 
     def coordsDifferenceMode(self, en):
         self.info_widget.coords_difference_mode = en
@@ -318,15 +315,15 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         self.mDebugInfo = self.create_action(
             "Debug info", self.debugInfoAction, "Debug info"
         )
-        
+
         self.mReopenCurrent = self.create_action(
             "Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
         )
-        
+
         self.mWebManual = self.create_action(
             "Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser", "F1"
         )
-        
+
         self.mCoordsDiff = self.create_action(
             "Coords difference",
             self.coordsDifferenceMode,

@@ -16,4 +16,3 @@ from zencad.gui.display import DisplayWidget
 from zenframe.finisher import setup_interrupt_handlers
 
 from zenframe.util import print_to_stderr
-

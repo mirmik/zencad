@@ -27,9 +27,11 @@ def _box(size, y=None, z=None, center=None):
     else:
         return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def box(size, y=None, z=None, center=None):
     return _box(size, y, z, center)
+
 
 def _sphere(r, yaw=None, pitch=None):
     if yaw is None and pitch is None:
@@ -47,47 +49,57 @@ def _sphere(r, yaw=None, pitch=None):
 
     return Shape(raw)
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def sphere(r, yaw=None, pitch=None):
     return _sphere(r, yaw, pitch)
+
 
 def _cylinder(r, h, yaw=None, center=False):
     if yaw:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h/2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(ax2, r, h, yaw).Shape()
+            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
+                ax2, r, h, yaw).Shape()
             return Shape(raw)
         else:
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(r, h, yaw).Shape()
+            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
+                r, h, yaw).Shape()
             return Shape(raw)
     else:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h/2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(ax2, r, h).Shape()
+            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
+                ax2, r, h).Shape()
             return Shape(raw)
         else:
             raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(r, h).Shape()
             return Shape(raw)
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def cylinder(r, h, yaw=None, center=False):
-    return _cylinder(r,h,yaw,center)
+    return _cylinder(r, h, yaw, center)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def _cone(r1, r2, h, yaw=None, center=False):
     if yaw:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h / 2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(ax2, r1, r2, h, yaw).Shape()
+            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(
+                ax2, r1, r2, h, yaw).Shape()
             return Shape(raw)
         else:
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(r1, r2, h, yaw).Shape()
+            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(
+                r1, r2, h, yaw).Shape()
             return Shape(raw)
 
     else:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h / 2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(ax2, r1, r2, h).Shape()
+            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(
+                ax2, r1, r2, h).Shape()
             return Shape(raw)
         else:
             raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(r1, r2, h).Shape()
@@ -96,7 +108,8 @@ def _cone(r1, r2, h, yaw=None, center=False):
 
 @lazy.lazy(cls=nocached_shape_generator)
 def cone(r1, r2, h, yaw=None, center=False):
-    return _cone(r1,r2,h,yaw,center)
+    return _cone(r1, r2, h, yaw, center)
+
 
 def _torus(r1, r2, yaw=None, pitch=None):
     if yaw is None and pitch is None:
@@ -114,14 +127,17 @@ def _torus(r1, r2, yaw=None, pitch=None):
 
     return Shape(raw)
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def torus(r1, r2, yaw=None, pitch=None):
     return _torus(r1, r2, yaw=yaw, pitch=pitch)
+
 
 def _halfspace():
     F = BRepLib_MakeFace(gp_Pln()).Face()
     MHS = BRepPrimAPI_MakeHalfSpace(F, gp_Pnt(0, 0, -1))
     return Shape(MHS.Solid())
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def halfspace():

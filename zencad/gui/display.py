@@ -260,10 +260,10 @@ class DisplayWidget(BaseViewer):
         # self.camera_center_mark.relocate(pyservoce.translate(*self.view.center()))
         for c in self.camera_center_axes:
             c.relocate(zencad.geom.trans.translate(self.center()))
-        
+
         if self._communicator:
             loc = self.store_location()
-            self._communicator.send({"cmd": "location",  "loc": loc })
+            self._communicator.send({"cmd": "location",  "loc": loc})
 
     def InitDriver(self):
         self._display.Create(window_handle=int(self.winId()), parent=self)
@@ -286,9 +286,7 @@ class DisplayWidget(BaseViewer):
         MOVE_SCALE = 0.05
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
 
-        #print(event.key())
-
-
+        # print(event.key())
 
         if event.key() == QtCore.Qt.Key_F3:
             self.markerQPressed()
@@ -398,7 +396,7 @@ class DisplayWidget(BaseViewer):
         self.dragStartPosY = ev.y()
         self._display.StartRotation(self.dragStartPosX, self.dragStartPosY)
         self.temporary1 = event.pos()
-        #print(self.temporary1)
+        # print(self.temporary1)
         self.mousedown = True
 
     def mouseReleaseEvent(self, event):
@@ -470,7 +468,7 @@ class DisplayWidget(BaseViewer):
                 self._display.Rotation(pt.x(), pt.y())
 
             self.location_changed_handle()
-    
+
         # DYNAMIC ZOOM
         elif (buttons == QtCore.Qt.MidButton):
             self._display.Repaint()
@@ -482,7 +480,7 @@ class DisplayWidget(BaseViewer):
             self.location_changed_handle()
 
         # PAN
-        elif (buttons == QtCore.Qt.RightButton or 
+        elif (buttons == QtCore.Qt.RightButton or
                 modifiers == QtCore.Qt.ShiftModifier):
             dx = pt.x() - self.dragStartPosX
             dy = pt.y() - self.dragStartPosY
@@ -490,8 +488,6 @@ class DisplayWidget(BaseViewer):
             self.dragStartPosY = pt.y()
             self._display.View.Pan(dx, -dy)
             self.location_changed_handle()
-
-
 
     def _resize_external(self, size):
         if self._inited0:
