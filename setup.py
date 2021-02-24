@@ -21,9 +21,6 @@ requires = [
         "zenframe"
     ] 
 
-#if sys.platform != "win32":
-#   requires.append("setproctitle")
-
 setup(
     name="zencad",
     packages=["zencad"],
@@ -60,7 +57,6 @@ setup(
     include_package_data=True,
     install_requires=requires,
     entry_points={"console_scripts": [
-        "zencad=zencad.__main__:main",
-        "zenframe=zencad.frame.main:main"
+        "zencad=zencad.__main__:main"
     ]},
 )

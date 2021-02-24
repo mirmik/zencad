@@ -3,23 +3,16 @@ import os
 import time
 import signal
 import json
-from zenframe.util import print_to_stderr
 
 import zencad.gui.actions
 from zencad.gui.info_widget import InfoWidget
-from zenframe.finisher import setup_interrupt_handlers
-from zencad.gui.startwdg import StartDialog
-
 from zencad.settings import Settings
-from zenframe.client import Client
-from zenframe.retransler import ConsoleRetransler
-from zenframe.communicator import Communicator
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-from zenframe.configuration import Configuration
 from zenframe.unbound import start_unbounded_worker
 from zenframe.mainwindow import ZenFrame
+from zenframe.util import print_to_stderr
 
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
