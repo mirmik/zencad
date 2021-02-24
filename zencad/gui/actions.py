@@ -11,7 +11,7 @@ import zencad.gui.util
 import zencad.gui.settingswdg
 
 from zencad.settings import Settings
-from zencad.frame.actions import ZenFrameActionsMixin
+from zenframe.actions import ZenFrameActionsMixin
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"

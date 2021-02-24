@@ -3,7 +3,7 @@ import os
 import sys
 
 from PyQt5.QtCore import *
-from zencad.frame.settings import BaseSettings, default_text_editor_os
+from zenframe.settings import BaseSettings, default_text_editor_os
 
 class ZencadSettings(BaseSettings):
     def __init__(self):

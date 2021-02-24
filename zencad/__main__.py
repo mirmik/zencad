@@ -4,24 +4,19 @@
 import os
 import sys
 import time
-import argparse
+
 import psutil
 import traceback
 import runpy
 import signal
 
-from zencad.configuration import Configuration
-from zencad.frame.finisher import terminate_all_subprocess, invoke_destructors, setup_interrupt_handlers
-
-def protect_path(s):
-    if s[0] == s[-1] and (s[0] == "'" or s[0] == '"'):
-        return s[1:-1]
-    return s
+import zenframe.starter as frame
 
 
 def console_options_handle():
-    parser = argparse.ArgumentParser()
+    parser = frame.ArgumentParser()
 
+    # Смотри аргументы в zenframe.ArgumentParser
     parser.add_argument("--install-libs", action="store_true",
                         help="Console dialog for install third-libraries")
     parser.add_argument("--install-occt-force", nargs="*",
@@ -30,81 +25,53 @@ def console_options_handle():
                         help="Download and install pythonocc package")
     parser.add_argument("--yes", action="store_true")
 
-    parser.add_argument("--none", action="store_true")
-    parser.add_argument("--zenframe", action="store_true", help="Test frame sublibrary")
-    parser.add_argument("--unbound", action="store_true")
-    parser.add_argument("--display", action="store_true")
-    parser.add_argument("--mainunbound", action="store_true")
-    parser.add_argument("--prescale", action="store_true")
-    parser.add_argument("--sleeped", action="store_true",
-                        help="Don't use manualy. Create sleeped thread.")
-    parser.add_argument("--size")
-    parser.add_argument("paths", type=str, nargs="*", help="runned file")
-
-    parser.add_argument("--no-restore", action="store_true")
-    parser.add_argument("--no-sleeped", action="store_true",
-                        help="Disable sleeped optimization")
-
     pargs = parser.parse_args()
     return pargs
 
 
-def exec_main_window_process(pargs):
-    """	Запускает графическую оболочку, которая управляет.
-            Потоками с виджетами отображения. """
+def top_half(communicator):
+    from zencad.lazifier import install_evalcahe_notication
+    install_evalcahe_notication(communicator)
 
-    import zencad.gui.mainwindow
-    import zencad.frame.util
+def bottom_half(communicator, init_size, scene):
+    from zencad.gui.display import DisplayWidget
+    display = DisplayWidget(
+        communicator=communicator,
+        init_size=init_size)
+    display.attach_scene(scene)
 
-    openpath = pargs.paths[0] if len(pargs.paths) > 0 else None
+    communicator.bind_handler(display.external_communication_command)
 
-    zencad.frame.util.set_debug_process_name("MAIN")
-    zencad.gui.mainwindow.start_application(
-        openpath=openpath,
-        none=pargs.none,
-        unbound=pargs.mainunbound,
-        norestore=pargs.no_restore,
-        sleeped_optimization=not pargs.no_sleeped)
+    return display
 
+def frame_creator(openpath, initial_communicator, norestore, unbound):
+    from zencad.gui.mainwindow import MainWindow
+    from zencad.gui.startwdg import StartDialog
+    from zencad.settings import Settings
+    from zencad.gui.util import create_temporary_file
 
-def exec_display_only(pargs):
-    """ Режим запускает один единственный виджет.
-        Простой режим, никакой ретрансляции команд, никаких биндов. """
+    if openpath is None and not unbound:
+        if Settings.get(["gui", "start_widget"]):
+            strt_dialog = startwdg.StartDialog()
+            strt_dialog.exec()
 
-    if len(pargs.paths) != 1:
-        raise Exception("Display mode invoked without path")
+            if strt_dialog.result() == 0:
+                return
 
-    runpy.run_path(pargs.paths[0], run_name="__main__")
+            openpath = strt_dialog.openpath
 
+        else:
+            openpath = create_temporary_file(zencad_template=True)
 
-def exec_display_unbound(pargs):
-    """ Запускает виджет отображения, зависимый от графической
-            оболочки."""
+    mainwindow = MainWindow(
+        initial_communicator=initial_communicator,
+        restore_gui=not norestore)
 
-    if len(pargs.paths) != 1:
-        raise Exception("Display unbound mode invoked without path")
+    return mainwindow, openpath
 
-    size = (float(a) for a in pargs.size.split(","))
-
-    from zencad.gui.display_unbounded import unbound_worker_exec
-    unbound_worker_exec(
-        path=pargs.paths[0],
-        prescale=pargs.prescale,
-        size=size,
-        sleeped=pargs.sleeped)
 
 def main():
-    setup_interrupt_handlers()
     pargs = console_options_handle()
-
-    if Configuration.TRACE_EXEC_OPTION:
-        from zencad.frame.util import print_to_stderr
-        print_to_stderr(pargs)
-
-    # TEST ZENFRAME
-    if (pargs.zenframe): 
-        import zencad.frame.main
-        zencad.frame.main.main()
 
     if pargs.install_libs:
         from zencad.geometry_core_installer import console_third_libraries_installer_utility
@@ -123,28 +90,11 @@ def main():
         install_precompiled_occt_library(tgtpath=path)
         return
 
-    try:
-        # Удаляем кавычки из пути, если он есть
-        if len(pargs.paths) > 0:
-            pargs.paths[0] = protect_path(pargs.paths[0])
-
-        if pargs.display:
-            exec_display_only(pargs)
-
-        elif pargs.unbound:
-            exec_display_unbound(pargs)
-
-        else:
-            exec_main_window_process(pargs)
-
-    except Exception as ex:
-        from zencad.frame.util import print_to_stderr
-        print_to_stderr(f"Finished with exception", ex)
-        print_to_stderr(f"Exception class: {ex.__class__}")
-        traceback.print_exc()
-
-    invoke_destructors()
-    terminate_all_subprocess()
+    frame.invoke(
+        pargs,
+        frame_creator = frame_creator,
+        exec_top_half = top_half,
+        exec_bottom_half = bottom_half)
 
 
 if __name__ == "__main__":

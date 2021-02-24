@@ -17,7 +17,8 @@ requires = [
         "pillow",
         "pyopengl",
         "PyQt5!=5.14.1",
-        "psutil"
+        "psutil",
+        "zenframe"
     ] 
 
 #if sys.platform != "win32":

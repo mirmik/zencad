@@ -17,7 +17,7 @@ from zencad.lazifier import *
 import zencad.geom.trans
 import zencad.geom.transformable
 from zencad.util import to_numpy, point3, vector3 
-from zencad.frame.util import print_to_stderr
+from zenframe.util import print_to_stderr
 
 import numpy
 

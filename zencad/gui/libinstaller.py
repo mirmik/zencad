@@ -6,9 +6,9 @@ import sys
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-from zencad.frame.console import ConsoleWidget
-from zencad.frame.retransler import ConsoleRetransler
-from zencad.frame.util import print_to_stderr
+from zenframe.console import ConsoleWidget
+from zenframe.retransler import ConsoleRetransler
+from zenframe.util import print_to_stderr
 
 from zencad.version import __occt_version__, __pythonocc_version__
 from zencad.geometry_core_installer import test_third_libraries, install_precompiled_python_occ, install_precompiled_occt_library

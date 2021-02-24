@@ -16,7 +16,7 @@ import OCC.Core.BRepPrimAPI
 
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
-from zencad.frame.util import print_to_stderr
+from zenframe.util import print_to_stderr
 from zencad.interactive_object import AxisInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
@@ -65,13 +65,11 @@ class BaseViewer(QtOpenGL.QGLWidget):
 class DisplayWidget(BaseViewer):
     def __init__(self,
                  axis_triedron=True,
-                 bind_mode=False,
                  communicator=None,
                  init_size=None):
 
         super().__init__()
 
-        self._bind_mode = bind_mode
         self._communicator = communicator
         self._orient = 1
         self._init_size = init_size

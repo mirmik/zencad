@@ -3,29 +3,23 @@ import os
 import time
 import signal
 import json
-from zencad.frame.util import print_to_stderr
+from zenframe.util import print_to_stderr
 
 import zencad.gui.actions
 from zencad.gui.info_widget import InfoWidget
-from zencad.gui.display_unbounded import start_unbounded_worker, spawn_sleeped_worker
-from zencad.frame.finisher import setup_interrupt_handlers
+from zenframe.finisher import setup_interrupt_handlers
 from zencad.gui.startwdg import StartDialog
 
 from zencad.settings import Settings
-from zencad.frame.client import Client
-from zencad.frame.retransler import ConsoleRetransler
-from zencad.frame.communicator import Communicator
+from zenframe.client import Client
+from zenframe.retransler import ConsoleRetransler
+from zenframe.communicator import Communicator
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-from zencad.configuration import Configuration
-from zencad.frame.mainwindow import ZenFrame
-
-if Configuration.FILTER_QT_WARNINGS:
-    QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
-
-
-
+from zenframe.configuration import Configuration
+from zenframe.unbound import start_unbounded_worker
+from zenframe.mainwindow import ZenFrame
 
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
@@ -59,7 +53,9 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self._bind_mode = True  # Bind widget to embed window
 
     def spawn(self, sleeped=False, openpath="", need_prescale=False, size=(640,480)):
-        return start_unbounded_worker(path=openpath,
+        return start_unbounded_worker(
+                               path=openpath,
+                               application_name="zencad",
                                need_prescale=need_prescale,
                                size=size,
                                sleeped=sleeped)
@@ -169,68 +165,3 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self.update_recent_menu()
 
 
-
-def start_application(openpath=None, none=False, unbound=False, norestore=False, sleeped_optimization=True):
-    QAPP = QtWidgets.QApplication(sys.argv[1:])
-    initial_communicator = None
-
-    setup_interrupt_handlers()
-
-    if unbound:
-        # Переопределяем дескрипторы, чтобы стандартный поток вывода пошёл
-        # через ретранслятор. Теперь все консольные сообщения будуут обвешиваться
-        # тегами и поступать на коммуникатор.
-        retransler = ConsoleRetransler(sys.stdout)
-        retransler.start_listen()
-
-        # Коммуникатор будет слать сообщения на скрытый файл,
-        # тоесть, на истинный stdout
-        initial_communicator = Communicator(
-            ifile=sys.stdin, ofile=retransler.new_file)
-
-        # Показываем ретранслятору его коммуникатор.
-        retransler.set_communicator(initial_communicator)
-
-        data = initial_communicator.simple_read()
-        dct0 = json.loads(data)
-
-        initial_communicator.declared_opposite_pid = int(dct0["data"])
-
-
-    if openpath is None and not none and not unbound:
-        if Settings.get(["gui", "start_widget"]) == "true":
-            strt_dialog = zencad.gui.startwdg.StartDialog()
-            strt_dialog.exec()
-
-            if strt_dialog.result() == 0:
-                return
-
-            openpath = strt_dialog.openpath
-
-        else:
-            openpath = zencad.gui.util.create_temporary_file(
-                zencad_template=True)
-
-    MAINWINDOW = MainWindow(
-        initial_communicator=initial_communicator,
-        restore_gui=not norestore,
-        sleeped_optimization=sleeped_optimization)
-
-    if unbound:
-        initial_communicator.bind_handler(MAINWINDOW.new_worker_message)
-        initial_communicator.start_listen()
-
-        MAINWINDOW.set_retransler(retransler)
-
-    if openpath:
-        if not unbound:
-            MAINWINDOW.open(openpath)
-        else:
-            MAINWINDOW.open_declared(openpath)
-
-    timer = QtCore.QTimer()
-    timer.start(Configuration.TIMER_PULSE * 1000)
-    timer.timeout.connect(lambda: None) 
-    
-    MAINWINDOW.show()
-    QAPP.exec()
