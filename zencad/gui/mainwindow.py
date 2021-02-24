@@ -19,8 +19,7 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     def __init__(self,
                  title="ZenCad",
                  initial_communicator=None,
-                 restore_gui=True,
-                 sleeped_optimization=True
+                 restore_gui=True
                  ):
 
         # Init objects
@@ -28,7 +27,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
         super().__init__(
             title=title,
-            sleeped_optimization=sleeped_optimization,
             initial_communicator=initial_communicator,
             restore_gui=restore_gui)
 
@@ -42,9 +40,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         # Устанавливается при открытии файла, если при следующем бинде
         # нужно/ненужно произвести восстановить параметры камеры.
         self._last_location = None
-
-        # Modes
-        self._bind_mode = True  # Bind widget to embed window
 
     def spawn(self, sleeped=False, openpath="", need_prescale=False, size=(640, 480)):
         return start_unbounded_worker(
