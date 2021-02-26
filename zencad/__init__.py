@@ -2,10 +2,12 @@
 
 import os
 import sys
+from zencad.version import __occt_version__
 
 # Libraries loading test. Starts with gui mode only.
 if (
     (
+        sys.platform == "win32" or
         sys.argv[0][-7:] == "/zencad"
         or
         sys.argv[0] == "zencad"

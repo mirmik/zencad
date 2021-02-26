@@ -12,7 +12,6 @@ import signal
 
 import zenframe.starter as frame
 
-
 def console_options_handle():
     parser = frame.ArgumentParser()
 
@@ -54,7 +53,7 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
     if openpath is None and not unbound:
         if Settings.get(["gui", "start_widget"]):
-            strt_dialog = startwdg.StartDialog()
+            strt_dialog = StartDialog()
             strt_dialog.exec()
 
             if strt_dialog.result() == 0:

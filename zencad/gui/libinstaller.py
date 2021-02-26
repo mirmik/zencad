@@ -77,6 +77,7 @@ class LibraryInstaller(QtWidgets.QWidget):
         vlayout.addWidget(self.console)
 
         self.setLayout(vlayout)
+        self.resize(800,600)
 
     def try_to_import(self):
         dct = test_third_libraries()
@@ -131,7 +132,8 @@ class LibraryInstaller(QtWidgets.QWidget):
                     sts = install_precompiled_occt_library(
                         occt_version=__occt_version__)
                 except Exception as ex:
-                    pass
+                    sts = -1
+                    print(ex)
                 self.wdg.enable_buttons()
 
                 if sts == 0:

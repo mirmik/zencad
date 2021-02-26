@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import traceback
 import random
 import string
 import tempfile
@@ -45,7 +46,7 @@ occt_precompiled_libraries = {
         },
     "win-64":
         {
-            "7.4.0": None
+            "7.4.0": "https://github.com/zencad/servoce-thirdlibs-win-occ7.4/raw/master/dll/x86_64-win64-occt7.4.0.tar.gz"
         }
 }
 
@@ -187,9 +188,19 @@ def install_precompiled_python_occ(occversion=__pythonocc_version__):
 
     # Copy to site packages
     print("Copy package to site-packages")
-    source_directory = os.path.join(extract_directory,
-                                    "lib", python_name, "site-packages", "OCC")
 
+    if systref == "linux-64":
+        source_directory = os.path.join(extract_directory,
+                                    "lib", 
+                                    python_name, 
+                                    "site-packages", 
+                                    "OCC")
+    else:
+        source_directory = os.path.join(extract_directory,
+                                    "Lib", 
+                                    "site-packages", 
+                                    "OCC")
+    
     for t in user_site_packages_directories():
         try:
             target_directory = os.path.join(t,
@@ -202,13 +213,14 @@ def install_precompiled_python_occ(occversion=__pythonocc_version__):
             print("Fault", ex)
     else:
         print("Copying status: Fault")
-        return
+        return -1
 
     print("Copying status: Success")
     print(f"Precomiled OCC succesfually installed in {target_directory}")
-
+    return 0
 
 def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__):
+    print("install_precompiled_occt_library", "tgtpath:", tgtpath, "occt_version:", occt_version)
 
     try:
         architecture = get_platform()
@@ -223,6 +235,11 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
         if architecture in ("linux-64"):
             target_directory = os.path.expanduser(
                 f"~/.local/lib/occt-{occt_version}") if tgtpath is None else tgtpath
+        elif architecture in ("win-64"):
+            target_directory = os.path.expanduser(
+                f"~/AppData/Local/occt-{occt_version}") if tgtpath is None else tgtpath
+        else:
+            raise Exception("unresolved architecture")    
             #target_directory = os.path.expanduser(f"/usr/local/lib/") if tgtpath is None else tgtpath
 
         if not os.path.exists(target_directory):
@@ -244,6 +261,7 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
 
     except Exception as ex:
         print("Fault", ex)
+        traceback.print_exc()
         return -1
 
     return 0
@@ -255,10 +273,12 @@ def test_third_libraries():
         import OCC.Core
         import OCC.Core.gp
     except Exception as ex:
-        if "libTK" in str(ex):
+        print("test_third_libraries_import finished with exception:", str(ex))
+
+        if "libTK" in str(ex) or "_gp" in str(ex):
             return {
                 "occt": False,
-                "pythonocc": True,
+                "pythonocc": OCC.__file__,
             }
 
         return {
