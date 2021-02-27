@@ -28,8 +28,7 @@ def _box(size, y=None, z=None, center=None):
         return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def box(size, y=None, z=None, center=None):
+def _cube(size, y=None, z=None, center=None):
     return _box(size, y, z, center)
 
 
@@ -48,11 +47,6 @@ def _sphere(r, yaw=None, pitch=None):
             r, pitch[0], pitch[1], yaw).Shape()
 
     return Shape(raw)
-
-
-@lazy.lazy(cls=nocached_shape_generator)
-def sphere(r, yaw=None, pitch=None):
-    return _sphere(r, yaw, pitch)
 
 
 def _cylinder(r, h, yaw=None, center=False):
@@ -77,12 +71,6 @@ def _cylinder(r, h, yaw=None, center=False):
             return Shape(raw)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def cylinder(r, h, yaw=None, center=False):
-    return _cylinder(r, h, yaw, center)
-
-
-@lazy.lazy(cls=nocached_shape_generator)
 def _cone(r1, r2, h, yaw=None, center=False):
     if yaw:
         if center:
@@ -106,11 +94,6 @@ def _cone(r1, r2, h, yaw=None, center=False):
             return Shape(raw)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def cone(r1, r2, h, yaw=None, center=False):
-    return _cone(r1, r2, h, yaw, center)
-
-
 def _torus(r1, r2, yaw=None, pitch=None):
     if yaw is None and pitch is None:
         raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2).Shape()
@@ -128,15 +111,40 @@ def _torus(r1, r2, yaw=None, pitch=None):
     return Shape(raw)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def torus(r1, r2, yaw=None, pitch=None):
-    return _torus(r1, r2, yaw=yaw, pitch=pitch)
-
-
 def _halfspace():
     F = BRepLib_MakeFace(gp_Pln()).Face()
     MHS = BRepPrimAPI_MakeHalfSpace(F, gp_Pnt(0, 0, -1))
     return Shape(MHS.Solid())
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def box(size, y=None, z=None, center=None):
+    return _box(size, y, z, center)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def cube(size, y=None, z=None, center=None):
+    return _cube(size, y, z, center)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def sphere(r, yaw=None, pitch=None):
+    return _sphere(r, yaw, pitch)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def cylinder(r, h, yaw=None, center=False):
+    return _cylinder(r, h, yaw, center)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def cone(r1, r2, h, yaw=None, center=False):
+    return _cone(r1, r2, h, yaw, center)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def torus(r1, r2, yaw=None, pitch=None):
+    return _torus(r1, r2, yaw=yaw, pitch=pitch)
 
 
 @lazy.lazy(cls=nocached_shape_generator)

@@ -191,16 +191,16 @@ def install_precompiled_python_occ(occversion=__pythonocc_version__):
 
     if systref == "linux-64":
         source_directory = os.path.join(extract_directory,
-                                    "lib", 
-                                    python_name, 
-                                    "site-packages", 
-                                    "OCC")
+                                        "lib",
+                                        python_name,
+                                        "site-packages",
+                                        "OCC")
     else:
         source_directory = os.path.join(extract_directory,
-                                    "Lib", 
-                                    "site-packages", 
-                                    "OCC")
-    
+                                        "Lib",
+                                        "site-packages",
+                                        "OCC")
+
     for t in user_site_packages_directories():
         try:
             target_directory = os.path.join(t,
@@ -219,8 +219,10 @@ def install_precompiled_python_occ(occversion=__pythonocc_version__):
     print(f"Precomiled OCC succesfually installed in {target_directory}")
     return 0
 
+
 def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__):
-    print("install_precompiled_occt_library", "tgtpath:", tgtpath, "occt_version:", occt_version)
+    print("install_precompiled_occt_library", "tgtpath:",
+          tgtpath, "occt_version:", occt_version)
 
     try:
         architecture = get_platform()
@@ -239,7 +241,7 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
             target_directory = os.path.expanduser(
                 f"~/AppData/Local/occt-{occt_version}") if tgtpath is None else tgtpath
         else:
-            raise Exception("unresolved architecture")    
+            raise Exception("unresolved architecture")
             #target_directory = os.path.expanduser(f"/usr/local/lib/") if tgtpath is None else tgtpath
 
         if not os.path.exists(target_directory):

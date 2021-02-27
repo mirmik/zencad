@@ -1,5 +1,16 @@
 import unittest
 import zencad
+import evalcache
+
+from functools import cmp_to_key
+
+def lexsort(a):
+    a = evalcache.unlazy_if_need(a)
+
+    def comparator(a,b):
+        return 1 if a > b else -1 
+
+    return sorted(a, key=cmp_to_key(comparator))
 
 
 class Prim3dprobe(unittest.TestCase):
@@ -12,14 +23,14 @@ class Prim3dprobe(unittest.TestCase):
         a = zencad.box(10, 10, 10)
         b = zencad.box(size=(10, 10, 10))
         c = zencad.box(10)
-        self.assertEqual(a.vertices(), b.vertices())
-        self.assertEqual(c.vertices(), b.vertices())
+        self.assertEqual(lexsort(a.vertices()), lexsort(b.vertices()))
+        self.assertEqual(lexsort(c.vertices()), lexsort(b.vertices()))
 
         a = zencad.box(10, 10, 10, center=True)
         b = zencad.box(size=(10, 10, 10), center=True)
         c = zencad.box(10, center=True)
-        self.assertEqual(a.vertices(), b.vertices())
-        self.assertEqual(c.vertices(), b.vertices())
+        self.assertEqual(lexsort(a.vertices()), lexsort(b.vertices()))
+        self.assertEqual(lexsort(c.vertices()), lexsort(b.vertices()))
 
         a = zencad.cube(10, 10, 10, True)
         b = zencad.cube(10, 10, 10, center=True)

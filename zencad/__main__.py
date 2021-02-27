@@ -12,6 +12,7 @@ import signal
 
 import zenframe.starter as frame
 
+
 def console_options_handle():
     parser = frame.ArgumentParser()
 
@@ -33,11 +34,10 @@ def top_half(communicator):
     install_evalcahe_notication(communicator)
 
 
-def bottom_half(communicator, init_size, scene):
+def bottom_half(communicator, scene):
     from zencad.gui.display import DisplayWidget
     display = DisplayWidget(
-        communicator=communicator,
-        init_size=init_size)
+        communicator=communicator)
     display.attach_scene(scene)
 
     communicator.bind_handler(display.external_communication_command)

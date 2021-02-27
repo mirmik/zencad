@@ -27,11 +27,13 @@ class InteractiveObject(zencad.geom.transformable.Transformable):
             border_color=border_color,
             wire_color=wire_color)
 
-    def set_color(self, color, border_color=Color(0, 0, 0), wire_color=None):
+    def set_color(self, color, border_color=None, wire_color=None):
         if color is None:
             color = default_color()
         if wire_color is None:
             wire_color = default_wire_color()
+        if border_color is None:
+            border_color = Color(0, 0, 0)
 
         self.color = color
         self.border_color = border_color
@@ -41,11 +43,11 @@ class InteractiveObject(zencad.geom.transformable.Transformable):
         self.ais_object.SetTransparency(self.color.a)
 
         aspect = self.ais_object.Attributes().LineAspect()
-        aspect.SetColor(border_color.to_Quantity_Color())
+        aspect.SetColor(self.border_color.to_Quantity_Color())
         self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
 
         aspect = self.ais_object.Attributes().WireAspect()
-        aspect.SetColor(wire_color.to_Quantity_Color())
+        aspect.SetColor(self.wire_color.to_Quantity_Color())
         self.ais_object.Attributes().SetWireAspect(aspect)
 
     def relocate(self, trsf):

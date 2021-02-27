@@ -77,7 +77,7 @@ class LibraryInstaller(QtWidgets.QWidget):
         vlayout.addWidget(self.console)
 
         self.setLayout(vlayout)
-        self.resize(800,600)
+        self.resize(800, 600)
 
     def try_to_import(self):
         dct = test_third_libraries()

@@ -68,6 +68,25 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     @property
     def z(self): return float(self[2])
 
+    def __lt__(self, oth):
+        if self.x < oth.x: return True
+        if self.x > oth.x: return False
+        if self.y < oth.y: return True
+        if self.y > oth.y: return False
+        if self.z < oth.z: return True
+        if self.z > oth.z: return False
+        return False
+
+    def __gt__(self, oth):
+        if self.x > oth.x: return True
+        if self.x < oth.x: return False
+        if self.y > oth.y: return True
+        if self.y < oth.y: return False
+        if self.z > oth.z: return True
+        if self.z < oth.z: return False
+        return False
+
+
     def Pnt(self):
         return gp_Pnt(float(self[0]), float(self[1]), float(self[2]))
 

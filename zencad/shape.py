@@ -11,6 +11,7 @@ from OCC.Core.BRep import BRep_Tool
 from OCC.Core.gp import gp_Pnt, gp_Vec
 from OCC.Core.TopExp import topexp, TopExp_Explorer
 from OCC.Core.BRepLProp import BRepLProp_SLProps
+from OCC.Core.BRep import BRep_Tool
 
 from zencad.geom.boolops_base import *
 from zencad.lazifier import *
@@ -70,9 +71,14 @@ class Shape(zencad.geom.transformable.Transformable):
         return prop
 
     def normal(self, u=0, v=0):
-        assert(self.is_face())
-        print(self._SLProps(u, v))
-        return vector3(self._SLProps(u, v).Normal())
+        from zencad.geom.operations import _restore_shapetype
+        shp = _restore_shapetype(self)
+
+        if not shp.is_face():
+            raise Exception(
+                "Can't take normal from non face shape. type:", self.shapetype())
+
+        return vector3(shp._SLProps(u, v).Normal())
 
     def __getstate__(self):
         return {
@@ -96,6 +102,24 @@ class Shape(zencad.geom.transformable.Transformable):
     def is_vertex(self): return self.Shape().ShapeType() == TopAbs_VERTEX
     def is_wire_or_edge(self): return self.is_edge() or self.is_wire()
 
+    def shapetype(self):
+        if self.Shape().ShapeType() == TopAbs_VERTEX:
+            return "vertex"
+        elif self.Shape().ShapeType() == TopAbs_WIRE:
+            return "wire"
+        elif self.Shape().ShapeType() == TopAbs_EDGE:
+            return "edge"
+        elif self.Shape().ShapeType() == TopAbs_FACE:
+            return "face"
+        elif self.Shape().ShapeType() == TopAbs_SOLID:
+            return "solid"
+        elif self.Shape().ShapeType() == TopAbs_SHELL:
+            return "shell"
+        elif self.Shape().ShapeType() == TopAbs_COMPSOLID:
+            return "compsolid"
+        elif self.Shape().ShapeType() == TopAbs_COMPOUND:
+            return "compound"
+
     def reflection_elements(self, getter, topabs):
         ret = []
         ex = TopExp_Explorer(self.Shape(), topabs)
@@ -109,11 +133,30 @@ class Shape(zencad.geom.transformable.Transformable):
     def wires(self): return self.reflection_elements(topods.Wire, TopAbs_WIRE)
     def faces(self): return self.reflection_elements(topods.Face, TopAbs_FACE)
 
-    def vertices(self): return self.reflection_elements(
+    def native_vertices(self): return self.reflection_elements(
         topods.Vertex, TopAbs_VERTEX)
 
+    def vertices(self):
+        verts = self.native_vertices()
+        pnts = []
+        pnts_filtered = []
+
+        for vertex in verts:
+            pnt = BRep_Tool.Pnt(vertex.Vertex())
+            pnts.append(point3(pnt))
+
+        # Фильтруем вершины, исключая близколежащие.
+        for p in pnts:
+            for f in pnts_filtered:
+                if numpy.linalg.norm(p-f) < 1e-5:
+                    break
+            else:
+                pnts_filtered.append(p)
+
+        return pnts_filtered
+
     def solids(self): return self.reflection_elements(
-        topods.Solid, TopAbs_SOLIDS)
+        topods.Solid, TopAbs_SOLID)
 
     def compounds(self): return self.reflection_elements(
         topods.Compound, TopAbs_COMPOUND)
@@ -227,7 +270,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "mirror", "mirrorX", "mirrorY", "mirrorZ",
         "mirrorYZ", "mirrorXY", "mirrorXZ",
         "scale", "transform", "center",
-        "extrude"
+        "extrude", "shapetype"
 
         #"props1", "props2", "props3"
     ]
@@ -236,7 +279,7 @@ class LazyObjectShape(evalcache.LazyObject):
     standart_methods = [
         "is_wire", "is_compsolid", "is_edge", "is_compound", "is_vertex",
         "is_face", "is_shell", "is_wire_or_edge", "is_solid",
-        "edges", "wires", "faces", "vertices",
+        "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds",
         "d1", "normal", "range", "endpoints"
     ]

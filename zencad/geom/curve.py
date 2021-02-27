@@ -38,8 +38,7 @@ def ellipse(r1, r2) -> Curve:
     return _ellipse(r1, r2)
 
 
-@lazy.lazy(cls=nocached_curve_generator)
-def interpolate(pnts, tang=None, closed=False) -> Curve:
+def _interpolate(pnts, tang=None, closed=False):
     _pnts = opencascade_h_array1_of_pnt(pnts)
     algo = GeomAPI_Interpolate(_pnts, closed, 0.0000001)
 
@@ -56,9 +55,11 @@ def interpolate(pnts, tang=None, closed=False) -> Curve:
     algo.Perform()
     return Curve(algo.Curve())
 
-
 @lazy.lazy(cls=nocached_curve_generator)
-def bezier(poles, weights=None):
+def interpolate(pnts, tang=None, closed=False):
+    return _interpolate(pnts, tang=tang, closed=closed)
+
+def _bezier(poles, weights=None):
     _poles = opencascade_array1_of_pnt(poles)
     if weights:
         _weights = opencascade_array1_of_real(weights)
@@ -70,9 +71,11 @@ def bezier(poles, weights=None):
 
     return Curve(curve)
 
-
 @lazy.lazy(cls=nocached_curve_generator)
-def bspline(
+def bezier(poles, weights=None):
+    return _bezier(poles, weights=weights)
+
+def _bspline(
         poles,
         knots,
         muls,
@@ -97,3 +100,7 @@ def bspline(
             degree, periodic)
 
     return Curve(crv)
+
+@lazy.lazy(cls=nocached_curve_generator)
+def bspline(*args, **kwargs):
+    return _bspline(*args, **kwargs)

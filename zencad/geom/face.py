@@ -25,19 +25,12 @@ def _fill(shp):
     return Shape(BRepBuilderAPI_MakeFace(shp.Wire_orEdgeToWire()).Face())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def fill(shp):
-    return _fill(shp)
+def _polygon(pnts, wire=False):
+    wr = wire_module._polysegment(pnts, closed=True)
+    return wr if wire else _fill(wr)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def polygon(pnts, wire=False):
-    wr = wire_module.polysegment(pnts, closed=True)
-    return wr if wire else fill(wr)
-
-
-@lazy.lazy(cls=nocached_shape_generator)
-def rectangle_wire(a, b, center):
+def _rectangle_wire(a, b, center):
     if center:
         x = a / 2
         y = b / 2
@@ -46,8 +39,7 @@ def rectangle_wire(a, b, center):
         return wire.polysegment([(0, 0, 0), (a, 0, 0), (a, b, 0), (0, b, 0)], True)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def rectangle(a, b=None, center=False, wire=False):
+def _rectangle(a, b=None, center=False, wire=False):
     if b is None:
         b = a
 
@@ -58,22 +50,16 @@ def rectangle(a, b=None, center=False, wire=False):
         return fill(wr)
 
 
-def square(*args, **kwargs):
+def _square(*args, **kwargs):
     return rectangle(*args, **kwargs)
 
 
 def _circle_edge(r, angle=None):
     if angle is None:
-        #EL = gp_Circ(gp.XOY(), r)
-        #anCircle = GC_MakeCircle(EL).Value();
-        # return Shape(BRepBuilderAPI_MakeEdge( anCircle ).Edge())
         return wire._make_edge(curve._circle(r))
 
     else:
         angle = zencad.util.angle_pair(angle)
-        #EL = gp_Circ(gp.XOY(), r)
-        #anCircle = GC_MakeCircle(EL).Value();
-        # return Shape(BRepBuilderAPI_MakeEdge( anCircle, angle[0], angle[1] ).Edge())
         return wire._make_edge(curve._circle(r), angle)
 
 
@@ -98,11 +84,6 @@ def _circle(r, angle=None, wire=False):
             return Shape(BRepBuilderAPI_MakeFace(aCircle).Face())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def circle(r, angle=None, wire=False):
-    return _circle(r, angle, wire)
-
-
 def _ngon(r, n, wire=False):
     pnts = [0] * n
 
@@ -115,17 +96,11 @@ def _ngon(r, n, wire=False):
     return polygon(pnts)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def ngon(r, n, wire=False):
-    return _ngon(r, n, wire)
-
-
 def register_font(fontpath):
     OCC.Core.Addons.register_font(fontpath)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def textshape(text, fontname, size, composite_curve=False):
+def _textshape(text, fontname, size, composite_curve=False):
     aspect = OCC.Core.Addons.Font_FA_Regular
     textshp = OCC.Core.Addons.text_to_brep(text, fontname,
                                            aspect, size, composite_curve)
@@ -133,7 +108,7 @@ def textshape(text, fontname, size, composite_curve=False):
     return Shape(textshp)
 
 
-def _ellipse(r1, r2, angle=None, wire=True):
+def _ellipse(r1, r2, angle=None, wire=False):
     if r2 > r1:
         inversed_sizes = True
         r1, r2 = r2, r1
@@ -160,7 +135,7 @@ def _ellipse(r1, r2, angle=None, wire=True):
 
     else:
         edg = wire_module._make_edge(crv)
-        ret = edg if wire else fill(edg)
+        ret = edg if wire else _fill(edg)
 
     if inversed_sizes:
         return rotateZ(deg(90))(ret)
@@ -169,5 +144,45 @@ def _ellipse(r1, r2, angle=None, wire=True):
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def ellipse(r1, r2, angle=None, wire=True):
+def ellipse(r1, r2, angle=None, wire=False):
     return _ellipse(r1, r2, angle, wire)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def fill(shp):
+    return _fill(shp)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def ngon(r, n, wire=False):
+    return _ngon(r, n, wire)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def textshape(text, fontname, size, composite_curve=False):
+    return _textshape(text, fontname, size, composite_curve)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def circle(r, angle=None, wire=False):
+    return _circle(r, angle, wire)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def polygon(pnts, wire=False):
+    return _polygon(pnts, wire)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def rectangle(a, b=None, center=False, wire=False):
+    return _rectangle(a, b, center=center, wire=wire)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def square(*args, **kwargs):
+    return _square(*args, **kwargs)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def rectangle_wire(a, b, center):
+    return _rectangle_wire(a, b, center)

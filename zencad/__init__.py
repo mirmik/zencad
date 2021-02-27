@@ -44,7 +44,7 @@ try:
 
     # Geometry API
     from zencad.geom.solid import \
-        box, sphere, torus, cone, cylinder, halfspace
+        box, cube, sphere, torus, cone, cylinder, halfspace
 
     from zencad.geom.platonic import *
 
@@ -67,6 +67,8 @@ try:
 
     from zencad.geom.unify import unify
     from zencad.geom.offset import *
+
+    from zencad.geom.operations import restore_shapetype
 
     # Display API
     from zencad.showapi import display, disp, show

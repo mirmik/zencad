@@ -37,20 +37,16 @@ def make_edge(crv, interval=None) -> Shape:
     return _make_edge(crv, interval)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def circle_arc(p1, p2, p3) -> Shape:
+def _circle_arc(p1, p2, p3):
     aArcOfCircle = GC_MakeArcOfCircle(to_Pnt(p1), to_Pnt(p2), to_Pnt(p3))
     return Shape(BRepBuilderAPI_MakeEdge(aArcOfCircle.Value()).Edge())
 
-
 @lazy.lazy(cls=nocached_shape_generator)
-def fill(shp) -> Shape:
-    assert(shp.Shape().ShapeType() == TopAbs_WIRE)
-    return Shape(BRepBuilderAPI_MakeFace(shp.Wire()).Face())
+def circle_arc(p1, p2, p3):
+    return _circle_arc(p1,p2,p3)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
-def polysegment(pnts, closed=False) -> Shape:
+def _polysegment(pnts, closed=False) -> Shape:
     if len(pnts) <= 1:
         raise Exception("Need at least two points for polysegment")
 
@@ -66,6 +62,9 @@ def polysegment(pnts, closed=False) -> Shape:
 
     return Shape(mkWire.Wire())
 
+@lazy.lazy(cls=nocached_shape_generator)
+def polysegment(pnts, closed=False):
+    return _polysegment(pnts, closed)
 
 def _segment(a, b) -> Shape:
     a, b = points((a, b))
@@ -77,19 +76,22 @@ def segment(a, b) -> Shape:
     return _segment(a, b)
 
 
+def _interpolate(pnts, tang=None, closed=False):
+    return _make_edge(
+        curve._interpolate(pnts=pnts, tang=tang, closed=closed))
+
 @lazy.lazy(cls=shape_generator)
 def interpolate(pnts, tang=None, closed=False) -> Shape:
-    return make_edge(
-        curve.interpolate(pnts=pnts, tang=tang, closed=closed))
+    return _interpolate(pnts, tang, closed)
 
-
-@lazy.lazy(cls=nocached_shape_generator)
-def bezier(pnts, weights=None) -> Shape:
-    return make_edge(curve.bezier(pnts, weights))
-
+def _bezier(pnts, weights=None):
+    return _make_edge(curve._bezier(pnts, weights))
 
 @lazy.lazy(cls=nocached_shape_generator)
-def bspline(
+def bezier(pnts, weights=None):
+    return _bezier(pnts, weights)
+
+def _bspline(
         poles,
         knots,
         muls,
@@ -97,7 +99,7 @@ def bspline(
         periodic: bool = False,
         weights=None,
         check_rational: bool = None
-) -> Shape:
+):
     return make_edge(curve.bspline(
         poles=poles,
         knots=knots,
@@ -108,8 +110,12 @@ def bspline(
         check_rational=check_rational))
 
 
-@lazy.lazy(cls=shape_generator)
-def rounded_polysegment(pnts, r, closed=False) -> Shape:
+@lazy.lazy(cls=nocached_shape_generator)
+def bspline(*args, **kwargs):
+    return _bspline(*args, kwargs)
+
+
+def _rounded_polysegment(pnts, r, closed=False):
     # Для того, чтобы закрыть контур, не теряя скругления, перекрёстно добавляем две точки,
     # Две в начале, другую в конце.
     pnts = points(pnts)
@@ -177,13 +183,15 @@ def rounded_polysegment(pnts, r, closed=False) -> Shape:
 
     return result
 
+@lazy.lazy(cls=shape_generator)
+def rounded_polysegment(*args, **kwargs):
+    return _rounded_polysegment(*args, **kwargs)
 
 # ***********
 # makeLongHelix is a workaround for an OCC problem found in helices with more than
 # some magic number of turns.  See Mantis #0954. (FreeCad)
 # ***********
-@lazy.lazy(cls=shape_generator)
-def helix(r, h, step=None, pitch=None, angle=0, left=False):
+def _helix(r, h, step=None, pitch=None, angle=0, left=False):
     radius = r
     height = h
 
@@ -264,6 +272,9 @@ def helix(r, h, step=None, pitch=None, angle=0, left=False):
     breplib.BuildCurves3d(shape)
     return Shape(shape)
 
+@lazy.lazy(cls=shape_generator)
+def helix(*args, **kwargs):
+    return _helix(*args, **kwargs)
 
 # //Взято в коде FreeCad.
 # servoce::shape servoce::make_helix(

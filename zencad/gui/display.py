@@ -65,14 +65,12 @@ class BaseViewer(QtOpenGL.QGLWidget):
 class DisplayWidget(BaseViewer):
     def __init__(self,
                  axis_triedron=True,
-                 communicator=None,
-                 init_size=None):
+                 communicator=None):
 
         super().__init__()
 
         self._communicator = communicator
         self._orient = 1
-        self._init_size = init_size
         self._drawbox = False
         self._zoom_area = False
         self._inited0 = False
@@ -84,8 +82,6 @@ class DisplayWidget(BaseViewer):
         self._perspective_mode = False
         self.mousedown = False
         self.keyboard_retranslate_mode = True
-
-        self.resize(init_size[0], init_size[1])
 
         self.last_redraw = time.time()
         self.animate_updated = threading.Event()
@@ -275,10 +271,6 @@ class DisplayWidget(BaseViewer):
 
         self._display.GetContext().SetDisplayMode(AIS_Shaded, False)
         self._display.GetContext().DefaultDrawer().SetFaceBoundaryDraw(True)
-
-        if self._init_size:
-            self.resize(*self._init_size)
-            self._display.GetView().MustBeResized()
 
         self.autoscale()
 
