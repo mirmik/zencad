@@ -5,6 +5,8 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_Make
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 from OCC.Core.gp import gp_Circ, gp, gp_Pnt
 from OCC.Core.GC import GC_MakeCircle
+from OCC.Core.GeomAbs import GeomAbs_C2
+from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
 import OCC.Core.Addons
 
 
@@ -15,10 +17,22 @@ import zencad.util
 from zencad.util import deg, point3
 from zencad.geom.sew import _sew
 import zencad.geom.wire as wire
+import zencad.geom.sweep as sweep
+import zencad.geom.face as face
 import zencad.geom.wire as wire_module
+import zencad.geom.unify as unify
+import zencad.geom.operations as operations
+import zencad.geom.boolops as boolops
 import zencad.geom.curve as curve
 from zencad.geom.trans import rotateZ
+from zencad.util import vector3, point3
 
+from zencad.opencascade_types import *
+
+def _interpolate2(refs, degmin=3, degmax=7):
+    Arr = opencascade_array2_of_pnt(refs)
+    Surf = GeomAPI_PointsToBSplineSurface(Arr, degmin, degmax, GeomAbs_C2, 1.0e-3)
+    return Shape(BRepBuilderAPI_MakeFace(Surf.Surface(), 1.0e-5).Face())
 
 def _fill(shp):
     assert(shp.Shape().ShapeType() in (TopAbs_WIRE, TopAbs_EDGE))
@@ -182,7 +196,68 @@ def rectangle(a, b=None, center=False, wire=False):
 def square(*args, **kwargs):
     return _square(*args, **kwargs)
 
+@lazy.lazy(cls=nocached_shape_generator)
+def interpolate2(*args, **kwargs):
+    return _interpolate2(*args, **kwargs)
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def rectangle_wire(a, b, center):
     return _rectangle_wire(a, b, center)
+
+
+def _wideedge(spine, rad, last_p0, last_p1, circled_joints):
+    # TODO: переимплементировать без сегмента
+    import zencad
+
+    if spine.shapetype() != "edge":
+        raise Exception("argument 'curve' should be edge")  
+
+    ad0 = spine.endpoints()[0]
+    ad1 = spine.endpoints()[1]
+
+    d10 = spine.d1(spine.range()[0]).cross(vector3(0,0,1)).normalize()
+    d11 = spine.d1(spine.range()[1]).cross(vector3(0,0,1)).normalize()
+
+    # начальные точки
+    p00 = ad0 + (d10 * rad)
+    p01 = ad0 - (d10 * rad) 
+
+    #конечные точки
+    p10 = ad1 + (d11 * rad)
+    p11 = ad1 - (d11 * rad)
+
+    perp = wire_module._segment(p00, p01)
+    wc = sweep._pipe(perp, spine, mode="corrected_frenet")
+
+    wc = wc.faces()[0]
+
+    if circled_joints is False:
+       if last_p1 is not None and last_p0 is not None:
+            wc = wc + face._polygon([last_p0, p00, ad0])
+            wc = wc + face._polygon([last_p1, p01, ad0])
+    else:
+       if last_p1 is not None and last_p0 is not None:
+            wc += face._circle(r=rad).mov(vector3(ad0))
+
+    return wc, p10, p11 #union(edgs) 
+
+def _widewire(spine, r, circled_joints=True, circled_ends=True):
+    edges = spine.edges()
+    p0 = None
+    p1 = None
+    rad = r
+    arr =[]
+    for e in edges:
+        f, p0, p1 = _wideedge(e, rad, p0, p1, circled_joints=circled_joints)
+        arr.append(f)
+
+    if circled_ends:
+        arr.append(face.circle(r=rad).move(spine.endpoints()[0]))
+        arr.append(face.circle(r=rad).move(spine.endpoints()[1]))
+
+    return unify._unify(boolops._union(arr))
+
+@lazy.lazy(cls=shape_generator)
+def widewire(spine, r, circled_joints=True, circled_ends=True):
+    return _widewire(spine, r, circled_joints, circled_ends)

@@ -78,9 +78,9 @@ def segment(a, b) -> Shape:
     return _segment(a, b)
 
 
-def _interpolate(pnts, tangs=None, closed=False):
+def _interpolate(pnts, tang=None, closed=False):
     return _make_edge(
-        curve._interpolate(pnts=pnts, tangs=tangs, closed=closed))
+        curve._interpolate(pnts=pnts, tang=tang, closed=closed))
 
 @lazy.lazy(cls=shape_generator)
 def interpolate(*args, **kwargs):
@@ -114,7 +114,7 @@ def _bspline(
 
 @lazy.lazy(cls=nocached_shape_generator)
 def bspline(*args, **kwargs):
-    return _bspline(*args, kwargs)
+    return _bspline(*args, **kwargs)
 
 
 def _rounded_polysegment(pnts, r, closed=False):

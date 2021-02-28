@@ -66,7 +66,6 @@ if __name__ == "__main__":
     execute_test(boolean_test)
     execute_test(math_test)
     execute_test(trans_test)
-    execute_test(rigidity_test)
     execute_test(curve3_test)
     execute_test(curve2_test)
     execute_test(reflection)

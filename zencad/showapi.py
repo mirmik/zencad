@@ -5,6 +5,8 @@ from zenframe.unbound import (
     unbound_frame_summon
 )
 
+NOSHOW = False
+
 # UNBOUND_MODE = False  # Устанавливается из zencad.gui.display_unbounded
 # сигнализирует об активации подчинённого режима работы
 
@@ -23,11 +25,17 @@ def disp(*args, **kwargs):
     return display(*args, **kwargs)
 
 
+def highlight(shp, color=(1,0,0,0.5), deep=True, scene=None):
+    display(shp, color, deep, scene)
+    return shp
+
+def hl(*args, **kwargs): return highlight(*args, **kwargs)
+
+
 def widget_creator(communicator, scene):
     from zencad.gui.display import DisplayWidget
     display = DisplayWidget(
-        communicator=communicator,
-        init_size=(640, 480))
+        communicator=communicator)
     display.attach_scene(scene)
 
     # todo: почему не внутри?
@@ -38,6 +46,9 @@ def widget_creator(communicator, scene):
 def show(scene=None, display_only=False):
     if scene is None:
         scene = __default_scene
+
+    if NOSHOW:
+        return
 
     if is_unbound_mode():
         # Включён UNBOUND_MODE возвращаем управление модулю,
@@ -54,5 +65,4 @@ def show(scene=None, display_only=False):
 
     else:
         # Запускаем оболочку как подчинённый процесс
-        import zencad.gui.main_unbounded
         unbound_frame_summon(widget_creator, "zencad", scene=scene)

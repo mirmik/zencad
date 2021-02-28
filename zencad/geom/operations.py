@@ -23,8 +23,7 @@ def _restore_shapetype(shp):
     elif len(shp.edges()) == 1:
         return shp.edges()[0]
 
-    else:
-        raise Exception("type is not supported: {}".format(shp.shapetype()))
+    return shp
 
 
 @lazy.lazy(cls=shape_generator)

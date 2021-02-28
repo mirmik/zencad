@@ -54,9 +54,10 @@ try:
     from zencad.geom.unify import *
     from zencad.geom.offset import *
     from zencad.geom.operations import *
+    from zencad.geom.wire_builder import wire_builder
 
     # Display API
-    from zencad.showapi import display, disp, show
+    from zencad.showapi import display, disp, show, hl, highlight
     from zencad.scene import Scene
 
     # Utility

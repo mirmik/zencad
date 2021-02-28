@@ -11,7 +11,10 @@ from OCC.Core.BRep import BRep_Tool
 from OCC.Core.gp import gp_Pnt, gp_Vec
 from OCC.Core.TopExp import topexp, TopExp_Explorer
 from OCC.Core.BRepLProp import BRepLProp_SLProps
+from OCC.Core.GProp import GProp_GProps
 from OCC.Core.BRep import BRep_Tool
+from OCC.Core.BRepGProp import brepgprop
+from OCC.Core.GCPnts import GCPnts_UniformAbscissa
 
 from zencad.geom.boolops_base import *
 from zencad.lazifier import *
@@ -57,10 +60,6 @@ class Shape(zencad.geom.transformable.Transformable):
 
     def __xor__(self, oth):
         return Shape(occ_pair_intersect(self._shp, oth._shp))
-
-    def center(self):
-        print_to_stderr("Warning: NotReleased")
-        return point3(0, 0, 0)
 
     def extrude(self, vec):
         from zencad.geom.sweep import extrude
@@ -188,12 +187,22 @@ class Shape(zencad.geom.transformable.Transformable):
         assert(self.is_edge())
         return BRepAdaptor_Curve(self.Edge())
 
+    def d0(self, arg):
+        assert(self.is_edge())
+        adaptor = self.AdaptorCurve()
+        pnt = gp_Pnt()
+        self.AdaptorCurve().D0(arg, pnt)
+        return point3(pnt.X(), pnt.Y(), pnt.Z())
+
+    def value(self, arg):
+        return self.d0(arg)
+
     def d1(self, arg):
         assert(self.is_edge())
         adaptor = self.AdaptorCurve()
         pnt, vec = gp_Pnt(), gp_Vec()
         self.AdaptorCurve().D1(arg, pnt, vec)
-        return numpy.array((vec.X(), vec.Y(), vec.Z()))
+        return vector3((vec.X(), vec.Y(), vec.Z()))
 
     def range(self):
         adaptor = self.AdaptorCurve()
@@ -216,14 +225,45 @@ class Shape(zencad.geom.transformable.Transformable):
         aCurve = BRep_Tool.Curve(self.Edge())
         return aCurve[0]
 
-    def _VolumeProperties(self):
+    def SurfaceProperties(self):
         props = GProp_GProps()
-        brepgprop.VolumeProperties(Shape(), props)
+        brepgprop.SurfaceProperties(self.Shape(), props)
         return props
 
+    def VolumeProperties(self):
+        props = GProp_GProps()
+        brepgprop.VolumeProperties(self.Shape(), props)
+        return props
+
+    def is_volumed(self):
+        return len(self.solids()) != 0
+
     def center(self):
-        centerMass = props.CentreOfMass()
+        from zencad.geom.operations import _restore_shapetype
+        
+        if not self.is_volumed():
+            centerMass = self.SurfaceProperties().CentreOfMass()
+            return point3(centerMass)
+        
+        centerMass = self.VolumeProperties().CentreOfMass()
         return point3(centerMass)
+
+    def uniform(self, npoints, strt=None, fini=None):
+        if strt is None and fini is None:
+            strt, fini = self.range()
+
+        ret = []
+        adaptor = self.AdaptorCurve()
+        algo = GCPnts_UniformAbscissa(adaptor, npoints, strt, fini)
+
+        for i in range(npoints):
+            ret.append(algo.Parameter(i + 1))
+ 
+        return ret
+
+    def uniform_points(self, npoints, strt=None, fini=None):
+        params = self.uniform(npoints, strt, fini)
+        return [ self.d0(p) in params ]
 
 # Support lazy methods
 
@@ -267,7 +307,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "Shape", "Vertex", "Wire", "Edge", "Solid", "Face",
         "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
         "reflection_elements", "AdaptorSurface", "AdaptorCurve",
-        "_SLProps", "_VolumeProperties", "Curve"
+        "_SLProps", "VolumeProperties", "Curve", "SurfaceProperties"
     ]
 
     transparent_methods = [
@@ -288,7 +328,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "rot", "rotX", "rotY", "rotZ",
         "mirror", "mirrorX", "mirrorY", "mirrorZ",
         "mirrorYZ", "mirrorXY", "mirrorXZ",
-        "scale", "transform", "center",
+        "scale", "transform",
         "extrude", "shapetype"
 
         #"props1", "props2", "props3"
@@ -297,10 +337,10 @@ class LazyObjectShape(evalcache.LazyObject):
     # Методы, которые возвращают не shape
     standart_methods = [
         "is_wire", "is_compsolid", "is_edge", "is_compound", "is_vertex",
-        "is_face", "is_shell", "is_wire_or_edge", "is_solid",
+        "is_face", "is_shell", "is_wire_or_edge", "is_solid", "is_volumed",
         "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds",
-        "d1", "normal", "range", "endpoints", "center"
+        "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points"
     ]
 
 

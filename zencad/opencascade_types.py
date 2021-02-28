@@ -26,7 +26,7 @@ def opencascade_array1_of_vec(arr):
 
 
 def opencascade_array2_of_pnt(arr):
-    ret = TColgp_Array2OfPnt(1, len(arr), 1, arr[0].size())
+    ret = TColgp_Array2OfPnt(1, len(arr), 1, len(arr[0]))
     for r in range(len(arr)):
         for c in range(len(arr[0])):
             ret.SetValue(r+1, c+1, to_Pnt(arr[r][c]))

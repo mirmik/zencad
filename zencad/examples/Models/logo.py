@@ -4,6 +4,7 @@
 import evalcache
 from zencad import *
 
+lazy.fastdo = True
 
 @lazy
 def instrument_metric_nut(drad, step, h):
@@ -22,7 +23,7 @@ def instrument_metric_nut(drad, step, h):
     )
 
     path = helix(r=drad, h=h, step=step)
-    base = pipe_shell(spine=path, profiles=[pseg], frenet=True)
+    base = pipe_shell(spine=path, arr=[pseg], frenet=True)
     return base
 
 
@@ -32,6 +33,7 @@ def metric_nut(d, step, h):
     drad = d / 2 - 3 / 8 * H
     cil = cylinder(r=d / 2, h=h)
     instr = instrument_metric_nut(drad=drad, step=step, h=h + step)
+
     ret = cil - instr
 
     return ret
@@ -71,8 +73,8 @@ m2 = m.rotateX(deg(180)).up(20)
 
 disp(base)
 
-disp(m.unlazy(), Color(0.6, 1, 1, 0.3))
-disp(m2.unlazy(), Color(1, 0.6, 1,0))
-disp(m3.unlazy(), Color(1, 1, 1,0))
+disp(m.unlazy(), color=(0.6, 1, 1, 0.3))
+disp(m2.unlazy(), color=(1, 0.6, 1,0))
+disp(m3.unlazy(), color=(1, 1, 1,0))
 
 show()

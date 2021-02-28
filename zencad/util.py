@@ -10,7 +10,7 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCC.Core.Geom import Geom_CartesianPoint
 
 import zencad.geom.transformable
-
+import evalcache
 
 def as_indexed(arg):
     if len(arg) != 1:
@@ -118,15 +118,12 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
 
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
-        if isinstance(args[0], (point3, vector3, list, tuple, numpy.ndarray)):
+        args = [ evalcache.unlazy_if_need(a) for a in args ]
+        
+        try:
+            _ = args[0][0]
             input_array = args[0]
-
-        elif isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
-            input_array = (args[0].X(), args[0].Y(), args[0].Z())
-
-        elif hasattr(args[0], "__getitem__"):
-            input_array = args[0]
-        else:
+        except:
             input_array = args
 
         if len(input_array) == 1:
@@ -146,6 +143,18 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def y(self): return float(self[1])
     @property
     def z(self): return float(self[2])
+    def __eq__(self, oth):
+        return self.x == oth.x and self.y == oth.y and self.z == oth.z
+
+    def __ne__(self, oth):
+        return self.x != oth.x or self.y != oth.y or self.z != oth.z
+
+    def __mul__(self, m):
+        return point3(self.x * m, self.y * m, self.z * m)
+
+    def __div__(self, m):
+        return point3(self.x / m, self.y / m, self.z / m)
+
 
     def Vec(self):
         return gp_Vec(float(self[0]), float(self[1]), float(self[2]))
@@ -154,9 +163,18 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
         t = trsf._trsf
         return point3(self.Pnt().Transformed(t))
 
+    def cross(self,oth):
+        return vector3(numpy.cross(self, oth))
+
+    def normalize(self):
+        n = numpy.linalg.norm(self)
+        return vector3(self / n)
+
 
 def points(pnts):
     return [point3(item) for item in pnts]
+def points2(tpls):
+    return [points(t) for t in tpls]    
 
 
 def vectors(pnts):

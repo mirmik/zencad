@@ -39,21 +39,21 @@ def ellipse(r1, r2) -> Curve:
     return _ellipse(r1, r2)
 
 
-def _interpolate(pnts, tangs=None, closed=False):
+def _interpolate(pnts, tang=None, closed=False):
     _pnts = opencascade_h_array1_of_pnt(pnts)
     algo = GeomAPI_Interpolate(_pnts, closed, 0.0000001)
 
-    if tangs is not None:
-        for i in range(len(tangs)):
-            if tangs[i] is None:
-                tangs[i] = vector3(0,0,0)
+    if tang is not None:
+        for i in range(len(tang)):
+            if tang[i] is None:
+                tang[i] = vector3(0,0,0)
 
-        if (len(tangs) != 0):
-            _tangs = opencascade_array1_of_vec(tangs)
+        if (len(tang) != 0):
+            _tangs = opencascade_array1_of_vec(tang)
 
-            _bools = TColStd_HArray1OfBoolean(1, len(tangs))
+            _bools = TColStd_HArray1OfBoolean(1, len(tang))
             for i in range(len(pnts)):
-                _bools.SetValue(i + 1, bool(numpy.linalg.norm(tangs[i]) != 0))
+                _bools.SetValue(i + 1, bool(numpy.linalg.norm(tang[i]) != 0))
 
             algo.Load(_tangs, _bools)
 

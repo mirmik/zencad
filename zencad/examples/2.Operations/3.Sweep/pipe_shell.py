@@ -5,7 +5,7 @@ ZenCad API example: pipe_shell
 
 from zencad import *
 
-a=circle(r=20)
+a = circle(r=20)
 b = circle(r=10).up(10)
 
 proto_wires = [

@@ -19,7 +19,7 @@ hole = cylinder(r=radius - thikness, h=height - thikness).up(thikness)
 # Handle:
 spine = interpolate(pnts, tang).rotateX(deg(90))
 profile = circle(handle_radius).rotateY(deg(45)).translate(pnts[0].x, 0, pnts[0].y)
-handle = pipe(spine=spine, profile=profile)
+handle = pipe(spine=spine, shp=profile)
 
 # Assemble:
 cup = base + handle.right(40).up(17) - hole

@@ -124,8 +124,7 @@ def _unify_compound(proto):
     return Shape(comp)
 
 
-@lazy.lazy(cls=shape_generator)
-def unify(proto):
+def _unify(proto):
     _Shape = proto.Shape()
 
     if _Shape.IsNull():
@@ -144,3 +143,8 @@ def unify(proto):
         return _unify_compound(proto)
 
     raise Exception("TODO")
+
+
+@lazy.lazy(cls=shape_generator)
+def unify(proto):
+    return _unify(proto)
