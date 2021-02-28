@@ -216,6 +216,15 @@ class Shape(zencad.geom.transformable.Transformable):
         aCurve = BRep_Tool.Curve(self.Edge())
         return aCurve[0]
 
+    def _VolumeProperties(self):
+        props = GProp_GProps()
+        brepgprop.VolumeProperties(Shape(), props)
+        return props
+
+    def center(self):
+        centerMass = props.CentreOfMass()
+        return point3(centerMass)
+
 # Support lazy methods
 
 
@@ -258,7 +267,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "Shape", "Vertex", "Wire", "Edge", "Solid", "Face",
         "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
         "reflection_elements", "AdaptorSurface", "AdaptorCurve",
-        "_SLProps", "Curve"
+        "_SLProps", "_VolumeProperties", "Curve"
     ]
 
     transparent_methods = [
@@ -291,7 +300,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "is_face", "is_shell", "is_wire_or_edge", "is_solid",
         "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds",
-        "d1", "normal", "range", "endpoints"
+        "d1", "normal", "range", "endpoints", "center"
     ]
 
 
