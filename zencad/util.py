@@ -103,6 +103,18 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __eq__(self, oth):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z
 
+    def __ne__(self, oth):
+        return self.x != oth.x or self.y != oth.y or self.z != oth.z
+
+    def __mul__(self, m):
+        return point3(self.x * m, self.y * m, self.z * m)
+
+    def __div__(self, m):
+        return point3(self.x / m, self.y / m, self.z / m)
+
+    def __round__(self, r):
+        return point3(round(self.x, r), round(self.y, r), round(self.z, r))
+
 
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
@@ -169,6 +181,7 @@ def to_Pnt(arg):
 
 
 def to_Vec(arg):
+    if arg is None: return gp_Vec(0,0,0)
     return gp_Vec(float(arg[0]), float(arg[1]), float(arg[2]))
 
 

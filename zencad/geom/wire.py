@@ -20,6 +20,8 @@ from zencad.util import points, to_Pnt, to_Vec
 from zencad.geom.project import project
 import zencad.geom.curve as curve
 
+from zencad.util import *
+
 import math
 import numpy
 
@@ -76,13 +78,13 @@ def segment(a, b) -> Shape:
     return _segment(a, b)
 
 
-def _interpolate(pnts, tang=None, closed=False):
+def _interpolate(pnts, tangs=None, closed=False):
     return _make_edge(
-        curve._interpolate(pnts=pnts, tang=tang, closed=closed))
+        curve._interpolate(pnts=pnts, tangs=tangs, closed=closed))
 
 @lazy.lazy(cls=shape_generator)
-def interpolate(pnts, tang=None, closed=False) -> Shape:
-    return _interpolate(pnts, tang, closed)
+def interpolate(*args, **kwargs):
+    return _interpolate(*args, **kwargs)
 
 def _bezier(pnts, weights=None):
     return _make_edge(curve._bezier(pnts, weights))

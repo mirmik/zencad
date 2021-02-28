@@ -38,11 +38,11 @@ class Ops1d2dProbe(unittest.TestCase):
     def test_fillet2d(self):
         zencad.square(20).fillet2d(1)
         zencad.square(20).fillet2d(r=1)
-        zencad.fillet(proto=zencad.square(20), r=1)
+        zencad.fillet2d(shp=zencad.square(20), r=1)
 
         zencad.square(20).fillet2d(1, [(0, 0, 0)])
         zencad.square(20).fillet2d(refs=[(0, 0, 0)], r=1)
-        zencad.fillet(proto=zencad.square(20), refs=[(0, 0, 0)], r=1)
+        zencad.fillet2d(shp=zencad.square(20), refs=[(0, 0, 0)], r=1)
 
     def test_chamfer2d(self):
         # not supported

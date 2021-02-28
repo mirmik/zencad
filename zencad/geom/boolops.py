@@ -8,7 +8,7 @@ from zencad.geom.boolops_base import occ_pair_union, occ_pair_difference, occ_pa
 
 def _union(lst):
     if len(lst) == 1:
-        return Shape(lst[0])
+        return lst[0]
 
     nrsize = 0
     rsize = len(lst) // 2 + len(lst) % 2

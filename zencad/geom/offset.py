@@ -6,7 +6,7 @@ from zencad.shape import Shape, shape_generator
 from zencad.lazifier import *
 
 
-def _thicksolid(proto, refs, t):
+def _thicksolid(proto, t, refs):
     facesToRemove = TopTools_ListOfShape()
 
     for p in refs:
@@ -18,8 +18,8 @@ def _thicksolid(proto, refs, t):
 
 
 @lazy.lazy(cls=shape_generator)
-def thicksolid(proto, refs, t):
-    return _thicksolid(proto, refs, t)
+def thicksolid(proto, t, refs):
+    return _thicksolid(proto, t, refs)
 
 
 def _offset(shp, off):

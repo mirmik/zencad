@@ -66,6 +66,22 @@ class Shape(zencad.geom.transformable.Transformable):
         from zencad.geom.sweep import extrude
         return extrude(self, vec)
 
+    def fillet(self, r, refs=None):
+        from zencad.geom.operations import fillet
+        return fillet(self, r, refs=refs)
+
+    def chamfer(self, r, refs=None):
+        from zencad.geom.operations import chamfer
+        return chamfer(self, r, refs=refs)
+
+    def fillet2d(self, r, refs=None):
+        from zencad.geom.operations import fillet2d
+        return fillet2d(self, r, refs=refs)
+
+    def chamfer2d(self, r, refs=None):
+        from zencad.geom.operations import chamfer2d
+        return chamfer2d(self, r, refs=refs)
+
     def _SLProps(self, u, v):
         prop = BRepLProp_SLProps(self.AdaptorSurface(), u, v, 1, 1e-5)
         return prop
@@ -132,9 +148,10 @@ class Shape(zencad.geom.transformable.Transformable):
     def edges(self): return self.reflection_elements(topods.Edge, TopAbs_EDGE)
     def wires(self): return self.reflection_elements(topods.Wire, TopAbs_WIRE)
     def faces(self): return self.reflection_elements(topods.Face, TopAbs_FACE)
-
-    def native_vertices(self): return self.reflection_elements(
-        topods.Vertex, TopAbs_VERTEX)
+    def solids(self): return self.reflection_elements(topods.Solid, TopAbs_SOLID)
+    def compounds(self): return self.reflection_elements(topods.Compound, TopAbs_COMPOUND)
+    def shells(self): return self.reflection_elements(topods.Shell, TopAbs_SHELL)
+    def native_vertices(self): return self.reflection_elements(topods.Vertex, TopAbs_VERTEX)
 
     def vertices(self):
         verts = self.native_vertices()
@@ -155,18 +172,11 @@ class Shape(zencad.geom.transformable.Transformable):
 
         return pnts_filtered
 
-    def solids(self): return self.reflection_elements(
-        topods.Solid, TopAbs_SOLID)
 
-    def compounds(self): return self.reflection_elements(
-        topods.Compound, TopAbs_COMPOUND)
-
-    def shells(self): return self.reflection_elements(
-        topods.Shell, TopAbs_SHELL)
 
     def fill(self):
         assert(self.is_wire_or_edge())
-        return Shape(BRepBuilderAPI_MakeFace(self.Wire()).Face())
+        return Shape(BRepBuilderAPI_MakeFace(self.Wire_orEdgeToWire()).Face())
 
     # TODO: Вынести в surface_algo
     def AdaptorSurface(self):
@@ -252,12 +262,12 @@ class LazyObjectShape(evalcache.LazyObject):
     ]
 
     transparent_methods = [
-        "extrude"
+        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill"
     ]
 
     cached_methods = [
         "__add__", "__sub__", "__xor__",
-        "scaleX", "scaleY", "scaleZ", "scaleXYZ", "fill"
+        "scaleX", "scaleY", "scaleZ", "scaleXYZ"
     ]
 
     nocached_methods = [

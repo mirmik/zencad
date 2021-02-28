@@ -25,21 +25,21 @@ class TransformationProbe(unittest.TestCase):
         z = 30
         v = 10
 
-        pnt = zencad.point(x, y, z)
+        pnt = zencad.point3(x, y, z)
 
         self.assertEqual(zencad.translate(z, y, x)(pnt),
-                         zencad.point(40, 40, 40))
+                         zencad.point3(40, 40, 40))
 
-        self.assertEqual(zencad.up(v)(pnt), zencad.point(x, y, z+v))
-        self.assertEqual(zencad.down(v)(pnt), zencad.point(x, y, z-v))
-        self.assertEqual(zencad.left(v)(pnt), zencad.point(x-v, y, z))
-        self.assertEqual(zencad.right(v)(pnt), zencad.point(x+v, y, z))
-        self.assertEqual(zencad.forw(v)(pnt), zencad.point(x, y+v, z))
-        self.assertEqual(zencad.back(v)(pnt), zencad.point(x, y-v, z))
+        self.assertEqual(zencad.up(v)(pnt), zencad.point3(x, y, z+v))
+        self.assertEqual(zencad.down(v)(pnt), zencad.point3(x, y, z-v))
+        self.assertEqual(zencad.left(v)(pnt), zencad.point3(x-v, y, z))
+        self.assertEqual(zencad.right(v)(pnt), zencad.point3(x+v, y, z))
+        self.assertEqual(zencad.forw(v)(pnt), zencad.point3(x, y+v, z))
+        self.assertEqual(zencad.back(v)(pnt), zencad.point3(x, y-v, z))
 
-        self.assertEqual(zencad.moveX(v)(pnt), zencad.point(x+v, y, z))
-        self.assertEqual(zencad.moveY(v)(pnt), zencad.point(x, y+v, z))
-        self.assertEqual(zencad.moveZ(v)(pnt), zencad.point(x, y, z+v))
+        self.assertEqual(zencad.moveX(v)(pnt), zencad.point3(x+v, y, z))
+        self.assertEqual(zencad.moveY(v)(pnt), zencad.point3(x, y+v, z))
+        self.assertEqual(zencad.moveZ(v)(pnt), zencad.point3(x, y, z+v))
 
     def test_rotate(self):
         x = 10
@@ -47,12 +47,12 @@ class TransformationProbe(unittest.TestCase):
         z = 30
         v = 10
 
-        pnt = zencad.point(x, y, z)
+        pnt = zencad.point3(x, y, z)
 
         ang = zencad.deg(v)
         self.assertEqual(
             zencad.rotateX(ang)(pnt),
-            zencad.point(
+            zencad.point3(
                 x,
                 y*math.cos(ang)-z*math.sin(ang),
                 z*math.cos(ang)+y*math.sin(ang))
@@ -60,7 +60,7 @@ class TransformationProbe(unittest.TestCase):
 
         self.assertEqual(
             zencad.rotateY(ang)(pnt),
-            zencad.point(
+            zencad.point3(
                 x*math.cos(ang)+z*math.sin(ang),
                 y,
                 z*math.cos(ang)-x*math.sin(ang))
@@ -68,7 +68,7 @@ class TransformationProbe(unittest.TestCase):
 
         self.assertEqual(
             zencad.rotateZ(ang)(pnt),
-            zencad.point(
+            zencad.point3(
                 x*math.cos(ang)-y*math.sin(ang),
                 y*math.cos(ang)+x*math.sin(ang),
                 z)
@@ -83,12 +83,14 @@ class TransformationProbe(unittest.TestCase):
         box = zencad.box(10, 10, 10, center=True).translate(x, y, z)
 
         self.assertEqual((zencad.translate(z, y, x)(
-            box)).center().unlazy(), zencad.point(40, 40, 40))
+            box)).center().unlazy(), zencad.point3(40, 40, 40))
 
     def test_short_rotate(self):
         t = zencad.short_rotate((0, 0, 1), (1, 0, 0))
 
         m = zencad.point3(0, 0, 1)
         m = t(m)
+
+        m = round(m, 4)
 
         self.assertEqual(m, zencad.point3(1, 0, 0))

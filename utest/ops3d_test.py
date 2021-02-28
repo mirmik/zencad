@@ -10,8 +10,8 @@ class Ops3dProbe(unittest.TestCase):
 
     def test_linear_extrude(self):
         proto = zencad.ngon(r=3, n=12)
-        zencad.linear_extrude(proto=proto, vec=3)
-        zencad.linear_extrude(proto=proto, vec=(3, 1, 3))
+        zencad.linear_extrude(shp=proto, vec=3)
+        zencad.linear_extrude(shp=proto, vec=(3, 1, 3))
         zencad.linear_extrude(proto, 3)
         zencad.linear_extrude(proto, (3, 1, 3))
 
@@ -19,7 +19,7 @@ class Ops3dProbe(unittest.TestCase):
         proto = zencad.circle(20)
         path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
         zencad.pipe(proto, path)
-        zencad.pipe(profile=proto, spine=path)
+        zencad.pipe(shp=proto, spine=path)
 
     def test_pipe_shell(self):
         proto0 = zencad.circle(20, wire=True)
@@ -27,7 +27,7 @@ class Ops3dProbe(unittest.TestCase):
         proto2 = zencad.circle(30, wire=True).up(20)
         path = zencad.interpolate([(0, 0, 0), (0, 0, 10), (0, 10, 20)])
         zencad.pipe_shell([proto0, proto1, proto2], path)
-        zencad.pipe_shell(profiles=[proto0, proto1, proto2], spine=path)
+        zencad.pipe_shell(arr=[proto0, proto1, proto2], spine=path)
 
     # def test_sweep(self):
     #    proto = zencad.circle(20, wire=True)
@@ -61,17 +61,17 @@ class Ops3dProbe(unittest.TestCase):
     def test_fillet(self):
         zencad.box(20).fillet(1)
         zencad.box(20).fillet(r=1)
-        zencad.fillet(proto=zencad.box(20), r=1)
+        zencad.fillet(shp=zencad.box(20), r=1)
 
         zencad.box(20).fillet(1, [(5, 0, 0)])
         zencad.box(20).fillet(refs=[(5, 0, 0)], r=1)
-        zencad.fillet(proto=zencad.box(20), refs=[(5, 0, 0)], r=1)
+        zencad.fillet(shp=zencad.box(20), refs=[(5, 0, 0)], r=1)
 
     def test_chamfer(self):
         zencad.box(20).chamfer(1)
         zencad.box(20).chamfer(r=1)
-        zencad.chamfer(proto=zencad.box(20), r=1)
+        zencad.chamfer(shp=zencad.box(20), r=1)
 
         zencad.box(20).chamfer(1, [(5, 0, 0)])
         zencad.box(20).chamfer(refs=[(5, 0, 0)], r=1)
-        zencad.chamfer(proto=zencad.box(20), refs=[(5, 0, 0)], r=1)
+        zencad.chamfer(shp=zencad.box(20), refs=[(5, 0, 0)], r=1)
