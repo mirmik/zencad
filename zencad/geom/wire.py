@@ -128,7 +128,7 @@ def _rounded_polysegment(pnts, r, closed=False):
     cpnts = pnts[1:-1]
 
     pairs = []
-    pairs_tangs = []
+    pairs_tang = []
     pairs.append((None, pnts[0]))
 
     for i in range(len(cpnts)):
@@ -142,7 +142,7 @@ def _rounded_polysegment(pnts, r, closed=False):
 
         if numpy.linalg.norm(n) == 0:
             pairs.append((cpnts[i], cpnts[i]))
-            pairs_tangs.append(None)
+            pairs_tang.append(None)
             continue
 
         abn = numpy.cross(ad1, n)
@@ -157,16 +157,16 @@ def _rounded_polysegment(pnts, r, closed=False):
         cb = project(c, b)
 
         pairs.append((ca, cb))
-        pairs_tangs.append((ad1, bd1))
+        pairs_tang.append((ad1, bd1))
 
     pairs.append((pnts[-1], None))
 
     nodes = []
     for i in range(len(cpnts)):
         nodes.append(segment(pairs[i][1], pairs[i+1][0]))
-        if pairs_tangs[i] is not None:
+        if pairs_tang[i] is not None:
             nodes.append(interpolate(
-                pnts=[pairs[i+1][0], pairs[i+1][1]], tang=[pairs_tangs[i][0], pairs_tangs[i][1]]))
+                pnts=[pairs[i+1][0], pairs[i+1][1]], tang=[pairs_tang[i][0], pairs_tang[i][1]]))
     nodes.append(segment(pairs[-2][1], pairs[-1][0]))
 
     # Для замыкания необходимо удалить крайние сегменты.

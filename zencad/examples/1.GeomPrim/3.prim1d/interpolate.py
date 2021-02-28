@@ -8,7 +8,7 @@ m = interpolate([
 	(20,10),
 	(0,5,10),
 ],
-tangs=[
+tang=[
 	None, 
 	None,
 	None, 

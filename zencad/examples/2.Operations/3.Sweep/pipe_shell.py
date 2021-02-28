@@ -18,7 +18,7 @@ proto_wires = [
 
 spine = interpolate(
 	[(0,0,0), (40,0,50), (80,0,100)], 
-	tangs=[(0,0,1), None, (0,0,1)])
+	tang=[(0,0,1), None, (0,0,1)])
 
 uniform = spine.uniform(len(proto_wires))
 

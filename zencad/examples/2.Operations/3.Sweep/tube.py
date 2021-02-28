@@ -24,19 +24,19 @@ POINTS=points([
 
 SPINE=sew([
 	segment(POINTS[0], POINTS[1]),
-	interpolate([POINTS[1], POINTS[2]], tangs=[(0,0,1), (1,0,0)]),
+	interpolate([POINTS[1], POINTS[2]], tang=[(0,0,1), (1,0,0)]),
 	segment(POINTS[2], POINTS[3]),
-	interpolate([POINTS[3], POINTS[4]], tangs=[(1,0,0), (0,1,0)]),
+	interpolate([POINTS[3], POINTS[4]], tang=[(1,0,0), (0,1,0)]),
 	segment(POINTS[4], POINTS[5]),
-	interpolate([POINTS[5], POINTS[6]], tangs=[(0,1,0), (0,0,1)]),
+	interpolate([POINTS[5], POINTS[6]], tang=[(0,1,0), (0,0,1)]),
 	segment(POINTS[6], POINTS[7]),
-	interpolate([POINTS[7], POINTS[8]], tangs=[(0,0,1), (-1,0,0)]),
+	interpolate([POINTS[7], POINTS[8]], tang=[(0,0,1), (-1,0,0)]),
 	segment(POINTS[8], POINTS[9]),
-	interpolate([POINTS[9], POINTS[10]], tangs=[(-1,0,0), (0,0,-1)]),
+	interpolate([POINTS[9], POINTS[10]], tang=[(-1,0,0), (0,0,-1)]),
 	segment(POINTS[10], POINTS[11]),
-	interpolate([POINTS[11], POINTS[12]], tangs=[(0,0,-1), (0,-1,0)]),
+	interpolate([POINTS[11], POINTS[12]], tang=[(0,0,-1), (0,-1,0)]),
 	segment(POINTS[12], POINTS[13]),
-	interpolate([POINTS[13], POINTS[0]], tangs=[(0,-1,0), (0,0,1)]),
+	interpolate([POINTS[13], POINTS[0]], tang=[(0,-1,0), (0,0,1)]),
 ])
 
 OUTER_SHELL = tube(spine=SPINE, r=3)
