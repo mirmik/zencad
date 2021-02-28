@@ -49,13 +49,13 @@ def _interpolate(pnts, tang=None, closed=False):
                 tang[i] = vector3(0,0,0)
 
         if (len(tang) != 0):
-            _tangs = opencascade_array1_of_vec(tang)
+            _tang = opencascade_array1_of_vec(tang)
 
             _bools = TColStd_HArray1OfBoolean(1, len(tang))
             for i in range(len(pnts)):
                 _bools.SetValue(i + 1, bool(numpy.linalg.norm(tang[i]) != 0))
 
-            algo.Load(_tangs, _bools)
+            algo.Load(_tang, _bools)
 
     algo.Perform()
     return Curve(algo.Curve())
