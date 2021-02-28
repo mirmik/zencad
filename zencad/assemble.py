@@ -3,7 +3,7 @@ import numpy
 
 from zencad.settings import Settings
 from zencad.geom.transformable import Transformable
-from zencad.geom.trans import _nulltrans
+from zencad.geom.trans import nulltrans
 
 
 class ShapeView:
