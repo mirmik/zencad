@@ -3,7 +3,7 @@ import numpy
 
 from zencad.settings import Settings
 from zencad.geom.transformable import Transformable
-from zencad.geom.trans import nulltrans
+from zencad.geom.exttrans import nulltrans
 
 
 class ShapeView:
@@ -32,7 +32,7 @@ class unit(Transformable):
                  parent=None,
                  shape=None,
                  name=None,
-                 location=_nulltrans()):
+                 location=nulltrans()):
         self.parent = parent
         self.location = evalcache.unlazy_if_need(location)
         self.global_location = self.location
