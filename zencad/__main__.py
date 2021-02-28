@@ -32,18 +32,7 @@ def console_options_handle():
 def top_half(communicator):
     from zencad.lazifier import install_evalcahe_notication
     install_evalcahe_notication(communicator)
-
-
-def bottom_half(communicator, scene):
-    from zencad.gui.display import DisplayWidget
-    display = DisplayWidget(
-        communicator=communicator)
-    display.attach_scene(scene)
-
-    communicator.bind_handler(display.external_communication_command)
-
-    return display
-
+    
 
 def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zencad.gui.mainwindow import MainWindow
@@ -91,11 +80,12 @@ def main():
         install_precompiled_occt_library(tgtpath=path)
         return
 
+    from zencad.showapi import widget_creator
     frame.invoke(
         pargs,
         frame_creator=frame_creator,
         exec_top_half=top_half,
-        exec_bottom_half=bottom_half)
+        exec_bottom_half=widget_creator)
 
 
 if __name__ == "__main__":
