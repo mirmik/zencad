@@ -1,6 +1,7 @@
 import unittest
 from zencad import *
 
+from OCC.Core.gp import gp_Dir, gp_Vec, gp_Pnt
 
 def early(a, b):
     if abs(a.x - b.x) > 0.0001:
@@ -13,6 +14,15 @@ def early(a, b):
 
 
 class MathTest(unittest.TestCase):
+    def test_constructor(self):
+        self.assertEqual(point3(0,0,1), point3(gp_Dir(0,0,1)))
+        self.assertEqual(point3(0,1,1), point3(gp_Vec(0,1,1)))
+        self.assertEqual(point3(1,0,1), point3(gp_Pnt(1,0,1)))
+
+        self.assertEqual(vector3(0,0,1), vector3(gp_Dir(0,0,1)))
+        self.assertEqual(vector3(0,1,1), vector3(gp_Vec(0,1,1)))
+        self.assertEqual(vector3(1,0,1), vector3(gp_Pnt(1,0,1)))
+
     def test_math(self):
         self.assertTrue(
             early(

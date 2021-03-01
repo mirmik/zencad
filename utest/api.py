@@ -52,20 +52,20 @@ def execute_test(test):
         unittest.TestLoader().loadTestsFromModule(test)
     )
 
-    if len(result.errors) != 0:
+    if len(result.errors) != 0 or len(result.failures) != 0:
         sys.exit(-1)
 
 
 if __name__ == "__main__":
     print("main")
+    execute_test(math_test)
+    execute_test(reflection)
     execute_test(prim1d_test)
     execute_test(prim2d_test)
     execute_test(prim3d_test)
     execute_test(ops3d_test)
     execute_test(ops1d2d_test)
     execute_test(boolean_test)
-    execute_test(math_test)
     execute_test(trans_test)
     execute_test(curve3_test)
     execute_test(curve2_test)
-    execute_test(reflection)

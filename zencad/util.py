@@ -119,12 +119,14 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
         args = [ evalcache.unlazy_if_need(a) for a in args ]
-        
-        try:
-            _ = args[0][0]
-            input_array = args[0]
-        except:
-            input_array = args
+        if isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
+            input_array = (args[0].X(), args[0].Y(), args[0].Z())
+        else:
+            try:
+                _ = args[0][0]
+                input_array = args[0]
+            except:
+                input_array = args
 
         if len(input_array) == 1:
             input_array = ((input_array[0], 0, 0))
