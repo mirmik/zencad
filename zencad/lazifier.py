@@ -29,6 +29,11 @@ onplace = None
 status_notify = None
 
 
+
+
+
+
+
 def disable_lazy():
     global ensave, desave, onplace, diag, status_notify
     ensave = lazy.encache
