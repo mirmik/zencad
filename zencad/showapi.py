@@ -74,11 +74,12 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
         unbound_worker_bottom_half,
         unbound_frame_summon
     )
+    from zenframe.configuration import Configuration
 
     if scene is None:
         scene = __default_scene
 
-    if NOSHOW:
+    if Configuration.NOSHOW:
         return
 
     if is_unbound_mode():
