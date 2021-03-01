@@ -58,4 +58,4 @@ setup(
     entry_points={"console_scripts": [
         "zencad=zencad.__main__:main"
     ]},
-) 
+)
