@@ -8,6 +8,7 @@ mandarinc = os.path.join(zencad.moduledir, "examples", "fonts/mandarinc.ttf")
 fontpath = register_font(mandarinc)
 
 NUT_RENDER = True
+DISPLAY_BOLT = False
 
 
 @lazy
@@ -68,6 +69,8 @@ m = m.translate(- m.center())
 m = m.extrude(6) + base
 m = m - bolt
 
-# disp(bolt)
+if DISPLAY_BOLT:
+    disp(bolt)
+
 disp(m, color=(0.6, 1, 1, 0.3))
 show()
