@@ -21,7 +21,6 @@ from zencad.lazifier import *
 import zencad.geom.trans
 import zencad.geom.transformable
 from zencad.util import to_numpy, point3, vector3
-from zenframe.util import print_to_stderr
 
 import numpy
 
@@ -147,10 +146,14 @@ class Shape(zencad.geom.transformable.Transformable):
     def edges(self): return self.reflection_elements(topods.Edge, TopAbs_EDGE)
     def wires(self): return self.reflection_elements(topods.Wire, TopAbs_WIRE)
     def faces(self): return self.reflection_elements(topods.Face, TopAbs_FACE)
-    def solids(self): return self.reflection_elements(topods.Solid, TopAbs_SOLID)
-    def compounds(self): return self.reflection_elements(topods.Compound, TopAbs_COMPOUND)
-    def shells(self): return self.reflection_elements(topods.Shell, TopAbs_SHELL)
-    def native_vertices(self): return self.reflection_elements(topods.Vertex, TopAbs_VERTEX)
+    def solids(self): return self.reflection_elements(
+        topods.Solid, TopAbs_SOLID)
+    def compounds(self): return self.reflection_elements(
+        topods.Compound, TopAbs_COMPOUND)
+    def shells(self): return self.reflection_elements(
+        topods.Shell, TopAbs_SHELL)
+    def native_vertices(self): return self.reflection_elements(
+        topods.Vertex, TopAbs_VERTEX)
 
     def vertices(self):
         verts = self.native_vertices()
@@ -170,8 +173,6 @@ class Shape(zencad.geom.transformable.Transformable):
                 pnts_filtered.append(p)
 
         return pnts_filtered
-
-
 
     def fill(self):
         assert(self.is_wire_or_edge())
@@ -240,11 +241,11 @@ class Shape(zencad.geom.transformable.Transformable):
 
     def center(self):
         from zencad.geom.operations import _restore_shapetype
-        
+
         if not self.is_volumed():
             centerMass = self.SurfaceProperties().CentreOfMass()
             return point3(centerMass)
-        
+
         centerMass = self.VolumeProperties().CentreOfMass()
         return point3(centerMass)
 
@@ -258,12 +259,12 @@ class Shape(zencad.geom.transformable.Transformable):
 
         for i in range(npoints):
             ret.append(algo.Parameter(i + 1))
- 
+
         return ret
 
     def uniform_points(self, npoints, strt=None, fini=None):
         params = self.uniform(npoints, strt, fini)
-        return [ self.d0(p) in params ]
+        return [self.d0(p) in params]
 
 # Support lazy methods
 

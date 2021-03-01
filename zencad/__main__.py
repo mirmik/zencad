@@ -32,7 +32,7 @@ def console_options_handle():
 def top_half(communicator):
     from zencad.lazifier import install_evalcahe_notication
     install_evalcahe_notication(communicator)
-    
+
 
 def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zencad.gui.mainwindow import MainWindow

@@ -82,7 +82,8 @@ def rotate_array2(n, r=None, yaw=(0, deg(360)), roll=(0, 0), endpoint=False, arr
 
 
 def short_rotate(f, t):
-    f, t = vector3(evalcache.unlazy_if_need(f)), vector3(evalcache.unlazy_if_need(t)) 
+    f, t = vector3(evalcache.unlazy_if_need(f)), vector3(
+        evalcache.unlazy_if_need(t))
 
     f = f / np.linalg.norm(f)
     t = t / np.linalg.norm(t)

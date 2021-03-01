@@ -73,28 +73,30 @@ def _loft(arr, smooth=False, shell=False, maxdegree=4):
 
 
 @lazy.lazy(cls=shape_generator)
-def loft(*args, **kwargs): 
+def loft(*args, **kwargs):
     return _loft(*args, **kwargs)
 
+
 geomfill_triedron_map = {
-    "corrected_frenet" : GeomFill_IsCorrectedFrenet,
-    "fixed" : GeomFill_IsFixed,
-    "frenet" : GeomFill_IsFrenet,
-    "constant_normal" : GeomFill_IsConstantNormal,
-    "darboux" : GeomFill_IsDarboux,
-    "guide_ac" : GeomFill_IsGuideAC,
-    "guide_plan" : GeomFill_IsGuidePlan,
-    "guide_ac_with_contact" : GeomFill_IsGuideACWithContact,
-    "guide_plan_with_contact" : GeomFill_IsGuidePlanWithContact,
-    "discrete_trihedron" : GeomFill_IsDiscreteTrihedron
+    "corrected_frenet": GeomFill_IsCorrectedFrenet,
+    "fixed": GeomFill_IsFixed,
+    "frenet": GeomFill_IsFrenet,
+    "constant_normal": GeomFill_IsConstantNormal,
+    "darboux": GeomFill_IsDarboux,
+    "guide_ac": GeomFill_IsGuideAC,
+    "guide_plan": GeomFill_IsGuidePlan,
+    "guide_ac_with_contact": GeomFill_IsGuideACWithContact,
+    "guide_plan_with_contact": GeomFill_IsGuidePlanWithContact,
+    "discrete_trihedron": GeomFill_IsDiscreteTrihedron
 }
+
 
 def _pipe(shp, spine, mode="corrected_frenet", force_approx_c1=False):
     if (spine.Shape().IsNull()):
-        raise Exception("Cannot sweep along empty spine");
+        raise Exception("Cannot sweep along empty spine")
 
     if (shp.Shape().IsNull()):
-        raise Exception("Cannot sweep empty profile");
+        raise Exception("Cannot sweep empty profile")
 
     try:
         if isinstance(mode, str):
@@ -109,30 +111,29 @@ def _pipe(shp, spine, mode="corrected_frenet", force_approx_c1=False):
 
 
 @lazy.lazy(cls=shape_generator)
-def pipe(*args, **kwargs): 
+def pipe(*args, **kwargs):
     return _pipe(*args, **kwargs)
 
 
 def _pipe_shell(
     arr,
     spine,
-    frenet = False,
-    approx_c1 = False,
-    binormal = None,
-    parallel = None,
-    discrete = False,
-    solid = True,
-    transition = 0
+    frenet=False,
+    approx_c1=False,
+    binormal=None,
+    parallel=None,
+    discrete=False,
+    solid=True,
+    transition=0
 ):
-    mkPipeShell = BRepOffsetAPI_MakePipeShell(spine.Wire_orEdgeToWire());
+    mkPipeShell = BRepOffsetAPI_MakePipeShell(spine.Wire_orEdgeToWire())
 
-
-    if   transition == 1: 
+    if transition == 1:
         transMode = BRepBuilderAPI_RightCorner
-    elif transition == 2: 
+    elif transition == 2:
         transMode = BRepBuilderAPI_RoundCorner
     else:
-        transMode = BRepBuilderAPI_Transformed;
+        transMode = BRepBuilderAPI_Transformed
 
     mkPipeShell.SetMode(frenet)
     mkPipeShell.SetTransitionMode(transMode)
@@ -161,27 +162,14 @@ def _pipe_shell(
     return Shape(mkPipeShell.Shape())
 
 
-
 @lazy.lazy(cls=shape_generator)
-def pipe_shell(*args, **kwargs): 
+def pipe_shell(*args, **kwargs):
     return _pipe_shell(*args, **kwargs)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-#Труба вытягивает круглый профиль по заданному контуру.
-#def _tube_section(shp, radius, tol, cont, maxdegree, maxsegm):
-#{
+# Труба вытягивает круглый профиль по заданному контуру.
+# def _tube_section(shp, radius, tol, cont, maxdegree, maxsegm):
+# {
 #    auto crv = servoce::circle_curve3(radius).rotZ(M_PI/2);
 #    auto slaw = servoce::law_evolved_section(crv, servoce::law_constant_function(1, crv.range()));
 #    auto llaw = servoce::law_spine_and_trihedron(shp, law_corrected_frenet_trihedron());
@@ -196,18 +184,18 @@ def pipe_shell(*args, **kwargs):
 #    auto face = make_face(surf);
 #
 #    return std::make_tuple(face, sedge, fedge);
-#}
+# }
 #
-#// Труба по wire состоит из нескольких труб по edge
-#std::tuple<shell_shape, edge_shape, edge_shape> servoce::make_tube(
+# // Труба по wire состоит из нескольких труб по edge
+# std::tuple<shell_shape, edge_shape, edge_shape> servoce::make_tube(
 #    const servoce::wire_shape& shp, double radius, double tol, int cont, int maxdegree, int maxsegm
 #    )
-#{
+# {
 #    std::vector<face_shape> faces;
 #    std::vector<edge_shape> strt;
 #    std::vector<edge_shape> fini;
 #
-#    for ( auto& e : shp.edges() ) 
+#    for ( auto& e : shp.edges() )
 #    {
 #        auto tpl = make_tube(e, radius, tol, cont, maxdegree, maxsegm);
 #
@@ -217,4 +205,4 @@ def pipe_shell(*args, **kwargs):
 #    }
 #
 #    return std::make_tuple(make_shell(faces), strt[0], fini[fini.size()-1]);
-#}
+# }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from zencad.version import __occt_version__, __pythonocc_version__
 import os
 import sys
 from zencad.version import __occt_version__
@@ -25,9 +26,6 @@ if (
         import zencad.gui.libinstaller
         zencad.gui.libinstaller.doit()
         exit()
-
-
-from zencad.version import __occt_version__, __pythonocc_version__
 
 
 class PreventLibraryLoading(Exception):

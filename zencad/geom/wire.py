@@ -43,9 +43,10 @@ def _circle_arc(p1, p2, p3):
     aArcOfCircle = GC_MakeArcOfCircle(to_Pnt(p1), to_Pnt(p2), to_Pnt(p3))
     return Shape(BRepBuilderAPI_MakeEdge(aArcOfCircle.Value()).Edge())
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def circle_arc(p1, p2, p3):
-    return _circle_arc(p1,p2,p3)
+    return _circle_arc(p1, p2, p3)
 
 
 def _polysegment(pnts, closed=False) -> Shape:
@@ -64,9 +65,11 @@ def _polysegment(pnts, closed=False) -> Shape:
 
     return Shape(mkWire.Wire())
 
+
 @lazy.lazy(cls=nocached_shape_generator)
 def polysegment(pnts, closed=False):
     return _polysegment(pnts, closed)
+
 
 def _segment(a, b) -> Shape:
     a, b = points((a, b))
@@ -82,16 +85,20 @@ def _interpolate(pnts, tang=None, closed=False):
     return _make_edge(
         curve._interpolate(pnts=pnts, tang=tang, closed=closed))
 
+
 @lazy.lazy(cls=shape_generator)
 def interpolate(*args, **kwargs):
     return _interpolate(*args, **kwargs)
 
+
 def _bezier(pnts, weights=None):
     return _make_edge(curve._bezier(pnts, weights))
+
 
 @lazy.lazy(cls=nocached_shape_generator)
 def bezier(pnts, weights=None):
     return _bezier(pnts, weights)
+
 
 def _bspline(
         poles,
@@ -185,6 +192,7 @@ def _rounded_polysegment(pnts, r, closed=False):
 
     return result
 
+
 @lazy.lazy(cls=shape_generator)
 def rounded_polysegment(*args, **kwargs):
     return _rounded_polysegment(*args, **kwargs)
@@ -193,6 +201,8 @@ def rounded_polysegment(*args, **kwargs):
 # makeLongHelix is a workaround for an OCC problem found in helices with more than
 # some magic number of turns.  See Mantis #0954. (FreeCad)
 # ***********
+
+
 def _helix(r, h, step=None, pitch=None, angle=0, left=False):
     radius = r
     height = h
@@ -273,6 +283,7 @@ def _helix(r, h, step=None, pitch=None, angle=0, left=False):
     shape = mkWire.Wire()
     breplib.BuildCurves3d(shape)
     return Shape(shape)
+
 
 @lazy.lazy(cls=shape_generator)
 def helix(*args, **kwargs):

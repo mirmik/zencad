@@ -12,6 +12,7 @@ from OCC.Core.Geom import Geom_CartesianPoint
 import zencad.geom.transformable
 import evalcache
 
+
 def as_indexed(arg):
     if len(arg) != 1:
         return tuple(arg)
@@ -69,23 +70,34 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def z(self): return float(self[2])
 
     def __lt__(self, oth):
-        if self.x < oth.x: return True
-        if self.x > oth.x: return False
-        if self.y < oth.y: return True
-        if self.y > oth.y: return False
-        if self.z < oth.z: return True
-        if self.z > oth.z: return False
+        if self.x < oth.x:
+            return True
+        if self.x > oth.x:
+            return False
+        if self.y < oth.y:
+            return True
+        if self.y > oth.y:
+            return False
+        if self.z < oth.z:
+            return True
+        if self.z > oth.z:
+            return False
         return False
 
     def __gt__(self, oth):
-        if self.x > oth.x: return True
-        if self.x < oth.x: return False
-        if self.y > oth.y: return True
-        if self.y < oth.y: return False
-        if self.z > oth.z: return True
-        if self.z < oth.z: return False
+        if self.x > oth.x:
+            return True
+        if self.x < oth.x:
+            return False
+        if self.y > oth.y:
+            return True
+        if self.y < oth.y:
+            return False
+        if self.z > oth.z:
+            return True
+        if self.z < oth.z:
+            return False
         return False
-
 
     def Pnt(self):
         return gp_Pnt(float(self[0]), float(self[1]), float(self[2]))
@@ -118,7 +130,7 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
 
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
-        args = [ evalcache.unlazy_if_need(a) for a in args ]
+        args = [evalcache.unlazy_if_need(a) for a in args]
         if isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
         else:
@@ -145,6 +157,7 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def y(self): return float(self[1])
     @property
     def z(self): return float(self[2])
+
     def __eq__(self, oth):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z
 
@@ -157,7 +170,6 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __div__(self, m):
         return point3(self.x / m, self.y / m, self.z / m)
 
-
     def Vec(self):
         return gp_Vec(float(self[0]), float(self[1]), float(self[2]))
 
@@ -165,7 +177,7 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
         t = trsf._trsf
         return point3(self.Pnt().Transformed(t))
 
-    def cross(self,oth):
+    def cross(self, oth):
         return vector3(numpy.cross(self, oth))
 
     def normalize(self):
@@ -175,8 +187,10 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
 
 def points(pnts):
     return [point3(item) for item in pnts]
+
+
 def points2(tpls):
-    return [points(t) for t in tpls]    
+    return [points(t) for t in tpls]
 
 
 def vectors(pnts):
@@ -201,7 +215,8 @@ def to_Pnt(arg):
 
 
 def to_Vec(arg):
-    if arg is None: return gp_Vec(0,0,0)
+    if arg is None:
+        return gp_Vec(0, 0, 0)
     return gp_Vec(float(arg[0]), float(arg[1]), float(arg[2]))
 
 

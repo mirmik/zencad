@@ -1,11 +1,4 @@
 from zencad.scene import Scene
-from zenframe.unbound import (
-    is_unbound_mode,
-    unbound_worker_bottom_half,
-    unbound_frame_summon
-)
-
-import zencad.animate
 
 NOSHOW = False
 
@@ -27,15 +20,20 @@ def disp(*args, **kwargs):
     return display(*args, **kwargs)
 
 
-def highlight(shp, color=(1,0,0,0.5), deep=True, scene=None):
+def highlight(shp, color=(1, 0, 0, 0.5), deep=True, scene=None):
     display(shp, color, deep, scene)
     return shp
+
 
 def hl(*args, **kwargs): return highlight(*args, **kwargs)
 
 
 ANIMATE_THREAD = None
-def widget_creator(communicator, scene, animate, animate_step = 0.01):
+
+
+def widget_creator(communicator, scene, animate, animate_step=0.01):
+    import zencad.animate
+
     global ANIMATE_THREAD
     from zencad.gui.display import DisplayWidget
     display = DisplayWidget(
@@ -47,8 +45,8 @@ def widget_creator(communicator, scene, animate, animate_step = 0.01):
 
     if animate:
         animate_thread = zencad.animate.AnimateThread(
-            widget=display, 
-            updater_function=animate, 
+            widget=display,
+            updater_function=animate,
             animate_step=animate_step)
 
         animate_thread.start()
@@ -58,6 +56,12 @@ def widget_creator(communicator, scene, animate, animate_step = 0.01):
 
 
 def show(scene=None, animate=None, display_only=False):
+    from zenframe.unbound import (
+        is_unbound_mode,
+        unbound_worker_bottom_half,
+        unbound_frame_summon
+    )
+
     if scene is None:
         scene = __default_scene
 
@@ -79,4 +83,5 @@ def show(scene=None, animate=None, display_only=False):
 
     else:
         # Запускаем оболочку как подчинённый процесс
-        unbound_frame_summon(widget_creator, "zencad", scene=scene, animate=animate)
+        unbound_frame_summon(widget_creator, "zencad",
+                             scene=scene, animate=animate)

@@ -4,11 +4,12 @@ import evalcache
 
 from functools import cmp_to_key
 
+
 def lexsort(a):
     a = evalcache.unlazy_if_need(a)
 
-    def comparator(a,b):
-        return 1 if a > b else -1 
+    def comparator(a, b):
+        return 1 if a > b else -1
 
     return sorted(a, key=cmp_to_key(comparator))
 

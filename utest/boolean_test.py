@@ -4,18 +4,21 @@ from functools import cmp_to_key
 import evalcache
 import zencad.util
 
+
 def rounded_list(a):
-    return [ round(f,5) for f in a ]
+    return [round(f, 5) for f in a]
 
 
 def lexsort(a):
     a = evalcache.unlazy_if_need(a)
 
-    def comparator(a,b):
-        return 1 if a > b else -1 
+    def comparator(a, b):
+        return 1 if a > b else -1
 
-    a =  [ zencad.util.point3(round(f.x,4),round(f.y,4),round(f.z,4)) for f in a ]
+    a = [zencad.util.point3(round(f.x, 4), round(
+        f.y, 4), round(f.z, 4)) for f in a]
     return sorted(a, key=cmp_to_key(comparator))
+
 
 class BooleanProbe(unittest.TestCase):
     def setUp(self):

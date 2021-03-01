@@ -46,7 +46,7 @@ def _interpolate(pnts, tang=None, closed=False):
     if tang is not None:
         for i in range(len(tang)):
             if tang[i] is None:
-                tang[i] = vector3(0,0,0)
+                tang[i] = vector3(0, 0, 0)
 
         if (len(tang) != 0):
             _tang = opencascade_array1_of_vec(tang)
@@ -60,9 +60,11 @@ def _interpolate(pnts, tang=None, closed=False):
     algo.Perform()
     return Curve(algo.Curve())
 
+
 @lazy.lazy(cls=nocached_curve_generator)
 def interpolate(pnts, tang=None, closed=False):
     return _interpolate(pnts, tang=tang, closed=closed)
+
 
 def _bezier(poles, weights=None):
     _poles = opencascade_array1_of_pnt(poles)
@@ -76,9 +78,11 @@ def _bezier(poles, weights=None):
 
     return Curve(curve)
 
+
 @lazy.lazy(cls=nocached_curve_generator)
 def bezier(poles, weights=None):
     return _bezier(poles, weights=weights)
+
 
 def _bspline(
         poles,
@@ -105,6 +109,7 @@ def _bspline(
             degree, periodic)
 
     return Curve(crv)
+
 
 @lazy.lazy(cls=nocached_curve_generator)
 def bspline(*args, **kwargs):
