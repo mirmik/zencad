@@ -73,11 +73,10 @@ class Prim2dprobe(unittest.TestCase):
     def test_textshape_probe(self):
         text = "HelloWorld"
         directory = os.path.dirname(__file__)
-        zencad.register_font(os.path.join(
-            directory, "../zencad/examples/fonts/testfont.ttf"))
-        zencad.textshape(
-            text=text, fontname="Ubuntu Mono", size=20
-        )
+        mandarinc = os.path.join(
+            zencad.moduledir, "examples", "fonts/mandarinc.ttf")
+        zencad.register_font(mandarinc)
+        zencad.textshape(text=text, fontname="Ubuntu Mono", size=20)
 
     def test_normales(self):
         self.assertGreater(zencad.circle(r=10).normal().z, 0)
