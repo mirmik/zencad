@@ -11,13 +11,15 @@ from zencad.color import Color, default_color, default_wire_color
 from zencad.axis import Axis
 from zencad.geom.trans import Transformation
 from zencad.geom.exttrans import nulltrans
-import zencad.geom.transformable
+from zencad.geom.transformable import Transformable
+from zencad.interactive.displayable import Displayable
+from zencad.util import point3
 
-
-class InteractiveObject(zencad.geom.transformable.Transformable):
+class InteractiveObject(Transformable, Displayable):
     def __init__(self, iobj, color, border_color=None, wire_color=None):
         self.ais_object = iobj
         self._location = nulltrans()
+        self._hide = False
         self._context = None
         if border_color is None:
             border_color = color
@@ -27,7 +29,13 @@ class InteractiveObject(zencad.geom.transformable.Transformable):
             border_color=border_color,
             wire_color=wire_color)
 
-    def set_color(self, color, border_color=None, wire_color=None):
+    def bind_to_scene(self, scene):
+        scene.add_interactive_object(self)
+
+    def set_color(self, color, b=None, c=None, d=0, border_color=None, wire_color=None):
+        if b is not None and c is not None:
+            color = Color(color,b,c,d)
+
         if color is None:
             color = default_color()
         if wire_color is None:
@@ -35,19 +43,19 @@ class InteractiveObject(zencad.geom.transformable.Transformable):
         if border_color is None:
             border_color = Color(0, 0, 0)
 
-        self.color = color
-        self.border_color = border_color
-        self.wire_color = wire_color
+        self._color = color
+        self._border_color = border_color
+        self._wire_color = wire_color
 
-        self.ais_object.SetColor(self.color.to_Quantity_Color())
-        self.ais_object.SetTransparency(self.color.a)
+        self.ais_object.SetColor(self._color.to_Quantity_Color())
+        self.ais_object.SetTransparency(self._color.a)
 
         aspect = self.ais_object.Attributes().LineAspect()
-        aspect.SetColor(self.border_color.to_Quantity_Color())
+        aspect.SetColor(self._border_color.to_Quantity_Color())
         self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
 
         aspect = self.ais_object.Attributes().WireAspect()
-        aspect.SetColor(self.wire_color.to_Quantity_Color())
+        aspect.SetColor(self._wire_color.to_Quantity_Color())
         self.ais_object.Attributes().SetWireAspect(aspect)
 
     def relocate(self, trsf):
@@ -55,6 +63,10 @@ class InteractiveObject(zencad.geom.transformable.Transformable):
         if self._context:
             loc = TopLoc_Location(trsf._trsf)
             self._context.SetLocation(self.ais_object, loc)
+            #self._context.Update(self.ais_object, True)
+
+    def color(self):
+        return self._color
 
     def location(self):
         if self._context:
@@ -69,8 +81,11 @@ class InteractiveObject(zencad.geom.transformable.Transformable):
     def bind_context(self, context):
         self._context = context
         self.relocate(self._location)
+        self.hide(self._hide)
+        self._context.Update(self.ais_object, True)
 
     def hide(self, en):
+        self._hide = en
         if self._context:
             if en:
                 self._context.Erase(self.ais_object, False)
@@ -95,11 +110,18 @@ class AxisInteractiveObject(InteractiveObject):
 
 class PointInteractiveObject(InteractiveObject):
     def __init__(self, point, color):
+        if isinstance(point, point3):
+            pnt = point.Pnt()
+            point = Geom_CartesianPoint(pnt)
+
         self.point = point
         super().__init__(AIS_Point(point), color=color)
 
 
 def create_interactive_object(obj, color=None):
+    if isinstance(obj, InteractiveObject):
+        return obj
+
     if isinstance(color, (tuple, list)):
         color = Color(*color)
 
@@ -107,7 +129,7 @@ def create_interactive_object(obj, color=None):
         return ShapeInteractiveObject(obj, color)
     elif isinstance(obj, Axis):
         return AxisInteractiveObject(obj, color)
-    elif isinstance(obj, Geom_CartesianPoint):
+    elif isinstance(obj, (Geom_CartesianPoint, point3)):
         return PointInteractiveObject(obj, color)
 
     else:

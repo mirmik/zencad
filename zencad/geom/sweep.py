@@ -15,6 +15,8 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transformed
 from zencad.util import *
 from zencad.geom.operations import _restore_shapetype
 
+import zencad.geom.face as face
+
 
 def _extrude(shp, vec, center=False):
     if type(vec) in (float, int):
@@ -56,6 +58,70 @@ def _revol(shp, r=None, yaw=0.0):
 
 @lazy.lazy(cls=shape_generator)
 def revol(*args, **kwargs): return _revol(*args, **kwargs)
+
+
+def _revol2(profile, r, n=30, yaw=(0, deg(360)), roll=(0, 0), sects=False, nparts=None):
+    rets = []
+    arrs = []
+
+    is_full_circle = abs((yaw[1]-yaw[0]) - deg(360)) < 0.000001
+
+    if is_full_circle:
+        endpoint = False
+        if nparts == None:
+            nparts = 2
+
+    else:
+        endpoint = True
+        if nparts == None:
+            nparts = 1
+
+    yaw_dist = yaw[1] - yaw[0]
+    roll_dist = roll[1] - roll[0]
+    yaw_step = yaw_dist / nparts
+    roll_step = roll_dist / nparts
+
+    def part_of_interval(part, total, a, b):
+        total_p = total + 1
+
+        def koeff(idx, tot): return idx / tot
+        def point(a, b, k): return a*(1-k) + b*k
+
+        return(point(a, b, koeff(part, total)), point(a, b, koeff(part+1, total)))
+
+    for ipart in range(nparts):
+        part_n = n // nparts
+        part_yaw = part_of_interval(ipart, nparts, yaw[0], yaw[1])
+        part_roll = part_of_interval(ipart, nparts, roll[0], roll[1])
+
+        for w in profile.wires():
+            m = zencad.geom.exttrans.rotate_array2(
+                r=r,
+                n=part_n,
+                yaw=part_yaw,
+                roll=part_roll,
+                endpoint=endpoint,
+                array=True)(w)
+
+            arrs.append(m)
+
+        # Радиус окружности не имеет значения.
+            rets.append(
+                _pipe_shell(
+                    m,
+                    spine=face._circle(r=100, angle=part_yaw, wire=True),
+                    # force_approx_c1=True,
+                    frenet=True))
+
+        if sects:
+            return arrs
+
+    return zencad.geom.boolops._union(rets)
+
+
+@lazy.lazy(cls=shape_generator)
+def revol2(*args, **kwargs):
+    return _revol2(*args, **kwargs)
 
 
 def _loft(arr, smooth=False, shell=False, maxdegree=4):

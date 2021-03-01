@@ -13,6 +13,12 @@ def display(shp, color=None, deep=True, scene=None):
     if scene is None:
         scene = __default_scene
 
+    if (isinstance(shp, list)):
+        ret = []
+        for i in shp:
+            ret.append(display(i, color, deep, scene))
+        return ret
+
     return __default_scene.add(shp, color)
 
 
@@ -31,8 +37,9 @@ def hl(*args, **kwargs): return highlight(*args, **kwargs)
 ANIMATE_THREAD = None
 
 
-def widget_creator(communicator, scene, animate, animate_step=0.01):
+def widget_creator(communicator, scene, animate, preanimate, close_handle, animate_step=0.01):
     import zencad.animate
+    import zenframe.finisher
 
     global ANIMATE_THREAD
     from zencad.gui.display import DisplayWidget
@@ -43,11 +50,17 @@ def widget_creator(communicator, scene, animate, animate_step=0.01):
     # todo: почему не внутри?
     communicator.bind_handler(display.external_communication_command)
 
+    if close_handle:
+        zenframe.finisher.register_destructor(None, close_handle)
+
     if animate:
         animate_thread = zencad.animate.AnimateThread(
             widget=display,
             updater_function=animate,
             animate_step=animate_step)
+
+        if preanimate:
+            preanimate(display, animate_thread)
 
         animate_thread.start()
         ANIMATE_THREAD = animate_thread
@@ -55,7 +68,7 @@ def widget_creator(communicator, scene, animate, animate_step=0.01):
     return display
 
 
-def show(scene=None, animate=None, display_only=False):
+def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_step=0.01, display_only=False):
     from zenframe.unbound import (
         is_unbound_mode,
         unbound_worker_bottom_half,
@@ -71,7 +84,8 @@ def show(scene=None, animate=None, display_only=False):
     if is_unbound_mode():
         # Включён UNBOUND_MODE возвращаем управление модулю,
         # который создаст виджет и прилинкует его к главному окну
-        unbound_worker_bottom_half(scene=scene, animate=animate)
+        unbound_worker_bottom_half(scene=scene, animate=animate, preanimate=preanimate,
+                                   close_handle=close_handle, animate_step=animate_step)
 
     elif display_only:
         # Простой режим. Просто отображаем виджет без
@@ -84,4 +98,4 @@ def show(scene=None, animate=None, display_only=False):
     else:
         # Запускаем оболочку как подчинённый процесс
         unbound_frame_summon(widget_creator, "zencad",
-                             scene=scene, animate=animate)
+                             scene=scene, animate=animate, preanimate=preanimate, close_handle=close_handle, animate_step=animate_step)

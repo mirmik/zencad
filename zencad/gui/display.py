@@ -17,7 +17,7 @@ import OCC.Core.BRepPrimAPI
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
 from zenframe.util import print_to_stderr
-from zencad.interactive_object import AxisInteractiveObject
+from zencad.interactive.interactive_object import AxisInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
 import zencad.geom.trans
@@ -98,8 +98,8 @@ class DisplayWidget(BaseViewer):
             AxisInteractiveObject(Axis(0, 0, 1), color.blue)
         )
         for iobj in self.camera_center_axes:
+            self._display.GetContext().Display(iobj.ais_object, False)
             iobj.bind_context(self._display.GetContext())
-            self._display.GetContext().Display(iobj.ais_object, True)
 
         self.set_center_visible(False)
 
@@ -215,8 +215,8 @@ class DisplayWidget(BaseViewer):
         scene.display = self
 
         for iobj in scene.interactives:
+            self._display.GetContext().Display(iobj.ais_object, False)
             iobj.bind_context(self._display.GetContext())
-            self._display.GetContext().Display(iobj.ais_object, True)
 
     def autoscale(self, koeff=0.07):
         self._display.GetView().FitAll(koeff)

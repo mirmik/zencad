@@ -3,7 +3,7 @@ import os
 import numpy
 import sys
 
-from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
+from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir, gp_XYZ, gp_Quaternion
 from OCC.Core.TopoDS import TopoDS_Vertex
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
@@ -43,7 +43,10 @@ def angle_pair(arg):
 
 class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
-        if isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
+        if len(args) == 0:
+            input_array = (0, 0, 0)
+
+        elif isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
 
         elif hasattr(args[0], "__getitem__"):
@@ -112,6 +115,9 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
         t = trsf._trsf
         return point3(self.Pnt().Transformed(t))
 
+    def cross(self, oth):
+        return vector3(numpy.cross(self, oth))
+
     def __eq__(self, oth):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z
 
@@ -131,7 +137,11 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
         args = [evalcache.unlazy_if_need(a) for a in args]
-        if isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec)):
+
+        if len(args) == 0:
+            input_array = (0, 0, 0)
+
+        elif isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
         else:
             try:
@@ -173,9 +183,12 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def Vec(self):
         return gp_Vec(float(self[0]), float(self[1]), float(self[2]))
 
+    def Pnt(self):
+        return gp_Pnt(float(self[0]), float(self[1]), float(self[2]))
+
     def transform(self, trsf):
         t = trsf._trsf
-        return point3(self.Pnt().Transformed(t))
+        return vector3(self.Vec().Transformed(t))
 
     def cross(self, oth):
         return vector3(numpy.cross(self, oth))
@@ -183,6 +196,17 @@ class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def normalize(self):
         n = numpy.linalg.norm(self)
         return vector3(self / n)
+
+
+class quat:
+    def __init__(self, arg):
+        if isinstance(arg, gp_Quaternion):
+            self.x = arg.X()
+            self.y = arg.Y()
+            self.z = arg.Z()
+            self.w = arg.W()
+        else:
+            NotImplemented()
 
 
 def points(pnts):

@@ -3,7 +3,7 @@ import numpy
 import pickle
 import base64 as b64
 
-from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_Quaternion
+from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_XYZ, gp_Quaternion
 
 import zencad.util
 
@@ -11,6 +11,26 @@ import zencad.util
 class Transformation:
     def __init__(self, trsf):
         self._trsf = trsf
+
+    def inverse(self):
+        return Transformation(self._trsf.Inverted())
+
+    def translation(self):
+        xyz = self._trsf.TranslationPart()
+        return zencad.util.vector3(xyz)
+
+    def rotation(self):
+        xyz = gp_XYZ()
+        angle = self._trsf.GetRotation(xyz)[1]
+        return zencad.util.vector3(xyz), angle
+
+    def rotation_euler(self):
+        a = self.rotation()
+        return a[0] * a[1]
+
+    def rotation_quat(self):
+        q = self._trsf.GetRotation()
+        return zencad.util.quat(q)
 
     def __call__(self, obj):
         return obj.transform(self)

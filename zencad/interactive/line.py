@@ -1,5 +1,5 @@
-from zencad.interactive_object import InteractiveObject
-import zencad.color
+from zencad.interactive.interactive_object import InteractiveObject
+from zencad.color import Color as color
 from zencad.util import to_Pnt, to_Vec, point3
 
 from OCC.Core.Geom import Geom_CartesianPoint
@@ -36,7 +36,7 @@ class LineInteractiveObject(InteractiveObject):
         self.width = width
 
         lineAspect = Prs3d_LineAspect(
-            self.color.to_Quantity_Color(),
+            self._color.to_Quantity_Color(),
             aspect_type,
             self.width)
 
@@ -49,12 +49,12 @@ class LineInteractiveObject(InteractiveObject):
         self.aDrawer.SetLineArrowDraw(True)
 
 
-def line(p1, p2, clr=zencad.color(1, 1, 1), width=1) -> LineInteractiveObject:
-    iobj = LineInteractiveObject(p1, p2, color=clr, width=width)
+def line(p1, p2, color=color(1, 1, 1), width=1) -> LineInteractiveObject:
+    iobj = LineInteractiveObject(p1, p2, color=color, width=width)
     return iobj
 
 
-def arrow(p1, p2, clr=zencad.color(1, 1, 1), arrlen=1, width=1) -> LineInteractiveObject:
-    iobj = LineInteractiveObject(p1, p2, color=clr, width=width)
+def arrow(p1, p2, color=color(1, 1, 1), arrlen=1, width=1) -> LineInteractiveObject:
+    iobj = LineInteractiveObject(p1, p2, color=color, width=width)
     iobj.set_arrow_aspect(arrlen)
     return iobj

@@ -10,12 +10,14 @@ import numpy
 class HeadAssemble(zencad.assemble.unit):
     def __init__(self):
         super().__init__()
-        
-        self.add_shape(cylinder(r=8, h=5).up(3) + cylinder(r=4, h=3))
-        
-        eye0 = self.add_shape(cylinder(r=3, h=3).rotateX(deg(90)).left(5).back(8).up(3 + 2.5))
-        eye1 = self.add_shape(cylinder(r=3, h=3).rotateX(deg(90)).right(5).back(8).up(3 + 2.5))
-        
+
+        self.add(cylinder(r=8, h=5).up(3) + cylinder(r=4, h=3))
+
+        eye0 = self.add(cylinder(r=3, h=3).rotateX(
+            deg(90)).left(5).back(8).up(3 + 2.5))
+        eye1 = self.add(cylinder(r=3, h=3).rotateX(
+            deg(90)).right(5).back(8).up(3 + 2.5))
+
         eye0.set_color(0.3, 0, 0)
         eye1.set_color(0.3, 0, 0)
 
@@ -29,44 +31,41 @@ class Robot(zencad.assemble.unit):
         super().__init__()
 
         arm_model = (
-        	zencad.box(self.aw, self.aw, self.h / 2, center=True)
-        		.down(self.h / 4 - self.aw / 2)
-        		.rotateY(deg(90))
-        	)
+            zencad.box(self.aw, self.aw, self.h / 2, center=True)
+            .down(self.h / 4 - self.aw / 2)
+            .rotateY(deg(90))
+        )
         body_model = zencad.cylinder(r=self.r, h=self.h)
-        arm_translate = translate(self.r + self.aw / 2, 0, self.h / 6 * 4) * rotateY(-deg(90))
+        arm_translate = translate(
+            self.r + self.aw / 2, 0, self.h / 6 * 4) * rotateY(-deg(90))
 
-        self.add_shape(body_model)
+        self.add(body_model)
 
-        #self.right_arm_connector = zencad.controllers.RotateConnector(
-         #   parent=self, child=arm_model, location=arm_translate
-        #)
+        self.left_arm_connector = zencad.assemble.spherical_rotator(
+            parent=self, location=mirrorYZ() * arm_translate)
+        self.right_arm_connector = zencad.assemble.spherical_rotator(
+            parent=self, location=arm_translate)
 
-        self.left_arm_connector = zencad.assemble.spherical_rotator(parent=self, location=mirrorYZ() * arm_translate)
-        self.right_arm_connector = zencad.assemble.spherical_rotator(parent=self, location=arm_translate)
+        self.left_arm_connector.output.add(arm_model)
+        self.right_arm_connector.output.add(arm_model)
 
-        self.left_arm_connector.output.add_shape(arm_model)
-        self.right_arm_connector.output.add_shape(arm_model)
-
-        # print("HEAD_CONNECTOR!!!")
         head = HeadAssemble()
 
-        # print("HEAD_CONNECTOR!!!")
-        self.head_connector = zencad.assemble.rotator(parent=self, location=up(self.h), axis=(0,0,1))
+        self.head_connector = zencad.assemble.rotator(
+            parent=self, location=up(self.h), axis=(0, 0, 1))
         self.head_connector.link(head)
 
 
 base = box(100, 100, 1, center=True).down(0.5)
 robot0 = Robot()
 
-fontpath = os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf")
-text = textshape(text="Brutality", fontpath=fontpath, size=15).extrude(2)
+register_font(os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf"))
+text = textshape(text="Brutality", fontname="Mandarinc", size=15).extrude(2)
 tcenter = text.center()
 text = text.translate(-tcenter.x, -tcenter.y, -tcenter.z)
 text = text.back(20).up(5)
 
 disp(robot0, deep=True)
-#robot0.bind_scene(zencad.showapi.default_scene, deep=True)
 disp(base, color=(0.3, 0.3, 0.3))
 
 robot0.location_update(deep=True, view=True)
@@ -94,7 +93,8 @@ def domovie(t):
             * rotateZ(deg(90))
         )
     if 2 < t < 4:
-        robot0.relocate(translate(*corner1) * rotateZ(deg(90 + 90 * ((t - 2) / 2))))
+        robot0.relocate(translate(*corner1) *
+                        rotateZ(deg(90 + 90 * ((t - 2) / 2))))
 
     if 4 < t < 6:
         robot0.relocate(
@@ -134,33 +134,45 @@ def domovie(t):
         )
 
     if 20 < t < 22:
-        robot0.left_arm_connector.set_yaw(-deg(-90 + 90 * math.cos((t - 20) * math.pi / 4)))
-        robot0.right_arm_connector.set_yaw(-deg(-90 + 90 * math.cos((t - 20) * math.pi / 4)))
+        robot0.left_arm_connector.set_yaw(-deg(-90 +
+                                               90 * math.cos((t - 20) * math.pi / 4)))
+        robot0.right_arm_connector.set_yaw(-deg(-90 +
+                                                90 * math.cos((t - 20) * math.pi / 4)))
 
     if 22 < t < 24:
-        robot0.left_arm_connector.set_yaw(-deg(-90 + 90 * math.sin((t - 22) * math.pi)))
-        robot0.right_arm_connector.set_yaw(-deg(-90 - 90 * math.sin((t - 22) * math.pi)))
+        robot0.left_arm_connector.set_yaw(-deg(-90 +
+                                               90 * math.sin((t - 22) * math.pi)))
+        robot0.right_arm_connector.set_yaw(-deg(-90 -
+                                                90 * math.sin((t - 22) * math.pi)))
 
     if 24 < t < 26:
         robot0.head_connector.set_coord(deg(45 * math.sin((t - 24) * math.pi)))
-        robot0.left_arm_connector.set_yaw(-deg(-90 + 90 * math.sin((t - 24) * math.pi)))
-        robot0.right_arm_connector.set_yaw(-deg(-90 - 90 * math.sin((t - 24) * math.pi)))
+        robot0.left_arm_connector.set_yaw(-deg(-90 +
+                                               90 * math.sin((t - 24) * math.pi)))
+        robot0.right_arm_connector.set_yaw(-deg(-90 -
+                                                90 * math.sin((t - 24) * math.pi)))
 
     if 26 < t < 28:
         robot0.relocate(rotateZ(deg(360 * ((t - 26) / 2))))
         robot0.head_connector.set_coord(deg(45 * math.sin((t - 26) * math.pi)))
-        robot0.left_arm_connector.set_yaw(-deg(-90 + 90 * math.sin((t - 26) * math.pi)))
-        robot0.right_arm_connector.set_yaw(-deg(-90 - 90 * math.sin((t - 26) * math.pi)))
+        robot0.left_arm_connector.set_yaw(-deg(-90 +
+                                               90 * math.sin((t - 26) * math.pi)))
+        robot0.right_arm_connector.set_yaw(-deg(-90 -
+                                                90 * math.sin((t - 26) * math.pi)))
 
     if 28 < t < 30:
         robot0.relocate(rotateZ(deg(-360 * ((t - 28) / 2))))
         robot0.head_connector.set_coord(deg(45 * math.sin((t - 28) * math.pi)))
-        robot0.left_arm_connector.set_yaw(-deg(-90 + 90 * math.sin((t - 28) * math.pi)))
-        robot0.right_arm_connector.set_yaw(-deg(-90 - 90 * math.sin((t - 28) * math.pi)))
+        robot0.left_arm_connector.set_yaw(-deg(-90 +
+                                               90 * math.sin((t - 28) * math.pi)))
+        robot0.right_arm_connector.set_yaw(-deg(-90 -
+                                                90 * math.sin((t - 28) * math.pi)))
 
     if 30 < t < 32:
-        robot0.left_arm_connector.set_yaw(-deg(-90 * math.cos((t - 30) * math.pi / 4)))
-        robot0.right_arm_connector.set_yaw(-deg(-90 * math.cos((t - 30) * math.pi / 4)))
+        robot0.left_arm_connector.set_yaw(-deg(-90 *
+                                               math.cos((t - 30) * math.pi / 4)))
+        robot0.right_arm_connector.set_yaw(-deg(-90 *
+                                                math.cos((t - 30) * math.pi / 4)))
 
     if 32 < t < 34:
         robot0.left_arm_connector.set_pitch(deg(-90 * (t - 32) / 2))
@@ -175,6 +187,7 @@ def domovie(t):
     if t > 36 and texthided is True:
         text_controller.hide(False)
         texthided = False
+
 
 start_time = time.time()
 

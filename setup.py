@@ -35,7 +35,7 @@ setup(
             "convert/*",
             "libs/*",
             "gui/*",
-            "draw/*",
+            "interactive/*",
             "convert/*",
             "internal_models/*",
             "examples/*",

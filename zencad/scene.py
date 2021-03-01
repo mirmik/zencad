@@ -2,9 +2,9 @@
 
 import evalcache
 
-from zencad.interactive_object import InteractiveObject
-from zencad.interactive_object import ShapeInteractiveObject
-from zencad.interactive_object import create_interactive_object
+from zencad.interactive.interactive_object import InteractiveObject
+from zencad.interactive.interactive_object import ShapeInteractiveObject
+from zencad.interactive.interactive_object import create_interactive_object
 
 from zencad.axis import Axis
 from zencad.shape import Shape, LazyObjectShape
@@ -24,38 +24,20 @@ class Scene:
     библиотек."""
 
     def __init__(self):
-        self.objects = []
         self.interactives = []
         self.display = None
 
     def add(self, obj, color=None):
-        if isinstance(obj, LazyObjectShape):
-            obj = obj.unlazy()
+        from zencad.interactive.displayable import Displayable
 
-        if isinstance(obj, evalcache.LazyObject):
-            if isinstance(obj, Shape):
-                if False:
-                    print("Warning: Scene.add: wrong wrapped object")
-            obj = obj.unlazy()
+        obj = evalcache.unlazy_if_need(obj)
 
-        if isinstance(obj, (Shape, Axis)):
-            iobj = create_interactive_object(obj, color)
-            self.add_interactive_object(iobj)
-
-        elif isinstance(obj, InteractiveObject):
+        if isinstance(obj, Displayable):
+            obj.bind_to_scene(self)
             iobj = obj
-            self.add_interactive_object(iobj)
-
-        elif isinstance(obj, numpy.ndarray):
-            iobj = create_interactive_object(to_GeomPoint(obj))
-            self.add_interactive_object(iobj)
-
-        elif isinstance(obj, list):
-            iobj = [self.add(item, color) for item in obj]
-
         else:
-            raise Exception(
-                f"Unresolved object type, __class__:{obj.__class__}")
+            iobj = create_interactive_object(obj, color)
+            self.add(iobj)
 
         return iobj
 
