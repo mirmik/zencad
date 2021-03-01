@@ -146,12 +146,16 @@ class Shape(zencad.geom.transformable.Transformable):
     def edges(self): return self.reflection_elements(topods.Edge, TopAbs_EDGE)
     def wires(self): return self.reflection_elements(topods.Wire, TopAbs_WIRE)
     def faces(self): return self.reflection_elements(topods.Face, TopAbs_FACE)
+
     def solids(self): return self.reflection_elements(
         topods.Solid, TopAbs_SOLID)
+
     def compounds(self): return self.reflection_elements(
         topods.Compound, TopAbs_COMPOUND)
+
     def shells(self): return self.reflection_elements(
         topods.Shell, TopAbs_SHELL)
+
     def native_vertices(self): return self.reflection_elements(
         topods.Vertex, TopAbs_VERTEX)
 

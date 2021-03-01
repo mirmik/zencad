@@ -15,6 +15,7 @@ from zencad.geom.transformable import Transformable
 from zencad.interactive.displayable import Displayable
 from zencad.util import point3
 
+
 class InteractiveObject(Transformable, Displayable):
     def __init__(self, iobj, color, border_color=None, wire_color=None):
         self.ais_object = iobj
@@ -34,7 +35,7 @@ class InteractiveObject(Transformable, Displayable):
 
     def set_color(self, color, b=None, c=None, d=0, border_color=None, wire_color=None):
         if b is not None and c is not None:
-            color = Color(color,b,c,d)
+            color = Color(color, b, c, d)
 
         if color is None:
             color = default_color()
