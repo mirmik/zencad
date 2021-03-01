@@ -14,7 +14,7 @@ directory = os.path.dirname(os.path.realpath(__file__))
 setup(
     name="zencad",
     packages=["zencad"],
-    version="0.34.0",
+    version="1.0.0.dev1",
     license="MIT",
     description="CAD system for righteous zen programmers ",
     author="mirmik",
