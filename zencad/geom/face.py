@@ -10,7 +10,7 @@ from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
 import OCC.Core.Addons
 
 
-from zencad.lazifier import *
+from zencad.lazifier import lazy
 from zencad.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
 import zencad.util
