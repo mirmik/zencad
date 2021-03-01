@@ -10,11 +10,12 @@ import traceback
 import runpy
 import signal
 
-import zenframe.starter as frame
+import zenframe.argparse
 
 
 def console_options_handle():
-    parser = frame.ArgumentParser()
+
+    parser = zenframe.argparse.ArgumentParser()
 
     # Смотри аргументы в zenframe.ArgumentParser
     parser.add_argument("--install-libs", action="store_true",
@@ -81,6 +82,8 @@ def main():
         return
 
     from zencad.showapi import widget_creator
+    import zenframe.starter as frame
+
     frame.invoke(
         pargs,
         frame_creator=frame_creator,

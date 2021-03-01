@@ -10,16 +10,6 @@ import os
 
 directory = os.path.dirname(os.path.realpath(__file__))
 
-requires = [
-        "evalcache>=1.13.0",
-        "pyservoce>=1.23.2",
-        "numpy",
-        "pillow",
-        "pyopengl",
-        "PyQt5!=5.14.1",
-        "psutil",
-        "zenframe"
-    ] 
 
 setup(
     name="zencad",
@@ -54,7 +44,18 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=requires,
+    install_requires=[
+        "psutil",
+        "numpy",
+        "pillow",
+        "evalcache>=1.14.0",
+    ],
+    extras_require={
+        'gui': [
+            'PyQt5',
+            'zenframe',
+        ]
+    },
     entry_points={"console_scripts": [
         "zencad=zencad.__main__:main"
     ]},

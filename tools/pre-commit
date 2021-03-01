@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+def system(*args, **kwargs):
+    print("PRE-HOOK: invoke:", args, kwargs)
+    kwargs.setdefault('stdout', subprocess.PIPE)
+    proc = subprocess.Popen(args, **kwargs)
+    out, err = proc.communicate()
+    return out
+
+
+def main():
+    modified = re.compile('^[AM]+\s+(?P<name>.*\.py)', re.MULTILINE)
+    files = system('git', 'status', '--porcelain')
+    print("PRE-HOOK: autopep8 for files:", files)
+    files = modified.findall(files.decode("utf-8"))
+
+    for f in files:
+        output = system('autopep8', f,  '--in-place')
+    
+        if output:
+            print(output)
+            sys.exit(-1)
+
+        system("git", "add", f)
+
+
+if __name__ == '__main__':
+    main()

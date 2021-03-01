@@ -5,10 +5,6 @@ import sys
 import os
 import subprocess
 
-import PyQt5.QtWidgets
-import PyQt5.QtCore
-import PyQt5.QtGui
-
 fast = False
 if "--fast" in sys.argv:
     fast = True
