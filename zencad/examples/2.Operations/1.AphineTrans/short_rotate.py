@@ -58,7 +58,7 @@ for t in tgt_cyls:
 
 # Draw arrows
 for i in range(len(src)):
-    arr = arrow(src[i], tgt[i], arrlen=arrl, width=arrw, clr=clr[i])
+    arr = arrow(src[i], tgt[i], arrlen=arrl, width=arrw, color=clr[i])
     disp(arr)
 
 # Draw white cube.
