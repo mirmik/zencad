@@ -79,6 +79,8 @@ try:
 
     from zencad.version import __version__
 
+    from zencad.convert.api import *
+
 except ImportError as ex:
     if "libTK" in str(ex):
         print("OCCT is not installed")

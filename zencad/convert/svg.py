@@ -6,15 +6,14 @@ import math
 import pyservoce
 import re
 import evalcache
-SVGWRITE_IS_NOT_INSTALLED = False
 
-try:
-    import svgwrite
-except:
-    SVGWRITE_IS_NOT_INSTALLED = True
+
+def sort_wires_by_face_area(cycles):
+    return sorted(cycles, key=lambda c: c.fill().mass(), reverse=True)
 
 
 def color_convert(zclr):
+    import svgwrite
     zclr = pyservoce.color(zclr)
     r, g, b, a = zclr.r, zclr.g, zclr.b, zclr.a
     r, g, b, a = (x * 100 for x in (r, g, b, a))
@@ -37,12 +36,7 @@ def box_size(shape, mapping):
 
 class SvgWriter:
     def __init__(self, fpath=None, size=None, off=None, **extras):
-        if SVGWRITE_IS_NOT_INSTALLED:
-            print("please install 'svgwrite' module for work with svg")
-            print()
-            print("python3 -m pip install svgwrite")
-            print()
-            exit(0)
+        import svgwrite
 
         if fpath is None:
             self.dwg = svgwrite.Drawing(size=size, **extras)
@@ -133,13 +127,13 @@ class SvgWriter:
 
     def push_face(self, face):
         face = zencad.fix_face(face)
-        wires = zencad.sort_wires_by_face_area(face.wires())
+        wires = sort_wires_by_face_area(face.wires())
         for w in wires:
             self.push_wire(w)
 
     def push_shape(self, shp, color):
         shp = zencad.unify(shp)
-        shp = zencad.util2.restore_shapetype(shp)
+        shp = zencad.restore_shapetype(shp)
         shp = shp.mirrorX()
 
         if shp.shapetype() == "face":

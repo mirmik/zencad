@@ -164,13 +164,13 @@ def mirror_axis(ax, ay, az):
     return Transformation(trsf)
 
 
-def mirrorX(x): return mirror_axis(x)
+def mirrorX(): return mirror_axis(1, 0, 0)
 
 
-def mirrorY(y): return mirror_axis(y)
+def mirrorY(): return mirror_axis(0, 1, 0)
 
 
-def mirrorZ(z): return mirror_axis(z)
+def mirrorZ(): return mirror_axis(0, 0, 1)
 
 
 def mirrorO(x=0, y=0, z=0):

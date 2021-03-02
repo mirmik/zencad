@@ -7,6 +7,7 @@ from OCC.Core.gp import gp_Circ, gp, gp_Pnt
 from OCC.Core.GC import GC_MakeCircle
 from OCC.Core.GeomAbs import GeomAbs_C2
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
+from OCC.Core.ShapeFix import ShapeFix_Face
 import OCC.Core.Addons
 
 
@@ -267,3 +268,15 @@ def _widewire(spine, r, circled_joints=True, circled_ends=True):
 @lazy.lazy(cls=shape_generator)
 def widewire(spine, r, circled_joints=True, circled_ends=True):
     return _widewire(spine, r, circled_joints, circled_ends)
+
+
+def _fix_face(shp):
+    fixer = ShapeFix_Face(shp.Face())
+    fixer.Perform()
+    fixer.FixOrientation()
+    return Shape(fixer.Face())
+
+
+@lazy.lazy(cls=shape_generator)
+def fix_face(shp):
+    return _fix_face(shp)
