@@ -253,7 +253,6 @@ class DisplayWidget(BaseViewer):
         }
 
     def location_changed_handle(self):
-        # self.camera_center_mark.relocate(pyservoce.translate(*self.view.center()))
         for c in self.camera_center_axes:
             c.relocate(zencad.geom.trans.translate(self.center()))
 
@@ -553,7 +552,7 @@ class DisplayWidget(BaseViewer):
         pass
         #scale = self.view.scale()
         #vec = self.view.center() - self.view.eye()
-        #vec = pyservoce.vector3(0,0,1).cross(vec).normalize() * self.scene_max0
+        #vec = vector3(0,0,1).cross(vec).normalize() * self.scene_max0
         #self.view.set_center(self.view.center() + vec * koeff)
         #self.view.set_eye(self.view.eye() + vec * koeff)
         # self.location_changed_handle()
@@ -564,7 +563,7 @@ class DisplayWidget(BaseViewer):
         pass
         #scale = self.view.scale()
         #vec = self.view.center() - self.view.eye()
-        #vec = pyservoce.vector3(0,0,-1).cross(vec).normalize() * self.scene_max0
+        #vec = vector3(0,0,-1).cross(vec).normalize() * self.scene_max0
         #self.view.set_center(self.view.center() + vec * koeff)
         #self.view.set_eye(self.view.eye() + vec * koeff)
         # self.location_changed_handle()

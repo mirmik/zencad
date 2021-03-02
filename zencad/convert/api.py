@@ -13,7 +13,6 @@
 import zencad.convert.svg
 import os
 import zencad
-import pyservoce
 import evalcache
 from zencad.lazifier import lazy
 

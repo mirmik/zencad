@@ -23,7 +23,7 @@ class multitransform:
 
     def __call__(self, shp):
         # if isinstance(shp, (
-        #		pyservoce.interactive_object,
+        #		interactive_object,
         #			zencad.assemble.unit)):
         #	rets = []
         #	clones = [shp.copy() for i in range(len(self.transes)-1)]

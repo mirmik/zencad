@@ -1,6 +1,5 @@
 import zencad.assemble
 import zencad.libs.screw
-import pyservoce
 import numpy
 import time
 
@@ -86,7 +85,7 @@ class kinematic_chain:
         """Вернуть массив тензоров производных положения выходного
         звена по вектору координат в виде [(w_i, v_i) ...]"""
 
-        trsf = pyservoce.nulltrans()
+        trsf = _nulltrans()
         senses = []
 
         outtrans = self.chain[0].global_location
@@ -99,7 +98,7 @@ class kinematic_chain:
 
         if False:
             for link in self.simplified_chain:
-                if isinstance(link, pyservoce.libservoce.transformation):
+                if isinstance(link, Transformation):
                     trsf = link * trsf
 
                 else:

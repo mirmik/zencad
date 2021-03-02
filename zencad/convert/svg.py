@@ -3,7 +3,6 @@
 import zencad.util
 import xml.etree.ElementTree as ET
 import math
-import pyservoce
 import re
 import evalcache
 
@@ -14,7 +13,7 @@ def sort_wires_by_face_area(cycles):
 
 def color_convert(zclr):
     import svgwrite
-    zclr = pyservoce.color(zclr)
+    zclr = Color(zclr)
     r, g, b, a = zclr.r, zclr.g, zclr.b, zclr.a
     r, g, b, a = (x * 100 for x in (r, g, b, a))
     return svgwrite.rgb(r, g, b, '%')
@@ -278,17 +277,17 @@ class SvgReader:
 
                             if abs(abs(x) - 1) < 1e-5 and abs(abs(y) - 1) < 1e-5:
                                 if abs(x + 1) < 1e-5 and abs(y + 1) < 1e-5:
-                                    trans = trans * pyservoce.mirrorO()
+                                    trans = trans * mirrorO()
 
                                 elif abs(x + 1) < 1e-5:
-                                    trans = trans * pyservoce.mirrorY()
+                                    trans = trans * mirrorY()
 
                                 elif abs(y + 1) < 1e-5:
-                                    trans = trans * pyservoce.mirrorX()
+                                    trans = trans * mirrorX()
                                 else:
                                     raise Exception("wrong mirror")
                             else:
-                                trans = trans * pyservoce.scaleXYZ(x, y, 1)
+                                trans = trans * scaleXYZ(x, y, 1)
                         else:
                             raise Exception("unresolved trans", sf)
 
