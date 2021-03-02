@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
 import zencad
-import trimesh
+
+try:
+    import trimesh
+except:
+    raise Exception(
+        "You should install `trimesh` module for start this script")
 
 h = 10
 r = 30
@@ -15,7 +20,7 @@ bbox = bulb.bbox()
 bulb = bulb.up(-bbox.zrange()[0] + h)
 base = zencad.cylinder(r, h)
 
-m = base + bulb 
+m = base + bulb
 
 zencad.disp(m)
 zencad.show()

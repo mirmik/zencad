@@ -16,11 +16,14 @@ from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepGProp import brepgprop
 from OCC.Core.GCPnts import GCPnts_UniformAbscissa
 
+from zencad.bbox import BoundaryBox
 from zencad.geom.boolops_base import *
 from zencad.lazifier import *
 import zencad.geom.trans
+from OCC.Core.Bnd import Bnd_Box
 import zencad.geom.transformable
 from zencad.util import to_numpy, point3, vector3
+from OCC.Core.BRepBndLib import brepbndlib
 
 import numpy
 
@@ -277,6 +280,12 @@ class Shape(zencad.geom.transformable.Transformable):
         params = self.uniform(npoints, strt, fini)
         return [self.d0(p) in params]
 
+    def bbox(self):
+        box = Bnd_Box()
+        brepbndlib.Add(self.Shape(), box)
+        xl, yl, zl, xh, yh, zh = box.Get()
+        return BoundaryBox(xl, xh, yl, yh, zl, zh)
+
 # Support lazy methods
 
 
@@ -352,7 +361,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "is_face", "is_shell", "is_wire_or_edge", "is_solid", "is_volumed",
         "is_closed",
         "edges", "wires", "faces", "vertices", "native_vertices",
-        "shells", "solids", "compounds",
+        "shells", "solids", "compounds", "bbox",
         "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points"
     ]
 
