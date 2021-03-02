@@ -1,4 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
 
 block_cipher = None
 
@@ -10,8 +12,11 @@ datas.append(("zencad/industrial-robot.svg", "zencad"))
 datas.append(("zencad/techpriest.jpg", "zencad"))
 datas.append(("zencad/zencad_logo.png", "zencad"))
 
+path = os.getcwd()
+zenframe_path = os.path.join(os.getcwd(), "..", "zenframe")
+
 a = Analysis(['zencad/__main__.py'],
-             pathex=['/home/mirmik/project/zencad', '/home/mirmik/project/zenframe'],
+             pathex=[path, zenframe_path],
              binaries=[],
              datas=datas,
              hiddenimports=["zenframe"],
@@ -28,7 +33,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='ZenCad',
+          name='ZenCad.exe' if sys.platform == "win32" else 'ZenCad',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
