@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-#import matplotlib.pyplot as plt
+
 import sys
 from skimage import measure, io
 from itertools import chain
@@ -17,8 +17,8 @@ mechanicus, base, ignore = mech.build()
 
 cube = box(1000, center=True)
 
-mech = [display(mechanicus, zencad.Color(1, 1, 1)) for i in range(0, 6)]
-base = [display(base, zencad.Color(0.2, 0.2, 0.2)) for i in range(0, 6)]
+mech = [disp(mechanicus, color=(1, 1, 1)) for i in range(0, 6)]
+base = [disp(base, color=(0.2, 0.2, 0.2)) for i in range(0, 6)]
 
 
 def animate(wdg):
@@ -38,5 +38,5 @@ def animate(wdg):
     base[5].relocate(rotateY(deg(90)) * rotateX(deg(180)) * trans)
 
 
-display(cube, color(0.3, 0.2, 0.2))
+display(cube, color=(0.3, 0.2, 0.2))
 show(animate=animate)

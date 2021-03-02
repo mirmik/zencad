@@ -43,7 +43,7 @@ def build():
 
     gons = zencad.union(gons)
 
-    pnts = chain(*[n.sfvertex().unlazy() for n in ncls])
+    pnts = chain(*[n.endpoints().unlazy() for n in ncls])
     pnts = list(pnts)
 
     rpnts = []
@@ -93,11 +93,13 @@ if __name__ == "__main__":
     for z in zcountours:
         if z.is_closed():
             zencad.display(
-                z.left(760 / 2).back(768 / 2).forw(760 + 200), zencad.color(0, 1, 0)
+                z.left(760 / 2).back(768 / 2).forw(760 +
+                                                   200), zencad.color(0, 1, 0)
             )
         else:
             zencad.display(
-                z.left(760 / 2).back(768 / 2).forw(760 + 200), zencad.color(1, 0, 0)
+                z.left(760 / 2).back(768 / 2).forw(760 +
+                                                   200), zencad.color(1, 0, 0)
             )
 
     zencad.display(mechanicus, zencad.color(1, 1, 1))

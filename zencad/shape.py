@@ -116,6 +116,13 @@ class Shape(zencad.geom.transformable.Transformable):
     def is_vertex(self): return self.Shape().ShapeType() == TopAbs_VERTEX
     def is_wire_or_edge(self): return self.is_edge() or self.is_wire()
 
+    def is_closed(self):
+        if not self.is_wire_or_edge():
+            raise Exception("Only for wire or edge")
+
+        strt, fini = self.endpoints()
+        return numpy.linalg.norm(fini-strt) < 1e-4
+
     def shapetype(self):
         if self.Shape().ShapeType() == TopAbs_VERTEX:
             return "vertex"
@@ -219,12 +226,12 @@ class Shape(zencad.geom.transformable.Transformable):
         if self.is_wire():
             a, b = TopoDS_Vertex(), TopoDS_Vertex()
             topexp.Vertices(self.Wire(), a, b)
-            return to_numpy(a), to_numpy(b)
+            return point3(a), point3(b)
 
         elif self.is_edge():
             a = topexp.FirstVertex(self.Edge())
             b = topexp.LastVertex(self.Edge())
-            return to_numpy(a), to_numpy(b)
+            return point3(a), point3(b)
 
     def Curve(self):
         aCurve = BRep_Tool.Curve(self.Edge())
@@ -343,6 +350,7 @@ class LazyObjectShape(evalcache.LazyObject):
     standart_methods = [
         "is_wire", "is_compsolid", "is_edge", "is_compound", "is_vertex",
         "is_face", "is_shell", "is_wire_or_edge", "is_solid", "is_volumed",
+        "is_closed",
         "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds",
         "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points"
@@ -408,10 +416,10 @@ D = A.difference(B).difference({
 })
 
 if len(D) != 0:
-    print_to_stderr("Warning: LazyShapeObject has not wrappers for methods:")
-    print_to_stderr(D)
+    print("Warning: LazyShapeObject has not wrappers for methods:")
+    print(D)
 
 if len(C) != 0:
-    print_to_stderr(
+    print(
         "Warning: LazyShapeObject has wrappers for unexisted methods:")
-    print_to_stderr(C)
+    print(C)

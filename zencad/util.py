@@ -43,16 +43,23 @@ def angle_pair(arg):
 
 class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
+        args = [evalcache.unlazy_if_need(a) for a in args]
+
         if len(args) == 0:
             input_array = (0, 0, 0)
 
+        elif isinstance(args[0], TopoDS_Vertex):
+            pnt = BRep_Tool.Pnt(args[0])
+            input_array = (pnt.X(), pnt.Y(), pnt.Z())
+
         elif isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
             input_array = (args[0].X(), args[0].Y(), args[0].Z())
-
-        elif hasattr(args[0], "__getitem__"):
-            input_array = args[0]
         else:
-            input_array = args
+            try:
+                _ = args[0][0]
+                input_array = args[0]
+            except:
+                input_array = args
 
         if len(input_array) == 1:
             input_array = ((input_array[0], 0, 0))
@@ -117,6 +124,12 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
 
     def cross(self, oth):
         return vector3(numpy.cross(self, oth))
+
+    def __add__(self, oth):
+        return point3(self[0] + oth[0], self[1] + oth[1], self[2] + oth[2])
+
+    def __sub__(self, oth):
+        return point3(self[0] - oth[0], self[1] - oth[1], self[2] - oth[2])
 
     def __eq__(self, oth):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z

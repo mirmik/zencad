@@ -6,6 +6,7 @@ import base64 as b64
 from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_XYZ, gp_Quaternion
 
 import zencad.util
+from zencad.util import point3, vector3
 
 
 class Transformation:
@@ -180,5 +181,5 @@ def mirrorO(x=0, y=0, z=0):
 
 def scale(s, center=(0, 0, 0)):
     trsf = gp_Trsf()
-    trsf.SetScale(to_Pnt(center), s)
+    trsf.SetScale(point3(center).Pnt(), s)
     return Transformation(trsf)
