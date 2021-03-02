@@ -66,14 +66,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         )
         msgBox.exec()
 
-    def create_new_do(self, path):
-        f = open(path, "w")
-        f.write(
-            "#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nm=box(10)\ndisp(m)\n\nshow()\n"
-        )
-        f.close()
-        self.open(path)
-
     def exportStlAction(self):
         self._current_client.send({"cmd": "exportstl"})
 

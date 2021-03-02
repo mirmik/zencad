@@ -11,6 +11,18 @@ import runpy
 import signal
 
 import zenframe.argparse
+import zenframe.configuration
+
+zenframe.configuration.Configuration.TEMPLATE = """
+#!/usr/bin/env python3
+#coding: utf-8
+
+from zencad import *
+
+m=box(10)
+disp(m)
+
+show()"""
 
 
 def console_options_handle():
@@ -39,7 +51,7 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zencad.gui.mainwindow import MainWindow
     from zencad.gui.startwdg import StartDialog
     from zencad.settings import Settings
-    from zencad.gui.util import create_temporary_file
+    from zenframe.util import create_temporary_file
 
     if openpath is None and not unbound:
         if Settings.get(["gui", "start_widget"]):
@@ -52,7 +64,8 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
             openpath = strt_dialog.openpath
 
         else:
-            openpath = create_temporary_file(zencad_template=True)
+            openpath = create_temporary_file(
+                zenframe.configuration.Configuration.TEMPLATE)
 
     mainwindow = MainWindow(
         initial_communicator=initial_communicator,
