@@ -6,7 +6,7 @@ from OCC.Core.TopoDS import TopoDS_Vertex
 from OCC.Core.Geom import Geom_CartesianPoint
 from OCC.Core.TopLoc import TopLoc_Location
 
-from zencad.shape import Shape
+from zencad.geom.shape import Shape
 from zencad.color import Color, default_color, default_wire_color
 from zencad.axis import Axis
 from zencad.geom.trans import Transformation

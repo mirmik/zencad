@@ -65,6 +65,7 @@ class Shape(zencad.geom.transformable.Transformable):
 
     def extrude(self, vec):
         from zencad.geom.sweep import extrude
+        print(self, vec)
         return extrude(self, vec)
 
     def fillet(self, r, refs=None):
@@ -189,8 +190,13 @@ class Shape(zencad.geom.transformable.Transformable):
         return pnts_filtered
 
     def fill(self):
+        print("HERE1")
+        import zencad.geom.face
         assert(self.is_wire_or_edge())
-        return Shape(BRepBuilderAPI_MakeFace(self.Wire_orEdgeToWire()).Face())
+        print("HERE0")
+        obj = zencad.geom.face.fill(self)
+        print("HERE", repr(obj))
+        return obj
 
     # TODO: Вынести в surface_algo
     def AdaptorSurface(self):
@@ -350,7 +356,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "mirror", "mirrorX", "mirrorY", "mirrorZ",
         "mirrorYZ", "mirrorXY", "mirrorXZ",
         "scale", "transform",
-        "extrude", "shapetype"
+        "shapetype"
 
         #"props1", "props2", "props3"
     ]
@@ -383,7 +389,7 @@ for item in LazyObjectShape.cached_methods:
 
 for item in LazyObjectShape.transparent_methods:
     setattr(LazyObjectShape, item, LazyObjectShape._generic(
-            item, False, cls=evalcache.LazyObject, prevent=["self"]))
+            item, False, cls=LazyObjectShape, prevent=["self"]))
 
 
 class nocached_shape_generator(evalcache.LazyObject):

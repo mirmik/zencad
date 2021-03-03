@@ -1,4 +1,4 @@
-from zencad.shape import Shape, nocached_shape_generator, shape_generator
+from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
 

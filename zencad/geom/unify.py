@@ -1,4 +1,4 @@
-from zencad.shape import Shape, nocached_shape_generator, shape_generator
+from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.lazifier import *
 from zencad.geom.boolops import _union
 

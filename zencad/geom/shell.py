@@ -5,7 +5,7 @@ from OCC.Core.TopoDS import TopoDS_Solid
 import zencad.util
 from zencad.geom.face import polygon
 from zencad.lazifier import *
-from zencad.shape import Shape, nocached_shape_generator, shape_generator
+from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 
 
 @lazy.lazy(cls=nocached_shape_generator)

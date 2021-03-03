@@ -1,4 +1,4 @@
-from zencad.shape import Shape, shape_generator
+from zencad.geom.shape import Shape, shape_generator
 from zencad.lazifier import *
 from zencad.util import vector3
 from zencad.geom.trans import translate

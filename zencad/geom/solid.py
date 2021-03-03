@@ -1,4 +1,4 @@
-from zencad.shape import Shape, nocached_shape_generator
+from zencad.geom.shape import Shape, nocached_shape_generator
 from zencad.util import as_indexed, angle_pair
 import OCC.Core.BRepPrimAPI
 from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln

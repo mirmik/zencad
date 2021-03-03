@@ -5,7 +5,7 @@ from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from zencad.geom.reflect_helpers import shape_types
 from zencad.util import *
 
-from zencad.shape import Shape, shape_generator
+from zencad.geom.shape import Shape, shape_generator
 from zencad.lazifier import *
 
 

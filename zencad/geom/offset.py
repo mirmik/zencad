@@ -2,7 +2,7 @@ from OCC.Core.TopTools import TopTools_ListOfShape
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakeThickSolid, BRepOffsetAPI_MakeOffsetShape
 
 from zencad.geom.near import _near_face
-from zencad.shape import Shape, shape_generator
+from zencad.geom.shape import Shape, shape_generator
 from zencad.lazifier import *
 
 

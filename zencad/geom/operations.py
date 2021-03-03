@@ -1,5 +1,5 @@
 from zencad.lazifier import *
-from zencad.shape import Shape, nocached_shape_generator, shape_generator
+from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeChamfer, BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeFillet2d
