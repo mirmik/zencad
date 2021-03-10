@@ -10,6 +10,6 @@ class BoundaryBox:
         self.zmin = zl
         self.zmax = zh
 
-    def xrange(self): return self.x
-    def yrange(self): return self.y
-    def zrange(self): return self.z
+    def xrange(self): return (self.xmin, self.xmax)
+    def yrange(self): return (self.ymin, self.ymax)
+    def zrange(self): return (self.zmin, self.zmax)

@@ -85,24 +85,26 @@ def _wires_to_edges(lst):
 
 
 def _sew_wire(lst, sort=True):
+    from zencad.geom.wire import _make_wire
     lst = evalcache.unlazy_if_need(lst)
     lst = _wires_to_edges(lst)
 
     if sort:
         lst = _sort_wires(lst)
 
-    return __make_wire(lst)
+    return _make_wire(lst)
 
 
 def _sew_shell(lst):
-    return __make_shell(lst)
+    from zencad.geom.shell import _make_shell
+    return _make_shell(lst)
 
 
 def _sew(lst, sort=True):
     if lst[0].is_face() or lst[0].is_shell():
-        return Shape(_sew_shell(lst))
+        return _sew_shell(lst)
     else:
-        return Shape(_sew_wire(lst, sort))
+        return _sew_wire(lst, sort)
 
 
 @lazy.lazy(cls=shape_generator)

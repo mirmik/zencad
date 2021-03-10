@@ -1,5 +1,5 @@
 from OCC.Core.gp import gp
-from OCC.Core.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_BezierCurve, Geom_BSplineCurve
+from OCC.Core.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_Curve, Geom_BezierCurve, Geom_BSplineCurve
 from OCC.Core.GeomAPI import GeomAPI_Interpolate
 
 from zencad.opencascade_types import *
@@ -9,13 +9,19 @@ from OCC.Core.TColStd import TColStd_HArray1OfBoolean
 import numpy
 from zencad.util import *
 
+from zencad.geom.transformable import Transformable
+from zencad.geom.curve_algo import CurveAlgo
 
-class Curve:
+
+class Curve(CurveAlgo, Transformable):
     def __init__(self, crv):
         self._crv = crv
 
     def Curve(self):
         return self._crv
+
+    def HCurveAdaptor(self):
+        return GeomAdaptor_HCurve(self.Curve())
 
     # TODO: Add unlazy wrapper
     def edge(self, interval=None):
@@ -32,6 +38,12 @@ class Curve:
         pnt = gp_Pnt()  # , vec = gp_Pnt(), gp_Vec()
         self._crv.D0(arg, pnt)
         return point3(pnt)
+
+    def transform(self, trsf):
+        return Curve(Geom_Curve.DownCast(self._crv.Transformed(trsf._trsf)))
+
+    def AdaptorCurve(self):
+        return self._crv
 
 
 class nocached_curve_generator(evalcache.LazyObject):

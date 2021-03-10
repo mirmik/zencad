@@ -134,10 +134,10 @@ class wire_builder:
             if abs(diff) > math.pi and not large:
                 continue
             if not sweep:
-                trimmed = full_edge.trim(
+                trimmed = full_edge.trimmed_edge(
                     start_point_parameter, finish_point_parameter)
             else:
-                trimmed = full_edge.trim(
+                trimmed = full_edge.trimmed_edge(
                     finish_point_parameter, start_point_parameter)
 
             self.edges.append(trimmed)
@@ -190,10 +190,10 @@ class wire_builder:
                 continue
 
             if not sweep:
-                trimmed = full_edge.trim(
+                trimmed = full_edge.trimmed_edge(
                     start_point_parameter, finish_point_parameter)
             else:
-                trimmed = full_edge.trim(
+                trimmed = full_edge.trimmed_edge(
                     finish_point_parameter, start_point_parameter)
 
             self.edges.append(trimmed)

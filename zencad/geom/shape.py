@@ -14,6 +14,7 @@ from OCC.Core.BRepLProp import BRepLProp_SLProps
 from OCC.Core.GProp import GProp_GProps
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepGProp import brepgprop
+from OCC.Core.BRepAdaptor import BRepAdaptor_HCurve
 from OCC.Core.GCPnts import GCPnts_UniformAbscissa
 
 from zencad.bbox import BoundaryBox
@@ -65,7 +66,7 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return Shape(occ_pair_intersect(self._shp, oth._shp))
 
     def extrude(self, vec):
-        from zencad.geom.sweep import extrude
+        from zencad.geom.sweep import _extrude
         print(self, vec)
         return _extrude(self, vec)
 
@@ -210,6 +211,11 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         assert(self.is_edge())
         return BRepAdaptor_Curve(self.Edge())
 
+    def HCurveAdaptor(self):
+        assert(self.is_edge())
+        path_adapt = BRepAdaptor_Curve(self.Edge())
+        return BRepAdaptor_HCurve(path_adapt)
+
     def Curve(self):
         aCurve = BRep_Tool.Curve(self.Edge())
         return aCurve[0]
@@ -304,7 +310,7 @@ class LazyObjectShape(evalcache.LazyObject):
     nolazy_methods = [
         "Shape", "Vertex", "Wire", "Edge", "Solid", "Face",
         "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
-        "reflection_elements", "AdaptorSurface", "AdaptorCurve",
+        "reflection_elements", "AdaptorSurface", "AdaptorCurve", "HCurveAdaptor",
         "_SLProps", "VolumeProperties", "Curve", "SurfaceProperties"
     ]
 
@@ -314,7 +320,7 @@ class LazyObjectShape(evalcache.LazyObject):
     cached_methods = [
         "__add__", "__sub__", "__xor__",
         "scaleX", "scaleY", "scaleZ", "scaleXYZ",
-        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill"
+        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill", "trimmed_edge"
     ]
 
     nocached_methods = [
@@ -340,7 +346,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds", "bbox",
         "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points",
-        "mass", "curvetype", 'ellipse_parameters', 'line_parameters', 'circle_parameters'
+        "mass", "curvetype", 'ellipse_parameters', 'line_parameters', 'circle_parameters', 'lower_distance_parameter'
     ]
 
 

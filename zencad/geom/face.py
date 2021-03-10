@@ -3,7 +3,7 @@ import math
 import OCC.Core.BRepPrimAPI
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
-from OCC.Core.gp import gp_Circ, gp, gp_Pnt
+from OCC.Core.gp import gp_Circ, gp, gp_Pnt, gp_Pln, gp_Vec, gp_Dir
 from OCC.Core.GC import GC_MakeCircle
 from OCC.Core.GeomAbs import GeomAbs_C2
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
@@ -18,7 +18,6 @@ import zencad.util
 from zencad.util import deg, point3
 from zencad.geom.sew import _sew
 import zencad.geom.wire as wire
-import zencad.geom.sweep as sweep
 import zencad.geom.face as face
 import zencad.geom.wire as wire_module
 import zencad.geom.unify as unify
@@ -48,14 +47,14 @@ def _fill(wires):
     algo = BRepBuilderAPI_MakeFace(wires[0].Wire_orEdgeToWire())
 
     for i in range(1, len(wires)):
-        algo.Add(wires[0].Wire_orEdgeToWire())
+        algo.Add(wires[i].Wire_orEdgeToWire())
 
     algo.Build()
 
     fixer = ShapeFix_Face(algo.Face())
     fixer.Perform()
     fixer.FixOrientation()
-    return Shape(fixer.Face()).Face()
+    return Shape(fixer.Face())
 
 
 def _polygon(pnts, wire=False):
@@ -231,6 +230,7 @@ def rectangle_wire(a, b, center):
 
 
 def _wideedge(spine, rad, last_p0, last_p1, circled_joints):
+    import zencad.geom.sweep as sweep
     # TODO: переимплементировать без сегмента
     import zencad
 
@@ -299,3 +299,23 @@ def _fix_face(shp):
 @lazy.lazy(cls=shape_generator)
 def fix_face(shp):
     return _fix_face(shp)
+
+
+def _infplane():
+    aFace = BRepBuilderAPI_MakeFace(
+        gp_Pln(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))).Face()
+    return Shape(aFace)
+
+
+@lazy.lazy(cls=shape_generator)
+def infplane():
+    return _infplane()
+
+
+def _make_face(surf, u1=None, u2=None, v1=None, v2=None):
+    if u1 is None:
+        u1, u2, v1, v2 = surf.Surface().Bounds()
+
+    algo = BRepBuilderAPI_MakeFace(surf.Surface(), u1, u2, v1, v2, 1e-6)
+    algo.Build()
+    return Shape(algo.Face())

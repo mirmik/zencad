@@ -2,6 +2,8 @@ from OCC.Core.TopExp import topexp, TopExp_Explorer
 from OCC.Core.GeomAbs import GeomAbs_Line, GeomAbs_Circle, GeomAbs_Ellipse, GeomAbs_Hyperbola, GeomAbs_Parabola, GeomAbs_BezierCurve, GeomAbs_OffsetCurve, GeomAbs_BSplineCurve, GeomAbs_OtherCurve
 from OCC.Core.gp import gp_Pnt, gp_Vec
 from OCC.Core.GeomAPI import GeomAPI_ProjectPointOnCurve
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+from OCC.Core.TopoDS import TopoDS_Vertex
 
 from zencad.util import to_numpy, point3, vector3
 
@@ -111,3 +113,8 @@ class CurveAlgo:
 
         algo = GeomAPI_ProjectPointOnCurve(pnt.Pnt(), self.Curve())
         return algo.LowerDistanceParameter()
+
+    def trimmed_edge(self, start, finish):
+        import zencad.geom.shape
+        algo = BRepBuilderAPI_MakeEdge(self.Curve(), start, finish)
+        return zencad.geom.shape.Shape(algo.Edge())

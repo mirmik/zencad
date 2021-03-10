@@ -52,3 +52,23 @@ def polyhedron(pnts, faces, shell=False):
         return shl
     else:
         return fill3d(shl)
+
+
+def _make_shell(vec):
+    algo = BRepOffsetAPI_Sewing()
+    for a in vec:
+        algo.Add(a.Shape())
+
+    algo.Perform()
+
+    if len(vec) > 1:
+        fixer = ShapeFix_Shell(algo.SewedShape())
+        fixer.Perform()
+        return Shape(fixer.Shell())
+    else:
+        return Shape(algo.SewedShape())
+
+
+@lazy.lazy(cls=shape_generator)
+def make_shell(vec):
+    return _make_shell(vec)

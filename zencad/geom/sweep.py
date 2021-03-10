@@ -16,6 +16,13 @@ from zencad.util import *
 from zencad.geom.operations import _restore_shapetype
 
 import zencad.geom.face as face
+import zencad.geom.curve as curve
+from zencad.geom.sweep_law import *
+
+from zencad.geom.surface import _sweep_surface
+from zencad.geom.wire import _make_edge
+from zencad.geom.face import _make_face
+from zencad.geom.shell import _make_shell
 
 
 def _extrude(shp, vec, center=False):
@@ -233,42 +240,42 @@ def pipe_shell(*args, **kwargs):
     return _pipe_shell(*args, **kwargs)
 
 
-# Труба вытягивает круглый профиль по заданному контуру.
-# def _tube_section(shp, radius, tol, cont, maxdegree, maxsegm):
-# {
-#    auto crv = servoce::circle_curve3(radius).rotZ(M_PI/2);
-#    auto slaw = servoce::law_evolved_section(crv, servoce::law_constant_function(1, crv.range()));
-#    auto llaw = servoce::law_spine_and_trihedron(shp, law_corrected_frenet_trihedron());
-#
-#    auto surf = servoce::sweep_surface(slaw, llaw, tol, cont, maxdegree, maxsegm);
-#    auto strt_crv = surf.v_iso_curve(surf.vrange().first);
-#    auto fini_crv = surf.v_iso_curve(surf.vrange().second);
-#
-#    //throw std::runtime_error("HERE2");
-#    auto sedge = make_edge(strt_crv);
-#    auto fedge = make_edge(fini_crv);
-#    auto face = make_face(surf);
-#
-#    return std::make_tuple(face, sedge, fedge);
-# }
-#
-# // Труба по wire состоит из нескольких труб по edge
-# std::tuple<shell_shape, edge_shape, edge_shape> servoce::make_tube(
-#    const servoce::wire_shape& shp, double radius, double tol, int cont, int maxdegree, int maxsegm
-#    )
-# {
-#    std::vector<face_shape> faces;
-#    std::vector<edge_shape> strt;
-#    std::vector<edge_shape> fini;
-#
-#    for ( auto& e : shp.edges() )
-#    {
-#        auto tpl = make_tube(e, radius, tol, cont, maxdegree, maxsegm);
-#
-#        faces.push_back(std::get<0>(tpl));
-#        strt.push_back(std::get<1>(tpl));
-#        fini.push_back(std::get<2>(tpl));
-#    }
-#
-#    return std::make_tuple(make_shell(faces), strt[0], fini[fini.size()-1]);
-# }
+def _tube_section(shp, radius, tol, cont, maxdegree, maxsegm):
+    """Труба вытягивает круглый профиль по заданному контуру."""
+    crv = curve._circle(radius).rotZ(math.pi/2)
+    slaw = law_evolved_section(crv, law_constant_function(1, crv.range()))
+    llaw = law_spine_and_trihedron(shp, law_corrected_frenet_trihedron())
+
+    surf = _sweep_surface(slaw, llaw, tol, cont, maxdegree, maxsegm)
+    strt_crv = surf.v_iso_curve(surf.vrange()[0])
+    fini_crv = surf.v_iso_curve(surf.vrange()[1])
+
+    sedge = _make_edge(strt_crv)
+    fedge = _make_edge(fini_crv)
+    face = _make_face(surf)
+
+    return face, sedge, fedge
+
+
+def _tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
+    """Труба по wire состоит из нескольких труб по edge"""
+    faces = []
+    strt = []
+    fini = []
+
+    for e in spine.edges():
+        tpl = _tube_section(e, r, tol, cont, maxdegree, maxsegm)
+
+        faces.append(tpl[0])
+        strt.append(tpl[1])
+        fini.append(tpl[2])
+
+    if bounds:
+        return _make_shell(faces), strt[0], fini[len(fini)-1]
+    else:
+        return _make_shell(faces)
+
+
+@lazy.lazy(cls=shape_generator)
+def tube(*args, **kwargs):
+    return _tube(*args, **kwargs)

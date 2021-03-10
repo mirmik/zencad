@@ -26,7 +26,6 @@ edge3 = segment(pnt4, pnt5)
 
 wire = sew([edge1, edge2, edge3])
 profile = sew([wire, wire.mirrorX()])
-print("KKKK", repr(profile.fill()))
 body = profile.fill().extrude(height)
 body = fillet(body, thickness / 12)
 hl(body.forw(140))

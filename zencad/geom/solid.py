@@ -1,9 +1,11 @@
-from zencad.geom.shape import Shape, nocached_shape_generator
+from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed, angle_pair
 import OCC.Core.BRepPrimAPI
 from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
 from OCC.Core.BRepLib import BRepLib_MakeFace
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
+from OCC.Core.ShapeFix import ShapeFix_Solid
 
 from zencad.lazifier import *
 
@@ -150,3 +152,22 @@ def torus(r1, r2, yaw=None, pitch=None):
 @lazy.lazy(cls=nocached_shape_generator)
 def halfspace():
     return _halfspace()
+
+
+def _make_solid(shells):
+    if not isinstance(shells, (list, tuple)):
+        shells = [shells]
+
+    algo = BRepBuilderAPI_MakeSolid()
+
+    for s in shells:
+        algo.Add(s.Shell())
+
+    fixer = ShapeFix_Solid(algo.Solid())
+    fixer.Perform()
+    return Shape(fixer.Solid())
+
+
+@lazy.lazy(cls=shape_generator)
+def make_solid(shells):
+    return _make_solid(shells)

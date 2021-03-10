@@ -13,6 +13,7 @@ from OCC.Core.GC import GC_MakeArcOfCircle
 from OCC.Core.Precision import precision_Confusion
 from OCC.Core.TopoDS import TopoDS_Edge, TopoDS_Wire
 from OCC.Core.BRepLib import breplib
+from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 
 from zencad.lazifier import *
 from zencad.geom.sew import sew
@@ -288,3 +289,15 @@ def _helix(r, h, step=None, pitch=None, angle=0, left=False):
 @lazy.lazy(cls=shape_generator)
 def helix(*args, **kwargs):
     return _helix(*args, **kwargs)
+
+
+def _make_wire(arr):
+    mk = BRepBuilderAPI_MakeWire()
+
+    for ptr in arr:
+        if (ptr.Shape().ShapeType() == TopAbs_WIRE):
+            mk.Add(ptr.Wire())
+        elif (ptr.Shape().ShapeType() == TopAbs_EDGE):
+            mk.Add(ptr.Edge())
+
+    return Shape(mk.Wire())

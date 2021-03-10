@@ -66,6 +66,7 @@ def color_convert(zclr):
 
 
 def box_size(shape, mapping):
+    shape = evalcache.unlazy_if_need(shape)
     box = shape.bbox()
 
     if mapping:
@@ -280,7 +281,9 @@ class SvgReader:
             else:
                 raise Exception("svgreader:path:undefined_command", cmd)
 
+        self.wires = evalcache.unlazy_if_need(self.wires)
         if fill is not None:
+            import zencad.showapi
             return _fill(self.wires)
 
         else:
@@ -337,7 +340,7 @@ class SvgReader:
                 shp = shp.mirrorX()  # svg coord system is reversed by Y
                 self.shapes.append(shp)
 
-        return zencad.union(self.shapes)
+        return _union(self.shapes)
 
 
 def shape_to_svg(fpath, shape, color, mapping):
@@ -353,6 +356,7 @@ def shape_to_svg(fpath, shape, color, mapping):
 
 
 def shape_to_svg_string(shape, color, mapping):
+    shape = evalcache.unlazy_if_need(shape)
     color = color_convert(color)
     size, off = box_size(shape, mapping)
     writer = SvgWriter(size=size, off=off)
@@ -379,7 +383,7 @@ if __name__ == "__main__":
             zencad.rectangle(10, 20)
             + zencad.rectangle(10, 20, center=True)
             + zencad.ellipse(10, 8)
-            - zencad.circle(5)
+            - zencad.circle(3)
         )
 
     zencad.hl(shp.down(2))
