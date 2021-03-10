@@ -1,10 +1,55 @@
 #!/usr/bin/env python3
 
 import zencad.util
+from zencad.geom.unify import _unify
+from zencad.geom.operations import _restore_shapetype
+from zencad.geom.face import _fix_face, _fill
+from zencad.geom.boolops import _union
 import xml.etree.ElementTree as ET
 import math
 import re
 import evalcache
+
+
+def wire_edges_orientation(edges):
+    pairs = [e.endpoints() for e in edges]
+
+    reverse = [False] * len(pairs)
+    for i in range(len(edges) - 1):
+        if pairs[i][0].early(pairs[i+1][0]):
+            reverse[i] = True
+            reverse[i+1] = False
+        elif pairs[i][0].early(pairs[i+1][1]):
+            reverse[i] = True
+            reverse[i+1] = True
+        elif pairs[i][1].early(pairs[i+1][0]):
+            reverse[i] = False
+            reverse[i+1] = False
+        elif pairs[i][1].early(pairs[i+1][1]):
+            reverse[i] = False
+            reverse[i+1] = True
+
+    return zip(edges, reverse)
+
+
+def sort_wire_edges(edges):
+    res = []
+
+    res.append(edges[0])
+
+    lst = list(edges)
+    del lst[0]
+
+    while len(lst) > 0:
+        ls, lf = res[-1].endpoints()
+        for i in range(len(lst)):
+            s, f = lst[i].endpoints()
+            if s.early(ls) or s.early(lf) or f.early(ls) or f.early(lf):
+                res.append(lst[i])
+                del lst[i]
+                break
+
+    return res
 
 
 def sort_wires_by_face_area(cycles):
@@ -13,7 +58,8 @@ def sort_wires_by_face_area(cycles):
 
 def color_convert(zclr):
     import svgwrite
-    zclr = Color(zclr)
+    import zencad.color
+    zclr = zencad.color(zclr)
     r, g, b, a = zclr.r, zclr.g, zclr.b, zclr.a
     r, g, b, a = (x * 100 for x in (r, g, b, a))
     return svgwrite.rgb(r, g, b, '%')
@@ -69,10 +115,10 @@ class SvgWriter:
         else:
             edges = [wire]
 
-        edges = zencad.sort_wire_edges(edges)
+        edges = sort_wire_edges(edges)
 
         if len(edges) > 1:
-            edges = zencad.wire_edges_orientation(edges)
+            edges = wire_edges_orientation(edges)
         else:
             edges = [(edges[0], False)]
 
@@ -125,14 +171,14 @@ class SvgWriter:
                     f"svg:wire : curvetype is not supported: {e.curvetype()} ")
 
     def push_face(self, face):
-        face = zencad.fix_face(face)
+        face = _fix_face(face)
         wires = sort_wires_by_face_area(face.wires())
         for w in wires:
             self.push_wire(w)
 
     def push_shape(self, shp, color):
-        shp = zencad.unify(shp)
-        shp = zencad.restore_shapetype(shp)
+        shp = _unify(shp)
+        shp = _restore_shapetype(shp)
         shp = shp.mirrorX()
 
         if shp.shapetype() == "face":
@@ -156,12 +202,7 @@ class SvgWriter:
 
 class SvgReader:
     def __init__(self):
-        if SVGWRITE_IS_NOT_INSTALLED:
-            print("please install 'svgwrite' module for work with svg")
-            print()
-            print("python3 -m pip install svgwrite")
-            print()
-            exit(0)
+        pass
 
     def read_path_final_wb(self):
         if self.wb is not None:
@@ -240,10 +281,10 @@ class SvgReader:
                 raise Exception("svgreader:path:undefined_command", cmd)
 
         if fill is not None:
-            return zencad.make_face(self.wires)
+            return _fill(self.wires)
 
         else:
-            return zencad.union(self.wires)
+            return _union(self.wires)
 
     def read_string(self, svgstring):
         self.root = ET.fromstring(svgstring)
@@ -300,6 +341,7 @@ class SvgReader:
 
 
 def shape_to_svg(fpath, shape, color, mapping):
+    shape = evalcache.unlazy_if_need(shape)
     color = color_convert(color)
     size, off = box_size(shape, mapping)
     writer = SvgWriter(fpath=fpath, off=off, size=size)

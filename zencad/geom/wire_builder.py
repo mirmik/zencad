@@ -107,8 +107,9 @@ class wire_builder:
                 .rotZ(x_axis_angle)            \
                 .mov(cent)
 
-            start_point_parameter = full_edge.project(self.current)
-            finish_point_parameter = full_edge.project(target)
+            start_point_parameter = full_edge.lower_distance_parameter(
+                self.current)
+            finish_point_parameter = full_edge.lower_distance_parameter(target)
 
             diff = finish_point_parameter - start_point_parameter
 
@@ -161,8 +162,9 @@ class wire_builder:
                 .rotZ(x_axis_angle)            \
                 .mov(cent)
 
-            start_point_parameter = full_edge.project(self.current)
-            finish_point_parameter = full_edge.project(target)
+            start_point_parameter = full_edge.lower_distance_parameter(
+                self.current)
+            finish_point_parameter = full_edge.lower_distance_parameter(target)
 
             diff = finish_point_parameter - start_point_parameter
 

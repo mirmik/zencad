@@ -38,9 +38,24 @@ def _interpolate2(refs, degmin=3, degmax=7):
     return Shape(BRepBuilderAPI_MakeFace(Surf.Surface(), 1.0e-5).Face())
 
 
-def _fill(shp):
-    assert(shp.Shape().ShapeType() in (TopAbs_WIRE, TopAbs_EDGE))
-    return Shape(BRepBuilderAPI_MakeFace(shp.Wire_orEdgeToWire()).Face())
+# def _fill(shp):
+    # return Shape(BRepBuilderAPI_MakeFace(shp.Wire_orEdgeToWire()).Face())
+
+def _fill(wires):
+    if not isinstance(wires, (list, tuple)):
+        return Shape(BRepBuilderAPI_MakeFace(wires.Wire_orEdgeToWire()).Face())
+
+    algo = BRepBuilderAPI_MakeFace(wires[0].Wire_orEdgeToWire())
+
+    for i in range(1, len(wires)):
+        algo.Add(wires[0].Wire_orEdgeToWire())
+
+    algo.Build()
+
+    fixer = ShapeFix_Face(algo.Face())
+    fixer.Perform()
+    fixer.FixOrientation()
+    return Shape(fixer.Face()).Face()
 
 
 def _polygon(pnts, wire=False):
@@ -169,6 +184,10 @@ def ellipse(r1, r2, angle=None, wire=False):
 @lazy.lazy(cls=nocached_shape_generator)
 def fill(shp):
     return _fill(shp)
+
+# @lazy.lazy(cls=nocached_shape_generator)
+# def make_face(wires):
+#    return _make_face(wires)
 
 
 @lazy.lazy(cls=nocached_shape_generator)

@@ -24,11 +24,12 @@ from OCC.Core.Bnd import Bnd_Box
 import zencad.geom.transformable
 from zencad.util import to_numpy, point3, vector3
 from OCC.Core.BRepBndLib import brepbndlib
+from zencad.geom.curve_algo import CurveAlgo
 
 import numpy
 
 
-class Shape(zencad.geom.transformable.Transformable):
+class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
     """ Basic zencad type. Является оболочкой для объекта геометрической формы TopoDS_Shape."""
 
     def __init__(self, arg):
@@ -66,23 +67,23 @@ class Shape(zencad.geom.transformable.Transformable):
     def extrude(self, vec):
         from zencad.geom.sweep import extrude
         print(self, vec)
-        return extrude(self, vec)
+        return _extrude(self, vec)
 
     def fillet(self, r, refs=None):
-        from zencad.geom.operations import fillet
-        return fillet(self, r, refs=refs)
+        from zencad.geom.operations import _fillet
+        return _fillet(self, r, refs=refs)
 
     def chamfer(self, r, refs=None):
-        from zencad.geom.operations import chamfer
-        return chamfer(self, r, refs=refs)
+        from zencad.geom.operations import _chamfer
+        return _chamfer(self, r, refs=refs)
 
     def fillet2d(self, r, refs=None):
-        from zencad.geom.operations import fillet2d
-        return fillet2d(self, r, refs=refs)
+        from zencad.geom.operations import _fillet2d
+        return _fillet2d(self, r, refs=refs)
 
     def chamfer2d(self, r, refs=None):
-        from zencad.geom.operations import chamfer2d
-        return chamfer2d(self, r, refs=refs)
+        from zencad.geom.operations import _chamfer2d
+        return _chamfer2d(self, r, refs=refs)
 
     def _SLProps(self, u, v):
         prop = BRepLProp_SLProps(self.AdaptorSurface(), u, v, 1, 1e-5)
@@ -190,13 +191,14 @@ class Shape(zencad.geom.transformable.Transformable):
         return pnts_filtered
 
     def fill(self):
-        print("HERE1")
         import zencad.geom.face
         assert(self.is_wire_or_edge())
-        print("HERE0")
-        obj = zencad.geom.face.fill(self)
-        print("HERE", repr(obj))
+        obj = zencad.geom.face._fill(self)
         return obj
+
+    # def project(self, arg):
+    #    import zencad.geom.project
+    #    return zencad.geom.project._project(self, arg)
 
     # TODO: Вынести в surface_algo
     def AdaptorSurface(self):
@@ -207,40 +209,6 @@ class Shape(zencad.geom.transformable.Transformable):
     def AdaptorCurve(self):
         assert(self.is_edge())
         return BRepAdaptor_Curve(self.Edge())
-
-    def d0(self, arg):
-        assert(self.is_edge())
-        adaptor = self.AdaptorCurve()
-        pnt = gp_Pnt()
-        self.AdaptorCurve().D0(arg, pnt)
-        return point3(pnt.X(), pnt.Y(), pnt.Z())
-
-    def value(self, arg):
-        return self.d0(arg)
-
-    def d1(self, arg):
-        assert(self.is_edge())
-        adaptor = self.AdaptorCurve()
-        pnt, vec = gp_Pnt(), gp_Vec()
-        self.AdaptorCurve().D1(arg, pnt, vec)
-        return vector3((vec.X(), vec.Y(), vec.Z()))
-
-    def range(self):
-        adaptor = self.AdaptorCurve()
-        return adaptor.FirstParameter(), adaptor.LastParameter()
-
-    def endpoints(self):
-        assert(self.is_wire_or_edge())
-
-        if self.is_wire():
-            a, b = TopoDS_Vertex(), TopoDS_Vertex()
-            topexp.Vertices(self.Wire(), a, b)
-            return point3(a), point3(b)
-
-        elif self.is_edge():
-            a = topexp.FirstVertex(self.Edge())
-            b = topexp.LastVertex(self.Edge())
-            return point3(a), point3(b)
 
     def Curve(self):
         aCurve = BRep_Tool.Curve(self.Edge())
@@ -268,6 +236,9 @@ class Shape(zencad.geom.transformable.Transformable):
 
         centerMass = self.VolumeProperties().CentreOfMass()
         return point3(centerMass)
+
+    def mass(self):
+        return self.VolumeProperties().Mass()
 
     def uniform(self, npoints, strt=None, fini=None):
         if strt is None and fini is None:
@@ -338,12 +309,12 @@ class LazyObjectShape(evalcache.LazyObject):
     ]
 
     transparent_methods = [
-        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill"
     ]
 
     cached_methods = [
         "__add__", "__sub__", "__xor__",
-        "scaleX", "scaleY", "scaleZ", "scaleXYZ"
+        "scaleX", "scaleY", "scaleZ", "scaleXYZ",
+        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill"
     ]
 
     nocached_methods = [
@@ -368,7 +339,8 @@ class LazyObjectShape(evalcache.LazyObject):
         "is_closed",
         "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds", "bbox",
-        "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points"
+        "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points",
+        "mass", "curvetype", 'ellipse_parameters', 'line_parameters', 'circle_parameters'
     ]
 
 
@@ -418,7 +390,10 @@ class shape_generator(evalcache.LazyObject):
 
 A = (
     set(Shape.__dict__.keys()).union(
-        set(zencad.geom.transformable.Transformable.__dict__.keys())))
+        set(zencad.geom.transformable.Transformable.__dict__.keys()),
+        set(CurveAlgo.__dict__.keys())
+    )
+)
 
 B = set(LazyObjectShape.__dict__.keys())
 

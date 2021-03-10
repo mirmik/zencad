@@ -125,6 +125,13 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def cross(self, oth):
         return vector3(numpy.cross(self, oth))
 
+    def early(self, oth):
+        return (
+            abs(self.x - oth.x) < 1e-5 and
+            abs(self.y - oth.y) < 1e-5 and
+            abs(self.z - oth.z) < 1e-5
+        )
+
     def __add__(self, oth):
         return point3(self[0] + oth[0], self[1] + oth[1], self[2] + oth[2])
 
