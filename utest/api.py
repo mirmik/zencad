@@ -10,8 +10,8 @@ sys.path.insert(0, "..")
 
 print("import")
 try:
-    print("import pyservoce")
-    import pyservoce
+    print("import zenframe")
+    import zenframe
 
     print("import traceback")
     import traceback
