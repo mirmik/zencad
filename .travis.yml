@@ -22,7 +22,7 @@ matrix:
         
         - python3 -m pip install pyservoce
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
-        - python3 -m pip install scikit-image
+        - python3 -m pip install scikit-image zenframe
 
         - python3 ./setup.py install
 
@@ -47,7 +47,7 @@ matrix:
 
         - python3 -m pip install licant wheel requests psutil
         - python3 -m pip install evalcache numpy pillow pyopengl PyQt5 psutil
-        - python3 -m pip install scikit-image
+        - python3 -m pip install scikit-image zenframe
         
         - python3 ./setup.py install
         - python3 -m zencad --install-occt-force=utest
