@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import os
 import tempfile
 
 
@@ -47,3 +48,21 @@ def open_online_manual():
     QDesktopServices.openUrl(
         QUrl("https://mirmik.github.io/zencad", QUrl.TolerantMode)
     )
+
+
+def pythonocc_directory():
+    try:
+        import OCC
+    except:
+        return None
+
+    return os.path.dirname(OCC.__file__)
+
+
+def pythonocc_core_directory():
+    try:
+        import OCC.Core
+    except:
+        return None
+
+    return os.path.dirname(OCC.Core.__file__)

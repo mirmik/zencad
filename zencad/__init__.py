@@ -33,7 +33,7 @@ class PreventLibraryLoading(Exception):
 
 
 try:
-    # Если активировано опция переустановки библиотек,
+    # Если активирована опция переустановки библиотек,
     # не даём интерпретатору линковать имеющиеся
     if ("--install-occt" in " ".join(sys.argv) or
             "--install-pythonocc" in " ".join(sys.argv)):

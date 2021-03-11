@@ -34,6 +34,8 @@ def console_options_handle():
                         help="Console dialog for install third-libraries")
     parser.add_argument("--install-occt-force", nargs="*",
                         default=None, help="Download and install libocct")
+    parser.add_argument("--install-occt-to-pythonocc-dir", action="store_true",
+                        default=None, help="Download and install libocct")
     parser.add_argument("--install-pythonocc-force", action="store_true",
                         help="Download and install pythonocc package")
     parser.add_argument("--yes", action="store_true")
@@ -76,6 +78,7 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
 def main():
     pargs = console_options_handle()
+    print(pargs)
 
     if pargs.install_libs:
         from zencad.geometry_core_installer import console_third_libraries_installer_utility
@@ -93,6 +96,17 @@ def main():
             pargs.install_occt_force) > 0 else None
         install_precompiled_occt_library(tgtpath=path)
         return
+
+    if pargs.install_occt_to_pythonocc_dir:
+        print("pargs.install_occt_to_pythonocc_dir")
+        from zencad.geometry_core_installer import install_precompiled_occt_library
+        import zencad.gui.util
+        path = zencad.gui.util.pythonocc_core_directory()
+        if path is None:
+            print("PythonOCC is not installed")
+            return -1
+        install_precompiled_occt_library(tgtpath=path)
+        return 0
 
     from zencad.showapi import widget_creator
     import zenframe.starter as frame
