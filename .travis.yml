@@ -50,8 +50,8 @@ matrix:
         - python3 -m pip install scikit-image zenframe
         
         - python3 ./setup.py install
-        - python3 -m zencad --install-occt-to-pythonocc-dir
         - python3 -m zencad --install-pythonocc-force
+        - python3 -m zencad --install-occt-to-pythonocc-dir
 
       script:
         - cd utest
