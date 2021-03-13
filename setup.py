@@ -20,7 +20,8 @@ setup(
     author="mirmik",
     author_email="mirmikns@yandex.ru",
     url="https://github.com/mirmik/zencad",
-    long_description=open(os.path.join(directory, "README.md"), "r").read(),
+    long_description=open(os.path.join(
+        directory, "README.md", encoding="utf8"), "r").read(),
     long_description_content_type="text/markdown",
     keywords=["testing", "cad"],
     classifiers=[],
