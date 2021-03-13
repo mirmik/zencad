@@ -16,8 +16,9 @@ if (
         (len(sys.argv) > 2 and sys.argv[1]
          == "-m" and sys.argv[2] == "zencad")
     )
-    and
-    not "--display-only" in sys.argv
+    and not "--display-only" in sys.argv
+    and not "--install-pythonocc" in " ".join(sys.argv)
+    and not "--install-occt" in " ".join(sys.argv)
 ):
     try:
         import OCC
