@@ -78,7 +78,6 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
 def main():
     pargs = console_options_handle()
-    print(pargs)
 
     if pargs.install_libs:
         from zencad.geometry_core_installer import console_third_libraries_installer_utility
