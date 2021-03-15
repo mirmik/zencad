@@ -97,7 +97,6 @@ def main():
         return
 
     if pargs.install_occt_to_pythonocc_dir:
-        print("pargs.install_occt_to_pythonocc_dir")
         from zencad.geometry_core_installer import install_precompiled_occt_library
         import zencad.gui.util
         path = zencad.gui.util.pythonocc_core_directory()
