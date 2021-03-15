@@ -13,71 +13,72 @@ print("LibraryInstaller")
 
 class LibraryInstaller(QtWidgets.QWidget):
     def __init__(self):
+        self.buttons = []
+
         super().__init__()
         vlayout = QtWidgets.QVBoxLayout()
+        self.vlayout = vlayout
 
-        msgLabel = QtWidgets.QLabel(
+        self.add_label(
             "ZenCad did not find some libraries. You can use that instrument to install it.")
-        vlayout.addWidget(msgLabel)
 
-        separ = QtWidgets.QFrame()
-        separ.setFrameShape(QtWidgets.QFrame.HLine)
-        vlayout.addWidget(separ)
+        self.add_separator()
+        self.add_label("Lookup.")
+        self.add_button("Try to import libraries", self.try_to_import)
 
-        msgLabel = QtWidgets.QLabel("Lookup.")
-        vlayout.addWidget(msgLabel)
+        self.add_separator()
+        self.add_label("Install pythonocc.")
+        self.add_button(
+            f"Install pythonocc-{__pythonocc_version__}", self.install_pythonocc_handler)
 
-        self.button4 = QtWidgets.QPushButton(f"Try to import libraries")
-        vlayout.addWidget(self.button4)
-        self.button4.clicked.connect(self.try_to_import)
+        if sys.platform in ("linux", "linux2"):
+            self.add_separator()
+            self.add_label("Install OCCT for current user only.")
+            self.add_button(
+                f"Install OCCT-{__occt_version__} for current user (~/.local/lib/occt-{__occt_version__})", self.install_occt_handler)
+            self.add_button(
+                f"Add ~/.local/lib/occt-{__occt_version__} to user LD_LIBRARY_PATH", self.add_local_library_path_to_bashrc)
 
-        separ = QtWidgets.QFrame()
-        separ.setFrameShape(QtWidgets.QFrame.HLine)
-        vlayout.addWidget(separ)
+            self.add_separator()
+            self.add_label(
+                "Install OCCT for all users (root permissions needed).")
+            self.add_button(
+                f"Install OCCT-{__occt_version__} for all user (/usr/local/lib)", self.install_occt_handler_global)
 
-        msgLabel = QtWidgets.QLabel("Install pythonocc.")
-        vlayout.addWidget(msgLabel)
-
-        self.button1 = QtWidgets.QPushButton(
-            f"Install pythonocc-{__pythonocc_version__}")
-        vlayout.addWidget(self.button1)
-        self.button1.clicked.connect(self.install_pythonocc_handler)
-
-        separ = QtWidgets.QFrame()
-        separ.setFrameShape(QtWidgets.QFrame.HLine)
-        vlayout.addWidget(separ)
-
-        msgLabel = QtWidgets.QLabel("Install OCCT for current user only.")
-        vlayout.addWidget(msgLabel)
-
-        self.button0 = QtWidgets.QPushButton(
-            f"Install OCCT-{__occt_version__} for current user (~/.local/lib/occt-{__occt_version__})")
-        vlayout.addWidget(self.button0)
-        self.button0.clicked.connect(self.install_occt_handler)
-
-        self.button2 = QtWidgets.QPushButton(
-            f"Add ~/.local/lib/occt-{__occt_version__} to user LD_LIBRARY_PATH")
-        vlayout.addWidget(self.button2)
-        self.button2.clicked.connect(self.add_local_library_path_to_bashrc)
-
-        separ = QtWidgets.QFrame()
-        separ.setFrameShape(QtWidgets.QFrame.HLine)
-        vlayout.addWidget(separ)
-
-        msgLabel = QtWidgets.QLabel(
-            "Install OCCT for all users (root permissions needed).")
-        vlayout.addWidget(msgLabel)
-
-        self.button3 = QtWidgets.QPushButton(
-            f"Install OCCT-{__occt_version__} for all user (/usr/local/lib)")
-        vlayout.addWidget(self.button3)
-        self.button3.clicked.connect(self.install_occt_handler_global)
+        if sys.platform in ("win32"):
+            self.add_separator()
+            self.add_label("Install OCCT in pythonocc directory.")
+            self.add_button(
+                f"Install OCCT-{__occt_version__} for in pythonocc directory", self.install_occt_to_pythonocc)
 
         self.console = ConsoleWidget()
         vlayout.addWidget(self.console)
 
         self.setLayout(vlayout)
         self.resize(800, 600)
+
+    def add_label(self, msg):
+        lbl = QtWidgets.QLabel(msg)
+        self.vlayout.addWidget(lbl)
+
+    def add_button(self, label, handler):
+        button = QtWidgets.QPushButton(label)
+        self.vlayout.addWidget(button)
+        button.clicked.connect(handler)
+        self.buttons.append(button)
+
+    def add_separator(self):
+        separ = QtWidgets.QFrame()
+        separ.setFrameShape(QtWidgets.QFrame.HLine)
+        self.vlayout.addWidget(separ)
+
+    def enable_buttons(self):
+        for b in self.buttons:
+            b.setEnabled(True)
+
+    def disable_buttons(self):
+        for b in self.buttons:
+            b.setEnabled(False)
 
     def try_to_import(self):
         dct = test_third_libraries()
@@ -116,61 +117,47 @@ class LibraryInstaller(QtWidgets.QWidget):
             print("Succesfually added.")
             print("Don't forget to restart the your terminal.")
 
+    class do_install_occt_handler(QtCore.QThread):
+        def __init__(self, wdg, path):
+            super().__init__()
+            self.wdg = wdg
+            self.path = path
+
+        def run(self):
+            print(f"Install OCCT-{__occt_version__} started.")
+            self.wdg.disable_buttons()
+            sts = 0
+            try:
+                sts = install_precompiled_occt_library(
+                    self.path,
+                    occt_version=__occt_version__)
+            except Exception as ex:
+                sts = -1
+                print(ex)
+            self.wdg.enable_buttons()
+            if sts == 0:
+                print(
+                    f"Install OCCT-{__occt_version__} finished succesful.")
+            else:
+                print(f"Install OCCT-{__occt_version__} failed.")
+
     def install_occt_handler(self):
-
-        class do_install_occt_handler(QtCore.QThread):
-            def __init__(self, wdg):
-                super().__init__()
-                self.wdg = wdg
-
-            def run(self):
-                print(f"Install OCCT-{__occt_version__} started.")
-                self.wdg.disable_buttons()
-
-                sts = 0
-                try:
-                    sts = install_precompiled_occt_library(
-                        occt_version=__occt_version__)
-                except Exception as ex:
-                    sts = -1
-                    print(ex)
-                self.wdg.enable_buttons()
-
-                if sts == 0:
-                    print(
-                        f"Install OCCT-{__occt_version__} finished succesful.")
-                else:
-                    print(f"Install OCCT-{__occt_version__} failed.")
-
-        self.thr = do_install_occt_handler(self)
+        self.thr = self.do_install_occt_handler(self, None)
         self.thr.start()
 
     def install_occt_handler_global(self):
+        self.thr = self.do_install_occt_handler(self, "/usr/local/lib")
+        self.thr.start()
 
-        class do_install_occt_handler(QtCore.QThread):
-            def __init__(self, wdg):
-                super().__init__()
-                self.wdg = wdg
+    def install_occt_to_pythonocc(self):
+        import zencad.gui.util
 
-            def run(self):
-                print(f"Install OCCT-{__occt_version__} started.")
-                self.wdg.disable_buttons()
+        path = zencad.gui.util.pythonocc_core_directory()
+        if path is None:
+            print("PythonOCC is not installed")
+            return -1
 
-                sts = 0
-                try:
-                    sts = install_precompiled_occt_library(
-                        "/usr/local/lib", occt_version=__occt_version__)
-                except Exception as ex:
-                    pass
-                self.wdg.enable_buttons()
-
-                if sts == 0:
-                    print(
-                        f"Install OCCT-{__occt_version__} finished succesful.")
-                else:
-                    print(f"Install OCCT-{__occt_version__} failed.")
-
-        self.thr = do_install_occt_handler(self)
+        self.thr = self.do_install_occt_handler(self, path)
         self.thr.start()
 
     def install_pythonocc_handler(self):
@@ -198,20 +185,6 @@ class LibraryInstaller(QtWidgets.QWidget):
 
         self.thr = do_install_pythonocc_handler(self)
         self.thr.start()
-
-    def enable_buttons(self):
-        self.button0.setEnabled(True)
-        self.button1.setEnabled(True)
-        self.button3.setEnabled(True)
-        self.button4.setEnabled(True)
-        self.button2.setEnabled(True)
-
-    def disable_buttons(self):
-        self.button0.setEnabled(False)
-        self.button1.setEnabled(False)
-        self.button2.setEnabled(False)
-        self.button3.setEnabled(False)
-        self.button4.setEnabled(False)
 
 
 def doit():
