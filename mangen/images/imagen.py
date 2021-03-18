@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-import zencad.draw as draw
+#import zencad.draw as draw
 from zencad import *
 import os
 

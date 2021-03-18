@@ -8,6 +8,9 @@ matrix:
       python:
         - "3.8"
 
+      packages:
+        - libxkbcommon-x11-0
+
       services:
         - xvfb
 
