@@ -65,7 +65,7 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
             strt_dialog.exec()
 
             if strt_dialog.result() == 0:
-                return
+                sys.exit(0)
 
             openpath = strt_dialog.openpath
 
