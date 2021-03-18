@@ -60,7 +60,7 @@ def execute_test(test):
 
 if __name__ == "__main__":
     print("main")
-    # execute_test(widgets_test)
+    # execute_test(widgets_test) # Fault on travis (Gui compatible)
     execute_test(math_test)
     execute_test(reflection)
     execute_test(prim1d_test)
