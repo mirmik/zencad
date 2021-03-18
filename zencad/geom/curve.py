@@ -89,31 +89,31 @@ def ellipse(r1, r2) -> Curve:
     return _ellipse(r1, r2)
 
 
-def _interpolate(pnts, tang=None, closed=False):
+def _interpolate(pnts, tangs=None, closed=False):
     _pnts = opencascade_h_array1_of_pnt(pnts)
     algo = GeomAPI_Interpolate(_pnts, closed, 0.0000001)
 
-    if tang is not None:
-        for i in range(len(tang)):
-            if tang[i] is None:
-                tang[i] = vector3(0, 0, 0)
+    if tangs is not None:
+        for i in range(len(tangs)):
+            if tangs[i] is None:
+                tangs[i] = vector3(0, 0, 0)
 
-        if (len(tang) != 0):
-            _tang = opencascade_array1_of_vec(tang)
+        if (len(tangs) != 0):
+            _tangs = opencascade_array1_of_vec(tangs)
 
-            _bools = TColStd_HArray1OfBoolean(1, len(tang))
+            _bools = TColStd_HArray1OfBoolean(1, len(tangs))
             for i in range(len(pnts)):
-                _bools.SetValue(i + 1, bool(numpy.linalg.norm(tang[i]) != 0))
+                _bools.SetValue(i + 1, bool(numpy.linalg.norm(tangs[i]) != 0))
 
-            algo.Load(_tang, _bools)
+            algo.Load(_tangs, _bools)
 
     algo.Perform()
     return Curve(algo.Curve())
 
 
 @lazy.lazy(cls=nocached_curve_generator)
-def interpolate(pnts, tang=None, closed=False):
-    return _interpolate(pnts, tang=tang, closed=closed)
+def interpolate(pnts, tangs=None, closed=False):
+    return _interpolate(pnts, tangs=tangs, closed=closed)
 
 
 def _bezier(poles, weights=None):

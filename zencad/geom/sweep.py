@@ -279,3 +279,9 @@ def _tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
 @lazy.lazy(cls=shape_generator)
 def tube(*args, **kwargs):
     return _tube(*args, **kwargs)
+
+
+@lazy.lazy(cls=shape_generator)
+def sweep(proto, path, frenet=False):
+    """sweep operation is deprecated. use pipe_shell instead"""
+    return _pipe_shell([proto], path, frenet)

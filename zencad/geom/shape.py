@@ -65,10 +65,9 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
     def __xor__(self, oth):
         return Shape(occ_pair_intersect(self._shp, oth._shp))
 
-    def extrude(self, vec):
+    def extrude(self, vec, center=False):
         from zencad.geom.sweep import _extrude
-        print(self, vec)
-        return _extrude(self, vec)
+        return _extrude(self, vec, center=center)
 
     def fillet(self, r, refs=None):
         from zencad.geom.operations import _fillet

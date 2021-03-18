@@ -298,9 +298,9 @@ class wire_builder:
         self.current = ep[1] if angle >= 0 else ep[0]
         return self
 
-    def interpolate(self, pnts, tang=None, curtang=(0, 0, 0), approx=False, rel=None):
-        if tang is None:
-            tang = [(0, 0, 0)] * len(pnts)
+    def interpolate(self, pnts, tangs=None, curtang=(0, 0, 0), approx=False, rel=None):
+        if tangs is None:
+            tangs = [(0, 0, 0)] * len(pnts)
 
         if approx:
             cc, fintang = self.edges[-1].d1(self.edges[-1].range()[1])
@@ -308,9 +308,9 @@ class wire_builder:
 
         pnts = self.prepare(pnts, rel)
         pnts = points([self.current] + pnts)
-        tang = vectors([curtang] + tang)
+        tangs = vectors([curtang] + tangs)
 
-        self.edges.append(interpolate(pnts=pnts, tang=tang))
+        self.edges.append(interpolate(pnts=pnts, tangs=tangs))
         self.current = pnts[-1]
         return self
 

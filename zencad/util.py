@@ -261,6 +261,8 @@ def to_Pnt(arg):
 def to_Vec(arg):
     if arg is None:
         return gp_Vec(0, 0, 0)
+    if len(arg) == 2:
+        return gp_Vec(float(arg[0]), float(arg[1]), 0)
     return gp_Vec(float(arg[0]), float(arg[1]), float(arg[2]))
 
 

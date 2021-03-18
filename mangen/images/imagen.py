@@ -1,17 +1,45 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-#import zencad.draw as draw
 from zencad import *
 import os
-
-import zencad.visual
 import zencad.internal_models
-import pyservoce
+import OCC.Display.OCCViewer
+from OCC.Core.Image import Image_PixMap
+from OCC.Core.gp import gp_Dir
 
-# lazy.diag = True
+from zencad.interactive.line import arrow
 
 wsize = (300, 200)
+
+
+class OffscreenRenderer(OCC.Display.OCCViewer.Viewer3d):
+    """ The offscreen renderer is inherited from Viewer3d.
+    The DisplayShape method is overriden to export to image
+    each time it is called.
+    """
+
+    def __init__(self, path, screen_size=(640, 480), yaw=None, pitch=None, triedron=False):
+        super().__init__()
+        # create the renderer
+        self.screen_size = screen_size
+        self.path = path
+        self.Create()
+        self.SetSize(screen_size[0], screen_size[1])
+        self.SetModeShaded()
+        self.set_bg_gradient_color([206, 215, 222], [128, 128, 128])
+        # self.display_triedron()
+        self.capture_number = 0
+
+    def DoIt(self):
+        path = self.path
+
+        self.View.Dump(path)
+        # if not os.path.isfile(path):
+        #    raise IOError("OffscreenRenderer failed to render image to file")
+
+        #print("OffscreenRenderer content dumped to %s" % path)
+        # return r
 
 
 def dock(sz): return box(sz, sz, 2, center=True).down(1)
@@ -35,38 +63,44 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
                 c = m[1]
                 m = m[0]
             else:
-                c = zencad.default_color
+                c = zencad.default_color()
 
             mod = m
             if isinstance(mod, evalcache.LazyObject):
                 mod = mod.unlazy()
 
-            if isinstance(mod, pyservoce.point3):
+            if isinstance(mod, zencad.util.point3):
                 scn.add(mod, color(1, 0, 0))
 
             else:
                 scn.add(mod, c)
 
-    viewer = scn.viewer
-    if triedron:  # Always add triedron
-        viewer.set_triedron_axes()
-    view = viewer.create_view()
-    view.set_triedron(False)
-    view.set_virtual_window(size[0], size[1])
+    #viewer = scn.viewer
+    # if triedron:  # Always add triedron
+    #    viewer.set_triedron_axes()
+    #view = viewer.create_view()
+    # view.set_triedron(False)
+    #view.set_virtual_window(size[0], size[1])
 
     if yaw is None:
         yaw = math.pi * (7 / 16) + math.pi / 2
     if pitch is None:
         pitch = math.pi * -0.15
-    view.set_direction(
+
+    render = OffscreenRenderer(path, size)
+
+    for i in scn.interactives:
+        render.Context.Display(i.ais_object, True)
+
+    render.View.Camera().SetDirection(gp_Dir(
         math.cos(pitch) * math.cos(yaw),
         math.cos(pitch) * math.sin(yaw),
         math.sin(pitch),
-    )
-    view.set_orthogonal()
-    view.fit_all()
+    ))
+    render.View.Camera().SetUp(gp_Dir(0, 0, 1))
+    render.View.FitAll(0.07)
 
-    zencad.visual.screen_view(view, path, size)
+    render.DoIt()
 
 
 def doscreen(model, path, size, yaw=None, pitch=None, triedron=True):
@@ -318,10 +352,9 @@ doscreen(
     triedron=True,
 )
 
+register_font("../../zencad/examples/fonts/testfont.ttf")
 doscreen(
-    model=textshape(
-        text="TextShape", fontpath="../../zencad/examples/fonts/testfont.ttf", size=100
-    ),
+    model=textshape("TextShape", "Ubuntu Mono", size=100),
     path="textshape0.png",
     size=wsize,
     yaw=yaw2d,
@@ -329,9 +362,7 @@ doscreen(
     triedron=True,
 )
 doscreen(
-    model=textshape(
-        text="TextShape", fontpath="../../zencad/examples/fonts/mandarinc.ttf", size=100
-    ),
+    model=textshape("TextShape", "Ubuntu Mono", size=100),
     path="textshape1.png",
     size=wsize,
     yaw=yaw2d,
@@ -568,12 +599,12 @@ doscreen(model=ngon(r=5, n=6), path="fillet3.png", size=wsize)
 doscreen(
     model=[
         *points([(6, 0, 0), (-6, 0, 0)]),
-        ngon(r=5, n=6).fillet(2, [(6, 0, 0), (-6, 0, 0)]),
+        ngon(r=5, n=6).fillet2d(2, [(6, 0, 0), (-6, 0, 0)]),
     ],
     path="fillet4.png",
     size=wsize,
 )
-doscreen(model=ngon(r=5, n=6).fillet(2), path="fillet5.png", size=wsize)
+doscreen(model=ngon(r=5, n=6).fillet2d(2), path="fillet5.png", size=wsize)
 
 doscreen(model=cube(10), path="chamfer0.png", size=wsize)
 doscreen(
@@ -634,10 +665,10 @@ doscreen(
     yaw=yaw,
     pitch=pitch,
 )
+register_font("../../zencad/examples/fonts/mandarinc.ttf")
 doscreen(
-    model=textshape(
-        text="TextShape", fontpath="../../zencad/examples/fonts/mandarinc.ttf", size=100
-    ).extrude(20),
+    model=textshape("TextShape", "Mandarinc", size=100
+                    ).extrude(20),
     path="extrude3.png",
     size=wsize,
     triedron=True,
@@ -974,7 +1005,7 @@ doscreen(
 
 
 doscreen(
-    model=offset(cone(r1=15, r2=10, h=20), r=5),
+    model=offset(cone(r1=15, r2=10, h=20), off=5),
     path="offset0.png",
     size=wsize
 )
@@ -994,9 +1025,9 @@ doscreen(
 doscreen(
     model=(
         zencad.internal_models.knight(),
-        zencad.lazy(draw.arrow((0, 0, 0), vector3(1, 1, 1).normalize()
-                               * 30, clr=color.blue, scene=None), transparent=True),
-        zencad.lazy(draw.arrow((0, 0, 0), vector3(0, 0, 1).normalize()*30, clr=color.green, scene=None), transparent=True)),
+        zencad.lazy(arrow((0, 0, 0), vector3(1, 1, 1).normalize()
+                          * 30, color=color.blue), transparent=True),
+        zencad.lazy(arrow((0, 0, 0), vector3(0, 0, 1).normalize()*30, color=color.green), transparent=True)),
     path="short_rotate0.png",
     size=wsize
 )
@@ -1004,9 +1035,9 @@ doscreen(
 doscreen(
     model=(
         short_rotate((0, 0, 1), (1, 1, 1))(zencad.internal_models.knight()),
-        zencad.lazy(draw.arrow((0, 0, 0), vector3(1, 1, 1).normalize()
-                               * 30, clr=color.blue, scene=None), transparent=True),
-        zencad.lazy(draw.arrow((0, 0, 0), vector3(0, 0, 1).normalize()*30, clr=color.green, scene=None), transparent=True)),
+        zencad.lazy(arrow((0, 0, 0), vector3(1, 1, 1).normalize()
+                          * 30, color=color.blue), transparent=True),
+        zencad.lazy(arrow((0, 0, 0), vector3(0, 0, 1).normalize()*30, color=color.green), transparent=True)),
     path="short_rotate1.png",
     size=wsize
 )

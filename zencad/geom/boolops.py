@@ -1,4 +1,4 @@
-from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut, BRepAlgoAPI_Common
+from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut, BRepAlgoAPI_Common, BRepAlgoAPI_Section
 from OCC.Core.TopoDS import TopoDS_Shape
 
 from zencad.geom.shape import shape_generator, Shape
@@ -66,3 +66,54 @@ def intersect(lst):
 @lazy.lazy(cls=shape_generator)
 def difference(lst):
     return _difference(lst)
+
+
+def _section(a, b, pretty):
+    algo = BRepAlgoAPI_Section(a.Shape(), b.Shape())
+
+    if pretty:
+        algo.ComputePCurveOn1(True)
+        algo.Approximation(True)
+
+    algo.Build()
+    if not algo.IsDone():
+        printf("warn: section algotithm failed\n")
+
+    return Shape(algo.Shape())
+
+
+@lazy.lazy(cls=shape_generator)
+def section(a, b=0):
+    """
+        Make section between 'a' and 'b'.
+        Oposite the intersect, which finds the intersection of bodies, 
+        the section finds the intersection of the shells of bodies.
+
+        Arguments:
+        a, b - is pair of algorithm arguments. The algorithm is commutative.
+            a and b can be numeric or vector. In that case algorithm find
+            section with a given plane.
+    """
+    import zencad.util
+    from zencad.geom.solid import _halfspace
+
+    def to_halfspace_if_need(x):
+        if isinstance(x, (tuple, list, zencad.util.vector3)):
+            vec = zencad.util.vector3(x)
+            return (
+                zencad.transform.translate(*vec) *
+                zencad.transform.short_rotate(f=(0, 0, 1), t=vec)
+            )(_halfspace())
+
+        elif isinstance(x, (int, float)):
+            return _halfspace().up(x)
+
+        return x
+
+    result = _section(
+        to_halfspace_if_need(a),
+        to_halfspace_if_need(b),
+        False
+    )
+
+    return result

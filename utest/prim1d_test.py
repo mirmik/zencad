@@ -18,11 +18,11 @@ class Prim1dProbber(unittest.TestCase):
 
     def test_interpolate_probe(self):
         pnts = [(0, 0, 0), (10, 20, 30), (10, 21, 35), (10, 22, 40)]
-        tang = [(0, 0, 1), (1, 0, 0), (0, 1, 0), (0, 0, 0)]
+        tangs = [(0, 0, 1), (1, 0, 0), (0, 1, 0), (0, 0, 0)]
         zencad.interpolate(pnts, closed=False)
         zencad.interpolate(pnts, closed=True)
-        zencad.interpolate(pnts, tang, closed=False)
-        zencad.interpolate(pnts, tang, closed=True)
+        zencad.interpolate(pnts, tangs, closed=False)
+        zencad.interpolate(pnts, tangs, closed=True)
 
     def test_circle_arc_probe(self):
         zencad.circle_arc((0, 0), (1, 1), (1, 2))

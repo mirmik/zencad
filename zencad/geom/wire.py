@@ -82,14 +82,14 @@ def segment(a, b) -> Shape:
     return _segment(a, b)
 
 
-def _interpolate(pnts, tang=None, closed=False):
+def _interpolate(pnts, tangs=None, closed=False):
     return _make_edge(
-        curve._interpolate(pnts=pnts, tang=tang, closed=closed))
+        curve._interpolate(pnts=pnts, tangs=tangs, closed=closed))
 
 
 @lazy.lazy(cls=shape_generator)
-def interpolate(*args, **kwargs):
-    return _interpolate(*args, **kwargs)
+def interpolate(pnts, tangs=None, closed=False):
+    return _interpolate(pnts, tangs, closed)
 
 
 def _bezier(pnts, weights=None):
@@ -174,7 +174,7 @@ def _rounded_polysegment(pnts, r, closed=False):
         nodes.append(segment(pairs[i][1], pairs[i+1][0]))
         if pairs_tang[i] is not None:
             nodes.append(interpolate(
-                pnts=[pairs[i+1][0], pairs[i+1][1]], tang=[pairs_tang[i][0], pairs_tang[i][1]]))
+                pnts=[pairs[i+1][0], pairs[i+1][1]], tangs=[pairs_tang[i][0], pairs_tang[i][1]]))
     nodes.append(segment(pairs[-2][1], pairs[-1][0]))
 
     # Для замыкания необходимо удалить крайние сегменты.
