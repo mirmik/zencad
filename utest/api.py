@@ -36,7 +36,7 @@ try:
     import trans_test
     import curve3_test
     import curve2_test
-    import widgets_test
+    #import widgets_test
     import convert
     import reflection
 except Exception as ex:
@@ -60,7 +60,7 @@ def execute_test(test):
 
 if __name__ == "__main__":
     print("main")
-    execute_test(widgets_test)
+    # execute_test(widgets_test)
     execute_test(math_test)
     execute_test(reflection)
     execute_test(prim1d_test)
