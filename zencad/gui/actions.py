@@ -185,8 +185,8 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         wdg = zencad.gui.settingswdg.SettingsWidget()
         status = wdg.exec()
 
-        if status == 1 and self._sleeped_optimization:
-            self.remake_sleeped_thread()
+        if status == 1 and self.use_sleeped_process:
+            self.remake_sleeped_client()
             self.reopen_current()
 
     def _add_open_action(self, menu, name, path):

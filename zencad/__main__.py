@@ -32,6 +32,8 @@ def console_options_handle():
     # Смотри аргументы в zenframe.ArgumentParser
     parser.add_argument("--installer", action="store_true",
                         help="Execute installer utility")
+    parser.add_argument("--settings", action="store_true",
+                        help="Execute settings utility")
     parser.add_argument("--install-libs", action="store_true",
                         help="Console dialog for install third-libraries")
     parser.add_argument("--install-occt-force", nargs="*",
@@ -80,6 +82,11 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
 def main():
     pargs = console_options_handle()
+
+    if pargs.settings:
+        import zencad.gui.settingswdg
+        zencad.gui.settingswdg.doit()
+        sys.exit()
 
     if pargs.installer:
         import zencad.gui.libinstaller

@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-import zencad.settings
+from zencad.settings import Settings
+from zencad.color import Color
 
 
 class TableField(QWidget):
@@ -23,7 +24,6 @@ class TableField(QWidget):
         self.layout.setSpacing(5)
         left, top, right, bottom = self.layout.getContentsMargins()
         spacing = self.layout.spacing()
-        #self.setFixedWidth(llen + self.wdg.width() + right + spacing)
 
     def restore(self):
         pass
@@ -37,12 +37,12 @@ class TextFieldChanger(QWidget):
         self.layout.addWidget(QLabel(label))
         self.edit = QLineEdit()
         self.edit.setFixedWidth(length)
-        self.edit.setText(str(zencad.settings.get(path)))
+        self.edit.setText(str(Settings.get(path)))
         self.layout.addWidget(self.edit)
         self.setLayout(self.layout)
 
     def apply(self):
-        zencad.settings.set(self.path, self.edit.text())
+        Settings.set(self.path, self.edit.text())
 
     def restore(self):
         pass
@@ -59,18 +59,17 @@ class Checker(QWidget):
         self.setLayout(self.layout)
 
     def apply(self):
-        #zencad.settings.start_screen(self.check.checkState() == 0)
-        zencad.settings.set(self.path, self.check.checkState() != 0)
+        Settings.set(self.path, self.check.checkState() != 0)
 
     def restore(self):
         self.check.setCheckState(
-            2 if zencad.settings.get(self.path) == "true" else 0)
+            2 if Settings.get(self.path) == "true" else 0)
 
 
 class ColorChanger(QWidget):
     def __init__(self):
         super().__init__()
-        values = zencad.settings.Settings.get_default_color()
+        values = Settings.get(["view", "default_color"])
 
         self.defbutton = QPushButton("Mech")
         self.defbutton.clicked.connect(self.set_default)
@@ -97,17 +96,16 @@ class ColorChanger(QWidget):
         pass
 
     def apply(self):
-
         values = tuple([float(e.text()) for e in self.edits])
-        if values != zencad.settings.get_default_color():
-            print("You should reevaluate script for color applying")
-        values = zencad.settings.Settings.set_default_color(*values)
+        # if values != Settings.get(["view", "default_color"]):
+        #    print("You should reevaluate script for color applying")
+        Settings.set(["view", "default_color"], values)
 
     def set_default(self):
-        self.edits[0].setText(str(round(zencad.color.mech.r, 5)))
-        self.edits[1].setText(str(round(zencad.color.mech.g, 5)))
-        self.edits[2].setText(str(round(zencad.color.mech.b, 5)))
-        self.edits[3].setText(str(round(zencad.color.mech.a, 5)))
+        self.edits[0].setText(str(round(Color.mech.r, 5)))
+        self.edits[1].setText(str(round(Color.mech.g, 5)))
+        self.edits[2].setText(str(round(Color.mech.b, 5)))
+        self.edits[3].setText(str(round(Color.mech.a, 5)))
 
 
 class SettingsWidget(QDialog):
@@ -115,9 +113,6 @@ class SettingsWidget(QDialog):
 
     def __init__(self):
         super().__init__()
-
-        settings = zencad.settings.Settings()
-        zencad.settings.restore()
 
         self.ok_button = QPushButton("Ok")
         self.cancel_button = QPushButton("Cancel")
@@ -147,7 +142,6 @@ class SettingsWidget(QDialog):
         append(self.texteditor_edit)
         append(self.default_color_edit)
         append(self.not_start_widget)
-        # append(self.bind_widget)
         append(self.marker_size_edit)
         append(self.chordial_deflection_edit)
 
@@ -164,7 +158,7 @@ class SettingsWidget(QDialog):
     def save_all(self):
         for a in self.appliers:
             a.apply()
-        zencad.settings.store()
+        Settings.store()
 
     def ok_handle(self):
         self.save_all()
@@ -174,8 +168,12 @@ class SettingsWidget(QDialog):
         self.reject()
 
 
-if __name__ == "__main__":
+def doit():
     import sys
     app = QApplication(sys.argv[1:])
     wdg = SettingsWidget()
     wdg.exec()
+
+
+if __name__ == "__main__":
+    doit()
