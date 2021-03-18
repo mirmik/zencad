@@ -17,11 +17,14 @@ import OCC.Core.BRepPrimAPI
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
 from zenframe.util import print_to_stderr
-from zencad.interactive.interactive_object import AxisInteractiveObject
+from zencad.interactive.interactive_object import AxisInteractiveObject, ShapeInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
 import zencad.geom.trans
 
+from OpenGL.GLUT import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
 STARTED_YAW = math.pi * (7 / 16)
@@ -80,6 +83,7 @@ class DisplayWidget(BaseViewer):
         self._rightisdown = False
         self._drawtext = True
         self._perspective_mode = False
+        self._first_shape = None
         self.mousedown = False
         self.keyboard_retranslate_mode = True
 
@@ -213,6 +217,12 @@ class DisplayWidget(BaseViewer):
 
     def attach_scene(self, scene):
         scene.display = self
+
+        if self._first_shape is None:
+            for iobj in scene.interactives:
+                if isinstance(iobj, ShapeInteractiveObject):
+                    self._first_shape = iobj.shape
+                    break
 
         for iobj in scene.interactives:
             self._display.GetContext().Display(iobj.ais_object, False)
@@ -521,6 +531,8 @@ class DisplayWidget(BaseViewer):
                 self.keyboard_retranslate_mode = data["en"]
             elif cmd == "screenshot":
                 self.addon_screenshot_upload()
+            elif cmd == "save_screenshot":
+                self.save_screenshot()
             elif cmd == "console":
                 sys.stdout.write(data["data"])
         except Exception as ex:
@@ -568,3 +580,101 @@ class DisplayWidget(BaseViewer):
         #self.view.set_eye(self.view.eye() + vec * koeff)
         # self.location_changed_handle()
         # self.view.redraw()
+
+    def export_file_for_one_shape(self, filters, defaultFilter):
+        # if self.scene.total() != 1 + self.count_of_helped_shapes:
+        #    print("more/less than one shape in scene:", self.scene.total() - self.count_of_helped_shapes)
+        #    return False, "", None
+
+        shape = self._first_shape
+
+        if shape is None:
+            raise Exception("Display widget hasn't ShapeInteractiveObject")
+
+        path = QtWidgets.QFileDialog.getSaveFileName(
+            self, "STL Export", QtCore.QDir.currentPath(), filters, defaultFilter
+        )
+
+        path = path[0]
+        return True, path, shape
+
+    def addon_exportstl(self):
+        from zencad.convert.api import _to_stl
+
+        ok, path, shape = self.export_file_for_one_shape(
+            filters="*.stl;;*.*",
+            defaultFilter="*.stl")
+
+        if ok == False or path == "":
+            return
+
+        d, okPressed = QtWidgets.QInputDialog.getDouble(
+            self, "Get double", "Value:", 0.01, 0, 10, 10
+        )
+
+        if not okPressed:
+            return
+
+        _to_stl(shape, path, d)
+        print("Make STL procedure finished.")
+
+    def addon_exportbrep(self):
+        from zencad.convert.api import _to_brep
+        ok, path, shape = self.export_file_for_one_shape(
+            filters="*.brep;;*.*",
+            defaultFilter="*.brep")
+
+        if ok == False or path == "":
+            return
+
+        _to_brep(shape, path)
+        print("Save BREP procedure finished.")
+
+    def save_screenshot(self):
+        filters = "*.png;;*.bmp;;*.jpg;;*.*"
+        defaultFilter = "*.png"
+
+        retpath = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Dump image", QtCore.QDir.currentPath(), filters, defaultFilter
+        )
+
+        path = retpath[0]
+
+        if path == "":
+            return
+
+        buf = glReadPixels(0, 0, self.width(), self.height(),
+                           GL_RGBA, GL_UNSIGNED_BYTE)
+
+        pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(buf, self.width(), self.height(),
+                                                      QtGui.QImage.Format_RGBA8888).mirrored(False, True))
+
+        file = QtCore.QFile(path)
+        file.open(QtCore.QIODevice.WriteOnly)
+        pixmap.save(file, "PNG")
+        # self.screen_saver.set_background(self.last_screen)
+        # self.openlock.unlock()
+
+    def addon_to_freecad_action(self):
+        from zencad.convert.api import _to_brep
+        import tempfile
+
+        # if self.scene.total() != 1 + self.count_of_helped_shapes:
+        #    print("more/less than one shape in scene:", self.scene.total() - self.count_of_helped_shapes)
+        #    return False, "", None
+
+        tmpfl = tempfile.mktemp(".brep")
+        # print(tmpfl)
+        cb = QtWidgets.QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(
+            'import Part; export = Part.Shape(); export.read("{}"); Part.show(export); Gui.activeDocument().activeView().viewAxonometric(); Gui.SendMsgToActiveView("ViewFit")'.format(
+                tmpfl
+            ),
+            mode=cb.Clipboard,
+        )
+        _to_brep(self._first_shape, tmpfl)
+        QtWidgets.QMessageBox.information(
+            self, self.tr("ToFreeCad"), self.tr(
+                "Script copied to clipboard. Don't close gui before script placing.")
+        )

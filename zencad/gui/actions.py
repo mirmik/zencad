@@ -76,7 +76,8 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         self._current_client.send({"cmd": "to_freecad"})
 
     def screenshotAction(self):
-        # TODO: Востановить алгоритм взятия скриншота с дампом view буффера.
+        self._current_client.send({"cmd": "save_screenshot"})
+        return
 
         filters = "*.png;;*.bmp;;*.jpg;;*.*"
         defaultFilter = "*.png"

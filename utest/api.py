@@ -37,6 +37,7 @@ try:
     import curve3_test
     import curve2_test
     import widgets_test
+    import convert
     import reflection
 except Exception as ex:
     print(ex)
@@ -71,3 +72,4 @@ if __name__ == "__main__":
     execute_test(trans_test)
     execute_test(curve3_test)
     execute_test(curve2_test)
+    execute_test(convert)
