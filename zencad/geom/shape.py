@@ -260,7 +260,7 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
 
     def uniform_points(self, npoints, strt=None, fini=None):
         params = self.uniform(npoints, strt, fini)
-        return [self.d0(p) in params]
+        return [self.d0(p) for p in params]
 
     def bbox(self):
         box = Bnd_Box()

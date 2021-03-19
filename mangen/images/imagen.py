@@ -295,7 +295,7 @@ doscreen(
     triedron=True,
 )
 doscreen(
-    model=polygon(pnts=[(0, 0), (0, 40), (20, 10), (10, 0)], wire=True),
+    model=polygon(pnts=[(0, 0), (0, 40), (20, 10), (10, 0)]),
     path="polygon1.png",
     size=wsize,
     yaw=yaw2d,

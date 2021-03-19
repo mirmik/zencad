@@ -69,3 +69,26 @@ def _make_shell(vec):
 @lazy.lazy(cls=shape_generator)
 def make_shell(vec):
     return _make_shell(vec)
+
+
+@lazy
+def convex_hull(pnts, incremental=False, qhull_options=None):
+    from scipy.spatial import ConvexHull
+
+    faces = ConvexHull(pnts, incremental=False, qhull_options=None).simplices
+
+    return faces
+
+
+def _convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None):
+    from scipy.spatial import ConvexHull
+
+    faces = ConvexHull(pnts, incremental, qhull_options).simplices
+    m = _polyhedron(pnts, faces, shell=shell)
+
+    return m
+
+
+@lazy.lazy(cls=shape_generator)
+def convex_hull_shape(*args, **kwargs):
+    return _convex_hull_shape(*args, **kwargs)

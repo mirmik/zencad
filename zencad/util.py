@@ -159,6 +159,10 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __repr__(self):
         return f"point3({self.x},{self.y},{self.z})"
 
+    def distance(self, oth):
+        diff = self - oth
+        return numpy.linalg.norm(diff)
+
 
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):
