@@ -9,6 +9,7 @@ from zencad.interactive.interactive_object import create_interactive_object
 from zencad.axis import Axis
 from zencad.geom.shape import Shape, LazyObjectShape
 from zencad.util import to_Vertex, to_GeomPoint
+from zencad.color import default_color
 
 import numpy
 
@@ -27,7 +28,7 @@ class Scene:
         self.interactives = []
         self.display = None
 
-    def add(self, obj, color=None):
+    def add(self, obj, color=default_color()):
         from zencad.interactive.displayable import Displayable
 
         obj = evalcache.unlazy_if_need(obj)

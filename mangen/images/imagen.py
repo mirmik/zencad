@@ -6,10 +6,15 @@ import os
 import zencad.internal_models
 import OCC.Display.OCCViewer
 from OCC.Core.Image import Image_PixMap
-from OCC.Core.gp import gp_Dir
+from OCC.Core.gp import gp_Dir, gp_Lin
 
 from zencad.interactive.line import arrow
 
+from OCC.Core.Geom import Geom_Line
+from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
+from OCC.Core.AIS import AIS_Axis
+
+REVERSE_COLOR = True
 wsize = (300, 200)
 
 
@@ -35,11 +40,7 @@ class OffscreenRenderer(OCC.Display.OCCViewer.Viewer3d):
         path = self.path
 
         self.View.Dump(path)
-        # if not os.path.isfile(path):
-        #    raise IOError("OffscreenRenderer failed to render image to file")
-
-        #print("OffscreenRenderer content dumped to %s" % path)
-        # return r
+        #self.View.ToPixMap(self.screen_size[0], self.screen_size[1])
 
 
 def dock(sz): return box(sz, sz, 2, center=True).down(1)
@@ -56,7 +57,12 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
         mmm = model
         if isinstance(mmm, evalcache.LazyObject):
             mmm = mmm.unlazy()
-        scn.add(mmm)
+
+        c = zencad.default_color()
+        if REVERSE_COLOR:
+            c = (c[2], c[1], c[0])
+
+        scn.add(mmm, c)
     except:
         for m in model:
             if isinstance(m, (tuple, list)):
@@ -65,12 +71,18 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
             else:
                 c = zencad.default_color()
 
+            if REVERSE_COLOR:
+                c = (c[2], c[1], c[0])
+
             mod = m
             if isinstance(mod, evalcache.LazyObject):
                 mod = mod.unlazy()
 
             if isinstance(mod, zencad.util.point3):
-                scn.add(mod, color(1, 0, 0))
+                c = color(1, 0, 0)
+                if REVERSE_COLOR:
+                    c = (c[2], c[1], c[0])
+                scn.add(mod, c)
 
             else:
                 scn.add(mod, c)
@@ -91,6 +103,24 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
 
     for i in scn.interactives:
         render.Context.Display(i.ais_object, True)
+        i.bind_context(render.Context)
+
+    if triedron:
+
+        x_axis = AIS_Axis(
+            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(1, 0, 0)))))
+        y_axis = AIS_Axis(
+            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(0, 1, 0)))))
+        z_axis = AIS_Axis(
+            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(0, 0, 1)))))
+
+        x_axis.SetColor(Quantity_Color(1, 0, 0, Quantity_TOC_RGB))
+        y_axis.SetColor(Quantity_Color(0, 1, 0, Quantity_TOC_RGB))
+        z_axis.SetColor(Quantity_Color(0, 0, 1, Quantity_TOC_RGB))
+
+        render.Context.Display(x_axis, True)
+        render.Context.Display(y_axis, True)
+        render.Context.Display(z_axis, True)
 
     render.View.Camera().SetDirection(gp_Dir(
         math.cos(pitch) * math.cos(yaw),
