@@ -8,6 +8,8 @@ from OCC.Core.GC import GC_MakeCircle
 from OCC.Core.GeomAbs import GeomAbs_C2
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
 from OCC.Core.ShapeFix import ShapeFix_Face
+from OCC.Core.BRepFill import brepfill
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakePolygon
 import OCC.Core.Addons
 
 
@@ -25,7 +27,7 @@ import zencad.geom.operations as operations
 import zencad.geom.boolops as boolops
 import zencad.geom.curve as curve
 from zencad.geom.trans import rotateZ
-from zencad.util import vector3, point3
+from zencad.util import vector3, point3, points
 
 from zencad.opencascade_types import *
 
@@ -57,9 +59,15 @@ def _fill(wires):
     return Shape(fixer.Face())
 
 
-def _polygon(pnts, wire=False):
-    wr = wire_module._polysegment(pnts, closed=True)
-    return wr if wire else _fill(wr)
+def _polygon(pnts):
+    pnts = points(pnts)
+    mk = BRepBuilderAPI_MakePolygon()
+
+    for i in range(len(pnts)):
+        mk.Add(pnts[i].Pnt())
+
+    mk.Close()
+    return Shape(BRepBuilderAPI_MakeFace(mk.Shape()).Face())
 
 
 def _rectangle_wire(a, b, center):
@@ -205,8 +213,8 @@ def circle(r, angle=None, wire=False):
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def polygon(pnts, wire=False):
-    return _polygon(pnts, wire)
+def polygon(pnts):
+    return _polygon(pnts)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
@@ -319,3 +327,12 @@ def _make_face(surf, u1=None, u2=None, v1=None, v2=None):
     algo = BRepBuilderAPI_MakeFace(surf.Surface(), u1, u2, v1, v2, 1e-6)
     algo.Build()
     return Shape(algo.Face())
+
+
+def _ruled(a, b):
+    return Shape(brepfill.Face(a.Edge(), b.Edge()))
+
+
+@lazy.lazy(cls=shape_generator)
+def ruled(a, b):
+    return _ruled(a, b)

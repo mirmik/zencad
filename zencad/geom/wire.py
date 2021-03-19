@@ -56,13 +56,17 @@ def _polysegment(pnts, closed=False) -> Shape:
 
     mkWire = BRepBuilderAPI_MakeWire()
 
+    def __make_edge(a, b):
+        try:
+            return BRepBuilderAPI_MakeEdge(to_Pnt(a), to_Pnt(b)).Edge()
+        except:
+            raise Exception(f"Cannot make edge segment from points {a}, {b}")
+
     for i in range(len(pnts)-1):
-        mkWire.Add(BRepBuilderAPI_MakeEdge(
-            to_Pnt(pnts[i]), to_Pnt(pnts[i + 1])).Edge())
+        mkWire.Add(__make_edge(pnts[i], pnts[i + 1]))
 
     if (closed):
-        mkWire.Add(BRepBuilderAPI_MakeEdge(
-            to_Pnt(pnts[len(pnts) - 1]), to_Pnt(pnts[0])).Edge())
+        mkWire.Add(__make_edge(pnts[len(pnts) - 1], pnts[0]))
 
     return Shape(mkWire.Wire())
 

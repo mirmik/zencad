@@ -3,9 +3,14 @@ from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeChamfer, BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeFillet2d
+from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 
+from OCC.Core.TopAbs import TopAbs_REVERSED
+from OCC.Core.TopLoc import TopLoc_Location
 from zencad.geom.near import _near_vertex
 from zencad.util import *
+
+import itertools
 
 
 def _restore_shapetype(shp):
@@ -115,3 +120,59 @@ def _fillet2d(shp, r, refs=None):
 @lazy.lazy(cls=shape_generator)
 def fillet2d(shp, r, refs=None):
     return _fillet2d(shp, r, refs)
+
+
+def _triangulate_face(shp, deflection):
+    mesh = BRepMesh_IncrementalMesh(shp.Shape(), deflection)
+
+    reverse_orientation = shp.Face().Orientation() == TopAbs_REVERSED
+
+    L = TopLoc_Location()
+    triangulation = BRep_Tool.Triangulation(shp.Face(), L)
+
+    Nodes = triangulation.Nodes()
+    Triangles = triangulation.Triangles()
+
+    triangles = []
+    for i in range(1, triangulation.NbTriangles() + 1):
+        tri = Triangles(i)
+        a, b, c = tri.Get()
+
+        if reverse_orientation:
+            triangles.append((b-1, a-1, c-1))
+        else:
+            triangles.append((a-1, b-1, c-1))
+
+    nodes = []
+    for i in range(1, triangulation.NbNodes() + 1):
+        nodes.append(point3(Nodes(i)))
+
+    return nodes, triangles
+
+
+@lazy.lazy(cls=shape_generator)
+def triangulate_face(shp, deflection):
+    return _triangulate_face(shp, deflection)
+
+
+def _triangulate(shp, deflection):
+    results = []
+    nodes = []
+    triangles = []
+
+    for f in shp.faces():
+        results.append(_triangulate_face(f, deflection))
+
+    for r in results:
+        nsize = len(nodes)
+        nodes.extend(r[0])
+
+        for t in r[1]:
+            triangles.append([t[0]+nsize, t[1]+nsize, t[2]+nsize])
+
+    return nodes, triangles
+
+
+@lazy
+def triangulate(shp, deflection):
+    return _triangulate(shp, deflection)

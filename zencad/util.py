@@ -153,6 +153,12 @@ class point3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __round__(self, r):
         return point3(round(self.x, r), round(self.y, r), round(self.z, r))
 
+    def __str__(self):
+        return f"point3({self.x},{self.y},{self.z})"
+
+    def __repr__(self):
+        return f"point3({self.x},{self.y},{self.z})"
+
 
 class vector3(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __new__(cls, *args, info=None):

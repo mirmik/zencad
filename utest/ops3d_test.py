@@ -75,3 +75,11 @@ class Ops3dProbe(unittest.TestCase):
         zencad.box(20).chamfer(1, [(5, 0, 0)])
         zencad.box(20).chamfer(refs=[(5, 0, 0)], r=1)
         zencad.chamfer(shp=zencad.box(20), refs=[(5, 0, 0)], r=1)
+
+    def test_ruled(self):
+        zencad.ruled(
+            zencad.segment((0, 0, 0), (10, 10, 10)),
+            zencad.segment((10, 0, 0), (20, 10, 10)))
+
+    def test_triangulation(self):
+        zencad.triangulate(zencad.box(10), 0.1)
