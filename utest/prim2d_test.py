@@ -59,8 +59,7 @@ class Prim2dprobe(unittest.TestCase):
 
     def test_polygon_probe(self):
         pnts = [(0, 0), (0, 10), (10, 0)]
-        zencad.polygon(pnts=pnts, wire=True)
-        zencad.polygon(pnts=pnts, wire=False)
+        zencad.polygon(pnts=pnts)
 
     def test_ngon_probe(self):
         zencad.ngon(r=20, n=3, wire=True)
