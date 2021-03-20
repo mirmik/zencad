@@ -23,12 +23,14 @@ from zencad.lazifier import *
 import zencad.geom.trans
 from OCC.Core.Bnd import Bnd_Box
 import zencad.geom.transformable
+import binascii
 from zencad.util import to_numpy, point3, vector3
 from OCC.Core.BRepBndLib import brepbndlib
 from zencad.geom.curve_algo import CurveAlgo
 from OCC.Core.BinTools import BinTools_ShapeSet, bintools
 
 import io
+import base64 as b64
 import numpy
 
 
@@ -102,47 +104,18 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return vector3(shp._SLProps(u, v).Normal())
 
     def __getstate__(self):
-        theShapeSet = BinTools_ShapeSet()
-        out = io.BytesIO()
-
-        if self._shp.IsNull():
-            theShapeSet.Add(self._shp)
-            string = theShapeSet.WriteGeometryToString(out)
-            return {
-                "shape": string,
-                "shapeId": -1,
-                "locId": -1,
-                "orient": -1
-            }
-
-        else:
-            shapeId = theShapeSet.Add(self._shp)
-            locId = theShapeSet.Locations().Index(self._shp.Location())
-            orient = self._shp.Orientation()
-
-            string = theShapeSet.WriteGeometryToString()
-            return {
-                "shape": string,
-                "shapeId": shapeId,
-                "locId": locId,
-                "orient": orient
-            }
+        return {"shape": self._shp}
 
     def __setstate__(self, dct):
-        theShapeSet = BinTools_ShapeSet()
-        theShapeSet.Read(dct["shape"])
-        shapeId = dct["shapeId"]
-        locId = dct["locId"]
-        orient = dct["orient"]
+        from zencad.geom.offset import _shapefix_solid
+        try:
+            self._shp = dct["shape"]
 
-        if (shapeId <= 0 or shapeId > theShapeSet.NbShapes()):
-            return
-
-        anOrient = TopAbs_Orientation(orient)
-
-        self._shp = theShapeSet.Shape(shapeId)
-        self._shp.Location(theShapeSet.Locations().Location(locId))
-        self._shp.Orientation(anOrient)
+            # thicksolid даёт невалидный пиклинг.
+            if self.is_solid():
+                self._shp = _shapefix_solid(Shape(self._shp)).Shape()
+        except Exception as ex:
+            print(ex)
 
     def transform(self, trans):
         shp = BRepBuilderAPI_Transform(self._shp, trans._trsf, True).Shape()

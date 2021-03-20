@@ -1,5 +1,6 @@
 from OCC.Core.TopTools import TopTools_ListOfShape
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakeThickSolid, BRepOffsetAPI_MakeOffsetShape
+from OCC.Core.ShapeFix import ShapeFix_Solid
 
 from zencad.geom.near import _near_face
 from zencad.geom.shape import Shape, shape_generator
@@ -7,6 +8,10 @@ from zencad.lazifier import *
 
 
 def _thicksolid(proto, t, refs):
+    algo0 = ShapeFix_Solid(proto.Solid())
+    algo0.Perform()
+    proto = Shape(algo0.Solid())
+
     facesToRemove = TopTools_ListOfShape()
 
     for p in refs:
@@ -14,7 +19,10 @@ def _thicksolid(proto, t, refs):
 
     algo = BRepOffsetAPI_MakeThickSolid()
     algo.MakeThickSolidByJoin(proto.Shape(), facesToRemove, t, 1.e-3)
-    return Shape(algo.Shape())
+
+    algo2 = ShapeFix_Solid(algo.Shape())
+    algo2.Perform()
+    return Shape(algo2.Solid())
 
 
 @lazy.lazy(cls=shape_generator)
@@ -32,3 +40,9 @@ def _offset(shp, off):
 @lazy.lazy(cls=shape_generator)
 def offset(*args, **kwargs):
     return _offset(*args, **kwargs)
+
+
+def _shapefix_solid(shp):
+    algo2 = ShapeFix_Solid(shp.Shape())
+    algo2.Perform()
+    return Shape(algo2.Solid())

@@ -5,6 +5,7 @@ from OCC.Core.Aspect import Aspect_TOL_SOLID
 from OCC.Core.TopoDS import TopoDS_Vertex
 from OCC.Core.Geom import Geom_CartesianPoint
 from OCC.Core.TopLoc import TopLoc_Location
+import OCC.Core
 
 from zencad.geom.shape import Shape
 from zencad.color import Color, default_color, default_wire_color
@@ -125,6 +126,19 @@ def create_interactive_object(obj, color=None):
 
     if isinstance(color, (tuple, list)):
         color = Color(*color)
+
+    if isinstance(obj, (
+        OCC.Core.TopoDS.TopoDS_Edge,
+        OCC.Core.TopoDS.TopoDS_Wire,
+        OCC.Core.TopoDS.TopoDS_Vertex,
+        OCC.Core.TopoDS.TopoDS_Face,
+        OCC.Core.TopoDS.TopoDS_Compound,
+        OCC.Core.TopoDS.TopoDS_CompSolid,
+        OCC.Core.TopoDS.TopoDS_Shell,
+        OCC.Core.TopoDS.TopoDS_Solid,
+        OCC.Core.TopoDS.TopoDS_Shape
+    )):
+        obj = Shape(obj)
 
     if isinstance(obj, Shape):
         return ShapeInteractiveObject(obj, color)
