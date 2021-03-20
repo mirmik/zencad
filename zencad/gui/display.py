@@ -6,13 +6,17 @@ import math
 import time
 import os
 
-from OCC.Core.AIS import AIS_Axis, AIS_Shaded
+from OCC.Core.AIS import AIS_Axis, AIS_Shaded, AIS_Shape
 from OCC.Core.Aspect import Aspect_GFM_VER
 from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
 from OCC.Core.Graphic3d import Graphic3d_Camera
+from OCC.Core.StdSelect import StdSelect_ViewerSelector3d
+from OCC.Core.SelectMgr import SelectMgr_SelectionManager
 import OCC.Core.BRepPrimAPI
+from OCC.Core.IntCurvesFace import IntCurvesFace_ShapeIntersector
+from OCC.Core.Precision import precision_Confusion
 
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
@@ -71,6 +75,9 @@ class DisplayWidget(BaseViewer):
                  communicator=None):
 
         super().__init__()
+        self.View = self._display.View
+        self.Viewer = self._display.Viewer
+        self.Context = self._display.Context
 
         self._communicator = communicator
         self._orient = 1
@@ -86,6 +93,7 @@ class DisplayWidget(BaseViewer):
         self._first_shape = None
         self.mousedown = False
         self.keyboard_retranslate_mode = True
+        self.tracking_mode = False
 
         self.last_redraw = time.time()
         self.animate_updated = threading.Event()
@@ -102,7 +110,7 @@ class DisplayWidget(BaseViewer):
             AxisInteractiveObject(Axis(0, 0, 1), color.blue)
         )
         for iobj in self.camera_center_axes:
-            self._display.GetContext().Display(iobj.ais_object, False)
+            self.Context.Display(iobj.ais_object, False)
             iobj.bind_context(self._display.GetContext())
 
         self.set_center_visible(False)
@@ -443,10 +451,64 @@ class DisplayWidget(BaseViewer):
         else:
             self.animate_updated.set()
 
+    def viewline(self, x, y):
+        Xv, Yv, Zv, Vx, Vy, Vz = self.View.ConvertWithProj(x, y)
+        return gp_Lin(gp_Pnt(Xv, Yv, Zv), gp_Dir(Vx, Vy, Vz))
+
+    def Select(self, X, Y):
+        self.Context.MoveTo(X, Y, self.View, False)
+
+        self.Context.Select(False)
+        self.Context.InitSelected()
+
+        self.selected_shapes = []
+        self.selected_ishapes = []
+        if self.Context.MoreSelected():
+            if self.Context.HasSelectedShape():
+                self.selected_shapes.append(self.Context.SelectedShape())
+                self.selected_ishapes.append(
+                    self.Context.SelectedInteractive())
+
+        # disable selection for prevent hilighting
+        self.Context.ClearSelected(False)
+
+    def intersect_point(self, x, y):
+        self.Select(x, y)
+
+        viewLine = self.viewline(x, y)
+
+        for i in range(len(self.selected_shapes)):
+            hShape = AIS_Shape.DownCast(self.selected_ishapes[i])
+            shape = hShape.Shape()
+
+            loc = self.Context.Location(hShape)
+            loc_shape = shape.Located(loc)
+
+            shapeIntersector = IntCurvesFace_ShapeIntersector()
+            shapeIntersector.Load(loc_shape, precision_Confusion())
+            shapeIntersector.Perform(viewLine, float("-inf"), float("+inf"))
+
+            if shapeIntersector.NbPnt() >= 1:
+                ip = shapeIntersector.Pnt(1)
+                return point3(ip), True
+            else:
+                continue
+
+        return point3(), False
+
     def mouseMoveEvent(self, evt):
         pt = evt.pos()
         buttons = int(evt.buttons())
         modifiers = evt.modifiers()
+
+        if self.tracking_mode and not self.mousedown:
+            ip, sts = self.intersect_point(evt.x(), evt.y())
+
+            if self._communicator:
+                self._communicator.send({
+                    "cmd": "trackinfo",
+                    "data": (ip.to_tuple(), sts)
+                })
 
         # ROTATE
         if (buttons == QtCore.Qt.LeftButton or
@@ -493,6 +555,9 @@ class DisplayWidget(BaseViewer):
     def _resize_external(self, size):
         if self._inited0:
             self.resize(QtCore.QSize(*size))
+
+    def tracking_mode_enable(self, en):
+        self.tracking_mode = en
 
     def external_communication_command(self, data):
         cmd = data["cmd"]

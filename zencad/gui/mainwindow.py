@@ -57,8 +57,8 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self.marker_handler("w", data)
         elif cmd == "location":
             self._last_location = data["loc"]
-        # elif cmd == "trackinfo":
-        #    self.info_widget.set_tracking_info(data["data"])
+        elif cmd == "trackinfo":
+            self.info_widget.set_tracking_info(data["data"])
         # elif cmd == "finish_screen":
         #    self.finish_screen(data["data"][0], data["data"][1], procpid)
         # elif cmd == "fault":
