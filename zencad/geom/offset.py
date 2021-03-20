@@ -8,10 +8,6 @@ from zencad.lazifier import *
 
 
 def _thicksolid(proto, t, refs):
-    algo0 = ShapeFix_Solid(proto.Solid())
-    algo0.Perform()
-    proto = Shape(algo0.Solid())
-
     facesToRemove = TopTools_ListOfShape()
 
     for p in refs:
@@ -20,9 +16,7 @@ def _thicksolid(proto, t, refs):
     algo = BRepOffsetAPI_MakeThickSolid()
     algo.MakeThickSolidByJoin(proto.Shape(), facesToRemove, t, 1.e-3)
 
-    algo2 = ShapeFix_Solid(algo.Shape())
-    algo2.Perform()
-    return Shape(algo2.Solid())
+    return Shape(algo.Shape())
 
 
 @lazy.lazy(cls=shape_generator)
