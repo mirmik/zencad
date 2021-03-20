@@ -25,6 +25,7 @@ from zencad.interactive.interactive_object import AxisInteractiveObject, ShapeIn
 import zencad.color as color
 from zencad.axis import Axis
 import zencad.geom.trans
+import zencad.geom.solid
 
 from OpenGL.GLUT import *
 from OpenGL.GL import *
@@ -105,13 +106,23 @@ class DisplayWidget(BaseViewer):
             self.enable_axis_triedron(True)
 
         self.camera_center_axes = (
-            AxisInteractiveObject(Axis(1, 0, 0), color.red),
-            AxisInteractiveObject(Axis(0, 1, 0), color.green),
-            AxisInteractiveObject(Axis(0, 0, 1), color.blue)
+            AxisInteractiveObject(Axis(1, 0, 0), zencad.color.Color.red),
+            AxisInteractiveObject(Axis(0, 1, 0), zencad.color.Color.green),
+            AxisInteractiveObject(Axis(0, 0, 1), zencad.color.Color.blue)
         )
         for iobj in self.camera_center_axes:
             self.Context.Display(iobj.ais_object, False)
             iobj.bind_context(self._display.GetContext())
+
+        self.msphere = zencad.geom.solid._sphere(1)
+        self.MarkerQController = ShapeInteractiveObject(
+            self.msphere, color=zencad.color.Color(1, 0, 0))
+        self.MarkerWController = ShapeInteractiveObject(
+            self.msphere, color=zencad.color.Color(0, 1, 0))
+        self.Context.Display(self.MarkerWController.ais_object, False)
+        self.Context.Display(self.MarkerQController.ais_object, False)
+        self.MarkerQController.bind_context(self.Context)
+        self.MarkerWController.bind_context(self.Context)
 
         self.set_center_visible(False)
 
@@ -291,27 +302,48 @@ class DisplayWidget(BaseViewer):
 
         self.autoscale()
 
+    def redraw_marker(self, qw, x, y, z):
+        if qw == "q":
+            marker = self.MarkerQController
+        elif qw == "w":
+            marker = self.MarkerWController
+
+        marker.relocate(zencad.translate(x, y, z))
+        marker.hide(x == 0 and y == 0 and z == 0)
+
+        self.redraw()
+
     def markerQPressed(self):
         self.marker1 = self.intersect_point(
-            self.lastPosition.x(), self.lastPosition.y()
+            self.lastPosition[0], self.lastPosition[1]
         )
         x = self.marker1[0].x
         y = self.marker1[0].y
         z = self.marker1[0].z
 
-        # self.markerRequestQ.emit((x,y,z))
-        # self.redraw_marker("q",x,y,z)
+        if self._communicator:
+            self._communicator.send({
+                "cmd": "qmarker",
+                "x": x,
+                "y": y,
+                "z": z})
+        self.redraw_marker("q", x, y, z)
 
     def markerWPressed(self):
         self.marker2 = self.intersect_point(
-            self.lastPosition.x(), self.lastPosition.y()
+            self.lastPosition[0], self.lastPosition[1]
         )
         x = self.marker2[0].x
         y = self.marker2[0].y
         z = self.marker2[0].z
 
-        # self.markerRequestW.emit((x,y,z))
-        # self.redraw_marker("w",x,y,z)
+        if self._communicator:
+            self._communicator.send({
+                "cmd": "wmarker",
+                "x": x,
+                "y": y,
+                "z": z})
+        self.redraw_marker("w", x, y, z)
 
     def keyPressEvent(self, event):
         MOVE_SCALE = 0.05
@@ -522,6 +554,7 @@ class DisplayWidget(BaseViewer):
         pt = evt.pos()
         buttons = int(evt.buttons())
         modifiers = evt.modifiers()
+        self.lastPosition = (evt.x(), evt.y())
 
         if self.tracking_mode and not self.mousedown:
             ip, sts = self.intersect_point(evt.x(), evt.y())

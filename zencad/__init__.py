@@ -61,7 +61,7 @@ try:
 
     # Utility
     from zencad.util import *
-    from zencad.color import Color as color
+    from zencad.color import Color
     from zencad.color import default_color
     from zencad.lazifier import lazy
 

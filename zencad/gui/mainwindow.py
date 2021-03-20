@@ -38,6 +38,17 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         super().init_central_widget()
         self.central_widget_layout().addWidget(self.info_widget)
 
+    def marker_handler(self, qw, data):
+        fmt = '.5f'
+        x = data["x"]
+        y = data["y"]
+        z = data["z"]
+        idx = qw.upper()
+        print("{0}: x:{1}, y:{2}, z:{3}; point3({1},{2},{3})".format(
+            idx, format(x, fmt), format(y, fmt), format(z, fmt)))
+
+        self.info_widget.set_marker_data(qw, x, y, z)
+
     def message_handler(self, data, procpid):
         res = super().message_handler(data, procpid)
         if res:
