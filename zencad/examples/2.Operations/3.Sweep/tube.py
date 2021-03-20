@@ -51,10 +51,10 @@ disp(MODEL)
 
 disp(CUTTED_MODEL).right(S*1)
 
-disp(INTERNAL_SHELL, color(0.0, 0.0, 0.8, 0.7)).right(S*2)
+disp(INTERNAL_SHELL, color=(0.0, 0.0, 0.8, 0.7)).right(S*2)
 disp(CUTTED_MODEL).right(S*2)
 
-disp(INTERNAL_SHELL, color(0.0, 0.0, 0.8, 0.7)).right(S*3)
+disp(INTERNAL_SHELL, color=(0.0, 0.0, 0.8, 0.7)).right(S*3)
 
 
 show()

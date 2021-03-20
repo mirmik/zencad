@@ -67,6 +67,18 @@ Color.mech = Color(0.6, 0.6, 0.8)
 Color.transmech = Color(0.6, 0.6, 0.8, 0.8)
 Color.orange = Color(1, 0xa5/255, 0)
 
+white = Color.white
+black = Color.black
+red = Color.red
+green = Color.green
+blue = Color.blue
+yellow = Color.yellow
+magenta = Color.magenta
+cian = Color.cian
+mech = Color.mech
+transmech = Color.transmech
+orange = Color.orange
+
 
 def default_color():
     return Color(Settings.get(["view", "default_color"]))

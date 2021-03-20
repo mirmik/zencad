@@ -30,5 +30,5 @@ ucs = union(
 )
 
 disp(ucs)
-disp(st, color(1, 1, 1))
+disp(st, color=(1, 1, 1))
 show()

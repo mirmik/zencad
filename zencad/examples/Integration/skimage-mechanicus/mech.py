@@ -94,14 +94,14 @@ if __name__ == "__main__":
         if z.is_closed():
             zencad.display(
                 z.left(760 / 2).back(768 / 2).forw(760 +
-                                                   200), zencad.color(0, 1, 0)
+                                                   200), color=(0, 1, 0)
             )
         else:
             zencad.display(
                 z.left(760 / 2).back(768 / 2).forw(760 +
-                                                   200), zencad.color(1, 0, 0)
+                                                   200), color=(1, 0, 0)
             )
 
-    zencad.display(mechanicus, zencad.color(1, 1, 1))
-    zencad.display(base, zencad.color(0.2, 0.2, 0.2))
+    zencad.display(mechanicus, color=(1, 1, 1))
+    zencad.display(base, color=(0.2, 0.2, 0.2))
     zencad.show()

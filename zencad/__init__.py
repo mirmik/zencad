@@ -63,6 +63,7 @@ try:
     from zencad.util import *
     from zencad.color import Color
     from zencad.color import default_color
+    import zencad.color as color
     from zencad.lazifier import lazy
 
     # Transes

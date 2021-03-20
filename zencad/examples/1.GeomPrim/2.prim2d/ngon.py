@@ -20,7 +20,7 @@ NMin = 3
 NMax = 12
 
 for i in range(NMin, NMax + 1):
-	k = (i-NMin) / (NMax - NMin)
-	disp(ngon(r=10, n=i).right((i-NMin)*30).forw(30), color(k**2,k,1-k))
+    k = (i-NMin) / (NMax - NMin)
+    disp(ngon(r=10, n=i).right((i-NMin)*30).forw(30), Color(k**2, k, 1-k))
 
 show()

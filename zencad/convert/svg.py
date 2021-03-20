@@ -59,7 +59,7 @@ def sort_wires_by_face_area(cycles):
 def color_convert(zclr):
     import svgwrite
     import zencad.color
-    zclr = zencad.color(zclr)
+    zclr = zencad.color.Color(zclr)
     r, g, b, a = zclr.r, zclr.g, zclr.b, zclr.a
     r, g, b, a = (x * 100 for x in (r, g, b, a))
     return svgwrite.rgb(r, g, b, '%')
@@ -388,7 +388,7 @@ if __name__ == "__main__":
 
     zencad.hl(shp.down(2))
 
-    clr = zencad.color(0.5, 0, 0.5)
+    clr = zencad.color.Color(0.5, 0, 0.5)
 
     mapping = False
 
