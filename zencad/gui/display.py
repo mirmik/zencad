@@ -123,6 +123,8 @@ class DisplayWidget(BaseViewer):
         self.Context.Display(self.MarkerQController.ais_object, False)
         self.MarkerQController.bind_context(self.Context)
         self.MarkerWController.bind_context(self.Context)
+        self.MarkerWController.hide(True)
+        self.MarkerQController.hide(True)
 
         self.set_center_visible(False)
 
@@ -301,6 +303,8 @@ class DisplayWidget(BaseViewer):
         self._display.GetContext().DefaultDrawer().SetFaceBoundaryDraw(True)
 
         self.autoscale()
+        self.MarkerWController.hide(True)
+        self.MarkerQController.hide(True)
 
     def redraw_marker(self, qw, x, y, z):
         if qw == "q":

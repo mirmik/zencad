@@ -9,12 +9,13 @@ from OCC.Core.Image import Image_PixMap
 from OCC.Core.gp import gp_Dir, gp_Lin
 
 from zencad.interactive.line import arrow
+from PIL import Image
 
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCC.Core.AIS import AIS_Axis
 
-REVERSE_COLOR = True
+REVERSE_COLOR = False
 wsize = (300, 200)
 
 
@@ -32,14 +33,31 @@ class OffscreenRenderer(OCC.Display.OCCViewer.Viewer3d):
         self.Create()
         self.SetSize(screen_size[0], screen_size[1])
         self.SetModeShaded()
-        self.set_bg_gradient_color([206, 215, 222], [128, 128, 128])
+        self.set_bg_gradient_color([180, 180, 180], [128, 128, 128])
         # self.display_triedron()
         self.capture_number = 0
 
     def DoIt(self):
         path = self.path
+        size = self.screen_size
 
-        self.View.Dump(path)
+        raw = self.GetImageData(self.screen_size[0], self.screen_size[1])
+        raw = numpy.frombuffer(raw, dtype=np.uint8)
+
+        npixels = np.reshape(raw, (size[1], size[0], 3))
+        nnnpixels = np.flip(npixels, 0).reshape((size[0] * size[1] * 3))
+
+        rawiter = iter(nnnpixels)
+        pixels = list(zip(rawiter, rawiter, rawiter))
+
+        image = Image.new("RGB", (size[0], size[1]))
+        image.putdata(pixels)
+
+        # image.show()
+        image.save(path)
+
+        # self.View.Redraw()
+        # self.View.Dump(path)
         #self.View.ToPixMap(self.screen_size[0], self.screen_size[1])
 
 
@@ -79,7 +97,7 @@ def doscreen_impl(model, path, size, yaw=None, pitch=None, triedron=True):
                 mod = mod.unlazy()
 
             if isinstance(mod, zencad.util.point3):
-                c = color(1, 0, 0)
+                c = Color(1, 0, 0)
                 if REVERSE_COLOR:
                     c = (c[2], c[1], c[0])
                 scn.add(mod, c)

@@ -13,8 +13,7 @@ import signal
 import zenframe.argparse
 import zenframe.configuration
 
-zenframe.configuration.Configuration.TEMPLATE = """
-#!/usr/bin/env python3
+zenframe.configuration.Configuration.TEMPLATE = """#!/usr/bin/env python3
 #coding: utf-8
 
 from zencad import *
@@ -58,6 +57,13 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zencad.gui.startwdg import StartDialog
     from zencad.settings import Settings
     from zenframe.util import create_temporary_file
+    import PyQt5.QtWidgets
+    import PyQt5.QtGui
+
+    PyQt5.QtWidgets.QApplication.instance().setWindowIcon(
+        PyQt5.QtGui.QIcon(os.path.join(
+            os.path.dirname(__file__),
+            "industrial-robot.svg")))
 
     if openpath is None and not unbound:
         if Settings.get(["gui", "start_widget"]):

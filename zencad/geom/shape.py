@@ -26,7 +26,9 @@ import zencad.geom.transformable
 from zencad.util import to_numpy, point3, vector3
 from OCC.Core.BRepBndLib import brepbndlib
 from zencad.geom.curve_algo import CurveAlgo
+from OCC.Core.BinTools import BinTools_ShapeSet, bintools
 
+import io
 import numpy
 
 
@@ -100,12 +102,47 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return vector3(shp._SLProps(u, v).Normal())
 
     def __getstate__(self):
-        return {
-            "shape": self._shp,
-        }
+        theShapeSet = BinTools_ShapeSet()
+        out = io.BytesIO()
+
+        if self._shp.IsNull():
+            theShapeSet.Add(self._shp)
+            string = theShapeSet.WriteGeometryToString(out)
+            return {
+                "shape": string,
+                "shapeId": -1,
+                "locId": -1,
+                "orient": -1
+            }
+
+        else:
+            shapeId = theShapeSet.Add(self._shp)
+            locId = theShapeSet.Locations().Index(self._shp.Location())
+            orient = self._shp.Orientation()
+
+            string = theShapeSet.WriteGeometryToString()
+            return {
+                "shape": string,
+                "shapeId": shapeId,
+                "locId": locId,
+                "orient": orient
+            }
 
     def __setstate__(self, dct):
-        self._shp = dct["shape"]
+        theShapeSet = BinTools_ShapeSet()
+        theShapeSet.Read(dct["shape"])
+        shapeId = dct["shapeId"]
+        locId = dct["locId"]
+        orient = dct["orient"]
+
+        if (shapeId <= 0 or shapeId > theShapeSet.NbShapes()):
+            return
+
+        anOrient = TopAbs_Orientation(orient)
+
+        self._shp = theShapeSet.Shape(shapeId)
+        self._shp.Location(theShapeSet.Locations().Location(locId))
+        self._shp.Orientation(anOrient)
 
     def transform(self, trans):
         shp = BRepBuilderAPI_Transform(self._shp, trans._trsf, True).Shape()
@@ -370,7 +407,7 @@ for item in LazyObjectShape.transparent_methods:
 
 
 class nocached_shape_generator(evalcache.LazyObject):
-    """	Decorator for heavy functions.
+    """ Decorator for heavy functions.
             It use caching for lazy data restoring."""
 
     def __init__(self, *args, **kwargs):
@@ -383,7 +420,7 @@ class nocached_shape_generator(evalcache.LazyObject):
 
 
 class shape_generator(evalcache.LazyObject):
-    """	Decorator for lightweight functions.
+    """ Decorator for lightweight functions.
             It prevent caching."""
 
     def __init__(self, *args, **kwargs):
