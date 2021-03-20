@@ -291,6 +291,28 @@ class DisplayWidget(BaseViewer):
 
         self.autoscale()
 
+    def markerQPressed(self):
+        self.marker1 = self.intersect_point(
+            self.lastPosition.x(), self.lastPosition.y()
+        )
+        x = self.marker1[0].x
+        y = self.marker1[0].y
+        z = self.marker1[0].z
+
+        # self.markerRequestQ.emit((x,y,z))
+        # self.redraw_marker("q",x,y,z)
+
+    def markerWPressed(self):
+        self.marker2 = self.intersect_point(
+            self.lastPosition.x(), self.lastPosition.y()
+        )
+        x = self.marker2[0].x
+        y = self.marker2[0].y
+        z = self.marker2[0].z
+
+        # self.markerRequestW.emit((x,y,z))
+        # self.redraw_marker("w",x,y,z)
+
     def keyPressEvent(self, event):
         MOVE_SCALE = 0.05
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
