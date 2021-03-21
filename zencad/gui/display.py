@@ -41,7 +41,9 @@ class BaseViewer(QtOpenGL.QGLWidget):
     '''
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        fmt = QtOpenGL.QGLFormat()
+        super().__init__(fmt, parent=parent)
+
         self._display = OCCViewer.Viewer3d()
         self._inited = False
 
@@ -125,8 +127,9 @@ class DisplayWidget(BaseViewer):
         self.MarkerWController.bind_context(self.Context)
         self.MarkerWController.hide(True)
         self.MarkerQController.hide(True)
-
         self.set_center_visible(False)
+
+        self.InitDriver()
 
     def set_perspective(self, en):
         self._perspective_mode = en
@@ -249,6 +252,8 @@ class DisplayWidget(BaseViewer):
             self._display.GetContext().Display(iobj.ais_object, False)
             iobj.bind_context(self._display.GetContext())
 
+        self.autoscale()
+
     def autoscale(self, koeff=0.07):
         self._display.GetView().FitAll(koeff)
         self._display.GetView().Redraw()
@@ -353,8 +358,6 @@ class DisplayWidget(BaseViewer):
         MOVE_SCALE = 0.05
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
 
-        # print(event.key())
-
         if event.key() == QtCore.Qt.Key_F3:
             self.markerQPressed()
             return
@@ -425,8 +428,6 @@ class DisplayWidget(BaseViewer):
 
     def showEvent(self, event):
         if not self._inited0:
-            self.InitDriver()
-
             self._inited0 = True
 
     def paintEvent(self, event):
@@ -463,7 +464,6 @@ class DisplayWidget(BaseViewer):
         self.dragStartPosY = ev.y()
         self._display.StartRotation(self.dragStartPosX, self.dragStartPosY)
         self.temporary1 = event.pos()
-        # print(self.temporary1)
         self.mousedown = True
 
     def mouseReleaseEvent(self, event):
@@ -788,7 +788,6 @@ class DisplayWidget(BaseViewer):
         #    return False, "", None
 
         tmpfl = tempfile.mktemp(".brep")
-        # print(tmpfl)
         cb = QtWidgets.QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(
