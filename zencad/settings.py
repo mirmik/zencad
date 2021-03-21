@@ -24,7 +24,7 @@ class ZencadSettings(BaseSettings):
                 "vsplitter_position": (500, 300),
                 "console_hidden": False,
                 "texteditor_hidden": False,
-                "wsize": (640, 480)
+                "wsize": None
             },
             "markers": {
                 "size": 1
