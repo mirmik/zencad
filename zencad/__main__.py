@@ -60,10 +60,11 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
     import PyQt5.QtWidgets
     import PyQt5.QtGui
 
-    PyQt5.QtWidgets.QApplication.instance().setWindowIcon(
-        PyQt5.QtGui.QIcon(os.path.join(
-            os.path.dirname(__file__),
-            "industrial-robot.svg")))
+    iconpath = os.path.join(os.path.dirname(__file__), "industrial-robot.svg")
+    if not os.path.exists(iconpath):
+        iconpath = os.path.join(os.path.dirname(__file__), "zencad", "industrial-robot.svg") # for pyinstaller files configuration
+
+    PyQt5.QtWidgets.QApplication.instance().setWindowIcon(PyQt5.QtGui.QIcon())
 
     if openpath is None and not unbound:
         if Settings.get(["gui", "start_widget"]):
