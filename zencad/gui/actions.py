@@ -30,7 +30,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
             self,
             self.tr("About ZenCad Shower"),
             (
-                "<p>Widget for display zencad geometry."
+                "<p>Widget for displaying zencad geometry."
                 "<pre>{}\n"
                 "{}\n"
                 "ZenCad version: {}\n"
