@@ -5,7 +5,7 @@ import sys
 block_cipher = None
 
 datas = []
-for (p, d, f) in os.walk("./zencad/examples"):
+for (p, d, f) in os.walk("./zencad/"):
   datas.extend([(os.path.join(p,a), os.path.relpath(p, start=".")) for a in f])
 
 datas.append(("zencad/industrial-robot.svg", "zencad"))
