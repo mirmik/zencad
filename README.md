@@ -45,19 +45,6 @@ Related repos:
 	[https://github.com/mirmik/servoce](https://github.com/mirmik/servoce)  
 	[https://github.com/mirmik/evalcache](https://github.com/mirmik/evalcache)  
 
-### Source code structure:
-- ./zencad/ (package)
-  - examples/ (gui`s example scripts)
-  - gui/ (application and graphical interface code files)
-  - geom/ (main zencad api functions)
-  - . : other or not yet sorted....
-- ./docs/ (manual directory. GitHub pages links here)
-- ./mangen/ (scripts and texts for ./docs automated generation)
-- ./utest/ (unit tests)
-- ./tools/ (scripts for repository routine work)
-- ./expers/ (place for maintainer experiments :-) )
-
-
 HelloWorld
 ----------
 ```python
