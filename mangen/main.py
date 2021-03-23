@@ -49,11 +49,13 @@ def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
     writer.build_file(path, page)
 
 
+# Подготавка файлов русской версии.
 for f in os.listdir("ru"):
     target = os.path.splitext(f)[0] + ".html"
     page_generate("ru/" + target, "ZenCad",
                   os.path.join("ru", f), "ru/nav.md", lang="ru")
 
+# Подготавка файлов английской версии.
 for f in os.listdir("en"):
     target = os.path.splitext(f)[0] + ".html"
     page_generate(
