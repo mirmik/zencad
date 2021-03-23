@@ -1,6 +1,6 @@
 ZenCad
 ======
-NOTE: Astrologers have announced a transitional period. ZenCad migrate to pythonocc wrapper. It break old library distribution strategy. Now OCCT and pythonocc will be installed over console/gui instruments or mannually. Most of the functionality has been restored on the new shell, but some backward compatibility violations are possible. 
+NOTE: Astrologers have announced a month of changes. ZenCad migrate to pythonocc wrapper. It break old library distribution strategy. Now OCCT and pythonocc will be installed over console/gui instruments or mannually. Most of the functionality has been restored on the new shell, but some backward compatibility violations are possible. servoce package is removed for now. (You can find old zencad/servoce variant in `master_v2_archive` branch)
 
 
 CAD system for righteous zen programmers  
