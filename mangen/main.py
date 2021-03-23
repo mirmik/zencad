@@ -5,12 +5,22 @@ import dominate
 import markdown2
 import writer
 import os
+import sys
 
 languages_predicates = (":ru", ":en")
 
+list_of_changes = {
+    "Сигнатура:": {"ru": "Сигнатура:", "en": "Signature:"},
+    "Signature:": {"ru": "Сигнатура:", "en": "Signature:"},
+    "Пример:": {"ru": "Пример:", "en": "Example:"},
+    "Example:": {"ru": "Пример:", "en": "Example:"},
+}
 
-def page_generate(path, title, mdpath, navpath, lang="ru"):
+
+def page_generate(path, title, mdpath, navpath, lang):
     lines = open(mdpath).readlines()
+    lines = [l.strip() for l in lines]
+
     filtered_lines = []
     languages_predicates_prevent = [
         l for l in languages_predicates if l != ":"+lang]
@@ -26,6 +36,11 @@ def page_generate(path, title, mdpath, navpath, lang="ru"):
             else:
                 filter = False
             continue
+
+        for k, v in list_of_changes.items():
+            if l.startswith(k):
+                l = v[lang]
+                break
 
         if filter is False:
             filtered_lines.append(l)
@@ -82,7 +97,7 @@ for f in os.listdir("ru"):
         lang="ru")
 
 # Подготавка файлов английской версии.
-for f in os.listdir("en"):
+for f in os.listdir("ru"):
     target = os.path.splitext(f)[0] + ".html"
     page_generate(
         path="en/" + target,
@@ -114,4 +129,5 @@ writer.copy_tree(dst=".", src="images")
 writer.copy_file("main.css", "main.css")
 writer.remove_file("images/imagen.py")
 
-os.system("cp -rfvT build ../docs")
+if len(sys.argv) > 1 and sys.argv[1] == "update":
+    os.system("cp -rfvT build ../docs")

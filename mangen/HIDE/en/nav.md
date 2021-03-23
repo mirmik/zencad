@@ -23,7 +23,6 @@
 	* [Curve analysis](crvalgo.html)
 	* [Surface analysis](surfalgo.html)
 	* [Geometric properties](geomprop.html)
-	* [Bounding box](bbox.html)
 * Visualization
 	* [Displaying](show.html)
 	* [Interactive object](interactive_object.html)  

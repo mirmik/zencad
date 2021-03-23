@@ -286,7 +286,6 @@ class wire_builder:
         v = self.current - c
 
         vangle = v.angle()
-        print(vangle)
         if zencad.vector3(1, 0, 0).cross(v).z < 0:
             vangle = - vangle
 

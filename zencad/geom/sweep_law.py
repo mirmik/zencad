@@ -36,7 +36,6 @@ class LawTrihedron:
 
 def law_constant_function(radius, range):
     aFunc = Law_Constant()
-    print(radius, range)
     aFunc.Set(radius, range[0], range[1])
     return LawFunction(aFunc)
 
