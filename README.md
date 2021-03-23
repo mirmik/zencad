@@ -1,5 +1,8 @@
 ZenCad
 ======
+NOTE: Astrologers have announced a transitional period. ZenCad migrate to pythonocc wrapper. It break old library distribution strategy. Now OCCT and pythonocc will be installed over console/gui instruments or mannually. Most of the functionality has been restored on the new shell, but some backward compatibility violations are possible. 
+
+
 CAD system for righteous zen programmers  
 
 Status:  
