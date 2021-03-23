@@ -6,8 +6,32 @@ import markdown2
 import writer
 import os
 
+languages_predicates = (":ru", ":en")
 
-def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
+
+def page_generate(path, title, mdpath, navpath, lang="ru"):
+    lines = open(mdpath).readlines()
+    filtered_lines = []
+    languages_predicates_prevent = [
+        l for l in languages_predicates if l != ":"+lang]
+
+    filter = False
+    for l in lines:
+        if l.startswith(":"):
+            filter = False
+            for r in languages_predicates_prevent:
+                if l.startswith(r):
+                    filter = True
+                    break
+            else:
+                filter = False
+            continue
+
+        if filter is False:
+            filtered_lines.append(l)
+
+    text = "\n".join(filtered_lines)
+
     page = dominate.document(title=title)
     with page:
         dominate.tags.meta(charset=u"utf-8")
@@ -39,10 +63,8 @@ def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
         dominate.util.raw(markdown2.markdown(open(navpath).read()))
 
     with article:
-        if comming:
-            article.add("English version in preparation. COMMING SOON.")
         dominate.util.raw(
-            markdown2.markdown(open(mdpath).read(), extras=[
+            markdown2.markdown(text, extras=[
                                "fenced-code-blocks", "tables", "header-ids"])
         )
 
@@ -52,14 +74,22 @@ def page_generate(path, title, mdpath, navpath, comming=False, lang="ru"):
 # Подготавка файлов русской версии.
 for f in os.listdir("ru"):
     target = os.path.splitext(f)[0] + ".html"
-    page_generate("ru/" + target, "ZenCad",
-                  os.path.join("ru", f), "ru/nav.md", lang="ru")
+    page_generate(
+        path="ru/" + target,
+        title="ZenCad",
+        mdpath=os.path.join("ru", f),
+        navpath="ru/nav.md",
+        lang="ru")
 
 # Подготавка файлов английской версии.
 for f in os.listdir("en"):
     target = os.path.splitext(f)[0] + ".html"
     page_generate(
-        "en/" + target, "ZenCad", os.path.join("en", f), "en/nav.md", comming=True, lang="en"
+        path="en/" + target,
+        title="ZenCad",
+        mdpath=os.path.join("ru", f),
+        navpath="en/nav.md",
+        lang="en"
     )
 
 redirect_page = dominate.document()
