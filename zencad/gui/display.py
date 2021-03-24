@@ -17,6 +17,7 @@ from OCC.Core.SelectMgr import SelectMgr_SelectionManager
 import OCC.Core.BRepPrimAPI
 from OCC.Core.IntCurvesFace import IntCurvesFace_ShapeIntersector
 from OCC.Core.Precision import precision_Confusion
+from OCC.Core.Aspect import Aspect_TOD_ABSOLUTE
 
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
@@ -26,6 +27,7 @@ import zencad.color as color
 from zencad.axis import Axis
 import zencad.geom.trans
 import zencad.geom.solid
+from zencad.settings import Settings
 
 from OpenGL.GLUT import *
 from OpenGL.GL import *
@@ -306,6 +308,10 @@ class DisplayWidget(BaseViewer):
 
         self._display.GetContext().SetDisplayMode(AIS_Shaded, False)
         self._display.GetContext().DefaultDrawer().SetFaceBoundaryDraw(True)
+
+        deviation = Settings.get(["view", "default_chordial_deviation"])
+        self.Context.DefaultDrawer().SetTypeOfDeflection(Aspect_TOD_ABSOLUTE)
+        self.Context.DefaultDrawer().SetMaximalChordialDeviation(deviation)
 
         self.autoscale()
         self.MarkerWController.hide(True)
