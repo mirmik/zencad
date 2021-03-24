@@ -1,13 +1,27 @@
+:ru
 # Триангуляция и меш
 
 __EXPERIMENTAL__
 
 Функции для работы с полигональным представлением.
+:en
+# Triangulation and mesh
+
+__EXPERIMENTAL__
+
+Functions for working with polygonal representation. 
+::
 
 ---
+:ru
 ## Триангуляция
 Построение полигональной сетки в формате (_nodes_, _triangles_), где _pnts_ - массив точек, а _triangles_ - массив 3-кортежей, индексов точек.
 Параметр _deflection_ отвечает за разрешение разбиения. 
+:en
+## Triangulation
+Creation of a polygonal mesh in the format (_nodes_, _triangles_), where _pnts_ is an array of points, and _triangles_ is an array of 3-tuples, indices of points.
+The _deflection_ parameter is responsible for resolving the splitting. 
+::
 
 Сигнатура:
 ```python
@@ -32,8 +46,13 @@ print("first_five_triangles:", triangles[:5])
 ```
 
 -----------------------------
+:ru
 ## Полигедрон
 Объёмное тело, состоящее из плоских граней, заданное точками вершин _pnts_ и массивом кортежей индексов точек, задающих грани.
+:en
+## Polyhedrone
+A solid consisting of flat faces, specified by vertex points _pnts_ and an array of tuples of indices of points defining the faces. 
+::
 
 Сигнатура:
 ```python
@@ -49,6 +68,7 @@ disp(polyhedron(nodes, triangles))
 ![](../images/generic/polyhedron0.png)
 
 ----------------------------------------------
+:ru
 ## Выпуклая оболочка
 Построение выпуклой оболочки множества точек.
 Используется процедура scipy.spatial.ConvexHull
@@ -59,6 +79,18 @@ _convex_hull_shape_ строит выпуклую оболочку, исполь
 Опции:
 _incremental_ и _qhull_options_ являются опциями scipy.spatial.ConvexHull (см. документацию scipy).
 _shell_ - создать оболочку вместо тела.
+:en
+## Convex hull
+Construction of the convex hull of a set of points.
+The scipy.spatial.ConvexHull procedure is used
+
+_convex_hull_ computes an array of convex hull polygon point indices.
+_convex_hull_shape_ builds a convex hull using the _polyhedron_ procedure.
+
+Options:
+_incremental_ and _qhull_options_ are scipy.spatial.ConvexHull options (see scipy documentation).
+_shell_ - create a shell instead of a body.
+::
 
 Сигнатура:
 ```python
