@@ -38,7 +38,7 @@ def _union(lst):
 def _difference(lst):
     ret = lst[0].Shape()
 
-    for i in range(len(lst)):
+    for i in range(1, len(lst)):
         ret = occ_pair_difference(ret, lst[i].Shape())
 
     return Shape(ret)
@@ -47,7 +47,7 @@ def _difference(lst):
 def _intersect(lst):
     ret = lst[0].Shape()
 
-    for i in range(len(lst)):
+    for i in range(1, len(lst)):
         ret = occ_pair_intersect(ret, lst[i].Shape())
 
     return Shape(ret)
