@@ -84,6 +84,7 @@ class DisplayWidget(BaseViewer):
         self.Viewer = self._display.Viewer
         self.Context = self._display.Context
 
+        self.init_driver_in_constructor = sys.platform == "win32"
         self._communicator = communicator
         self._orient = 1
         self._drawbox = False
@@ -131,7 +132,8 @@ class DisplayWidget(BaseViewer):
         self.MarkerQController.hide(True)
         self.set_center_visible(False)
 
-        self.InitDriver()
+        if self.init_driver_in_constructor:
+            self.InitDriver()
 
     def set_perspective(self, en):
         self._perspective_mode = en
@@ -436,6 +438,9 @@ class DisplayWidget(BaseViewer):
         if not self._inited0:
             self._inited0 = True
 
+            if not self.init_driver_in_constructor:
+                self.InitDriver()
+
     def paintEvent(self, event):
         if not self._inited1:
 
@@ -446,12 +451,6 @@ class DisplayWidget(BaseViewer):
             self._inited1 = True
 
         self._display.Context.UpdateCurrentViewer()
-
-        if self._drawbox:
-            painter = QtGui.QPainter(self)
-            painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 2))
-            rect = QtCore.QRect(*self._drawbox)
-            painter.drawRect(rect)
 
     def wheelEvent(self, event):
         mul = 1.1
