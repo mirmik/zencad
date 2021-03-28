@@ -48,10 +48,8 @@ union([
 	cylinder(r=5, h=10, center=True).rotateX(deg(90))
 ])
 ```
-![](../images/generic/union.png)
-![](../images/generic/union0.png)  
-![](../images/generic/union1.png)
-![](../images/generic/union2.png)  
+![](../images/generic/union.png) ![](../images/generic/union0.png)   </br>
+![](../images/generic/union1.png) ![](../images/generic/union2.png)  
 
 ---
 :ru
@@ -80,10 +78,8 @@ difference([
 	cylinder(r=5, h=10, center=True).rotateX(deg(90))
 ])
 ```
-![](../images/generic/difference.png)
-![](../images/generic/difference0.png)  
-![](../images/generic/difference1.png)
-![](../images/generic/difference2.png)  
+![](../images/generic/difference.png) ![](../images/generic/difference0.png)   </br>
+![](../images/generic/difference1.png) ![](../images/generic/difference2.png)  
 
 ---
 :ru
@@ -113,10 +109,8 @@ intersect([
 	cylinder(r=5, h=10, center=True).rotateX(deg(90))
 ])
 ```
-![](../images/generic/intersect.png)
-![](../images/generic/intersect0.png)  
-![](../images/generic/intersect1.png)
-![](../images/generic/intersect2.png)  
+![](../images/generic/intersect.png) ![](../images/generic/intersect0.png)   </br>
+![](../images/generic/intersect1.png) ![](../images/generic/intersect2.png)  
 
 ---
 :ru
@@ -159,5 +153,5 @@ m2 = sphere(10) ^ square(10)
 m2 = section(sphere(10), square(10))
 ```
 
-![](../images/generic/bool20.png) ![](../images/generic/bool21.png)
+![](../images/generic/bool20.png) ![](../images/generic/bool21.png) </br>
 ![](../images/generic/bool22.png) ![](../images/generic/bool23.png)
