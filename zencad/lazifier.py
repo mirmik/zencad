@@ -13,7 +13,7 @@ lazy = evalcache.Lazy(
     cache=evalcache.dircache_v2.DirCache_v2(cachepath),
     algo=algo,
     onbool=True,
-    #    onstr=True,
+    onstr=True,
     pedantic=True,
 
     # diag=True,

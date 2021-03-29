@@ -101,11 +101,11 @@ convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None)
 Пример:
 ```python
 pnts = points([
-	(0,0,0),
-	(1,0,0),
-	(1,1,0),
-	(0,1,0),
-	(0.5,0.5,1),
+	( 0,  0,  0),
+	(10,  0,  0),
+	(10, 10,  0),
+	( 0, 10,  0),
+	( 5,  5, 10),
 ])
 
 print(convex_hull(pnts))
