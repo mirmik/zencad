@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,34 +66,34 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Триангуляция и меш</h1>
+      <article class="article"><h1 id="triangulation-and-mesh">Triangulation and mesh</h1>
 
 <p><strong>EXPERIMENTAL</strong></p>
 
-<p>Функции для работы с полигональным представлением.</p>
+<p>Functions for working with polygonal representation.</p>
 
 <hr />
 
-<h2 id="-2">Триангуляция</h2>
+<h2 id="triangulation">Triangulation</h2>
 
-<p>Построение полигональной сетки в формате (<em>nodes</em>, <em>triangles</em>), где <em>pnts</em> - массив точек, а <em>triangles</em> - массив 3-кортежей, индексов точек.
-Параметр <em>deflection</em> отвечает за разрешение разбиения. </p>
+<p>Creation of a polygonal mesh in the format (<em>nodes</em>, <em>triangles</em>), where <em>pnts</em> is an array of points, and <em>triangles</em> is an array of 3-tuples, indices of points.
+The <em>deflection</em> parameter is responsible for resolving the splitting.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">triangulate</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">deflection</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">triangulate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 
 <span class="c1">#count_of_nodes: 699</span>
 <span class="c1">#count_of_triangles: 1362</span>
@@ -102,16 +103,16 @@
 
 <hr />
 
-<h2 id="-3">Полигедрон</h2>
+<h2 id="polyhedrone">Polyhedrone</h2>
 
-<p>Объёмное тело, состоящее из плоских граней, заданное точками вершин <em>pnts</em> и массивом кортежей индексов точек, задающих грани.</p>
+<p>A solid consisting of flat faces, specified by vertex points <em>pnts</em> and an array of tuples of indices of points defining the faces.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">triangulate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
@@ -122,35 +123,35 @@
 
 <hr />
 
-<h2 id="-4">Выпуклая оболочка</h2>
+<h2 id="convex-hull">Convex hull</h2>
 
-<p>Построение выпуклой оболочки множества точек.
-Используется процедура scipy.spatial.ConvexHull</p>
+<p>Construction of the convex hull of a set of points.
+The scipy.spatial.ConvexHull procedure is used</p>
 
-<p><em>convex</em>hull_ вычисляет массив индексов точек полигонов выпуклой оболочки.
-<em>convex</em>hull<em>shape</em> строит выпуклую оболочку, используя процедуру <em>polyhedron</em>.</p>
+<p><em>convex</em>hull_ computes an array of convex hull polygon point indices.
+<em>convex</em>hull<em>shape</em> builds a convex hull using the <em>polyhedron</em> procedure.</p>
 
-<p>Опции:
-<em>incremental</em> и <em>qhull</em>options_ являются опциями scipy.spatial.ConvexHull (см. документацию scipy).
-<em>shell</em> - создать оболочку вместо тела.</p>
+<p>Options:
+<em>incremental</em> and <em>qhull</em>options_ are scipy.spatial.ConvexHull options (see scipy documentation).
+<em>shell</em> - create a shell instead of a body.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">pnts</span> <span class="o">=</span> <span class="n">points</span><span class="p">([</span>
-    <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
-    <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
-    <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
-    <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
-    <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">(</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+<span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+<span class="p">(</span> <span class="mi">5</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
 <span class="p">])</span>
 
-<span class="k">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
 </code></pre></div>
 

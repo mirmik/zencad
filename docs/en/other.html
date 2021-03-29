@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,22 +66,24 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Прочие операции.</h1>
+      <article class="article"><h1 id="other-operations">Other operations.</h1>
 
-<p>В этом разделе перечислены операции не подходящие ни к одному другому разделу.</p>
+<p>This section lists operations that do not fit into any other section.</p>
+
+<hr />
 
 <h2 id="unify">unify</h2>
 
-<p>Данная операция упрощает геометрическое представление объекта, путём удаления лишних рёбер и объединения гранией.</p>
+<p>This operation simplifies the geometric representation of an object by removing unnecessary edges and merging with a face.</p>
 
-<p>Может выполняться над двумерными и трёхмерными объектами.</p>
+<p>Can be performed on 2D and 3D objects.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">unify</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">unify</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 </code></pre></div>
@@ -88,8 +91,8 @@
 <table>
 <thead>
 <tr>
-  <th>До</th>
-  <th>После</th>
+  <th>Before</th>
+  <th>After</th>
 </tr>
 </thead>
 <tbody>

@@ -14,8 +14,8 @@
         <span class="icon"></span>
       </a>
       <p>
-        <a href="../ru/kinematic.html">Ru</a>
-        <a href="../en/kinematic.html">En</a>
+        <a href="../ru/bbox.html">Ru</a>
+        <a href="../en/bbox.html">En</a>
       </p>
     </div>
     <div id="content">
@@ -66,16 +66,46 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Библиотека кинематики.</h1>
+      <article class="article"><h1 id="bounding-box">Bounding box</h1>
 
-<p>Данная библиотека является дополнением к системе <a href="assemble.html">сборок</a> и позволяет управлять перемещением элементов сборок в терминах обобщенных кинематических координат, а так же осуществлять некоторые действия на кинематическими цепями.</p>
+<p>The bounding box is a minimal Ox, Oy, Oz-based box that describes the geometric shape shape.</p>
 
-<p>Библиотека определяет дополнительные типы unit:</p>
+<hr />
 
-<p>zencad.libs.kinematic.rotator - поворотное звено
-zencad.libs.kinematic.actuator - актуаторное звено</p>
+<h2 id="shapebbox">shape.bbox</h2>
 
-<p>UNDER_CONSTRUCT</p>
+<p>Construct a bounding box based on the shape.</p>
+
+<p>Пример</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+</code></pre></div>
+
+<h2 id="fields">Fields.</h2>
+
+<div class="codehilite"><pre><span></span><code><span class="n">bbox</span><span class="o">.</span><span class="n">xmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">xmax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmax</span>
+</code></pre></div>
+
+<h2 id="methods">Methods.</h2>
+
+<p>bbox.xrange()
+bbox.yrange()
+bbox.zrange()</p>
+
+<h2 id="to-shape">To Shape.</h2>
+
+<p>Пример</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">shape</span><span class="p">())</span>
+</code></pre></div>
 </article>
     </div>
     <div id="footer"></div>

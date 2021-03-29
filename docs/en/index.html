@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,37 +66,37 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<p><center><h0>ZenCad.<h0/></center></p>
+      <article class="article"><p><center><h0>ZenCad.<h0/></center></p>
 
 <p><center></p>
 
-<div class="t0"><p>Скриптовый CAD для праведных прогеров.</p></div>
+<div class="t0"><p>Script CAD for righteous programmers.</p></div>
 
-<p><img src="../images/generic/zencad-logo.png" alt="" /> <br />
+<p><img src="../images/generic/zencad-logo.png" alt="" />
 </center></p>
 
 <hr />
 
-<h2 id="-1">Что это?</h2>
+<h2 id="what-is-zencad">What is ZenCad?</h2>
 
-<p><em>ZenCad</em> - это библиотека параметрического 3д моделирования. библиотека исповедует идею создания 3д модели путём написания скрипта и ноги её растут из системы <em>OpenScad</em>. В отличие от <em>OpenScad</em>, библиотека использует геометрическое ядро граничного представления <em>OpenCascade</em> и язык общего назначения <em>Python</em>.</p>
+<p><em>ZenCad</em> is a library for parametric 3D modeling. the library adheres to the idea of ​​creating a 3D model by writing a script and its legs grow from the <em>OpenScad</em> system. Unlike <em>OpenScad</em>, the library uses the geometrical core of the boundary representation <em>OpenCascade</em> and the general-purpose language <em>Python</em>.</p>
 
-<p><em>ZenCad</em> может использоваться как самостоятельная система быстрого прототипирования для целей макетирования или 3д печати, так и в комплексе с библиотеками экосистемы <em>Python</em>, в частности для построения 3д моделий на основе расчетов выполненных в таких системах как scipy и sympy.</p>
-
-<hr />
-
-<h1 id="-2">Быстрый старт.</h1>
+<p><em>ZenCad</em> can be used as an independent rapid prototyping system for prototyping or 3D printing purposes, and in combination with the libraries of the <em>Python</em> ecosystem, in particular for building 3D models based on calculations performed in such systems as scipy and sympy.</p>
 
 <hr />
 
-<h2 id="-3">Установка.</h2>
+<h1 id="fast-start">Fast start.</h1>
+
+<hr />
+
+<h2 id="install">Install.</h2>
 
 <div class="codehilite"><pre><span></span><code>python3 -m pip install zencad
 </code></pre></div>
 
 <hr />
 
-<h2 id="-4">Запуск графической оболочки.</h2>
+<h2 id="graphic-user-intrface">Graphic user intrface.</h2>
 
 <div class="codehilite"><pre><span></span><code>zencad
 
@@ -112,7 +113,7 @@ python3 -m pip zencad
 
 <span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">sphere1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
 <span class="n">sphere2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
 
@@ -124,10 +125,10 @@ python3 -m pip zencad
 
 <hr />
 
-<h2 id="-5">Ссылки</h2>
+<h2 id="references">References</h2>
 
-<p>github: <a href="https://github.com/mirmik/zencad">https://github.com/mirmik/zencad</a> <br />
-pypi: <a href="https://pypi.org/project/zencad">https://pypi.org/project/zencad</a>  </p>
+<p>github: <a href="https://github.com/mirmik/zencad">https://github.com/mirmik/zencad</a>
+pypi: <a href="https://pypi.org/project/zencad">https://pypi.org/project/zencad</a></p>
 </article>
     </div>
     <div id="footer"></div>

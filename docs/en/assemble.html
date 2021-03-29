@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,39 +66,39 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Иерархические сборки.</h1>
+      <article class="article"><h1 id="hierarchical-assemblies">Hierarchical assemblies.</h1>
 
-<p>При отображении сложной или анимированной сцены необъходимо работать с большим количеством связанных интерактивных объектов, перемещающихся друг относительно друга по определённым законам.</p>
+<p>When displaying a complex or animated scene, it is necessary to work with a large number of connected interactive objects that move relative to each other according to certain laws.</p>
 
-<p>Для облегчения реализации такого поведения в zencad представлена библиотека zencad.assemble и её основное средство zencad.assemble.unit.</p>
+<p>To facilitate this behavior, zencad provides the zencad.assemble library and its main tool zencad.assemble.unit.</p>
 
 <hr />
 
-<h2 id="zencadassembleunit">Сборочный юнит (zencad.assemble.unit).</h2>
+<h2 id="assembly-unit-zencadassembleunit">Assembly unit (zencad.assemble.unit).</h2>
 
-<p>Сборочный юнит - это объект, имеющий собственную локальную систему координат, относительно которой позиционируются связанные с этим юнитом интерактивные объекты и другие юниты. Юниты могут создавать структуру дерева, отсчитывая своё положение относительно положения юнита-предка (unit.parent). Если юнит не имеет предка, его положение отсчитывается от глобальной системы координат.</p>
+<p>An assembly unit is an object that has its own local coordinate system, relative to which interactive objects and other units associated with this unit are positioned. Units can create a tree structure by counting their position relative to the position of the parent unit (unit.parent). If the unit does not have an ancestor, its position is measured from the global coordinate system.</p>
 
-<p>Юнит содержит имеет два объекта координатного преобразования - location и global_location. </p>
+<p>The unit contains two coordinate transformation objects - location and global_location.</p>
 
 <ul>
-<li>location - задаёт положение юнита относительно положения юнита предка. location может быть обновлён или непосредственно, или с помощью метода relocate.</li>
-<li>global<em>location - это положение юнита относительно глобальной системы координат. global</em>location используется при отрисовке объекта. global<em>location строится на основе дерева unit.location и может быть обновлён с помощью метода location</em>update, relocate и, с помощью других операций.</li>
+<li>location - sets the position of the unit relative to the position of the ancestor unit. location can be updated either directly or using the relocate method.</li>
+<li>global<em>location is the position of the unit relative to the global coordinate system. global</em>location is used when rendering an object. global<em>location is built from the unit.location tree and can be updated using location</em>update, relocate and other operations.</li>
 </ul>
 
 <hr />
 
-<h2 id="-2">Добавление объекта.</h2>
+<h2 id="adding-an-object">Adding an object.</h2>
 
-<p>Создаёт и связывает с юнитом интерактивный объект на основе переданного геометрического объекта <em>obj</em>.</p>
+<p>Creates and links to the unit an interactive object based on the passed geometry object <em>obj</em>.</p>
 
-<p>Если в качестве параметра передан интерактивный объект, юнит берёт его под управление. (Примечание: юнит управляет расположением интерактивного объекта).</p>
+<p>If an interactive object is passed as a parameter, the unit takes control of it. (Note: the unit controls the location of the interactive object).</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <pre><code>m = box(10)
 i = interactive_object(box(10).right(20))
@@ -105,49 +106,57 @@ u.add(m)
 u.add(i)
 </code></pre>
 
-<h2 id="-">Добавление юнита-потомка.</h2>
+<hr />
 
-<p>Устанавливает объект <em>u</em> предком для объекта <em>child</em>.
-Теперь положение объектов в юните <em>child</em> (и его потомках) будет расчитываться с учётом положения объекта <em>u</em>.</p>
+<h2 id="adding-a-child-unit">Adding a child unit.</h2>
 
-<p>Сигнатура:</p>
+<p>Sets the <em>u</em> object to be the ancestor of the <em>child</em> object.
+Now the position of objects in the unit <em>child</em> (and its descendants) will be calculated taking into account the position of the object <em>u</em>.</p>
+
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="o">***</span>
 </code></pre></div>
 
-<h2 id="-3">Обновить глобальное расположение.</h2>
+<hr />
 
-<p>Сигнатура:</p>
+<h2 id="update-global-position">Update global position.</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<p>Update the global position of the object according to its current position and the global position of the ancestor object.
+view - if the object is displayed, redraw it based on the new position.
+deep - apply recursively all descendants of an object.</p>
+
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Обновить глобальное расположение объекта согласно данным о его текущем положении и объекту глобального положения предка. 
-view - если объект отображен, перерисовать его, исходя из нового положения.
-deep - применить рекурсивно всех потомков объекта.</p>
+<hr />
 
-<h2 id="-4">Изменить локальное положение.</h2>
+<h2 id="update-local-position">Update local position.</h2>
 
-<p>Сигнатура:</p>
+<p>Change current position to location object and apply location_update procedure with deep, view options.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Изменить текущее положение на объект location и применить процедуру location_update с опциями deep, view.</p>
+<hr />
 
-<h2 id="-5">Отобразить на сцене.</h2>
+<h2 id="display-on-stage">Display on stage.</h2>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">bind_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">bind_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_color</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </code></pre></div>
 
-<p>Добавить юнит в сцену scene. Все объекты, цвета которых не установлены, будут окрашены в default_color. Если deep, рекурсивно добавить в сцену все зависимые юниты.</p>
+<p>Add unit to scene scene. All objects whose colors are not set will be colored in default_color. If deep, recursively add all dependent units to the scene.</p>
 </article>
     </div>
     <div id="footer"></div>

@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,45 +66,45 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Анализ кривых</h1>
+      <article class="article"><h1 id="curve-analysis">Curve analysis</h1>
 
 <hr />
 
-<h2 id="-2">Теоретическая сводка.</h2>
+<h2 id="theoretical-summary">Theoretical summary.</h2>
 
-<p>Общепризнанным методом задания кривых в системах вычислительной геометрии является параметрический метод.</p>
+<p>The generally accepted method for defining curves in computational geometry systems is the parametric method.</p>
 
-<p>Согласно ему кривая задана непрерывным отображением скалярного множества <em>[U_min, U_max]</em> на пространство заданной мерности.
-<em>P = F(U) : P ∈ R^N, U ∈ R^1[U_min, U_max]</em>, где <em>F</em> - функтор отображения, а <em>N</em> - мерность пространства.</p>
+<p>According to him, the curve is given by a continuous mapping of the scalar set <em>[U _min, U _max]</em> onto a space of a given dimension.
+<em>P = F (U): P ∈ R ^ N, U ∈ R ^ 1 [U _min, U _max]</em>, where <em>F</em> is the mapping functor and <em>N</em> is the dimension of the space.</p>
 
-<p>На практике это означает, что любая точка <em>P</em> на кривой имеет соответствующее ей значение скалярного параметра <em>U</em>. Следует понимать, что в общем случае функция связывающая параметр <em>U</em> в точке <em>P</em> и длину кривой из точки начала <em>O</em> до точки <em>P</em> не линейна. Поэтому вычисления над кривой в терминах длин требуют применения специального математического аппарата (реализованного в виде методов настоящей библиотеки).</p>
+<p>In practice, this means that any point <em>P</em> on the curve has a corresponding value of the scalar parameter <em>U</em>. It should be understood that, in the general case, the function connecting the parameter <em>U</em> at the point <em>P</em> and the length of the curve from the start point <em>O</em> to the point <em>P</em> is not linear. Therefore, calculations over a curve in terms of lengths require the use of a special mathematical apparatus (implemented in the form of methods in this library).</p>
 
 <hr />
 
-<h2 id="-3">Классы кривых.</h2>
+<h2 id="classes-of-curves">Classes of curves.</h2>
 
-<p>В ZenCad существуют следующие классы реализующие методы анализа кривых:</p>
+<p>ZenCad has the following classes that implement curve analysis methods:</p>
 
 <ul>
-<li>Edge (порождается инструментами segment, interpolate, bezier, bspline и т.д.)</li>
-<li>Curve3 (NotReleased)</li>
-<li>Curve2 (NotReleased)</li>
+<li>Edge (spawned by segment, interpolate, bezier, bspline, etc.)</li>
+<li>Curve</li>
+<li>Curve2</li>
 </ul>
 
 <hr />
 
-<h2 id="-4">Крайние точки и диапазон конечной кривой.</h2>
+<h2 id="end-points-and-end-curve-range">End points and end curve range.</h2>
 
-<p>Определение концевых точек конечных кривых.</p>
+<p>Determines the endpoints of the end curves.</p>
 
-<p>Метод <em>endpoints</em> возвращает объекты крайних точек. 
-Параметры этих точек могут быть запрошены методом <em>range</em>.</p>
+<p>The <em>endpoints</em> method returns endpoint objects.
+The parameters of these points can be queried using the <em>range</em> method.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">endpoints</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">point3</span><span class="p">,</span> <span class="n">point3</span>
 <span class="n">curve</span><span class="o">.</span><span class="n">range</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span>
 </code></pre></div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
+<div class="codehilite"><pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
 <span class="n">s</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">crv</span><span class="o">.</span><span class="n">endpoints</span><span class="p">()</span>
 <span class="n">disp</span><span class="p">([</span><span class="n">crv</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">f</span><span class="p">])</span>
 </code></pre></div>
@@ -112,50 +113,53 @@
 
 <hr />
 
-<h2 id="curvelength">curve.length()</h2>
+<h2 id="curvelength">curve.length ()</h2>
 
-<p>Вернуть длину кривой между параметрами <em>U_min</em> и <em>U_max</em>.</p>
-
-<hr />
-
-<h2 id="curved0u">curve.d0(u)</h2>
-
-<p>Вернуть точку, соответствующую параметру <em>u</em>.</p>
+<p>Return the length of the curve between the <em>U \ _min</em> and <em>U \ _max</em> parameters.</p>
 
 <hr />
 
-<h2 id="curved1u">curve.d1(u)</h2>
+<h2 id="curved0-u">curve.d0 (u)</h2>
 
-<p>Вернуть точку и вектор первой производной, соответствующие параметру <em>u</em>.</p>
-
-<hr />
-
-<h2 id="curvelinoffu-dist">curve.linoff(u, dist)</h2>
-
-<p>Вернуть параметр точки, смещенной на длину <em>dist</em> относительно точки задаваемой параметром <em>u</em>.</p>
+<p>Return the point corresponding to the <em>u</em> parameter.</p>
 
 <hr />
 
-<h2 id="curvelinoff_pointu-dist">curve.linoff_point(u, dist)</h2>
+<h2 id="curved1-u">curve.d1 (u)</h2>
 
-<p>Вернуть точку, смещенную на длину dist относительно точки задаваемой параметром <em>u</em>. <br />
-alternate: <code>curve.d0(curve.linoff(u,dist))</code></p>
+<p>Return the vector of the first derivative matching the <em>u</em> parameter.</p>
 
 <hr />
 
-<h2 id="-5">Равнораспределённые точки кривой.</h2>
+<h2 id="curvelinoff-u-dist">curve.linoff (u, dist)</h2>
 
-<p>Вернуть массив точек, равномерно распределённых на кривой. Параметр <em>npnts</em> - задаёт количество точек.
-Параметры umin, umax задают диапазон на множестве параметров в котором будет проведена процедура распределения.</p>
+<p>Return the parameter of the point offset by the length <em>dist</em> relative to the point specified by the <em>u</em> parameter.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="c1"># Список параметров</span>
-<span class="n">curve</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="n">point3</span><span class="p">)</span> <span class="c1"># Список точек.</span>
+<hr />
+
+<h2 id="curvelinoff_point-u-dist">curve.linoff_point (u, dist)</h2>
+
+<p>Return the point offset by the length dist relative to the point specified by the <em>u</em> parameter.</p>
+
+<h2 id="curveproject-pnt">curve.project (pnt)</h2>
+
+<p>Return the parameter corresponding to the point on the curve closest to the point pnt.</p>
+
+<hr />
+
+<h2 id="equidistant-curve-points">Equidistant curve points.</h2>
+
+<p>Return an array of points equally spaced along the curve. The <em>npnts</em> parameter sets the number of points.
+The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">curve</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="n">point3</span><span class="p">)</span>
 </code></pre></div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
+<div class="codehilite"><pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
 
 <span class="n">params</span> <span class="o">=</span> <span class="n">crv</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="c1"># [0.7853981633974483, 1.121997376282069, 1.4585965891666897, 1.7951958020513104, 2.131795014935931, 2.4683942278205517, 2.8049934407051724, 3.141592653589793]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="c1"># [0.7853981633974483, 1.121997376282069, 1.4585965891666897, 1.7951958020513104, 2.131795014935931, 2.4683942278205517, 2.8049934407051724, 3.141592653589793]</span>
 
 <span class="n">pnts</span> <span class="o">=</span> <span class="n">crv</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">pnts</span> <span class="o">+</span> <span class="p">[</span><span class="n">crv</span><span class="p">])</span>

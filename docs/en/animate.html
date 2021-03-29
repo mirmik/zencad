@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,26 +66,26 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Анимация</h1>
+      <article class="article"><h1 id="animation">Animation</h1>
 
-<p>Графический интерфейс позволяет анимировать отображаемую сцену.
-Пример:</p>
+<p>The graphical interface allows you to animate the displayed scene.
+Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">controller</span> <span class="o">=</span> <span class="n">disp</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="n">nulltime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">widget</span><span class="p">):</span>
-    <span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">nulltime</span><span class="p">)</span> <span class="o">*</span> <span class="n">right</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">nulltime</span><span class="p">)</span> <span class="o">*</span> <span class="n">right</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
 
-<span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">)</span> 
+<span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Здесь мы используем специальную функцию анимации <code>animate</code>, которая, используя объект контроллер, возвращенный функцией disp, в зависимости от текущего момента времени обновляет местоположение контролируемого объекта.
-В качестве параметра метода <code>relocate</code> выступает объект преобразования. (Подробнее в <a href="trans0.html">Преобразования</a>, <a href="trans1.html">Комбинации преобразований</a>)</p>
+<p>Here we use a special animation function <code>animate</code>, which, using the controller object returned by the disp function, updates the location of the controlled object based on the current moment in time.
+The transformation object is used as a parameter of the <code>relocate</code> method. (More details in <a href="trans0.html">Transformations</a>, <a href="trans1.html">Transformations</a>)</p>
 
-<p>Кроме параметра <code>animate</code> функция show имеет связанные параметры <code>preanimate</code> и <code>close_handle</code>. <code>preanimate</code> принимает функцию, вызывающуюся один раз до первой итерации <code>animate</code>, но уже после создания графического окружения. <code>close_handle</code> вызывается как обработчик при завершении процесса.</p>
+<p>In addition to the <code>animate</code> parameter, the show function has associated<code>preanimate</code> and <code>close_handle</code> parameters. <code>preanimate</code> takes a function that is called once before the first iteration of<code>animate</code>, but after the graphical environment has been created. <code>close_handle</code> is called as a handler when the process ends.</p>
 </article>
     </div>
     <div id="footer"></div>

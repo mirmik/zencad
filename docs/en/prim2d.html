@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,159 +66,146 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Плоские примитивы.</h1>
+      <article class="article"><h1 id="flat-primitives">Flat primitives.</h1>
 
-<p>В этом разделе приводятся плоские примитивы. Обычно они используются совместно с 3д операциями для построения тел со сложной геометрией.</p>
+<p>This section introduces flat primitives. They are usually used in conjunction with 3D operations to construct bodies with complex geometry.</p>
 
 <hr />
 
-<h2 id="-2">Прямоугольник.</h2>
+<h2 id="rectangle">Rectangle</h2>
 
-<p>Плоский примитив - прямоугольник. Задаётся двумя сторонами. Допустимо не указывать вторую сторону, что будет соответствовать построению квадрата. Установка опции <em>center</em> совмещает геометрический центр тела с началом координат. При установке опции <em>wire</em> вместо залитой грани будет сгенерирован цикл прямоугольника.</p>
+<p>The flat primitive is a rectangle. Set by two sides. It is permissible not to indicate the second side, which will correspond to the construction of the square. Setting the <em>center</em> option aligns the geometric center of the body with the origin. When the <em>wire</em> option is set, a rectangle loop will be generated instead of a filled face.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rectangle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">rectangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">square</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span> <span class="c1">#alternate</span>
+<div class="codehilite"><pre><span></span><code><span class="n">rectangle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">rectangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">square</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#alternate</span>
 </code></pre></div>
 
-<p><img src="../images/generic/rectangle0.png" alt="" />
-<img src="../images/generic/rectangle1.png" alt="" /> <br />
-<img src="../images/generic/rectangle2.png" alt="" />
-<img src="../images/generic/rectangle3.png" alt="" />  </p>
+<p><img src="../images/generic/rectangle0.png" alt="" /> <img src="../images/generic/rectangle1.png" alt="" /> </br>
+<img src="../images/generic/rectangle2.png" alt="" /> <img src="../images/generic/rectangle3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-3">Окружность/Круг.</h2>
+<h2 id="circle-circle">Circle / Circle</h2>
 
-<p>Окружность задаётся радиусом <em>r</em>. Установка необязательной опции <em>angle</em> позволяет сгенерировать сектор круга / дугу окружности.
-При установке опции <em>wire</em> вместо залитой грани круга будет сгенерирована каркасная окружность.</p>
+<p>The circle is given by the radius <em>r</em>. Setting the optional <em>angle</em> option allows you to generate a sector of a circle / arc of a circle.
+When the <em>wire</em> option is set, a wireframe circle will be generated instead of a filled circle face.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/circle0.png" alt="" />
-<img src="../images/generic/circle1.png" alt="" /> <br />
-<img src="../images/generic/circle2.png" alt="" />
-<img src="../images/generic/circle3.png" alt="" />  </p>
+<p><img src="../images/generic/circle0.png" alt="" /> <img src="../images/generic/circle1.png" alt="" />   </br>
+<img src="../images/generic/circle2.png" alt="" /> <img src="../images/generic/circle3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-4">Элипс.</h2>
+<h2 id="ellipse">Ellipse</h2>
 
-<p>Плоский примитив - эллипс. Задаётся двумя радиусами, причем <em>r1</em> должен быть больше <em>r2</em>. Также можно построить сектор, указав угол или пару углов как необязательный параметр <em>angle</em>.
-При установке опции <em>wire</em> вместо залитой грани будет сгенерирован каркас.</p>
+<p>The flat primitive is an ellipse. It is specified by two radii, and <em>r1</em> must be greater than <em>r2</em>. You can also draw a wedge by specifying an angle or a pair of angles as the optional <em>angle</em> parameter.
+When the <em>wire</em> option is set, a wireframe will be generated instead of a filled face.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/ellipse0.png" alt="" />
-<img src="../images/generic/ellipse1.png" alt="" /> <br />
-<img src="../images/generic/ellipse2.png" alt="" />
-<img src="../images/generic/ellipse3.png" alt="" />  </p>
+<p><img src="../images/generic/ellipse0.png" alt="" /> <img src="../images/generic/ellipse1.png" alt="" />   </br>
+<img src="../images/generic/ellipse2.png" alt="" /> <img src="../images/generic/ellipse3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-5">Полигон.</h2>
+<h2 id="polygon">Polygon</h2>
 
-<p>Плоский примитив - полигон. Строится по точкам вершин.
-При установке опции <em>wire</em> вместо залитой грани будет сгенерирован каркас (что аналогично закрытому полисегменту.).
-<em>pnts</em> - массив точек вершин.</p>
+<p>A flat primitive is a polygon. Constructed by vertex points.
+When the <em>wire</em> option is set, a wireframe will be generated instead of a filled face (which is similar to a closed polysegment.).
+<em>pnts</em> is an array of vertex points.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">polygon</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="n">pnts</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">polygon</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="n">pnts</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/polygon0.png" alt="" />
-<img src="../images/generic/polygon1.png" alt="" />  </p>
+<p><img src="../images/generic/polygon0.png" alt="" /> <img src="../images/generic/polygon1.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-6">Правильный многоугольник.</h2>
+<h2 id="regular-polygon">Regular polygon</h2>
 
-<p>Плоский примитив - правильный многоугольник. Задаются радиус и количество вершин.
-При установке опции <em>wire</em> вместо залитой грани будет сгенерирован каркас.</p>
+<p>A flat primitive is a regular polygon. The radius and the number of vertices are set.
+When the <em>wire</em> option is set, a wireframe will be generated instead of a filled face.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">vertexCount</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">vertexCount</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/ngon0.png" alt="" />
-<img src="../images/generic/ngon1.png" alt="" /> <br />
-<img src="../images/generic/ngon2.png" alt="" />
-<img src="../images/generic/ngon3.png" alt="" /> <br />
-<img src="../images/generic/ngon4.png" alt="" />
-<img src="../images/generic/ngon5.png" alt="" />  </p>
+<p><img src="../images/generic/ngon0.png" alt="" /> <img src="../images/generic/ngon1.png" alt="" />  </br>
+<img src="../images/generic/ngon2.png" alt="" /> <img src="../images/generic/ngon3.png" alt="" />  </br>
+<img src="../images/generic/ngon4.png" alt="" /> <img src="../images/generic/ngon5.png" alt="" /></p>
 
 <hr />
 
-<h2 id="textshape">Textshape.</h2>
+<h2 id="text-shape">Text shape</h2>
 
-<p>Плоский примитив - текст. Создаёт грань на основе строки и шрифта. Шрифт указывается в виде пути на файл формата ttf (FreeType).</p>
+<p>The flat primitive is text. Creates a face based on string and font. The font is specified as a path to a ttf (FreeType) file.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">textString</span><span class="p">,</span> <span class="n">fontpath</span><span class="o">=</span><span class="n">pathToFont</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fontSize</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/textshape0.png" alt="" />
-<img src="../images/generic/textshape1.png" alt="" />  </p>
+<p><img src="../images/generic/textshape0.png" alt="" /> <img src="../images/generic/textshape1.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-7">Бесконечная плоскость.</h2>
+<h2 id="infinite-plane">Infinite Plane</h2>
 
-<p>Бесконечная плоскость - специальный геометрический объект, который может использоваться в некоторых операцих над другими объектами.
-Бесконечная плоскость не может быть отображена непосредственно.</p>
+<p>An infinite plane is a special geometric object that can be used in some operations on other objects.
+An infinite plane cannot be displayed directly.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">infplane</span><span class="p">()</span>
 </code></pre></div>
 
 <p>Пример (Построение конических сечений):</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
-<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
-<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/infplane01.png" alt="" />
-<img src="../images/generic/infplane0.png" alt="" /> <br />
-<img src="../images/generic/infplane1.png" alt="" />
-<img src="../images/generic/infplane2.png" alt="" />  </p>
+<p><img src="../images/generic/infplane01.png" alt="" /> <img src="../images/generic/infplane0.png" alt="" /> </br>
+<img src="../images/generic/infplane1.png" alt="" /> <img src="../images/generic/infplane2.png" alt="" /></p>
 
 <hr />
 
-<h2 id="fill">Fill</h2>
+<h2 id="filling-the-outline">Filling the outline</h2>
 
-<p>Данная операция применяется к плоской замкнутой линии <em>wire</em> и превращает ее в грань.</p>
+<p>This operation is applied to the flat closed line <em>wire</em> and turns it into a face.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
 <span class="n">wire</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span> <span class="c1">#alternate</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">wire</span> <span class="o">=</span> <span class="n">sew</span><span class="p">([</span>
-    <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
-    <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> 
-    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
-    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+<span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+<span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+<span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="p">])</span>
 <span class="n">fill</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
 </code></pre></div>
@@ -236,6 +224,34 @@
 </tr>
 </tbody>
 </table>
+
+<hr />
+
+<h2 id="interpolate-a-surface-over-an-array-of-points">Interpolate a surface over an array of points</h2>
+
+<p>Builds a bspline surface by interpolating a 2D array of points. The array is specified by a two-dimensional list.
+degmin and degmax define the minimum and maximum degrees of the interpolation polynomial, respectively.</p>
+
+<p>Signature:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">interpolate2</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">degmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degmax</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">POINTS</span> <span class="o">=</span> <span class="n">points2</span><span class="p">([</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">)],</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mf">7.5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">)],</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">)],</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mf">1.3</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mf">8.5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">6</span><span class="p">)],</span>
+<span class="p">])</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">interpolate2</span><span class="p">(</span><span class="n">POINTS</span><span class="p">)</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">POINTS</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+</code></pre></div>
+
+<p><img src="../images/generic/interpolate20.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>

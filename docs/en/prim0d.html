@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,15 +66,15 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Точка, вектор, вспомогательные функции.</h1>
+      <article class="article"><h1 id="point-vector-helper-functions">Point, vector, helper functions.</h1>
 
-<p>В библиотеки ZenCad есть некоторые вспомогательные математические объекты и функции для работы с ними.</p>
+<p>ZenCad has some math helpers and functions for working with them.</p>
 
 <hr />
 
-<h2 id="-2">Точка.</h2>
+<h2 id="point">Point</h2>
 
-<p>Некоторые функции ZenCad используют в качестве параметров точки или массивы точек. Для создания объекта точки можно использовать функцию <code>point3</code>. Кроме того, часто функция может сама сформировать точки по списку или кортежу координат.</p>
+<p>Some ZenCad functions use points or point arrays as parameters. You can use the <code>point3</code> function to create a point object. In addition, often a function can itself form points from a list or a tuple of coordinates.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
 
@@ -83,26 +84,57 @@
 <span class="n">interpolate</span><span class="p">(</span><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)]))</span>
 </code></pre></div>
 
-<p>Точка может быть отображена функцией display, как соответствующая такой точке вершина.</p>
+<p>A point can be displayed with the display function as the corresponding vertex for such a point.</p>
 
 <hr />
 
-<h2 id="-3">Вектор.</h2>
+<h2 id="vector">Vector</h2>
 
-<p>Иногда кроме указаний точек используются объекты-векторы для указания направлений. Принцип работы с векторами аналогичен работе с точками.</p>
+<p>Sometimes, in addition to specifying points, vector objects are used to indicate directions. The principle of working with vectors is similar to working with points.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 
 <span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
 </code></pre></div>
 
-<p>Вектор не может быть отображен непосредственно.</p>
+<p>The vector cannot be displayed directly.
+Unlike a point, a vector ignores translation during transformations.</p>
 
 <hr />
 
-<h2 id="-4">Операции над точками и векторами.</h2>
+<h2 id="point-and-vector-arrays">Point and vector arrays</h2>
 
-<p>Точки и вектора могут использоваться в математических операциях в соответствиями с правилами линейной алгебры.</p>
+<p>The vectors and points functions explicitly create arrays of points from arrays of coordinates.
+points2 creates a two-dimensional array of points from a two-dimensional list.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
+<span class="n">vectors</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
+
+<span class="n">points2</span><span class="p">([</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span>
+<span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)]</span>
+<span class="p">])</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="incremental-array-of-points">Incremental array of points</h2>
+
+<p>Creates an array of points based on offsets.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">points_incremental</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
+<span class="c1"># Создаёт масив точек:</span>
+<span class="c1"># (0,2,0)</span>
+<span class="c1"># (0,2,10)</span>
+<span class="c1"># (5,2,10)</span>
+<span class="c1"># (10,2,10)</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="operations-on-points-and-vectors">Operations on points and vectors</h2>
+
+<p>Points and vectors can be used in mathematical operations according to the rules of linear algebra.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">pnt</span> <span class="o">-</span> <span class="n">pnt</span> <span class="o">-&gt;</span> <span class="n">vec</span>
 <span class="n">pnt</span> <span class="o">+</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">pnt</span>
@@ -112,40 +144,50 @@
 
 <hr />
 
-<h2 id="vectors-points">Функции vectors, points.</h2>
+<h2 id="empty-primitive-nullshape">Empty primitive. nullshape</h2>
 
-<p>Функции vectors и points явно создают массивы точек из массивов координат.</p>
+<p>Empty primitive. Can participate in boolean operations.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
-<span class="n">vectors</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
-</code></pre></div>
-
-<hr />
-
-<h2 id="nullshape">Пустое примитив. nullshape.</h2>
-
-<p>Пустой примитив. Может участвовать в булевых операциях.  </p>
-
-<p>Пример использования в цикле:</p>
+<p>An example of use in a loop:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="n">nullshape</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
-    <span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
+<span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
 
 <span class="c1">#alternate: union([box(20).translate(10*i,10*i,10*i) for i in range(7)])</span>
 </code></pre></div>
 
 <hr />
 
-<h2 id="deg">Функция deg.</h2>
+<h2 id="conversion-of-angular-values-radians-and-degrees">Conversion of angular values. Radians and degrees</h2>
 
-<p>API ZenCad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg: <br />
-<code>deg(180)</code> соответствует <code>math.pi</code>.</p>
+<p>The zencad API uses radians to define angles. Using degrees requires scaling a numerical factor. This is exactly what the deg function does (synonymous with deg2rad):
+<code>deg (180)</code> matches <code>math.pi</code>.</p>
 
-<p>Код функции deg:</p>
+<p>The reverse conversion is performed by the rad2deg function.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+<p>Сигнатуры:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="c1"># Convert degrees to radians:</span>
+<span class="k">def</span> <span class="nf">deg2rad</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+
+<span class="c1"># Convert radians to degrees:</span>
+<span class="k">def</span> <span class="nf">rad2deg</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Function code deg2rad, rad2deg:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deg2rad</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
+<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+
+<span class="k">def</span> <span class="nf">rad2deg</span><span class="p">(</span><span class="n">rad</span><span class="p">):</span>
+<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+</code></pre></div>
+
+<p>Example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
 </code></pre></div>
 </article>
     </div>

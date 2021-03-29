@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,30 +66,30 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Интерактивный объект</h1>
+      <article class="article"><h1 id="interactive-object">Interactive object</h1>
 
-<p>Интерактивный объект - есть единица отображения в zencad.</p>
+<p>An interactive object is a display unit in zencad.</p>
 
-<p>В этом разделе перечислены типы интерактивных объектов и указаны методы соответствующего базового класса.</p>
+<p>This section lists the types of interactive objects and specifies the methods of the corresponding base class.</p>
 
 <hr />
 
-<h2 id="-2">Геометрические интерактивные объекты.</h2>
+<h2 id="geometric-interactive-objects">Geometric interactive objects.</h2>
 
-<p>Механизм интерактивных объектов используется для отображения геометрических форм, обрабатываемых zencad.</p>
+<p>The interactive object engine is used to display geometric shapes processed by zencad.</p>
 
-<p>Пример 1 (Создание интерактивного объекта формы):</p>
+<p>Example 1 (Creating an interactive form object):</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">scn</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">scene</span><span class="p">()</span>
 
-<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">interactive_object</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> 
+<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">interactive_object</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="n">scn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">intobj</span><span class="p">)</span>
 
 <span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scn</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример 2 (Создание интерактивного объекта формы с помощью функции отображения disp):</p>
+<p>Example 2 (Create an interactive form object using the disp display function):</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
@@ -98,45 +99,49 @@
 
 <hr />
 
-<h2 id="-3">Графические интерактивные объекты.</h2>
+<h2 id="graphical-interactive-objects">Graphical interactive objects.</h2>
 
-<p>Помимо интерактивных объектов геометрических форм существуют интерактивные объекты, которые могут использоваться для передачи дополненительной информации на рабочей сцене:</p>
+<p>In addition to interactive objects of geometric shapes, there are interactive objects that can be used to transfer additional information on the working stage:</p>
 
-<h3 id="-4">Стрелка:</h3>
+<hr />
+
+<h3 id="arrow">Arrow:</h3>
+
+<p>Show an arrow corresponding to the vector <em>vec</em>, leading from the point <em>pnt</em>, the size of the arrow head is determined by the <em>arrlen</em> parameter, the line width by the <em>width</em> parameter.
+If scene is not None, the object is immediately added to scene.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">arrow</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Отобразить стрелку, соответствующую вектору <em>vec</em>, ведущему из точки <em>pnt</em>, размер головы стрелки определяется параметром <em>arrlen</em>, толщина линии параметром <em>width</em>.
-Если параметр scene не None, объект сразу добавляется в scene.</p>
+<hr />
 
-<h3 id="-5">Линия:</h3>
+<h3 id="line">Line:</h3>
+
+<p>Show the line, between the points <em>apnt</em> and <em>bpnt</em>, line width with the <em>width</em> parameter.
+If scene is not None, the object is immediately added to scene.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">line</span><span class="p">(</span><span class="n">apnt</span><span class="p">,</span> <span class="n">bpnt</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">default_scene</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Отобразить линию, между точками <em>apnt</em> и <em>bpnt</em>, толщина линии параметром <em>width</em>.
-Если параметр scene не None, объект сразу добавляется в scene.</p>
-
 <hr />
 
-<h2 id="interactive_object">Методы класса interactive_object:</h2>
+<h2 id="methods-of-the-interactive_object-class">Methods of the interactive_object class:</h2>
 
-<h3 id="-6">Переразмещение</h3>
+<h3 id="repositioning">Repositioning</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Переразмещает объект в положение <em>trans</em> относительно исходного расположения. </p>
+<p>Relocates the object to the <em>trans</em> position relative to its original location.</p>
 
-<h3 id="-7">Скрытие</h3>
+<h3 id="hiding">Hiding</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">hide</span><span class="p">(</span><span class="n">en</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Скрыть или же вновь отобразить объект. Скрытый объект не удаляется из памяти.</p>
+<p>Hide or re-display the object. The hidden object is not removed from memory.</p>
 
-<h3 id="-8">Установка цвета</h3>
+<h3 id="color-setting">Color setting</h3>
 
 <div class="codehilite"><pre><span></span><code><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
 
@@ -150,8 +155,8 @@
 <span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
 </code></pre></div>
 
-<p>Изменить цвет интерактивного объекта. 
-Параметр color представляет или кортеж или объект zencad.color.</p>
+<p>Change the color of the interactive object.
+The color parameter represents either a tuple or a zencad.color object.</p>
 </article>
     </div>
     <div id="footer"></div>

@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,13 +66,13 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Привет, друг.</h1>
+      <article class="article"><h1 id="hello-friend">Hello Friend.</h1>
 
-<p>Вот пример, демонстрирующий принцип построения моделей в zencad.</p>
+<p>Here is an example to demonstrate the principle of building models in zencad.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
 
@@ -84,46 +85,46 @@
 
 <hr />
 
-<h2 id="-2">Что происходит:</h2>
+<h2 id="whats-happening">What's happening:</h2>
 
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
 </code></pre></div>
 
-<p>В первой строчке мы импортируем в текущее пространство пространство имён zencad. В данном случае, нас интересуют функции <code>box</code>, <code>sphere</code>, <code>display</code>, <code>show</code>.
+<p>In the first line, we import into the current zencad namespace. In this case, we are interested in the <code>box</code>,<code>sphere</code>, <code>display</code>,<code>show</code> functions.
 </br>
 </br></p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Подготавливаем геометрические примитивы. Создаётся объект box с размерами 200x200x200 и смещением геометрического центра в начало координат. Также создаются две сферы радиусом 120 и 60.
+<p>Preparing geometric primitives. A box object is created with dimensions 200x200x200 and an offset of the geometric center to the origin. It also creates two spheres with a radius of 120 and 60.
 </br>
 </br></p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
 </code></pre></div>
 
-<p>Вычисляем модель с применением булевых операций. Сперва из куба будет вычтена большая сфера. Потом добавлена малая. Порядок слагаемых в данном случае важен, поскольку операции объединения и разности геометрических тел некомутативны.
+<p>Computing the model using boolean operations. First, a large sphere will be subtracted from the cube. Then a small one was added. The order of the terms is important in this case, since the operations of union and difference of geometric bodies are non-commutative.
 </br>
 </br></p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Функция display передаёт объект в сцену для последующего отображения.
+<p>The <code>disp</code> function passes the object into the scene for later display.
 </br>
 </br></p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
 
-<p>Отображаем виджет сцены.</p>
+<p>Displaying the scene widget.</p>
 
 <hr />
 
-<h2 id="-3">Если всё прошло благополучно:</h2>
+<h2 id="if-everything-went-well">If everything went well:</h2>
 
 <p><img src="../images/helloworld.png" alt="" /></p>
 </article>

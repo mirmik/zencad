@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,44 +66,56 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Графический интерфейс, основные моменты.</h1>
+      <article class="article"><h1 id="graphical-interface-highlights">Graphical interface, highlights.</h1>
 
 <p><img src="../images/gui.png" alt="gui.png" /></p>
 
-<h2 id="-2">Вызов</h2>
+<hr />
 
-<p>Окно графического интерфейса может быть вызвано следующими способами:</p>
+<h2 id="call">Call</h2>
+
+<p>The GUI window can be invoked in the following ways:</p>
 
 <ul>
-<li>Вызов <code>zencad.show()</code> в интерпретаторе python.  </li>
-<li>Выполнение <code>python3 -m pip zencad</code> в среде терминала. (usage: <code>python3 -m pip zencad [filepath]</code>)  </li>
-<li>Вызов утилиты командной строки <code>zencad</code> (usage: <code>zencad [filepath]</code>)  </li>
+<li>Calling <code>zencad.show ()</code> in the python interpreter.</li>
+<li>Executing <code>python3 -m pip zencad</code> in a terminal environment. (usage: <code>python3 -m pip zencad [filepath]</code>)</li>
+<li>Call the command line utility <code>zencad</code> (usage:<code>zencad [filepath]</code>)</li>
 </ul>
 
-<h2 id="-3">Обновление модели по обновлению файла источника</h2>
+<hr />
 
-<p>Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Следует учесть, что реализация этой функциональности выполняется путём изменения работы функции <code>zencad.show()</code> (То есть, есть разница в запуске скрипта из терминала, или из программы визуализатора).  </p>
+<h2 id="updating-the-model-by-updating-the-source-file">Updating the model by updating the source file</h2>
 
-<h2 id="-4">Встроенный текстовый редактор</h2>
+<p>The renderer keeps track of changes in the file, the source of the geometry. When the source is updated, the program automatically starts re-executing the script. It should be noted that this functionality is implemented by changing the operation of the <code>zencad.show ()</code> function (That is, there is a difference in running the script from the terminal, or from the visualizer program).</p>
 
-<p>Визуализатор имеет встроенный виджет текстового редактора, который может быть использован для быстрого редактирования или проведения экспериментов. Отображение редактора <code>View/'Hide editor'</code></p>
+<hr />
 
-<h2 id="-5">Встроенная консоль</h2>
+<h2 id="built-in-text-editor">Built-in text editor</h2>
 
-<p>ZenCad также ретранслирует вывод терминала на встроенную консоль. Отображение консоли <code>View/'Hide console'</code>.
-Это может использоваться в случае, когда вывод основного терминала недоступен.</p>
+<p>The visualizer has a built-in text editor widget that can be used for quick editing or experimentation. Show editor <code>View/'Hide editor'</code></p>
 
-<h2 id="-6">Маркеры, определение координат</h2>
+<hr />
 
-<p>Для установки маркеров следует используются клавиши <code>Q(F1)</code>, <code>W(F2)</code>. После установки координаты маркера выводятся в соответствующем поле. Если установлены оба маркера, дистанция между ними отображается в поле Distance.</p>
+<h2 id="built-in-console">Built-in console</h2>
 
-<h2 id="3d">3D навигация</h2>
+<p>ZenCad also relays the terminal output to the embedded console. Show console <code>View/'Hide console'</code>.
+This can be used when the main terminal output is not available.</p>
 
-<p>Вращение: MouseLeftClick/Alt + MouseMove <br />
-Смещение: MouseRightClick/Shift + MouseMove <br />
-Масштабирование: PgUp/PgDown/MouseWheel  </p>
+<hr />
 
-<p>Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - <code>Navigation/'Axionometric view'</code>, <code>Navigation/'Free rotation view'</code></p>
+<h2 id="markers-determination-of-coordinates">Markers, determination of coordinates</h2>
+
+<p>To set markers, use the keys <code>Q (F1)</code>, <code>W (F2)</code>. After setting, the coordinates of the marker are displayed in the corresponding field. If both markers are set, the distance between them is displayed in the Distance field.</p>
+
+<hr />
+
+<h2 id="3d-navigation">3D navigation</h2>
+
+<p>Rotation: MouseLeftClick / Alt + MouseMove
+Offset: MouseRightClick / Shift + MouseMove
+Scaling: PgUp / PgDown / MouseWheel</p>
+
+<p>The renderer supports two orientation modes. Orthogonal orientation (Z axis is always upward) and free rotation mode. Switch between them - <code>Navigation/'Axionometric view'</code>, <code>Navigation / 'Free rotation view'</code>.</p>
 </article>
     </div>
     <div id="footer"></div>

@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,42 +66,71 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Рефлексия</h1>
+      <article class="article"><h1 id="reflection">Reflection</h1>
 
-<p>Сложные геометрические объекты состоят из более простых. Данная группа функций и методов позволяет расскладывать сложные объекты на образующие их компоненты.</p>
+<p>Complex geometric objects are composed of simpler ones. This group of functions and methods allows you to decompose complex objects into their constituent components.</p>
 
-<p>Для работы с эими фунциями рекомендуется изучить топологическое устройство brep моделей в ядре <em>OpenCascade</em>. (Начать ознаклмление можно с раздела <a href="geomcore.html">Введение в BREP представление геометрических моделей</a>)</p>
+<p>To work with these functions, it is recommended to study the topological structure of models in the <em>OpenCascade</em> kernel. (You can get started with the section <a href="geomcore.html">Introduction to BREP Representation of Geometric Models</a>)</p>
 
 <hr />
 
-<h2 id="-2">Массивы базовых объектов</h2>
+<h2 id="empty-object">Empty object</h2>
 
-<p>Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. </p>
+<p>Returns true if the object is empty, false otherwise.</p>
 
-<p>Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция <em>filter</em> позволяет отфильтровать выборку по необходимому условию.</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid] </span>
-<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">shp</span><span class="o">.</span><span class="n">is_nullshape</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Example:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">is_nullshape</span><span class="p">()</span> <span class="c1"># True</span>
 </code></pre></div>
 
 <hr />
 
-<h2 id="-3">Взятие базового объекта по методу ближайшей точки</h2>
+<h2 id="arrays-of-base-objects">Arrays of base objects</h2>
 
-<p>Иногда требуется извлечь из сложного объекта конкретный базовый объект. 
-В этом случае можно использовать метод базовой точки.  </p>
+<p>This family of methods allows you to retrieve and filter the underlying objects you need.</p>
 
-<p>Следующие функции реализуют метод ближайшей точке и возвращают ближайший к <em>pnt</em> базовый объект соответствующего типа, принадлежащий сложному объекту <em>shp</em>.</p>
+<p>All methods have the same signature and return an array of objects of the corresponding type. The optional <em>filter</em> option allows you to filter the selection by a necessary condition.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="taking-a-base-object-using-the-closest-point-method">Taking a base object using the closest point method</h2>
+
+<p>Sometimes you want to extract a specific base object from a complex object.
+In this case, you can use the base point method.</p>
+
+<p>The following functions implement the closest point method and return the closest base object of the corresponding type to <em>pnt</em> belonging to the complex <em>shp</em> object.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Edge</span>
 <span class="n">near_face</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Face</span>
 <span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; point3</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="type-restoration">Type restoration</h2>
+
+<p>zencad displays the type of object and the operations applicable to it based on the build tree, which in some cases may give incorrect results.</p>
+
+<p>The restore_shapetype function restores the type based on the analysis of the object's real representation.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">original_shp</span> <span class="o">=</span> <span class="n">restore_shapetype</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
 </code></pre></div>
 </article>
     </div>

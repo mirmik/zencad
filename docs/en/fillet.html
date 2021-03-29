@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,17 +66,17 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Топологически зависимые преобразования</h1>
+      <article class="article"><h1 id="topologically-dependent-transformations">Topologically dependent transformations</h1>
 
-<p>Существует класс операций, требующий в качестве параметра выбрать элемент топологии модели. В интерактивных CAD мы можем, используя указатель мыши, выделить такой элемент и указать в качестве параметра. Этот метод недоступен в скриптовом CAD. Общий подход ZenCad состоит в том, что такой элемент задаётся методом "ближайшей точки". При задании аргумента, вместо элемента топологии задаётся точка. Выбранным считается элемент, растояние до которого от элемента топологии будет минимальным. </p>
+<p>There is a class of operations required as part of the model topology. In interactive CAD, we can, using the mouse pointer, point to such an element and point it as a guide. This method is not available in scripted CAD. The general approach of ZenCad is that such an element is specified using the "closest point" method. When specifying an argument, a point is specified instead of a topology element. The selected element is the element, the distance to which from the topology element will be minimal.</p>
 
 <hr />
 
 <h2 id="fillet">Fillet</h2>
 
-<p>Операция скругления тела. 
-Если тело объёмное - модификации подвергаются ребра. Если плоское - вершины.
-Скругления задаются радиусом <code>r</code> и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
+<p>Body rounding operation.
+If the body is solid, the edges are modified. If flat - tops.
+Fillets are specified by radius <code>r</code> and an array of nearest points<code>refs</code>. If <code>refs == None</code>, all elements of the topology are considered selected.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
 <span class="n">fillet</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
@@ -83,43 +84,37 @@
 <span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/fillet0.png" alt="" />
-<img src="../images/generic/fillet1.png" alt="" /> <br />
-<img src="../images/generic/fillet2.png" alt="" />
-<img src="../images/generic/fillet3.png" alt="" /> <br />
-<img src="../images/generic/fillet4.png" alt="" />
-<img src="../images/generic/fillet5.png" alt="" />  </p>
+<p><img src="../images/generic/fillet0.png" alt="" /> <img src="../images/generic/fillet1.png" alt="" /> </br>
+<img src="../images/generic/fillet2.png" alt="" /> <img src="../images/generic/fillet3.png" alt="" /> </br>
+<img src="../images/generic/fillet4.png" alt="" /> <img src="../images/generic/fillet5.png" alt="" /></p>
 
 <hr />
 
 <h2 id="chamfer">Chamfer</h2>
 
-<p>Операция взятия фаски тела. В отличие от скругления применяется только к объёмным телам.
-Фаска задаётся расстоянием <code>r</code>, взятым от ребра до линии фаски и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
+<p>Body chamfering operation. Unlike rounding, it is applied only to solid bodies.
+The chamfer is specified by the distance <code>r</code> taken from the edge to the chamfer line and an array of the nearest points<code>refs</code>. If <code>refs == None</code>, all elements of the topology are considered selected.</p>
 
-<p>TODO: несиметричная фаска. </p>
+<p>TODO: asymmetrical chamfer.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/chamfer0.png" alt="" />
-<img src="../images/generic/chamfer1.png" alt="" /> <br />
-<img src="../images/generic/chamfer2.png" alt="" />
-<img src="../images/generic/chamfer3.png" alt="" />  </p>
+<p><img src="../images/generic/chamfer0.png" alt="" /> <img src="../images/generic/chamfer1.png" alt="" /> </br>
+<img src="../images/generic/chamfer2.png" alt="" /> <img src="../images/generic/chamfer3.png" alt="" /></p>
 
 <hr />
 
 <h2 id="thicksolid">Thicksolid</h2>
 
-<p>Операция создания тонкостенного объёмного тела.
-Задаётся прототипной моделью <code>shp</code> и массивом точек, ближайших к удаляемым граням <code>refs</code>.
-Также задаётся толщина стенок <code>t</code>. Если толщина стенок положительная, стенки наращиваются наружу. Если отрицательная - внутрь.</p>
+<p>The operation of creating a thin-walled volumetric body.
+Defined by the prototype model <code>shp</code> and an array of points closest to the removed faces<code>refs</code>.
+The wall thickness <code>t</code> is also specified. If the wall thickness is positive, the walls grow outward. If negative - inward.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/thicksolid0.png" alt="" />
-<img src="../images/generic/thicksolid1.png" alt="" />  </p>
+<p><img src="../images/generic/thicksolid0.png" alt="" /> <img src="../images/generic/thicksolid1.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>

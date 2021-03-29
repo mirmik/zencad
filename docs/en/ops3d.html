@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,20 +66,20 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Ссылочная геометрия</h1>
+      <article class="article"><h1 id="reference-geometry">Reference geometry</h1>
 
 <hr />
 
-<h2 id="c">Cмещение.</h2>
+<h2 id="offset">Offset</h2>
 
-<p>Путём смещения оболочек, строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
+<p>By displacing the shells, builds a thickened / thinned body based on the prototype <em>proto</em> and the radius of the thickening <em>r</em>. If <em>r</em> is positive, the shell is shifted outward, if negative - inward.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </code></pre></div>
@@ -87,52 +88,47 @@
 
 <hr />
 
-<h2 id="-2">Линейчатая поверхность.</h2>
+<h2 id="ruled-surface">Ruled surface</h2>
 
-<p>Строит грань, задаваемую линейчатое поверхностью, опирающейся на линии <em>a</em>, <em>b</em>.</p>
+<p>Draws a face defined by a ruled surface based on the lines <em>a</em>, <em>b</em>.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
-<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
 <span class="n">ruled</span><span class="p">(</span>
-    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
-    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+<span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
+<span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
 
-<p><img src="../images/generic/ruled0.png" alt="" />
-<img src="../images/generic/ruled1.png" alt="" /> <br />
-<img src="../images/generic/ruled2.png" alt="" /> 
-<img src="../images/generic/ruled3.png" alt="" /></p>
+<p><img src="../images/generic/ruled0.png" alt="" /> <img src="../images/generic/ruled1.png" alt="" />   </br>
+<img src="../images/generic/ruled2.png" alt="" /> <img src="../images/generic/ruled3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-3">Увязка</h2>
+<h2 id="binding">Binding</h2>
 
-<p>Построение оболочки на масиве каркасных линий <em>profiles</em>. При активации опции <em>shell</em> вместо твёрдого тела строится оболочка. Активации опции <em>smooth</em> изменяет режим линейчатой поверхности на гладкую апроксимацию. При активной апроксимации опция <em>maxdegree</em> ограничивает максимальную степень полинома.</p>
+<p>Constructing a shell on the <em>profiles</em> wireframe array. When the <em>shell</em> option is activated, a shell is built instead of a solid body. Activating the <em>smooth</em> option changes the ruled surface mode to a smooth approximation. When approximation is active, the <em>maxdegree</em> option limits the maximum degree of the polynomial.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite"><pre><span></span><code>
 </code></pre></div>
 
-<p><img src="../images/generic/loft0.png" alt="" />
-<img src="../images/generic/loft1.png" alt="" /> <br />
-<img src="../images/generic/loft2.png" alt="" />
-<img src="../images/generic/loft3.png" alt="" /> <br />
-<img src="../images/generic/loft4.png" alt="" />
-<img src="../images/generic/loft5.png" alt="" />  </p>
+<p><img src="../images/generic/loft0.png" alt="" /> <img src="../images/generic/loft1.png" alt="" />  </br>
+<img src="../images/generic/loft2.png" alt="" /> <img src="../images/generic/loft3.png" alt="" />  </br>
+<img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" /></p>
 </article>
     </div>
     <div id="footer"></div>

@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,32 +66,50 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Экспорт/Импорт</h1>
+      <article class="article"><h1 id="export-import">Export Import</h1>
 
-<p>Операции экспорта/импорта отличаются от большинства операций библиотеки zencad тем, что производятся не только над объектами в памяти программы, но и над файлами. Для работы с файлами библиотека кэширования evalcache использует специальный механизм. Благодаря ему операции импорта учитывают изменения содержимого файлов, а операции экспорта не выполняются без необходимости.</p>
+<p>Export / import operations differ from most operations of the zencad library in that they are performed not only on objects in the program memory, but also on files. The evalcache caching library uses a special mechanism to work with files. It allows imports to take into account changes to the content of files, and exports are not performed unnecessarily.</p>
 
 <hr />
 
 <h2 id="stl">STL</h2>
 
-<p>Создать файл мешсети формата STL, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>. 
-Параметр <code>delta</code> определяет степень детализации. Чем меньше <code>delta</code>, тем меньше размер полигонов.</p>
+<p>Create an STL mesh file located in the path from the solid model model.
+The <code>delta</code> parameter determines the granularity. The smaller the delta, the smaller the size of the polygons.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">to_stl</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
 </code></pre></div>
 
+<p>Importing SMALL stl and other mesh mesh formats is possible using third-party libraries such as trimesh. (see examples / Integration / trimesh)</p>
+
 <hr />
 
-<h2 id="brep">BREP</h2>
-
-<p>Создать файл brep представления формата BREP, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>. </p>
+<p>Create a brep file of the BREP format located in the path <code>path</code> from the solid model<code>model</code>.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">to_brep</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Считать файл brep представления формата BREP, находящийся по пути <code>path</code>. Вернуть полученную модель.</p>
+<p>Read the brep file of the BREP format located in the path <code>path</code>. Return the resulting model.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">from_brep</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+
+<h2 id="svg">SVG</h2>
+
+<p>("0.34.0: Currently limited support. Not all curve types are supported.")</p>
+
+<p>Create / read svg file from flat body <code>model</code>, located on path<code>path</code>.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">to_svg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Create / read svg string of flat body representation <code>model</code>.</p>
+
+<div class="codehilite"><pre><span></span><code><span class="n">svg</span> <span class="o">=</span> <span class="n">to_svg_string</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg_string</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
 </code></pre></div>
 </article>
     </div>

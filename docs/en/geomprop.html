@@ -52,6 +52,7 @@
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
 </ul></li>
 <li>Visualization
 <ul>
@@ -65,46 +66,60 @@
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<h1 id="-1">Геометрические характеристики.</h1>
+      <article class="article"><h1 id="geometric-characteristics">Geometric characteristics.</h1>
 
-<p>Раздел посвящен измерению геометрических характеристик конструируемой геометрии.</p>
+<p>The section is devoted to measuring the geometric characteristics of the constructed geometry.</p>
 
-<p>Поскольку понятия плотности и масштаба весьма эфемерны для вычислительной библиотеки, все вычисления проводятся в условных единицах. Перевод величин в систему си требует дополнительных вычислений.</p>
-
-<hr />
-
-<h2 id="-2">Встроенные методы</h2>
-
-<p>Shape имеет ряд методов, позволяющих запросить геометрическую информацию.</p>
-
-<h3 id="-3">Центр масс.</h3>
-
-<p>shape.center() -> point3
-shape.cmradius() -> vector3</p>
-
-<h3 id="-4">Объём.</h3>
-
-<p>shape.mass() -> float</p>
-
-<h3 id="-5">Матрица инерции.</h3>
-
-<p>shape.matrix<em>of</em>inertia() -> matrix33</p>
-
-<h3 id="-6">Статические моменты.</h3>
-
-<p>shape.static_moments() -> float, float, float</p>
-
-<h3 id="-7">Момент инерции относительно оси.</h3>
-
-<p>UNDER_CONSTRUCT</p>
-
-<h3 id="-8">Радиус инерции.</h3>
-
-<p>UNDER_CONSTRUCT</p>
+<p>Since the concepts of density and scale are very ephemeral for the computational library, all calculations are carried out in arbitrary units. Converting values to the si system requires additional calculations.</p>
 
 <hr />
 
-<h2 id="-9">Измерение систем тел</h2>
+<h2 id="built-in-methods">Built-in methods</h2>
+
+<p>Shape has a number of methods for querying geometric information.</p>
+
+<hr />
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">center</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">point3</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">cmradius</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">vector3</span>
+</code></pre></div>
+
+<hr />
+
+<h3 id="center-of-mass">Center of mass.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</code></pre></div>
+
+<hr />
+
+<h3 id="matrix-of-inertia">Matrix of inertia.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">matrix_of_inertia</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">matrix33</span>
+</code></pre></div>
+
+<hr />
+
+<h3 id="static-moments">Static moments.</h3>
+
+<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">static_moments</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span>
+</code></pre></div>
+
+<hr />
+
+<h3 id="moment-of-inertia-about-the-axis">Moment of inertia about the axis.</h3>
+
+<p>UNDER_CONSTRUCTION</p>
+
+<hr />
+
+<h3 id="radius-of-gyration">Radius of gyration.</h3>
+
+<p>UNDER_CONSTRUCTION</p>
+
+<hr />
+
+<h2 id="measuring-body-systems">Measuring body systems</h2>
 
 <p>UNDER_CONSTRUCT</p>
 </article>
