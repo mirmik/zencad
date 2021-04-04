@@ -61,3 +61,18 @@ class MathTest(unittest.TestCase):
                               3, zencad.vector3(9, 18, 27)))
         self.assertTrue(early(zencad.vector3(3, 6, 9) /
                               3, zencad.vector3(1, 2, 3)))
+
+        self.assertAlmostEqual(
+            zencad.vector3(0, 0, 1).angle(zencad.vector3(0, 0, 1)),
+            0
+        )
+
+        self.assertAlmostEqual(
+            zencad.vector3(13, 0, 0).angle(zencad.vector3(0, 0, 25)),
+            math.pi/2
+        )
+
+        self.assertAlmostEqual(
+            zencad.point3(13, 11, 0).angle(zencad.vector3(0, 0, 25)),
+            math.pi / (2)
+        )
