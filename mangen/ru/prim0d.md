@@ -171,3 +171,16 @@ def rad2deg(rad):
 ```python
 rotateZ(deg(45))
 ```
+
+---
+:ru
+### Зарегистрировать шрифт
+Регистрирует в системе шрифт в формате FreeType.
+:en
+### Register font
+Register FreeType font in system.
+:end
+
+```python
+register_font(fontpath) 
+```

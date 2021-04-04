@@ -105,15 +105,15 @@ ngon(r=radius, n=vertexCount, wire=True/False)
 ---
 :ru
 ## Текст
-Плоский примитив - текст. Создаёт грань на основе строки и шрифта. Шрифт указывается в виде пути на файл формата ttf (FreeType).
+Плоский примитив - текст. Создаёт грань на основе строки `text`, названия шрифта `fontname` и размера шрифта `size`. Шрифт выбирается из числа зарегистрированных в системе. Для регистрации дополнительных шрифтов используйте комманду `register_font`. Опция `composite_curve` Позволяет снизить количество составных объектов результирующей формы путём увеличения их сложности. 
 :en
 ## Text shape
-The flat primitive is text. Creates a face based on string and font. The font is specified as a path to a ttf (FreeType) file. 
+The flat primitive is text. Creates a face based on string `text` and name of font `fontname` with font size `size`. The font is selected from those registered in the system. To register additional fonts use `register_font` command. The `composite_curve` option reduce the number of edges in the resulting shape by increasing their complexity. 
 ::
 
 Сигнатура:
 ```python
-textshape(text=textString, fontpath=pathToFont, size=fontSize)
+textshape(text, fontname, size, composite_curve=False)
 ```
 ![](../images/generic/textshape0.png) ![](../images/generic/textshape1.png)  
 

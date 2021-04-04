@@ -155,11 +155,11 @@
 
 <h2 id="-7">Текст</h2>
 
-<p>Плоский примитив - текст. Создаёт грань на основе строки и шрифта. Шрифт указывается в виде пути на файл формата ttf (FreeType).</p>
+<p>Плоский примитив - текст. Создаёт грань на основе строки <code>text</code>, названия шрифта <code>fontname</code> и размера шрифта <code>size</code>. Шрифт выбирается из числа зарегистрированных в системе. Для регистрации дополнительных шрифтов используйте комманду <code>register_font</code>. Опция <code>composite_curve</code> Позволяет снизить количество составных объектов результирующей формы путём увеличения их сложности.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">textString</span><span class="p">,</span> <span class="n">fontpath</span><span class="o">=</span><span class="n">pathToFont</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fontSize</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fontname</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">composite_curve</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/textshape0.png" alt="" /> <img src="../images/generic/textshape1.png" alt="" /></p>
