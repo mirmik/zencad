@@ -135,6 +135,7 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
         return numpy.linalg.norm(diff)
 
     def angle(self, oth):
+        oth = vector3(oth)
         a = self.to_unit_vector()
         b = oth.to_unit_vector()
 
