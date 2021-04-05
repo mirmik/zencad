@@ -20,7 +20,7 @@ Manual and Information
 - Articles:  
 	- habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
 
-- Community chat (Telegram, ru): [https://t.me/zencad](https://t.me/zencad)
+- Community chat (Telegram): [https://t.me/zencad](https://t.me/zencad)
 
 Installation
 ------------
