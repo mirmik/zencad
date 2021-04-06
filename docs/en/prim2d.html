@@ -155,11 +155,11 @@ When the <em>wire</em> option is set, a wireframe will be generated instead of a
 
 <h2 id="text-shape">Text shape</h2>
 
-<p>The flat primitive is text. Creates a face based on string and font. The font is specified as a path to a ttf (FreeType) file.</p>
+<p>The flat primitive is text. Creates a face based on string <code>text</code> and name of font <code>fontname</code> with font size <code>size</code>. The font is selected from those registered in the system. To register additional fonts use <code>register_font</code> command. The <code>composite_curve</code> option reduce the number of edges in the resulting shape by increasing their complexity.</p>
 
 <p>Signature:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">textString</span><span class="p">,</span> <span class="n">fontpath</span><span class="o">=</span><span class="n">pathToFont</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fontSize</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fontname</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">composite_curve</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
 <p><img src="../images/generic/textshape0.png" alt="" /> <img src="../images/generic/textshape1.png" alt="" /></p>

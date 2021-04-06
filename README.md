@@ -2,7 +2,6 @@ ZenCad
 ======
 **NOTE: Astrologers have announced a month of changes. ZenCad migrate to pythonocc wrapper. It break old library distribution strategy. Now OCCT and pythonocc will be installed over console/gui instruments or mannually. Most of the functionality has been restored on the new shell, but some backward compatibility violations are possible. servoce package is removed for now. (You can find old zencad/servoce variant in `master_v2_archive` branch)**
 
-
 CAD system for righteous zen programmers  
 
 Status:  
@@ -16,9 +15,12 @@ So, it's  openscad idea, python language and opencascade power in one.
 
 Manual and Information
 ----------------------
-- Manual: You can find manual [here](https://mirmik.github.io/zencad/). Now only russian version.  
+- Manual: You can find manual [here](https://mirmik.github.io/zencad/).
+
 - Articles:  
 	- habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
+
+- Community chat (Telegram): [https://t.me/zencad](https://t.me/zencad)
 
 Installation
 ------------
@@ -42,7 +44,7 @@ Source code
 Main project repo: 
 	[https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
 Related repos:  
-	[https://github.com/mirmik/servoce](https://github.com/mirmik/servoce)  
+	[https://github.com/mirmik/zenframe](https://github.com/mirmik/zenframe)  
 	[https://github.com/mirmik/evalcache](https://github.com/mirmik/evalcache)  
 
 HelloWorld

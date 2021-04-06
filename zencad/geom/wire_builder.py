@@ -270,7 +270,7 @@ class wire_builder:
         c, = self.prepare([c], rel)
         v = self.current - c
 
-        vangle = v.angle()
+        vangle = v.angle((1, 0, 0))
         if zencad.vector3(1, 0, 0).cross(v).z < 0:
             vangle = - vangle
 
@@ -285,7 +285,7 @@ class wire_builder:
         c, = self.prepare([c], rel)
         v = self.current - c
 
-        vangle = v.angle()
+        vangle = v.angle((1, 0, 0))
         if zencad.vector3(1, 0, 0).cross(v).z < 0:
             vangle = - vangle
 

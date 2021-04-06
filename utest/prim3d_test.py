@@ -97,3 +97,6 @@ class Prim3dprobe(unittest.TestCase):
     def test_halfspace_probe(self):
         (zencad.sphere(r=10) - zencad.halfspace().rotateX(zencad.deg(150)))
         (zencad.sphere(r=10) ^ zencad.halfspace().rotateX(zencad.deg(150)))
+
+    def test_nullshape_probe(self):
+        zencad.nullshape()

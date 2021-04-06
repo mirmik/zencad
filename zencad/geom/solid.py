@@ -171,3 +171,12 @@ def _make_solid(shells):
 @lazy.lazy(cls=shape_generator)
 def make_solid(shells):
     return _make_solid(shells)
+
+
+def _nullshape():
+    return _box(1, 1, 1) - _box(1, 1, 1)
+
+
+@lazy.lazy(cls=nocached_shape_generator)
+def nullshape():
+    return _nullshape()
