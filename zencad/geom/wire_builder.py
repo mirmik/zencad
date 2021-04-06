@@ -242,7 +242,7 @@ class wire_builder:
         if self.current.distance(self.start) < 1e-5:
             return
 
-        if approx_a is None and approx_b is None:
+        if not approx_a and not approx_b:
             self.edges.append(segment(self.current, self.start))
 
         else:
