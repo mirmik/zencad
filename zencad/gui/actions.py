@@ -77,42 +77,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
 
     def screenshotAction(self):
         self._current_client.send({"cmd": "save_screenshot"})
-        return
-
-        filters = "*.png;;*.bmp;;*.jpg;;*.*"
-        defaultFilter = "*.png"
-
-        retpath = QFileDialog.getSaveFileName(
-            self, "Dump image", QDir.currentPath(), filters, defaultFilter
-        )
-
-        path = retpath[0]
-
-        if path == "":
-            return
-
-        screen = self.screen()
-
-        file = QFile(path)
-        file.open(QIODevice.WriteOnly)
-        #screen.save(file, "PNG")
-
-        raise Exception("not implemented")
-
-        #w = self.dispw.width()
-        #h = self.dispw.height()
-
-        #raw = self.dispw.view.rawarray(w, h)
-        #npixels = np.reshape(np.asarray(raw), (h, w, 3))
-        #nnnpixels = np.flip(npixels, 0).reshape((w * h * 3))
-
-        #rawiter = iter(nnnpixels)
-        #pixels = list(zip(rawiter, rawiter, rawiter))
-
-        #image = Image.new("RGB", (w, h))
-        # image.putdata(pixels)
-
-        # image.save(path)
 
     def resetAction(self):
         self._current_client.send({"cmd": "resetview"})
