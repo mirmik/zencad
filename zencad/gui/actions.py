@@ -178,20 +178,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
             m = menu.addMenu(d)
             self._init_example_menu(m, os.path.join(directory, d))
 
-    def _init_recent_menu(self, menu):
-        def _add_open_action(menu, name, path):
-            def callback():
-                self.open(path)
-
-            menu.addAction(self.create_action(name, callback, path))
-
-        for l in zencad.settings.Settings.get_recent():
-            _add_open_action(menu, os.path.basename(l), l)
-
-    def update_recent_menu(self):
-        self.recentMenu.clear()
-        self._init_recent_menu(self.recentMenu)
-
     def create_actions(self):
         super().create_actions()
         self.perspective_checkbox_state = False
