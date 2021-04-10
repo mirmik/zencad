@@ -40,3 +40,8 @@ def _shapefix_solid(shp):
     algo2 = ShapeFix_Solid(shp.Shape())
     algo2.Perform()
     return Shape(algo2.Solid())
+
+
+@lazy.lazy(cls=shape_generator)
+def shapefix_solid(shp):
+    return _shapefix_solid(shp)
