@@ -62,23 +62,15 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
     iconpath = os.path.join(os.path.dirname(__file__), "industrial-robot.svg")
     if not os.path.exists(iconpath):
-        iconpath = os.path.join(os.path.dirname(__file__), "zencad", "industrial-robot.svg") # for pyinstaller files configuration
+        # for pyinstaller files configuration
+        iconpath = os.path.join(os.path.dirname(
+            __file__), "zencad", "industrial-robot.svg")
 
     PyQt5.QtWidgets.QApplication.instance().setWindowIcon(PyQt5.QtGui.QIcon())
 
     if openpath is None and not unbound:
-        if Settings.get(["gui", "start_widget"]):
-            strt_dialog = StartDialog()
-            strt_dialog.exec()
-
-            if strt_dialog.result() == 0:
-                sys.exit(0)
-
-            openpath = strt_dialog.openpath
-
-        else:
-            openpath = create_temporary_file(
-                zenframe.configuration.Configuration.TEMPLATE)
+        openpath = create_temporary_file(
+            zenframe.configuration.Configuration.TEMPLATE)
 
     mainwindow = MainWindow(
         initial_communicator=initial_communicator,

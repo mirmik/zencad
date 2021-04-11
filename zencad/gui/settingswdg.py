@@ -123,8 +123,6 @@ class SettingsWidget(QDialog):
         self.default_color_edit = ColorChanger()
         self.texteditor_edit = TextFieldChanger(
             path=["gui", "text_editor"], label="Text editor command:")
-        self.not_start_widget = Checker(
-            "Показывать стартовый экран", path=["gui", "start_widget"])
         self.bind_widget = Checker("Линковать виджет", path=[
                                    "gui", "bind_widget"])
         self.marker_size_edit = TextFieldChanger(
@@ -141,7 +139,6 @@ class SettingsWidget(QDialog):
 
         append(self.texteditor_edit)
         append(self.default_color_edit)
-        append(self.not_start_widget)
         append(self.marker_size_edit)
         append(self.chordial_deflection_edit)
 
