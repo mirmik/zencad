@@ -70,8 +70,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self._last_location = data["loc"]
         elif cmd == "trackinfo":
             self.info_widget.set_tracking_info(data["data"])
-        # elif cmd == "finish_screen":
-        #    self.finish_screen(data["data"][0], data["data"][1], procpid)
         # elif cmd == "fault":
         #    self.open_fault()
         elif cmd == "evalcache":
@@ -102,8 +100,3 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                 1, "to load: {}".format(data["toload"]))
             self.screen_saver.set_subtext(
                 2, "to eval: {}".format(data["toeval"]))
-
-    def openStartEvent(self, path):
-        """ Добавляем путь в список последних вызовов."""
-        Settings.add_recent(os.path.abspath(path))
-        self.update_recent_menu()
