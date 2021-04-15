@@ -59,8 +59,12 @@ def _fill(wires):
     return Shape(fixer.Face())
 
 
-def _polygon(pnts):
+def _polygon(pnts, wire=False):
     pnts = points(pnts)
+
+    if wire:
+        return wire_module._polysegment(pnts, closed=True)
+
     mk = BRepBuilderAPI_MakePolygon()
 
     for i in range(len(pnts)):
@@ -213,8 +217,8 @@ def circle(r, angle=None, wire=False):
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def polygon(pnts):
-    return _polygon(pnts)
+def polygon(pnts, wire=False):
+    return _polygon(pnts, wire=wire)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
