@@ -302,18 +302,10 @@ class DisplayWidget(BaseViewer):
 
     def InitDriver(self):
         self._display.Create(window_handle=int(self.winId()), parent=self)
-        # background gradient
-#		self._display.SetModeShaded()
 
         self.Viewer.SetDefaultLights()
         self.Viewer.SetLightOn()
-
         self.Context.SetDisplayMode(AIS_Shaded, False)
-        self.Context.DefaultDrawer().SetFaceBoundaryDraw(True)
-
-        deviation = Settings.get(["view", "default_chordial_deviation"])
-        self.Context.DefaultDrawer().SetTypeOfDeflection(Aspect_TOD_ABSOLUTE)
-        self.Context.DefaultDrawer().SetMaximalChordialDeviation(deviation)
 
         self.autoscale()
         self.MarkerWController.hide(True)

@@ -13,9 +13,7 @@ class LineInteractiveObject(InteractiveObject):
         self.p1 = point3(p1)
         self.p2 = point3(p2)
 
-        self.aDrawer = Prs3d_Drawer()
         super().__init__(self.make_ais(), color)
-        self.ais_object.SetAttributes(self.aDrawer)
 
         self.width = width if width else 1
         self.set_line_aspect(self.width)
@@ -40,13 +38,13 @@ class LineInteractiveObject(InteractiveObject):
             aspect_type,
             self.width)
 
-        self.aDrawer.SetLineAspect(lineAspect)
+        self.ais_object.Attributes().SetLineAspect(lineAspect)
 
     def set_arrow_aspect(self, arrlen):
         arrowAspect = Prs3d_ArrowAspect()
         arrowAspect.SetLength(arrlen)
-        self.aDrawer.SetArrowAspect(arrowAspect)
-        self.aDrawer.SetLineArrowDraw(True)
+        self.ais_object.Attributes().SetArrowAspect(arrowAspect)
+        self.ais_object.Attributes().SetLineArrowDraw(True)
 
 
 def line(p1, p2, color=color(1, 1, 1), width=1) -> LineInteractiveObject:

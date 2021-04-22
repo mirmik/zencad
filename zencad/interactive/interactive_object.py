@@ -1,9 +1,10 @@
 from OCC.Core.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Axis, AIS_Point
 from OCC.Core.Prs3d import Prs3d_LineAspect
 from OCC.Core.Quantity import Quantity_NOC_BLACK, Quantity_Color, Quantity_TOC_RGB
-from OCC.Core.Aspect import Aspect_TOL_SOLID
+from OCC.Core.Aspect import Aspect_TOL_SOLID, Aspect_TOD_ABSOLUTE
 from OCC.Core.TopoDS import TopoDS_Vertex
 from OCC.Core.Geom import Geom_CartesianPoint
+from OCC.Core.Prs3d import Prs3d_Drawer
 from OCC.Core.TopLoc import TopLoc_Location
 import OCC.Core
 
@@ -15,6 +16,7 @@ from zencad.geom.exttrans import nulltrans
 from zencad.geom.transformable import Transformable
 from zencad.interactive.displayable import Displayable
 from zencad.util import point3
+from zencad.settings import Settings
 
 
 class InteractiveObject(Transformable, Displayable):
@@ -26,10 +28,20 @@ class InteractiveObject(Transformable, Displayable):
         if border_color is None:
             border_color = color
 
+        self.setup_drawer()
+
         self.set_color(
             color=color,
             border_color=border_color,
             wire_color=wire_color)
+
+    def setup_drawer(self):
+        drawer = self.ais_object.Attributes()
+        drawer.SetFaceBoundaryDraw(True)
+        drawer.SetTypeOfDeflection(Aspect_TOD_ABSOLUTE)
+
+        deviation = Settings.get(["view", "default_chordial_deviation"])
+        drawer.SetMaximalChordialDeviation(deviation)
 
     def bind_to_scene(self, scene):
         scene.add_interactive_object(self)
