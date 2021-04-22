@@ -11,7 +11,7 @@ from zencad.geom.trans import rotateZ, rotateY, rotate, translate
 from zencad.util import vector3, point3
 from zencad.color import Color as color
 
-from zencad.interactive.interactive_object import create_interactive_object
+from zencad.interactive import create_interactive_object
 from zencad.interactive.displayable import Displayable
 
 
