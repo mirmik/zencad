@@ -19,7 +19,7 @@ def display(shp, color=None, deep=True, scene=None):
             ret.append(display(i, color, deep, scene))
         return ret
 
-    return __default_scene.add(shp, color)
+    return scene.add(shp, color)
 
 
 def disp(*args, **kwargs):

@@ -22,7 +22,7 @@ from OCC.Core.Aspect import Aspect_TOD_ABSOLUTE
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
 from zenframe.util import print_to_stderr
-from zencad.interactive.interactive_object import AxisInteractiveObject, ShapeInteractiveObject
+from zencad.interactive import AxisInteractiveObject, ShapeInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
 import zencad.geom.trans
