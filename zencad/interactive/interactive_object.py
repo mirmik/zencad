@@ -77,7 +77,6 @@ class InteractiveObject(Transformable, Displayable):
         if self._context:
             loc = TopLoc_Location(trsf._trsf)
             self._context.SetLocation(self.ais_object, loc)
-            #self._context.Update(self.ais_object, True)
 
     def color(self):
         return self._color
