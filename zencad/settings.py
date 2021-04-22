@@ -16,7 +16,7 @@ class ZencadSettings(BaseSettings):
             },
             "view": {
                 "default_color": (0.6, 0.6, 0.8, 0),
-                "default_chordial_deviation": 0.003
+                "default_chordial_deviation": 0.1
             },
             "memory": {
                 "recents": [],
