@@ -117,7 +117,7 @@ class DisplayWidget(BaseViewer):
         )
         for iobj in self.camera_center_axes:
             self.Context.Display(iobj.ais_object, False)
-            iobj.bind_context(self._display.GetContext())
+            iobj.bind_context(self.Context)
 
         self.msphere = zencad.geom.solid._sphere(1)
         self.MarkerQController = ShapeInteractiveObject(
@@ -253,24 +253,24 @@ class DisplayWidget(BaseViewer):
                     break
 
         for iobj in scene.interactives:
-            self._display.GetContext().Display(iobj.ais_object, False)
-            iobj.bind_context(self._display.GetContext())
+            self.Context.Display(iobj.ais_object, False)
+            iobj.bind_context(self.Context)
 
         self.autoscale()
 
     def autoscale(self, koeff=0.07):
-        self._display.GetView().FitAll(koeff)
-        self._display.GetView().Redraw()
+        self.View.FitAll(koeff)
+        self.View.Redraw()
 
     def enable_axis_triedron(self, en):
         if en:
-            self._display.GetContext().Display(self.x_axis, True)
-            self._display.GetContext().Display(self.y_axis, True)
-            self._display.GetContext().Display(self.z_axis, True)
+            self.Context.Display(self.x_axis, True)
+            self.Context.Display(self.y_axis, True)
+            self.Context.Display(self.z_axis, True)
         else:
-            self._display.GetContext().Erase(self.x_axis, True)
-            self._display.GetContext().Erase(self.y_axis, True)
-            self._display.GetContext().Erase(self.z_axis, True)
+            self.Context.Erase(self.x_axis, True)
+            self.Context.Erase(self.y_axis, True)
+            self.Context.Erase(self.z_axis, True)
 
     def restore_location(self, dct):
         scale = dct["scale"]
@@ -305,11 +305,11 @@ class DisplayWidget(BaseViewer):
         # background gradient
 #		self._display.SetModeShaded()
 
-        self._display.GetViewer().SetDefaultLights()
-        self._display.GetViewer().SetLightOn()
+        self.Viewer.SetDefaultLights()
+        self.Viewer.SetLightOn()
 
-        self._display.GetContext().SetDisplayMode(AIS_Shaded, False)
-        self._display.GetContext().DefaultDrawer().SetFaceBoundaryDraw(True)
+        self.Context.SetDisplayMode(AIS_Shaded, False)
+        self.Context.DefaultDrawer().SetFaceBoundaryDraw(True)
 
         deviation = Settings.get(["view", "default_chordial_deviation"])
         self.Context.DefaultDrawer().SetTypeOfDeflection(Aspect_TOD_ABSOLUTE)
