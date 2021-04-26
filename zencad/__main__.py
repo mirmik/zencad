@@ -54,7 +54,6 @@ def top_half(communicator):
 
 def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zencad.gui.mainwindow import MainWindow
-    from zencad.gui.startwdg import StartDialog
     from zencad.settings import Settings
     from zenframe.util import create_temporary_file
     import PyQt5.QtWidgets
