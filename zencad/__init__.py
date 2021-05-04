@@ -67,6 +67,8 @@ try:
     import zencad.color as color
     from zencad.lazifier import lazy
 
+    import zencad.assemble
+
     # Transes
     from zencad.geom.trans import move, moveX, moveY, moveZ, \
         translate, translateX, translateY, translateZ, \

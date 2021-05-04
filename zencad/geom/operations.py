@@ -38,6 +38,9 @@ def restore_shapetype(shp):
 
 
 def _fillet(shp, r, refs=None):
+    if (shp.shapetype() == "face"):
+        return _fillet2d(shp, r, refs)
+
     if refs:
         refs = points(refs)
 

@@ -78,10 +78,6 @@ class unit(Transformable, Displayable):
     def set_objects(self, objects):
         self.dispobjects = objects
 
-    def set_shape(self, shp):
-        raise Exception(
-            "zencad.assemble.unit: set_shape function removed. Use `add_shape` instead.")
-
     def add_object(self, d):
         self.dispobjects.append(d)
 
@@ -91,9 +87,13 @@ class unit(Transformable, Displayable):
 
     def add(self, obj, color=None):
         uo = evalcache.unlazy_if_need(obj)
-        interobj = create_interactive_object(uo)
+        interobj = create_interactive_object(uo, color=color)
         self.add_object(interobj)
         return interobj
+
+    def add_shape(self, obj, color):
+        print("'add_shape' is deprecated. use 'add' method instead.")
+        self.add(obj, color)
 
     def add_triedron(self, length=10, width=1, arrlen=1,
                      xcolor=color.red, ycolor=color.green, zcolor=color.blue):
