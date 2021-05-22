@@ -88,7 +88,7 @@ class InteractiveObject(Transformable, Displayable):
             return self._location
 
     def transform(self, trans):
-        self.relocate(self.location() * trans)
+        self.relocate(trans * self.location())
         return self
 
     def bind_context(self, context):
