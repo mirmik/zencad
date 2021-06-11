@@ -112,3 +112,7 @@ test/screens/*.png
 *.stl
 *.brep
 mangen/images/generic/*.png
+
+
+doxygen/html
+doxygen/latex
