@@ -1,9 +1,16 @@
-from zencad.interactive.interactive_object import *
+from zencad.interactive.interactive_object import point3
 
-from zencad.interactive.point import *
-from zencad.interactive.axis import *
-from zencad.interactive.shape import *
-from zencad.interactive.line import *
+from zencad.interactive.point import PointInteractiveObject
+from zencad.interactive.axis import AxisInteractiveObject
+from zencad.interactive.shape import ShapeInteractiveObject
+from zencad.interactive.interactive_object import InteractiveObject
+
+from OCC.Core.Geom import Geom_CartesianPoint
+import OCC.Core
+
+from zencad.axis import Axis
+from zencad.color import Color
+from zencad.geom.shape import Shape
 
 
 def create_interactive_object(obj, color=None):

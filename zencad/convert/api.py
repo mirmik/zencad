@@ -1,11 +1,11 @@
 """
-В этом файле определены операции экспорта и импорта геометрии. 
+В этом файле определены операции экспорта и импорта геометрии.
 
 Операции экспорта реализованы с применением evalcache.lazyfile,
 что позволяет избежать множественных загрухок крайней ноды.
 
 Политика хеширования в случае импорта требует учета возможности изменения
-файла. Поэтому в хэш загружаемого объекта подмешивается дата его модификации. 
+файла. Поэтому в хэш загружаемого объекта подмешивается дата его модификации.
 Объект не кешируется, потому как операция восстановления из кэша
 ничем не отличается от загрузки из файла.
 """
@@ -28,7 +28,7 @@ def _to_stl(shp, path, delta):
 
     mesh = BRepMesh_IncrementalMesh(shp.Shape(), delta)
 
-    if mesh.IsDone() == False:
+    if mesh.IsDone() is False:
         return False
 
     stl_writer = StlAPI_Writer()
@@ -100,8 +100,3 @@ def from_svg(path):
 def from_svg_string(string):
     reader = zencad.convert.svg.SvgReader()
     return reader.read_string(string)
-
-
-#from zencad.convert.svg import shape_to_svg_string
-#from zencad.convert.svg import shape_to_svg
-#from zencad.convert.svg import svg_to_shape

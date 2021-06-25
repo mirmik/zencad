@@ -5,6 +5,7 @@ from zencad.geom.unify import _unify
 from zencad.geom.operations import _restore_shapetype
 from zencad.geom.face import _fix_face, _fill
 from zencad.geom.boolops import _union
+from zencad.geom.trans import mirrorO, mirrorX, mirrorY
 import xml.etree.ElementTree as ET
 import math
 import re
@@ -183,7 +184,6 @@ class SvgWriter:
         shp = shp.mirrorX()
 
         if shp.shapetype() == "face":
-            fill_opacity = 1
             self.path = self.dwg.path(stroke="", fill=color, fill_opacity=1)
             self.push_face(shp)
 
@@ -256,7 +256,8 @@ class SvgReader:
         if "fill" in el:
             fill = el["fill"]
         if "fill_opacity" in el:
-            fill_opacity = el["fill_opacity"]
+            #fill_opacity = el["fill_opacity"]
+            pass
 
         tokens = d.split()
         self.wb = None
@@ -266,7 +267,7 @@ class SvgReader:
         while 1:
             try:
                 cmd = next(self.iter)
-            except:
+            except Exception:
                 self.read_path_final_wb()
                 break
 
@@ -283,7 +284,6 @@ class SvgReader:
 
         self.wires = evalcache.unlazy_if_need(self.wires)
         if fill is not None:
-            import zencad.showapi
             return _fill(self.wires)
 
         else:
