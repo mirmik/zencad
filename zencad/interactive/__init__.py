@@ -3,6 +3,7 @@ from zencad.interactive.interactive_object import point3
 from zencad.interactive.point import PointInteractiveObject
 from zencad.interactive.axis import AxisInteractiveObject
 from zencad.interactive.shape import ShapeInteractiveObject
+from zencad.interactive.line import line, arrow
 from zencad.interactive.interactive_object import InteractiveObject
 
 from OCC.Core.Geom import Geom_CartesianPoint
@@ -42,3 +43,9 @@ def create_interactive_object(obj, color=None):
 
     else:
         raise Exception("unresolved type", obj.__class__)
+
+
+__all__ = [
+    "line",
+    "arrow"
+]

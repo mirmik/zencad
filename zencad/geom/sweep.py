@@ -1,28 +1,31 @@
 from zencad.geom.shape import Shape, shape_generator
-from zencad.lazifier import *
+from zencad.lazifier import lazy
 from zencad.util import vector3
 from zencad.geom.trans import translate
+import zencad.geom.exttrans
 
-from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_SOLID, TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SHELL, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX
+from OCC.Core.TopAbs import TopAbs_FACE
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakePrism, BRepPrimAPI_MakeRevol
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_ThruSections
-from OCC.Core.gp import gp_Ax1, gp_Pnt, gp_Dir
+from OCC.Core.gp import gp_Ax1, gp_Pnt, gp_Dir, gp_Ax2
 
-from OCC.Core.GeomFill import GeomFill_IsFixed, GeomFill_IsFrenet, GeomFill_IsDarboux, GeomFill_IsDiscreteTrihedron, GeomFill_IsCorrectedFrenet, GeomFill_IsConstantNormal, GeomFill_IsCorrectedFrenet, GeomFill_IsGuideAC, GeomFill_IsGuidePlan, GeomFill_IsGuideACWithContact, GeomFill_IsGuidePlanWithContact
+from OCC.Core.GeomFill import GeomFill_IsFixed, GeomFill_IsFrenet, GeomFill_IsDarboux, GeomFill_IsDiscreteTrihedron, GeomFill_IsConstantNormal, GeomFill_IsCorrectedFrenet, GeomFill_IsGuideAC, GeomFill_IsGuidePlan, GeomFill_IsGuideACWithContact, GeomFill_IsGuidePlanWithContact
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe, BRepOffsetAPI_MakePipeShell
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transformed
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transformed, BRepBuilderAPI_RoundCorner, BRepBuilderAPI_RightCorner
 
-from zencad.util import *
+from zencad.util import deg
 from zencad.geom.operations import _restore_shapetype
 
 import zencad.geom.face as face
 import zencad.geom.curve as curve
-from zencad.geom.sweep_law import *
+from zencad.geom.sweep_law import law_evolved_section, law_constant_function, law_spine_and_trihedron, law_corrected_frenet_trihedron
 
 from zencad.geom.surface import _sweep_surface
 from zencad.geom.wire import _make_edge
 from zencad.geom.face import _make_face
 from zencad.geom.shell import _make_shell
+
+import math
 
 
 def _extrude(shp, vec, center=False):
@@ -75,22 +78,15 @@ def _revol2(profile, r, n=30, yaw=(0, deg(360)), roll=(0, 0), sects=False, npart
 
     if is_full_circle:
         endpoint = False
-        if nparts == None:
+        if nparts is None:
             nparts = 2
 
     else:
         endpoint = True
-        if nparts == None:
+        if nparts is None:
             nparts = 1
 
-    yaw_dist = yaw[1] - yaw[0]
-    roll_dist = roll[1] - roll[0]
-    yaw_step = yaw_dist / nparts
-    roll_step = roll_dist / nparts
-
     def part_of_interval(part, total, a, b):
-        total_p = total + 1
-
         def koeff(idx, tot): return idx / tot
         def point(a, b, k): return a*(1-k) + b*k
 
@@ -177,7 +173,7 @@ def _pipe(shp, spine, mode="corrected_frenet", force_approx_c1=False):
         else:
             tri = mode
 
-    except:
+    except Exception:
         raise Exception("pipe: undefined mode")
 
     return Shape(BRepOffsetAPI_MakePipe(spine.Wire_orEdgeToWire(), shp.Shape(), tri, force_approx_c1).Shape())
