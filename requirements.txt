@@ -5,3 +5,4 @@ evalcache>=1.14.0
 requests
 wheel
 zenframe
+six
