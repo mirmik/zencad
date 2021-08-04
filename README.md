@@ -4,10 +4,6 @@ ZenCad
 
 CAD system for righteous zen programmers  
 
-Status:  
-![](https://travis-ci.org/mirmik/zencad.svg?branch=master) - master  
-![](https://travis-ci.org/mirmik/zencad.svg?branch=dev) - dev  
-
 What is it?
 -----------
 ZenCad - it's a system for use oce geometry core in openscad's script style.
@@ -15,7 +11,7 @@ So, it's  openscad idea, python language and opencascade power in one.
 
 Manual and Information
 ----------------------
-- Manual: You can find manual [here](https://mirmik.github.io/zencad/).
+- Manual: [here](https://mirmik.github.io/zencad/).
 
 - Articles:  
 	- habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
@@ -24,11 +20,24 @@ Manual and Information
 
 Installation
 ------------
+### Common:
 Install zencad from pypi:  
-```python3 -m pip install zencad ```
+```python3 -m pip install zencad[gui]```
 
 Maybe need install qt5-default, because pyqt5 has trouble with xcb plugin.  
 ```apt install qt5-default ```
+
+Zencad needs *pyocct* and *opencascade core*(OCCT). After first launch
+`zencad` or `python3 -m zencad` 
+library instalation utility will started. You can use it for *pyocc* and *OCCT* installation. Also you can install it mannualy.
+
+### Installation without graphical part:
+Install zencad as library without gui:
+```python3 -m pip install zencad```
+
+For install libraries without graphical parts, you can use keywords:
+```python3 -m zencad --install-occt-force```
+```python3 -m zencad --install-pythonocc-force```
 
 ### For Windows:  
 Windows version of ZenCad needed `vcredist` (Microsoft Redistibutable Package).  
@@ -37,7 +46,7 @@ Please, install `vcredist 2015` for Python3.7 and also `vcredist 2019` for Pytho
 Standalone Distribution
 -----------------------
 ZenCad have standalone version for Windows.  
-You can find windows prerelease version in [releases](https://github.com/mirmik/zencad/releases).
+Windows prerelease version in [releases](https://github.com/mirmik/zencad/releases).
 
 Source code
 ---------------
