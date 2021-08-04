@@ -6,16 +6,20 @@ import sys
 from zencad.version import __occt_version__
 
 # Libraries loading test. Starts with gui mode only.
+
 if (
-    (
-        sys.platform == "win32" or
-        sys.argv[0][-7:] == "/zencad"
-        or
-        sys.argv[0] == "zencad"
-        or
-        (len(sys.argv) > 2 and sys.argv[1]
-         == "-m" and sys.argv[2] == "zencad")
-    )
+    (True
+     #        sys.platform == "win32" or
+     #       sys.argv[0][-7:] == "/zencad"
+     #      or
+     #     sys.argv[0] == "zencad"
+     #    or
+     #   (len(sys.argv) > 2 and sys.argv[1]
+     #   == "-m" and sys.argv[2] == "zencad")
+     # or
+        # (len(sys.argv) >= 2 and sys.argv[0]
+     # == "-m" and sys.argv[1] == "zencad")
+     )
     and not "--display-only" in sys.argv
     and not "--install-pythonocc" in " ".join(sys.argv)
     and not "--install-occt" in " ".join(sys.argv)
