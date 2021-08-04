@@ -1,4 +1,5 @@
 import zencad.geom.trans as trans
+import zencad.geom.general_transformation as general_transformation
 
 
 class Transformable:
@@ -26,10 +27,11 @@ class Transformable:
     def rotZ(self, *args): return trans.rotateZ(*args)(self)
 
     def scale(self, *args): return trans.scale(*args)(self)
-    def scaleX(self, *args): return trans.scaleX(*args)(self)
-    def scaleY(self, *args): return trans.scaleY(*args)(self)
-    def scaleZ(self, *args): return trans.scaleZ(*args)(self)
-    def scaleXYZ(self, *args): return trans.scaleXYZ(*args)(self)
+    def scaleX(self, *args): return general_transformation.scaleX(*args)(self)
+    def scaleY(self, *args): return general_transformation.scaleY(*args)(self)
+    def scaleZ(self, *args): return general_transformation.scaleZ(*args)(self)
+    def scaleXYZ(
+        self, *args): return general_transformation.scaleXYZ(*args)(self)
 
     def up(self, *args): return trans.up(*args)(self)
     def down(self, *args): return trans.down(*args)(self)

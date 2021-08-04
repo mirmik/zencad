@@ -1,6 +1,6 @@
 # !/usr/bin/env python3
 
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform, BRepBuilderAPI_GTransform
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Vertex
 from OCC.Core.BinTools import BinTools_ShapeSet
 from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
@@ -21,6 +21,8 @@ from zencad.bbox import BoundaryBox
 from zencad.geom.boolops_base import *
 from zencad.lazifier import *
 import zencad.geom.trans
+from zencad.geom.trans import Transformation
+from zencad.geom.general_transformation import GeneralTransformation
 from OCC.Core.Bnd import Bnd_Box
 import zencad.geom.transformable
 import binascii
@@ -118,8 +120,15 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
             print(ex)
 
     def transform(self, trans):
-        shp = BRepBuilderAPI_Transform(self._shp, trans._trsf, True).Shape()
-        return Shape(shp)
+        if isinstance(trans, Transformation):
+            shp = BRepBuilderAPI_Transform(
+                self._shp, trans._trsf, True).Shape()
+            return Shape(shp)
+
+        if isinstance(trans, GeneralTransformation):
+            shp = BRepBuilderAPI_GTransform(
+                self._shp, trans._gtrsf, True).Shape()
+            return Shape(shp)
 
     def is_wire(self): return self.Shape().ShapeType() == TopAbs_WIRE
     def is_edge(self): return self.Shape().ShapeType() == TopAbs_EDGE

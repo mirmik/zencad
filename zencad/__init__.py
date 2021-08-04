@@ -78,7 +78,8 @@ try:
         mirrorO, \
         scale, \
         up, down, left, right, forw, back
-    # scaleX, scaleY, scaleZ
+
+    from zencad.geom.general_transformation import scaleXYZ, scaleX, scaleY, scaleZ
 
     from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
         rotate_array, rotate_array2, short_rotate, nulltrans

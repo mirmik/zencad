@@ -34,6 +34,7 @@ try:
     import boolean_test
     import math_test
     import trans_test
+    import general_transformation_test
     import curve3_test
     import curve2_test
     #import widgets_test
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     execute_test(ops1d2d_test)
     execute_test(boolean_test)
     execute_test(trans_test)
+    execute_test(general_transformation_test)
     execute_test(curve3_test)
     execute_test(curve2_test)
     execute_test(convert)
