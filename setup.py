@@ -50,11 +50,11 @@ setup(
         "numpy",
         "pillow",
         "evalcache>=1.14.0",
+        'zenframe',
     ],
     extras_require={
         'gui': [
-            'PyQt5',
-            'zenframe',
+            'PyQt5'
         ]
     },
     entry_points={"console_scripts": [
