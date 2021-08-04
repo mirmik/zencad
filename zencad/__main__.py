@@ -41,6 +41,8 @@ def console_options_handle():
                         default=None, help="Download and install libocct")
     parser.add_argument("--install-pythonocc-force", action="store_true",
                         help="Download and install pythonocc package")
+    parser.add_argument("--lookup-libraries", action="store_true",
+                        help="Lookup depends")
     parser.add_argument("--yes", action="store_true")
 
     pargs = parser.parse_args()
@@ -99,6 +101,11 @@ def main():
     if pargs.install_pythonocc_force:
         from zencad.geometry_core_installer import install_precompiled_python_occ
         install_precompiled_python_occ()
+        return
+
+    if pargs.lookup_libraries:
+        from zencad.geometry_core_installer import test_third_libraries
+        print(test_third_libraries())
         return
 
     if pargs.install_occt_force is not None:
