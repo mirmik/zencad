@@ -45,10 +45,12 @@ jobs:
 
     - name: Install pyocc        
       run: |
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/.local/lib/occt-7.4.0
           python3 -m zencad --install-pythonocc-force
 
     - name: Lookup libraries        
       run: |
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/.local/lib/occt-7.4.0
           python3 -m zencad --lookup-libraries
 
     #- name: Lint with flake8
@@ -59,4 +61,5 @@ jobs:
         #flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        python3 -m pytest
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/.local/lib/occt-7.4.0
+          python3 -m pytest
