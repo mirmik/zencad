@@ -31,10 +31,14 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Install zencad
-      run: |
-        ./setup.py install --user
-        python3 -m zencad --install-occt-force
-        python3 -m zencad --install-pyocc-force 
+      run: ./setup.py install --user
+        
+    - name: Install occt
+        run: python3 -m zencad --install-occt-force
+
+    - name: Install pyocc        
+        run: python3 -m zencad --install-pyocc-force
+
     #- name: Lint with flake8
     #  run: |
         # stop the build if there are Python syntax errors or undefined names
