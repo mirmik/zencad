@@ -1,0 +1,4 @@
+psutil
+numpy
+pillow
+evalcache>=1.14.0
