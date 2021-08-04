@@ -40,7 +40,7 @@ jobs:
 
     - name: Install pyocc        
       run: |
-          python3 -m zencad --install-pyocc-force
+          python3 -m zencad --install-pythonocc-force
 
     #- name: Lint with flake8
     #  run: |
