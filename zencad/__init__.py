@@ -23,6 +23,7 @@ if (
     and not "--display-only" in sys.argv
     and not "--install-pythonocc" in " ".join(sys.argv)
     and not "--install-occt" in " ".join(sys.argv)
+    and not "--lookup-libraries" in " ".join(sys.argv)
 ):
     try:
         import OCC
