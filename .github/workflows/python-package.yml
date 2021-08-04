@@ -43,6 +43,10 @@ jobs:
       run: |
           python3 -m zencad --install-pythonocc-force
 
+    - name: Lookup libraries        
+      run: |
+          python3 -m zencad --lookup-libraries
+
     #- name: Lint with flake8
     #  run: |
         # stop the build if there are Python syntax errors or undefined names
