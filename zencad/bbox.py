@@ -13,3 +13,11 @@ class BoundaryBox:
     def xrange(self): return (self.xmin, self.xmax)
     def yrange(self): return (self.ymin, self.ymax)
     def zrange(self): return (self.zmin, self.zmax)
+
+    def xlength(self): return self.xmax - self.xmin
+    def ylength(self): return self.ymax - self.ymin
+    def zlength(self): return self.zmax - self.zmin
+
+    def shape(self):
+        from zencad.geom.solid import box
+        return box(self.xlength(), self.ylength(), self.zlength()).move(self.xmin, self.ymin, self.zmin)
