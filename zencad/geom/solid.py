@@ -7,10 +7,11 @@ from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
 from OCC.Core.ShapeFix import ShapeFix_Solid
 
+from zencad.geombase import point3
 from zencad.lazifier import *
 
 
-def _box(size, y=None, z=None, center=None):
+def _box(size, y=None, z=None, center=False):
     if isinstance(size, (float, int)):
         x = size
         if y is None and z is None:
@@ -24,7 +25,20 @@ def _box(size, y=None, z=None, center=None):
     x, y, z = size[0], size[1], size[2]
 
     if center:
-        ax2 = gp_Ax2(gp_Pnt(-x / 2, -y / 2, -z / 2), gp_Dir(0, 0, 1))
+        pnt = point3()
+
+        if center is True:
+            pnt = point3(-x / 2, -y / 2, -z / 2)
+
+        if isinstance(center, str):
+            if ("x" in center):
+                pnt += point3(-x/2, 0, 0)
+            if ("y" in center):
+                pnt += point3(0, -y/2, 0)
+            if ("z" in center):
+                pnt += point3(0, 0, -z/2)
+
+        ax2 = gp_Ax2(pnt.Pnt(), gp_Dir(0, 0, 1))
         return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(ax2, *size).Shape())
     else:
         return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())

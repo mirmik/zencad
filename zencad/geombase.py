@@ -109,6 +109,18 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
     def __sub__(self, oth):
         return vector3(self[0] - oth[0], self[1] - oth[1], self[2] - oth[2])
 
+    def __iadd__(self, oth):
+        self[0] += oth[0]
+        self[1] += oth[1]
+        self[2] += oth[2]
+        return self
+
+    def __isub__(self, oth):
+        self[0] -= oth[0]
+        self[1] -= oth[1]
+        self[2] -= oth[2]
+        return self
+
     def __eq__(self, oth):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z
 
