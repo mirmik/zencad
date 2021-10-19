@@ -39,7 +39,7 @@ Install zencad as library without gui part:
 
 ### For Windows:  
 Windows version of ZenCad needed `vcredist` (Microsoft Redistibutable Package).  
-Please, install `vcredist 2015` for Python3.7 and also `vcredist 2019` for Python3.8  
+Please, install `vcredist 2015` for Python3.7 and also `vcredist 2019` for Python3.8 and later.
 
 Standalone Distribution
 -----------------------
