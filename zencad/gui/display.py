@@ -22,6 +22,7 @@ from OCC.Core.Aspect import Aspect_TOD_ABSOLUTE
 from OCC.Display import OCCViewer
 from zencad.util import point3, to_Pnt
 from zenframe.util import print_to_stderr
+from zencad.geombase import vector3, point3
 from zencad.interactive import AxisInteractiveObject, ShapeInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
@@ -98,7 +99,7 @@ class DisplayWidget(BaseViewer):
         self._perspective_mode = False
         self._first_shape = None
         self.mousedown = False
-        self.keyboard_retranslate_mode = True
+        self.keyboard_retranslate_mode = False
         self.tracking_mode = False
 
         self.last_redraw = time.time()
@@ -192,14 +193,17 @@ class DisplayWidget(BaseViewer):
     def eye(self):
         return point3(self._display.View.Eye())
 
-    def set_eye(self, pnt, orthogonal=True):
-        self._display.View.SetEye(pnt.x, pnt.y, pnt.z)
+    def set_eye(self, pnt, orthogonal=True, redraw=False):
+        self._display.View.Camera().SetEye(gp_Pnt(pnt.x, pnt.y, pnt.z))
 
         if orthogonal:
             self.set_orthogonal()
 
         self.update_orient1_from_view()
         self.set_orient1()
+
+        if redraw:
+            self.redraw()
 
     def set_center_visible(self, en):
         if en:
@@ -215,10 +219,12 @@ class DisplayWidget(BaseViewer):
 
         self.redraw()
 
-    def set_center(self, pnt):
+    def set_center(self, pnt, redraw=True):
         self._display.View.Camera().SetCenter(to_Pnt(pnt))
         self.set_orient1()
-        self.redraw()
+
+        if redraw:
+            self.redraw()
 
     def center(self):
         return point3(self._display.View.Camera().Center())
@@ -245,6 +251,8 @@ class DisplayWidget(BaseViewer):
 
     def attach_scene(self, scene):
         scene.display = self
+        box = scene.boundbox()
+        self.scene_max0 = max(box.xlength(), box.ylength(), box.zlength())
 
         if self._first_shape is None:
             for iobj in scene.interactives:
@@ -355,7 +363,7 @@ class DisplayWidget(BaseViewer):
         self.redraw_marker("w", x, y, z)
 
     def keyPressEvent(self, event):
-        MOVE_SCALE = 0.05
+        MOVE_SCALE = 0.03
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
 
         if event.key() == QtCore.Qt.Key_F3:
@@ -367,11 +375,11 @@ class DisplayWidget(BaseViewer):
             return
 
         elif event.key() == QtCore.Qt.Key_F5:
-            self.move_forw()
+            self.move_forw(MOVE_SCALE)
             return
 
         elif event.key() == QtCore.Qt.Key_F6:
-            self.move_back()
+            self.move_back(MOVE_SCALE)
             return
 
         elif event.key() == QtCore.Qt.Key_F8:
@@ -379,11 +387,11 @@ class DisplayWidget(BaseViewer):
             return
 
         elif event.key() == QtCore.Qt.Key_PageUp:
-            self.zoom_up(self.zoom_koeff_key)
+            self.zoom_up()
             return
 
         elif event.key() == QtCore.Qt.Key_PageDown:
-            self.zoom_down(self.zoom_koeff_key)
+            self.zoom_down()
             return
 
         elif event.key() == QtCore.Qt.Key_W and (self.mousedown or self.keyboard_retranslate_mode is False):
@@ -394,10 +402,10 @@ class DisplayWidget(BaseViewer):
             return
 
         elif event.key() == QtCore.Qt.Key_D and (self.mousedown or self.keyboard_retranslate_mode is False):
-            self.move_left(MOVE_SCALE)
+            self.move_right(MOVE_SCALE)
             return
         elif event.key() == QtCore.Qt.Key_A and (self.mousedown or self.keyboard_retranslate_mode is False):
-            self.move_right(MOVE_SCALE)
+            self.move_left(MOVE_SCALE)
             return
 
         elif event.key() == QtCore.Qt.Key_Alt:
@@ -417,6 +425,15 @@ class DisplayWidget(BaseViewer):
                 "key": event.key(),
                 "modifiers": "",
                 "text": event.text()})
+
+    def zoom_factor(self, factor):
+        self._display.ZoomFactor(factor)
+
+    def zoom_up(self):
+        self.zoom_factor(1.07)
+
+    def zoom_down(self):
+        self.zoom_factor(1/1.07)
 
     def focusInEvent(self, event):
         if self._inited1:
@@ -478,15 +495,6 @@ class DisplayWidget(BaseViewer):
 
         self.mousedown = False
 
-   # def DrawBox(self, event):
-  #      tolerance = 2
- #       pt = event.pos()
-#        dx = pt.x() - self.dragStartPosX
-   #     dy = pt.y() - self.dragStartPosY
-  #      if abs(dx) <= tolerance and abs(dy) <= tolerance:
- #           return
-#        self._drawbox = [self.dragStartPosX, self.dragStartPosY, dx, dy]
-
     def redraw(self):
         self.animate_updated.clear()
         self._display.View.Redraw()
@@ -498,10 +506,6 @@ class DisplayWidget(BaseViewer):
         виджета"""
 
         if time.time() - self.last_redraw > 0.012:
-
-            # if self.pan_temporary != (0,0):
-            #    self.view.pan(self.pan_temporary[0], self.pan_temporary[1])
-            #    self.pan_temporary=(0,0)
             self.redraw()
         else:
             self.animate_updated.set()
@@ -581,7 +585,6 @@ class DisplayWidget(BaseViewer):
                 if self.pitch < -math.pi * 0.4999:
                     self.pitch = -math.pi * 0.4999
                 self.set_orient1()
-                # self.location_changed_handle()
                 self.continuous_redraw()
             elif self._orient == 2:
                 self._display.Rotation(pt.x(), pt.y())
@@ -659,48 +662,39 @@ class DisplayWidget(BaseViewer):
         except Exception as ex:
             print_to_stderr("Error on external command handling", repr(ex))
 
+    def move_vector_cross(self, vecin, koeff):
+        vec = self.center() - self.eye()
+        vec = vec.cross(vecin).normalize() * self.scene_max0
+        self.set_center(self.center() + vec * koeff, redraw=False)
+        self.location_changed_handle()
+        self.redraw()
+
+    def move_vector_eye_line(self, koeff):
+        vec = self.center() - self.eye()
+        vecnorm = vec.normalize() * self.scene_max0
+        self.set_center(self.center() + vecnorm * koeff, redraw=False)
+        self.set_eye(self.eye() + vecnorm * koeff, redraw=False)
+        self.location_changed_handle()
+        self.redraw()
+
     def move_back(self, koeff=1):
-        print("move_back")
-        pass
-        #vec = self.view.eye() - self.view.center()
-        #vec = vec.normalize() * self.scene_max0
-        #self.view.set_center(self.view.center() + vec * koeff)
-        #self.view.set_eye(self.view.eye() + vec * koeff)
-        # self.location_changed_handle()
-        # self.view.redraw()
+        self.move_vector_eye_line(-koeff)
 
     def move_forw(self, koeff=1):
-        print("move_forw")
-        pass
-        #scale = self.view.scale()
-        #vec = self.view.center() - self.view.eye()
-        #vec = vec.normalize() * self.scene_max0
-        #self.view.set_center(self.view.center() + vec * koeff)
-        #self.view.set_eye(self.view.eye() + vec * koeff)
-        # self.location_changed_handle()
-        # self.view.redraw()
-
-    def move_right(self, koeff=1):
-        print("move_right")
-        pass
-        #scale = self.view.scale()
-        #vec = self.view.center() - self.view.eye()
-        #vec = vector3(0,0,1).cross(vec).normalize() * self.scene_max0
-        #self.view.set_center(self.view.center() + vec * koeff)
-        #self.view.set_eye(self.view.eye() + vec * koeff)
-        # self.location_changed_handle()
-        # self.view.redraw()
+        self.move_vector_eye_line(koeff)
 
     def move_left(self, koeff=1):
-        print("move_left")
-        pass
-        #scale = self.view.scale()
-        #vec = self.view.center() - self.view.eye()
-        #vec = vector3(0,0,-1).cross(vec).normalize() * self.scene_max0
-        #self.view.set_center(self.view.center() + vec * koeff)
-        #self.view.set_eye(self.view.eye() + vec * koeff)
-        # self.location_changed_handle()
-        # self.view.redraw()
+        self.move_vector_cross(vector3(0, 0, -1), koeff)
+
+    def move_right(self, koeff=1):
+        self.move_vector_cross(vector3(0, 0, 1), koeff)
+
+    def first_person_mode(self):
+        self.set_perspective(True)
+        self.set_center(self.eye()-vector3(0, 0, 1), redraw=False)
+        self.set_center_visible(False)
+        self.set_orient1()
+        self.redraw()
 
     def export_file_for_one_shape(self, filters, defaultFilter):
         # if self.scene.total() != 1 + self.count_of_helped_shapes:

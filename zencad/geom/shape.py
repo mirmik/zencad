@@ -282,10 +282,14 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return [self.d0(p) for p in params]
 
     def bbox(self):
+        return self.boundbox()
+
+    def boundbox(self):
         box = Bnd_Box()
         brepbndlib.Add(self.Shape(), box)
         xl, yl, zl, xh, yh, zh = box.Get()
         return BoundaryBox(xl, xh, yl, yh, zl, zh)
+
 
 # Support lazy methods
 
@@ -362,7 +366,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "is_face", "is_shell", "is_wire_or_edge", "is_solid", "is_volumed",
         "is_closed",
         "edges", "wires", "faces", "vertices", "native_vertices",
-        "shells", "solids", "compounds", "bbox",
+        "shells", "solids", "compounds", "bbox", "boundbox",
         "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points",
         "mass", "curvetype", 'ellipse_parameters', 'line_parameters', 'circle_parameters', 'lower_distance_parameter'
     ]

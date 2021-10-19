@@ -1,4 +1,5 @@
 from zencad.scene import Scene
+from zenframe.configuration import Configuration
 
 NOSHOW = False
 
@@ -88,7 +89,7 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
         unbound_worker_bottom_half(scene=scene, animate=animate, preanimate=preanimate,
                                    close_handle=close_handle, animate_step=animate_step)
 
-    elif display_only:
+    elif display_only or Configuration.WIDGET_ONLY:
         # Простой режим. Просто отображаем виджет без
         # главной оболочки.
         import zencad.gui.display_only

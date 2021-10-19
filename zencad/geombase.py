@@ -107,7 +107,7 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
         return point3(self[0] + oth[0], self[1] + oth[1], self[2] + oth[2])
 
     def __sub__(self, oth):
-        return point3(self[0] - oth[0], self[1] - oth[1], self[2] - oth[2])
+        return vector3(self[0] - oth[0], self[1] - oth[1], self[2] - oth[2])
 
     def __eq__(self, oth):
         return self.x == oth.x and self.y == oth.y and self.z == oth.z
@@ -171,6 +171,8 @@ class vector3(xyz):
 
     def normalize(self):
         n = numpy.linalg.norm(self)
+        if n == 0:
+            return vector3(0, 0, 0)
         return vector3(self / n)
 
 

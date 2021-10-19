@@ -9,6 +9,7 @@ from zencad.geom.shape import Shape, LazyObjectShape
 from zencad.util import to_Vertex, to_GeomPoint
 from zencad.color import default_color
 from zencad.interactive import create_interactive_object
+from zencad.bbox import BoundaryBox
 
 import OCC.Core
 
@@ -48,3 +49,10 @@ class Scene:
 
         if self.display is not None:
             self.display.display_interactive_object(iobj)
+
+    def boundbox(self):
+        box = BoundaryBox()
+        for inter in self.interactives:
+            bbox = inter.boundbox()
+            box.add(bbox)
+        return box

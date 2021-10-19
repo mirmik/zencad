@@ -2,6 +2,7 @@ from zencad.interactive.interactive_object import InteractiveObject
 from zencad.color import Color
 
 from OCC.Core.AIS import AIS_Shape
+from zencad.bbox import BoundaryBox
 
 
 class ShapeInteractiveObject(InteractiveObject):
@@ -11,3 +12,7 @@ class ShapeInteractiveObject(InteractiveObject):
                          color=color,
                          border_color=border_color,
                          wire_color=wire_color)
+
+    def boundbox(self):
+        bbox = self.ais_object.BoundingBox()
+        return BoundaryBox(bbox)

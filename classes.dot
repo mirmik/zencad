@@ -1,0 +1,8 @@
+digraph "classes" {
+charset="utf-8"
+rankdir=BT
+"0" [label="{LazyObjectShape|cached_methods : list\lnocached_methods : list\lnolazy_methods : list\lstandart_methods : list\ltransparent_methods : list\l|unlazy()\l}", shape="record"];
+"1" [label="{Shape|\l|AdaptorCurve()\lAdaptorSurface()\lCompSolid()\lCompound()\lCurve()\lEdge()\lFace()\lHCurveAdaptor()\lShape()\lShell()\lSolid()\lSurfaceProperties()\lVertex()\lVolumeProperties()\lWire()\lWire_orEdgeToWire()\lbbox()\lcenter()\lchamfer(r, refs)\lchamfer2d(r, refs)\lcompounds()\ledges()\lextrude(vec, center)\lfaces()\lfill()\lfillet(r, refs)\lfillet2d(r, refs)\lis_closed()\lis_compound()\lis_compsolid()\lis_edge()\lis_face()\lis_shell()\lis_solid()\lis_vertex()\lis_volumed()\lis_wire()\lis_wire_or_edge()\lmass()\lnative_vertices()\lnormal(u, v)\lreflection_elements(getter, topabs)\lshapetype()\lshells()\lsolids()\ltransform(trans)\luniform(npoints, strt, fini)\luniform_points(npoints, strt, fini)\lvertices()\lwires()\l}", shape="record"];
+"2" [label="{nocached_shape_generator|\l|}", shape="record"];
+"3" [label="{shape_generator|\l|}", shape="record"];
+}

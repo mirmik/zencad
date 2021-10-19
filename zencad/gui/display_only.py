@@ -9,7 +9,7 @@ import OCC.Core.BRepPrimAPI
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-from zencad.configuration import Configuration
+from zenframe.configuration import Configuration
 if Configuration.FILTER_QT_WARNINGS:
     QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
