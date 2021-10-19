@@ -23,10 +23,6 @@ class LibraryInstaller(QtWidgets.QWidget):
             "ZenCad did not find some libraries. You can use that instrument to install it.")
 
         self.add_separator()
-        self.add_label("Lookup.")
-        self.add_button("Try to import libraries", self.try_to_import)
-
-        self.add_separator()
         self.add_label("Install pythonocc.")
         self.add_button(
             f"Install pythonocc-{__pythonocc_version__}", self.install_pythonocc_handler)
@@ -50,6 +46,10 @@ class LibraryInstaller(QtWidgets.QWidget):
             self.add_label("Install OCCT in pythonocc directory.")
             self.add_button(
                 f"Install OCCT-{__occt_version__} for in pythonocc directory", self.install_occt_to_pythonocc)
+
+        self.add_separator()
+        self.add_label("Lookup.")
+        self.add_button("Try to lookup libraries", self.try_to_import)
 
         self.console = ConsoleWidget()
         vlayout.addWidget(self.console)

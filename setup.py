@@ -54,7 +54,8 @@ setup(
     ],
     extras_require={
         'gui': [
-            'PyQt5'
+            'PyQt5',
+            "pyopengl"
         ]
     },
     entry_points={"console_scripts": [

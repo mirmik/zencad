@@ -21,21 +21,21 @@ Manual and Information
 Installation
 ------------
 ### Common:
-Install zencad from pypi:  
-```python3 -m pip install zencad[gui]```
-
-Maybe need install qt5-default, because pyqt5 has trouble with xcb plugin.  
-```apt install qt5-default ```
-
 Zencad needs *pyocct* and *opencascade core*(OCCT). After first launch
 (type `zencad` or `python3 -m zencad` commands)
-library instalation utility will started. You can use it for *pyocc* and *OCCT* installation. Also you can install libraries mannualy.
+library instalation utility will started. You can use it for *pyocc* and *OCCT* installation. Also you can install libraries manualy.
+```
+apt install qt5-default
+python3 -m pip install zencad[gui]
+zencad 
+# On first launch, Zenсad will ask you to download the required libraries. 
+# After completing the necessary operations, close the installation utility and run the program again. 
+zencad
+```
 
 ### Installation without graphical part:
-Install zencad as library without gui:
+Install zencad as library without gui part:
 ```python3 -m pip install zencad```
-
-For install libraries without graphical parts, you can use keywords:
 ```python3 -m zencad --install-occt-force```  
 ```python3 -m zencad --install-pythonocc-force```
 
