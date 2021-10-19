@@ -51,10 +51,13 @@ setup(
         "pillow",
         "evalcache>=1.14.0",
         'zenframe',
+        "requests",
+        "six",
     ],
     extras_require={
         'gui': [
             'PyQt5',
+            'PyQt5-sip',
             "pyopengl"
         ]
     },
