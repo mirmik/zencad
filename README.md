@@ -43,7 +43,7 @@ Please, install `vcredist 2015` for Python3.7 and also `vcredist 2019` for Pytho
 
 Standalone Distribution
 -----------------------
-ZenCad have standalone version for Windows.  
+ZenCad have standalone version for Windows.
 Windows prerelease version in [releases](https://github.com/mirmik/zencad/releases).
 
 Source code
