@@ -263,7 +263,7 @@ def _wideedge(spine, rad, last_p0, last_p1, circled_joints):
     p10 = ad1 + (d11 * rad)
     p11 = ad1 - (d11 * rad)
 
-    perp = wire_module._segment(p00, p01)
+    perp = wire_module._segment(p01, p00)
     wc = sweep._pipe(perp, spine, mode="corrected_frenet")
 
     wc = wc.faces()[0]
