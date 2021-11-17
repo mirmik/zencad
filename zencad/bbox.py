@@ -8,6 +8,7 @@ class BoundaryBox:
             return
 
         if (xl is None):
+            self.assign_coords(0, 0, 0, 0, 0, 0)
             self.inited = False
             return
 

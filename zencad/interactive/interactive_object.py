@@ -18,6 +18,8 @@ from zencad.interactive.displayable import Displayable
 from zencad.util import point3
 from zencad.settings import Settings
 
+from zencad.bbox import BoundaryBox
+
 
 class InteractiveObject(Transformable, Displayable):
     def __init__(self, iobj, color, border_color=None, wire_color=None):
@@ -104,3 +106,6 @@ class InteractiveObject(Transformable, Displayable):
                 self._context.Erase(self.ais_object, False)
             else:
                 self._context.Display(self.ais_object, False)
+
+    def boundbox(self):
+        return BoundaryBox()
