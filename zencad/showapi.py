@@ -45,7 +45,9 @@ def widget_creator(communicator, scene, animate, preanimate, close_handle, anima
     global DISPLAY
     global ANIMATE_THREAD
     from zencad.gui.display import DisplayWidget
-    DISPLAY = DisplayWidget(
+    from zencad.gui.viewzone import ViewZone
+
+    DISPLAY = ViewZone(
         communicator=communicator)
     DISPLAY.attach_scene(scene)
 

@@ -99,13 +99,13 @@ class InteractiveObject(Transformable, Displayable):
         self.hide(self._hide)
         self._context.Update(self.ais_object, True)
 
-    def hide(self, en):
+    def hide(self, en, redraw=False):
         self._hide = en
         if self._context:
             if en:
-                self._context.Erase(self.ais_object, False)
+                self._context.Erase(self.ais_object, redraw)
             else:
-                self._context.Display(self.ais_object, False)
+                self._context.Display(self.ais_object, redraw)
 
     def boundbox(self):
         return BoundaryBox()
