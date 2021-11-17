@@ -23,6 +23,7 @@ from zencad.bbox import BoundaryBox
 
 class InteractiveObject(Transformable, Displayable):
     def __init__(self, iobj, color, border_color=None, wire_color=None):
+        self._name = "no_named"
         self.ais_object = iobj
         self._location = nulltrans()
         self._hide = False
@@ -47,6 +48,7 @@ class InteractiveObject(Transformable, Displayable):
 
     def bind_to_scene(self, scene):
         scene.add_interactive_object(self)
+        scene.add_interactive_root(self)
 
     def set_color(self, color, b=None, c=None, d=0, border_color=None, wire_color=None):
         if b is not None and c is not None:

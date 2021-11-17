@@ -26,16 +26,14 @@ class unit(Transformable, Displayable):
                  parts=[],
                  parent=None,
                  shape=None,
-                 name=None,
                  location=nulltrans()):
+        self._name = "no_named_unit"
         self.parent = parent
         self.location = evalcache.unlazy_if_need(location)
         self.global_location = self.location
-        self.name = name
         self.color = None
         self.dispobjects = []
         self.scene = None
-
         self.shapes_holder = []
 
         self.views = set()
@@ -46,6 +44,13 @@ class unit(Transformable, Displayable):
 
         for obj in parts:
             self.add(obj)
+
+    def hide(self, en, redraw=False):
+        for c in self.childs:
+            c.hide(en, redraw)
+
+        for c in self.dispobjects:
+            c.hide(en, redraw)
 
     def add_child(self, child):
         child.parent = self
@@ -157,6 +162,7 @@ class unit(Transformable, Displayable):
         for c in self.childs:
             c.bind_to_scene(scene)
 
+        scene.add_interactive_root(self)
         self.scene = scene
 
     def transform(self, trsf):

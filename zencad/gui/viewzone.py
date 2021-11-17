@@ -8,11 +8,10 @@ class InteractiveControl(QtWidgets.QTreeWidgetItem):
         super().__init__(parent)
         self.name = name
         self.interactive = interactive
-        self.setText(0, "fasdasfdaf")
+        self.setText(0, name)
 
         self.checkbox = QtWidgets.QCheckBox()
-        self.treeWidget().setItemWidget(self, 1, QtWidgets.QLabel("fsadfsadf"))
-        self.treeWidget().setItemWidget(self, 2, self.checkbox)
+        self.treeWidget().setItemWidget(self, 1, self.checkbox)
 
         self.checkbox.clicked.connect(self.hide_or_show)
 
@@ -31,7 +30,7 @@ class ViewZone(QtWidgets.QWidget):
         self.display = DisplayWidget(communicator)
 
         self.other_widget = QtWidgets.QTreeWidget()
-        HEADERS = ("column 1", "column 3", "column 2")
+        HEADERS = ("Имя", "Скрыть")
         self.other_widget.setColumnCount(len(HEADERS))
         self.other_widget.setHeaderLabels(HEADERS)
 
@@ -43,8 +42,8 @@ class ViewZone(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def attach_scene(self, scene):
-        for item in scene.interactives:
-            InteractiveControl(self.other_widget, str(item), item)
+        for item in scene.interactive_roots:
+            InteractiveControl(self.other_widget, item.name(), item)
         return self.display.attach_scene(scene)
 
     def external_communication_command(self, data):

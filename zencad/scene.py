@@ -28,6 +28,7 @@ class Scene:
 
     def __init__(self):
         self.interactives = []
+        self.interactive_roots = []
         self.display = None
 
     def add(self, obj, color=default_color()):
@@ -49,6 +50,9 @@ class Scene:
 
         if self.display is not None:
             self.display.display_interactive_object(iobj)
+
+    def add_interactive_root(self, iobj):
+        self.interactive_roots.append(iobj)
 
     def boundbox(self):
         box = BoundaryBox()
