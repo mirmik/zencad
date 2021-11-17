@@ -51,6 +51,13 @@ class unit(Transformable, Displayable):
         child.parent = self
         self.childs.add(child)
 
+    def deep_childs_list(self):
+        childs = []
+        childs.extend(self.childs)
+        for c in self.childs:
+            childs.extend(c.deep_childs_list())
+        return childs
+
     def link(self, child):
         self.add_child(child)
 
