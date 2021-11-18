@@ -38,6 +38,7 @@ class Scene:
 
         if isinstance(obj, Displayable):
             obj.bind_to_scene(self)
+            self.interactive_roots.append(obj)
             iobj = obj
         else:
             iobj = create_interactive_object(obj, color)

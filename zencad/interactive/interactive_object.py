@@ -83,7 +83,15 @@ class InteractiveObject(Transformable, Displayable):
             self._context.SetLocation(self.ais_object, loc)
 
     def color(self):
-        return self._color
+        return self._color if self._color is not None else default_color()
+
+    def set_transparency(self, val, redraw=True, deep=None):
+        color = self.color()
+        color.a = val
+        self.set_color(color)
+
+        if redraw:
+            self.redraw()
 
     def location(self):
         if self._context:
@@ -111,3 +119,28 @@ class InteractiveObject(Transformable, Displayable):
 
     def boundbox(self):
         return BoundaryBox()
+
+    def highlight(self, en, redraw=False, deep=None):
+        if en:
+            aspect = self.ais_object.Attributes().LineAspect()
+            aspect.SetColor(Color(51/255, 204/255, 51/255).to_Quantity_Color())
+            self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
+
+            aspect = self.ais_object.Attributes().WireAspect()
+            aspect.SetColor(Color(51/255, 204/255, 51/255).to_Quantity_Color())
+            self.ais_object.Attributes().SetWireAspect(aspect)
+
+        else:
+            aspect = self.ais_object.Attributes().LineAspect()
+            aspect.SetColor(self._border_color.to_Quantity_Color())
+            self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
+
+            aspect = self.ais_object.Attributes().WireAspect()
+            aspect.SetColor(self._wire_color.to_Quantity_Color())
+            self.ais_object.Attributes().SetWireAspect(aspect)
+
+        if redraw:
+            self.redraw()
+
+    def redraw(self):
+        self._context.Update(self.ais_object, True)

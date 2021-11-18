@@ -45,12 +45,29 @@ class unit(Transformable, Displayable):
         for obj in parts:
             self.add(obj)
 
-    def hide(self, en, redraw=False):
-        for c in self.childs:
-            c.hide(en, redraw)
+    def hide(self, en, redraw=False, deep=True):
+        if deep:
+            for c in self.childs:
+                c.hide(en, redraw=redraw, deep=deep)
 
         for c in self.dispobjects:
-            c.hide(en, redraw)
+            c.hide(en, redraw=redraw)
+
+    def highlight(self, en, redraw=True, deep=True):
+        if deep:
+            for c in self.childs:
+                c.highlight(en, redraw=redraw, deep=deep)
+
+        for c in self.dispobjects:
+            c.highlight(en, redraw=redraw)
+
+    def set_transparency(self, val, redraw=True, deep=True):
+        if deep:
+            for c in self.childs:
+                c.set_transparency(val, redraw=redraw, deep=deep)
+
+        for c in self.dispobjects:
+            c.set_transparency(val, redraw=redraw)
 
     def add_child(self, child):
         child.parent = self
@@ -162,7 +179,6 @@ class unit(Transformable, Displayable):
         for c in self.childs:
             c.bind_to_scene(scene)
 
-        scene.add_interactive_root(self)
         self.scene = scene
 
     def transform(self, trsf):
