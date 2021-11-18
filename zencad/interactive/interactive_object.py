@@ -48,7 +48,6 @@ class InteractiveObject(Transformable, Displayable):
 
     def bind_to_scene(self, scene):
         scene.add_interactive_object(self)
-        scene.add_interactive_root(self)
 
     def set_color(self, color, b=None, c=None, d=0, border_color=None, wire_color=None):
         if b is not None and c is not None:
@@ -109,7 +108,7 @@ class InteractiveObject(Transformable, Displayable):
         self.hide(self._hide)
         self._context.Update(self.ais_object, True)
 
-    def hide(self, en, redraw=False):
+    def hide(self, en, redraw=False, deep=None):
         self._hide = en
         if self._context:
             if en:

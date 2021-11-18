@@ -62,7 +62,7 @@ try:
     from zencad.geom.near import *
 
     # Display API
-    from zencad.showapi import display, disp, show, hl, highlight
+    from zencad.showapi import display, disp, show, hl, highlight, prototype
     from zencad.scene import Scene
 
     # Utility

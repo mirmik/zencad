@@ -53,7 +53,7 @@ class AnimateThread(QThread):
         self.animate_step = step
 
     def run(self):
-        while not self.wdg._inited1:
+        while not self.wdg.is_inited():
             time.sleep(0.1)
 
         self.state.timestamp(time.time())

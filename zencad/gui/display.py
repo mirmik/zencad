@@ -136,6 +136,9 @@ class DisplayWidget(BaseViewer):
         if self.init_driver_in_constructor:
             self.InitDriver()
 
+    def is_inited(self):
+        return self._inited1
+
     def set_perspective(self, en):
         self._perspective_mode = en
         if en:

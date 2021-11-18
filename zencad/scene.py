@@ -29,6 +29,7 @@ class Scene:
     def __init__(self):
         self.interactives = []
         self.interactive_roots = []
+        self.prototypes = []
         self.display = None
 
     def add(self, obj, color=default_color()):
@@ -61,3 +62,8 @@ class Scene:
             bbox = inter.boundbox()
             box.add(bbox)
         return box
+
+    def add_prototype(self, shape):
+        iobj = create_interactive_object(evalcache.unlazy_if_need(shape))
+        self.prototypes.append(iobj)
+        return iobj

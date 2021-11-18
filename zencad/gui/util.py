@@ -12,7 +12,7 @@ def create_temporary_file(zencad_template=False):
     if zencad_template:
         f = open(path, "w")
         f.write(
-            "#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nm=box(10)\ndisp(m)\n\nshow()\n"
+            "#!/usr/bin/env python3\n#coding: utf-8\n\nfrom zencad import *\n\nm=box(10)\ndisp(m).set_name(\"Box\")\n\nshow()\n"
         )
         f.close()
 

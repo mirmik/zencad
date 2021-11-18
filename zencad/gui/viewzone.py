@@ -34,25 +34,36 @@ class InteractiveControl(QtWidgets.QTreeWidgetItem):
             float(self.transparent.text()), redraw=True, deep=deep)
 
 
+class PrototypeControl(QtWidgets.QTreeWidgetItem):
+    def __init__(self, parent, name, interactive):
+        super().__init__(parent)
+
+
 class ViewZone(QtWidgets.QWidget):
     def __init__(self, communicator):
         QtWidgets.QWidget.__init__(self)
         self.layout = QtWidgets.QVBoxLayout()
         self.splitter = QtWidgets.QSplitter()
+        self.vertsplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.display = DisplayWidget(communicator)
 
         self.other_widget = QtWidgets.QTreeWidget()
+        self.prototypes_widget = QtWidgets.QTreeWidget()
         HEADERS = ("Имя", "Прозрачность", "Скрыть")
         self.other_widget.setColumnCount(len(HEADERS))
         self.other_widget.setHeaderLabels(HEADERS)
 
         self.layout.addWidget(self.splitter)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.splitter.addWidget(self.other_widget)
+        self.splitter.addWidget(self.vertsplitter)
         self.splitter.addWidget(self.display)
+
+        self.vertsplitter.addWidget(self.other_widget)
+        self.vertsplitter.addWidget(self.prototypes_widget)
 
         self.setLayout(self.layout)
         self.other_widget.currentItemChanged.connect(self.itemClickedHandle)
+        self.animate_updated = self.display.animate_updated
 
     def itemClickedHandle(self, current, previous):
         if previous:
@@ -64,7 +75,7 @@ class ViewZone(QtWidgets.QWidget):
     def attach_scene(self, scene):
         def recurse(item, root):
             if isinstance(item, zencad.assemble.unit):
-                if len(item.dispobjects) > 0:
+                if len(item.dispobjects) > 0 or item.parent is None:
                     root = InteractiveControl(root, item.name(), item)
 
                 for child in item.childs:
@@ -76,7 +87,13 @@ class ViewZone(QtWidgets.QWidget):
         for item in scene.interactive_roots:
             recurse(item, self.other_widget)
 
+        for item in scene.prototypes:
+            self.registry_prototype(item)
+
         return self.display.attach_scene(scene)
+
+    def registry_prototype(self, item):
+        return
 
     def external_communication_command(self, data):
         cmd = data["cmd"]
@@ -90,3 +107,13 @@ class ViewZone(QtWidgets.QWidget):
             print_to_stderr("Error on external command handling", repr(ex))
 
         return self.display.external_communication_command(data)
+
+    def continuous_redraw(self):
+        return self.display.continuous_redraw()
+
+    def is_inited(self):
+        return self.display.is_inited()
+
+    def keyPressEvent(self, event):
+        print("keyEvent")
+        self.display.keyPressEvent(event)

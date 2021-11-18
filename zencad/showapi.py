@@ -29,6 +29,10 @@ def disp(*args, **kwargs):
     return display(*args, **kwargs)
 
 
+def prototype(shp):
+    return __default_scene.add_prototype(shp)
+
+
 def highlight(shp, color=(1, 0, 0, 0.5), deep=True, scene=None):
     display(shp, color, deep, scene)
     return shp
