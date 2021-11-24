@@ -19,9 +19,9 @@ Manual and Information
 Installation
 ------------
 ### Common:
-Zencad needs *pyocct* and *opencascade core*(OCCT). After first launch
+Zencad needs *pythonocc* and *opencascade core*(OCCT). After first launch
 (type `zencad` or `python3 -m zencad` commands)
-library instalation utility will started. You can use it for *pyocc* and *OCCT* installation. Also you can install libraries manualy.
+library instalation utility will started. You can use it for *pythonocc* and *OCCT* installation. Also you can install libraries manualy.
 ```
 apt install qt5-default
 python3 -m pip install zencad[gui]

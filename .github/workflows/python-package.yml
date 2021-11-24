@@ -43,7 +43,7 @@ jobs:
           python3 -m zencad --install-occt-force
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/.local/lib/occt-7.4.0
 
-    - name: Install pyocc        
+    - name: Install pythonocc        
       run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/.local/lib/occt-7.4.0
           python3 -m zencad --install-pythonocc-force
