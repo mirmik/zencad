@@ -11,7 +11,10 @@ from zencad.geombase import point3
 from zencad.lazifier import *
 
 
-def _box(size, y=None, z=None, center=False):
+def _box(x, y=None, z=None, center=False, size=None):
+    if size is None:
+        size = x
+
     if isinstance(size, (float, int)):
         x = size
         if y is None and z is None:
@@ -44,8 +47,8 @@ def _box(size, y=None, z=None, center=False):
         return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
 
 
-def _cube(size, y=None, z=None, center=None):
-    return _box(size, y, z, center)
+def _cube(x, y=None, z=None, center=None, size=None):
+    return _box(x, y, z, center, size)
 
 
 def _sphere(r, yaw=None, pitch=None):
@@ -134,13 +137,13 @@ def _halfspace():
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def box(size, y=None, z=None, center=None):
-    return _box(size, y, z, center)
+def box(x=0, y=None, z=None, center=None, size=None):
+    return _box(x, y, z, center, size)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
-def cube(size, y=None, z=None, center=None):
-    return _cube(size, y, z, center)
+def cube(x=0, y=None, z=None, center=None, size=None):
+    return _cube(x, y, z, center, size)
 
 
 @lazy.lazy(cls=nocached_shape_generator)
