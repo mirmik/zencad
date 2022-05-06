@@ -1,5 +1,5 @@
 import sys
-import numpy
+import numpy as np
 import pickle
 import base64 as b64
 
