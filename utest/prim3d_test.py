@@ -21,6 +21,7 @@ class Prim3dprobe(unittest.TestCase):
         zencad.lazy.fastdo = True
 
     def test_box_probe(self):
+        a = zencad.box(x=10, y=10, z=10)
         a = zencad.box(10, 10, 10)
         b = zencad.box(size=(10, 10, 10))
         c = zencad.box(10)
