@@ -266,6 +266,13 @@ class DisplayWidget(BaseViewer):
 
         self.autoscale()
 
+    def remove_all(self):
+        self._display.Context.RemoveAll(True)
+
+    def display_interactive_object(self, iobj):
+        self.Context.Display(iobj.ais_object, False)
+        iobj.bind_context(self.Context)
+
     def autoscale(self, koeff=0.07):
         self.View.FitAll(koeff)
         self.View.Redraw()
