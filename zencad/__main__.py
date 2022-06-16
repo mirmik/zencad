@@ -99,6 +99,7 @@ def main():
         sys.exit()
 
     if pargs.install_pythonocc_force:
+        import zencad.version
         from zencad.geometry_core_installer import install_precompiled_python_occ
         install_precompiled_python_occ(None, occversion=zencad.version.__occt_version__)
         return
@@ -109,6 +110,7 @@ def main():
         return
 
     if pargs.install_occt_force is not None:
+        import zencad.version
         from zencad.geometry_core_installer import install_precompiled_occt_library
         path = pargs.install_occt_force[0] if len(
             pargs.install_occt_force) > 0 else None
@@ -116,6 +118,7 @@ def main():
         return
 
     if pargs.install_occt_to_pythonocc_dir:
+        import zencad.version
         from zencad.geometry_core_installer import install_precompiled_occt_library
         import zencad.gui.util
         path = zencad.gui.util.pythonocc_core_directory()
