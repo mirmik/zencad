@@ -5,5 +5,10 @@ try:
 except:
     __version__ = "Unresolved???"
 
-__occt_version__ = "7.5.0"
-__pythonocc_version__ = "7.5.1"
+if sys.version_info[1] >= 10:
+    __occt_version__ = "7.5.0"
+    __pythonocc_version__ = "7.5.1"
+
+else:
+    __occt_version__ = "7.5.0"
+    __pythonocc_version__ = "7.5.1"
