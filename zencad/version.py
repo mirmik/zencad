@@ -1,4 +1,5 @@
 import pkg_resources
+import sys
 
 try:
     __version__ = pkg_resources.get_distribution("zencad").version
