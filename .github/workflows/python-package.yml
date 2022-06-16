@@ -30,6 +30,10 @@ jobs:
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+    - name: Install libs
+      run: |
+        sudo apt install libfreeimage-dev 
+
     #- name: Install qt
     #  run: |
     #    sudo apt install qt5-default 
