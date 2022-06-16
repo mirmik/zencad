@@ -20,7 +20,7 @@ python_occ_precompiled_packages = None
 occt_precompiled_libraries = {
     "linux-64":
         {
-            "7.4.0": "https://github.com/zencad/x86_64-linux64-occt7.4.0/raw/master/bin/x86_64-linux64-occt7.4.0.tar.gz"
+            "7.4.0": "https://github.com/zencad/x86_64-linux64-occt7.4.0/raw/master/bin/x86_64-linux64-occt7.4.0.tar.gz",
             "7.5.0": "https://github.com/zencad/x86_64-linux64-occt7.5.0/raw/master/bin/x86_64-linux64-occt7.5.0.tar.gz"
         },
     "win-64":
