@@ -12,8 +12,6 @@ from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
 from OCC.Core.Graphic3d import Graphic3d_Camera
-from OCC.Core.StdSelect import StdSelect_ViewerSelector3d
-from OCC.Core.SelectMgr import SelectMgr_SelectionManager
 import OCC.Core.BRepPrimAPI
 from OCC.Core.IntCurvesFace import IntCurvesFace_ShapeIntersector
 from OCC.Core.Precision import precision_Confusion

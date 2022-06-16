@@ -5,5 +5,5 @@ try:
 except:
     __version__ = "Unresolved???"
 
-__occt_version__ = "7.4.0"
-__pythonocc_version__ = "7.4.1"
+__occt_version__ = "7.5.0"
+__pythonocc_version__ = "7.5.1"

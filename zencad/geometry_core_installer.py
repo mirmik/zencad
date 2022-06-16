@@ -11,38 +11,17 @@ import sys
 import site
 import shutil
 import os
+import re
 
 from zencad.version import __occt_version__, __pythonocc_version__
 
-python_occ_precompiled_packages = {
-    "linux-64": {
-        "python3.7": {
-            "7.4.1": "https://anaconda.org/conda-forge/pythonocc-core/7.4.1/download/linux-64/pythonocc-core-7.4.1-py37h2700f40_0.tar.bz2"
-        },
-        "python3.8": {
-            "7.4.1": "https://anaconda.org/conda-forge/pythonocc-core/7.4.1/download/linux-64/pythonocc-core-7.4.1-py38he1669a3_0.tar.bz2"
-        },
-        "python3.9": {
-            "7.4.1": "https://anaconda.org/conda-forge/pythonocc-core/7.4.1/download/linux-64/pythonocc-core-7.4.1-py39h465cb30_0.tar.bz2"
-        }
-    },
-    "win-64": {
-        "python3.7": {
-            "7.4.1": "https://anaconda.org/conda-forge/pythonocc-core/7.4.1/download/win-64/pythonocc-core-7.4.1-py37hc019675_0.tar.bz2"
-        },
-        "python3.8": {
-            "7.4.1": "https://anaconda.org/conda-forge/pythonocc-core/7.4.1/download/win-64/pythonocc-core-7.4.1-py38hb051852_0.tar.bz2"
-        },
-        "python3.9": {
-            "7.4.1": "https://anaconda.org/conda-forge/pythonocc-core/7.4.1/download/win-64/pythonocc-core-7.4.1-py39h3d1c7c5_0.tar.bz2"
-        }
-    }
-}
+python_occ_precompiled_packages = None
 
 occt_precompiled_libraries = {
     "linux-64":
         {
             "7.4.0": "https://github.com/zencad/x86_64-linux64-occt7.4.0/raw/master/bin/x86_64-linux64-occt7.4.0.tar.gz"
+            "7.5.0": "https://github.com/zencad/x86_64-linux64-occt7.5.0/raw/master/bin/x86_64-linux64-occt7.5.0.tar.gz"
         },
     "win-64":
         {
@@ -50,6 +29,64 @@ occt_precompiled_libraries = {
         }
 }
 
+
+class PythonOCCLibraryPath:
+    def __init__(self, path):
+        lst = path.split('/')
+        self.version = lst[3]
+        self.system = lst[5]
+        pyvers_pre = re.findall("(py36|py37|py38|py39|py310|py311|py312|py313|py314)", lst[6])[0]
+        self.pyvers = pyvers_pre.replace("py3", "python3.")
+        self.link = path
+
+    def __str__(self):
+        return ("(version: " + self.version + ", system:" + self.system + 
+            ", pyvers:" + self.pyvers + " " + str(hash(self)))
+
+    def __hash__(self):
+        return hash(self.version) + hash(self.system) + hash(self.pyvers)
+
+    def __lt__(self, oth):
+        if self.version < oth.version: return True
+        if self.system < oth.system: return True
+        if self.pyvers < oth.pyvers: return True
+        return False
+
+def get_python_version():
+    return f"{sys.version_info[0]}.{sys.version_info[1]}"
+    
+
+def get_conda_pythonocc_list():
+    url = "http://anaconda.org/conda-forge/pythonocc-core/files"
+    html = requests.get(url).text
+    matches = re.compile("/conda-forge/pythonocc-core/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
+    libs = [ PythonOCCLibraryPath(m) for m in matches ]
+
+    filtered_hash = []
+    filtered_libs = []
+    for l in libs:
+        if hash(l) not in filtered_hash:
+            filtered_libs.append(l)
+            filtered_hash.append(hash(l))
+
+    hashes = [hash(l) for l in filtered_libs] 
+    hashes_set = set(hashes)
+
+    dictionary = {}
+    for x in libs:
+        if x.system not in dictionary:
+            dictionary[x.system] = {}
+        if x.pyvers not in dictionary[x.system]:
+            dictionary[x.system][x.pyvers] = {}
+        dictionary[x.system][x.pyvers][x.version] = "http://anaconda.org" + x.link
+
+    return dictionary
+
+def update_python_occ_precompiled_packages():
+    global python_occ_precompiled_packages 
+    if python_occ_precompiled_packages is not None: 
+        return
+    python_occ_precompiled_packages = get_conda_pythonocc_list()
 
 def download_repo(url, path):
     """Just file downloading"""
@@ -127,10 +164,10 @@ def getsitepackages():
             sitepackages.append(os.path.join(prefix, "Lib", "site-packages"))
         elif os.sep == '/':
             sitepackages.append(os.path.join(prefix, "local/lib",
-                                             "python" + sys.version[:3],
+                                             "python" + get_python_version(),
                                              "dist-packages"))
             sitepackages.append(os.path.join(prefix, "lib",
-                                             "python" + sys.version[:3],
+                                             "python" + get_python_version(),
                                              "dist-packages"))
         else:
             sitepackages.append(prefix)
@@ -143,7 +180,7 @@ def getsitepackages():
             if framework:
                 sitepackages.append(
                     os.path.join("/Library", framework,
-                                 sys.version[:3], "site-packages"))
+                                 get_python_version(), "site-packages"))
     return sitepackages
 
 
@@ -174,10 +211,13 @@ def get_platform():
 
 
 def install_precompiled_python_occ(occversion=__pythonocc_version__):
+    update_python_occ_precompiled_packages()
     systref = get_platform()
 
-    ver = sys.version[:3]
+    ver = get_python_version()
     python_name = "python" + ver
+    print(python_occ_precompiled_packages)
+    print(occversion, python_name, systref)
 
     # Downloading precompiled repo
     url = python_occ_precompiled_packages[systref][python_name][occversion]
@@ -221,6 +261,7 @@ def install_precompiled_python_occ(occversion=__pythonocc_version__):
 
 
 def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__):
+    update_python_occ_precompiled_packages()
     print("install_precompiled_occt_library", "tgtpath:",
           tgtpath, "occt_version:", occt_version)
 
@@ -270,6 +311,7 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
 
 
 def test_third_libraries():
+    update_python_occ_precompiled_packages()
     try:
         import OCC
         import OCC.Core
@@ -309,6 +351,7 @@ def ask_yes_no(question):
 
 
 def console_third_libraries_installer_utility(yes=False):
+    update_python_occ_precompiled_packages()
     while True:
         third_libraries_status = test_third_libraries()
         print(third_libraries_status)
@@ -347,6 +390,5 @@ def console_third_libraries_installer_utility(yes=False):
 
     return False
 
-
 if __name__ == "__main__":
-    sts = console_third_libraries_installer_utility()
+    get_conda_pythonocc_list()

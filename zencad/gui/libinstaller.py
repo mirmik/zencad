@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from zencad.geometry_core_installer import test_third_libraries, install_precompiled_python_occ, install_precompiled_occt_library
+from zencad.geometry_core_installer import update_python_occ_precompiled_packages, test_third_libraries, install_precompiled_python_occ, install_precompiled_occt_library
 from zencad.version import __occt_version__, __pythonocc_version__
 from zenframe.util import print_to_stderr
 from zenframe.retransler import ConsoleRetransler
@@ -13,6 +13,7 @@ print("LibraryInstaller")
 
 class LibraryInstaller(QtWidgets.QWidget):
     def __init__(self):
+        update_python_occ_precompiled_packages()
         self.buttons = []
 
         super().__init__()
@@ -174,7 +175,7 @@ class LibraryInstaller(QtWidgets.QWidget):
                     sts = install_precompiled_python_occ(
                         occversion=__pythonocc_version__)
                 except Exception as ex:
-                    pass
+                    print(ex)
                 self.wdg.enable_buttons()
 
                 if sts == 0:
