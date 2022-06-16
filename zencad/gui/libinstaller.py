@@ -32,15 +32,12 @@ class LibraryInstaller(QtWidgets.QWidget):
             self.add_separator()
             self.add_label("Install OCCT for current user only.")
             self.add_button(
-                f"Install OCCT-{__occt_version__} for current user (~/.local/lib/occt-{__occt_version__})", self.install_occt_handler)
-            self.add_button(
-                f"Add ~/.local/lib/occt-{__occt_version__} to user LD_LIBRARY_PATH", self.add_local_library_path_to_bashrc)
-
+                f"Install OCCT-{__occt_version__} for current user (~/.local/lib)", self.install_occt_handler)
             self.add_separator()
             self.add_label(
                 "Install OCCT for all users (root permissions needed).")
             self.add_button(
-                f"Install OCCT-{__occt_version__} for all user (/usr/local/lib)", self.install_occt_handler_global)
+                f"Install OCCT-{__occt_version__} for all user (/usr/lib)", self.install_occt_handler_global)
 
         if sys.platform in ("win32"):
             self.add_separator()
@@ -101,6 +98,7 @@ class LibraryInstaller(QtWidgets.QWidget):
 
     def add_local_library_path_to_bashrc(self):
 
+        #our_path = os.path.expanduser(f"~/.local/lib/occt-{__occt_version__}")
         our_path = os.path.expanduser(f"~/.local/lib/occt-{__occt_version__}")
         our_string = f"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{our_path}"
 
@@ -147,7 +145,7 @@ class LibraryInstaller(QtWidgets.QWidget):
         self.thr.start()
 
     def install_occt_handler_global(self):
-        self.thr = self.do_install_occt_handler(self, "/usr/local/lib")
+        self.thr = self.do_install_occt_handler(self, "/usr/lib")
         self.thr.start()
 
     def install_occt_to_pythonocc(self):

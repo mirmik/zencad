@@ -13,21 +13,10 @@ import shutil
 import os
 import re
 
-from zencad.version import __occt_version__, __pythonocc_version__
+#from zencad.version import __occt_version__, __pythonocc_version__
 
 python_occ_precompiled_packages = None
-
-occt_precompiled_libraries = {
-    "linux-64":
-        {
-            "7.4.0": "https://github.com/zencad/x86_64-linux64-occt7.4.0/raw/master/bin/x86_64-linux64-occt7.4.0.tar.gz",
-            "7.5.0": "https://github.com/zencad/x86_64-linux64-occt7.5.0/raw/main/bin/x86_64-linux64-occt7.5.0.tar.gz"
-        },
-    "win-64":
-        {
-            "7.4.0": "https://github.com/zencad/servoce-thirdlibs-win-occ7.4/raw/master/dll/x86_64-win64-occt7.4.0.tar.gz"
-        }
-}
+occt_precompiled_libraries = None
 
 
 class PythonOCCLibraryPath:
@@ -50,6 +39,25 @@ class PythonOCCLibraryPath:
         if self.version < oth.version: return True
         if self.system < oth.system: return True
         if self.pyvers < oth.pyvers: return True
+        return False
+
+class OCCTLibraryPath:
+    def __init__(self, path):
+        lst = path.split('/')
+        self.version = lst[3]
+        self.system = lst[5]
+        self.link = path
+
+    def __str__(self):
+        return ("(version: " + self.version + ", system:" + self.system + 
+            " " + str(hash(self)))
+
+    def __hash__(self):
+        return hash(self.version) + hash(self.system)
+
+    def __lt__(self, oth):
+        if self.version < oth.version: return True
+        if self.system < oth.system: return True
         return False
 
 def get_python_version():
@@ -82,11 +90,43 @@ def get_conda_pythonocc_list():
 
     return dictionary
 
+def get_conda_occt_list():
+    dictionary = {}
+    #url = "https://anaconda.org/conda-forge/occt/files"
+    for url in [
+        "https://anaconda.org/conda-forge/occt/files?page=1",
+        "https://anaconda.org/conda-forge/occt/files?page=2",
+        "https://anaconda.org/conda-forge/occt/files?page=3",
+        "https://anaconda.org/conda-forge/occt/files?page=4"
+    ]:
+        html = requests.get(url).text
+        matches = re.compile("/conda-forge/occt/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
+        libs = [ OCCTLibraryPath(m) for m in matches ]
+
+        filtered_hash = []
+        filtered_libs = []
+        for l in libs:
+            if hash(l) not in filtered_hash:
+                filtered_libs.append(l)
+                filtered_hash.append(hash(l))
+
+        hashes = [hash(l) for l in filtered_libs] 
+        hashes_set = set(hashes)
+
+        for x in libs:
+            if x.system not in dictionary:
+                dictionary[x.system] = {}
+            dictionary[x.system][x.version] = "http://anaconda.org" + x.link
+
+    return dictionary
+
 def update_python_occ_precompiled_packages():
     global python_occ_precompiled_packages 
-    if python_occ_precompiled_packages is not None: 
-        return
-    python_occ_precompiled_packages = get_conda_pythonocc_list()
+    global occt_precompiled_libraries
+    if python_occ_precompiled_packages is None: 
+        python_occ_precompiled_packages = get_conda_pythonocc_list()
+    if occt_precompiled_libraries is None:
+        occt_precompiled_libraries = get_conda_occt_list()
 
 def download_repo(url, path):
     """Just file downloading"""
@@ -210,7 +250,7 @@ def get_platform():
         raise Exception("Unresolved architecture")
 
 
-def install_precompiled_python_occ(occversion=__pythonocc_version__):
+def install_precompiled_python_occ(occversion):
     update_python_occ_precompiled_packages()
     systref = get_platform()
 
@@ -260,7 +300,7 @@ def install_precompiled_python_occ(occversion=__pythonocc_version__):
     return 0
 
 
-def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__):
+def install_precompiled_occt_library(tgtpath, occt_version):
     update_python_occ_precompiled_packages()
     print("install_precompiled_occt_library", "tgtpath:",
           tgtpath, "occt_version:", occt_version)
@@ -277,7 +317,7 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
 
         if architecture in ("linux-64"):
             target_directory = os.path.expanduser(
-                f"~/.local/lib/occt-{occt_version}") if tgtpath is None else tgtpath
+                f"~/.local/lib") if tgtpath is None else tgtpath
         elif architecture in ("win-64"):
             target_directory = os.path.expanduser(
                 f"~/AppData/Local/occt-{occt_version}") if tgtpath is None else tgtpath
@@ -289,12 +329,14 @@ def install_precompiled_occt_library(tgtpath=None, occt_version=__occt_version__
             os.mkdir(target_directory)
 
         print("Copy libs to system libs directory")
-        source_directory = os.path.join(extract_directory)
+        source_directory = os.path.join(os.path.join(extract_directory, "lib"))
         target_directory = os.path.join(target_directory)
         print(f"Source: {source_directory}")
         print(f"Target: {target_directory}")
 
         for item in os.listdir(source_directory):
+            if os.path.isdir(os.path.join(source_directory, item)):
+                continue
             shutil.copy(
                 os.path.join(source_directory, item),
                 os.path.join(target_directory, item)
@@ -391,4 +433,4 @@ def console_third_libraries_installer_utility(yes=False):
     return False
 
 if __name__ == "__main__":
-    get_conda_pythonocc_list()
+    print(get_conda_occt_list())
