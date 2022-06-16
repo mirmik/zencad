@@ -100,7 +100,7 @@ def main():
 
     if pargs.install_pythonocc_force:
         from zencad.geometry_core_installer import install_precompiled_python_occ
-        install_precompiled_python_occ()
+        install_precompiled_python_occ(None, occversion=zencad.version.__occt_version__)
         return
 
     if pargs.lookup_libraries:
@@ -112,7 +112,7 @@ def main():
         from zencad.geometry_core_installer import install_precompiled_occt_library
         path = pargs.install_occt_force[0] if len(
             pargs.install_occt_force) > 0 else None
-        install_precompiled_occt_library(tgtpath=path)
+        install_precompiled_occt_library(tgtpath=path, occversion=zencad.version.__pythonocc_version__)
         return
 
     if pargs.install_occt_to_pythonocc_dir:
@@ -122,7 +122,7 @@ def main():
         if path is None:
             print("PythonOCC is not installed")
             return -1
-        install_precompiled_occt_library(tgtpath=path)
+        install_precompiled_occt_library(tgtpath=path, occversion=zencad.version.__pythonocc_version__)
         return 0
 
     from zencad.showapi import widget_creator
