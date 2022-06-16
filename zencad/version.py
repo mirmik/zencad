@@ -10,5 +10,5 @@ if sys.version_info[1] >= 10:
     __pythonocc_version__ = "7.5.1"
 
 else:
-    __occt_version__ = "7.5.0"
-    __pythonocc_version__ = "7.5.1"
+    __occt_version__ = "7.4.0"
+    __pythonocc_version__ = "7.4.1"
