@@ -125,8 +125,10 @@ def update_python_occ_precompiled_packages():
     global occt_precompiled_libraries
     if python_occ_precompiled_packages is None: 
         python_occ_precompiled_packages = get_conda_pythonocc_list()
+        print(python_occ_precompiled_packages)
     if occt_precompiled_libraries is None:
         occt_precompiled_libraries = get_conda_occt_list()
+        print(occt_precompiled_libraries)
 
 def download_repo(url, path):
     """Just file downloading"""
