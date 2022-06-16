@@ -101,7 +101,7 @@ def main():
     if pargs.install_pythonocc_force:
         import zencad.version
         from zencad.geometry_core_installer import install_precompiled_python_occ
-        install_precompiled_python_occ(None, occversion=zencad.version.__pythonocc_version__)
+        install_precompiled_python_occ(occversion=zencad.version.__pythonocc_version__)
         return
 
     if pargs.lookup_libraries:
