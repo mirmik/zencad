@@ -5,12 +5,12 @@ from zencad.settings import Settings
 from zencad.geom.transformable import Transformable
 from zencad.geom.trans import rotate, translate
 from zencad.geom.exttrans import nulltrans
+from zencad.geom.solid import _nullshape
+from zencad.interactive.shape import ShapeInteractiveObject
 from zencad.interactive.line import arrow
-
 from zencad.geom.trans import rotateZ, rotateY, rotate, translate
 from zencad.util import vector3, point3
 from zencad.color import Color as color
-
 from zencad.interactive import create_interactive_object
 from zencad.interactive.displayable import Displayable
 
@@ -184,10 +184,11 @@ class unit(Transformable, Displayable):
         return cpy
 
     def union_shape(self):
-        acc = zencad.nullshape()
+        """ Возвращает union от массива связанных с объектом shape."""
+        acc = _nullshape()
         for p in self.dispobjects:
-            if isinstance(p, interactive_object) and p.is_shape():
-                s = p.object
+            if isinstance(p, ShapeInteractiveObject):
+                s = p.shape
                 acc += s
         return acc
 
