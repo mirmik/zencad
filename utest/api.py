@@ -37,6 +37,7 @@ try:
     import general_transformation_test
     import curve3_test
     import curve2_test
+    import make_test
     #import widgets_test
     import convert
     import reflection
@@ -75,3 +76,4 @@ if __name__ == "__main__":
     execute_test(curve3_test)
     execute_test(curve2_test)
     execute_test(convert)
+    execute_test(make_test)

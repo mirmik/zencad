@@ -7,6 +7,7 @@ from zenframe.retransler import ConsoleRetransler
 from zenframe.console import ConsoleWidget
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 import os
+import traceback
 import sys
 print("LibraryInstaller")
 
@@ -132,7 +133,7 @@ class LibraryInstaller(QtWidgets.QWidget):
                     occt_version=__occt_version__)
             except Exception as ex:
                 sts = -1
-                print(ex)
+                print_to_stderr(traceback.format_exc())
             self.wdg.enable_buttons()
             if sts == 0:
                 print(
@@ -173,7 +174,8 @@ class LibraryInstaller(QtWidgets.QWidget):
                     sts = install_precompiled_python_occ(
                         occversion=__pythonocc_version__)
                 except Exception as ex:
-                    print(ex)
+                    print_to_stderr(traceback.format_exc())
+                    sts = -1
                 self.wdg.enable_buttons()
 
                 if sts == 0:

@@ -236,45 +236,45 @@ def pipe_shell(*args, **kwargs):
     return _pipe_shell(*args, **kwargs)
 
 
-def _tube_section(shp, radius, tol, cont, maxdegree, maxsegm):
-    """Труба вытягивает круглый профиль по заданному контуру."""
-    crv = curve._circle(radius).rotZ(math.pi/2)
-    slaw = law_evolved_section(crv, law_constant_function(1, crv.range()))
-    llaw = law_spine_and_trihedron(shp, law_corrected_frenet_trihedron())
+# def _tube_section(shp, radius, tol, cont, maxdegree, maxsegm):
+#     """Труба вытягивает круглый профиль по заданному контуру."""
+#     crv = curve._circle(radius).rotZ(math.pi/2)
+#     slaw = law_evolved_section(crv, law_constant_function(1, crv.range()))
+#     llaw = law_spine_and_trihedron(shp, law_corrected_frenet_trihedron())
 
-    surf = _sweep_surface(slaw, llaw, tol, cont, maxdegree, maxsegm)
-    strt_crv = surf.v_iso_curve(surf.vrange()[0])
-    fini_crv = surf.v_iso_curve(surf.vrange()[1])
+#     surf = _sweep_surface(slaw, llaw, tol, cont, maxdegree, maxsegm)
+#     strt_crv = surf.v_iso_curve(surf.vrange()[0])
+#     fini_crv = surf.v_iso_curve(surf.vrange()[1])
 
-    sedge = _make_edge(strt_crv)
-    fedge = _make_edge(fini_crv)
-    face = _make_face(surf)
+#     sedge = _make_edge(strt_crv)
+#     fedge = _make_edge(fini_crv)
+#     face = _make_face(surf)
 
-    return face, sedge, fedge
-
-
-def _tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
-    """Труба по wire состоит из нескольких труб по edge"""
-    faces = []
-    strt = []
-    fini = []
-
-    for e in spine.edges():
-        tpl = _tube_section(e, r, tol, cont, maxdegree, maxsegm)
-
-        faces.append(tpl[0])
-        strt.append(tpl[1])
-        fini.append(tpl[2])
-
-    if bounds:
-        return _make_shell(faces), strt[0], fini[len(fini)-1]
-    else:
-        return _make_shell(faces)
+#     return face, sedge, fedge
 
 
-@lazy.lazy(cls=shape_generator)
-def tube(*args, **kwargs):
-    return _tube(*args, **kwargs)
+# def _tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
+#     """Труба по wire состоит из нескольких труб по edge"""
+#     faces = []
+#     strt = []
+#     fini = []
+
+#     for e in spine.edges():
+#         tpl = _tube_section(e, r, tol, cont, maxdegree, maxsegm)
+
+#         faces.append(tpl[0])
+#         strt.append(tpl[1])
+#         fini.append(tpl[2])
+
+#     if bounds:
+#         return _make_shell(faces), strt[0], fini[len(fini)-1]
+#     else:
+#         return _make_shell(faces)
+
+
+# @lazy.lazy(cls=shape_generator)
+# def tube(*args, **kwargs):
+#     return _tube(*args, **kwargs)
 
 
 @lazy.lazy(cls=shape_generator)

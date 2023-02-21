@@ -305,3 +305,7 @@ def _make_wire(arr):
             mk.Add(ptr.Edge())
 
     return Shape(mk.Wire())
+
+@lazy.lazy(cls=shape_generator)
+def make_wire(*args):
+    return _make_wire(*args)

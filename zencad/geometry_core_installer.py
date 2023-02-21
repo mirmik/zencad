@@ -258,12 +258,33 @@ def install_precompiled_python_occ(occversion):
 
     ver = get_python_version()
     python_name = "python" + ver
-    print(python_occ_precompiled_packages)
-    print(occversion, python_name, systref)
+    
+    # print system list
+    print("Available python-occ systems:")
+    for k in python_occ_precompiled_packages.keys():
+        print("\t" + k)
+
+    # print current system
+    print("Current system:", systref)
+    print("Available python versions:")
+    for k in python_occ_precompiled_packages[systref].keys():
+        print("\t" + k)
+
+    # print current python version  
+    print("Current python version:", python_name)
+
+    # print available OCC versions
+    print("Available OCC versions:")
+    for k in python_occ_precompiled_packages[systref][python_name].keys():
+        print("\t" + k)
+
+    
 
     # Downloading precompiled repo
     url = python_occ_precompiled_packages[systref][python_name][occversion]
+    print(f"Use url: {url}")
     path = download_repo_to_temporary_directory(url)
+    print("Use temporary path: ", path)
 
     # Extraction
     extract_directory = extract_archive(path)

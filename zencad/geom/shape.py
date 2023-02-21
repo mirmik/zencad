@@ -14,7 +14,8 @@ from OCC.Core.BRepLProp import BRepLProp_SLProps
 from OCC.Core.GProp import GProp_GProps
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepGProp import brepgprop
-from OCC.Core.BRepAdaptor import BRepAdaptor_HCurve
+#from OCC.Core.BRepAdaptor import BRepAdaptor_HCurve
+from OCC.Core.GeomAdaptor import GeomAdaptor_Curve
 from OCC.Core.GCPnts import GCPnts_UniformAbscissa
 
 from zencad.bbox import BoundaryBox
@@ -231,8 +232,8 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
 
     def HCurveAdaptor(self):
         assert(self.is_edge())
-        path_adapt = BRepAdaptor_Curve(self.Edge())
-        return BRepAdaptor_HCurve(path_adapt)
+        from zencad.geom.curve import Curve
+        return Curve(self.Curve()).HCurveAdaptor()
 
     def Curve(self):
         aCurve = BRep_Tool.Curve(self.Edge())

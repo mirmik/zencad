@@ -11,7 +11,7 @@ from zencad.geom.near import _near_vertex
 from zencad.util import *
 
 import itertools
-
+import sys
 
 def _restore_shapetype(shp):
     if len(shp.solids()) == 1:
@@ -124,6 +124,17 @@ def _fillet2d(shp, r, refs=None):
 def fillet2d(shp, r, refs=None):
     return _fillet2d(shp, r, refs)
 
+def get_nodes(triangulation):
+    if hasattr(triangulation, "Nodes"):
+        return triangulation.Nodes()
+    else:
+        return triangulation.InternalNodes()
+
+def get_triangles(triangulation):
+    if hasattr(triangulation, "Triangles"):
+        return triangulation.Triangles()
+    else:
+        return triangulation.InternalTriangles()
 
 def _triangulate_face(shp, deflection):
     mesh = BRepMesh_IncrementalMesh(shp.Shape(), deflection)
@@ -133,12 +144,12 @@ def _triangulate_face(shp, deflection):
     L = TopLoc_Location()
     triangulation = BRep_Tool.Triangulation(shp.Face(), L)
 
-    Nodes = triangulation.Nodes()
-    Triangles = triangulation.Triangles()
+    Nodes = get_nodes(triangulation)
+    Triangles = get_triangles(triangulation)
 
     triangles = []
     for i in range(1, triangulation.NbTriangles() + 1):
-        tri = Triangles(i)
+        tri = Triangles.Value(i)
         a, b, c = tri.Get()
 
         if reverse_orientation:
@@ -147,8 +158,14 @@ def _triangulate_face(shp, deflection):
             triangles.append((a-1, b-1, c-1))
 
     nodes = []
-    for i in range(1, triangulation.NbNodes() + 1):
-        nodes.append(point3(Nodes(i)))
+
+    # if python3.10 or higher:
+    if sys.version_info >= (3, 10):
+        for i in range(0, triangulation.NbNodes()):
+            nodes.append(point3(Nodes.Value(i)))
+    else:
+        for i in range(1, triangulation.NbNodes() + 1):
+            nodes.append(point3(Nodes.Value(i)))
 
     return nodes, triangles
 

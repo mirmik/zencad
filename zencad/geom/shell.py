@@ -1,6 +1,8 @@
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_Sewing
 from OCC.Core.ShapeFix import ShapeFix_Shell, ShapeFix_Solid
-from OCC.Core.TopoDS import TopoDS_Solid
+from OCC.Core.TopoDS import TopoDS_Solid, TopoDS_Shell
+from OCC.Core.BRep import BRep_Builder
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeShell
 
 import zencad.util
 from zencad.geom.face import _polygon
@@ -52,6 +54,13 @@ def polyhedron(pnts, faces, shell=False):
 
 
 def _make_shell(vec):
+    #builder = BRep_Builder()
+    #shell = TopoDS_Shell()    
+    #make_shell = builder.MakeShell(shell)
+    #for a in vec:
+    #    builder.Add(shell, a.Shape())
+    #return Shape(shell)
+
     algo = BRepOffsetAPI_Sewing()
     for a in vec:
         algo.Add(a.Shape())
