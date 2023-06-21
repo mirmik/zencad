@@ -198,6 +198,9 @@ class quat:
         else:
             NotImplemented()
 
+    def __str__(self):
+        return f"quat({self.x},{self.y},{self.z},{self.w})"
+
 
 def points(pnts):
     return [point3(item) for item in pnts]

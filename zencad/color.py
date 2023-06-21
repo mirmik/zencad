@@ -92,3 +92,12 @@ def default_color():
 
 def default_wire_color():
     return Color(1, 1, 1)
+
+
+_default_point_color = Color(0, 1, 0)
+def default_point_color():
+    return  _default_point_color
+
+def set_default_point_color(color):
+    global _default_point_color
+    _default_point_color = color    

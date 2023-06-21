@@ -192,6 +192,13 @@ class unit(Transformable, Displayable):
                 acc += s
         return acc
 
+    def parents_list(self):
+        """Возвращает список родительских кинематических звеньев"""
+        if self.parent is None:
+            return []
+        else:
+            return [self.parent] + self.parent.parents_list()
+
 
 class kinematic_unit(unit):
     """Кинематическое звено задаётся двумя системами координат,
