@@ -37,6 +37,9 @@ class InteractiveObject(Transformable, Displayable):
             border_color=border_color,
             wire_color=wire_color)
 
+    def redisplay(self):
+        self.ais_object.Redisplay()
+
     def setup_drawer(self):
         drawer = self.ais_object.Attributes()
         drawer.SetFaceBoundaryDraw(True)
