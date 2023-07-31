@@ -209,6 +209,9 @@ class kinematic_unit(unit):
         super().__init__(**kwargs)
         self.output = unit(parent=self)
 
+    def dim(self):
+        raise NotImplementedError
+
     def senses(self):
         """Возвращает кортеж тензоров производной по положению
         по набору кинематических координат
@@ -265,6 +268,9 @@ class kinematic_unit_one_axis(kinematic_unit):
     def set_coord(self, coord, **kwargs):
         raise NotImplementedError
 
+    def dim(self):
+        return 1
+
 
 class rotator(kinematic_unit_one_axis):
     def sensivity(self):
@@ -304,9 +310,41 @@ class planemover(kinematic_unit):
             (vector3(0, 1, 0), vector3())
         )
 
+    def dim(self):
+        return 2
+
     def set_coords(self, coords, **kwargs):
-        self.x = coord[0]
-        self.y = coord[1]
+        self.x = coords[0]
+        self.y = coords[1]
+        self.output.relocate(
+            translate(vector3(self.x, self.y, 0)), **kwargs)
+
+
+class freemover(kinematic_unit):
+    """Кинематическое звено с двумя степенями свободы для перемещения
+    по плоскости"""
+
+    def __init__(self):
+        super().__init__(**kwargs)
+        self.x = 0
+        self.y = 0
+
+    def dim(self):
+        return 6
+
+    def senses(self):
+        return (
+            (vector3(1, 0, 0), vector3(0, 0, 0)),
+            (vector3(0, 1, 0), vector3(0, 0, 0))
+            (vector3(0, 0, 1), vector3(0, 0, 0))
+            (vector3(0, 0, 0), vector3(1, 0, 0)),
+            (vector3(0, 0, 0), vector3(0, 1, 0))
+            (vector3(0, 0, 0), vector3(0, 0, 1))
+        )
+
+    def set_coords(self, coords, **kwargs):
+        self.x = coords[0]
+        self.y = coords[1]
         self.output.relocate(
             translate(vector3(self.x, self.y, 0)), **kwargs)
 
