@@ -65,6 +65,15 @@ class BaseViewer(QtOpenGL.QGLWidget):
         self._display.View.SetBgGradientColors(
             color1, color2, Aspect_GFM_VER, True)
 
+    def set_background_gradient(self, color1, color2):
+        qcolor1 = color1.to_Quantity_Color()
+        qcolor2 = color2.to_Quantity_Color()
+        self._display.View.SetBgGradientColors(
+            qcolor1, qcolor2, Aspect_GFM_VER, True)
+
+    def set_background_color(self, color):
+        self.set_background_gradient(color, color)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._display.View.MustBeResized()
@@ -143,6 +152,13 @@ class DisplayWidget(BaseViewer):
             self._display.View.Camera().SetProjectionType(
                 Graphic3d_Camera.Projection_Orthographic)
 
+        self.redraw()
+
+    def reset_topprojection(self):
+        self._orient = 1
+        self.yaw = math.pi / 2
+        self.pitch = -math.pi / 2
+        self.set_orient1()
         self.redraw()
 
     def reset_orient1(self):
@@ -284,6 +300,18 @@ class DisplayWidget(BaseViewer):
             self.Context.Erase(self.x_axis, True)
             self.Context.Erase(self.y_axis, True)
             self.Context.Erase(self.z_axis, True)
+
+    def enable_axis_biedron(self, en, colors=None):
+        if en:
+            self.Context.Display(self.x_axis, True)
+            self.Context.Display(self.y_axis, True)
+        else:
+            self.Context.Erase(self.x_axis, True)
+            self.Context.Erase(self.y_axis, True)
+
+        if colors is not None:
+            self.x_axis.SetColor(colors[0].to_Quantity_Color())
+            self.y_axis.SetColor(colors[1].to_Quantity_Color())
 
     def restore_location(self, dct):
         scale = dct["scale"]
@@ -630,6 +658,8 @@ class DisplayWidget(BaseViewer):
                 self.autoscale()
             elif cmd == "resetview":
                 self.reset_orient()
+            elif cmd == "topprojection":
+                self.reset_topprojection()
             elif cmd == "redraw":
                 self.redraw()
             elif cmd == "resize":

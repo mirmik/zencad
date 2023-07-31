@@ -69,10 +69,24 @@ try:
     from zencad.util import *
     from zencad.color import Color
     from zencad.color import default_color, set_default_point_color, default_point_color
+    from zencad.color import set_default_wire_color, default_wire_color
+    from zencad.color import set_default_border_color, default_border_color
     import zencad.color as color
     from zencad.lazifier import lazy
 
     import zencad.assemble
+
+    from zencad.color import (white,
+black,
+red,
+green,
+blue,
+yellow,
+magenta,
+cian,
+mech,
+transmech,
+orange)
 
     # Transes
     from zencad.geom.trans import move, moveX, moveY, moveZ, \

@@ -89,10 +89,13 @@ orange = Color.orange
 def default_color():
     return Color(Settings.get(["view", "default_color"]))
 
-
+_default_wire_color = Color(0, 0, 0)
 def default_wire_color():
-    return Color(1, 1, 1)
+    return _default_wire_color
 
+_default_border_color = Color(0, 0, 0)
+def default_border_color():
+    return _default_border_color
 
 _default_point_color = Color(0, 1, 0)
 def default_point_color():
@@ -101,3 +104,11 @@ def default_point_color():
 def set_default_point_color(color):
     global _default_point_color
     _default_point_color = color    
+
+def set_default_wire_color(color):
+    global _default_wire_color
+    _default_wire_color = color    
+
+def set_default_border_color(color):
+    global _default_border_color
+    _default_border_color = color    

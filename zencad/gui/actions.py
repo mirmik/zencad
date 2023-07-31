@@ -84,6 +84,9 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
     def centeringAction(self):
         self._current_client.send({"cmd": "centering"})
 
+    def topprojectionAction(self):
+        self._current_client.send({"cmd": "topprojection"})
+
     def autoscaleAction(self):
         self._current_client.send({"cmd": "autoscale"})
 
@@ -224,6 +227,10 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
             "Autoscale", self.autoscaleAction, "Autoscale", "Ctrl+A"
         )
 
+        self.mTopProjection = self.create_action(
+            "TopView", self.topprojectionAction, "TopView"
+        )
+
         self.mOrient1 = self.create_action(
             "Axinometric view", self.orient1, "Orient1")
 
@@ -306,6 +313,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         self.mNavigationMenu.addAction(self.mReset)
         self.mNavigationMenu.addAction(self.mCentering)
         self.mNavigationMenu.addAction(self.mAutoscale)
+        self.mNavigationMenu.addAction(self.mTopProjection)
         self.mNavigationMenu.addAction(self.mOrient1)
         self.mNavigationMenu.addAction(self.mOrient2)
         self.mNavigationMenu.addSeparator()

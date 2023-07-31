@@ -9,7 +9,7 @@ from OCC.Core.TopLoc import TopLoc_Location
 import OCC.Core
 
 from zencad.geom.shape import Shape
-from zencad.color import Color, default_color, default_wire_color
+from zencad.color import Color, default_color, default_wire_color, default_border_color
 from zencad.axis import Axis
 from zencad.geom.trans import Transformation
 from zencad.geom.exttrans import nulltrans
@@ -51,6 +51,11 @@ class InteractiveObject(Transformable, Displayable):
     def bind_to_scene(self, scene):
         scene.add_interactive_object(self)
 
+    def set_border_width(self, width):
+        #drawer = self.ais_object.Attributes()
+        #drawer.SetWidth(width)
+        raise Exception("Not implemented")
+
     def set_color(self, color, b=None, c=None, d=0, border_color=None, wire_color=None):
         if b is not None and c is not None:
             color = Color(color, b, c, d)
@@ -60,7 +65,7 @@ class InteractiveObject(Transformable, Displayable):
         if wire_color is None:
             wire_color = default_wire_color()
         if border_color is None:
-            border_color = Color(0, 0, 0)
+            border_color = default_border_color()
 
         self._color = color
         self._border_color = border_color
