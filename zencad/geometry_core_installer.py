@@ -65,28 +65,33 @@ def get_python_version():
     
 
 def get_conda_pythonocc_list():
-    url = "http://anaconda.org/conda-forge/pythonocc-core/files"
-    html = requests.get(url).text
-    matches = re.compile("/conda-forge/pythonocc-core/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
-    libs = [ PythonOCCLibraryPath(m) for m in matches ]
-
-    filtered_hash = []
-    filtered_libs = []
-    for l in libs:
-        if hash(l) not in filtered_hash:
-            filtered_libs.append(l)
-            filtered_hash.append(hash(l))
-
-    hashes = [hash(l) for l in filtered_libs] 
-    hashes_set = set(hashes)
-
     dictionary = {}
-    for x in libs:
-        if x.system not in dictionary:
-            dictionary[x.system] = {}
-        if x.pyvers not in dictionary[x.system]:
-            dictionary[x.system][x.pyvers] = {}
-        dictionary[x.system][x.pyvers][x.version] = "http://anaconda.org" + x.link
+    for url in [
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=1",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=2",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=3",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=4"
+    ]:
+        html = requests.get(url).text
+        matches = re.compile("/conda-forge/pythonocc-core/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
+        libs = [ PythonOCCLibraryPath(m) for m in matches ]
+
+        filtered_hash = []
+        filtered_libs = []
+        for l in libs:
+            if hash(l) not in filtered_hash:
+                filtered_libs.append(l)
+                filtered_hash.append(hash(l))
+
+        hashes = [hash(l) for l in filtered_libs] 
+        hashes_set = set(hashes)
+
+        for x in libs:
+            if x.system not in dictionary:
+                dictionary[x.system] = {}
+            if x.pyvers not in dictionary[x.system]:
+                dictionary[x.system][x.pyvers] = {}
+            dictionary[x.system][x.pyvers][x.version] = "http://anaconda.org" + x.link
 
     return dictionary
 
@@ -97,7 +102,9 @@ def get_conda_occt_list():
         "https://anaconda.org/conda-forge/occt/files?page=1",
         "https://anaconda.org/conda-forge/occt/files?page=2",
         "https://anaconda.org/conda-forge/occt/files?page=3",
-        "https://anaconda.org/conda-forge/occt/files?page=4"
+        "https://anaconda.org/conda-forge/occt/files?page=4",
+        "https://anaconda.org/conda-forge/occt/files?page=5",
+        "https://anaconda.org/conda-forge/occt/files?page=6"
     ]:
         html = requests.get(url).text
         matches = re.compile("/conda-forge/occt/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
