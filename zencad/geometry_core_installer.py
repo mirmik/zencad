@@ -70,7 +70,18 @@ def get_conda_pythonocc_list():
         "https://anaconda.org/conda-forge/pythonocc-core/files?page=1",
         "https://anaconda.org/conda-forge/pythonocc-core/files?page=2",
         "https://anaconda.org/conda-forge/pythonocc-core/files?page=3",
-        "https://anaconda.org/conda-forge/pythonocc-core/files?page=4"
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=4",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=5",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=6",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=7",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=8",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=9",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=10",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=11",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=12",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=13",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=14",
+        "https://anaconda.org/conda-forge/pythonocc-core/files?page=15"
     ]:
         html = requests.get(url).text
         matches = re.compile("/conda-forge/pythonocc-core/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
@@ -104,7 +115,19 @@ def get_conda_occt_list():
         "https://anaconda.org/conda-forge/occt/files?page=3",
         "https://anaconda.org/conda-forge/occt/files?page=4",
         "https://anaconda.org/conda-forge/occt/files?page=5",
-        "https://anaconda.org/conda-forge/occt/files?page=6"
+        "https://anaconda.org/conda-forge/occt/files?page=6",
+        "https://anaconda.org/conda-forge/occt/files?page=7",
+        "https://anaconda.org/conda-forge/occt/files?page=8",
+        "https://anaconda.org/conda-forge/occt/files?page=9",
+        "https://anaconda.org/conda-forge/occt/files?page=10",
+        "https://anaconda.org/conda-forge/occt/files?page=11",
+        "https://anaconda.org/conda-forge/occt/files?page=12",
+        "https://anaconda.org/conda-forge/occt/files?page=13",
+        "https://anaconda.org/conda-forge/occt/files?page=14",
+        "https://anaconda.org/conda-forge/occt/files?page=15",
+        "https://anaconda.org/conda-forge/occt/files?page=16",
+        "https://anaconda.org/conda-forge/occt/files?page=17",
+        "https://anaconda.org/conda-forge/occt/files?page=18",
     ]:
         html = requests.get(url).text
         matches = re.compile("/conda-forge/occt/[a-z|A-Z|/|_|.|0-9|-]*\.bz2").findall(html)    
@@ -136,6 +159,12 @@ def update_python_occ_precompiled_packages():
     if occt_precompiled_libraries is None:
         occt_precompiled_libraries = get_conda_occt_list()
         print(occt_precompiled_libraries)
+
+def precompiled_occt_package_list():
+    return occt_precompiled_libraries
+
+def precompiled_pythonocc_package_list():
+    return python_occ_precompiled_packages
 
 def download_repo(url, path):
     """Just file downloading"""
@@ -329,6 +358,12 @@ def install_precompiled_python_occ(occversion):
     print(f"Precomiled OCC succesfually installed in {target_directory}")
     return 0
 
+def find_directory_with(basepath, filename):
+    for root, dirs, files in os.walk(basepath):
+        if filename in files:
+            return root
+    return None
+
 
 def install_precompiled_occt_library(tgtpath, occt_version):
     update_python_occ_precompiled_packages()
@@ -359,7 +394,8 @@ def install_precompiled_occt_library(tgtpath, occt_version):
             os.mkdir(target_directory)
 
         print("Copy libs to system libs directory")
-        source_directory = os.path.join(os.path.join(extract_directory, "lib"))
+        source_directory = find_directory_with(extract_directory, "TKGeomBase.dll")
+
         target_directory = os.path.join(target_directory)
         print(f"Source: {source_directory}")
         print(f"Target: {target_directory}")

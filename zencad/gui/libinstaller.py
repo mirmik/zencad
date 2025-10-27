@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-from zencad.geometry_core_installer import update_python_occ_precompiled_packages, test_third_libraries, install_precompiled_python_occ, install_precompiled_occt_library
+from zencad.geometry_core_installer import update_python_occ_precompiled_packages
+from zencad.geometry_core_installer import test_third_libraries
+from zencad.geometry_core_installer import install_precompiled_python_occ 
+from zencad.geometry_core_installer import install_precompiled_occt_library
+from zencad.geometry_core_installer import precompiled_occt_package_list
+from zencad.geometry_core_installer import precompiled_pythonocc_package_list
 from zencad.version import __occt_version__, __pythonocc_version__
 from zenframe.util import print_to_stderr
 from zenframe.retransler import ConsoleRetransler
@@ -9,8 +14,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 import os
 import traceback
 import sys
-print("LibraryInstaller")
 
+print("Run LibraryInstaller")
 
 class LibraryInstaller(QtWidgets.QWidget):
     def __init__(self):
@@ -50,11 +55,27 @@ class LibraryInstaller(QtWidgets.QWidget):
         self.add_label("Lookup.")
         self.add_button("Try to lookup libraries", self.try_to_import)
 
+        self.add_button("show precompiled occt packages", self.show_occt_precompiled_packages)
+
         self.console = ConsoleWidget()
         vlayout.addWidget(self.console)
 
         self.setLayout(vlayout)
         self.resize(800, 600)
+
+    def show_occt_precompiled_packages(self):
+        update_python_occ_precompiled_packages()
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Precompiled packages")
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(QtWidgets.QLabel("Precompiled OCCT packages:"))
+        for pkg in precompiled_occt_package_list():
+            layout.addWidget(QtWidgets.QLabel(f" - {pkg}"))
+        layout.addWidget(QtWidgets.QLabel("Precompiled pythonocc packages:"))
+        for pkg in precompiled_pythonocc_package_list():
+            layout.addWidget(QtWidgets.QLabel(f" - {pkg}"))
+        dialog.setLayout(layout)
+        dialog.exec_()        
 
     def add_label(self, msg):
         lbl = QtWidgets.QLabel(msg)
