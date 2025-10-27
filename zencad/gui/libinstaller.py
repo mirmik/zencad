@@ -210,9 +210,13 @@ class LibraryInstaller(QtWidgets.QWidget):
 
 
 def doit():
+    print("Start QApplication")
     QAPP = QtWidgets.QApplication(sys.argv[1:])
 
+    print("Create Widget")
     wdg = LibraryInstaller()
+
+    print("Start Widget")
     wdg.show()
 
     timer = QtCore.QTimer()

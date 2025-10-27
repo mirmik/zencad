@@ -379,6 +379,7 @@ def install_precompiled_occt_library(tgtpath, occt_version):
 
         # Extraction
         extract_directory = extract_archive(path)
+        print("Extract Directory: ", extract_directory)
 
         if architecture in ("linux-64"):
             target_directory = os.path.expanduser(
@@ -394,7 +395,14 @@ def install_precompiled_occt_library(tgtpath, occt_version):
             os.mkdir(target_directory)
 
         print("Copy libs to system libs directory")
-        source_directory = find_directory_with(extract_directory, "TKGeomBase.dll")
+
+        template_name = ""
+        if sys.platform == "win32":
+            template_name = "TKGeomBase.dll"
+        elif sys.platform == "linux":
+            template_name = "libTKGeomBase.so"
+
+        source_directory = find_directory_with(extract_directory, template_name)
 
         target_directory = os.path.join(target_directory)
         print(f"Source: {source_directory}")
