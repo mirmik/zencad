@@ -6,3 +6,4 @@ requests
 wheel
 zenframe
 six
+pyopengl

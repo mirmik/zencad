@@ -45,39 +45,33 @@ class screw:
         self.lin += oth.lin
         return self
 
-    def carry(self, arm):
-        """Перенос бивектора в другую точку приложения. НА ВЕКТОР ПЛЕЧА!!! Не путать с радиус вектор.
-        Вектор переноса обратен радиус вектору силы.
-
-        Detail
-        ------
-        Формула TODO
-        """
-        return screw(
-            ang=self.ang - arm.cross(self.lin),
-            lin=self.lin)
-
     def kinematic_carry(self, arm):
         return screw(
             lin=self.lin + self.ang.cross(arm),
             ang=self.ang)
 
-    # def inverse_kinematic_carry(self, arm):
-    #	return screw(
-    #		lin = self.lin - self.ang.cross(-arm),
-    #		ang = self.ang )
-
-    def angular_carry(self, arm):
-        return self.kinematic_carry(arm)
-
     def force_carry(self, arm):
-        return self.carry(arm)
+        return screw(
+            ang=self.ang - arm.cross(self.lin),
+            lin=self.lin)
 
     def dot(self, oth):
         l = (self.lin[0]*oth.lin[0]+self.lin[1]*oth.lin[1]+self.lin[2]*oth.lin[2] +
              self.ang[0]*oth.ang[0]+self.ang[1]*oth.ang[1]+self.ang[2]*oth.ang[2])
         # if l == 0: return 0
         return l  # math.sqrt(l)
+
+    def transform_by(self, trans):
+        return screw(
+            ang=trans.transform_vector(self.ang),
+            lin=trans.transform_vector(self.lin)
+        )
+
+    def inverse_transform_by(self, trans):
+        return screw(
+            ang=trans.inverse_transform_vector(self.ang),
+            lin=trans.inverse_transform_vector(self.lin)
+        )
 
     # def to_array(self):
         """Массив имеет обратный принятому в screw порядку"""

@@ -20,6 +20,30 @@ class Transformation:
         xyz = self._trsf.TranslationPart()
         return zencad.util.vector3(xyz)
 
+    def transform_vector(self, vec):
+        t = self._trsf
+        v = gp_Vec(vec[0], vec[1], vec[2])
+        vtr = v.Transformed(t)
+        return zencad.util.vector3(vtr)
+
+    def transform_point(self, pnt):
+        t = self._trsf
+        p = gp_Pnt(pnt[0], pnt[1], pnt[2])
+        ptr = p.Transformed(t)
+        return zencad.util.point3(ptr)
+    
+    def inverse_transform_point(self, pnt):
+        t = self._trsf.Inverted()
+        p = gp_Pnt(pnt[0], pnt[1], pnt[2])
+        ptr = p.Transformed(t)
+        return zencad.util.point3(ptr)
+    
+    def inverse_transform_vector(self, vec):
+        t = self._trsf.Inverted()
+        v = gp_Vec(vec[0], vec[1], vec[2])
+        vtr = v.Transformed(t)
+        return zencad.util.vector3(vtr)
+
     def rotation(self):
         xyz = gp_XYZ()
         angle = self._trsf.GetRotation(xyz)[1]

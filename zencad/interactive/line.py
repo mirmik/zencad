@@ -29,6 +29,7 @@ class LineInteractiveObject(InteractiveObject):
         p1 = Geom_CartesianPoint(to_Pnt(self.p1))
         p2 = Geom_CartesianPoint(to_Pnt(self.p2))
         self.ais_object.SetPoints(p1, p2)
+        self.ais_object.Redisplay()
 
     def set_line_aspect(self, width, aspect_type=Aspect_TOL_SOLID):
         self.width = width

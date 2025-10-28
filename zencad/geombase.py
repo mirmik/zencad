@@ -166,6 +166,9 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
         norm = numpy.linalg.norm(self)
         return self / norm
 
+    def to_array(self):
+        return numpy.array([self.x, self.y, self.z])
+
 
 class point3(xyz):
     def transform(self, trsf):
@@ -200,6 +203,9 @@ class quat:
 
     def __str__(self):
         return f"quat({self.x},{self.y},{self.z},{self.w})"
+
+    def to_array(self):
+        return numpy.array([self.x, self.y, self.z, self.w])
 
 
 def points(pnts):

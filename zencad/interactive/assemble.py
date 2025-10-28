@@ -13,6 +13,7 @@ from zencad.util import vector3, point3
 from zencad.color import Color as color
 from zencad.interactive import create_interactive_object
 from zencad.interactive.displayable import Displayable
+from zencad.libs.screw import screw
 
 
 class unit(Transformable, Displayable):
@@ -276,7 +277,7 @@ class rotator(kinematic_unit_one_axis):
     def sensivity(self):
         """Возвращает тензор производной по положению
         в собственной системе координат в формате (w, v)"""
-        return (self.axmul, vector3())
+        return screw(ang=self.axmul, lin=vector3())
 
     def set_coord(self, coord, **kwargs):
         self.coord = coord
@@ -287,7 +288,7 @@ class actuator(kinematic_unit_one_axis):
     def sensivity(self):
         """Возвращает тензор производной по положению
         в собственной системе координат в формате (w, v)"""
-        return (vector3(), self.axmul)
+        return screw(ang=vector3(), lin=self.axmul)
 
     def set_coord(self, coord, **kwargs):
         self.coord = coord
@@ -306,8 +307,8 @@ class planemover(kinematic_unit):
 
     def senses(self):
         return (
-            (vector3(1, 0, 0), vector3()),
-            (vector3(0, 1, 0), vector3())
+            screw(ang=vector3(1, 0, 0), lin=vector3()),
+            screw(ang=vector3(0, 1, 0), lin=vector3())
         )
 
     def dim(self):
@@ -334,12 +335,12 @@ class freemover(kinematic_unit):
 
     def senses(self):
         return (
-            (vector3(1, 0, 0), vector3(0, 0, 0)),
-            (vector3(0, 1, 0), vector3(0, 0, 0))
-            (vector3(0, 0, 1), vector3(0, 0, 0))
-            (vector3(0, 0, 0), vector3(1, 0, 0)),
-            (vector3(0, 0, 0), vector3(0, 1, 0))
-            (vector3(0, 0, 0), vector3(0, 0, 1))
+            screw(ang=vector3(1, 0, 0), lin=vector3(0, 0, 0)),
+            screw(ang=vector3(0, 1, 0), lin=vector3(0, 0, 0)),
+            screw(ang=vector3(0, 0, 1), lin=vector3(0, 0, 0)),
+            screw(ang=vector3(0, 0, 0), lin=vector3(1, 0, 0)),
+            screw(ang=vector3(0, 0, 0), lin=vector3(0, 1, 0)),
+            screw(ang=vector3(0, 0, 0), lin=vector3(0, 0, 1))
         )
 
     def set_coords(self, coords, **kwargs):

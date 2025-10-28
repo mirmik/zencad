@@ -1,5 +1,6 @@
 import zencad.assemble
 import zencad.libs.screw
+from zencad import nulltrans
 import numpy
 import time
 
@@ -13,14 +14,15 @@ class kinematic_chain:
     выхода, до точки входа.
 
     Порядок следования обратный, потому что звено может иметь одного родителя,
-    но много потомков. Цепочка собирается по родителю.
+    но много потомков. Цепочка собирается от выходного звена к родителю.
 
-    finallink - конечное звено.
-    startlink - начальное звено. 
+    distant - конечное звено.
+    proxymal - начальное звено. 
             Если не указано, алгоритм проходит до абсолютной СК"""
 
-    def __init__(self, finallink, startlink=None):
-        self.chain = self.collect_chain(finallink, startlink)
+    def __init__(self, distant, proxymal=None):
+        self.distant = distant
+        self.chain = self.collect_chain(distant, proxymal)
         self.simplified_chain = self.simplify_chain(self.chain)
         self.kinematic_pairs = self.collect_kinematic_pairs()
 
@@ -31,28 +33,32 @@ class kinematic_chain:
                 par.append(l)
         return par
 
-    # def collect_coords(self):
-    #	arr = []
-    #	for l in self.parametered_links:
-    #		arr.append(l.coord)
-    #	return arr
+    #indexer 
+    def __getitem__(self, key):
+        return self.kinematic_pairs[key]
+
+    def apply_step(self, x):
+        # TODO: не учитывает пары с несколькими степенями свободы
+        for i in range(len(x)):
+            k = self.kinematic_pairs[i]
+            k.set_coord(k.coord + x[i])
 
     def apply(self, speeds, delta):
         for i in range(len(speeds)):
-            k = self.kinematic_pairs[len(self.kinematic_pairs) - i - 1]
+            k = self.kinematic_pairs[i]
             k.set_coord(k.coord + speeds[i] * delta)
 
     @staticmethod
-    def collect_chain(finallink, startlink=None):
+    def collect_chain(distant, proxymal=None):
         chain = []
-        link = finallink
+        link = distant
 
-        while link is not startlink:
+        while link is not proxymal:
             chain.append(link)
             link = link.parent
 
-        if startlink is not None:
-            chain.append(startlink)
+        if proxymal is not None:
+            chain.append(proxymal)
 
         return chain
 
@@ -85,10 +91,8 @@ class kinematic_chain:
         """Вернуть массив тензоров производных положения выходного
         звена по вектору координат в виде [(w_i, v_i) ...]"""
 
-        trsf = _nulltrans()
         senses = []
-
-        outtrans = self.chain[0].global_location
+        outtrans = self.distant.global_location
 
         """Два разных алгоритма получения масива тензоров чувствительности.
 		Первый - проход по цепи с аккумулированием тензора трансформации.
@@ -96,115 +100,63 @@ class kinematic_chain:
 
 		Возможно следует использовать второй и сразу же перегонять в btrsf вместо outtrans"""
 
-        if False:
-            for link in self.simplified_chain:
-                if isinstance(link, Transformation):
-                    trsf = link * trsf
+        for link in self.kinematic_pairs:
+            # Получаем собственные чувствительности текущего звена в его собственной системе координат
+            lsenses = link.senses()
 
-                else:
-                    lsenses = link.senses()
-                    radius = trsf.translation()
+            # Получаем трансформацию выхода текущего звена
+            linktrans = link.output.global_location
+            
+            # Получаем трансформацию входа текущего звена
+            #linktrans = link.global_location
+             
+            # Получаем трансформацию цели в системе текущего звена
+            trsf = linktrans.inverse() * outtrans
 
-                    for sens in reversed(lsenses):
+            # Получаем радиус-вектор в системе текущего звена
+            radius = trsf.translation()
 
-                        wsens = sens[0]
-                        vsens = wsens.cross(radius) + sens[1]
+            for sens in reversed(lsenses):
+                # Получаем линейную и угловую составляющие чувствительности
+                # в системе текущего звена
+                scr = sens.kinematic_carry(radius)
 
-                        itrsf = trsf.inverse()
+                # Трансформируем их в систему цели и добавляем в список
+                senses.append((
+                    scr.inverse_transform_by(trsf)
+                ))
 
-                        senses.append((
-                            itrsf(wsens),
-                            itrsf(vsens)
-                        ))
-
-                    trsf = link.location * trsf
-
-        else:
-            for link in self.kinematic_pairs:
-                lsenses = link.senses()
-
-                linktrans = link.output.global_location
-                trsf = linktrans.inverse() * outtrans
-
-                radius = trsf.translation()
-
-                for sens in reversed(lsenses):
-
-                    wsens = sens[0]
-                    vsens = wsens.cross(radius) + sens[1]
-
-                    itrsf = trsf.inverse()
-
-                    senses.append((
-                        itrsf(wsens),
-                        itrsf(vsens)
-                    ))
-
-        """Для удобства интерпретации удобно перегнать выход в интуитивный базис."""
+        # Перегоняем в систему basis, если она задана
         if basis is not None:
             btrsf = basis.global_location
-            #trsf =  btrsf * outtrans.inverse()
-            # trsf =  outtrans * btrsf.inverse() #ok
-            trsf = btrsf.inverse() * outtrans  # ok
-            #trsf =  outtrans.inverse() * btrsf
-            #trsf =  trsf.inverse()
+            trsf = btrsf.inverse() * outtrans
+            senses = [s.transform_by(trsf) for s in senses]
 
-            senses = [(trsf(w), trsf(v)) for w, v in senses]
+        return senses
 
-        senses = [zencad.libs.screw.screw(ang=s[0], lin=s[1]) for s in senses]
+    def sensivity_jacobian(self, basis=None):
+        """Вернуть матрицу Якоби выхода по координатам в виде numpy массива 6xN"""
 
-        return list(reversed(senses))
+        sens = self.sensivity(basis)
+        jacobian = numpy.zeros((6, len(sens)))
 
-    def decompose(self, vec, use_base_frame=False):
-        sens = self.sensivity(self.chain[-1] if use_base_frame else None)
-        #sens = self.sensivity(None)
-        sens = [s.to_array() for s in sens]
-        target = vec.to_array()
-        return zencad.malgo.svd_backpack(target, sens)[0]
+        for i in range(len(sens)):
+            wsens = sens[i].ang.to_array()
+            vsens = sens[i].lin.to_array()
 
-    def decompose_linear(self, vec, use_base_frame=False, maxsig=2, maxnorm=1,
-                         priority=None):
-        a = time.time()
-        sens = self.sensivity(self.chain[-1] if use_base_frame else None)
-        b = time.time()
-        #sens = self.sensivity(None)
-        sens = [s.lin for s in sens]
-        target = vec
+            jacobian[0:3, i] = wsens
+            jacobian[3:6, i] = vsens
 
-        if priority:
-            for i in range(len(sens)):
-                sens[i] = sens[i] * priority[i]
+        return jacobian
 
-        # for i in range(len(sens)):
-        #	print(abs(sens[i].dot(target)))
-            # if abs(sens[i].dot(target)) > 10:
-            #	sens[i] = (0,0,0)
-        # print(sens)
-        sigs = zencad.malgo.svd_backpack(target, sens)[0]
-        c = time.time()
+    def translation_sensivity_jacobian(self, basis=None):
+        """Вернуть матрицу Якоби трансляции выхода по координатам в виде numpy массива 3xN"""
 
-        if priority:
-            for i in range(len(sens)):
-                sigs[i] = sigs[i] * priority[i]
-        # print(sigs)
-        # print(sigs)
+        sens = self.sensivity(basis)
+        jacobian = numpy.zeros((3, len(sens)))
 
-        #norm = numpy.linalg.norm(sigs)
-        # if norm > maxnorm:
-        #	sigs = sigs / norm * maxnorm
-        # print(sigs)
-        # if norm > maxnorm:
-        #	sigs = sigs / norm * maxnorm
+        for i in range(len(sens)):
+            vsens = sens[i].lin.to_array()
+            jacobian[0:3, i] = vsens
 
-        #ssigs = list(sigs)
-        # print(ssigs)
-        # for i in range(len(sigs)):
-        #	if abs(ssigs[i]) > maxsig:
-        #		ssigs[i] = 0
-
-        #print(b-a, c-b)
-
-        return sigs
-
-    def kunit(self, num):
-        return self.kinematic_pairs[-num-1]
+        return jacobian

@@ -131,6 +131,18 @@ def fast_backpack(target, vectors):
 
     return coords, 1
 
+def nullspace(A):
+    I = numpy.identity(A.shape[1])
+    A_plus = numpy.linalg.pinv(A)
+    N = I - A_plus.dot(A)
+    return N
+   
+    
+
+def svd_solve(A, b):
+    im = numpy.linalg.pinv(A)
+    res = im.dot(b)
+    return res
 
 def svd_backpack(target, vectors, koeffs=None, penalty=None):
     def sign(x):
