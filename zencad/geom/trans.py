@@ -21,6 +21,9 @@ class Transformation:
         return zencad.util.vector3(xyz)
 
     def transform_vector(self, vec):
+        if vec == point3(0, 0, 0):
+            return zencad.util.vector3(0, 0, 0)
+
         t = self._trsf
         v = gp_Vec(vec[0], vec[1], vec[2])
         vtr = v.Transformed(t)

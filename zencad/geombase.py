@@ -169,6 +169,9 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
     def to_array(self):
         return numpy.array([self.x, self.y, self.z])
 
+    def length(self):
+        return numpy.linalg.norm(self)
+
 
 class point3(xyz):
     def transform(self, trsf):

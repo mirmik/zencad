@@ -87,6 +87,100 @@ class kinematic_chain:
     def getchain(self):
         return self.chain
 
+    @staticmethod
+    def found_first_kinematic_unit_in_parent_tree(body):
+        if isinstance(body, kinematic_unit):
+            raise ValueError("body cannot be kinematic unit")
+    
+        link = body
+        while link is not None:
+            if isinstance(link, kinematic_unit):
+                return link
+            link = link.parent
+        return None
+
+    def sensivity2(self, body, local, basis=None):
+        """
+        body - звено, с которым связана отслеживаемая система координат
+        local - локальная система координат внутри body
+        basis - система координат, в которой возвращаются чувствительности
+        """
+
+        top_kinunit = self.found_first_kinematic_unit_in_parent_tree(body)
+        if top_kinunit is None:
+            raise ValueError("No kinematic unit found in body parent tree")
+
+        senses = []
+        outtrans = body.global_location * local
+
+        top_unit_founded = False
+        for link in self.kinematic_pairs:
+            if link is top_kinunit:
+                top_unit_founded = True
+
+            # Получаем собственные чувствительности текущего звена в его собственной системе координат
+            lsenses = link.senses()
+
+            if top_unit_founded == False:
+                for _ in lsenses:
+                    senses.append(zencad.libs.screw.screw())
+                continue
+ 
+            # Получаем трансформацию выхода текущей пары
+            linktrans = link.output.global_location
+
+            # Получаем трансформацию цели в системе текущего звена
+            trsf = linktrans.inverse() * outtrans
+
+            # Получаем радиус-вектор в системе текущего звена
+            radius = trsf.translation()
+
+            for sens in reversed(lsenses):
+                # Получаем линейную и угловую составляющие чувствительности
+                # в системе текущего звена
+                scr = sens.kinematic_carry(radius)
+
+                # Трансформируем их в систему цели и добавляем в список
+                senses.append((
+                    scr.inverse_transform_by(trsf)
+                ))
+            
+        # Перегоняем в систему basis, если она задана
+        if basis is not None:
+            btrsf = basis.global_location
+            trsf = btrsf.inverse() * outtrans
+            senses = [s.transform_by(trsf) for s in senses]
+
+        return senses
+
+    def sensitivity_jacobian2(self, body, local, basis=None):
+        """Вернуть матрицу Якоби выхода по координатам в виде numpy массива 6xN"""
+
+        sens = self.sensivity2(body, local, basis)
+        jacobian = numpy.zeros((6, len(sens)))
+
+        for i in range(len(sens)):
+            wsens = sens[i].ang.to_array()
+            vsens = sens[i].lin.to_array()
+
+            jacobian[0:3, i] = wsens
+            jacobian[3:6, i] = vsens
+
+        return jacobian
+
+    def translation_sensitivity_jacobian2(self, body, local, basis=None):
+        """Вернуть матрицу Якоби трансляции выхода по координатам в виде numpy массива 3xN"""
+
+        sens = self.sensivity2(body, local, basis)
+        jacobian = numpy.zeros((3, len(sens)))
+
+        for i in range(len(sens)):
+            vsens = sens[i].lin.to_array()
+            jacobian[0:3, i] = vsens
+
+        return jacobian
+
+
     def sensivity(self, basis=None):
         """Вернуть массив тензоров производных положения выходного
         звена по вектору координат в виде [(w_i, v_i) ...]"""
@@ -106,9 +200,6 @@ class kinematic_chain:
 
             # Получаем трансформацию выхода текущего звена
             linktrans = link.output.global_location
-            
-            # Получаем трансформацию входа текущего звена
-            #linktrans = link.global_location
              
             # Получаем трансформацию цели в системе текущего звена
             trsf = linktrans.inverse() * outtrans
