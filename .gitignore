@@ -116,3 +116,5 @@ mangen/images/generic/*.png
 
 doxygen/html
 doxygen/latex
+
+venv
