@@ -15,6 +15,8 @@ from zencad.interactive import create_interactive_object
 from zencad.interactive.displayable import Displayable
 from zencad.libs.screw import screw
 
+import termin
+from termin.transform import Transform3 
 
 class unit(Transformable, Displayable):
     """Базовый класс для использования в кинематических цепях и сборках
@@ -27,8 +29,9 @@ class unit(Transformable, Displayable):
                  parts=[],
                  parent=None,
                  shape=None,
-                 name=None,
-                 location=nulltrans()):
+                 name="unit",
+                 location=nulltrans(),
+                 transform=None):
         self.parent = parent
         self.location = evalcache.unlazy_if_need(location)
         self.global_location = self.location
@@ -36,14 +39,18 @@ class unit(Transformable, Displayable):
         self.color = None
         self.dispobjects = []
         self.scene = None
-
         self.shapes_holder = []
-
         self.views = set()
         self.childs = set()
 
+        if transform is None:
+            self.transform = Transform3(name=name)
+        else:
+            self.transform = transform
+
         if parent is not None:
             parent.add_child(self)
+            parent.transform.link(self.transform)
 
         for obj in parts:
             self.add(obj)
@@ -51,6 +58,7 @@ class unit(Transformable, Displayable):
     def add_child(self, child):
         child.parent = self
         self.childs.add(child)
+        self.transform.link(child.transform)
 
     def deep_childs_list(self):
         childs = []
@@ -206,9 +214,10 @@ class kinematic_unit(unit):
     входной и выходной. Изменение кинематических параметров изменяет
     положение выходной СК относительно входной"""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.output = unit(parent=self)
+    def __init__(self, transform=None, **kwargs):
+        super().__init__(transform=transform, **kwargs)
+        self.output = unit(parent=self, name=self.name+"(output)")
+        self.transform.init_output(self.output.transform)
 
     def dim(self):
         raise NotImplementedError
@@ -244,8 +253,8 @@ class kinematic_unit_one_axis(kinematic_unit):
     mul - линейный коэффициент масштабирования входной координаты.
     """
 
-    def __init__(self, axis, mul=1, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, axis, mul=1, transform=None, **kwargs):
+        super().__init__(transform=transform, **kwargs)
         self.coord = 0
         self.axis = vector3(axis)
         self.axis = self.axis.normalize()
@@ -274,6 +283,11 @@ class kinematic_unit_one_axis(kinematic_unit):
 
 
 class rotator(kinematic_unit_one_axis):
+    def __init__(self, **kwargs):
+        super().__init__(
+            transform=termin.kinematic.Rotator3(manual_output=True),
+            **kwargs)
+
     def sensivity(self):
         """Возвращает тензор производной по положению
         в собственной системе координат в формате (w, v)"""

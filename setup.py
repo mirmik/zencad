@@ -52,6 +52,7 @@ setup(
         "pillow",
         "evalcache>=1.14.0",
         'zenframe',
+        'termin',
         "requests",
         "six",
     ],
