@@ -299,6 +299,11 @@ class rotator(kinematic_unit_one_axis):
 
 
 class actuator(kinematic_unit_one_axis):
+    def __init__(self, **kwargs):
+        super().__init__(
+            transform=termin.kinematic.Actuator3(manual_output=True),
+            **kwargs)
+
     def sensivity(self):
         """Возвращает тензор производной по положению
         в собственной системе координат в формате (w, v)"""
