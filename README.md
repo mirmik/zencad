@@ -18,6 +18,11 @@ Manual and Information
 
 Installation
 ------------
+### Install xcb
+```
+apt install libxcb*
+```
+
 ### Common:
 Zencad needs *pythonocc* and *opencascade core*(OCCT). After first launch
 (type `zencad` or `python3 -m zencad` commands)

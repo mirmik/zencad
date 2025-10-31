@@ -128,6 +128,7 @@ class kinematic_chain:
  
             # Получаем трансформацию выхода текущей пары
             linktrans = link.output.global_location
+            link.output.global_location
 
             # Получаем трансформацию цели в системе текущего звена
             trsf = linktrans.inverse() * outtrans
@@ -203,10 +204,10 @@ class kinematic_chain:
              
             # Получаем трансформацию цели в системе текущего звена
             trsf = linktrans.inverse() * outtrans
-
+            
             # Получаем радиус-вектор в системе текущего звена
             radius = trsf.translation()
-
+            
             for sens in reversed(lsenses):
                 # Получаем линейную и угловую составляющие чувствительности
                 # в системе текущего звена
@@ -216,7 +217,7 @@ class kinematic_chain:
                 senses.append((
                     scr.inverse_transform_by(trsf)
                 ))
-
+            
         # Перегоняем в систему basis, если она задана
         if basis is not None:
             btrsf = basis.global_location

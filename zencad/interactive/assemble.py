@@ -3,7 +3,7 @@ import numpy
 
 from zencad.settings import Settings
 from zencad.geom.transformable import Transformable
-from zencad.geom.trans import rotate, translate
+from zencad.geom.trans import rotate, translate, rotate_quat
 from zencad.geom.exttrans import nulltrans
 from zencad.geom.solid import _nullshape
 from zencad.interactive.shape import ShapeInteractiveObject
@@ -16,7 +16,18 @@ from zencad.interactive.displayable import Displayable
 from zencad.libs.screw import screw
 
 import termin
+import termin.kinematic
 from termin.transform import Transform3 
+
+def trans_to_pose3(trsf):
+    return termin.pose3.Pose3(
+                lin=trsf.translation().to_array(),
+                ang=trsf.rotation_quat().to_array()
+            )
+
+def pose3_to_trans(p):
+    return translate(p.lin) * rotate_quat(p.ang)
+    
 
 class unit(Transformable, Displayable):
     """Базовый класс для использования в кинематических цепях и сборках
@@ -44,21 +55,21 @@ class unit(Transformable, Displayable):
         self.childs = set()
 
         if transform is None:
-            self.transform = Transform3(name=name)
+            self.transform = Transform3(name=name, 
+                local_pose=trans_to_pose3(self.location))
         else:
             self.transform = transform
 
         if parent is not None:
             parent.add_child(self)
-            parent.transform.link(self.transform)
-
+            
         for obj in parts:
             self.add(obj)
 
     def add_child(self, child):
         child.parent = self
         self.childs.add(child)
-        self.transform.link(child.transform)
+        self.transform.add_child(child.transform)
 
     def deep_childs_list(self):
         childs = []
@@ -84,8 +95,17 @@ class unit(Transformable, Displayable):
         if view:
             self._apply_view_location(False)
 
+    def update_location_from_transform(self, deep=True):
+        self.relocate(pose3_to_trans(self.transform.local_pose()))        
+        if deep:
+            for c in self.childs:
+                c.update_location_from_transform(deep=True)
+
     def relocate(self, location, deep=False, view=True):
         self.location = evalcache.unlazy_if_need(location)
+        self.transform.relocate(
+            trans_to_pose3(location)
+        )
         self.location_update(deep=deep, view=False)
 
         if view:
@@ -283,9 +303,13 @@ class kinematic_unit_one_axis(kinematic_unit):
 
 
 class rotator(kinematic_unit_one_axis):
-    def __init__(self, **kwargs):
+    def __init__(self, axis, location=nulltrans(), name="rotator", **kwargs):
         super().__init__(
-            transform=termin.kinematic.Rotator3(manual_output=True),
+            axis=axis,
+            name=name,
+            transform=termin.kinematic.Rotator3(axis, name=name, manual_output=True,
+                local_pose=trans_to_pose3(location)),
+            location=location,
             **kwargs)
 
     def sensivity(self):
@@ -296,12 +320,17 @@ class rotator(kinematic_unit_one_axis):
     def set_coord(self, coord, **kwargs):
         self.coord = coord
         self.output.relocate(rotate(self.axis, coord * self.mul), **kwargs)
+        self.transform.set_coord(coord)
 
 
 class actuator(kinematic_unit_one_axis):
-    def __init__(self, **kwargs):
+    def __init__(self, axis, location=nulltrans(), name="actuator", **kwargs):
         super().__init__(
-            transform=termin.kinematic.Actuator3(manual_output=True),
+            axis=axis,
+            name=name,
+            transform=termin.kinematic.Actuator3(axis, name=name, manual_output=True,
+                local_pose=trans_to_pose3(location)),
+            location=location,
             **kwargs)
 
     def sensivity(self):
@@ -313,6 +342,7 @@ class actuator(kinematic_unit_one_axis):
         self.coord = coord
         self.output.relocate(translate(
             self.axis * coord * self.mul), **kwargs)
+        self.transform.set_coord(coord)
 
 
 class planemover(kinematic_unit):

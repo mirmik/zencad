@@ -5,6 +5,7 @@ from zencad import *
 import time
 import math
 import termin
+import termin.kinematic
 
 tclr = color.transmech
 

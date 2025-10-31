@@ -11,6 +11,8 @@ import zencad.libs.kinematic
 import zencad.libs.malgo
 
 import time
+import termin
+import termin.kinchain
 
 CTRWIDGET = None
 SLDS = None
@@ -58,15 +60,24 @@ b.rotator.link(c)
 c.rotator.link(d)
 d.rotator.link(f)
 
+r.location_update()
+
 r.set_coord(deg(80))
 a.rotator.set_coord(deg(50))
 b.rotator.set_coord(deg(60))
 c.rotator.set_coord(deg(-60))
 d.rotator.set_coord(deg(45))
 
+
+zencad.assemble.unit.print_tree(r)
+termin.transform.inspect_tree(r.transform, name_only=True)
+
 bb= b
 
-chain = zencad.libs.kinematic.kinematic_chain(f.output)
+r.location_update()
+
+chain2 = zencad.libs.kinematic.kinematic_chain(f.output)
+chain = termin.kinchain.KinematicChain3(f.output.transform)
 disp(a)
 
 
@@ -118,6 +129,8 @@ def animate(wdg):
         lasttime = stime
         return
 
+    r.location_update()
+
     curtime = time.time()
     DELTA = curtime - lasttime
     lasttime = curtime
@@ -125,29 +138,38 @@ def animate(wdg):
     target_location = translate(
         XSLD.value()/5000*120, YSLD.value()/5000*120, ZSLD.value()/5000*120)
 
-    sens_jacobian = chain.translation_sensivity_jacobian(
+    sens_jacobian = chain.translation_sensitivity_jacobian(
+        basis=z.transform.global_pose())
+    sens_jacobian2 = chain2.translation_sensivity_jacobian(
         basis=z)
+
+    sens = chain.sensitivity_twists(
+        basis=z.transform.global_pose())
+    sens2 = chain2.sensivity(
+        basis=z)
+
     
     sens_jacobian_C = c
 
-    error = target_location.translation() - chain.distant.global_location.translation()  
+    error = target_location.translation() - chain.distal.global_pose().lin  
 
     line.set_points(
-        chain.distant.global_location.translation(),
+        chain.distal.global_pose().lin,
         target_location.translation()
     )
 	
-    coord0 = chain[0].coord
-    coord1 = chain[1].coord
-    coord2 = chain[2].coord
-    coord3 = chain[3].coord
-    coord4 = chain[4].coord
+    coord0 = chain[0].coord()
+    coord1 = chain[1].coord()
+    coord2 = chain[2].coord()
+    coord3 = chain[3].coord()
+    coord4 = chain[4].coord()
 
     J0 = sens_jacobian
-    J2 = chain.translation_sensitivity_jacobian2(
-        body=c, local=up(60), basis=z)
-    J1 = chain.translation_sensitivity_jacobian2(
-        body=d, local=up(60), basis=z)
+    J2 = chain.translation_sensitivity_jacobian(
+        body=c.transform, local=termin.pose3.Pose3.up(60), basis=z.transform.global_pose())
+    J1 = chain.translation_sensitivity_jacobian(
+        body=d.transform, local=termin.pose3.Pose3.up(60), 
+basis=z.transform.global_pose())
 
     def barrier(x, l):
         if x > l:
@@ -197,7 +219,6 @@ def animate(wdg):
     def LL_tgt(c):
         return (deg(0) - c)**7
 
-
     N0 = zencad.libs.malgo.nullspace(sens_jacobian)
     
     I = numpy.diag([1,1,1,1,1])
@@ -244,7 +265,7 @@ def animate(wdg):
     sA += (N0J1).T.dot(N0J1) * kT
     sb += (N0J1).T.dot(U15) * kT
 
-    E03 = (chain.distant.global_location.translation() -
+    E03 = (chain.distal.global_pose().lin -
         c.global_location.translation())
     U03_abs = E03.length()
     U03_barrier = barrier(U03_abs, R)
@@ -261,7 +282,7 @@ def animate(wdg):
     N0J1 = J1.dot(N0)
     sA += (N0J1).T.dot(N0J1) * kT
     sb += (N0J1).T.dot(U13) * kT
-
+    
     m = 1
     kA_h = numpy.diag([m**7,m**7,m**3,m**2,m**1]).dot(N0) * 0.5
     kA = kA_h.T.dot(kA_h)
@@ -270,7 +291,11 @@ def animate(wdg):
     #A = wA
     U = error * K
     b = J0.T.dot(U) + wb*10000 + barrierb*1000 + sb*0
+    #print(wb)
+    #print(barrierb)
+    #print(sb)
     #b = wb
+
     x = zencad.libs.malgo.svd_solve(A, b)
 
     #v0 = (J0.dot(x) - U).length()
@@ -306,7 +331,9 @@ def animate(wdg):
     #         J0.dot(x) * 50)
     # )
 	
-    chain.apply_step(x * DELTA)
+    chain.apply_coordinate_changes(x * DELTA)
+	
+    r.update_location_from_transform()
 
     ctr.relocate(target_location)
     a.location_update()

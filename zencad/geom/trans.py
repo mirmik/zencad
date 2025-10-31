@@ -169,6 +169,11 @@ def rotate(axis, angle=None):
         gp_Vec(axis[0], axis[1], axis[2]))), angle)
     return Transformation(trsf)
 
+def rotate_quat(q):
+    trsf = gp_Trsf()
+    trsf.SetRotation(gp_Quaternion(q[0], q[1], q[2], q[3]))
+    return Transformation(trsf)
+
 
 def mirror_plane(ax, ay, az):
     trsf = gp_Trsf()
