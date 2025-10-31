@@ -14,6 +14,11 @@ import time
 import termin
 import termin.kinchain
 
+from termin.lsolver import SymCondition, ConditionCollection
+from termin.colliders.capsule import CapsuleCollider
+from termin.colliders.attached import AttachedCollider
+from termin.pose3 import Pose3
+
 CTRWIDGET = None
 SLDS = None
 
@@ -37,6 +42,12 @@ class link(zencad.assemble.unit):
                 center=True).transform(up(h) * short_rotate((0, 0, 1), axis)))
         self.rotator = zencad.assemble.rotator(
             parent=self, axis=axis, location=up(h))
+        self.collider = AttachedCollider(collider=CapsuleCollider(
+            a = numpy.array((0,0,0)),
+            b = numpy.array((0,0,h)),
+            radius = 5
+        ), transform=self.transform)
+
 
 class flink(zencad.assemble.unit):
     def __init__(self, h=60):
@@ -44,6 +55,11 @@ class flink(zencad.assemble.unit):
         self.add(cylinder(5, h))
         self.output = zencad.assemble.unit(
             parent=self, location=up(h))
+        self.collider = AttachedCollider(collider=CapsuleCollider(
+            a = numpy.array((0,0,0)),
+            b = numpy.array((0,0,h)),
+            radius = 5
+        ), transform=self.transform)
 
 
 z = zencad.assemble.unit()
@@ -69,10 +85,12 @@ c.rotator.set_coord(deg(-60))
 d.rotator.set_coord(deg(45))
 
 
-zencad.assemble.unit.print_tree(r)
-termin.transform.inspect_tree(r.transform, name_only=True)
 
-bb= b
+aa = a
+bb = b
+cc = c
+dd = d
+ff = f
 
 r.location_update()
 
@@ -219,26 +237,21 @@ basis=z.transform.global_pose())
     def LL_tgt(c):
         return (deg(0) - c)**7
 
-    N0 = zencad.libs.malgo.nullspace(sens_jacobian)
-    
-    I = numpy.diag([1,1,1,1,1])
-    barrierM = I
-    barrierA = barrierM.dot(barrierM)
-    barrierb = barrierM.dot(barrierM).dot(numpy.array([Lbi_barrier(coord0), Lbi_barrier(coord1), Lbi_barrier(coord2), LL_barrier(coord3), 0]))
-
-    wA = N0.T.dot(N0)
-    wb = N0.T.dot(N0).dot(numpy.array([Lbi_tgt(coord0), Lbi_tgt(coord1), Lbi_tgt(coord2), LL_tgt(coord3), 0]))
-
-    # N02 = numpy.diag([1,1,1,1,1])
-    # kTw2 = 0
-    # wA2 = N02.T.dot(N02) * kTw2
-    # wb2 = N02.T.dot(N02).dot(numpy.array([L2(coord0), L(coord1), L(coord2), L(coord3), LL(coord4)])) * kTw2
-    
-    #wA = numpy.diag([1,1,1,1,1])
-    #wb = numpy.array([L(coord0), L(coord1), L(coord2), L(coord3), 0])
 
     kT = 1
     R = 60 * math.sqrt(2)
+
+    conds = ConditionCollection()
+    
+    U = error * K
+    target_cond = SymCondition(J0, U)
+
+    N0 = target_cond.Nullspace()
+
+    I = numpy.diag([1,1,1,1,1])
+    barrier_cond = SymCondition(I, numpy.array([Lbi_barrier(coord0), Lbi_barrier(coord1), Lbi_barrier(coord2), LL_barrier(coord3), 0]))
+
+    wcond = SymCondition(N0, numpy.array([Lbi_tgt(coord0), Lbi_tgt(coord1), Lbi_tgt(coord2), LL_tgt(coord3), 0]))
 
     E25_1 = d.global_location.translation()
     E25_1[2] = 0
@@ -252,49 +265,67 @@ basis=z.transform.global_pose())
     U25_1 = E25_1 * U25_barrier_1 * 1000
     U25_2 = E25_2 * U25_barrier_2 * 1000
     U25 = U25_1 + U25_2
-    N0J2 = J2.dot(N0)
-    sA = (N0J2).T.dot(N0J2) * kT
-    sb = (N0J2).T.dot(U25) * kT
+    e25_cond = SymCondition(J2.dot(N0), U25)
 
     E15 = c.global_location.translation()
     E15[2] = 0
     U15_abs = E15.length()
     U15_barrier = barrier(U15_abs, R)
     U15 = E15 * U15_barrier * 1000
-    N0J1 = J1.dot(N0)
-    sA += (N0J1).T.dot(N0J1) * kT
-    sb += (N0J1).T.dot(U15) * kT
+    e15_cond = SymCondition(J1.dot(N0), U15)
 
     E03 = (chain.distal.global_pose().lin -
         c.global_location.translation())
     U03_abs = E03.length()
     U03_barrier = barrier(U03_abs, R)
     U03 = E03 * U03_barrier * 1000
-    N0J0 = J0.dot(N0)
-    sA += (N0J0).T.dot(N0J0) * kT
-    sb += (N0J0).T.dot(U03) * kT
+    e03_cond = SymCondition(J0.dot(N0), U03)
 
     E13 = (f.global_location.translation() -
         c.global_location.translation())
     U13_abs = E13.length()
     U13_barrier = barrier(U13_abs, R)
     U13 = E13 * U13_barrier * 1000
-    N0J1 = J1.dot(N0)
-    sA += (N0J1).T.dot(N0J1) * kT
-    sb += (N0J1).T.dot(U13) * kT
+    e13_cond = SymCondition(J1.dot(N0), U13)
     
     m = 1
     kA_h = numpy.diag([m**7,m**7,m**3,m**2,m**1]).dot(N0) * 0.5
     kA = kA_h.T.dot(kA_h)
+    k_cond = SymCondition(numpy.diag([m**7,m**7,m**3,m**2,m**1]).dot(N0), numpy.array([0,0,0,0,0]), weight=0.5)
 
-    A = J0.T.dot(J0) + wA*10000 + barrierA*1000 + sA*0 + kA
-    #A = wA
-    U = error * K
-    b = J0.T.dot(U) + wb*10000 + barrierb*1000 + sb*0
-    #print(wb)
-    #print(barrierb)
-    #print(sb)
-    #b = wb
+
+    conds.add(target_cond)
+    conds.add(barrier_cond)
+    conds.add(wcond, 10000)
+
+
+
+    avoid_dir, avoid_dist, avoid_pnt = aa.collider.avoidance(ff.collider)
+    f_pose = ff.transform.global_pose()
+    avoid_pnt_local = f_pose.inverse().transform_point(avoid_pnt)
+    J_avoid = chain.translation_sensitivity_jacobian(body=f.transform, local=Pose3.move(*avoid_pnt_local))
+    avoid_cond = SymCondition(J_avoid, -avoid_dir * (10 / avoid_dist))
+    conds.add(avoid_cond, 1)
+
+
+
+    avoid_dir, avoid_dist, avoid_pnt = aa.collider.avoidance(dd.collider)
+    d_pose = dd.transform.global_pose()
+    avoid_pnt_local = d_pose.inverse().transform_point(avoid_pnt)
+    J_avoid = chain.translation_sensitivity_jacobian(body=d.transform, local=Pose3.move(*avoid_pnt_local))
+    avoid_cond = SymCondition(J_avoid, -avoid_dir * (10 / avoid_dist))
+    conds.add(avoid_cond, 1)
+
+
+    #conds.add(e25_cond)
+    #conds.add(e15_cond)
+    #conds.add(e03_cond)
+    #conds.add(e13_cond)
+    #conds.add(k_cond)
+
+    A = conds.A()
+    b = conds.b()
+
 
     x = zencad.libs.malgo.svd_solve(A, b)
 
@@ -344,3 +375,4 @@ def close_handle():
 
 
 show(animate=animate, preanimate=preanimate, close_handle=close_handle)
+
