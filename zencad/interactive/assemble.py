@@ -17,10 +17,11 @@ from zencad.libs.screw import screw
 
 import termin
 import termin.kinematic
-from termin.transform import Transform3 
+import termin.geombase.pose3
+from termin.kinematic import Transform3 
 
 def trans_to_pose3(trsf):
-    return termin.pose3.Pose3(
+    return termin.geombase.pose3.Pose3(
                 lin=trsf.translation().to_array(),
                 ang=trsf.rotation_quat().to_array()
             )
