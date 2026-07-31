@@ -79,4 +79,5 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         working-directory: ${{ runner.temp }}
-        run: python -c "import zencad.gui.display, zencad.gui.mainwindow, zencad.gui.settingswdg; print('GUI import smoke: OK')"
+        run: |
+          python -c "import zencad.gui.display, zencad.gui.mainwindow, zencad.gui.settingswdg; print('GUI import smoke: OK')"
