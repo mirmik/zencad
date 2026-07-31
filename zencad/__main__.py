@@ -54,7 +54,8 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
     mainwindow = MainWindow(
         initial_communicator=initial_communicator,
-        restore_gui=not norestore)
+        restore_gui=not norestore,
+        managed_runtime=not unbound)
 
     return mainwindow, openpath
 

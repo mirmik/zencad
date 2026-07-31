@@ -15,14 +15,21 @@ from zenframe.util import print_to_stderr
 
 
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
+    runner_message = QtCore.pyqtSignal(object)
+
     def __init__(self,
                  title="ZenCad",
                  initial_communicator=None,
-                 restore_gui=True
+                 restore_gui=True,
+                 managed_runtime=True,
                  ):
 
         # Init objects
         self.info_widget = InfoWidget()
+        self._managed_runtime_requested = managed_runtime
+        self._runner_supervisor = None
+        self._pending_snapshots = {}
+        self._generation_statuses = {}
 
         super().__init__(
             title=title,
@@ -30,13 +37,130 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             initial_communicator=initial_communicator,
             restore_gui=restore_gui)
 
+        if managed_runtime:
+            from zencad.runtime import RunnerSupervisor
+
+            self.use_sleeped_process = False
+            self.runner_message.connect(
+                self._handle_runner_message,
+                QtCore.Qt.QueuedConnection,
+            )
+            self._runner_supervisor = RunnerSupervisor(
+                on_message=self.runner_message.emit,
+            )
+
         # Устанавливается при открытии файла, если при следующем бинде
         # нужно/ненужно произвести восстановить параметры камеры.
         self._last_location = None
 
+    def spawn_process(self, application_name):
+        if self._managed_runtime_requested:
+            return None
+        return super().spawn_process(application_name)
+
     def init_central_widget(self):
         super().init_central_widget()
+        if self._managed_runtime_requested:
+            from zencad.gui.display import DisplayWidget
+
+            self.display_widget = DisplayWidget()
+            self.vsplitter.replaceWidget(0, self.display_widget)
+            self.screen_saver.hide()
         self.central_widget_layout().addWidget(self.info_widget)
+
+    def open(self, openpath, update_texteditor=True):
+        if not self._managed_runtime_requested:
+            return super().open(openpath, update_texteditor)
+
+        self._openlock.lock()
+        try:
+            self._reopen_mode = openpath == self._current_opened
+            self._current_opened = openpath
+            if update_texteditor:
+                self.texteditor.open(openpath)
+
+            self.notifier.clear()
+            self.notifier.add_target(openpath)
+            self.console.clear()
+            self.setWindowTitle(openpath)
+            self.openStartEvent(openpath)
+            generation = self._runner_supervisor.start(openpath)
+            self._pending_snapshots.clear()
+            self._generation_statuses.clear()
+            return generation
+        finally:
+            self._openlock.unlock()
+
+    def enable_display_changed_mode(self):
+        if not self._managed_runtime_requested:
+            return super().enable_display_changed_mode()
+        self.statusBar().showMessage("Calculating scene…")
+
+    def _progress_text(self, payload):
+        if payload.get("phase"):
+            return "Calculating scene: {}".format(payload["phase"])
+        if payload.get("subcmd") == "progress":
+            return "Calculating scene: load {}, evaluate {}".format(
+                payload.get("toload", "?"), payload.get("toeval", "?")
+            )
+        if payload.get("subcmd") == "newtree":
+            return "Calculating scene: {} objects".format(
+                payload.get("len", "?")
+            )
+        return "Calculating scene…"
+
+    @QtCore.pyqtSlot(object)
+    def _handle_runner_message(self, message):
+        message_type = message.message_type
+        generation = message.generation
+        if generation != self._runner_supervisor.current_generation:
+            # A callback can already be queued in Qt when a new generation is
+            # started.  Recheck freshness on the GUI side before staging or
+            # committing anything.
+            return
+
+        if message_type == "run":
+            self.enable_display_changed_mode()
+        elif message_type == "progress":
+            self.statusBar().showMessage(self._progress_text(message.payload))
+        elif message_type == "output":
+            self.console.write(message.payload.get("text", ""))
+        elif message_type == "scene":
+            self._pending_snapshots[generation] = message.snapshot
+        elif message_type == "error":
+            details = message.payload.get("traceback")
+            if not details:
+                details = "{}: {}\n".format(
+                    message.payload.get("exception_type", "RunnerError"),
+                    message.payload.get("message", ""),
+                )
+            self.console.write(details)
+            self.statusBar().showMessage("Scene calculation failed")
+        elif message_type == "finished":
+            status = message.payload.get("status")
+            snapshot = self._pending_snapshots.pop(generation, None)
+            if status == "success" and snapshot is not None:
+                try:
+                    self.display_widget.apply_snapshot(snapshot)
+                except Exception:
+                    import traceback
+
+                    self.console.write(traceback.format_exc())
+                    self.statusBar().showMessage("Scene presentation failed")
+                else:
+                    self.statusBar().showMessage("Scene ready", 2000)
+            elif status == "success":
+                self.statusBar().showMessage("Script produced no scene", 3000)
+            elif status == "cancelled":
+                self.statusBar().showMessage("Scene calculation cancelled", 2000)
+            self._generation_statuses[generation] = status
+
+    def closeEvent(self, event):
+        if self._runner_supervisor is not None:
+            self._runner_supervisor.shutdown()
+        super().closeEvent(event)
+        if self.notifier.isRunning():
+            self.notifier.wait(1000)
 
     def marker_handler(self, qw, data):
         fmt = '.5f'

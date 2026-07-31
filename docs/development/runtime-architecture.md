@@ -1,9 +1,10 @@
 # Planned runtime architecture
 
 > Status: migration in progress.  The transport protocol, runner-side
-> `SceneDraft`, persistent `ScenePresenter`, and generation supervisor are
-> implemented; reload integration is not yet the default execution path.  The
-> accepted decision is recorded in
+> `SceneDraft`, persistent `ScenePresenter`, generation supervisor, and managed
+> reload path are implemented.  Removing the retained legacy embedding path
+> and adding live-update/animation support remain follow-up work.  The accepted
+> decision is recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
 ZenCad is migrating from cross-process native-window embedding to a persistent
@@ -173,9 +174,19 @@ terminal state.
 
 ## Migration boundary
 
-The first integration may continue using ZenFrame editor widgets, but must
-bypass its unbound worker and foreign-window embedding path.  Legacy
+The default `zencad` application now keeps the ZenFrame editor, console, menus,
+and file watcher, but overrides file execution with `RunnerSupervisor`.  Its
+one `DisplayWidget` is constructed with the main window and never replaced.
+Runner callbacks cross into the GUI thread through a queued Qt signal; a
+snapshot is staged until that generation reports successful completion and is
+then committed by `ScenePresenter`.  Progress appears in the status bar while
+the previous scene remains visible.  Navigation and export actions are routed
+directly to the local display instead of a worker-side window.
+
+The direct-script compatibility mode is temporarily retained.  Legacy
 `bindwin`, `QWindow.fromWinId()`, and `createWindowContainer()` code can be
 removed only after static scenes, errors, reload, cancellation, camera
 preservation, and supported interactive objects pass the replacement-path
-smokes.
+smokes.  `utest/gui_reload_smoke.py` exercises 20 successive reloads plus
+failure, cancellation, and supersession while asserting stable native-window,
+viewer, context, editor, console, and camera identities.

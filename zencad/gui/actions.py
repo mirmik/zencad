@@ -25,6 +25,14 @@ BANNER_TEXT = (  # "\n"
 
 
 class MainWindowActionsMixin(ZenFrameActionsMixin):
+    def _send_viewer_command(self, command):
+        display = getattr(self, "display_widget", None)
+        if display is not None:
+            display.external_communication_command(command)
+            return
+        if self._current_client is not None:
+            self._current_client.send(command)
+
     def aboutAction(self):
         QMessageBox.about(
             self,
@@ -67,38 +75,38 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         msgBox.exec()
 
     def exportStlAction(self):
-        self._current_client.send({"cmd": "exportstl"})
+        self._send_viewer_command({"cmd": "exportstl"})
 
     def exportBrepAction(self):
-        self._current_client.send({"cmd": "exportbrep"})
+        self._send_viewer_command({"cmd": "exportbrep"})
 
     def to_freecad_action(self):
-        self._current_client.send({"cmd": "to_freecad"})
+        self._send_viewer_command({"cmd": "to_freecad"})
 
     def screenshotAction(self):
-        self._current_client.send({"cmd": "save_screenshot"})
+        self._send_viewer_command({"cmd": "save_screenshot"})
 
     def resetAction(self):
-        self._current_client.send({"cmd": "resetview"})
+        self._send_viewer_command({"cmd": "resetview"})
 
     def centeringAction(self):
-        self._current_client.send({"cmd": "centering"})
+        self._send_viewer_command({"cmd": "centering"})
 
     def topprojectionAction(self):
-        self._current_client.send({"cmd": "topprojection"})
+        self._send_viewer_command({"cmd": "topprojection"})
 
     def autoscaleAction(self):
-        self._current_client.send({"cmd": "autoscale"})
+        self._send_viewer_command({"cmd": "autoscale"})
 
     def trackingAction(self, en):
-        self._current_client.send({"cmd": "tracking", "en": en})
+        self._send_viewer_command({"cmd": "tracking", "en": en})
         self.info_widget.set_tracking_info_status(en)
 
     def orient1(self):
-        self._current_client.send({"cmd": "orient1"})
+        self._send_viewer_command({"cmd": "orient1"})
 
     def orient2(self):
-        self._current_client.send({"cmd": "orient2"})
+        self._send_viewer_command({"cmd": "orient2"})
 
     def invalidateCacheAction(self):
         files = zencad.lazy.cache.keys()
@@ -153,8 +161,9 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         wdg = zencad.gui.settingswdg.SettingsWidget()
         status = wdg.exec()
 
-        if status == 1 and self.use_sleeped_process:
-            self.remake_sleeped_client()
+        if status == 1:
+            if self.use_sleeped_process:
+                self.remake_sleeped_client()
             self.reopen_current()
 
     def _add_open_action(self, menu, name, path):
@@ -282,8 +291,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         )
 
     def set_center_visible(self, en):
-        self._current_client.send(
-            {"cmd": "set_center_visible", "en": en})
+        self._send_viewer_command({"cmd": "set_center_visible", "en": en})
 
     def create_menus(self):
         self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -346,13 +354,11 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         pass
 
     def set_perspective(self, en):
-        if self._current_client:
-            self._current_client.send(
-                {"cmd": "set_perspective", "en": en})
+        self._send_viewer_command({"cmd": "set_perspective", "en": en})
         self.perspective_checkbox_state = en
 
     def first_person_mode(self):
-        self._current_client.send({"cmd": "first_person_mode"})
+        self._send_viewer_command({"cmd": "first_person_mode"})
 
     def view_only(self, en):
         if en:

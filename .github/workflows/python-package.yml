@@ -81,3 +81,8 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           python -c "import zencad.gui.display, zencad.gui.mainwindow, zencad.gui.settingswdg; print('GUI import smoke: OK')"
+      - name: Exercise persistent managed reload
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python "${{ github.workspace }}/utest/gui_reload_smoke.py"
