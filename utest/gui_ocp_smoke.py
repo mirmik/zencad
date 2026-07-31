@@ -50,6 +50,51 @@ def main():
     reopened.show()
     application.processEvents()
     assert reopened._display._window.IsMapped()
+
+    from zencad.gui.scene_presenter import ScenePresentationError
+    from zencad.runtime.scene_protocol import SceneObjectRecord, SceneSnapshot
+    from zencad.scene_draft import SceneDraft
+
+    window_id = int(reopened.winId())
+    viewer = reopened.Viewer
+    view = reopened.View
+    context = reopened.Context
+
+    first_draft = SceneDraft(1)
+    first_draft.add(zencad.box(5).unlazy())
+    reopened.apply_snapshot(first_draft.snapshot())
+    first_object = reopened.scene_presenter.objects[0].ais_object
+    assert context.IsDisplayed(first_object)
+    reopened.set_scale(3.5)
+    camera = reopened.store_location()
+    context.SetSelected(first_object, True)
+
+    second_draft = SceneDraft(2)
+    second_draft.add(zencad.sphere(3).unlazy())
+    reopened.apply_snapshot(second_draft.snapshot())
+    second_object = reopened.scene_presenter.objects[0].ais_object
+    assert not context.IsDisplayed(first_object)
+    assert context.IsDisplayed(second_object)
+    assert context.NbSelected() == 0
+    assert reopened.store_location() == camera
+    assert int(reopened.winId()) == window_id
+    assert reopened.Viewer is viewer
+    assert reopened.View is view
+    assert reopened.Context is context
+
+    invalid = SceneSnapshot(
+        generation=3,
+        objects=(SceneObjectRecord("bad", "unsupported", b"bad"),),
+    )
+    try:
+        reopened.apply_snapshot(invalid)
+    except ScenePresentationError:
+        pass
+    else:
+        raise AssertionError("invalid snapshot was accepted")
+    assert context.IsDisplayed(second_object)
+    assert reopened.store_location() == camera
+
     reopened.close()
     application.processEvents()
     print("ZenCad OCP viewer smoke: OK")

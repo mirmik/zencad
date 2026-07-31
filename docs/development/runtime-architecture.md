@@ -1,8 +1,9 @@
 # Planned runtime architecture
 
-> Status: migration in progress.  The transport protocol and runner-side
-> `SceneDraft` path are implemented; the persistent presenter and supervisor
-> are not yet the default execution path.  The accepted decision is recorded in
+> Status: migration in progress.  The transport protocol, runner-side
+> `SceneDraft`, and persistent `ScenePresenter` are implemented; the supervisor
+> and reload integration are not yet the default execution path.  The accepted
+> decision is recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
 ZenCad is migrating from cross-process native-window embedding to a persistent
@@ -103,6 +104,16 @@ If validation, decoding, or materialization fails before commit, the previous
 scene remains active and the failure is reported.  Scene-owned AIS objects
 must be tracked separately from permanent viewer helpers such as axes and
 markers; a scene replacement must not call an indiscriminate `RemoveAll()`.
+
+The implemented `ScenePresenter` belongs to one `DisplayWidget` and reuses its
+native window, `V3d_View`, and `AIS_InteractiveContext` for every generation.
+It materializes and validates all records before touching the context, removes
+and displays only its own AIS handles with viewer updates disabled, clears
+selection on every successful full replacement, and performs one final viewer
+update.  A failed validation preserves both selection and the last scene; a
+mid-commit failure rolls back the previous scene and camera.  `preserve` fits
+the first successful scene and keeps the camera thereafter, while `fit` and
+an explicit camera in snapshot metadata are opt-in policies.
 
 ## API transition
 

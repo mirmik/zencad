@@ -26,6 +26,7 @@ from zencad.axis import Axis
 import zencad.geom.trans
 import zencad.geom.solid
 from zencad.settings import Settings
+from zencad.gui.scene_presenter import ScenePresenter
 
 from OpenGL.GLUT import *
 from OpenGL.GL import *
@@ -142,6 +143,15 @@ class DisplayWidget(BaseViewer):
 
         if self.init_driver_in_constructor:
             self.InitDriver()
+
+        self.scene_presenter = ScenePresenter(self)
+
+    def assert_gui_thread(self):
+        if QtCore.QThread.currentThread() != self.thread():
+            raise RuntimeError("Scene snapshots must be applied on the GUI thread")
+
+    def apply_snapshot(self, snapshot):
+        return self.scene_presenter.apply(snapshot)
 
     def set_perspective(self, en):
         self._perspective_mode = en
@@ -310,15 +320,16 @@ class DisplayWidget(BaseViewer):
             self.x_axis.SetColor(colors[0].to_Quantity_Color())
             self.y_axis.SetColor(colors[1].to_Quantity_Color())
 
-    def restore_location(self, dct):
+    def restore_location(self, dct, redraw=True):
         scale = dct["scale"]
         eye = point3(dct["eye"])
         center = point3(dct["center"])
 
-        self.set_center(center)
+        self.set_center(center, redraw=False)
         self.set_eye(eye)
         self.set_scale(scale)
-        self.redraw()
+        if redraw:
+            self.redraw()
 
         self.update_orient1_from_view()
         self.location_changed_handle()
