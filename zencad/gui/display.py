@@ -86,9 +86,10 @@ class BaseViewer(QtOpenGL.QGLWidget):
 class DisplayWidget(BaseViewer):
     def __init__(self,
                  axis_triedron=True,
-                 communicator=None):
+                 communicator=None,
+                 parent=None):
 
-        super().__init__()
+        super().__init__(parent=parent)
         self.View = self._display.View
         self.Viewer = self._display.Viewer
         self.Context = self._display.Context

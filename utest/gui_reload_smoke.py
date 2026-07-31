@@ -75,6 +75,19 @@ def main():
             assert window.texteditor is editor
             assert window.console is console
 
+        def assert_visible_frame():
+            display.redraw()
+            application.processEvents()
+            image = application.primaryScreen().grabWindow(
+                int(display.winId())
+            ).toImage()
+            colors = {
+                image.pixelColor(x, y).rgb()
+                for x in range(0, image.width(), max(1, image.width() // 16))
+                for y in range(0, image.height(), max(1, image.height() // 16))
+            }
+            assert len(colors) > 4, "viewer framebuffer is blank"
+
         def start_cancel_case():
             state["phase"] = "cancel"
             state["target"] = window.open(
@@ -101,6 +114,7 @@ def main():
                     assert display.store_location() == state["camera"]
 
                 if state["commits"] == RELOAD_COUNT:
+                    assert_visible_frame()
                     state["stable_object"] = display.scene_presenter.objects[0]
                     state["phase"] = "error"
                     state["target"] = window.open(
@@ -131,6 +145,7 @@ def main():
                 assert display.scene_presenter.objects[0] is not state["stable_object"]
                 assert display.store_location() == state["camera"]
                 assert_persistent_viewer()
+                assert_visible_frame()
                 state["phase"] = "done"
                 window.close()
                 application.quit()

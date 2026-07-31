@@ -63,8 +63,12 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         if self._managed_runtime_requested:
             from zencad.gui.display import DisplayWidget
 
-            self.display_widget = DisplayWidget()
-            self.vsplitter.replaceWidget(0, self.display_widget)
+            # Give Qt the final native parent before OCCT binds to winId().
+            # Reparenting an already-created native widget can replace its XID
+            # and leave Xw_Window drawing into the old invisible window.
+            self.screen_saver.setParent(None)
+            self.display_widget = DisplayWidget(parent=self.vsplitter)
+            self.vsplitter.insertWidget(0, self.display_widget)
             self.screen_saver.hide()
         self.central_widget_layout().addWidget(self.info_widget)
 
