@@ -1,12 +1,13 @@
 from zencad.lazifier import *
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 
-from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
-from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeChamfer, BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeFillet2d
-from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+from OCP.BRepFilletAPI import BRepFilletAPI_MakeChamfer, BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeFillet2d
+from OCP.BRepMesh import BRepMesh_IncrementalMesh
 
-from OCC.Core.TopAbs import TopAbs_REVERSED
-from OCC.Core.TopLoc import TopLoc_Location
+from OCP.TopAbs import TopAbs_REVERSED
+from OCP.TopLoc import TopLoc_Location
+from zencad.occ_compat import face_triangulation
 from zencad.geom.near import _near_vertex
 from zencad.util import *
 
@@ -142,7 +143,7 @@ def _triangulate_face(shp, deflection):
     reverse_orientation = shp.Face().Orientation() == TopAbs_REVERSED
 
     L = TopLoc_Location()
-    triangulation = BRep_Tool.Triangulation(shp.Face(), L)
+    triangulation = face_triangulation(shp.Face(), L)
 
     Nodes = get_nodes(triangulation)
     Triangles = get_triangles(triangulation)

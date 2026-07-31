@@ -1,8 +1,8 @@
-from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_Sewing
-from OCC.Core.ShapeFix import ShapeFix_Shell, ShapeFix_Solid
-from OCC.Core.TopoDS import TopoDS_Solid, TopoDS_Shell
-from OCC.Core.BRep import BRep_Builder
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeShell
+from zencad.occ_compat import make_sewing
+from OCP.ShapeFix import ShapeFix_Shell, ShapeFix_Solid
+from OCP.TopoDS import TopoDS_Solid, TopoDS_Shell
+from OCP.BRep import BRep_Builder
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeShell
 
 import zencad.util
 from zencad.geom.face import _polygon
@@ -61,7 +61,7 @@ def _make_shell(vec):
     #    builder.Add(shell, a.Shape())
     #return Shape(shell)
 
-    algo = BRepOffsetAPI_Sewing()
+    algo = make_sewing()
     for a in vec:
         algo.Add(a.Shape())
 

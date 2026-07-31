@@ -69,6 +69,33 @@ helpers and downcasts listed above. Do not emulate the complete `OCC.Core`
 package hierarchy: a broad facade would preserve obsolete pythonocc concepts
 and make future OCP upgrades harder to audit.
 
+That boundary is implemented in `zencad/occ_compat.py`. Subsequent ports must:
+
+- import ordinary OCCT classes directly from `OCP`;
+- use `occ_compat` for the renamed static calls, downcasts, BREP I/O, precision,
+  sewing, backend version, and typed standard exceptions;
+- add a focused wrapper only when a real pythonocc/OCP incompatibility is found;
+- never add module-level monkey patches or an `OCC.Core` compatibility tree.
+
+The adapter deliberately imports only OCP. If the package is absent, lacks
+version metadata, or lacks one of the APIs required by the adapter, importing
+it raises an actionable error recommending `cadquery-ocp-novtk`; it does not
+start the GUI or invoke an installer.
+
+## Geometry migration finding
+
+Unlike pythonocc, OCP's `TopoDS_Shape` objects are not directly pickleable.
+ZenCad's evalcache therefore cannot persist a `Shape` by storing its wrapped
+OCCT object. `Shape.__getstate__` and `Shape.__setstate__` now normalize this
+through an in-memory BREP stream. This keeps the public Python object
+pickleable and also avoids depending on private binding internals.
+
+The migrated geometry/topology set passes 56 existing headless tests plus the
+primitive, transform, boolean, mass, bounds, and topology portions of the
+migration baseline on OCP 7.9.3.1. Text construction and file conversion are
+excluded here because they are tracked by the separate text and I/O migration
+tasks.
+
 The production migration must retain a separate GUI extra, but it does not
 need the VTK-enabled OCP distribution unless later viewer work demonstrates a
 real use of the OCP VTK bridge.

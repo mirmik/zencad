@@ -1,22 +1,18 @@
 # !/usr/bin/env python3
 
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform, BRepBuilderAPI_GTransform
-from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Vertex
-from OCC.Core.BinTools import BinTools_ShapeSet
-from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeFace
-from OCC.Core.TopoDS import topods
-from OCC.Core.BRepAdaptor import BRepAdaptor_Curve, BRepAdaptor_Surface
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.gp import gp_Pnt, gp_Vec
-from OCC.Core.TopExp import topexp, TopExp_Explorer
-from OCC.Core.BRepLProp import BRepLProp_SLProps
-from OCC.Core.GProp import GProp_GProps
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepGProp import brepgprop
-#from OCC.Core.BRepAdaptor import BRepAdaptor_HCurve
-from OCC.Core.GeomAdaptor import GeomAdaptor_Curve
-from OCC.Core.GCPnts import GCPnts_UniformAbscissa
+from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform, BRepBuilderAPI_GTransform
+from OCP.TopoDS import TopoDS_Shape, TopoDS_Vertex
+from OCP.BinTools import BinTools_ShapeSet
+from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeFace
+from OCP.BRepAdaptor import BRepAdaptor_Curve, BRepAdaptor_Surface
+from OCP.gp import gp_Pnt, gp_Vec
+from OCP.TopExp import TopExp_Explorer
+from OCP.BRepLProp import BRepLProp_SLProps
+from OCP.GProp import GProp_GProps
+#from OCP.BRepAdaptor import BRepAdaptor_HCurve
+from OCP.GeomAdaptor import GeomAdaptor_Curve
+from OCP.GCPnts import GCPnts_UniformAbscissa
 
 from zencad.bbox import BoundaryBox
 from zencad.geom.boolops_base import *
@@ -24,13 +20,28 @@ from zencad.lazifier import *
 import zencad.geom.trans
 from zencad.geom.trans import Transformation
 from zencad.geom.general_transformation import GeneralTransformation
-from OCC.Core.Bnd import Bnd_Box
+from OCP.Bnd import Bnd_Box
 import zencad.geom.transformable
 import binascii
 from zencad.util import to_numpy, point3, vector3
-from OCC.Core.BRepBndLib import brepbndlib
 from zencad.geom.curve_algo import CurveAlgo
-from OCC.Core.BinTools import BinTools_ShapeSet, bintools
+from zencad.occ_compat import (
+    add_to_bounds,
+    as_compound,
+    as_compsolid,
+    as_edge,
+    as_face,
+    as_shell,
+    as_solid,
+    as_vertex,
+    as_wire,
+    edge_curve,
+    read_brep,
+    surface_properties,
+    vertex_point,
+    volume_properties,
+    write_brep,
+)
 
 import io
 import base64 as b64
@@ -48,14 +59,14 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         self._shp = arg
 
     def Shape(self): return self._shp
-    def Wire(self): return topods.Wire(self._shp)
-    def Edge(self): return topods.Edge(self._shp)
-    def Face(self): return topods.Face(self._shp)
-    def Vertex(self): return topods.Vertex(self._shp)
-    def Shell(self): return topods.Shell(self._shp)
-    def Solid(self): return topods.Solid(self._shp)
-    def Compound(self): return topods.Compound(self._shp)
-    def CompSolid(self): return topods.CompSolid(self._shp)
+    def Wire(self): return as_wire(self._shp)
+    def Edge(self): return as_edge(self._shp)
+    def Face(self): return as_face(self._shp)
+    def Vertex(self): return as_vertex(self._shp)
+    def Shell(self): return as_shell(self._shp)
+    def Solid(self): return as_solid(self._shp)
+    def Compound(self): return as_compound(self._shp)
+    def CompSolid(self): return as_compsolid(self._shp)
 
     def Wire_orEdgeToWire(self):
         if (self.Shape().ShapeType() == TopAbs_WIRE):
@@ -107,12 +118,19 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return vector3(shp._SLProps(u, v).Normal())
 
     def __getstate__(self):
-        return {"shape": self._shp}
+        stream = io.BytesIO()
+        write_brep(self._shp, stream)
+        return {"brep": stream.getvalue()}
 
     def __setstate__(self, dct):
         from zencad.geom.offset import _shapefix_solid
         try:
-            self._shp = dct["shape"]
+            if "brep" in dct:
+                self._shp = TopoDS_Shape()
+                read_brep(self._shp, io.BytesIO(dct["brep"]))
+            else:
+                # Compatibility with in-memory state produced by pythonocc.
+                self._shp = dct["shape"]
 
             # thicksolid даёт невалидный пиклинг.
             if self.is_solid():
@@ -175,21 +193,21 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
             ex.Next()
         return ret
 
-    def edges(self): return self.reflection_elements(topods.Edge, TopAbs_EDGE)
-    def wires(self): return self.reflection_elements(topods.Wire, TopAbs_WIRE)
-    def faces(self): return self.reflection_elements(topods.Face, TopAbs_FACE)
+    def edges(self): return self.reflection_elements(as_edge, TopAbs_EDGE)
+    def wires(self): return self.reflection_elements(as_wire, TopAbs_WIRE)
+    def faces(self): return self.reflection_elements(as_face, TopAbs_FACE)
 
     def solids(self): return self.reflection_elements(
-        topods.Solid, TopAbs_SOLID)
+        as_solid, TopAbs_SOLID)
 
     def compounds(self): return self.reflection_elements(
-        topods.Compound, TopAbs_COMPOUND)
+        as_compound, TopAbs_COMPOUND)
 
     def shells(self): return self.reflection_elements(
-        topods.Shell, TopAbs_SHELL)
+        as_shell, TopAbs_SHELL)
 
     def native_vertices(self): return self.reflection_elements(
-        topods.Vertex, TopAbs_VERTEX)
+        as_vertex, TopAbs_VERTEX)
 
     def vertices(self):
         verts = self.native_vertices()
@@ -197,7 +215,7 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         pnts_filtered = []
 
         for vertex in verts:
-            pnt = BRep_Tool.Pnt(vertex.Vertex())
+            pnt = vertex_point(vertex.Vertex())
             pnts.append(point3(pnt))
 
         # Фильтруем вершины, исключая близколежащие.
@@ -236,17 +254,16 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return Curve(self.Curve()).HCurveAdaptor()
 
     def Curve(self):
-        aCurve = BRep_Tool.Curve(self.Edge())
-        return aCurve[0]
+        return edge_curve(self.Edge())
 
     def SurfaceProperties(self):
         props = GProp_GProps()
-        brepgprop.SurfaceProperties(self.Shape(), props)
+        surface_properties(self.Shape(), props)
         return props
 
     def VolumeProperties(self):
         props = GProp_GProps()
-        brepgprop.VolumeProperties(self.Shape(), props)
+        volume_properties(self.Shape(), props)
         return props
 
     def is_volumed(self):
@@ -287,7 +304,7 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
 
     def boundbox(self):
         box = Bnd_Box()
-        brepbndlib.Add(self.Shape(), box)
+        add_to_bounds(self.Shape(), box)
         xl, yl, zl, xh, yh, zh = box.Get()
         return BoundaryBox(xl, xh, yl, yh, zl, zh)
 

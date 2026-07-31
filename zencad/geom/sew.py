@@ -1,9 +1,9 @@
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
-from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
+from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 
-from OCC.Core.gp import gp_Pnt
+from OCP.gp import gp_Pnt
 
 from zencad.lazifier import lazy
 import evalcache

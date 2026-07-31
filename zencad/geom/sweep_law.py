@@ -1,5 +1,5 @@
-from OCC.Core.GeomFill import GeomFill_Frenet, GeomFill_EvolvedSection, GeomFill_CorrectedFrenet, GeomFill_CurveAndTrihedron
-from OCC.Core.Law import Law_Constant
+from OCP.GeomFill import GeomFill_Frenet, GeomFill_EvolvedSection, GeomFill_CorrectedFrenet, GeomFill_CurveAndTrihedron
+from OCP.Law import Law_Constant
 
 
 class LawFunction:

@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 import base64 as b64
 
-from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_XYZ, gp_Quaternion
+from OCP.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_XYZ, gp_Quaternion
 
 import zencad.util
 from zencad.util import point3, vector3

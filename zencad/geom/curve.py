@@ -1,12 +1,13 @@
-from OCC.Core.gp import gp
-from OCC.Core.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_Curve, Geom_BezierCurve, Geom_BSplineCurve
-from OCC.Core.GeomAPI import GeomAPI_Interpolate
-from OCC.Core.GeomAdaptor import GeomAdaptor_Curve
+from OCP.gp import gp
+from zencad.occ_compat import plane_xoy
+from OCP.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_Curve, Geom_BezierCurve, Geom_BSplineCurve
+from OCP.GeomAPI import GeomAPI_Interpolate
+from OCP.GeomAdaptor import GeomAdaptor_Curve
 
 from zencad.opencascade_types import *
 from zencad.lazifier import *
 
-from OCC.Core.TColStd import TColStd_HArray1OfBoolean
+from OCP.TColStd import TColStd_HArray1OfBoolean
 import numpy
 from zencad.util import *
 
@@ -73,7 +74,7 @@ def line(pnt, dir) -> Curve:
 
 
 def _circle(radius) -> Curve:
-    return Curve(Geom_Circle(gp.XOY(), radius))
+    return Curve(Geom_Circle(plane_xoy(), radius))
 
 
 @lazy.lazy(cls=nocached_curve_generator)
@@ -82,7 +83,7 @@ def circle(radius) -> Curve:
 
 
 def _ellipse(r1, r2) -> Curve:
-    return Curve(Geom_Ellipse(gp.XOY(), r1, r2))
+    return Curve(Geom_Ellipse(plane_xoy(), r1, r2))
 
 
 @lazy.lazy(cls=nocached_curve_generator)

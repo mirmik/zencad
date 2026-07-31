@@ -16,11 +16,10 @@ import zencad
 import evalcache
 from zencad.lazifier import lazy
 
-from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
-from OCC.Core.StlAPI import StlAPI_Writer
-from OCC.Core.TopoDS import TopoDS_Shape
-from OCC.Core.BRep import BRep_Builder
-from OCC.Core.BRepTools import breptools
+from OCP.BRepMesh import BRepMesh_IncrementalMesh
+from OCP.StlAPI import StlAPI_Writer
+from OCP.TopoDS import TopoDS_Shape
+from zencad.occ_compat import read_brep, write_brep
 
 
 def _to_stl(shp, path, delta):
@@ -32,8 +31,7 @@ def _to_stl(shp, path, delta):
         return False
 
     stl_writer = StlAPI_Writer()
-    stl_writer.Write(shp.Shape(), path)
-    return True
+    return stl_writer.Write(shp.Shape(), path)
 
 
 @lazy.file_creator(pathfield="path")
@@ -42,7 +40,8 @@ def to_stl(model, path, delta):
 
 
 def _to_brep(model, path):
-    breptools.Write(model.Shape(), path)
+    if not write_brep(model.Shape(), path):
+        raise OSError(f"Failed to write BREP file: {path}")
 
 
 @lazy.file_creator(pathfield="path")
@@ -55,9 +54,8 @@ def _from_brep(path):
     path = os.path.expanduser(path)
 
     shp = TopoDS_Shape()
-    builder = BRep_Builder()
-
-    breptools.Read(shp, path, builder)
+    if not read_brep(shp, path):
+        raise OSError(f"Failed to read BREP file: {path}")
     return Shape(shp)
 
 

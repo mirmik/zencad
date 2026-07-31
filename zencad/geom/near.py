@@ -1,6 +1,6 @@
-from OCC.Core.TopAbs import TopAbs_VERTEX, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
-from OCC.Core.TopExp import TopExp_Explorer
-from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
+from OCP.TopAbs import TopAbs_VERTEX, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
+from OCP.TopExp import TopExp_Explorer
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 
 from zencad.geom.reflect_helpers import shape_types
 from zencad.util import *

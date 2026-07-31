@@ -1,5 +1,5 @@
-from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut, BRepAlgoAPI_Common, BRepAlgoAPI_Section
-from OCC.Core.TopoDS import TopoDS_Shape
+from OCP.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut, BRepAlgoAPI_Common, BRepAlgoAPI_Section
+from OCP.TopoDS import TopoDS_Shape
 
 from zencad.geom.shape import shape_generator, Shape
 from zencad.lazifier import lazy

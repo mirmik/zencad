@@ -2,18 +2,18 @@ from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.lazifier import *
 from zencad.geom.boolops import _union
 
-from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
-from OCC.Core.BRep import BRep_Builder
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
-from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_Sewing
-from OCC.Core.TopoDS import TopoDS_Compound, TopoDS_Solid
-from OCC.Core.TopExp import TopExp_Explorer
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
-from OCC.Core.GeomAbs import GeomAbs_Plane
-from OCC.Core.Geom import Geom_Plane
-from OCC.Core.gp import gp_Pnt
-from OCC.Core.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
+from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
+from OCP.BRep import BRep_Builder
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
+from OCP.TopoDS import TopoDS_Compound, TopoDS_Solid
+from OCP.TopExp import TopExp_Explorer
+from OCP.BRep import BRep_Tool
+from OCP.BRepAdaptor import BRepAdaptor_Surface
+from OCP.GeomAbs import GeomAbs_Plane
+from OCP.Geom import Geom_Plane
+from OCP.gp import gp_Pnt
+from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
+from zencad.occ_compat import face_surface, make_sewing
 
 
 def _unify_face(proto):
@@ -27,7 +27,7 @@ def _unify_faces_array(input):
     fset = {}
 
     for i in input:
-        surface = BRep_Tool.Surface(i.Face())
+        surface = face_surface(i.Face())
 
         adaptor_surface = BRepAdaptor_Surface(i.Face())
         surface_type = adaptor_surface.GetType()
@@ -70,7 +70,7 @@ def _unify_faces_array(input):
 
 def _unify_shell(proto):
     faces = []
-    mkShell = BRepOffsetAPI_Sewing()
+    mkShell = make_sewing()
 
     newfaces = _unify_faces_array(proto.faces())
     for n in newfaces:

@@ -1,4 +1,4 @@
-from OCC.Core.GeomAPI import GeomAPI_ProjectPointOnCurve
+from OCP.GeomAPI import GeomAPI_ProjectPointOnCurve
 from zencad.util import to_Pnt, point3
 
 

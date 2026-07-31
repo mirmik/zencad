@@ -1,14 +1,14 @@
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace
-from OCC.Core.Geom import Geom_CylindricalSurface
-from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Ax3, gp_Dir
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace
+from OCP.Geom import Geom_CylindricalSurface
+from OCP.gp import gp_Pnt, gp_Vec, gp_Ax3, gp_Dir
 
 from zencad.util import point3, vector3
 from zencad.lazifier import *
 from zencad.geom.curve import Curve
-from OCC.Core.BRepLib import breplib
+from zencad.occ_compat import build_curves_3d
 
-from OCC.Core.GeomFill import GeomFill_Sweep, GeomFill_Location
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+from OCP.GeomFill import GeomFill_Sweep, GeomFill_Location
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
 
 import evalcache
 
@@ -39,7 +39,7 @@ class Surface:
     def map(self, tcrv):
         mk = BRepBuilderAPI_MakeEdge(tcrv.Curve2(), self.Surface())
         edge = mk.Edge()
-        breplib.BuildCurves3d(edge)
+        build_curves_3d(edge)
         return Shape(edge)
 
 

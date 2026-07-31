@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
+import evalcache.dircache_v2
 import zencad
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
 
@@ -12,6 +13,17 @@ def unlazy(value):
 
 
 class MigrationBaseline(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.cache_directory = TemporaryDirectory()
+        zencad.lazy.cache = evalcache.dircache_v2.DirCache_v2(
+            cls.cache_directory.name
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.cache_directory.cleanup()
+
     def setUp(self):
         zencad.lazy.encache = False
         zencad.lazy.decache = False
@@ -62,8 +74,8 @@ class MigrationBaseline(unittest.TestCase):
         source = zencad.box(20, center=True) - zencad.sphere(5)
 
         with TemporaryDirectory() as temporary_directory:
-            brep_path = Path(temporary_directory) / "shape.brep"
-            stl_path = Path(temporary_directory) / "shape.stl"
+            brep_path = Path(temporary_directory) / "форма.brep"
+            stl_path = Path(temporary_directory) / "форма.stl"
 
             _to_brep(unlazy(source), str(brep_path))
             restored = _from_brep(str(brep_path))
@@ -76,6 +88,12 @@ class MigrationBaseline(unittest.TestCase):
 
             self.assertTrue(_to_stl(unlazy(source), str(stl_path), 0.1))
             self.assertGreater(stl_path.stat().st_size, 0)
+
+    def test_invalid_brep_has_actionable_error(self):
+        with TemporaryDirectory() as temporary_directory:
+            missing = Path(temporary_directory) / "missing.brep"
+            with self.assertRaisesRegex(OSError, "Failed to read BREP"):
+                _from_brep(str(missing))
 
 
 if __name__ == "__main__":

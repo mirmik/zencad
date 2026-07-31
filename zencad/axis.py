@@ -1,6 +1,6 @@
 import zencad.util
-from OCC.Core.Geom import Geom_Line
-from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+from OCP.Geom import Geom_Line
+from OCP.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
 
 
 class Axis:

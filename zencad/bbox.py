@@ -1,4 +1,4 @@
-from OCC.Core.Bnd import Bnd_Box
+from OCP.Bnd import Bnd_Box
 
 
 class BoundaryBox:

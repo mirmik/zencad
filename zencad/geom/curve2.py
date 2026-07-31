@@ -1,9 +1,9 @@
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace
-from OCC.Core.Geom import Geom_CylindricalSurface
-from OCC.Core.Geom2d import Geom2d_Ellipse, Geom2d_Curve
-from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Ax3, gp_Dir, gp_Ax2d, gp_Dir2d, gp_Pnt2d, gp_Trsf2d
-from OCC.Core.Geom2d import Geom2d_TrimmedCurve
-from OCC.Core.GCE2d import GCE2d_MakeSegment
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace
+from OCP.Geom import Geom_CylindricalSurface
+from OCP.Geom2d import Geom2d_Ellipse, Geom2d_Curve
+from OCP.gp import gp_Pnt, gp_Vec, gp_Ax3, gp_Dir, gp_Ax2d, gp_Dir2d, gp_Pnt2d, gp_Trsf2d
+from OCP.Geom2d import Geom2d_TrimmedCurve
+from OCP.GCE2d import GCE2d_MakeSegment
 
 from zencad.util import point3, vector3
 from zencad.lazifier import *

@@ -1,19 +1,18 @@
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
 
-from OCC.Core.GCE2d import GCE2d_MakeSegment
-from OCC.Core.Geom2d import Geom2d_Line, Geom2d_TrimmedCurve
-from OCC.Core.Geom import Geom_CylindricalSurface, Geom_ConicalSurface
-from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Ax2d, gp_Ax3, gp_DZ, gp_Pnt2d, gp_Dir2d
-from OCC.Core.GeomAPI import GeomAPI_Interpolate
-from OCC.Core.TColgp import TColgp_HArray1OfPnt, TColgp_Array1OfVec
-from OCC.Core.TColStd import TColStd_HArray1OfBoolean
-from OCC.Core.GC import GC_MakeArcOfCircle
-from OCC.Core.Precision import precision_Confusion
-from OCC.Core.TopoDS import TopoDS_Edge, TopoDS_Wire
-from OCC.Core.BRepLib import breplib
-from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
+from OCP.GCE2d import GCE2d_MakeSegment
+from OCP.Geom2d import Geom2d_Line, Geom2d_TrimmedCurve
+from OCP.Geom import Geom_CylindricalSurface, Geom_ConicalSurface
+from OCP.gp import gp_Pnt, gp_Ax2, gp_Ax2d, gp_Ax3, gp_Pnt2d, gp_Dir2d
+from OCP.GeomAPI import GeomAPI_Interpolate
+from OCP.TColgp import TColgp_HArray1OfPnt, TColgp_Array1OfVec
+from OCP.TColStd import TColStd_HArray1OfBoolean
+from OCP.GC import GC_MakeArcOfCircle
+from OCP.TopoDS import TopoDS_Edge, TopoDS_Wire
+from zencad.occ_compat import build_curves_3d, confusion, direction_z
+from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 
 from zencad.lazifier import *
 from zencad.geom.sew import sew
@@ -217,24 +216,24 @@ def _helix(r, h, step=None, pitch=None, angle=0, left=False):
     else:
         pitch = step
 
-    if pitch < precision_Confusion():
+    if pitch < confusion():
         raise Exception("Pitch of helix too small")
 
-    if height < precision_Confusion():
+    if height < confusion():
         raise Exception("Height of helix too small")
 
-    cylAx2 = gp_Ax2(gp_Pnt(0.0, 0.0, 0.0), gp_DZ())
+    cylAx2 = gp_Ax2(gp_Pnt(0.0, 0.0, 0.0), direction_z())
 
-    if abs(angle) < precision_Confusion():
+    if abs(angle) < confusion():
         # Cylindrical helix
-        if radius < precision_Confusion():
+        if radius < confusion():
             raise Exception("Radius of helix too small")
 
         surf = Geom_CylindricalSurface(gp_Ax3(cylAx2), radius)
         isCylinder = True
     else:
         # Conical helix
-        if abs(angle) < precision_Confusion():
+        if abs(angle) < confusion():
             raise Exception("Angle of helix too small")
 
         surf = Geom_ConicalSurface(gp_Ax3(cylAx2), angle, radius)
@@ -272,7 +271,7 @@ def _helix(r, h, step=None, pitch=None, angle=0, left=False):
         mkWire.Add(edgeOnSurf)
         beg = end
 
-    if partTurn > precision_Confusion():
+    if partTurn > confusion():
         if (isCylinder):
             end = line.Value(
                 math.sqrt(4.0 * math.pi * math.pi + pitch * pitch) * turns)
@@ -286,7 +285,7 @@ def _helix(r, h, step=None, pitch=None, angle=0, left=False):
         mkWire.Add(edgeOnSurf)
 
     shape = mkWire.Wire()
-    breplib.BuildCurves3d(shape)
+    build_curves_3d(shape)
     return Shape(shape)
 
 

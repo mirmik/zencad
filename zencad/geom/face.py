@@ -1,16 +1,15 @@
 import math
 
-import OCC.Core.BRepPrimAPI
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
-from OCC.Core.TopAbs import TopAbs_WIRE, TopAbs_EDGE
-from OCC.Core.gp import gp_Circ, gp, gp_Pnt, gp_Pln, gp_Vec, gp_Dir
-from OCC.Core.GC import GC_MakeCircle
-from OCC.Core.GeomAbs import GeomAbs_C2
-from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
-from OCC.Core.ShapeFix import ShapeFix_Face
-from OCC.Core.BRepFill import brepfill
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakePolygon
-import OCC.Core.Addons
+import OCP.BRepPrimAPI
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
+from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE
+from OCP.gp import gp_Circ, gp, gp_Pnt, gp_Pln, gp_Vec, gp_Dir
+from OCP.GC import GC_MakeCircle
+from OCP.GeomAbs import GeomAbs_C2
+from OCP.GeomAPI import GeomAPI_PointsToBSplineSurface
+from OCP.ShapeFix import ShapeFix_Face
+from zencad.occ_compat import make_fill_face
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakePolygon
 
 
 from zencad.lazifier import lazy
@@ -30,6 +29,8 @@ from zencad.geom.trans import rotateZ
 from zencad.util import vector3, point3, points
 
 from zencad.opencascade_types import *
+from zencad.text import register_font as _register_font
+from zencad.text import text_to_brep
 
 
 def _interpolate2(refs, degmin=3, degmax=7):
@@ -71,7 +72,7 @@ def _polygon(pnts, wire=False):
         mk.Add(pnts[i].Pnt())
 
     mk.Close()
-    return Shape(BRepBuilderAPI_MakeFace(mk.Shape()).Face())
+    return Shape(BRepBuilderAPI_MakeFace(mk.Wire()).Face())
 
 
 def _rectangle_wire(a, b, center):
@@ -141,13 +142,16 @@ def _ngon(r, n, wire=False):
 
 
 def register_font(fontpath):
-    OCC.Core.Addons.register_font(fontpath)
+    _register_font(fontpath)
 
 
 def _textshape(text, fontname, size, composite_curve=False):
-    aspect = OCC.Core.Addons.Font_FA_Regular
-    textshp = OCC.Core.Addons.text_to_brep(text, fontname,
-                                           aspect, size, composite_curve)
+    textshp = text_to_brep(
+        text,
+        fontname,
+        size,
+        composite_curve=composite_curve,
+    )
 
     return Shape(textshp)
 
@@ -334,7 +338,7 @@ def _make_face(surf, u1=None, u2=None, v1=None, v2=None):
 
 
 def _ruled(a, b):
-    return Shape(brepfill.Face(a.Edge(), b.Edge()))
+    return Shape(make_fill_face(a.Edge(), b.Edge()))
 
 
 @lazy.lazy(cls=shape_generator)

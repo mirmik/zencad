@@ -6,7 +6,8 @@ import os
 import sys
 from zencad.version import __occt_version__
 
-# Libraries loading test. Starts with gui mode only.
+# Backend loading test. Dependency installation is handled by pip, never at
+# import time.
 
 if (
     (True
@@ -27,12 +28,13 @@ if (
     and not "--lookup-libraries" in " ".join(sys.argv)
 ):
     try:
-        import OCC
-        import OCC.Core.gp
-    except:
-        import zencad.gui.libinstaller
-        zencad.gui.libinstaller.doit()
-        exit()
+        import OCP
+        import OCP.gp
+    except ImportError as exception:
+        raise ImportError(
+            "ZenCad requires cadquery-ocp-novtk; install the missing pip "
+            "dependency before importing zencad"
+        ) from exception
 
 
 class PreventLibraryLoading(Exception):

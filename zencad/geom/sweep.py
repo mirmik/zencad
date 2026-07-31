@@ -4,14 +4,14 @@ from zencad.util import vector3
 from zencad.geom.trans import translate
 import zencad.geom.exttrans
 
-from OCC.Core.TopAbs import TopAbs_FACE
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakePrism, BRepPrimAPI_MakeRevol
-from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_ThruSections
-from OCC.Core.gp import gp_Ax1, gp_Pnt, gp_Dir, gp_Ax2
+from OCP.TopAbs import TopAbs_FACE
+from OCP.BRepPrimAPI import BRepPrimAPI_MakePrism, BRepPrimAPI_MakeRevol
+from OCP.BRepOffsetAPI import BRepOffsetAPI_ThruSections
+from OCP.gp import gp_Ax1, gp_Pnt, gp_Dir, gp_Ax2
 
-from OCC.Core.GeomFill import GeomFill_IsFixed, GeomFill_IsFrenet, GeomFill_IsDarboux, GeomFill_IsDiscreteTrihedron, GeomFill_IsConstantNormal, GeomFill_IsCorrectedFrenet, GeomFill_IsGuideAC, GeomFill_IsGuidePlan, GeomFill_IsGuideACWithContact, GeomFill_IsGuidePlanWithContact
-from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe, BRepOffsetAPI_MakePipeShell
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transformed, BRepBuilderAPI_RoundCorner, BRepBuilderAPI_RightCorner
+from OCP.GeomFill import GeomFill_IsFixed, GeomFill_IsFrenet, GeomFill_IsDarboux, GeomFill_IsDiscreteTrihedron, GeomFill_IsConstantNormal, GeomFill_IsCorrectedFrenet, GeomFill_IsGuideAC, GeomFill_IsGuidePlan, GeomFill_IsGuideACWithContact, GeomFill_IsGuidePlanWithContact
+from OCP.BRepOffsetAPI import BRepOffsetAPI_MakePipe, BRepOffsetAPI_MakePipeShell
+from OCP.BRepBuilderAPI import BRepBuilderAPI_Transformed, BRepBuilderAPI_RoundCorner, BRepBuilderAPI_RightCorner
 
 from zencad.util import deg
 from zencad.geom.operations import _restore_shapetype

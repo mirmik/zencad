@@ -70,12 +70,22 @@ class Prim2dprobe(unittest.TestCase):
         zencad.ngon(r=20, n=30, wire=False)
 
     def test_textshape_probe(self):
-        text = "HelloWorld"
+        text = "Hello, Мир"
         directory = os.path.dirname(__file__)
         mandarinc = os.path.join(
             zencad.moduledir, "examples", "fonts/mandarinc.ttf")
         zencad.register_font(mandarinc)
-        zencad.textshape(text=text, fontname="Ubuntu Mono", size=20)
+        shape = zencad.textshape(
+            text=text, fontname="MandarinC", size=20
+        ).unlazy()
+        self.assertFalse(shape.Shape().IsNull())
+        self.assertGreater(len(shape.edges()), 0)
+        bounds = shape.bbox()
+        self.assertGreater(bounds.xmax - bounds.xmin, 50)
+        self.assertGreater(bounds.ymax - bounds.ymin, 10)
+
+        with self.assertRaises(FileNotFoundError):
+            zencad.register_font(os.path.join(directory, "missing.ttf"))
 
     def test_normales(self):
         self.assertGreater(zencad.circle(r=10).normal().z, 0)

@@ -1,11 +1,11 @@
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed, angle_pair
-import OCC.Core.BRepPrimAPI
-from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
-from OCC.Core.BRepLib import BRepLib_MakeFace
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
-from OCC.Core.ShapeFix import ShapeFix_Solid
+import OCP.BRepPrimAPI
+from OCP.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
+from OCP.BRepLib import BRepLib_MakeFace
+from OCP.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
+from OCP.ShapeFix import ShapeFix_Solid
 
 from zencad.geombase import point3
 from zencad.lazifier import *
@@ -42,9 +42,9 @@ def _box(x, y=None, z=None, center=False, size=None):
                 pnt += point3(0, 0, -z/2)
 
         ax2 = gp_Ax2(pnt.Pnt(), gp_Dir(0, 0, 1))
-        return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(ax2, *size).Shape())
+        return Shape(OCP.BRepPrimAPI.BRepPrimAPI_MakeBox(ax2, *size).Shape())
     else:
-        return Shape(OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
+        return Shape(OCP.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
 
 
 def _cube(x, y=None, z=None, center=None, size=None):
@@ -53,16 +53,16 @@ def _cube(x, y=None, z=None, center=None, size=None):
 
 def _sphere(r, yaw=None, pitch=None):
     if yaw is None and pitch is None:
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r).Shape()
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(r).Shape()
     elif yaw is None and pitch is not None:
         pitch = angle_pair(pitch)
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(
             r, pitch[0], pitch[1]).Shape()
     elif yaw is not None and pitch is None:
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(r, yaw).Shape()
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(r, yaw).Shape()
     else:
         pitch = angle_pair(pitch)
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeSphere(
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(
             r, pitch[0], pitch[1], yaw).Shape()
 
     return Shape(raw)
@@ -72,21 +72,21 @@ def _cylinder(r, h, yaw=None, center=False):
     if yaw:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h/2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
                 ax2, r, h, yaw).Shape()
             return Shape(raw)
         else:
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
                 r, h, yaw).Shape()
             return Shape(raw)
     else:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h/2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
                 ax2, r, h).Shape()
             return Shape(raw)
         else:
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCylinder(r, h).Shape()
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(r, h).Shape()
             return Shape(raw)
 
 
@@ -94,37 +94,37 @@ def _cone(r1, r2, h, yaw=None, center=False):
     if yaw:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h / 2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(
                 ax2, r1, r2, h, yaw).Shape()
             return Shape(raw)
         else:
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(
                 r1, r2, h, yaw).Shape()
             return Shape(raw)
 
     else:
         if center:
             ax2 = gp_Ax2(gp_Pnt(0, 0, -h / 2), gp_Dir(0, 0, 1))
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(
                 ax2, r1, r2, h).Shape()
             return Shape(raw)
         else:
-            raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeCone(r1, r2, h).Shape()
+            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(r1, r2, h).Shape()
             return Shape(raw)
 
 
 def _torus(r1, r2, yaw=None, pitch=None):
     if yaw is None and pitch is None:
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2).Shape()
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2).Shape()
     elif yaw is None and pitch is not None:
         pitch = angle_pair(pitch)
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(
             r1, r2, pitch[0], pitch[1]).Shape()
     elif yaw is not None and pitch is None:
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2, yaw).Shape()
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2, yaw).Shape()
     else:
         pitch = angle_pair(pitch)
-        raw = OCC.Core.BRepPrimAPI.BRepPrimAPI_MakeTorus(
+        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(
             r1, r2, pitch[0], pitch[1], yaw).Shape()
 
     return Shape(raw)

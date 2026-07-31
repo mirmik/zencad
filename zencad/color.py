@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB
+from OCP.Quantity import Quantity_Color, Quantity_TOC_RGB
 from zencad.settings import Settings
 
 

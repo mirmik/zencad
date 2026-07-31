@@ -1,9 +1,10 @@
-from OCC.Core.TopExp import topexp, TopExp_Explorer
-from OCC.Core.GeomAbs import GeomAbs_Line, GeomAbs_Circle, GeomAbs_Ellipse, GeomAbs_Hyperbola, GeomAbs_Parabola, GeomAbs_BezierCurve, GeomAbs_OffsetCurve, GeomAbs_BSplineCurve, GeomAbs_OtherCurve
-from OCC.Core.gp import gp_Pnt, gp_Vec
-from OCC.Core.GeomAPI import GeomAPI_ProjectPointOnCurve
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
-from OCC.Core.TopoDS import TopoDS_Vertex
+from OCP.TopExp import TopExp_Explorer
+from zencad.occ_compat import first_vertex, last_vertex, wire_vertices
+from OCP.GeomAbs import GeomAbs_Line, GeomAbs_Circle, GeomAbs_Ellipse, GeomAbs_Hyperbola, GeomAbs_Parabola, GeomAbs_BezierCurve, GeomAbs_OffsetCurve, GeomAbs_BSplineCurve, GeomAbs_OtherCurve
+from OCP.gp import gp_Pnt, gp_Vec
+from OCP.GeomAPI import GeomAPI_ProjectPointOnCurve
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+from OCP.TopoDS import TopoDS_Vertex
 
 from zencad.util import to_numpy, point3, vector3
 
@@ -62,12 +63,12 @@ class CurveAlgo:
 
         if self.is_wire():
             a, b = TopoDS_Vertex(), TopoDS_Vertex()
-            topexp.Vertices(self.Wire(), a, b)
+            wire_vertices(self.Wire(), a, b)
             return point3(a), point3(b)
 
         elif self.is_edge():
-            a = topexp.FirstVertex(self.Edge())
-            b = topexp.LastVertex(self.Edge())
+            a = first_vertex(self.Edge())
+            b = last_vertex(self.Edge())
             return point3(a), point3(b)
 
     def line_parameters(self):

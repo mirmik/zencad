@@ -1,6 +1,6 @@
-from OCC.Core.TopTools import TopTools_ListOfShape
-from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakeThickSolid, BRepOffsetAPI_MakeOffsetShape
-from OCC.Core.ShapeFix import ShapeFix_Solid
+from OCP.TopTools import TopTools_ListOfShape
+from OCP.BRepOffsetAPI import BRepOffsetAPI_MakeThickSolid, BRepOffsetAPI_MakeOffsetShape
+from OCP.ShapeFix import ShapeFix_Solid
 
 from zencad.geom.near import _near_face
 from zencad.geom.shape import Shape, shape_generator
