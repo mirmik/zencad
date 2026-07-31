@@ -16,6 +16,8 @@ from zencad.runtime.scene_protocol import (
     ensure_current_generation,
     select_snapshot_transport,
 )
+from zencad.runtime.runner_protocol import RunnerMessage
+from zencad.runtime.runner_supervisor import RunnerSupervisor
 
 __all__ = [
     "CURRENT_PROTOCOL_VERSION",
@@ -32,4 +34,6 @@ __all__ = [
     "encode_snapshot_frame",
     "ensure_current_generation",
     "select_snapshot_transport",
+    "RunnerMessage",
+    "RunnerSupervisor",
 ]

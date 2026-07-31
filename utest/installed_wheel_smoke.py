@@ -6,11 +6,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from evalcache.dircache_v2 import DirCache_v2
+from zencad.runtime import RunnerMessage, RunnerSupervisor
 import zencad
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
 
 
 def main():
+    assert RunnerMessage is not None
+    assert RunnerSupervisor is not None
     checkout = os.environ.get("GITHUB_WORKSPACE")
     if checkout:
         package_path = Path(zencad.__file__).resolve()

@@ -1,9 +1,9 @@
 # Planned runtime architecture
 
 > Status: migration in progress.  The transport protocol, runner-side
-> `SceneDraft`, and persistent `ScenePresenter` are implemented; the supervisor
-> and reload integration are not yet the default execution path.  The accepted
-> decision is recorded in
+> `SceneDraft`, persistent `ScenePresenter`, and generation supervisor are
+> implemented; reload integration is not yet the default execution path.  The
+> accepted decision is recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
 ZenCad is migrating from cross-process native-window embedding to a persistent
@@ -152,6 +152,24 @@ generation are ignored.
 Runner failure never clears the committed scene.  Protocol corruption or an
 unsupported object kind is a failed generation with an actionable diagnostic,
 not a partial scene.
+
+The implemented `RunnerSupervisor` launches every generation with Python's
+`spawn` context, so a runner cannot inherit Qt, window, or OpenGL state from
+the GUI process.  The run request and progress/output/error/finished events are
+versioned, length-checked JSON frames sent with `Connection.send_bytes`; scene
+messages use the existing `ZCSN` binary frame or its atomic file bundle.  No
+Python object is sent through `Connection.send`.
+
+Starting a generation immediately makes all older messages stale.  Reader
+threads may continue draining an older process, but generation filtering occurs
+before callback dispatch, so a late scene cannot reach the presenter.  A shared
+cancellation event and trace hook stop ordinary Python evaluation
+cooperatively.  After the configured grace period, a reaper thread terminates
+a runner blocked in native code without blocking the caller or GUI thread.
+Missing terminal messages, non-zero process exits, corrupt frames, stdout,
+stderr, tracebacks, and EvalCache progress are converted into generation-tagged
+`RunnerMessage` values.  The next generation remains startable after every
+terminal state.
 
 ## Migration boundary
 
