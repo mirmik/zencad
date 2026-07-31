@@ -70,6 +70,10 @@ jobs:
         with:
           name: zencad-distributions
           path: dist
+      - name: Install X11 smoke dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0 libglu1-mesa
       - name: Install GUI extra
         run: |
           python -m pip install --upgrade pip
