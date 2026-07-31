@@ -43,8 +43,26 @@ class SupersededGenerationError(ProtocolError):
     """A valid snapshot belongs to an iteration that is no longer current."""
 
 
+def _freeze_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType({
+            key: _freeze_json(item) for key, item in value.items()
+        })
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_json(item) for item in value)
+    return value
+
+
+def _plain_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _plain_json(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_plain_json(item) for item in value]
+    return value
+
+
 def _freeze_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any]:
-    return MappingProxyType(dict(value or {}))
+    return _freeze_json(dict(value or {}))
 
 
 @dataclass(frozen=True)
@@ -134,14 +152,14 @@ def _build_manifest(snapshot: SceneSnapshot) -> tuple[dict[str, Any], list[bytes
             "payload_index": index,
             "payload_size": len(record.payload),
             "payload_sha256": _payload_digest(record.payload),
-            "properties": dict(record.properties),
+            "properties": _plain_json(record.properties),
         })
 
     manifest = {
         "protocol_version": CURRENT_PROTOCOL_VERSION,
         "generation": snapshot.generation,
         "camera_policy": snapshot.camera_policy,
-        "metadata": dict(snapshot.metadata),
+        "metadata": _plain_json(snapshot.metadata),
         "objects": objects,
     }
     return manifest, payloads

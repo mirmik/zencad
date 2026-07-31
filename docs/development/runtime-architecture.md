@@ -1,6 +1,8 @@
 # Planned runtime architecture
 
-> Status: planned, not yet implemented.  The accepted decision is recorded in
+> Status: migration in progress.  The transport protocol and runner-side
+> `SceneDraft` path are implemented; the persistent presenter and supervisor
+> are not yet the default execution path.  The accepted decision is recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
 ZenCad is migrating from cross-process native-window embedding to a persistent
@@ -115,6 +117,14 @@ Under a managed runner, `display()` adds a description to the current draft
 and returns a logical object reference.  Mutations before `show()` update that
 description.  `show()` publishes the immutable snapshot and does not start a
 second Qt event loop.
+
+The first managed adapter is the explicit `managed_scene(generation,
+publisher)` context.  Inside it, the regular public `display()` and `show()`
+functions target a data-only `SceneDraft`; `show()` invokes the publisher and
+returns the same snapshot without importing Qt or entering ZenFrame.  Shape
+references currently preserve transform, visibility, face color, border
+color, and wire color.  Unsupported presentation kinds fail explicitly until
+their snapshot representation is added.
 
 Standalone and headless modes need explicit adapters; they must not infer
 process role by importing Qt.  Existing animation and post-`show()` object

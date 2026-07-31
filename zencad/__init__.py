@@ -32,8 +32,9 @@ try:
     from zencad.geom.near import *
 
     # Display API
-    from zencad.showapi import display, disp, show, hl, highlight
+    from zencad.showapi import display, disp, show, hl, highlight, managed_scene
     from zencad.scene import Scene
+    from zencad.scene_draft import SceneDraft, SceneObjectRef
 
     # Utility
     from zencad.util import *

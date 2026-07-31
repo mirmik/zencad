@@ -1,4 +1,7 @@
+from contextlib import contextmanager
+
 from zencad.scene import Scene
+from zencad.scene_draft import SceneDraft
 
 NOSHOW = False
 DISPLAY = None
@@ -14,9 +17,13 @@ __default_scene = Scene()  # Сцена, с которой работают ко
 def display(shp, color=None, deep=True, scene=None):
     from zencad.settings import Settings
 
-    Settings.restore()
     if scene is None:
         scene = __default_scene
+
+    # Managed runners receive settings as data and must not initialize Qt just
+    # because a script called display().
+    if not isinstance(scene, SceneDraft):
+        Settings.restore()
 
     if (isinstance(shp, list)):
         ret = []
@@ -73,15 +80,22 @@ def widget_creator(communicator, scene, animate, preanimate, close_handle, anima
 
 
 def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_step=0.01, display_only=False):
+    if scene is None:
+        scene = __default_scene
+
+    if isinstance(scene, SceneDraft):
+        if any(value is not None for value in (animate, preanimate, close_handle)):
+            raise ValueError(
+                "Managed static scenes do not support animation or close hooks"
+            )
+        return scene.publish()
+
     from zenframe.unbound import (
         is_unbound_mode,
         unbound_worker_bottom_half,
         unbound_frame_summon
     )
     from zenframe.configuration import Configuration
-
-    if scene is None:
-        scene = __default_scene
 
     if Configuration.NOSHOW:
         return
@@ -104,3 +118,21 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
         # Запускаем оболочку как подчинённый процесс
         unbound_frame_summon(widget_creator, "zencad",
                              scene=scene, animate=animate, preanimate=preanimate, close_handle=close_handle, animate_step=animate_step)
+
+
+@contextmanager
+def managed_scene(generation, publisher=None, camera_policy="preserve"):
+    """Temporarily route the public display/show API into a data-only draft."""
+    global __default_scene
+
+    previous = __default_scene
+    draft = SceneDraft(
+        generation=generation,
+        publisher=publisher,
+        camera_policy=camera_policy,
+    )
+    __default_scene = draft
+    try:
+        yield draft
+    finally:
+        __default_scene = previous
