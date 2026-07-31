@@ -1,54 +1,21 @@
 #!/usr/bin/env python3
 
-from zencad.version import __occt_version__, __pythonocc_version__
 import importlib
 import os
-import sys
-from zencad.version import __occt_version__
 
-# Backend loading test. Dependency installation is handled by pip, never at
-# import time.
+try:
+    import OCP
+    import OCP.gp
+except ImportError as exception:
+    raise ImportError(
+        "ZenCad requires cadquery-ocp-novtk; install it with "
+        "'python -m pip install zencad'"
+    ) from exception
 
-if (
-    (True
-     #        sys.platform == "win32" or
-     #       sys.argv[0][-7:] == "/zencad"
-     #      or
-     #     sys.argv[0] == "zencad"
-     #    or
-     #   (len(sys.argv) > 2 and sys.argv[1]
-     #   == "-m" and sys.argv[2] == "zencad")
-     # or
-        # (len(sys.argv) >= 2 and sys.argv[0]
-     # == "-m" and sys.argv[1] == "zencad")
-     )
-    and not "--display-only" in sys.argv
-    and not "--install-pythonocc" in " ".join(sys.argv)
-    and not "--install-occt" in " ".join(sys.argv)
-    and not "--lookup-libraries" in " ".join(sys.argv)
-):
-    try:
-        import OCP
-        import OCP.gp
-    except ImportError as exception:
-        raise ImportError(
-            "ZenCad requires cadquery-ocp-novtk; install the missing pip "
-            "dependency before importing zencad"
-        ) from exception
-
-
-class PreventLibraryLoading(Exception):
-    pass
+from zencad.version import __ocp_version__
 
 
 try:
-    # Если активирована опция переустановки библиотек,
-    # не даём интерпретатору линковать имеющиеся
-    if ("--install-occt" in " ".join(sys.argv) or
-            "--install-pythonocc" in " ".join(sys.argv)):
-        print("Prevent library link.")
-        raise PreventLibraryLoading()
-
     # Geometry API
     from zencad.geom.solid import *
     from zencad.geom.platonic import *
@@ -108,20 +75,15 @@ orange)
 
     from zencad.convert.api import *
 
-except ImportError as ex:
-    if "libTK" in str(ex):
-        print("OCCT is not installed")
-    else:
-        raise ex
-except PreventLibraryLoading as ex:
-    pass
+except ImportError:
+    raise
 
 moduledir = os.path.dirname(__file__)
 exampledir = os.path.join(os.path.dirname(__file__), "examples")
 
 
 def __getattr__(name):
-    """Load the legacy assembly integration only when it is requested."""
+    """Load the local assembly API only when it is requested."""
     if name != "assemble":
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
@@ -129,8 +91,7 @@ def __getattr__(name):
         module = importlib.import_module("zencad.assemble")
     except ImportError as exception:
         raise ImportError(
-            "zencad.assemble requires a compatible legacy Termin kinematic "
-            "API; the core ZenCad geometry API remains available without it"
+            "zencad.assemble could not load its local kinematic API"
         ) from exception
 
     globals()[name] = module

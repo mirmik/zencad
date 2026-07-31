@@ -68,35 +68,20 @@
 </nav>
       <article class="article"><h1 id="installation">Installation</h1>
 
-<p>ZenCad system is tested on Linux (Debian family), Windows.</p>
+<p>ZenCad is installed from PyPI together with a prebuilt geometry-backend wheel. Conda and a separate OpenCascade installation are not required.</p>
 
-<h2 id="installing-pypi">Installing pypi</h2>
+<h2 id="graphical-interface">Graphical interface</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">zencad</span>
+<div class="codehilite"><pre><span></span><code>python3 -m pip install "zencad[gui]"
+zencad
 </code></pre></div>
 
-<h2 id="features-of-installation-on-various-os">Features of installation on various OS.</h2>
+<h2 id="headless-geometry-only">Headless geometry only</h2>
 
-<h3 id="installing-windows">Installing Windows.</h3>
+<div class="codehilite"><pre><span></span><code>python3 -m pip install zencad
+</code></pre></div>
 
-<p>At the moment, you may need to install vcredist2019.</p>
-
-<h3 id="installing-macos">Installing MacOS.</h3>
-
-<p>MacOS version in development.</p>
-
-<h3 id="installing-standalone-version-windows">Installing standalone version (Windows).</h3>
-
-<p>The StandAlone version can be found at <a href="https://github.com/mirmik/zencad/releases">here</a>. The StandAlone version may lag behind the mainline.</p>
-
-<h2 id="installing-from-source">Installing from source.</h2>
-
-<p>To install from the source code, you need to build, or get the compiled binary dependencies:</p>
-
-<ul>
-<li><a href="https://github.com/tpaviot/pythonocc-core">pythonocc-core</a></li>
-<li><a href="https://www.opencascade.com/content/overview">OpenCascade</a></li>
-</ul>
+<p>Supported wheels cover CPython 3.10–3.14, Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc 2.31 or newer.</p>
 </article>
     </div>
     <div id="footer"></div>

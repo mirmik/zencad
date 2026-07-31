@@ -11,8 +11,6 @@ from zencad.color import default_color
 from zencad.interactive import create_interactive_object
 from zencad.bbox import BoundaryBox
 
-import OCC.Core
-
 import numpy
 
 
@@ -30,10 +28,12 @@ class Scene:
         self.interactives = []
         self.display = None
 
-    def add(self, obj, color=default_color()):
+    def add(self, obj, color=None):
         from zencad.interactive.displayable import Displayable
 
         obj = evalcache.unlazy_if_need(obj)
+        if color is None:
+            color = default_color()
 
         if isinstance(obj, Displayable):
             obj.bind_to_scene(self)

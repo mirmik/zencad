@@ -6,18 +6,17 @@ import math
 import time
 import os
 
-from OCC.Core.AIS import AIS_Axis, AIS_Shaded, AIS_Shape
-from OCC.Core.Aspect import Aspect_GFM_VER
-from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
-from OCC.Core.Geom import Geom_Line
-from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
-from OCC.Core.Graphic3d import Graphic3d_Camera
-import OCC.Core.BRepPrimAPI
-from OCC.Core.IntCurvesFace import IntCurvesFace_ShapeIntersector
-from OCC.Core.Precision import precision_Confusion
-from OCC.Core.Aspect import Aspect_TOD_ABSOLUTE
+from OCP.AIS import AIS_Axis, AIS_Shaded, AIS_Shape
+from OCP.Aspect import Aspect_GFM_VER
+from OCP.Quantity import Quantity_TOC_RGB, Quantity_Color
+from OCP.Geom import Geom_Line
+from OCP.gp import gp_Ax1, gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+from OCP.Graphic3d import Graphic3d_Camera
+from OCP.IntCurvesFace import IntCurvesFace_ShapeIntersector
+from OCP.Aspect import Aspect_TOD_ABSOLUTE
 
-from OCC.Display import OCCViewer
+from zencad.gui import ocp_viewer
+from zencad.occ_compat import confusion
 from zencad.util import point3, to_Pnt
 from zenframe.util import print_to_stderr
 from zencad.geombase import vector3, point3
@@ -45,7 +44,7 @@ class BaseViewer(QtOpenGL.QGLWidget):
         fmt = QtOpenGL.QGLFormat()
         super().__init__(fmt, parent=parent)
 
-        self._display = OCCViewer.Viewer3d()
+        self._display = ocp_viewer.Viewer3d()
         self._inited = False
 
         # enable Mouse Tracking
@@ -59,6 +58,7 @@ class BaseViewer(QtOpenGL.QGLWidget):
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground)
 
         self.setAutoFillBackground(False)
+        self._display.Create(window_handle=int(self.winId()), parent=self)
 
         color1 = Quantity_Color(.55, .55, .55, Quantity_TOC_RGB)
         color2 = Quantity_Color(.22, .22, .22, Quantity_TOC_RGB)
@@ -92,7 +92,7 @@ class DisplayWidget(BaseViewer):
         self.Viewer = self._display.Viewer
         self.Context = self._display.Context
 
-        self.init_driver_in_constructor = sys.platform == "win32"
+        self.init_driver_in_constructor = True
         self._communicator = communicator
         self._orient = 1
         self._drawbox = False
@@ -253,12 +253,9 @@ class DisplayWidget(BaseViewer):
         self.set_center(point3(0, 0, 0))
 
     def make_axis_triedron(self):
-        self.x_axis = AIS_Axis(
-            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(1, 0, 0)))))
-        self.y_axis = AIS_Axis(
-            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(0, 1, 0)))))
-        self.z_axis = AIS_Axis(
-            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(0, 0, 1)))))
+        self.x_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(1, 0, 0)))
+        self.y_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(0, 1, 0)))
+        self.z_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(0, 0, 1)))
         self.x_axis.SetColor(Quantity_Color(1, 0, 0, Quantity_TOC_RGB))
         self.y_axis.SetColor(Quantity_Color(0, 1, 0, Quantity_TOC_RGB))
         self.z_axis.SetColor(Quantity_Color(0, 0, 1, Quantity_TOC_RGB))
@@ -342,7 +339,8 @@ class DisplayWidget(BaseViewer):
             self._communicator.send({"cmd": "location",  "loc": loc})
 
     def InitDriver(self):
-        self._display.Create(window_handle=int(self.winId()), parent=self)
+        if self._display._window is None:
+            self._display.Create(window_handle=int(self.winId()), parent=self)
 
         self.Viewer.SetDefaultLights()
         self.Viewer.SetLightOn()
@@ -570,14 +568,14 @@ class DisplayWidget(BaseViewer):
         viewLine = self.viewline(x, y)
 
         for i in range(len(self.selected_shapes)):
-            hShape = AIS_Shape.DownCast(self.selected_ishapes[i])
-            shape = hShape.Shape()
+            hShape = self.selected_ishapes[i]
+            shape = self.selected_shapes[i]
 
             loc = self.Context.Location(hShape)
             loc_shape = shape.Located(loc)
 
             shapeIntersector = IntCurvesFace_ShapeIntersector()
-            shapeIntersector.Load(loc_shape, precision_Confusion())
+            shapeIntersector.Load(loc_shape, confusion())
             shapeIntersector.Perform(viewLine, float("-inf"), float("+inf"))
 
             if shapeIntersector.NbPnt() >= 1:

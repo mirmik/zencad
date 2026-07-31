@@ -1,9 +1,6 @@
 import evalcache
-import numpy
-
-from zencad.settings import Settings
 from zencad.geom.transformable import Transformable
-from zencad.geom.trans import rotate, translate, rotate_quat
+from zencad.geom.trans import rotate, translate
 from zencad.geom.exttrans import nulltrans
 from zencad.geom.solid import _nullshape
 from zencad.interactive.shape import ShapeInteractiveObject
@@ -15,21 +12,6 @@ from zencad.interactive import create_interactive_object
 from zencad.interactive.displayable import Displayable
 from zencad.libs.screw import screw
 
-import termin
-import termin.kinematic
-import termin.geombase.pose3
-from termin.kinematic import Transform3 
-
-def trans_to_pose3(trsf):
-    return termin.geombase.pose3.Pose3(
-                lin=trsf.translation().to_array(),
-                ang=trsf.rotation_quat().to_array()
-            )
-
-def pose3_to_trans(p):
-    return translate(p.lin) * rotate_quat(p.ang)
-    
-
 class unit(Transformable, Displayable):
     """Базовый класс для использования в кинематических цепях и сборках
 
@@ -38,12 +20,14 @@ class unit(Transformable, Displayable):
     """
 
     def __init__(self,
-                 parts=[],
+                 parts=None,
                  parent=None,
                  shape=None,
                  name="unit",
                  location=nulltrans(),
                  transform=None):
+        if parts is None:
+            parts = []
         self.parent = parent
         self.location = evalcache.unlazy_if_need(location)
         self.global_location = self.location
@@ -55,12 +39,6 @@ class unit(Transformable, Displayable):
         self.views = set()
         self.childs = set()
 
-        if transform is None:
-            self.transform = Transform3(name=name, 
-                local_pose=trans_to_pose3(self.location))
-        else:
-            self.transform = transform
-
         if parent is not None:
             parent.add_child(self)
             
@@ -70,7 +48,6 @@ class unit(Transformable, Displayable):
     def add_child(self, child):
         child.parent = self
         self.childs.add(child)
-        self.transform.add_child(child.transform)
 
     def deep_childs_list(self):
         childs = []
@@ -97,16 +74,14 @@ class unit(Transformable, Displayable):
             self._apply_view_location(False)
 
     def update_location_from_transform(self, deep=True):
-        self.relocate(pose3_to_trans(self.transform.local_pose()))        
+        """Compatibility hook; local ZenCad transforms are authoritative."""
+        self.location_update(deep=False)
         if deep:
             for c in self.childs:
                 c.update_location_from_transform(deep=True)
 
     def relocate(self, location, deep=False, view=True):
         self.location = evalcache.unlazy_if_need(location)
-        self.transform.relocate(
-            trans_to_pose3(location)
-        )
         self.location_update(deep=deep, view=False)
 
         if view:
@@ -199,7 +174,7 @@ class unit(Transformable, Displayable):
         if deep:
             parts = parts + [child.copy(deep=True) for child in self.childs]
 
-        cpy = zencad.assemble.unit(
+        cpy = unit(
             parent=self.parent,
             location=self.location,
             parts=parts,
@@ -236,9 +211,8 @@ class kinematic_unit(unit):
     положение выходной СК относительно входной"""
 
     def __init__(self, transform=None, **kwargs):
-        super().__init__(transform=transform, **kwargs)
+        super().__init__(**kwargs)
         self.output = unit(parent=self, name=self.name+"(output)")
-        self.transform.init_output(self.output.transform)
 
     def dim(self):
         raise NotImplementedError
@@ -308,8 +282,6 @@ class rotator(kinematic_unit_one_axis):
         super().__init__(
             axis=axis,
             name=name,
-            transform=termin.kinematic.Rotator3(axis, name=name, manual_output=True,
-                local_pose=trans_to_pose3(location)),
             location=location,
             **kwargs)
 
@@ -320,8 +292,8 @@ class rotator(kinematic_unit_one_axis):
 
     def set_coord(self, coord, **kwargs):
         self.coord = coord
+        kwargs.setdefault("deep", True)
         self.output.relocate(rotate(self.axis, coord * self.mul), **kwargs)
-        self.transform.set_coord(coord)
 
 
 class actuator(kinematic_unit_one_axis):
@@ -329,8 +301,6 @@ class actuator(kinematic_unit_one_axis):
         super().__init__(
             axis=axis,
             name=name,
-            transform=termin.kinematic.Actuator3(axis, name=name, manual_output=True,
-                local_pose=trans_to_pose3(location)),
             location=location,
             **kwargs)
 
@@ -341,16 +311,15 @@ class actuator(kinematic_unit_one_axis):
 
     def set_coord(self, coord, **kwargs):
         self.coord = coord
-        self.output.relocate(translate(
-            self.axis * coord * self.mul), **kwargs)
-        self.transform.set_coord(coord)
+        kwargs.setdefault("deep", True)
+        self.output.relocate(translate(self.axis * coord * self.mul), **kwargs)
 
 
 class planemover(kinematic_unit):
     """Кинематическое звено с двумя степенями свободы для перемещения
     по плоскости"""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.x = 0
         self.y = 0
@@ -375,7 +344,7 @@ class freemover(kinematic_unit):
     """Кинематическое звено с двумя степенями свободы для перемещения
     по плоскости"""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.x = 0
         self.y = 0
@@ -422,13 +391,15 @@ class spherical_rotator(kinematic_unit):
         self.update_position(**kwargs)
 
     def set_coords(self, coords, **kwargs):
-        self._yaw = coord[0]
-        self._pitch = coord[1]
+        self._yaw = coords[0]
+        self._pitch = coords[1]
         self.update_position(**kwargs)
 
     def update_position(self, **kwargs):
-        self.output.relocate(rotateZ(self._yaw)
-                             * rotateY(self._pitch))
+        kwargs.setdefault("deep", True)
+        self.output.relocate(
+            rotateZ(self._yaw) * rotateY(self._pitch), **kwargs
+        )
 
 
 def for_each_unit(u, foo):

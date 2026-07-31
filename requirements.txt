@@ -1,10 +1,4 @@
-psutil
-numpy
-pillow
+cadquery-ocp-novtk>=7.9.3.1.1,<7.10
 evalcache>=1.14.0
-requests
-wheel
-zenframe
-six
-pyopengl
-termin
+numpy
+svgwrite

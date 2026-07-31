@@ -1,7 +1,7 @@
 from zencad.interactive.interactive_object import InteractiveObject
 
-from OCC.Core.Geom import Geom_CartesianPoint
-from OCC.Core.AIS import AIS_Point
+from OCP.Geom import Geom_CartesianPoint
+from OCP.AIS import AIS_Point
 
 from zencad.geombase import point3
 from zencad.color import default_point_color

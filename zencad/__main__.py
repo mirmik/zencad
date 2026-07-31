@@ -3,47 +3,25 @@
 
 import os
 import sys
-import time
 
-import psutil
-import traceback
-import runpy
-import signal
-
-import zenframe.argparse
-import zenframe.configuration
-
-zenframe.configuration.Configuration.TEMPLATE = """#!/usr/bin/env python3
-#coding: utf-8
+TEMPLATE = """#!/usr/bin/env python3
+# coding: utf-8
 
 from zencad import *
 
-m=box(10)
-disp(m)
-
-show()"""
+model = box(10)
+display(model)
+show()
+"""
 
 
 def console_options_handle():
-
+    import zenframe.argparse
     parser = zenframe.argparse.ArgumentParser()
 
     # Смотри аргументы в zenframe.ArgumentParser
-    parser.add_argument("--installer", action="store_true",
-                        help="Execute installer utility")
     parser.add_argument("--settings", action="store_true",
                         help="Execute settings utility")
-    parser.add_argument("--install-libs", action="store_true",
-                        help="Console dialog for install third-libraries")
-    parser.add_argument("--install-occt-force", nargs="*",
-                        default=None, help="Download and install libocct")
-    parser.add_argument("--install-occt-to-pythonocc-dir", action="store_true",
-                        default=None, help="Download and install libocct")
-    parser.add_argument("--install-pythonocc-force", action="store_true",
-                        help="Download and install pythonocc package")
-    parser.add_argument("--lookup-libraries", action="store_true",
-                        help="Lookup depends")
-    parser.add_argument("--yes", action="store_true")
 
     pargs = parser.parse_args()
     return pargs
@@ -58,6 +36,7 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zencad.gui.mainwindow import MainWindow
     from zencad.settings import Settings
     from zenframe.util import create_temporary_file
+    import zenframe.configuration
     import PyQt5.QtWidgets
     import PyQt5.QtGui
 
@@ -81,52 +60,21 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
 
 def main():
-    pargs = console_options_handle()
+    try:
+        import zenframe.configuration
+        pargs = console_options_handle()
+    except ImportError as exception:
+        raise SystemExit(
+            "ZenCad GUI dependencies are missing; install them with "
+            "'python -m pip install zencad[gui]'"
+        ) from exception
+
+    zenframe.configuration.Configuration.TEMPLATE = TEMPLATE
 
     if pargs.settings:
         import zencad.gui.settingswdg
         zencad.gui.settingswdg.doit()
         sys.exit()
-
-    if pargs.installer:
-        import zencad.gui.libinstaller
-        zencad.gui.libinstaller.doit()
-        sys.exit()
-
-    if pargs.install_libs:
-        from zencad.geometry_core_installer import console_third_libraries_installer_utility
-        console_third_libraries_installer_utility(yes=pargs.yes)
-        sys.exit()
-
-    if pargs.install_pythonocc_force:
-        import zencad.version
-        from zencad.geometry_core_installer import install_precompiled_python_occ
-        install_precompiled_python_occ(occversion=zencad.version.__pythonocc_version__)
-        return
-
-    if pargs.lookup_libraries:
-        from zencad.geometry_core_installer import test_third_libraries
-        print(test_third_libraries())
-        return
-
-    if pargs.install_occt_force is not None:
-        import zencad.version
-        from zencad.geometry_core_installer import install_precompiled_occt_library
-        path = pargs.install_occt_force[0] if len(
-            pargs.install_occt_force) > 0 else None
-        install_precompiled_occt_library(tgtpath=path, occt_version=zencad.version.__occt_version__)
-        return
-
-    if pargs.install_occt_to_pythonocc_dir:
-        import zencad.version
-        from zencad.geometry_core_installer import install_precompiled_occt_library
-        import zencad.gui.util
-        path = zencad.gui.util.pythonocc_core_directory()
-        if path is None:
-            print("PythonOCC is not installed")
-            return -1
-        install_precompiled_occt_library(tgtpath=path, occt_version=zencad.version.__occt_version__)
-        return 0
 
     from zencad.showapi import widget_creator
     import zenframe.starter as frame

@@ -1,1 +1,4 @@
-./setup.py install --user
+#!/usr/bin/env sh
+set -eu
+
+python -m pip install --user .

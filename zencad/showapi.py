@@ -1,5 +1,4 @@
 from zencad.scene import Scene
-from zenframe.configuration import Configuration
 
 NOSHOW = False
 DISPLAY = None
@@ -13,6 +12,9 @@ __default_scene = Scene()  # Сцена, с которой работают ко
 
 
 def display(shp, color=None, deep=True, scene=None):
+    from zencad.settings import Settings
+
+    Settings.restore()
     if scene is None:
         scene = __default_scene
 

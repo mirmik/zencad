@@ -4,7 +4,8 @@ CAD system for righteous zen programmers
 
 What is it?
 -----------
-ZenCad - it's a system for use oce geometry core in openscad's script style.
+ZenCad is a system for using the OpenCascade geometry core in an OpenSCAD-like
+script style.
 So, it's  openscad idea, python language and opencascade power in one.  
 
 Manual and Information
@@ -18,33 +19,32 @@ Manual and Information
 
 Installation
 ------------
-### Install xcb
+### GUI system libraries on Linux
 ```
-apt install libxcb*
+sudo apt install libxcb-xinerama0 libxkbcommon-x11-0
 ```
 
-### Common:
-Zencad needs *pythonocc* and *opencascade core*(OCCT). After first launch
-(type `zencad` or `python3 -m zencad` commands)
-library instalation utility will started. You can use it for *pythonocc* and *OCCT* installation. Also you can install libraries manualy.
+### Common
+
+The default installation uses the prebuilt `cadquery-ocp-novtk` wheel from
+PyPI. It does not use conda, download OCCT at import time, or install VTK.
+
 ```
-apt install qt5-default
-python3 -m pip install zencad[gui]
-zencad 
-# On first launch, Zenсad will ask you to download the required libraries. 
-# After completing the necessary operations, close the installation utility and run the program again. 
+python3 -m pip install "zencad[gui]"
 zencad
 ```
 
-### Installation without graphical part:
-Install zencad as library without gui part:
-```python3 -m pip install zencad```
-```python3 -m zencad --install-occt-force```  
-```python3 -m zencad --install-pythonocc-force```
+For headless geometry use:
+
+```
+python3 -m pip install zencad
+```
+
+The current OCP wheels support CPython 3.10-3.14 on Windows x86-64, macOS
+11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc 2.31 or newer.
 
 ### For Windows:  
-Windows version of ZenCad needed `vcredist` (Microsoft Redistibutable Package).  
-Please, install `vcredist 2015` for Python3.7 and also `vcredist 2019` for Python3.8 and later.
+The PyPI OCP wheel currently targets 64-bit Windows.
 
 Standalone Distribution
 -----------------------
@@ -69,7 +69,7 @@ from zencad import *
 
 model = box(200, center = True) - sphere(120) + sphere(60)
 
-display(m)
+display(model)
 show()
 ```
 Result:  

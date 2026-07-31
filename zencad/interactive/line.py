@@ -2,10 +2,10 @@ from zencad.interactive.interactive_object import InteractiveObject
 from zencad.color import Color as color
 from zencad.util import to_Pnt, to_Vec, point3
 
-from OCC.Core.Geom import Geom_CartesianPoint
-from OCC.Core.Prs3d import Prs3d_Drawer, Prs3d_ArrowAspect, Prs3d_LineAspect
-from OCC.Core.AIS import AIS_Line
-from OCC.Core.Aspect import Aspect_TOL_SOLID
+from OCP.Geom import Geom_CartesianPoint
+from OCP.Prs3d import Prs3d_Drawer, Prs3d_ArrowAspect, Prs3d_LineAspect
+from OCP.AIS import AIS_Line
+from OCP.Aspect import Aspect_TOL_SOLID
 
 
 class LineInteractiveObject(InteractiveObject):

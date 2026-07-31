@@ -6,8 +6,18 @@ from zencad.interactive.shape import ShapeInteractiveObject
 from zencad.interactive.line import line, arrow
 from zencad.interactive.interactive_object import InteractiveObject
 
-from OCC.Core.Geom import Geom_CartesianPoint
-import OCC.Core
+from OCP.Geom import Geom_CartesianPoint
+from OCP.TopoDS import (
+    TopoDS_Compound,
+    TopoDS_CompSolid,
+    TopoDS_Edge,
+    TopoDS_Face,
+    TopoDS_Shape,
+    TopoDS_Shell,
+    TopoDS_Solid,
+    TopoDS_Vertex,
+    TopoDS_Wire,
+)
 
 from zencad.axis import Axis
 from zencad.color import Color
@@ -22,15 +32,15 @@ def create_interactive_object(obj, color=None):
         color = Color(*color)
 
     if isinstance(obj, (
-        OCC.Core.TopoDS.TopoDS_Edge,
-        OCC.Core.TopoDS.TopoDS_Wire,
-        OCC.Core.TopoDS.TopoDS_Vertex,
-        OCC.Core.TopoDS.TopoDS_Face,
-        OCC.Core.TopoDS.TopoDS_Compound,
-        OCC.Core.TopoDS.TopoDS_CompSolid,
-        OCC.Core.TopoDS.TopoDS_Shell,
-        OCC.Core.TopoDS.TopoDS_Solid,
-        OCC.Core.TopoDS.TopoDS_Shape
+        TopoDS_Edge,
+        TopoDS_Wire,
+        TopoDS_Vertex,
+        TopoDS_Face,
+        TopoDS_Compound,
+        TopoDS_CompSolid,
+        TopoDS_Shell,
+        TopoDS_Solid,
+        TopoDS_Shape,
     )):
         obj = Shape(obj)
 
