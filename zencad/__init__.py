@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from zencad.version import __occt_version__, __pythonocc_version__
+import importlib
 import os
 import sys
 from zencad.version import __occt_version__
@@ -74,8 +75,6 @@ try:
     import zencad.color as color
     from zencad.lazifier import lazy
 
-    import zencad.assemble
-
     from zencad.color import (white,
 black,
 red,
@@ -117,3 +116,20 @@ except PreventLibraryLoading as ex:
 
 moduledir = os.path.dirname(__file__)
 exampledir = os.path.join(os.path.dirname(__file__), "examples")
+
+
+def __getattr__(name):
+    """Load the legacy assembly integration only when it is requested."""
+    if name != "assemble":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    try:
+        module = importlib.import_module("zencad.assemble")
+    except ImportError as exception:
+        raise ImportError(
+            "zencad.assemble requires a compatible legacy Termin kinematic "
+            "API; the core ZenCad geometry API remains available without it"
+        ) from exception
+
+    globals()[name] = module
+    return module
