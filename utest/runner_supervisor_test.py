@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from tempfile import TemporaryDirectory
 import time
 import unittest
@@ -89,7 +90,10 @@ show()
             if item.payload["stream"] == "stderr"
         )
         self.assertIn("local-import", stdout)
-        self.assertIn(str(self.root), stdout)
+        reported_cwd = next(
+            line for line in stdout.splitlines() if line != "local-import"
+        )
+        self.assertTrue(os.path.samefile(reported_cwd, self.root))
         self.assertIn("diagnostic", stderr)
         progress = self.messages(generation, "progress")
         self.assertTrue(progress)

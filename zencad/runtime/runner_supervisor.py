@@ -202,6 +202,11 @@ class RunnerSupervisor:
                     handle.saw_finished = True
                     handle.status = message.payload.get("status")
                 self._dispatch(message)
+                if message.message_type == "finished":
+                    # `finished` is the terminal protocol frame.  Waiting for
+                    # pipe EOF after it can block forever on Windows when a
+                    # process was cooperatively cancelled.
+                    break
         finally:
             try:
                 handle.connection.close()
@@ -268,6 +273,13 @@ class RunnerSupervisor:
                 handle.process.join(timeout=1)
                 if handle.process.is_alive() and hasattr(handle.process, "kill"):
                     handle.process.kill()
+                    handle.process.join(timeout=1)
+                try:
+                    # Closing the receiving endpoint wakes a Windows reader
+                    # blocked in recv_bytes after forced termination.
+                    handle.connection.close()
+                except OSError:
+                    pass
 
         threading.Thread(
             target=reap,
