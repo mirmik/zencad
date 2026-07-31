@@ -105,9 +105,9 @@ protocol and does not provide a stable representation for native OCCT handles.
 - Imported user modules remain naturally isolated when each generation gets a
   fresh runner.  Prewarming is an optimization, not part of protocol
   correctness.
-- Arbitrary animation callbacks cannot cross this boundary.  Animation and
-  live interaction require a later versioned `ScenePatch`/command contract or
-  an explicitly reduced compatibility contract.
+- Arbitrary animation callbacks cannot cross this boundary.  The accepted
+  runner-driven `ScenePatch` and `InputEvent` contract is recorded in
+  [Runner-driven animation with scene patches and input events](2026-08-01-scene-patch-input-events.md).
 - BREP transfer preserves topology but not every custom Python-side behaviour.
   Supported scene object kinds and fallback diagnostics must be explicit.
 - Materializing very large AIS scenes can still occupy the GUI thread; the
@@ -120,7 +120,7 @@ protocol and does not provide a stable representation for native OCCT handles.
 3. Introduce a permanent viewer and transactional `ScenePresenter`.
 4. Add runner supervision, generation filtering, cancellation, and diagnostics.
 5. Integrate the snapshot pipeline while retaining the last successful scene.
-6. Decide and implement animation/live-update compatibility.
+6. Implement the accepted animation/live-update compatibility contract.
 7. Remove `bindwin`, `QWindow.fromWinId()`, `createWindowContainer()`, and the
    legacy unbound viewer path after compatibility tests pass.
 

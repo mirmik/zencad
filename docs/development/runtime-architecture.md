@@ -143,6 +143,34 @@ process role by importing Qt.  Existing animation and post-`show()` object
 mutation are outside the first static-snapshot milestone and require a
 follow-up live-update protocol.
 
+## Planned live updates and input
+
+The accepted live-update design keeps `show(animate=callback)` callbacks in
+the isolated runner.  It does not serialize or execute them in the GUI.
+Logical scene references keep their common mutation API: before `show()` they
+edit the draft, and after the initial scene becomes ready they produce
+absolute `ScenePatch` property updates.
+
+Patch v1 is limited to transform, visibility, face color/transparency, and
+border/wire style on objects already present in the committed snapshot.  Each
+patch carries a generation, scene revision, monotonic sequence, and stable
+object IDs.  Patches are idempotent and latest-state-wins: bounded producer
+and GUI coalescers may skip intermediate sequences.  The GUI revalidates
+generation and revision on its own thread, applies one prepared batch to
+GUI-owned AIS objects, and redraws once.
+
+Keyboard and basic mouse input travel in the opposite direction as typed,
+versioned `InputEvent` data.  A runner sees ZenCad input state or handlers, not
+Qt event objects.  This permits simulations and games without giving scripts
+direct access to `DisplayWidget` or the AIS context.
+
+Arbitrary `preanimate` Qt widgets, GUI event monkeypatching, and direct
+viewer/AIS access are not part of managed compatibility.  Declarative control
+panels, live topology add/remove, and camera commands are potential later
+protocol extensions.  None of this section is implemented yet; the accepted
+decision and rationale are recorded in
+[Runner-driven animation with scene patches and input events](../architecture-council/2026-08-01-scene-patch-input-events.md).
+
 ## Cancellation and failure
 
 Cancellation is generation-based.  The supervisor first requests cooperative
