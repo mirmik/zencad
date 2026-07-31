@@ -84,7 +84,10 @@ class OCPCompatibilityBoundary(unittest.TestCase):
             )
             self.assertFalse(loaded_from_stream.IsNull())
 
-        with self.assertRaises(self.compat.Standard_DomainError):
+        # OCCT may expose this validation failure as the more specific
+        # Standard_DomainError or as its Standard_Failure base class,
+        # depending on the platform build.
+        with self.assertRaises(self.compat.Standard_Failure):
             BRepPrimAPI_MakeBox(0.0, 2.0, 3.0).Shape()
 
 

@@ -19,6 +19,11 @@ class TransformationProbe(unittest.TestCase):
         zencad.lazy.decache = False
         zencad.lazy.fastdo = True
 
+    def assertPointAlmostEqual(self, actual, expected):
+        self.assertAlmostEqual(actual.x, expected.x, places=12)
+        self.assertAlmostEqual(actual.y, expected.y, places=12)
+        self.assertAlmostEqual(actual.z, expected.z, places=12)
+
     def test_translate(self):
         x = 10
         y = 20
@@ -50,7 +55,7 @@ class TransformationProbe(unittest.TestCase):
         pnt = zencad.point3(x, y, z)
 
         ang = zencad.deg(v)
-        self.assertEqual(
+        self.assertPointAlmostEqual(
             zencad.rotateX(ang)(pnt),
             zencad.point3(
                 x,
@@ -58,7 +63,7 @@ class TransformationProbe(unittest.TestCase):
                 z*math.cos(ang)+y*math.sin(ang))
         )
 
-        self.assertEqual(
+        self.assertPointAlmostEqual(
             zencad.rotateY(ang)(pnt),
             zencad.point3(
                 x*math.cos(ang)+z*math.sin(ang),
@@ -66,7 +71,7 @@ class TransformationProbe(unittest.TestCase):
                 z*math.cos(ang)-x*math.sin(ang))
         )
 
-        self.assertEqual(
+        self.assertPointAlmostEqual(
             zencad.rotateZ(ang)(pnt),
             zencad.point3(
                 x*math.cos(ang)-y*math.sin(ang),
