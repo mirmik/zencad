@@ -1,0 +1,232 @@
+import importlib.util
+import json
+from pathlib import Path
+import struct
+from tempfile import TemporaryDirectory
+import unittest
+from unittest import mock
+
+from evalcache.dircache_v2 import DirCache_v2
+from OCP.BRep import BRep_Builder
+from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+from OCP.Bnd import Bnd_Box
+from OCP.GProp import GProp_GProps
+from OCP.TopoDS import TopoDS_Compound
+
+import zencad
+from zencad.occ_compat import add_to_bounds, volume_properties
+import zencad.runtime.scene_protocol as scene_protocol
+from zencad.runtime.scene_protocol import (
+    FileSnapshotBundle,
+    PayloadIntegrityError,
+    ProtocolError,
+    SceneObjectRecord,
+    SceneSnapshot,
+    SupersededGenerationError,
+    UnsupportedProtocolVersion,
+    decode_brep,
+    decode_snapshot_frame,
+    encode_brep,
+    encode_snapshot_frame,
+    ensure_current_generation,
+    select_snapshot_transport,
+)
+
+
+ROOT = Path(__file__).parents[1]
+
+
+def shape_signature(shape):
+    properties = GProp_GProps()
+    volume_properties(shape, properties)
+    bounds = Bnd_Box()
+    add_to_bounds(shape, bounds)
+    return properties.Mass(), bounds.Get()
+
+
+def compound_of_boxes(count):
+    compound = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(compound)
+    for index in range(count):
+        box = BRepPrimAPI_MakeBox(1.0, 2.0, 3.0).Shape()
+        moved = zencad.Shape(box).translate(index * 2.0, 0, 0).Shape()
+        builder.Add(compound, moved)
+    return compound
+
+
+def organizer_model():
+    path = (
+        ROOT
+        / "zencad"
+        / "examples"
+        / "Models"
+        / "organizer"
+        / "organizer.py"
+    )
+    spec = importlib.util.spec_from_file_location("zencad_test_organizer", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.organizer(3, 5, 27, 20, 64, 1.5, 5, 5).unlazy().Shape()
+
+
+class SceneProtocolTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.cache_directory = TemporaryDirectory()
+        zencad.lazy.cache = DirCache_v2(cls.cache_directory.name)
+        zencad.lazy.encache = False
+        zencad.lazy.decache = False
+        zencad.lazy.fastdo = True
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.cache_directory.cleanup()
+
+    def make_snapshot(self):
+        box_payload = encode_brep(zencad.box(10).unlazy())
+        return SceneSnapshot(
+            generation=7,
+            objects=(
+                SceneObjectRecord(
+                    object_id="main-box",
+                    kind="brep",
+                    payload=box_payload,
+                    properties={
+                        "color": [0.1, 0.2, 0.3, 0.4],
+                        "label": "форма",
+                        "visible": True,
+                    },
+                ),
+            ),
+            camera_policy="preserve",
+            metadata={"source": "scene_protocol_test.py"},
+        )
+
+    def test_brep_round_trip_representative_shapes(self):
+        shapes = {
+            "box": zencad.box(10).unlazy().Shape(),
+            "boolean": (
+                zencad.box(20, center=True) - zencad.sphere(5)
+            ).unlazy().Shape(),
+            "compound": compound_of_boxes(50),
+            "organizer": organizer_model(),
+        }
+        for name, source in shapes.items():
+            with self.subTest(name=name):
+                restored = decode_brep(encode_brep(source))
+                source_mass, source_bounds = shape_signature(source)
+                restored_mass, restored_bounds = shape_signature(restored)
+                self.assertAlmostEqual(restored_mass, source_mass, places=8)
+                for actual, expected in zip(restored_bounds, source_bounds):
+                    self.assertAlmostEqual(actual, expected, places=8)
+
+    def test_binary_frame_round_trip(self):
+        source = self.make_snapshot()
+        restored = decode_snapshot_frame(encode_snapshot_frame(source))
+
+        self.assertEqual(restored.generation, source.generation)
+        self.assertEqual(restored.camera_policy, "preserve")
+        self.assertEqual(dict(restored.metadata), dict(source.metadata))
+        self.assertEqual(len(restored.objects), 1)
+        self.assertEqual(restored.objects[0].object_id, "main-box")
+        self.assertEqual(
+            dict(restored.objects[0].properties),
+            dict(source.objects[0].properties),
+        )
+        self.assertEqual(restored.objects[0].payload, source.objects[0].payload)
+        decode_brep(restored.objects[0].payload)
+
+    def test_file_bundle_round_trip_and_atomic_target(self):
+        source = self.make_snapshot()
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "generation-7"
+            FileSnapshotBundle.write(path, source)
+            restored = FileSnapshotBundle.read(path)
+            self.assertEqual(restored, source)
+            self.assertTrue((path / "manifest.json").is_file())
+            self.assertTrue((path / "payload-000000.bin").is_file())
+            with self.assertRaises(FileExistsError):
+                FileSnapshotBundle.write(path, source)
+
+    def test_corrupt_binary_payload_is_rejected(self):
+        frame = bytearray(encode_snapshot_frame(self.make_snapshot()))
+        frame[-1] ^= 0x01
+        with self.assertRaisesRegex(
+            PayloadIntegrityError, "digest mismatch"
+        ):
+            decode_snapshot_frame(bytes(frame))
+
+    def test_corrupt_file_payload_is_rejected(self):
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "generation-7"
+            FileSnapshotBundle.write(path, self.make_snapshot())
+            payload_path = path / "payload-000000.bin"
+            payload = bytearray(payload_path.read_bytes())
+            payload[-1] ^= 0x01
+            payload_path.write_bytes(payload)
+            with self.assertRaisesRegex(
+                PayloadIntegrityError, "digest mismatch"
+            ):
+                FileSnapshotBundle.read(path)
+
+    def test_unknown_frame_version_is_rejected(self):
+        frame = bytearray(encode_snapshot_frame(self.make_snapshot()))
+        struct.pack_into(">H", frame, 4, 99)
+        with self.assertRaisesRegex(
+            UnsupportedProtocolVersion, "version 99"
+        ):
+            decode_snapshot_frame(bytes(frame))
+
+    def test_unknown_bundle_version_is_rejected(self):
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "generation-7"
+            FileSnapshotBundle.write(path, self.make_snapshot())
+            manifest_path = path / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["protocol_version"] = 99
+            manifest_path.write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(
+                UnsupportedProtocolVersion, "version 99"
+            ):
+                FileSnapshotBundle.read(path)
+
+    def test_truncated_frame_is_rejected(self):
+        frame = encode_snapshot_frame(self.make_snapshot())
+        with self.assertRaises(ProtocolError):
+            decode_snapshot_frame(frame[:-10])
+
+    def test_superseded_generation_is_rejected(self):
+        snapshot = self.make_snapshot()
+        ensure_current_generation(snapshot, 7)
+        with self.assertRaisesRegex(
+            SupersededGenerationError, "not current"
+        ):
+            ensure_current_generation(snapshot, 8)
+
+    def test_large_snapshot_selects_file_bundle(self):
+        snapshot = self.make_snapshot()
+        frame_size = len(encode_snapshot_frame(snapshot))
+        self.assertEqual(select_snapshot_transport(snapshot), "inline")
+        with mock.patch.object(
+            scene_protocol, "INLINE_FRAME_LIMIT", frame_size - 1
+        ):
+            self.assertEqual(select_snapshot_transport(snapshot), "file")
+            with self.assertRaisesRegex(ProtocolError, "inline frame limit"):
+                encode_snapshot_frame(snapshot)
+
+    def test_invalid_brep_is_rejected(self):
+        with self.assertRaisesRegex(PayloadIntegrityError, "Invalid BREP"):
+            decode_brep(b"not a BREP")
+
+    def test_invalid_record_and_generation_types_are_rejected(self):
+        with self.assertRaisesRegex(ProtocolError, "object ID"):
+            SceneObjectRecord(7, "brep", b"payload")
+        with self.assertRaisesRegex(ProtocolError, "object kind"):
+            SceneObjectRecord("object", None, b"payload")
+        with self.assertRaisesRegex(ProtocolError, "non-negative"):
+            SceneSnapshot(True, ())
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -79,6 +79,10 @@ Shape payloads use BREP bytes.  The transport spike must choose between direct
 binary pipe frames and file-backed blobs using measured scene sizes; the
 logical manifest must not depend on that choice.
 
+The transport spike selected inline binary frames through 32 MiB and atomic
+file-backed bundles above that boundary.  The format, benchmark, and integrity
+rules are recorded in [SceneSnapshot transport v1](scene-snapshot-transport.md).
+
 Python pickle is not the protocol.
 
 ## Transactional presentation
