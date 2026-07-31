@@ -60,6 +60,11 @@ def frame_creator(openpath, initial_communicator, norestore, unbound):
 
 
 def main():
+    # OCCT's Linux Xw_Window requires an X11 XID.  Select XWayland before
+    # zenframe creates QApplication when ZenCad is launched from Wayland.
+    from zencad.gui.qt_backend import configure_qt_platform
+    configure_qt_platform()
+
     try:
         import zenframe.configuration
         pargs = console_options_handle()

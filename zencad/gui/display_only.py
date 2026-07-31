@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+from zencad.gui.qt_backend import configure_qt_platform
+configure_qt_platform()
+
 import zencad.gui.display
 import zencad.showapi
 import sys
