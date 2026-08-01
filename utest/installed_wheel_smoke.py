@@ -3,6 +3,8 @@
 import importlib.metadata
 import os
 from pathlib import Path
+import subprocess
+import sys
 from tempfile import TemporaryDirectory
 
 from evalcache.dircache_v2 import DirCache_v2
@@ -39,6 +41,22 @@ def main():
         assert abs(restored.mass() - expected_mass) < 1e-8
         assert _to_stl(shape.unlazy(), str(stl_path), 0.1)
         assert stl_path.stat().st_size > 0
+
+        script_path = temporary_path / "headless_model.py"
+        script_path.write_text(
+            "import sys\n"
+            "from zencad import box, display, show\n"
+            "display(box(1))\n"
+            "show()\n"
+            "assert 'PyQt5' not in sys.modules\n"
+            "assert 'zenframe' not in sys.modules\n",
+            encoding="utf-8",
+        )
+        subprocess.run(
+            [sys.executable, "-m", "zencad", "--no-show", str(script_path)],
+            cwd=temporary_path,
+            check=True,
+        )
 
     print("Installed wheel geometry/I/O smoke: OK")
 

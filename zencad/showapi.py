@@ -19,7 +19,7 @@ def display(shp, color=None, deep=True, scene=None):
 
     # Managed runners receive settings as data and must not initialize Qt just
     # because a script called display().
-    if not isinstance(scene, SceneDraft):
+    if not NOSHOW and not isinstance(scene, SceneDraft):
         Settings.restore()
 
     if (isinstance(shp, list)):
@@ -94,6 +94,9 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
                 close_handle=close_handle,
             )
         return snapshot
+
+    if NOSHOW:
+        return
 
     from zenframe.configuration import Configuration
 

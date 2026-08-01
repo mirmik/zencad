@@ -52,7 +52,9 @@ class RuntimeEmbeddingRemovalTest(unittest.TestCase):
                 "assert 'PyQt5' not in sys.modules\n"
                 "from zencad import box, display, show\n"
                 "display(box(1))\n"
-                "show()\n",
+                "show()\n"
+                "assert 'PyQt5' not in sys.modules\n"
+                "assert 'zenframe' not in sys.modules\n",
                 encoding="utf-8",
             )
             subprocess.run(

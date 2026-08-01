@@ -45,6 +45,28 @@ def frame_creator(openpath, norestore):
     return mainwindow, openpath
 
 
+def _run_script_path(path):
+    script_path = Path(path).resolve()
+    if not script_path.is_file():
+        raise FileNotFoundError(script_path)
+    os.chdir(script_path.parent)
+    sys.path.insert(0, str(script_path.parent))
+    runpy.run_path(str(script_path), run_name="__main__")
+
+
+def _run_no_show(argv):
+    paths = [argument for argument in argv if argument != "--no-show"]
+    if len(paths) != 1:
+        raise SystemExit("--no-show requires exactly one script")
+
+    # Keep this path independent of the optional GUI/ZenFrame stack.  In
+    # particular, a headless wheel must be able to evaluate a model without
+    # importing Qt merely to configure show().
+    import zencad.showapi
+    zencad.showapi.NOSHOW = True
+    _run_script_path(paths[0])
+
+
 def _run_script_only(pargs):
     import zenframe.configuration
 
@@ -52,12 +74,7 @@ def _run_script_only(pargs):
         raise SystemExit("--display/--no-show requires exactly one script")
     zenframe.configuration.Configuration.NOSHOW = bool(pargs.no_show)
     zenframe.configuration.Configuration.WIDGET_ONLY = bool(pargs.display)
-    script_path = Path(pargs.paths[0]).resolve()
-    if not script_path.is_file():
-        raise FileNotFoundError(script_path)
-    os.chdir(script_path.parent)
-    sys.path.insert(0, str(script_path.parent))
-    runpy.run_path(str(script_path), run_name="__main__")
+    _run_script_path(pargs.paths[0])
 
 
 def _run_main_window(pargs):
@@ -77,6 +94,17 @@ def _run_main_window(pargs):
 
 
 def main():
+    argv = sys.argv[1:]
+    removed_modes = ("--unbound", "--frame", "--sleeped")
+    if any(option in argv for option in removed_modes):
+        raise SystemExit(
+            "Foreign-window --unbound/--frame/--sleeped modes were removed; "
+            "run 'zencad SCRIPT.py' or use --display for a standalone viewer"
+        )
+    if "--no-show" in argv:
+        _run_no_show(argv)
+        return 0
+
     # OCCT's Linux Xw_Window requires an X11 XID.  Select XWayland before
     # zenframe creates QApplication when ZenCad is launched from Wayland.
     from zencad.gui.qt_backend import configure_qt_platform
@@ -98,11 +126,6 @@ def main():
         zencad.gui.settingswdg.doit()
         sys.exit()
 
-    if pargs.unbound or pargs.frame or pargs.sleeped:
-        raise SystemExit(
-            "Foreign-window --unbound/--frame/--sleeped modes were removed; "
-            "run 'zencad SCRIPT.py' or use --display for a standalone viewer"
-        )
     if pargs.display or pargs.no_show:
         _run_script_only(pargs)
         return 0
