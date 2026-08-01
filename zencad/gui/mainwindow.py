@@ -3,6 +3,7 @@ import os
 import time
 import signal
 import json
+import threading
 
 import zencad.gui.actions
 from zencad.gui.info_widget import InfoWidget
@@ -16,6 +17,7 @@ from zenframe.util import print_to_stderr
 
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
     runner_message = QtCore.pyqtSignal(object)
+    scene_patch_ready = QtCore.pyqtSignal()
 
     def __init__(self,
                  title="ZenCad",
@@ -30,6 +32,11 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self._runner_supervisor = None
         self._pending_snapshots = {}
         self._generation_statuses = {}
+        self._scene_patch_coalescer = None
+        self._scene_patch_lock = threading.Lock()
+        self._scene_patch_notification_pending = False
+        self._scene_patch_bridge_error = None
+        self._failed_live_generation = None
 
         super().__init__(
             title=title,
@@ -38,16 +45,22 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             restore_gui=restore_gui)
 
         if managed_runtime:
-            from zencad.runtime import RunnerSupervisor
+            from zencad.runtime import RunnerSupervisor, ScenePatchCoalescer
 
             self.use_sleeped_process = False
             self.runner_message.connect(
                 self._handle_runner_message,
                 QtCore.Qt.QueuedConnection,
             )
-            self._runner_supervisor = RunnerSupervisor(
-                on_message=self.runner_message.emit,
+            self.scene_patch_ready.connect(
+                self._apply_pending_scene_patch,
+                QtCore.Qt.QueuedConnection,
             )
+            self._runner_supervisor = RunnerSupervisor(
+                on_message=self._queue_runner_message,
+                record_scene_patches=False,
+            )
+            self._scene_patch_coalescer = ScenePatchCoalescer()
 
         # Устанавливается при открытии файла, если при следующем бинде
         # нужно/ненужно произвести восстановить параметры камеры.
@@ -91,6 +104,11 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             generation = self._runner_supervisor.start(openpath)
             self._pending_snapshots.clear()
             self._generation_statuses.clear()
+            with self._scene_patch_lock:
+                self._scene_patch_coalescer.clear()
+                self._scene_patch_notification_pending = False
+                self._scene_patch_bridge_error = None
+            self._failed_live_generation = None
             return generation
         finally:
             self._openlock.unlock()
@@ -99,6 +117,24 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         if not self._managed_runtime_requested:
             return super().enable_display_changed_mode()
         self.statusBar().showMessage("Calculating scene…")
+
+    def _queue_runner_message(self, message):
+        """Coalesce patches before they can fill the queued Qt event stream."""
+        if message.message_type != "scene_patch":
+            self.runner_message.emit(message)
+            return
+        should_notify = False
+        with self._scene_patch_lock:
+            try:
+                self._scene_patch_coalescer.push(message.scene_patch)
+            except Exception as exception:
+                self._scene_patch_bridge_error = exception
+                self._scene_patch_coalescer.clear()
+            if not self._scene_patch_notification_pending:
+                self._scene_patch_notification_pending = True
+                should_notify = True
+        if should_notify:
+            self.scene_patch_ready.emit()
 
     def _progress_text(self, payload):
         if payload.get("phase"):
@@ -122,6 +158,11 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             # started.  Recheck freshness on the GUI side before staging or
             # committing anything.
             return
+        if (
+            generation == self._failed_live_generation
+            and message_type in {"scene", "ready", "scene_patch"}
+        ):
+            return
 
         if message_type == "run":
             self.enable_display_changed_mode()
@@ -131,7 +172,31 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self.console.write(message.payload.get("text", ""))
         elif message_type == "scene":
             self._pending_snapshots[generation] = message.snapshot
+        elif message_type == "ready":
+            snapshot = self._pending_snapshots.get(generation)
+            if snapshot is None:
+                self._fail_live_scene(
+                    "Runner became ready without an initial scene"
+                )
+                return
+            if not message.payload.get("animated"):
+                self.statusBar().showMessage("Finalizing scene…")
+                return
+            self._pending_snapshots.pop(generation, None)
+            try:
+                self.display_widget.scene_presenter.apply(
+                    snapshot,
+                    scene_revision=message.payload.get("scene_revision", 0),
+                )
+            except Exception:
+                import traceback
+
+                self.console.write(traceback.format_exc())
+                self._fail_live_scene("Scene presentation failed")
+                return
+            self.statusBar().showMessage("Animation running")
         elif message_type == "error":
+            self._apply_pending_scene_patch()
             details = message.payload.get("traceback")
             if not details:
                 details = "{}: {}\n".format(
@@ -139,7 +204,13 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                     message.payload.get("message", ""),
                 )
             self.console.write(details)
-            self.statusBar().showMessage("Scene calculation failed")
+            if (
+                self.display_widget.scene_presenter.committed_generation
+                == generation
+            ):
+                self.statusBar().showMessage("Animation failed; last frame retained")
+            else:
+                self.statusBar().showMessage("Scene calculation failed")
         elif message_type == "finished":
             status = message.payload.get("status")
             snapshot = self._pending_snapshots.pop(generation, None)
@@ -153,11 +224,61 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                     self.statusBar().showMessage("Scene presentation failed")
                 else:
                     self.statusBar().showMessage("Scene ready", 2000)
+            elif (
+                status == "success"
+                and self.display_widget.scene_presenter.committed_generation
+                == generation
+            ):
+                self.statusBar().showMessage("Scene ready", 2000)
             elif status == "success":
                 self.statusBar().showMessage("Script produced no scene", 3000)
-            elif status == "cancelled":
+            elif (
+                status == "cancelled"
+                and generation != self._failed_live_generation
+            ):
                 self.statusBar().showMessage("Scene calculation cancelled", 2000)
             self._generation_statuses[generation] = status
+
+    @QtCore.pyqtSlot()
+    def _apply_pending_scene_patch(self):
+        if self._scene_patch_coalescer is None:
+            return
+        with self._scene_patch_lock:
+            error = self._scene_patch_bridge_error
+            self._scene_patch_bridge_error = None
+            patch = self._scene_patch_coalescer.drain()
+            self._scene_patch_notification_pending = False
+        if error is not None:
+            self.console.write(
+                "{}: {}\n".format(type(error).__name__, error)
+            )
+            self._fail_live_scene("Invalid ScenePatch")
+            return
+        if patch is None:
+            return
+        if patch.generation != self._runner_supervisor.current_generation:
+            return
+        try:
+            self.display_widget.apply_scene_patch(patch)
+        except Exception:
+            import traceback
+
+            self.console.write(traceback.format_exc())
+            self._fail_live_scene("ScenePatch presentation failed")
+
+    def _fail_live_scene(self, message):
+        if self._runner_supervisor is not None:
+            self._failed_live_generation = (
+                self._runner_supervisor.current_generation
+            )
+        if self._scene_patch_coalescer is not None:
+            with self._scene_patch_lock:
+                self._scene_patch_coalescer.clear()
+                self._scene_patch_notification_pending = False
+                self._scene_patch_bridge_error = None
+        self.statusBar().showMessage(message)
+        if self._runner_supervisor is not None:
+            self._runner_supervisor.cancel_current()
 
     def closeEvent(self, event):
         if self._runner_supervisor is not None:

@@ -3,8 +3,8 @@
 This document records the implemented, pickle-free protocol foundation for
 the accepted
 [runner-driven animation design](../architecture-council/2026-08-01-scene-patch-input-events.md).
-It defines transport and coalescing. Runner production is implemented; GUI
-application is a separate milestone.
+It defines transport and coalescing. Runner production and transactional GUI
+application are implemented.
 
 ## Runner lifecycle
 
@@ -21,6 +21,24 @@ errors and leave the last completely emitted state intact. Cancellation and
 supersession stop the live generation through the existing cooperative trace
 and bounded hard-cancel fallback. `preanimate` and direct GUI access are
 explicitly outside this managed lifecycle.
+
+## GUI application
+
+The main window commits an animated snapshot on its ordered `ready` event,
+while static snapshots retain the stronger rule of waiting for successful
+runner completion. Incoming patches are merged by a thread-safe
+`ScenePatchCoalescer` bridge before entering Qt's event queue. At most one GUI
+notification remains queued while newer absolute state accumulates behind it;
+the supervisor also disables patch history recording for GUI sessions. The
+presenter checks generation, scene revision, sequence, and every object ID
+before touching AIS state.
+
+Transform, visibility, face/transparency, boundary, and wire changes are
+applied to the existing AIS handles. A batch performs one viewer update. If
+any operation fails, all touched handles are restored to their previous state
+and the live runner is cancelled; later data from that failed generation is
+ignored. Full scene replacement still owns camera policy, so ordinary patches
+leave the camera and native viewer unchanged.
 
 ## Wire contract
 
@@ -39,10 +57,11 @@ set:
 - `border_color`: RGBA face-boundary style;
 - `wire_color`: RGBA wire style.
 
-Numeric values must be finite, scale must be non-zero, and RGBA components
-must be in `[0, 1]`. Unknown or missing fields, malformed JSON, non-finite
-numbers, duplicate JSON properties, duplicate object IDs, excessive sizes,
-and unsupported versions are rejected before a `ScenePatch` is returned.
+Numeric values must be finite, scale and the rotation quaternion must be
+non-zero, and RGBA components must be in `[0, 1]`. Unknown or missing fields,
+malformed JSON, non-finite numbers, duplicate JSON properties, duplicate
+object IDs, excessive sizes, and unsupported versions are rejected before a
+`ScenePatch` is returned.
 
 Within one patch an object may occur once and a property may occur once.
 Across strictly increasing patch sequences, later absolute properties replace
@@ -76,4 +95,8 @@ generation/revision filtering, sequence gaps, latest-state coalescing, and
 bounded/mixed-stream failure modes. `utest/scene_draft_test.py` verifies
 post-publication dirty state, and `utest/runner_supervisor_test.py` verifies
 ready/patch ordering, structured callback failure, and cancellation. The
-suites import no Qt modules in the runner process.
+suites import no Qt modules in the runner process. `utest/scene_presenter_test.py`
+covers GUI-thread guards, sequence/revision/object validation, stable handles,
+single redraw, and rollback. `utest/gui_reload_smoke.py` exercises real X11
+pixels and persistent window/view/context/camera identities across reload and
+live animation.

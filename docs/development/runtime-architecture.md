@@ -2,10 +2,10 @@
 
 > Status: migration in progress.  The transport protocol, runner-side
 > `SceneDraft`, persistent `ScenePresenter`, generation supervisor, and managed
-> reload path are implemented.  Managed runners now produce live
-> `ScenePatch` updates; GUI-side application, input events, and removal of the
-> retained legacy embedding path remain follow-up work.  The accepted decision
-> is recorded in
+> reload path are implemented.  Managed animation patches now travel from the
+> runner into the persistent GUI scene; input events and removal of the retained
+> legacy embedding path remain follow-up work.  The accepted decision is
+> recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
 ZenCad is migrating from cross-process native-window embedding to a persistent
@@ -172,8 +172,8 @@ Arbitrary `preanimate` Qt widgets, GUI event monkeypatching, and direct
 viewer/AIS access are not part of managed compatibility.  Declarative control
 panels, live topology add/remove, and camera commands are potential later
 protocol extensions.  The transport DTO, validation, and coalescing foundation
-and runner-side animation lifecycle are implemented; GUI application remains
-follow-up work.  The exact v1 validation and coalescing rules are documented in
+and runner/GUI animation path are implemented; input remains follow-up work.
+The exact v1 validation and coalescing rules are documented in
 [ScenePatch transport v1](scene-patch-transport.md), while the accepted
 decision and rationale are recorded in
 [Runner-driven animation with scene patches and input events](../architecture-council/2026-08-01-scene-patch-input-events.md).
@@ -215,9 +215,15 @@ and file watcher, but overrides file execution with `RunnerSupervisor`.  Its
 one `DisplayWidget` is constructed with the main window and never replaced.
 Runner callbacks cross into the GUI thread through a queued Qt signal; a
 snapshot is staged until that generation reports successful completion and is
-then committed by `ScenePresenter`.  Progress appears in the status bar while
-the previous scene remains visible.  Navigation and export actions are routed
-directly to the local display instead of a worker-side window.
+then committed by `ScenePresenter`.  Animated snapshots commit on their
+ordered `ready` event so their long-lived runner can start feeding patches;
+static snapshots still wait for successful `finished`.  Queued patches are
+coalesced in a thread-safe bridge before they enter Qt's event queue, validated
+against generation and scene revision, and committed to the existing AIS
+handles with one redraw.
+Progress appears in the status bar while the previous scene remains visible.
+Navigation and export actions are routed directly to the local display instead
+of a worker-side window.
 
 The direct-script compatibility mode is temporarily retained.  Legacy
 `bindwin`, `QWindow.fromWinId()`, and `createWindowContainer()` code can be

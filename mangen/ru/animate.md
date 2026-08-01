@@ -2,26 +2,23 @@
 # Анимация
 Графический интерфейс позволяет анимировать отображаемую сцену.
 
-> Примечание о миграции: постоянный viewer уже используется для статических
-> сцен, но managed runtime пока не реализует `show(animate=...)`. Принята
-> архитектура, в которой callback останется в вычислительном процессе,
-> изменения `relocate`, `set_color` и `hide` будут передаваться как
-> `ScenePatch`, а клавиатура и мышь — как типизированные `InputEvent` в обратную
-> сторону. Произвольные PyQt-виджеты и прямой доступ к viewer поддерживаться не
-> будут. До реализации этого контракта пример ниже описывает legacy runtime.
+> Примечание о миграции: managed runtime поддерживает базовый
+> `show(animate=...)`. Callback исполняется в отдельном вычислительном процессе,
+> а изменения `relocate`, `set_color` и `hide` применяются к постоянному viewer
+> через `ScenePatch`. Типизированный ввод с клавиатуры и мыши пока не реализован;
+> произвольные PyQt-виджеты, `preanimate` и прямой доступ к viewer не входят в
+> новый контракт.
 
 Пример:
 :en
 # Animation
 The graphical interface allows you to animate the displayed scene.
 
-> Migration note: the persistent viewer is already the default for static
-> scenes, but the managed runtime does not yet implement `show(animate=...)`.
-> The accepted design keeps callbacks in the runner, transports logical object
-> mutations as `ScenePatch`, and returns typed keyboard/mouse `InputEvent`
-> values. Arbitrary PyQt widgets and direct viewer access will not be supported.
-> Until that contract is implemented, the example below describes the legacy
-> runtime.
+> Migration note: the managed runtime supports basic `show(animate=...)`.
+> Callbacks execute in the isolated runner, while `relocate`, `set_color`, and
+> `hide` mutations reach the persistent viewer as `ScenePatch` values. Typed
+> keyboard/mouse input is not implemented yet; arbitrary PyQt widgets,
+> `preanimate`, and direct viewer access are outside the new contract.
 
 Example: 
 ::

@@ -96,6 +96,8 @@ class ScenePatchProtocolTest(unittest.TestCase):
             {"color": (0, 0, float("nan"), 0)},
             {"transform": {"scale": 0, "rotation": (0, 0, 0, 1),
                            "translation": (0, 0, 0)}},
+            {"transform": {"scale": 1, "rotation": (0, 0, 0, 0),
+                           "translation": (0, 0, 0)}},
             {"transform": {"scale": 1, "rotation": (0, 0, 0, 1),
                            "translation": (0, 0, 0), "extra": 1}},
             {"camera": "fit"},

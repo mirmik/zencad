@@ -29,7 +29,10 @@ def main():
         )
         error_path = Path(temporary_directory) / "error.py"
         error_path.write_text(
-            "raise RuntimeError('expected reload failure')\n",
+            "from zencad import *\n"
+            "display(box(30))\n"
+            "show()\n"
+            "raise RuntimeError('expected reload failure after show')\n",
             encoding="utf-8",
         )
         slow_path = Path(temporary_directory) / "slow.py"
@@ -43,6 +46,19 @@ def main():
             "from zencad import *\n"
             "display(sphere(7))\n"
             "show()\n",
+            encoding="utf-8",
+        )
+        animation_path = Path(temporary_directory) / "animation.py"
+        animation_path.write_text(
+            "from zencad import *\n"
+            "controller = display(box(10, center=True))\n"
+            "ticks = 0\n"
+            "def animate(state):\n"
+            "    global ticks\n"
+            "    ticks += 1\n"
+            "    controller.relocate(translate((ticks % 20) - 10, 0, 0))\n"
+            "    controller.set_color((ticks % 10) / 10, 0.4, 0.8, 0)\n"
+            "show(animate=animate, animate_step=0.01)\n",
             encoding="utf-8",
         )
 
@@ -65,6 +81,8 @@ def main():
             "phase": "reload",
             "target": None,
             "stable_object": None,
+            "animation_handle": None,
+            "animation_sequence": None,
         }
 
         def assert_persistent_viewer():
@@ -146,6 +164,35 @@ def main():
                 assert display.store_location() == state["camera"]
                 assert_persistent_viewer()
                 assert_visible_frame()
+                state["phase"] = "animation"
+                state["target"] = window.open(
+                    str(animation_path), update_texteditor=False
+                )
+            elif state["phase"] == "animation" and generation == state["target"]:
+                presenter = display.scene_presenter
+                if presenter.last_patch_sequence is None:
+                    return
+                handle = presenter.objects[0].ais_object
+                if state["animation_handle"] is None:
+                    state["animation_handle"] = handle
+                    state["animation_sequence"] = presenter.last_patch_sequence
+                    return
+                if presenter.last_patch_sequence <= state["animation_sequence"]:
+                    return
+                assert handle is state["animation_handle"]
+                assert display.store_location() == state["camera"]
+                assert_persistent_viewer()
+                assert_visible_frame()
+                state["phase"] = "animation_cancel"
+                window._runner_supervisor.cancel_current()
+            elif (
+                state["phase"] == "animation_cancel"
+                and status == "cancelled"
+            ):
+                assert display.scene_presenter.objects[0].ais_object is state[
+                    "animation_handle"
+                ]
+                assert_persistent_viewer()
                 state["phase"] = "done"
                 window.close()
                 application.quit()

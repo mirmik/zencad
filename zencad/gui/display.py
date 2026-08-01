@@ -154,6 +154,9 @@ class DisplayWidget(BaseViewer):
     def apply_snapshot(self, snapshot):
         return self.scene_presenter.apply(snapshot)
 
+    def apply_scene_patch(self, patch):
+        return self.scene_presenter.apply_patch(patch)
+
     def set_perspective(self, en):
         self._perspective_mode = en
         if en:

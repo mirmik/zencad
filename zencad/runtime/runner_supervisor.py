@@ -47,11 +47,13 @@ class RunnerSupervisor:
         self,
         on_message: Callable[[RunnerMessage], None] | None = None,
         cancel_grace_period: float = 0.5,
+        record_scene_patches: bool = True,
     ):
         if cancel_grace_period < 0:
             raise ValueError("Cancellation grace period must be non-negative")
         self.on_message = on_message
         self.cancel_grace_period = cancel_grace_period
+        self.record_scene_patches = record_scene_patches
         self._context = multiprocessing.get_context("spawn")
         self._lock = threading.RLock()
         self._generation = 0
@@ -140,7 +142,8 @@ class RunnerSupervisor:
         with self._lock:
             if message.generation != self._current_generation:
                 return False
-            self.messages.append(message)
+            if message.message_type != "scene_patch" or self.record_scene_patches:
+                self.messages.append(message)
         if self.on_message is not None:
             try:
                 self.on_message(message)

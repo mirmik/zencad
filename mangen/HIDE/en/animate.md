@@ -1,13 +1,11 @@
 # Анимация
 Графический интерфейс позволяет анимировать отображаемую сцену.
 
-> Migration note: the persistent viewer is already the default for static
-> scenes, but the managed runtime does not yet implement `show(animate=...)`.
-> The accepted design keeps callbacks in the runner, transports logical object
-> mutations as `ScenePatch`, and returns typed keyboard/mouse `InputEvent`
-> values. Arbitrary PyQt widgets and direct viewer access will not be supported.
-> Until that contract is implemented, the example below describes the legacy
-> runtime.
+> Migration note: the managed runtime supports basic `show(animate=...)`.
+> Callbacks execute in the isolated runner, while `relocate`, `set_color`, and
+> `hide` mutations reach the persistent viewer as `ScenePatch` values. Typed
+> keyboard/mouse input is not implemented yet; arbitrary PyQt widgets,
+> `preanimate`, and direct viewer access are outside the new contract.
 
 Пример:
 

@@ -91,11 +91,14 @@ def _transform(value: Any) -> Mapping[str, Any]:
     scale = _finite_number(value["scale"], "transform scale")
     if scale == 0:
         raise ProtocolError("transform scale must be non-zero")
+    rotation = _number_tuple(
+        value["rotation"], "transform rotation", 4
+    )
+    if not any(rotation):
+        raise ProtocolError("transform rotation quaternion must be non-zero")
     return MappingProxyType({
         "scale": scale,
-        "rotation": _number_tuple(
-            value["rotation"], "transform rotation", 4
-        ),
+        "rotation": rotation,
         "translation": _number_tuple(
             value["translation"], "transform translation", 3
         ),
