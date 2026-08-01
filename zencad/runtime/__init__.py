@@ -18,6 +18,21 @@ from zencad.runtime.scene_protocol import (
 )
 from zencad.runtime.runner_protocol import RunnerMessage
 from zencad.runtime.runner_supervisor import RunnerSupervisor
+from zencad.runtime.scene_patch_protocol import (
+    MAX_SCENE_PATCH_FRAME_BYTES,
+    MAX_SCENE_PATCH_OBJECT_ID_BYTES,
+    MAX_SCENE_PATCH_UPDATES,
+    SCENE_PATCH_PROTOCOL_VERSION,
+    SceneObjectPatch,
+    ScenePatch,
+    ScenePatchCoalescer,
+    ScenePatchSequenceError,
+    SupersededScenePatchError,
+    UnsupportedScenePatchVersion,
+    decode_scene_patch_frame,
+    encode_scene_patch_frame,
+    ensure_current_scene_patch,
+)
 
 __all__ = [
     "CURRENT_PROTOCOL_VERSION",
@@ -36,4 +51,17 @@ __all__ = [
     "select_snapshot_transport",
     "RunnerMessage",
     "RunnerSupervisor",
+    "MAX_SCENE_PATCH_FRAME_BYTES",
+    "MAX_SCENE_PATCH_OBJECT_ID_BYTES",
+    "MAX_SCENE_PATCH_UPDATES",
+    "SCENE_PATCH_PROTOCOL_VERSION",
+    "SceneObjectPatch",
+    "ScenePatch",
+    "ScenePatchCoalescer",
+    "ScenePatchSequenceError",
+    "SupersededScenePatchError",
+    "UnsupportedScenePatchVersion",
+    "decode_scene_patch_frame",
+    "encode_scene_patch_frame",
+    "ensure_current_scene_patch",
 ]

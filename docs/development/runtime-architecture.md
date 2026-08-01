@@ -167,7 +167,10 @@ direct access to `DisplayWidget` or the AIS context.
 Arbitrary `preanimate` Qt widgets, GUI event monkeypatching, and direct
 viewer/AIS access are not part of managed compatibility.  Declarative control
 panels, live topology add/remove, and camera commands are potential later
-protocol extensions.  None of this section is implemented yet; the accepted
+protocol extensions.  The transport DTO, validation, and coalescing foundation
+are implemented; runner and GUI integration remain follow-up work.  The exact
+v1 validation and coalescing rules are documented in
+[ScenePatch transport v1](scene-patch-transport.md), while the accepted
 decision and rationale are recorded in
 [Runner-driven animation with scene patches and input events](../architecture-council/2026-08-01-scene-patch-input-events.md).
 
