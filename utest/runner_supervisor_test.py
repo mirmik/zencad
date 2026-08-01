@@ -38,6 +38,17 @@ class RunnerSupervisorTest(unittest.TestCase):
             )
         ]
 
+    def wait_for_message(self, generation, message_type, timeout=10):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            messages = self.messages(generation, message_type)
+            if messages:
+                return messages[-1]
+            time.sleep(0.01)
+        self.fail(
+            f"Runner generation {generation} did not emit {message_type!r}"
+        )
+
     def test_control_message_round_trip_and_validation(self):
         frame = encode_control_message(
             "run",
@@ -125,6 +136,123 @@ show()
             "success",
         )
         self.assertEqual(len(self.messages(next_generation, "scene")), 1)
+
+    def test_animation_emits_ready_and_patches_before_structured_failure(self):
+        path = self.script("animated_failure.py", """
+import sys
+from zencad import box, display, show, translate
+assert "PyQt5" not in sys.modules
+assert "zencad.gui.display" not in sys.modules
+controller = display(box(2))
+assert not hasattr(controller, "ais_object")
+ticks = 0
+def animate(state):
+    global ticks
+    ticks += 1
+    controller.relocate(translate(ticks, 2, 3))
+    controller.set_color(1, 0, 0, 0.25)
+    controller.hide(ticks % 2 == 0)
+    if ticks == 3:
+        raise RuntimeError("animation failed")
+def close_handle():
+    print("animation closed")
+show(animate=animate, animate_step=0.001, close_handle=close_handle)
+""")
+        generation = self.supervisor.start(path)
+        self.assertEqual(self.supervisor.wait(generation, timeout=10), "error")
+
+        message_types = [
+            message.message_type
+            for message in self.messages(generation)
+        ]
+        scene_index = message_types.index("scene")
+        ready_index = message_types.index("ready")
+        patch_index = message_types.index("scene_patch")
+        self.assertLess(scene_index, ready_index)
+        self.assertLess(ready_index, patch_index)
+        ready = self.messages(generation, "ready")[-1]
+        self.assertEqual(dict(ready.payload), {
+            "animated": True,
+            "scene_revision": 0,
+        })
+        patches = self.messages(generation, "scene_patch")
+        self.assertEqual(len(patches), 2)
+        self.assertEqual(
+            [message.scene_patch.sequence for message in patches],
+            [1, 2],
+        )
+        first = patches[0].scene_patch
+        self.assertEqual(first.generation, generation)
+        self.assertEqual(first.scene_revision, 0)
+        self.assertEqual(
+            set(first.updates[0].properties),
+            {"transform", "color", "visible"},
+        )
+        error = self.messages(generation, "error")[-1]
+        self.assertEqual(error.payload["exception_type"], "RuntimeError")
+        self.assertIn("animation failed", error.payload["message"])
+        stdout = "".join(
+            message.payload["text"]
+            for message in self.messages(generation, "output")
+            if message.payload["stream"] == "stdout"
+        )
+        self.assertIn("animation closed", stdout)
+
+    def test_live_animation_is_cooperatively_cancelled(self):
+        path = self.script("animated_cancel.py", """
+import sys
+from zencad import box, display, show, translate
+assert "PyQt5" not in sys.modules
+assert "zencad.gui.display" not in sys.modules
+controller = display(box(1))
+ticks = 0
+def animate(state):
+    global ticks
+    ticks += 1
+    controller.relocate(translate(ticks, 0, 0))
+show(animate=animate, animate_step=0.001)
+""")
+        generation = self.supervisor.start(path)
+        self.wait_for_message(generation, "scene_patch")
+        self.assertTrue(self.supervisor.cancel_current(grace_period=0.5))
+        self.assertEqual(
+            self.supervisor.wait(generation, timeout=10),
+            "cancelled",
+        )
+        self.assertFalse(self.supervisor.is_alive(generation))
+        finished = self.messages(generation, "finished")[-1]
+        self.assertFalse(finished.payload.get("hard", False))
+
+    def test_superseded_live_generation_cannot_dispatch_late_patches(self):
+        live = self.script("superseded_animation.py", """
+from zencad import box, display, show, translate
+controller = display(box(1))
+ticks = 0
+def animate(state):
+    global ticks
+    ticks += 1
+    controller.relocate(translate(ticks, 0, 0))
+show(animate=animate, animate_step=0.001)
+""")
+        replacement = self.script(
+            "animation_replacement.py",
+            "from zencad import show, sphere, display\n"
+            "display(sphere(2))\nshow()\n",
+        )
+        first = self.supervisor.start(live)
+        self.wait_for_message(first, "scene_patch")
+
+        second = self.supervisor.start(replacement)
+        patches_after_reload = len(self.messages(first, "scene_patch"))
+        self.assertEqual(self.supervisor.wait(second, timeout=10), "success")
+        self.assertEqual(self.supervisor.wait(first, timeout=10), "cancelled")
+        time.sleep(0.05)
+
+        self.assertEqual(
+            len(self.messages(first, "scene_patch")),
+            patches_after_reload,
+        )
+        self.assertEqual(len(self.messages(second, "scene")), 1)
 
     def test_superseded_generation_cannot_publish_scene(self):
         slow = self.script("slow.py", """

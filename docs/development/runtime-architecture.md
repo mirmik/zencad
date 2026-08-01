@@ -2,9 +2,10 @@
 
 > Status: migration in progress.  The transport protocol, runner-side
 > `SceneDraft`, persistent `ScenePresenter`, generation supervisor, and managed
-> reload path are implemented.  Removing the retained legacy embedding path
-> and adding live-update/animation support remain follow-up work.  The accepted
-> decision is recorded in
+> reload path are implemented.  Managed runners now produce live
+> `ScenePatch` updates; GUI-side application, input events, and removal of the
+> retained legacy embedding path remain follow-up work.  The accepted decision
+> is recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
 ZenCad is migrating from cross-process native-window embedding to a persistent
@@ -74,6 +75,8 @@ classes:
 - `progress`: generation and structured evaluation progress;
 - `output`: generation, stream, and text chunk;
 - `scene`: manifest plus binary payloads;
+- `ready`: initial scene revision and static/animated lifecycle mode;
+- `scene_patch`: versioned absolute live property updates;
 - `error`: generation, exception summary, and traceback;
 - `finished`: generation and terminal status.
 
@@ -132,16 +135,17 @@ second Qt event loop.
 
 The first managed adapter is the explicit `managed_scene(generation,
 publisher)` context.  Inside it, the regular public `display()` and `show()`
-functions target a data-only `SceneDraft`; `show()` invokes the publisher and
-returns the same snapshot without importing Qt or entering ZenFrame.  Shape
-references currently preserve transform, visibility, face color, border
-color, and wire color.  Unsupported presentation kinds fail explicitly until
-their snapshot representation is added.
+functions target a data-only `SceneDraft`.  Static `show()` invokes the
+snapshot and ready publishers and returns the same snapshot without importing
+Qt or entering ZenFrame.  Animated `show()` keeps the runner alive, calls the
+user callback at `animate_step`, and emits a patch after each successful dirty
+iteration.  Shape references preserve transform, visibility, face color,
+border color, and wire color.  Unsupported presentation kinds fail explicitly
+until their snapshot representation is added.
 
 Standalone and headless modes need explicit adapters; they must not infer
-process role by importing Qt.  Existing animation and post-`show()` object
-mutation are outside the first static-snapshot milestone and require a
-follow-up live-update protocol.
+process role by importing Qt.  Arbitrary `preanimate` GUI access remains
+explicitly unsupported by the managed adapter.
 
 ## Planned live updates and input
 
@@ -168,8 +172,8 @@ Arbitrary `preanimate` Qt widgets, GUI event monkeypatching, and direct
 viewer/AIS access are not part of managed compatibility.  Declarative control
 panels, live topology add/remove, and camera commands are potential later
 protocol extensions.  The transport DTO, validation, and coalescing foundation
-are implemented; runner and GUI integration remain follow-up work.  The exact
-v1 validation and coalescing rules are documented in
+and runner-side animation lifecycle are implemented; GUI application remains
+follow-up work.  The exact v1 validation and coalescing rules are documented in
 [ScenePatch transport v1](scene-patch-transport.md), while the accepted
 decision and rationale are recorded in
 [Runner-driven animation with scene patches and input events](../architecture-council/2026-08-01-scene-patch-input-events.md).
@@ -189,8 +193,9 @@ The implemented `RunnerSupervisor` launches every generation with Python's
 `spawn` context, so a runner cannot inherit Qt, window, or OpenGL state from
 the GUI process.  The run request and progress/output/error/finished events are
 versioned, length-checked JSON frames sent with `Connection.send_bytes`; scene
-messages use the existing `ZCSN` binary frame or its atomic file bundle.  No
-Python object is sent through `Connection.send`.
+messages use the existing `ZCSN` binary frame or its atomic file bundle, and
+live updates use `ZCPT` frames.  No Python object is sent through
+`Connection.send`.
 
 Starting a generation immediately makes all older messages stale.  Reader
 threads may continue draining an older process, but generation filtering occurs

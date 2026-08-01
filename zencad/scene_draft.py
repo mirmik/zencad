@@ -2,6 +2,9 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass
+import math
+import sys
+import time
 from typing import Callable
 
 import evalcache
@@ -22,10 +25,35 @@ from zencad.runtime.scene_protocol import (
     SceneSnapshot,
     encode_brep,
 )
+from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
 
 
 class SceneDraftError(ValueError):
     """The runner attempted an unsupported scene operation."""
+
+
+class SceneAnimationCancelled(BaseException):
+    """The owning generation was cancelled during managed animation."""
+
+
+class ManagedAnimationState:
+    """Qt-free counterpart of the callback state used by legacy animation."""
+
+    def __init__(self):
+        now = time.time()
+        self.widget = None
+        self.start_time = now
+        self.time = now
+        self.last_time = now
+        self.delta = 0.0
+        self.loctime = 0.0
+        self.scene = None
+
+    def timestamp(self, timestamp):
+        self.time = timestamp
+        self.loctime = timestamp - self.start_time
+        self.delta = timestamp - self.last_time
+        self.last_time = timestamp
 
 
 def _color(value, fallback) -> Color:
@@ -75,7 +103,13 @@ class SceneObjectRef(Transformable):
     def relocate(self, transformation):
         if not isinstance(transformation, Transformation):
             raise SceneDraftError("Scene relocation requires a Transformation")
-        self._object().location = transformation
+        obj = self._object()
+        obj.location = transformation
+        self._draft._mark_dirty(
+            self.object_id,
+            "transform",
+            _transformation_state(transformation),
+        )
         return self
 
     def location(self):
@@ -97,17 +131,34 @@ class SceneObjectRef(Transformable):
             color = Color(color, b, c, d)
         obj = self._object()
         obj.color = _color(color, default_color)
+        self._draft._mark_dirty(
+            self.object_id,
+            "color",
+            _color_tuple(obj.color),
+        )
         if border_color is not None:
             obj.border_color = _color(border_color, default_border_color)
+            self._draft._mark_dirty(
+                self.object_id,
+                "border_color",
+                _color_tuple(obj.border_color),
+            )
         if wire_color is not None:
             obj.wire_color = _color(wire_color, default_wire_color)
+            self._draft._mark_dirty(
+                self.object_id,
+                "wire_color",
+                _color_tuple(obj.wire_color),
+            )
         return self
 
     def color(self):
         return self._object().color
 
     def hide(self, enabled=True):
-        self._object().visible = not enabled
+        obj = self._object()
+        obj.visible = not enabled
+        self._draft._mark_dirty(self.object_id, "visible", obj.visible)
         return self
 
     def is_hidden(self):
@@ -122,6 +173,9 @@ class SceneDraft:
         generation: int,
         publisher: Callable[[SceneSnapshot], None] | None = None,
         camera_policy: str = "preserve",
+        patch_publisher: Callable[[ScenePatch], bool | None] | None = None,
+        ready_publisher: Callable[[int, bool], bool | None] | None = None,
+        cancel_event=None,
     ):
         if not isinstance(generation, int) or isinstance(generation, bool):
             raise SceneDraftError("Scene generation must be an integer")
@@ -130,8 +184,16 @@ class SceneDraft:
         self.generation = generation
         self.publisher = publisher
         self.camera_policy = camera_policy
+        self.patch_publisher = patch_publisher
+        self.ready_publisher = ready_publisher
+        self.cancel_event = cancel_event
         self._objects: OrderedDict[str, _DraftObject] = OrderedDict()
         self._next_id = 0
+        self._published = False
+        self._ready = False
+        self._scene_revision = 0
+        self._patch_sequence = 0
+        self._dirty: OrderedDict[str, dict] = OrderedDict()
 
     def _get(self, object_id: str) -> _DraftObject:
         try:
@@ -141,7 +203,17 @@ class SceneDraft:
                 f"Scene object {object_id!r} does not belong to this draft"
             ) from exception
 
+    def _mark_dirty(self, object_id, property_name, value):
+        if not self._published:
+            return
+        properties = self._dirty.setdefault(object_id, {})
+        properties[property_name] = value
+
     def add(self, obj, color=None):
+        if self._published:
+            raise SceneDraftError(
+                "Managed scenes cannot add objects after initial publication"
+            )
         obj = evalcache.unlazy_if_need(obj)
         if not isinstance(obj, (Shape, TopoDS_Shape)):
             raise SceneDraftError(
@@ -184,10 +256,108 @@ class SceneDraft:
         )
 
     def publish(self) -> SceneSnapshot:
+        if self._published:
+            raise SceneDraftError("Managed scene was already published")
         snapshot = self.snapshot()
         if self.publisher is not None:
             self.publisher(snapshot)
+        self._published = True
+        self._dirty.clear()
         return snapshot
+
+    def ready(self, animated=False):
+        if not self._published:
+            raise SceneDraftError("Managed scene must be published before ready")
+        if self._ready:
+            raise SceneDraftError("Managed scene is already ready")
+        if not isinstance(animated, bool):
+            raise SceneDraftError("animated must be a boolean")
+        self._ready = True
+        if self.ready_publisher is not None:
+            accepted = self.ready_publisher(self._scene_revision, animated)
+            if accepted is False:
+                raise SceneAnimationCancelled()
+
+    def drain_patch(self) -> ScenePatch | None:
+        if not self._dirty:
+            return None
+        self._patch_sequence += 1
+        patch = ScenePatch(
+            generation=self.generation,
+            scene_revision=self._scene_revision,
+            sequence=self._patch_sequence,
+            updates=tuple(
+                SceneObjectPatch(object_id, properties)
+                for object_id, properties in self._dirty.items()
+            ),
+        )
+        self._dirty.clear()
+        return patch
+
+    def _cancelled(self):
+        if self.cancel_event is None:
+            return False
+        trace = sys.gettrace()
+        if trace is not None:
+            sys.settrace(None)
+        try:
+            return self.cancel_event.is_set()
+        finally:
+            if trace is not None:
+                sys.settrace(trace)
+
+    def _wait(self, timeout):
+        if self.cancel_event is None:
+            time.sleep(timeout)
+            return False
+        # The worker's cancellation trace reads this same multiprocessing
+        # Event. Do not let tracing recursively re-enter Event.wait() while
+        # its condition lock is held.
+        trace = sys.gettrace()
+        if trace is not None:
+            sys.settrace(None)
+        try:
+            return self.cancel_event.wait(timeout)
+        finally:
+            if trace is not None:
+                sys.settrace(trace)
+
+    def run_animation(self, callback, animate_step=0.01, close_handle=None):
+        if not self._ready or not self._published:
+            raise SceneDraftError("Managed scene must be ready before animation")
+        if not callable(callback):
+            raise SceneDraftError("Animation callback must be callable")
+        if close_handle is not None and not callable(close_handle):
+            raise SceneDraftError("close_handle must be callable")
+        if (
+            not isinstance(animate_step, (int, float))
+            or isinstance(animate_step, bool)
+            or not math.isfinite(animate_step)
+            or animate_step <= 0
+        ):
+            raise SceneDraftError("animate_step must be a positive finite number")
+
+        state = ManagedAnimationState()
+        deadline = time.monotonic()
+        try:
+            while True:
+                if self._cancelled():
+                    raise SceneAnimationCancelled()
+                delay = deadline - time.monotonic()
+                if delay > 0 and self._wait(delay):
+                    raise SceneAnimationCancelled()
+
+                state.timestamp(time.time())
+                callback(state)
+                patch = self.drain_patch()
+                if patch is not None and self.patch_publisher is not None:
+                    accepted = self.patch_publisher(patch)
+                    if accepted is False:
+                        raise SceneAnimationCancelled()
+                deadline = max(deadline + animate_step, time.monotonic())
+        finally:
+            if close_handle is not None:
+                close_handle()
 
     def __len__(self):
         return len(self._objects)

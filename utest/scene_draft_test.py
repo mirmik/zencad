@@ -4,6 +4,7 @@ from pathlib import Path
 import runpy
 import subprocess
 import sys
+import threading
 from tempfile import TemporaryDirectory
 import unittest
 from unittest import mock
@@ -18,7 +19,11 @@ from zencad.runtime.scene_protocol import (
     decode_snapshot_frame,
     encode_snapshot_frame,
 )
-from zencad.scene_draft import SceneDraft
+from zencad.scene_draft import (
+    SceneAnimationCancelled,
+    SceneDraft,
+    SceneDraftError,
+)
 
 
 ROOT = Path(__file__).parents[1]
@@ -91,6 +96,63 @@ class SceneDraftTest(unittest.TestCase):
             decode_snapshot_frame(encode_snapshot_frame(snapshot)),
             snapshot,
         )
+
+    def test_post_publish_mutations_become_coalesced_absolute_patches(self):
+        published = []
+        patches = []
+        ready = []
+        cancel_event = threading.Event()
+        closed = []
+        states = []
+
+        with zencad.managed_scene(
+            12,
+            published.append,
+            patch_publisher=lambda patch: patches.append(patch),
+            ready_publisher=lambda revision, animated: ready.append(
+                (revision, animated)
+            ),
+            cancel_event=cancel_event,
+        ) as draft:
+            reference = zencad.display(zencad.box(2))
+
+            def animate(state):
+                states.append(state)
+                reference.relocate(zencad.translate(len(states), 2, 3))
+                reference.set_color(1, 0, 0, 0.25)
+                reference.hide(len(states) == 1)
+                if len(states) == 2:
+                    cancel_event.set()
+
+            with self.assertRaises(SceneAnimationCancelled):
+                zencad.show(
+                    animate=animate,
+                    animate_step=0.001,
+                    close_handle=lambda: closed.append(True),
+                )
+
+        self.assertEqual(len(published), 1)
+        self.assertEqual(ready, [(0, True)])
+        self.assertEqual(len(patches), 2)
+        self.assertEqual([patch.sequence for patch in patches], [1, 2])
+        self.assertEqual(patches[0].generation, 12)
+        properties = patches[0].updates[0].properties
+        self.assertEqual(
+            set(properties), {"transform", "color", "visible"}
+        )
+        self.assertEqual(properties["transform"]["translation"], (1, 2, 3))
+        self.assertFalse(properties["visible"])
+        self.assertEqual(patches[1].updates[0].properties["visible"], True)
+        self.assertEqual(closed, [True])
+        self.assertGreaterEqual(states[-1].loctime, states[0].loctime)
+        with self.assertRaisesRegex(SceneDraftError, "cannot add objects"):
+            draft.add(zencad.sphere(1))
+
+    def test_managed_preanimate_is_explicitly_unsupported(self):
+        with zencad.managed_scene(13):
+            zencad.display(zencad.box(1))
+            with self.assertRaisesRegex(ValueError, "preanimate"):
+                zencad.show(animate=lambda state: None, preanimate=lambda: None)
 
     def test_generations_are_isolated(self):
         published = []

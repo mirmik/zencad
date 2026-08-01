@@ -84,11 +84,23 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
         scene = __default_scene
 
     if isinstance(scene, SceneDraft):
-        if any(value is not None for value in (animate, preanimate, close_handle)):
+        if preanimate is not None:
             raise ValueError(
-                "Managed static scenes do not support animation or close hooks"
+                "Managed scenes do not support preanimate or direct GUI access"
             )
-        return scene.publish()
+        if animate is None and close_handle is not None:
+            raise ValueError(
+                "Managed static scenes do not support close_handle"
+            )
+        snapshot = scene.publish()
+        scene.ready(animated=animate is not None)
+        if animate is not None:
+            scene.run_animation(
+                animate,
+                animate_step=animate_step,
+                close_handle=close_handle,
+            )
+        return snapshot
 
     from zenframe.unbound import (
         is_unbound_mode,
@@ -121,7 +133,14 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
 
 
 @contextmanager
-def managed_scene(generation, publisher=None, camera_policy="preserve"):
+def managed_scene(
+    generation,
+    publisher=None,
+    camera_policy="preserve",
+    patch_publisher=None,
+    ready_publisher=None,
+    cancel_event=None,
+):
     """Temporarily route the public display/show API into a data-only draft."""
     global __default_scene
 
@@ -130,6 +149,9 @@ def managed_scene(generation, publisher=None, camera_policy="preserve"):
         generation=generation,
         publisher=publisher,
         camera_policy=camera_policy,
+        patch_publisher=patch_publisher,
+        ready_publisher=ready_publisher,
+        cancel_event=cancel_event,
     )
     __default_scene = draft
     try:

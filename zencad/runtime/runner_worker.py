@@ -16,6 +16,8 @@ from zencad.runtime.scene_protocol import (
     encode_snapshot_frame,
     select_snapshot_transport,
 )
+from zencad.runtime.scene_patch_protocol import encode_scene_patch_frame
+from zencad.scene_draft import SceneAnimationCancelled
 
 
 class RunnerCancelled(BaseException):
@@ -30,7 +32,7 @@ class _Reporter:
 
     def control(self, message_type, **payload):
         if self.closed:
-            return
+            return False
         try:
             self.connection.send_bytes(
                 encode_control_message(
@@ -41,6 +43,8 @@ class _Reporter:
             )
         except (BrokenPipeError, EOFError, OSError):
             self.closed = True
+            return False
+        return True
 
     def scene(self, snapshot, bundle_root):
         if select_snapshot_transport(snapshot) == "inline":
@@ -49,6 +53,16 @@ class _Reporter:
         name = f"generation-{self.generation}-{uuid4().hex}"
         FileSnapshotBundle.write(Path(bundle_root) / name, snapshot)
         self.control("scene_file", bundle=name)
+
+    def scene_patch(self, patch):
+        if self.closed:
+            return False
+        try:
+            self.connection.send_bytes(encode_scene_patch_frame(patch))
+        except (BrokenPipeError, EOFError, OSError):
+            self.closed = True
+            return False
+        return True
 
 
 class _OutputStream:
@@ -145,6 +159,13 @@ def run_generation(request_frame, connection, cancel_event, bundle_root):
             with managed_scene(
                 generation,
                 lambda snapshot: reporter.scene(snapshot, bundle_root),
+                patch_publisher=reporter.scene_patch,
+                ready_publisher=lambda revision, animated: reporter.control(
+                    "ready",
+                    scene_revision=revision,
+                    animated=animated,
+                ),
+                cancel_event=cancel_event,
             ):
                 runpy.run_path(str(script_path), run_name="__main__")
             terminal_status = "success"
@@ -155,7 +176,7 @@ def run_generation(request_frame, connection, cancel_event, bundle_root):
             sys.argv = previous_argv
             sys.path[:] = previous_path
             os.chdir(previous_cwd)
-    except RunnerCancelled:
+    except (RunnerCancelled, SceneAnimationCancelled):
         terminal_status = "cancelled"
     except SystemExit as exception:
         if exception.code in (None, 0):

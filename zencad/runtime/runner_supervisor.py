@@ -20,6 +20,10 @@ from zencad.runtime.scene_protocol import (
     ProtocolError,
     decode_snapshot_frame,
 )
+from zencad.runtime.scene_patch_protocol import (
+    SCENE_PATCH_FRAME_MAGIC,
+    decode_scene_patch_frame,
+)
 
 
 @dataclass
@@ -162,6 +166,19 @@ class RunnerSupervisor:
                 handle.generation,
                 {"carrier": "inline"},
                 snapshot=snapshot,
+            )
+        if frame.startswith(SCENE_PATCH_FRAME_MAGIC):
+            patch = decode_scene_patch_frame(frame)
+            if patch.generation != handle.generation:
+                raise ProtocolError("ScenePatch generation does not match its runner")
+            return RunnerMessage(
+                "scene_patch",
+                handle.generation,
+                {
+                    "scene_revision": patch.scene_revision,
+                    "sequence": patch.sequence,
+                },
+                scene_patch=patch,
             )
         if not frame.startswith(RUNNER_MAGIC):
             raise ProtocolError("Unknown runner frame magic")

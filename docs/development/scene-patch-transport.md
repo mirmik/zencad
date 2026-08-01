@@ -3,8 +3,24 @@
 This document records the implemented, pickle-free protocol foundation for
 the accepted
 [runner-driven animation design](../architecture-council/2026-08-01-scene-patch-input-events.md).
-It defines transport and coalescing only; runner and GUI integration are
-separate milestones.
+It defines transport and coalescing. Runner production is implemented; GUI
+application is a separate milestone.
+
+## Runner lifecycle
+
+Managed `show()` publishes the initial `SceneSnapshot`, emits
+`ready(scene_revision=0, animated=true)`, and then runs the callback inside the
+same isolated spawn-runner. The Qt-free callback state retains the legacy
+timing fields. Mutations through the logical object returned by `display()`
+are coalesced by object and property during each callback iteration; only a
+successfully completed iteration is drained into the next sequence.
+
+Patch writes are synchronous, so the runner cannot build an unbounded frame
+queue behind a slow consumer. Callback failures become structured runner
+errors and leave the last completely emitted state intact. Cancellation and
+supersession stop the live generation through the existing cooperative trace
+and bounded hard-cancel fallback. `preanimate` and direct GUI access are
+explicitly outside this managed lifecycle.
 
 ## Wire contract
 
@@ -57,4 +73,7 @@ touching AIS objects.
 `utest/scene_patch_protocol_test.py` covers canonical round-trip, immutable
 DTOs, malformed/unknown/duplicate input, property and resource limits,
 generation/revision filtering, sequence gaps, latest-state coalescing, and
-bounded/mixed-stream failure modes. The suite imports no Qt modules.
+bounded/mixed-stream failure modes. `utest/scene_draft_test.py` verifies
+post-publication dirty state, and `utest/runner_supervisor_test.py` verifies
+ready/patch ordering, structured callback failure, and cancellation. The
+suites import no Qt modules in the runner process.
