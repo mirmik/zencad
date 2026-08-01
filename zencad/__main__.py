@@ -2,6 +2,8 @@
 # coding:utf-8
 
 import os
+from pathlib import Path
+import runpy
 import sys
 
 TEMPLATE = """#!/usr/bin/env python3
@@ -27,37 +29,51 @@ def console_options_handle():
     return pargs
 
 
-def top_half(communicator):
-    from zencad.lazifier import install_evalcahe_notication
-    install_evalcahe_notication(communicator)
-
-
-def frame_creator(openpath, initial_communicator, norestore, unbound):
+def frame_creator(openpath, norestore):
     from zencad.gui.mainwindow import MainWindow
-    from zencad.settings import Settings
     from zenframe.util import create_temporary_file
     import zenframe.configuration
-    import PyQt5.QtWidgets
-    import PyQt5.QtGui
 
-    iconpath = os.path.join(os.path.dirname(__file__), "industrial-robot.svg")
-    if not os.path.exists(iconpath):
-        # for pyinstaller files configuration
-        iconpath = os.path.join(os.path.dirname(
-            __file__), "zencad", "industrial-robot.svg")
-
-    PyQt5.QtWidgets.QApplication.instance().setWindowIcon(PyQt5.QtGui.QIcon())
-
-    if openpath is None and not unbound:
+    if openpath is None:
         openpath = create_temporary_file(
             zenframe.configuration.Configuration.TEMPLATE)
 
     mainwindow = MainWindow(
-        initial_communicator=initial_communicator,
         restore_gui=not norestore,
-        managed_runtime=not unbound)
+    )
 
     return mainwindow, openpath
+
+
+def _run_script_only(pargs):
+    import zenframe.configuration
+
+    if len(pargs.paths) != 1:
+        raise SystemExit("--display/--no-show requires exactly one script")
+    zenframe.configuration.Configuration.NOSHOW = bool(pargs.no_show)
+    zenframe.configuration.Configuration.WIDGET_ONLY = bool(pargs.display)
+    script_path = Path(pargs.paths[0]).resolve()
+    if not script_path.is_file():
+        raise FileNotFoundError(script_path)
+    os.chdir(script_path.parent)
+    sys.path.insert(0, str(script_path.parent))
+    runpy.run_path(str(script_path), run_name="__main__")
+
+
+def _run_main_window(pargs):
+    from PyQt5 import QtCore, QtWidgets
+    import zenframe.configuration
+
+    application = QtWidgets.QApplication(sys.argv[1:])
+    openpath = pargs.paths[0] if pargs.paths else None
+    window, openpath = frame_creator(openpath, pargs.no_restore)
+    if openpath:
+        window.open(openpath)
+    pulse = QtCore.QTimer()
+    pulse.start(int(zenframe.configuration.Configuration.TIMER_PULSE * 1000))
+    pulse.timeout.connect(lambda: None)
+    window.show()
+    return application.exec()
 
 
 def main():
@@ -82,14 +98,15 @@ def main():
         zencad.gui.settingswdg.doit()
         sys.exit()
 
-    from zencad.showapi import widget_creator
-    import zenframe.starter as frame
-
-    frame.invoke(
-        pargs,
-        frame_creator=frame_creator,
-        exec_top_half=top_half,
-        exec_bottom_half=widget_creator)
+    if pargs.unbound or pargs.frame or pargs.sleeped:
+        raise SystemExit(
+            "Foreign-window --unbound/--frame/--sleeped modes were removed; "
+            "run 'zencad SCRIPT.py' or use --display for a standalone viewer"
+        )
+    if pargs.display or pargs.no_show:
+        _run_script_only(pargs)
+        return 0
+    return _run_main_window(pargs)
 
 
 if __name__ == "__main__":

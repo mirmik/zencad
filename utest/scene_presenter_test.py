@@ -212,7 +212,7 @@ class ScenePresenterTest(unittest.TestCase):
             "center": (3.0, 2.0, 1.0),
         })
 
-    def test_real_materializer_creates_styled_unbound_ais_shape(self):
+    def test_real_materializer_creates_styled_detached_ais_shape(self):
         source = SceneObjectRecord(
             object_id="box",
             kind="brep",

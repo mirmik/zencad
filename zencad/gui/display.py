@@ -44,6 +44,10 @@ class BaseViewer(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         fmt = QtOpenGL.QGLFormat()
         super().__init__(fmt, parent=parent)
+        # OCCT embeds into this widget's own native child window. Declare that
+        # relationship before winId() is created; wrapping the resulting XID
+        # in a second QWindow used to cause BadWindow/reparenting races.
+        self.setWindowFlag(QtCore.Qt.SubWindow, True)
 
         self._display = ocp_viewer.Viewer3d()
         self._inited = False
@@ -86,7 +90,6 @@ class BaseViewer(QtOpenGL.QGLWidget):
 class DisplayWidget(BaseViewer):
     def __init__(self,
                  axis_triedron=True,
-                 communicator=None,
                  parent=None):
 
         super().__init__(parent=parent)
@@ -95,7 +98,6 @@ class DisplayWidget(BaseViewer):
         self.Context = self._display.Context
 
         self.init_driver_in_constructor = True
-        self._communicator = communicator
         self._orient = 1
         self._drawbox = False
         self._zoom_area = False
@@ -111,6 +113,7 @@ class DisplayWidget(BaseViewer):
         self.keyboard_retranslate_mode = False
         self.tracking_mode = False
         self._input_event_sink = None
+        self._viewer_event_sink = None
 
         self.last_redraw = time.time()
         self.animate_updated = threading.Event()
@@ -152,6 +155,15 @@ class DisplayWidget(BaseViewer):
         if sink is not None and not callable(sink):
             raise TypeError("Input event sink must be callable")
         self._input_event_sink = sink
+
+    def set_viewer_event_sink(self, sink):
+        if sink is not None and not callable(sink):
+            raise TypeError("Viewer event sink must be callable")
+        self._viewer_event_sink = sink
+
+    def _emit_viewer_event(self, event_type, data):
+        if self._viewer_event_sink is not None:
+            self._viewer_event_sink(event_type, data)
 
     def _emit_input_event(self, message_type, data):
         if self._input_event_sink is not None:
@@ -429,10 +441,6 @@ class DisplayWidget(BaseViewer):
         for c in self.camera_center_axes:
             c.relocate(zencad.geom.trans.translate(self.center()))
 
-        if self._communicator:
-            loc = self.store_location()
-            self._communicator.send({"cmd": "location",  "loc": loc})
-
     def InitDriver(self):
         if self._display._window is None:
             self._display.Create(window_handle=int(self.winId()), parent=self)
@@ -464,12 +472,7 @@ class DisplayWidget(BaseViewer):
         y = self.marker1[0].y
         z = self.marker1[0].z
 
-        if self._communicator:
-            self._communicator.send({
-                "cmd": "qmarker",
-                "x": x,
-                "y": y,
-                "z": z})
+        self._emit_viewer_event("qmarker", {"x": x, "y": y, "z": z})
         self.redraw_marker("q", x, y, z)
 
     def markerWPressed(self):
@@ -480,12 +483,7 @@ class DisplayWidget(BaseViewer):
         y = self.marker2[0].y
         z = self.marker2[0].z
 
-        if self._communicator:
-            self._communicator.send({
-                "cmd": "wmarker",
-                "x": x,
-                "y": y,
-                "z": z})
+        self._emit_viewer_event("wmarker", {"x": x, "y": y, "z": z})
         self.redraw_marker("w", x, y, z)
 
     def keyPressEvent(self, event):
@@ -550,14 +548,6 @@ class DisplayWidget(BaseViewer):
             self.dragStartPosY = ev.y()
             return
 
-        # If signal not handling here, translate it onto top level
-        if self._communicator:
-            self._communicator.send({
-                "cmd": "keypressed_raw",
-                "key": event.key(),
-                "modifiers": "",
-                "text": event.text()})
-
     def keyReleaseEvent(self, event):
         self._emit_input_event("key_up", {
             "key": self._input_key(event),
@@ -592,11 +582,6 @@ class DisplayWidget(BaseViewer):
 
     def paintEvent(self, event):
         if not self._inited1:
-
-            QtGui.QWindow.fromWinId(self.winId()).setFlags(
-                QtGui.QWindow.fromWinId(self.winId()).flags() |
-                QtCore.Qt.SubWindow)
-
             self._inited1 = True
 
         self._display.Context.UpdateCurrentViewer()
@@ -734,12 +719,7 @@ class DisplayWidget(BaseViewer):
 
         if self.tracking_mode and not self.mousedown:
             ip, sts = self.intersect_point(evt.x(), evt.y())
-
-            if self._communicator:
-                self._communicator.send({
-                    "cmd": "trackinfo",
-                    "data": (ip.to_tuple(), sts)
-                })
+            self._emit_viewer_event("trackinfo", (ip.to_tuple(), sts))
 
         # ROTATE
         if (buttons == QtCore.Qt.LeftButton or

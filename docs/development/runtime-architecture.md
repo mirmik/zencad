@@ -1,15 +1,13 @@
-# Planned runtime architecture
+# Runtime architecture
 
-> Status: migration in progress.  The transport protocol, runner-side
-> `SceneDraft`, persistent `ScenePresenter`, generation supervisor, and managed
-> reload path are implemented. Managed animation patches and typed input now
-> travel in opposite directions between the runner and persistent GUI scene;
-> removal of the retained legacy embedding path remains follow-up work. The accepted decision is
-> recorded in
+> Status: implemented. The transport protocol, runner-side `SceneDraft`,
+> persistent `ScenePresenter`, generation supervisor, managed animations, and
+> typed input are the only editor runtime. The former cross-process native
+> window path has been removed. The accepted decision is recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
-ZenCad is migrating from cross-process native-window embedding to a persistent
-viewer fed by versioned scene snapshots.
+ZenCad uses one persistent viewer fed by versioned scene snapshots from
+isolated script runners.
 
 ## Process ownership
 
@@ -67,7 +65,7 @@ presented during calculation, cancellation, and failure.
 
 ## Protocol boundary
 
-The control protocol is versioned and framed.  It needs at least these message
+The control protocol is versioned and framed. It contains these message
 classes:
 
 - `run`: script path, generation, arguments, settings, and environment policy;
@@ -80,7 +78,7 @@ classes:
 - `error`: generation, exception summary, and traceback;
 - `finished`: generation and terminal status.
 
-The first scene manifest should describe a full replacement, not a diff.  Each
+The first scene manifest describes a full replacement, not a diff. Each
 object needs an ID, kind, payload reference, transform, visibility, and style.
 Shape payloads use BREP bytes.  The transport spike must choose between direct
 binary pipe frames and file-backed blobs using measured scene sizes; the
@@ -121,8 +119,8 @@ an explicit camera in snapshot metadata are opt-in policies.
 
 ## API transition
 
-The current `Scene` mixes scene description with eagerly created AIS objects.
-The planned split is:
+Legacy direct display still has a `Scene`, while the editor runtime uses this
+implemented split:
 
 - runner-side `SceneDraft` and logical object references;
 - immutable `SceneSnapshot` data transfer objects;
@@ -154,7 +152,7 @@ not require runner-side Qt windows or AIS contexts. Supported and excluded
 example patterns are listed in
 [Managed animation migration notes](managed-animation-migration.md).
 
-## Planned live updates and input
+## Live updates and input
 
 The accepted live-update design keeps `show(animate=callback)` callbacks in
 the isolated runner.  It does not serialize or execute them in the GUI.
@@ -219,7 +217,7 @@ stderr, tracebacks, and EvalCache progress are converted into generation-tagged
 `RunnerMessage` values.  The next generation remains startable after every
 terminal state.
 
-## Migration boundary
+## Runtime entry points
 
 The default `zencad` application now keeps the ZenFrame editor, console, menus,
 and file watcher, but overrides file execution with `RunnerSupervisor`.  Its
@@ -236,10 +234,26 @@ Progress appears in the status bar while the previous scene remains visible.
 Navigation and export actions are routed directly to the local display instead
 of a worker-side window.
 
-The direct-script compatibility mode is temporarily retained.  Legacy
-`bindwin`, `QWindow.fromWinId()`, and `createWindowContainer()` code can be
-removed only after static scenes, errors, reload, cancellation, camera
-preservation, and supported interactive objects pass the replacement-path
-smokes.  `utest/gui_reload_smoke.py` exercises 20 successive reloads plus
-failure, cancellation, and supersession while asserting stable native-window,
-viewer, context, editor, console, and camera identities.
+The normal `zencad SCRIPT.py` entry point always creates this persistent editor
+and evaluates scripts through `RunnerSupervisor`. The old worker/frame/sleeping
+process modes fail immediately with a migration hint and cannot enter an
+embedding branch.
+
+`zencad --display SCRIPT.py` and direct `show()` remain available as an
+explicit same-process standalone viewer. They create one local
+`DisplayWidget`; they do not launch an editor process or transport a native
+window ID. `--no-show` remains a Qt-free same-process evaluation mode.
+
+The display still passes its own native widget handle to OCCT when creating the
+platform window. That is local renderer initialization, not cross-process
+window transport. No foreign Qt window wrapper or container remains in the
+active ZenCad sources.
+
+`utest/gui_reload_smoke.py` exercises 20 successive reloads plus failure,
+cancellation, and supersession while asserting stable native-window, viewer,
+context, editor, console, and camera identities. `utest/gui_games_smoke.py`
+drives Tetris through the reverse input channel, and
+`utest/gui_standalone_smoke.py` verifies the local direct-script path.
+`utest/runtime_embedding_removal_test.py` guards the removed symbols and legacy
+CLI modes. Headless protocol/runtime tests run on Linux, Windows, and macOS in
+CI; the native OCCT/X11 GUI smokes run on Linux under Xvfb.

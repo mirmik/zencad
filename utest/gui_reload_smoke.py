@@ -63,7 +63,7 @@ def main():
             encoding="utf-8",
         )
 
-        window = MainWindow(restore_gui=False, managed_runtime=True)
+        window = MainWindow(restore_gui=False)
         display = window.display_widget
         window.resize(800, 600)
         window.show()

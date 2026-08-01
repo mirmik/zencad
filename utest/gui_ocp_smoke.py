@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Named Linux smoke for the OCP-backed ZenCad viewer."""
 
+from zencad.gui.qt_backend import configure_qt_platform
+
+configure_qt_platform()
+
 from PyQt5 import QtWidgets
 from pathlib import Path
 from tempfile import TemporaryDirectory

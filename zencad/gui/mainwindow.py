@@ -1,18 +1,10 @@
-import sys
-import os
-import time
-import signal
-import json
 import threading
 
 import zencad.gui.actions
 from zencad.gui.info_widget import InfoWidget
-from zencad.settings import Settings
-
-from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
+from PyQt5 import QtCore
 
 from zenframe.mainwindow import ZenFrame
-from zenframe.util import print_to_stderr
 
 
 class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
@@ -21,18 +13,13 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
     def __init__(self,
                  title="ZenCad",
-                 initial_communicator=None,
                  restore_gui=True,
-                 managed_runtime=True,
                  ):
 
         # Init objects
         self.info_widget = InfoWidget()
-        self._managed_runtime_requested = managed_runtime
-        self._runner_supervisor = None
         self._pending_snapshots = {}
         self._generation_statuses = {}
-        self._scene_patch_coalescer = None
         self._scene_patch_lock = threading.Lock()
         self._scene_patch_notification_pending = False
         self._scene_patch_bridge_error = None
@@ -41,57 +28,39 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         super().__init__(
             title=title,
             application_name="zencad",
-            initial_communicator=initial_communicator,
             restore_gui=restore_gui)
 
-        if managed_runtime:
-            from zencad.runtime import RunnerSupervisor, ScenePatchCoalescer
+        from zencad.runtime import RunnerSupervisor, ScenePatchCoalescer
 
-            self.use_sleeped_process = False
-            self.runner_message.connect(
-                self._handle_runner_message,
-                QtCore.Qt.QueuedConnection,
-            )
-            self.scene_patch_ready.connect(
-                self._apply_pending_scene_patch,
-                QtCore.Qt.QueuedConnection,
-            )
-            self._runner_supervisor = RunnerSupervisor(
-                on_message=self._queue_runner_message,
-                record_scene_patches=False,
-            )
-            self._scene_patch_coalescer = ScenePatchCoalescer()
-            self.display_widget.set_input_event_sink(
-                self._forward_input_event
-            )
-
-        # Устанавливается при открытии файла, если при следующем бинде
-        # нужно/ненужно произвести восстановить параметры камеры.
-        self._last_location = None
+        self.runner_message.connect(
+            self._handle_runner_message,
+            QtCore.Qt.QueuedConnection,
+        )
+        self.scene_patch_ready.connect(
+            self._apply_pending_scene_patch,
+            QtCore.Qt.QueuedConnection,
+        )
+        self._runner_supervisor = RunnerSupervisor(
+            on_message=self._queue_runner_message,
+            record_scene_patches=False,
+        )
+        self._scene_patch_coalescer = ScenePatchCoalescer()
+        self.display_widget.set_input_event_sink(self._forward_input_event)
+        self.display_widget.set_viewer_event_sink(self._handle_viewer_event)
 
     def spawn_process(self, application_name):
-        if self._managed_runtime_requested:
-            return None
-        return super().spawn_process(application_name)
+        return None
 
     def init_central_widget(self):
         super().init_central_widget()
-        if self._managed_runtime_requested:
-            from zencad.gui.display import DisplayWidget
+        from zencad.gui.display import DisplayWidget
 
-            # Give Qt the final native parent before OCCT binds to winId().
-            # Reparenting an already-created native widget can replace its XID
-            # and leave Xw_Window drawing into the old invisible window.
-            self.screen_saver.setParent(None)
-            self.display_widget = DisplayWidget(parent=self.vsplitter)
-            self.vsplitter.insertWidget(0, self.display_widget)
-            self.screen_saver.hide()
+        self.display_widget = DisplayWidget(parent=self.vsplitter)
+        self.vsplitter.insertWidget(0, self.display_widget)
+        self.screen_saver.hide()
         self.central_widget_layout().addWidget(self.info_widget)
 
     def open(self, openpath, update_texteditor=True):
-        if not self._managed_runtime_requested:
-            return super().open(openpath, update_texteditor)
-
         self._openlock.lock()
         try:
             self._reopen_mode = openpath == self._current_opened
@@ -117,8 +86,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self._openlock.unlock()
 
     def enable_display_changed_mode(self):
-        if not self._managed_runtime_requested:
-            return super().enable_display_changed_mode()
         self.statusBar().showMessage("Calculating scene…")
 
     def _queue_runner_message(self, message):
@@ -140,8 +107,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self.scene_patch_ready.emit()
 
     def _forward_input_event(self, message_type, data):
-        if self._runner_supervisor is None:
-            return False
         try:
             return self._runner_supervisor.send_input(message_type, data)
         except Exception:
@@ -150,6 +115,14 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self.console.write(traceback.format_exc())
             self._fail_live_scene("Input transport failed")
             return False
+
+    def _handle_viewer_event(self, event_type, data):
+        if event_type in {"qmarker", "wmarker"}:
+            self.info_widget.set_marker_data(
+                event_type[0], data["x"], data["y"], data["z"]
+            )
+        elif event_type == "trackinfo":
+            self.info_widget.set_tracking_info(data)
 
     def _progress_text(self, payload):
         if payload.get("phase"):
@@ -256,8 +229,6 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
     @QtCore.pyqtSlot()
     def _apply_pending_scene_patch(self):
-        if self._scene_patch_coalescer is None:
-            return
         with self._scene_patch_lock:
             error = self._scene_patch_bridge_error
             self._scene_patch_bridge_error = None
@@ -282,85 +253,16 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
             self._fail_live_scene("ScenePatch presentation failed")
 
     def _fail_live_scene(self, message):
-        if self._runner_supervisor is not None:
-            self._failed_live_generation = (
-                self._runner_supervisor.current_generation
-            )
-        if self._scene_patch_coalescer is not None:
-            with self._scene_patch_lock:
-                self._scene_patch_coalescer.clear()
-                self._scene_patch_notification_pending = False
-                self._scene_patch_bridge_error = None
+        self._failed_live_generation = self._runner_supervisor.current_generation
+        with self._scene_patch_lock:
+            self._scene_patch_coalescer.clear()
+            self._scene_patch_notification_pending = False
+            self._scene_patch_bridge_error = None
         self.statusBar().showMessage(message)
-        if self._runner_supervisor is not None:
-            self._runner_supervisor.cancel_current()
+        self._runner_supervisor.cancel_current()
 
     def closeEvent(self, event):
-        if self._runner_supervisor is not None:
-            self._runner_supervisor.shutdown()
+        self._runner_supervisor.shutdown()
         super().closeEvent(event)
         if self.notifier.isRunning():
             self.notifier.wait(1000)
-
-    def marker_handler(self, qw, data):
-        fmt = '.5f'
-        x = data["x"]
-        y = data["y"]
-        z = data["z"]
-        idx = qw.upper()
-        print("{0}: x:{1}, y:{2}, z:{3}; point3({1},{2},{3})".format(
-            idx, format(x, fmt), format(y, fmt), format(z, fmt)))
-
-        self.info_widget.set_marker_data(qw, x, y, z)
-
-    def message_handler(self, data, procpid):
-        res = super().message_handler(data, procpid)
-        if res:
-            return
-
-        try:
-            cmd = data["cmd"]
-        except:
-            return
-
-        if procpid != self._current_client.pid() and data["cmd"] != "finish_screen":
-            return
-
-        if cmd == "qmarker":
-            self.marker_handler("q", data)
-        elif cmd == "wmarker":
-            self.marker_handler("w", data)
-        elif cmd == "location":
-            self._last_location = data["loc"]
-        elif cmd == "trackinfo":
-            self.info_widget.set_tracking_info(data["data"])
-        # elif cmd == "fault":
-        #    self.open_fault()
-        elif cmd == "evalcache":
-            self.evalcache_notification(data)
-        else:
-            print("Warn: unrecognized command", data)
-
-    def synchronize_subprocess_state(self):
-        """
-            Пересылаем на ту сторону информацию об опциях интерфейса.
-        """
-
-        if self.is_reopen_mode() and self._last_location is not None:
-            self._current_client.send(
-                {"cmd": "location", "loc": self._last_location})
-
-        self._current_client.send(
-            {"cmd": "set_perspective", "en": self.perspective_checkbox_state})
-        self._current_client.send({"cmd": "redraw"})
-        super().synchronize_subprocess_state()
-
-    def evalcache_notification(self, data):
-        if data["subcmd"] == "newtree":
-            self.screen_saver.set_subtext(0, "Eval tree: objs:{objs} root:{root}".format(
-                root=data["root"][:8], objs=data["len"]))
-        if data["subcmd"] == "progress":
-            self.screen_saver.set_subtext(
-                1, "to load: {}".format(data["toload"]))
-            self.screen_saver.set_subtext(
-                2, "to eval: {}".format(data["toeval"]))

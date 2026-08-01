@@ -97,6 +97,11 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           python -c "import zencad.gui.display, zencad.gui.mainwindow, zencad.gui.settingswdg; print('GUI import smoke: OK')"
+      - name: Exercise local OCP viewer
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python "${{ github.workspace }}/utest/gui_ocp_smoke.py"
       - name: Exercise persistent managed reload
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
@@ -107,3 +112,8 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         working-directory: ${{ runner.temp }}
         run: xvfb-run -a python "${{ github.workspace }}/utest/gui_games_smoke.py"
+      - name: Exercise same-process standalone viewer
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python -m zencad --display "${{ github.workspace }}/utest/gui_standalone_smoke.py"

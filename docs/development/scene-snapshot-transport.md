@@ -1,6 +1,6 @@
 # SceneSnapshot transport v1
 
-This document records the implemented transport spike for the planned
+This document records the implemented transport for the
 [runtime architecture](runtime-architecture.md).  It describes a protocol
 foundation, not yet the default ZenCad execution path.
 

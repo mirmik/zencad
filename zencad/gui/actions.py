@@ -26,12 +26,7 @@ BANNER_TEXT = (  # "\n"
 
 class MainWindowActionsMixin(ZenFrameActionsMixin):
     def _send_viewer_command(self, command):
-        display = getattr(self, "display_widget", None)
-        if display is not None:
-            display.external_communication_command(command)
-            return
-        if self._current_client is not None:
-            self._current_client.send(command)
+        self.display_widget.external_communication_command(command)
 
     def aboutAction(self):
         QMessageBox.about(
@@ -162,8 +157,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         status = wdg.exec()
 
         if status == 1:
-            if self.use_sleeped_process:
-                self.remake_sleeped_client()
             self.reopen_current()
 
     def _add_open_action(self, menu, name, path):

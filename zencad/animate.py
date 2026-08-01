@@ -29,7 +29,7 @@ class AnimateThread(QThread):
     after_update_signal = pyqtSignal()
 
     def __init__(self, widget, updater_function, animate_step=1/100):
-        import zenframe
+        import zenframe.finisher
 
         QThread.__init__(self)
         self.updater_function = updater_function
