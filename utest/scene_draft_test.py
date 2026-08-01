@@ -148,6 +148,38 @@ class SceneDraftTest(unittest.TestCase):
         with self.assertRaisesRegex(SceneDraftError, "cannot add objects"):
             draft.add(zencad.sphere(1))
 
+    def test_managed_assembly_flattens_and_keeps_live_kinematics(self):
+        import zencad.assemble
+
+        root = zencad.assemble.unit()
+        joint = zencad.assemble.rotator(axis=(0, 0, 1), parent=root)
+        child = zencad.assemble.unit()
+        child.add(zencad.box(2), color=zencad.color.red)
+        joint.link(child)
+        patches = []
+        cancelled = threading.Event()
+
+        with zencad.managed_scene(
+            14,
+            patch_publisher=patches.append,
+            cancel_event=cancelled,
+        ) as draft:
+            returned = zencad.display(root)
+
+            def animate(state):
+                joint.set_coord(zencad.deg(45))
+                root.location_update()
+                cancelled.set()
+
+            with self.assertRaises(SceneAnimationCancelled):
+                zencad.show(animate=animate, animate_step=0.001)
+
+        self.assertIs(returned, root)
+        self.assertEqual(len(draft), 1)
+        self.assertEqual(len(patches), 1)
+        transform = patches[0].updates[0].properties["transform"]
+        self.assertNotEqual(transform["rotation"], (0.0, 0.0, 0.0, 1.0))
+
     def test_managed_preanimate_is_explicitly_unsupported(self):
         with zencad.managed_scene(13):
             zencad.display(zencad.box(1))

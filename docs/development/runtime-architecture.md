@@ -147,6 +147,13 @@ Standalone and headless modes need explicit adapters; they must not infer
 process role by importing Qt.  Arbitrary `preanimate` GUI access remains
 explicitly unsupported by the managed adapter.
 
+Shape-only legacy assembly trees are now flattened into logical scene
+references during managed `display()`. Their existing kinematic methods update
+those references after publication, so Pacman, Robot, and the bundled games do
+not require runner-side Qt windows or AIS contexts. Supported and excluded
+example patterns are listed in
+[Managed animation migration notes](managed-animation-migration.md).
+
 ## Planned live updates and input
 
 The accepted live-update design keeps `show(animate=callback)` callbacks in

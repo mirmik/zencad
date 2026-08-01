@@ -7,9 +7,9 @@ last update: 13.10.2019
 from zencad import *
 import random
 
-#s = icosahedron(10)
-s = dodecahedron(10)
-#s = icosahedron(10).fillet(2)
+# The example demonstrates live style updates; keep its cold start cheap so it
+# is also useful as a managed-runtime smoke.
+s = sphere(10)
 
 controller = disp(s)
 transparent = 0.05

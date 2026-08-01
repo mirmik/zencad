@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+"""Legacy direct-GUI example; managed camera commands are not available yet."""
 
 from zencad import *
 import time

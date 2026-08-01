@@ -102,3 +102,8 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         working-directory: ${{ runner.temp }}
         run: xvfb-run -a python "${{ github.workspace }}/utest/gui_reload_smoke.py"
+      - name: Exercise managed game input
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python "${{ github.workspace }}/utest/gui_games_smoke.py"

@@ -4,6 +4,9 @@ ZenCad example: manual-control
 
 We can control current object position in real time.
 In that example we create special widget to change link`s positions by sliders.
+
+Legacy direct-GUI example: arbitrary QWidget/preanimate panels are intentionally
+outside the managed runtime contract.
 """
 
 from zencad import *

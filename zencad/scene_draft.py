@@ -219,6 +219,10 @@ class SceneDraft:
                 "Managed scenes cannot add objects after initial publication"
             )
         obj = evalcache.unlazy_if_need(obj)
+        from zencad.interactive.assemble import unit
+
+        if isinstance(obj, unit):
+            return self._add_assembly(obj)
         if not isinstance(obj, (Shape, TopoDS_Shape)):
             raise SceneDraftError(
                 f"Managed scenes do not support {type(obj).__name__} yet"
@@ -236,6 +240,38 @@ class SceneDraft:
             wire_color=default_wire_color(),
         )
         return SceneObjectRef(self, object_id)
+
+    def _add_assembly(self, root):
+        """Flatten a legacy assembly into stable logical scene references."""
+        from zencad.interactive.shape import ShapeInteractiveObject
+
+        root.location_update(deep=True, view=False)
+
+        def bind(current):
+            current.views.clear()
+            for display_object in current.dispobjects:
+                if not isinstance(display_object, ShapeInteractiveObject):
+                    raise SceneDraftError(
+                        "Managed assemblies currently support shape parts only; "
+                        f"got {type(display_object).__name__}"
+                    )
+                reference = self.add(
+                    display_object.shape,
+                    color=display_object.color(),
+                )
+                reference.set_color(
+                    display_object.color(),
+                    border_color=display_object._border_color,
+                    wire_color=display_object._wire_color,
+                )
+                reference.hide(display_object._hide)
+                reference.relocate(current.global_location)
+                current.views.add(reference)
+            for child in current.childs:
+                bind(child)
+
+        bind(root)
+        return root
 
     def snapshot(self, metadata=None) -> SceneSnapshot:
         records = []
