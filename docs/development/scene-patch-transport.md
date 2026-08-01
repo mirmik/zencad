@@ -99,4 +99,5 @@ suites import no Qt modules in the runner process. `utest/scene_presenter_test.p
 covers GUI-thread guards, sequence/revision/object validation, stable handles,
 single redraw, and rollback. `utest/gui_reload_smoke.py` exercises real X11
 pixels and persistent window/view/context/camera identities across reload and
-live animation.
+live animation. The same smoke now drives that animation through a real
+[`InputEvent`](input-event-transport.md) key edge.

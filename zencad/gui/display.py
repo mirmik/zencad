@@ -110,6 +110,7 @@ class DisplayWidget(BaseViewer):
         self.mousedown = False
         self.keyboard_retranslate_mode = False
         self.tracking_mode = False
+        self._input_event_sink = None
 
         self.last_redraw = time.time()
         self.animate_updated = threading.Event()
@@ -146,6 +147,85 @@ class DisplayWidget(BaseViewer):
             self.InitDriver()
 
         self.scene_presenter = ScenePresenter(self)
+
+    def set_input_event_sink(self, sink):
+        if sink is not None and not callable(sink):
+            raise TypeError("Input event sink must be callable")
+        self._input_event_sink = sink
+
+    def _emit_input_event(self, message_type, data):
+        if self._input_event_sink is not None:
+            return self._input_event_sink(message_type, data)
+        return False
+
+    @staticmethod
+    def _input_modifiers(modifiers):
+        values = []
+        for flag, name in (
+            (QtCore.Qt.ShiftModifier, "shift"),
+            (QtCore.Qt.ControlModifier, "control"),
+            (QtCore.Qt.AltModifier, "alt"),
+            (QtCore.Qt.MetaModifier, "meta"),
+        ):
+            if modifiers & flag:
+                values.append(name)
+        return values
+
+    @staticmethod
+    def _input_buttons(buttons):
+        values = []
+        for flag, name in (
+            (QtCore.Qt.LeftButton, "left"),
+            (QtCore.Qt.MidButton, "middle"),
+            (QtCore.Qt.RightButton, "right"),
+            (QtCore.Qt.BackButton, "back"),
+            (QtCore.Qt.ForwardButton, "forward"),
+        ):
+            if buttons & flag:
+                values.append(name)
+        return values
+
+    @staticmethod
+    def _input_button(button):
+        values = DisplayWidget._input_buttons(button)
+        return values[0] if values else None
+
+    @staticmethod
+    def _input_key(event):
+        key = event.key()
+        if QtCore.Qt.Key_A <= key <= QtCore.Qt.Key_Z:
+            return chr(key).lower()
+        if QtCore.Qt.Key_0 <= key <= QtCore.Qt.Key_9:
+            return chr(key)
+        special = {
+            QtCore.Qt.Key_Left: "left",
+            QtCore.Qt.Key_Right: "right",
+            QtCore.Qt.Key_Up: "up",
+            QtCore.Qt.Key_Down: "down",
+            QtCore.Qt.Key_Space: "space",
+            QtCore.Qt.Key_Escape: "escape",
+            QtCore.Qt.Key_Enter: "enter",
+            QtCore.Qt.Key_Return: "return",
+            QtCore.Qt.Key_Tab: "tab",
+            QtCore.Qt.Key_Backtab: "backtab",
+            QtCore.Qt.Key_Backspace: "backspace",
+            QtCore.Qt.Key_Delete: "delete",
+            QtCore.Qt.Key_Insert: "insert",
+            QtCore.Qt.Key_Home: "home",
+            QtCore.Qt.Key_End: "end",
+            QtCore.Qt.Key_PageUp: "page_up",
+            QtCore.Qt.Key_PageDown: "page_down",
+            QtCore.Qt.Key_Shift: "shift",
+            QtCore.Qt.Key_Control: "control",
+            QtCore.Qt.Key_Alt: "alt",
+            QtCore.Qt.Key_Meta: "meta",
+        }
+        if key in special:
+            return special[key]
+        if QtCore.Qt.Key_F1 <= key <= QtCore.Qt.Key_F35:
+            return "f{}".format(key - QtCore.Qt.Key_F1 + 1)
+        rendered = QtGui.QKeySequence(key).toString().strip().lower()
+        return rendered or "key:{}".format(key)
 
     def assert_gui_thread(self):
         if QtCore.QThread.currentThread() != self.thread():
@@ -409,6 +489,12 @@ class DisplayWidget(BaseViewer):
         self.redraw_marker("w", x, y, z)
 
     def keyPressEvent(self, event):
+        self._emit_input_event("key_down", {
+            "key": self._input_key(event),
+            "text": event.text(),
+            "modifiers": self._input_modifiers(event.modifiers()),
+            "repeat": event.isAutoRepeat(),
+        })
         MOVE_SCALE = 0.03
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
 
@@ -472,6 +558,14 @@ class DisplayWidget(BaseViewer):
                 "modifiers": "",
                 "text": event.text()})
 
+    def keyReleaseEvent(self, event):
+        self._emit_input_event("key_up", {
+            "key": self._input_key(event),
+            "text": event.text(),
+            "modifiers": self._input_modifiers(event.modifiers()),
+            "repeat": event.isAutoRepeat(),
+        })
+
     def zoom_factor(self, factor):
         self._display.ZoomFactor(factor)
 
@@ -508,8 +602,17 @@ class DisplayWidget(BaseViewer):
         self._display.Context.UpdateCurrentViewer()
 
     def wheelEvent(self, event):
+        delta_point = event.angleDelta()
+        position = event.pos()
+        self._emit_input_event("mouse_wheel", {
+            "dx": delta_point.x(),
+            "dy": delta_point.y(),
+            "x": position.x(),
+            "y": position.y(),
+            "modifiers": self._input_modifiers(event.modifiers()),
+        })
         mul = 1.1
-        delta = event.angleDelta().y()
+        delta = delta_point.y()
         if delta > 0:
             zoom_factor = mul
         else:
@@ -518,6 +621,14 @@ class DisplayWidget(BaseViewer):
         self.location_changed_handle()
 
     def mousePressEvent(self, event):
+        button = self._input_button(event.button())
+        if button is not None:
+            self._emit_input_event("mouse_button_down", {
+                "button": button,
+                "x": event.x(),
+                "y": event.y(),
+                "modifiers": self._input_modifiers(event.modifiers()),
+            })
         self.setFocus()
         ev = event.pos()
         self.dragStartPosX = ev.x()
@@ -527,6 +638,14 @@ class DisplayWidget(BaseViewer):
         self.mousedown = True
 
     def mouseReleaseEvent(self, event):
+        button = self._input_button(event.button())
+        if button is not None:
+            self._emit_input_event("mouse_button_up", {
+                "button": button,
+                "x": event.x(),
+                "y": event.y(),
+                "modifiers": self._input_modifiers(event.modifiers()),
+            })
         pt = event.pos()
         modifiers = event.modifiers()
 
@@ -602,6 +721,12 @@ class DisplayWidget(BaseViewer):
         return point3(), False
 
     def mouseMoveEvent(self, evt):
+        self._emit_input_event("mouse_move", {
+            "x": evt.x(),
+            "y": evt.y(),
+            "buttons": self._input_buttons(evt.buttons()),
+            "modifiers": self._input_modifiers(evt.modifiers()),
+        })
         pt = evt.pos()
         buttons = int(evt.buttons())
         modifiers = evt.modifiers()

@@ -7,6 +7,10 @@ import sys
 import traceback
 from uuid import uuid4
 
+from zencad.runtime.input_protocol import (
+    InputEventBuffer,
+    decode_input_frame,
+)
 from zencad.runtime.runner_protocol import (
     decode_control_message,
     encode_control_message,
@@ -110,7 +114,39 @@ def _cancel_trace(cancel_event):
     return trace
 
 
-def run_generation(request_frame, connection, cancel_event, bundle_root):
+class _InputReceiver:
+    """Drain and validate one generation's reverse input pipe."""
+
+    def __init__(self, connection, generation):
+        self.connection = connection
+        self.generation = generation
+        self.buffer = InputEventBuffer(generation)
+
+    def drain(self):
+        trace = sys.gettrace()
+        if trace is not None:
+            sys.settrace(None)
+        try:
+            received = 0
+            while received < 4096 and self.connection.poll():
+                event = decode_input_frame(self.connection.recv_bytes())
+                self.buffer.push(event)
+                received += 1
+            return self.buffer.drain()
+        except (EOFError, OSError):
+            return self.buffer.drain()
+        finally:
+            if trace is not None:
+                sys.settrace(trace)
+
+
+def run_generation(
+    request_frame,
+    connection,
+    input_connection,
+    cancel_event,
+    bundle_root,
+):
     """Evaluate one run request and emit framed generation messages."""
     reporter = None
     generation = 0
@@ -120,6 +156,7 @@ def run_generation(request_frame, connection, cancel_event, bundle_root):
         if message_type != "run":
             raise ValueError("Runner worker requires a run request")
         reporter = _Reporter(connection, generation)
+        input_receiver = _InputReceiver(input_connection, generation)
         script_path = Path(request["script_path"]).resolve()
         cwd = Path(request.get("cwd") or script_path.parent).resolve()
         arguments = request.get("arguments", [])
@@ -166,6 +203,7 @@ def run_generation(request_frame, connection, cancel_event, bundle_root):
                     animated=animated,
                 ),
                 cancel_event=cancel_event,
+                input_drain=input_receiver.drain,
             ):
                 runpy.run_path(str(script_path), run_name="__main__")
             terminal_status = "success"
@@ -204,5 +242,9 @@ def run_generation(request_frame, connection, cancel_event, bundle_root):
             reporter.control("finished", status=terminal_status)
         try:
             connection.close()
+        except OSError:
+            pass
+        try:
+            input_connection.close()
         except OSError:
             pass

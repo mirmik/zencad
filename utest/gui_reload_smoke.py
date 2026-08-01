@@ -12,7 +12,7 @@ def main():
 
     configure_qt_platform()
 
-    from PyQt5 import QtCore, QtWidgets
+    from PyQt5 import QtCore, QtTest, QtWidgets
 
     application = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
@@ -52,12 +52,13 @@ def main():
         animation_path.write_text(
             "from zencad import *\n"
             "controller = display(box(10, center=True))\n"
-            "ticks = 0\n"
+            "position = 0\n"
             "def animate(state):\n"
-            "    global ticks\n"
-            "    ticks += 1\n"
-            "    controller.relocate(translate((ticks % 20) - 10, 0, 0))\n"
-            "    controller.set_color((ticks % 10) / 10, 0.4, 0.8, 0)\n"
+            "    global position\n"
+            "    if state.input.key_pressed('right'):\n"
+            "        position += 15\n"
+            "        controller.relocate(translate(position, 0, 0))\n"
+            "        controller.set_color(1, 0.4, 0.2, 0)\n"
             "show(animate=animate, animate_step=0.01)\n",
             encoding="utf-8",
         )
@@ -83,6 +84,7 @@ def main():
             "stable_object": None,
             "animation_handle": None,
             "animation_sequence": None,
+            "input_sent": False,
         }
 
         def assert_persistent_viewer():
@@ -170,14 +172,28 @@ def main():
                 )
             elif state["phase"] == "animation" and generation == state["target"]:
                 presenter = display.scene_presenter
-                if presenter.last_patch_sequence is None:
-                    return
                 handle = presenter.objects[0].ais_object
                 if state["animation_handle"] is None:
                     state["animation_handle"] = handle
                     state["animation_sequence"] = presenter.last_patch_sequence
+                if not state["input_sent"]:
+                    state["input_sent"] = True
+                    display.setFocus()
+                    QtTest.QTest.keyPress(display, QtCore.Qt.Key_Right)
+                    QtCore.QTimer.singleShot(
+                        50,
+                        lambda: QtTest.QTest.keyRelease(
+                            display, QtCore.Qt.Key_Right
+                        ),
+                    )
                     return
-                if presenter.last_patch_sequence <= state["animation_sequence"]:
+                if presenter.last_patch_sequence is None:
+                    return
+                if (
+                    state["animation_sequence"] is not None
+                    and presenter.last_patch_sequence
+                    <= state["animation_sequence"]
+                ):
                     return
                 assert handle is state["animation_handle"]
                 assert display.store_location() == state["camera"]
@@ -213,7 +229,13 @@ def main():
 
         window.open(str(script_path))
         exit_code = application.exec()
-        assert exit_code == 0, "managed reload smoke timed out"
+        assert exit_code == 0, (
+            "managed reload smoke timed out in phase {!r}; target status {!r}"
+            .format(
+                state["phase"],
+                window._generation_statuses.get(state["target"]),
+            )
+        )
         assert state["commits"] == RELOAD_COUNT
         assert state["phase"] == "done"
 

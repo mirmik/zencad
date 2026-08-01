@@ -223,6 +223,46 @@ show(animate=animate, animate_step=0.001)
         finished = self.messages(generation, "finished")[-1]
         self.assertFalse(finished.payload.get("hard", False))
 
+    def test_input_edges_reach_only_the_current_runner(self):
+        path = self.script("animated_input.py", """
+import sys
+from zencad import box, display, show, translate
+assert "PyQt5" not in sys.modules
+controller = display(box(1))
+saw_press = False
+def animate(state):
+    global saw_press
+    saw_press = saw_press or state.input.key_pressed("right")
+    if saw_press and state.input.key_released("right"):
+        assert not state.input.key_down("right")
+        controller.relocate(translate(9, 0, 0))
+        raise RuntimeError("input edges observed")
+show(animate=animate, animate_step=0.01)
+""")
+        generation = self.supervisor.start(path)
+        self.wait_for_message(generation, "ready")
+        self.assertTrue(self.supervisor.send_input("key_down", {
+            "key": "right", "text": "", "modifiers": [], "repeat": False,
+        }))
+        time.sleep(0.03)
+        self.assertTrue(self.supervisor.send_input("key_up", {
+            "key": "right", "text": "", "modifiers": [], "repeat": False,
+        }))
+        self.assertEqual(self.supervisor.wait(generation, timeout=10), "error")
+        error = self.messages(generation, "error")[-1]
+        self.assertIn("input edges observed", error.payload["message"])
+
+        replacement = self.script("input_replacement.py", "print('replacement')\n")
+        next_generation = self.supervisor.start(replacement)
+        self.assertFalse(self.supervisor.send_input(
+            "key_down",
+            {"key": "left", "text": "", "modifiers": [], "repeat": False},
+            generation=generation,
+        ))
+        self.assertEqual(
+            self.supervisor.wait(next_generation, timeout=10), "success"
+        )
+
     def test_superseded_live_generation_cannot_dispatch_late_patches(self):
         live = self.script("superseded_animation.py", """
 from zencad import box, display, show, translate

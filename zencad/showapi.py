@@ -140,6 +140,7 @@ def managed_scene(
     patch_publisher=None,
     ready_publisher=None,
     cancel_event=None,
+    input_drain=None,
 ):
     """Temporarily route the public display/show API into a data-only draft."""
     global __default_scene
@@ -152,6 +153,7 @@ def managed_scene(
         patch_publisher=patch_publisher,
         ready_publisher=ready_publisher,
         cancel_event=cancel_event,
+        input_drain=input_drain,
     )
     __default_scene = draft
     try:

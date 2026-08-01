@@ -26,6 +26,7 @@ from zencad.runtime.scene_protocol import (
     encode_brep,
 )
 from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
+from zencad.runtime.input_protocol import InputState
 
 
 class SceneDraftError(ValueError):
@@ -48,6 +49,7 @@ class ManagedAnimationState:
         self.delta = 0.0
         self.loctime = 0.0
         self.scene = None
+        self.input = InputState()
 
     def timestamp(self, timestamp):
         self.time = timestamp
@@ -176,6 +178,7 @@ class SceneDraft:
         patch_publisher: Callable[[ScenePatch], bool | None] | None = None,
         ready_publisher: Callable[[int, bool], bool | None] | None = None,
         cancel_event=None,
+        input_drain: Callable[[], tuple] | None = None,
     ):
         if not isinstance(generation, int) or isinstance(generation, bool):
             raise SceneDraftError("Scene generation must be an integer")
@@ -187,6 +190,7 @@ class SceneDraft:
         self.patch_publisher = patch_publisher
         self.ready_publisher = ready_publisher
         self.cancel_event = cancel_event
+        self.input_drain = input_drain
         self._objects: OrderedDict[str, _DraftObject] = OrderedDict()
         self._next_id = 0
         self._published = False
@@ -348,6 +352,9 @@ class SceneDraft:
                     raise SceneAnimationCancelled()
 
                 state.timestamp(time.time())
+                state.input.begin_frame(
+                    self.input_drain() if self.input_drain is not None else ()
+                )
                 callback(state)
                 patch = self.drain_patch()
                 if patch is not None and self.patch_publisher is not None:

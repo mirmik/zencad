@@ -8,6 +8,11 @@ import tempfile
 import threading
 from typing import Callable
 
+from zencad.runtime.input_protocol import (
+    InputEvent,
+    InputEventBuffer,
+    encode_input_frame,
+)
 from zencad.runtime.runner_protocol import (
     RUNNER_MAGIC,
     RunnerMessage,
@@ -31,8 +36,17 @@ class _RunnerHandle:
     generation: int
     process: multiprocessing.Process
     connection: object
+    input_connection: object
     cancel_event: object
     data_root: Path
+    input_buffer: InputEventBuffer
+    input_condition: threading.Condition = field(
+        default_factory=threading.Condition
+    )
+    input_sequence: int = 0
+    input_closed: bool = False
+    input_error: BaseException | None = None
+    input_writer: threading.Thread | None = None
     finished: threading.Event = field(default_factory=threading.Event)
     cancel_requested: bool = False
     hard_cancelled: bool = False
@@ -96,6 +110,9 @@ class RunnerSupervisor:
 
         data_root = Path(tempfile.mkdtemp(prefix=f"zencad-run-{generation}-"))
         receive_connection, send_connection = self._context.Pipe(duplex=False)
+        input_receive_connection, input_send_connection = self._context.Pipe(
+            duplex=False
+        )
         cancel_event = self._context.Event()
         request = encode_control_message(
             "run",
@@ -107,20 +124,29 @@ class RunnerSupervisor:
         )
         process = self._context.Process(
             target=run_generation,
-            args=(request, send_connection, cancel_event, str(data_root)),
+            args=(
+                request,
+                send_connection,
+                input_receive_connection,
+                cancel_event,
+                str(data_root),
+            ),
             name=f"zencad-runner-{generation}",
         )
         handle = _RunnerHandle(
             generation=generation,
             process=process,
             connection=receive_connection,
+            input_connection=input_send_connection,
             cancel_event=cancel_event,
             data_root=data_root,
+            input_buffer=InputEventBuffer(generation),
         )
         with self._lock:
             self._handles[generation] = handle
         process.start()
         send_connection.close()
+        input_receive_connection.close()
         self._dispatch(RunnerMessage(
             "run",
             generation,
@@ -136,7 +162,67 @@ class RunnerSupervisor:
             name=f"zencad-runner-reader-{generation}",
             daemon=True,
         ).start()
+        handle.input_writer = threading.Thread(
+            target=self._write_input,
+            args=(handle,),
+            name=f"zencad-runner-input-{generation}",
+            daemon=True,
+        )
+        handle.input_writer.start()
         return generation
+
+    def send_input(self, message_type, data, generation=None):
+        """Queue input for the current runner without blocking the GUI thread."""
+        with self._lock:
+            if generation is None:
+                generation = self._current_generation
+            if generation != self._current_generation:
+                return False
+            handle = self._handles.get(generation)
+        if (
+            handle is None
+            or handle.cancel_requested
+            or not handle.process.is_alive()
+        ):
+            return False
+        with handle.input_condition:
+            if handle.input_closed:
+                return False
+            handle.input_sequence += 1
+            event = InputEvent(
+                generation,
+                handle.input_sequence,
+                message_type,
+                data,
+            )
+            accepted = handle.input_buffer.push(event)
+            if accepted:
+                handle.input_condition.notify()
+            return accepted
+
+    def _write_input(self, handle):
+        try:
+            while True:
+                with handle.input_condition:
+                    while (
+                        not handle.input_closed
+                        and not handle.input_buffer
+                    ):
+                        handle.input_condition.wait()
+                    if handle.input_closed and not handle.input_buffer:
+                        return
+                    event = handle.input_buffer.pop_left()
+                try:
+                    handle.input_connection.send_bytes(
+                        encode_input_frame(event)
+                    )
+                except (BrokenPipeError, EOFError, OSError) as exception:
+                    handle.input_error = exception
+                    return
+        finally:
+            with handle.input_condition:
+                handle.input_closed = True
+                handle.input_buffer.clear()
 
     def _dispatch(self, message: RunnerMessage):
         with self._lock:
@@ -236,6 +322,17 @@ class RunnerSupervisor:
             if handle.process.is_alive():
                 handle.process.terminate()
                 handle.process.join(timeout=1)
+
+            with handle.input_condition:
+                handle.input_closed = True
+                handle.input_buffer.clear()
+                handle.input_condition.notify_all()
+            try:
+                handle.input_connection.close()
+            except OSError:
+                pass
+            if handle.input_writer is not None:
+                handle.input_writer.join(timeout=1)
 
             if protocol_failure is not None:
                 handle.status = "protocol_error"

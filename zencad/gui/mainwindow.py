@@ -61,6 +61,9 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                 record_scene_patches=False,
             )
             self._scene_patch_coalescer = ScenePatchCoalescer()
+            self.display_widget.set_input_event_sink(
+                self._forward_input_event
+            )
 
         # Устанавливается при открытии файла, если при следующем бинде
         # нужно/ненужно произвести восстановить параметры камеры.
@@ -135,6 +138,18 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                 should_notify = True
         if should_notify:
             self.scene_patch_ready.emit()
+
+    def _forward_input_event(self, message_type, data):
+        if self._runner_supervisor is None:
+            return False
+        try:
+            return self._runner_supervisor.send_input(message_type, data)
+        except Exception:
+            import traceback
+
+            self.console.write(traceback.format_exc())
+            self._fail_live_scene("Input transport failed")
+            return False
 
     def _progress_text(self, payload):
         if payload.get("phase"):

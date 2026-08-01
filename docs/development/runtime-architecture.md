@@ -2,9 +2,9 @@
 
 > Status: migration in progress.  The transport protocol, runner-side
 > `SceneDraft`, persistent `ScenePresenter`, generation supervisor, and managed
-> reload path are implemented.  Managed animation patches now travel from the
-> runner into the persistent GUI scene; input events and removal of the retained
-> legacy embedding path remain follow-up work.  The accepted decision is
+> reload path are implemented. Managed animation patches and typed input now
+> travel in opposite directions between the runner and persistent GUI scene;
+> removal of the retained legacy embedding path remains follow-up work. The accepted decision is
 > recorded in
 > [Persistent viewer and scene snapshots](../architecture-council/2026-08-01-persistent-viewer-scene-snapshots.md).
 
@@ -172,9 +172,13 @@ Arbitrary `preanimate` Qt widgets, GUI event monkeypatching, and direct
 viewer/AIS access are not part of managed compatibility.  Declarative control
 panels, live topology add/remove, and camera commands are potential later
 protocol extensions.  The transport DTO, validation, and coalescing foundation
-and runner/GUI animation path are implemented; input remains follow-up work.
-The exact v1 validation and coalescing rules are documented in
-[ScenePatch transport v1](scene-patch-transport.md), while the accepted
+and runner/GUI animation path are implemented. Input v1 provides keyboard
+edges, persistent key state, mouse position/buttons, and wheel deltas through
+the Qt-free `state.input` facade. A bounded writer thread prevents the reverse
+pipe from blocking the GUI; only mouse motion is coalescible, while discrete
+edges retain order. The exact validation and coalescing rules are documented
+in [ScenePatch transport v1](scene-patch-transport.md) and
+[InputEvent transport v1](input-event-transport.md), while the accepted
 decision and rationale are recorded in
 [Runner-driven animation with scene patches and input events](../architecture-council/2026-08-01-scene-patch-input-events.md).
 
@@ -194,7 +198,7 @@ The implemented `RunnerSupervisor` launches every generation with Python's
 the GUI process.  The run request and progress/output/error/finished events are
 versioned, length-checked JSON frames sent with `Connection.send_bytes`; scene
 messages use the existing `ZCSN` binary frame or its atomic file bundle, and
-live updates use `ZCPT` frames.  No Python object is sent through
+live updates use `ZCPT` frames, and reverse input uses `ZCIN` frames. No Python object is sent through
 `Connection.send`.
 
 Starting a generation immediately makes all older messages stale.  Reader
