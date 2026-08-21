@@ -46,6 +46,32 @@ The current OCP wheels support CPython 3.10-3.14 on Windows x86-64, macOS
 ### For Windows:  
 The PyPI OCP wheel currently targets 64-bit Windows.
 
+To run ZenCad from a source checkout, open PowerShell in the repository and
+use:
+
+```powershell
+.\start.ps1
+```
+
+The script creates `venv`, installs the project with its GUI dependencies,
+and starts ZenCad. Arguments are forwarded to ZenCad; for example:
+
+```powershell
+.\start.ps1 .\zencad\examples\0.Base\helloworld.py
+.\start.ps1 -SkipInstall
+```
+
+For an editable development installation without the startup script, install
+the `gui` extra explicitly:
+
+```powershell
+python -m pip install -e ".[gui]"
+python -m zencad
+```
+
+`python -m pip install -e .` installs only the headless geometry dependencies
+and is not sufficient to launch the GUI.
+
 Standalone Distribution
 -----------------------
 ZenCad have standalone version for Windows.
