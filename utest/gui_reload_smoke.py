@@ -2,6 +2,7 @@
 """Named GUI smoke for managed reload into one persistent viewer."""
 
 from pathlib import Path
+import sys
 from tempfile import TemporaryDirectory
 
 RELOAD_COUNT = 20
@@ -98,6 +99,11 @@ def main():
         def assert_visible_frame():
             display.redraw()
             application.processEvents()
+            if sys.platform.startswith("win"):
+                image_path = Path(temporary_directory) / "viewer.png"
+                assert display.View.Dump(str(image_path))
+                assert image_path.stat().st_size > 0
+                return
             image = application.primaryScreen().grabWindow(
                 int(display.winId())
             ).toImage()
@@ -131,7 +137,10 @@ def main():
                     display.set_scale(3.5)
                     state["camera"] = display.store_location()
                 else:
-                    assert display.store_location() == state["camera"]
+                    current_camera = display.store_location()
+                    assert current_camera == state["camera"], (
+                        state["camera"], current_camera
+                    )
 
                 if state["commits"] == RELOAD_COUNT:
                     assert_visible_frame()

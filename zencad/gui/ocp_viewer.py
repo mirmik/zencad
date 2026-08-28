@@ -5,6 +5,7 @@ ship pythonocc's ``OCC.Display.OCCViewer`` helpers.  This module implements
 only the operations used by ZenCad.
 """
 
+import ctypes
 import sys
 
 from OCP.AIS import AIS_InteractiveContext
@@ -30,6 +31,24 @@ class Viewer3d:
             from OCP.Xw import Xw_Window
 
             return Xw_Window(self._display_connection, window_handle)
+
+        if sys.platform.startswith("win"):
+            from OCP.WNT import WNT_Window
+
+            # Qt exposes HWND as an integer, while OCP's pybind11 wrapper
+            # intentionally models native pointer arguments as PyCapsules.
+            # Wrap the existing HWND without taking ownership of it.
+            py_capsule_new = ctypes.pythonapi.PyCapsule_New
+            py_capsule_new.restype = ctypes.py_object
+            py_capsule_new.argtypes = (
+                ctypes.c_void_p,
+                ctypes.c_char_p,
+                ctypes.c_void_p,
+            )
+            handle_capsule = py_capsule_new(
+                ctypes.c_void_p(window_handle), None, None
+            )
+            return WNT_Window(handle_capsule)
 
         # Aspect_NeutralWindow is the portable native-handle adapter used by
         # OCCT on platforms where the binding has no dedicated window module.
