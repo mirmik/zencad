@@ -58,6 +58,17 @@ class Ops3dProbe(unittest.TestCase):
         zencad.thicksolid(zencad.box(10), 1, [(5, 0, 5)])
         zencad.thicksolid(proto=zencad.box(10), refs=[(5, 0, 5)], t=1)
 
+    def test_shapefix_solid_downcasts_generic_shape(self):
+        from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+        from zencad.geom.offset import _shapefix_solid
+        from zencad.geom.shape import Shape
+
+        generic_solid = Shape(BRepPrimAPI_MakeBox(2, 3, 4).Shape())
+        fixed = _shapefix_solid(generic_solid)
+
+        self.assertTrue(fixed.is_solid())
+        self.assertAlmostEqual(fixed.mass(), 24.0)
+
     def test_fillet(self):
         zencad.box(20).fillet(1)
         zencad.box(20).fillet(r=1)

@@ -37,7 +37,7 @@ def offset(*args, **kwargs):
 
 
 def _shapefix_solid(shp):
-    algo2 = ShapeFix_Solid(shp.Shape())
+    algo2 = ShapeFix_Solid(shp.Solid())
     algo2.Perform()
     return Shape(algo2.Solid())
 
