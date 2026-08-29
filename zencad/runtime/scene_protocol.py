@@ -137,6 +137,49 @@ def decode_brep(payload: bytes) -> TopoDS_Shape:
     return shape
 
 
+def encode_json_payload(value: Any) -> bytes:
+    """Encode small non-BREP scene data as strict canonical JSON."""
+    try:
+        return json.dumps(
+            value,
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exception:
+        raise ProtocolError("Scene object payload must contain JSON values") from exception
+
+
+def _json_payload_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ProtocolError(f"Duplicate JSON property: {key!r}")
+        result[key] = value
+    return result
+
+
+def _invalid_json_payload_constant(value):
+    raise ProtocolError(f"Invalid JSON number: {value}")
+
+
+def decode_json_payload(payload: bytes) -> Any:
+    """Decode a strict JSON scene payload."""
+    if not isinstance(payload, bytes):
+        raise TypeError("JSON scene payload must be bytes")
+    try:
+        return json.loads(
+            payload.decode("utf-8"),
+            object_pairs_hook=_json_payload_object,
+            parse_constant=_invalid_json_payload_constant,
+        )
+    except ProtocolError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exception:
+        raise PayloadIntegrityError("Invalid JSON scene payload") from exception
+
+
 def _payload_digest(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 

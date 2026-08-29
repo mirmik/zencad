@@ -7,13 +7,10 @@ from OCP.BRep import BRep_Builder
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
 from OCP.TopoDS import TopoDS_Compound, TopoDS_Solid
 from OCP.TopExp import TopExp_Explorer
-from OCP.BRep import BRep_Tool
 from OCP.BRepAdaptor import BRepAdaptor_Surface
 from OCP.GeomAbs import GeomAbs_Plane
-from OCP.Geom import Geom_Plane
-from OCP.gp import gp_Pnt
 from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
-from zencad.occ_compat import face_surface, make_sewing
+from zencad.occ_compat import make_sewing
 
 
 def _unify_face(proto):
@@ -24,25 +21,18 @@ def _unify_face(proto):
 
 def _unify_faces_array(input):
     ret = []
-    fset = {}
+    planar_groups = []
 
     for i in input:
-        surface = face_surface(i.Face())
-
         adaptor_surface = BRepAdaptor_Surface(i.Face())
         surface_type = adaptor_surface.GetType()
 
         if surface_type == GeomAbs_Plane:
-            pln = Geom_Plane.DownCast(surface)
-            pln0 = pln.Pln()
+            pln0 = adaptor_surface.Plane()
 
             found = False
 
-            for key, arr in fset.items():
-                pnt = gp_Pnt()
-                key.D0(0, 0, pnt)
-                pln1 = key.Pln()
-
+            for pln1, arr in planar_groups:
                 dir0 = pln0.Axis().Direction()
                 dir1 = pln1.Axis().Direction()
 
@@ -54,14 +44,14 @@ def _unify_faces_array(input):
                     arr.append(i)
                     break
 
-            if found == False:
-                fset[pln] = [i]
+            if not found:
+                planar_groups.append((pln0, [i]))
 
         else:
             ret.append(i)
             continue
 
-    for key, arr in fset.items():
+    for _plane, arr in planar_groups:
         farr = _union(arr)
         ret.append(_unify_face(farr))
 

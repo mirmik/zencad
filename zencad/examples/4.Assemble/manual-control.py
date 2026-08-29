@@ -1,40 +1,25 @@
 #!/usr/bin/env python3
-"""
-ZenCad example: manual-control
+"""Keyboard-controlled articulated chain.
 
-We can control current object position in real time.
-In that example we create special widget to change link`s positions by sliders.
-
-Legacy direct-GUI example: arbitrary QWidget/preanimate panels are intentionally
-outside the managed runtime contract.
+Keys 1-4 select a joint; left/right rotate the selected joint.
 """
 
 from zencad import *
 import zencad.assemble
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
-CTRWIDGET = None
-SLDS = None
-
-
-class Slider(QSlider):
-    def __init__(self):
-        super().__init__(Qt.Horizontal)
-        self.setRange(0, 10000)
-        self.setValue(5000)
-        self.setSingleStep(1)
-
 
 class link(zencad.assemble.unit):
     def __init__(self, h=40, axis=(0, 1, 0)):
         super().__init__()
-        self.add(cylinder(5, h) + cylinder(6, 10,
-                                           center=True).transform(up(h) * short_rotate((0, 0, 1), axis)))
+        joint = cylinder(6, 10, center=True).transform(
+            up(h) * short_rotate((0, 0, 1), axis)
+        )
+        self.add(cylinder(5, h) + joint)
         self.rotator = zencad.assemble.rotator(
-            parent=self, axis=axis, location=up(h))
+            parent=self,
+            axis=axis,
+            location=up(h),
+        )
 
 
 a = link(axis=(0, 1, 0))
@@ -48,33 +33,26 @@ c.rotator.link(d)
 d.rotator.output.add(cone(5, 12, 40).up(10) + cylinder(5, 10))
 
 LINKS = [a, b, c, d]
+COORDS = [0.0] * len(LINKS)
+SELECTED = 0
+SPEED = deg(90)
 
 disp(a)
 
 
-def preanimate(widget, animate_thread):
-    global CTRWIDGET, SLDS
-    CTRWIDGET = QWidget()
-    layout = QVBoxLayout()
-    SLDS = [Slider() for i in range(len(LINKS))]
+def animate(state):
+    global SELECTED
+    for index in range(len(LINKS)):
+        if state.input.key_pressed(str(index + 1)):
+            SELECTED = index
 
-    for sld in SLDS:
-        layout.addWidget(sld)
-
-    CTRWIDGET.setLayout(layout)
-    CTRWIDGET.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Dialog)
-    CTRWIDGET.show()
-
-
-def animate(wdg):
-    for i in range(len(LINKS)):
-        LINKS[i].rotator.set_coord(
-            (SLDS[i].value() - 5000) / 10000 * math.pi * 2)
+    direction = (
+        state.input.key_down("right") - state.input.key_down("left")
+    )
+    COORDS[SELECTED] += direction * SPEED * min(state.delta, 0.1)
+    for link_object, coordinate in zip(LINKS, COORDS):
+        link_object.rotator.set_coord(coordinate)
     a.location_update()
 
 
-def close_handle():
-    CTRWIDGET.close()
-
-
-show(animate=animate, preanimate=preanimate, close_handle=close_handle)
+show(animate=animate)

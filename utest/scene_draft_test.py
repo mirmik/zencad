@@ -16,6 +16,7 @@ import zencad
 from zencad.occ_compat import add_to_bounds, volume_properties
 from zencad.runtime.scene_protocol import (
     decode_brep,
+    decode_json_payload,
     decode_snapshot_frame,
     encode_snapshot_frame,
 )
@@ -179,6 +180,33 @@ class SceneDraftTest(unittest.TestCase):
         self.assertEqual(len(patches), 1)
         transform = patches[0].updates[0].properties["transform"]
         self.assertNotEqual(transform["rotation"], (0.0, 0.0, 0.0, 1.0))
+
+    def test_points_lines_and_assembly_triedrons_are_transportable(self):
+        from zencad.interactive import arrow, line
+        import zencad.assemble
+
+        draft = SceneDraft(generation=15)
+        draft.add(zencad.point3(1, 2, 3), color=zencad.color.red)
+        draft.add(line((0, 0, 0), (4, 5, 6), width=2))
+        draft.add(arrow((1, 1, 1), (2, 3, 4), arrlen=3, width=4))
+        assembly = zencad.assemble.unit()
+        assembly.add_triedron(length=10, arrlen=2)
+        draft.add(assembly)
+
+        snapshot = draft.snapshot()
+        self.assertEqual(
+            [record.kind for record in snapshot.objects],
+            ["point", "line", "line", "line", "line", "line"],
+        )
+        self.assertEqual(
+            decode_json_payload(snapshot.objects[0].payload),
+            [1.0, 2.0, 3.0],
+        )
+        line_data = decode_json_payload(snapshot.objects[1].payload)
+        self.assertEqual(line_data["end"], [4.0, 5.0, 6.0])
+        self.assertEqual(line_data["width"], 2.0)
+        arrow_data = decode_json_payload(snapshot.objects[2].payload)
+        self.assertEqual(arrow_data["arrow_length"], 3.0)
 
     def test_managed_preanimate_is_explicitly_unsupported(self):
         with zencad.managed_scene(13):

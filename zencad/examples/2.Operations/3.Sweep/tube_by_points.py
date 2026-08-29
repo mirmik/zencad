@@ -1,32 +1,23 @@
 #!/usr/bin/env python3
-# Not suported yet
-# """
-# ZenCad API example: tube_by_points
-# """
+"""Build a rounded hollow tube from a polyline control-point list."""
 
-# from zencad import *
+from zencad import *
 
-# POINTS = [
-# 	(0,0,0),
-# 	(0,0,20),
-# 	(0,20,40),
-# 	(-90,20,40),
-# 	(-90,20,20),
-# 	(0,20,0),
-# ]
-# spine = rounded_polysegment(POINTS, r=10)
 
-# a, a_start, a_finish = tube(spine, r=5, bounds=True) 
-# b, b_start, b_finish = tube(spine, r=3, bounds=True)
+POINTS = [
+    (0, 0, 0),
+    (0, 0, 30),
+    (25, 0, 50),
+    (65, 0, 50),
+    (85, 20, 50),
+    (85, 55, 50),
+]
 
-# c = a_start.fill() - b_start.fill()
-# d = a_finish.fill() - b_finish.fill()
+spine = rounded_polysegment(POINTS, r=10)
+outer = pipe_shell([circle(5, wire=True)], spine, frenet=True, solid=True)
+inner = pipe_shell([circle(3, wire=True)], spine, frenet=True, solid=True)
 
-# m = sew([a,b,c,d])
-
-# disp(m)
-# disp(a).forw(60)
-# disp(spine, color.green).forw(120)
-# ctrs = disp(points(POINTS), color.red)
-# for c in ctrs: c.forw(120)
-# show()
+disp(outer - inner)
+disp(spine, color.green)
+disp(points(POINTS), color.red)
+show()

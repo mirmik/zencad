@@ -7,7 +7,12 @@ from zencad.gui.scene_presenter import (
     ScenePresenter,
     materialize_scene_object,
 )
-from zencad.runtime.scene_protocol import SceneObjectRecord, SceneSnapshot, encode_brep
+from zencad.runtime.scene_protocol import (
+    SceneObjectRecord,
+    SceneSnapshot,
+    encode_brep,
+    encode_json_payload,
+)
 from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
 
 
@@ -237,6 +242,31 @@ class ScenePresenterTest(unittest.TestCase):
         self.assertAlmostEqual(translation.X(), 4)
         self.assertAlmostEqual(translation.Y(), 5)
         self.assertAlmostEqual(translation.Z(), 6)
+
+    def test_real_materializer_creates_points_lines_and_arrows(self):
+        point = materialize_scene_object(SceneObjectRecord(
+            object_id="point",
+            kind="point",
+            payload=encode_json_payload((1, 2, 3)),
+            properties={"color": (1, 0, 0, 0)},
+        ))
+        line = materialize_scene_object(SceneObjectRecord(
+            object_id="line",
+            kind="line",
+            payload=encode_json_payload({
+                "start": (0, 0, 0),
+                "end": (4, 5, 6),
+                "width": 2,
+                "arrow_length": 3,
+            }),
+            properties={"color": (0, 1, 0, 0)},
+        ))
+
+        self.assertEqual(type(point.ais_object).__name__, "AIS_Point")
+        self.assertEqual(type(line.ais_object).__name__, "AIS_Line")
+        self.assertIsNone(point.shape)
+        self.assertIsNone(line.shape)
+        self.assertTrue(line.ais_object.Attributes().LineArrowDraw())
 
     def test_patch_updates_existing_handles_once_and_tracks_sequence(self):
         widget = FakeWidget()

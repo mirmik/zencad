@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-# coding: utf-8
-"""Legacy direct-GUI example; managed camera commands are not available yet."""
+"""Orbit a model while leaving mouse interaction in control of the viewer."""
 
 from zencad import *
-import time
-
-s = box(10, center=True)
-controller = disp(s)
 
 
-def animate(wdg):
-    if not wdg.mousedown:
-        wdg.set_eye(zencad.rotateZ(zencad.deg(-0.8))(wdg.eye()), orthogonal=True)
+model = box(10, center=True)
+controller = disp(model)
+
+
+def animate(state):
+    # The managed runner owns model state, while the GUI owns the camera.
+    # Pausing on a mouse drag keeps automatic motion out of the user's way.
+    if not state.input.mouse_buttons:
+        controller.relocate(rotateZ(deg(-30) * state.loctime))
 
 
 show(animate=animate)

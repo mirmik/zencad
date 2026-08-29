@@ -19,8 +19,8 @@ Objects returned by `display()` retain these live operations:
 - `hide()` and `is_hidden()`;
 - `color()` and `location()` queries.
 
-Shape-only `zencad.assemble.unit` trees are flattened into stable logical scene
-objects. Existing `unit.relocate()`, rotators, spherical rotators, and
+Shape and triedron-line `zencad.assemble.unit` trees are flattened into stable
+logical scene objects. Existing `unit.relocate()`, rotators, spherical rotators, and
 `location_update()` continue to propagate transforms to those objects. The
 runner creates no Qt window or AIS context.
 
@@ -53,12 +53,13 @@ replaces its external slider window with keyboard controls.
 | `4.Assemble/robot.py` | Supported contract | Shape-only nested assembly animation |
 | `MiniGames/tetris.py` | Supported | InputEvent arrows, visibility/color patches |
 | `MiniGames/tennis.py` | Supported | Two-player keyboard input and assembly motion |
-| `3.Animation/camera.py` | Unsupported | Direct viewer/camera mutation needs a future camera protocol |
-| `4.Assemble/manual-control*.py` | Legacy only | Arbitrary custom QWidget/preanimate panels are not transported |
+| `3.Animation/camera.py` | Supported | Model orbit pauses while the user manipulates the GUI-owned camera |
+| `4.Assemble/manual-control.py` | Supported | Number keys select a joint; arrows rotate it |
+| `4.Assemble/manual-control-2.py` | Supported | Keyboard-driven inverse-kinematics target |
 
-The unsupported examples remain useful documentation of the legacy direct-GUI
-mode, but managed execution rejects `preanimate` explicitly instead of silently
-creating a second window.
+Arbitrary custom QWidget panels remain outside the managed runner contract.
+Interactive examples use transported input events instead, so they work in the
+same persistent viewer as ordinary scripts.
 
 ## Verification
 

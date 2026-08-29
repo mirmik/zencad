@@ -14,6 +14,7 @@ from zencad.color import (
     Color,
     default_border_color,
     default_color,
+    default_point_color,
     default_wire_color,
 )
 from zencad.geom.exttrans import nulltrans
@@ -24,6 +25,7 @@ from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
     encode_brep,
+    encode_json_payload,
 )
 from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
 from zencad.runtime.input_protocol import InputState
@@ -84,7 +86,8 @@ def _transformation_state(value: Transformation) -> dict:
 @dataclass
 class _DraftObject:
     object_id: str
-    shape: Shape | TopoDS_Shape
+    kind: str
+    source: object
     location: Transformation
     visible: bool
     color: Color
@@ -220,10 +223,54 @@ class SceneDraft:
             )
         obj = evalcache.unlazy_if_need(obj)
         from zencad.interactive.assemble import unit
+        from zencad.interactive.line import LineInteractiveObject
+        from zencad.interactive.point import PointInteractiveObject
+        from zencad.geombase import point3
 
         if isinstance(obj, unit):
             return self._add_assembly(obj)
-        if not isinstance(obj, (Shape, TopoDS_Shape)):
+        if isinstance(obj, (Shape, TopoDS_Shape)):
+            kind = "brep"
+            source = obj
+            object_color = _color(color, default_color)
+            location = nulltrans()
+            visible = True
+            border_color = default_border_color()
+            wire_color = default_wire_color()
+        elif isinstance(obj, point3):
+            kind = "point"
+            source = tuple(float(component) for component in obj)
+            object_color = _color(color, default_point_color)
+            location = nulltrans()
+            visible = True
+            border_color = default_border_color()
+            wire_color = default_wire_color()
+        elif isinstance(obj, PointInteractiveObject):
+            point = obj.point.Pnt()
+            kind = "point"
+            source = (point.X(), point.Y(), point.Z())
+            object_color = _color(color, lambda: obj.color())
+            location = obj.location()
+            visible = not obj._hide
+            border_color = obj._border_color
+            wire_color = obj._wire_color
+        elif isinstance(obj, LineInteractiveObject):
+            kind = "line"
+            source = {
+                "start": tuple(float(component) for component in obj.p1),
+                "end": tuple(float(component) for component in obj.p2),
+                "width": float(obj.width),
+                "arrow_length": (
+                    None if obj.arrow_length is None
+                    else float(obj.arrow_length)
+                ),
+            }
+            object_color = _color(color, lambda: obj.color())
+            location = obj.location()
+            visible = not obj._hide
+            border_color = obj._border_color
+            wire_color = obj._wire_color
+        else:
             raise SceneDraftError(
                 f"Managed scenes do not support {type(obj).__name__} yet"
             )
@@ -232,17 +279,19 @@ class SceneDraft:
         self._next_id += 1
         self._objects[object_id] = _DraftObject(
             object_id=object_id,
-            shape=obj,
-            location=nulltrans(),
-            visible=True,
-            color=_color(color, default_color),
-            border_color=default_border_color(),
-            wire_color=default_wire_color(),
+            kind=kind,
+            source=source,
+            location=location,
+            visible=visible,
+            color=object_color,
+            border_color=border_color,
+            wire_color=wire_color,
         )
         return SceneObjectRef(self, object_id)
 
     def _add_assembly(self, root):
         """Flatten a legacy assembly into stable logical scene references."""
+        from zencad.interactive.line import LineInteractiveObject
         from zencad.interactive.shape import ShapeInteractiveObject
 
         root.location_update(deep=True, view=False)
@@ -250,15 +299,20 @@ class SceneDraft:
         def bind(current):
             current.views.clear()
             for display_object in current.dispobjects:
-                if not isinstance(display_object, ShapeInteractiveObject):
+                if not isinstance(
+                    display_object,
+                    (ShapeInteractiveObject, LineInteractiveObject),
+                ):
                     raise SceneDraftError(
-                        "Managed assemblies currently support shape parts only; "
+                        "Managed assemblies support shape and line parts; "
                         f"got {type(display_object).__name__}"
                     )
-                reference = self.add(
-                    display_object.shape,
-                    color=display_object.color(),
+                source = (
+                    display_object.shape
+                    if isinstance(display_object, ShapeInteractiveObject)
+                    else display_object
                 )
+                reference = self.add(source, color=display_object.color())
                 reference.set_color(
                     display_object.color(),
                     border_color=display_object._border_color,
@@ -276,10 +330,15 @@ class SceneDraft:
     def snapshot(self, metadata=None) -> SceneSnapshot:
         records = []
         for obj in self._objects.values():
+            payload = (
+                encode_brep(obj.source)
+                if obj.kind == "brep"
+                else encode_json_payload(obj.source)
+            )
             records.append(SceneObjectRecord(
                 object_id=obj.object_id,
-                kind="brep",
-                payload=encode_brep(obj.shape),
+                kind=obj.kind,
+                payload=payload,
                 properties={
                     "visible": obj.visible,
                     "color": _color_tuple(obj.color),

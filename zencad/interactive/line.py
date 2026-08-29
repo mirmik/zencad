@@ -12,6 +12,7 @@ class LineInteractiveObject(InteractiveObject):
     def __init__(self, p1, p2, width, color):
         self.p1 = point3(p1)
         self.p2 = point3(p2)
+        self.arrow_length = None
 
         super().__init__(self.make_ais(), color)
 
@@ -42,6 +43,7 @@ class LineInteractiveObject(InteractiveObject):
         self.ais_object.Attributes().SetLineAspect(lineAspect)
 
     def set_arrow_aspect(self, arrlen):
+        self.arrow_length = arrlen
         arrowAspect = Prs3d_ArrowAspect()
         arrowAspect.SetLength(arrlen)
         self.ais_object.Attributes().SetArrowAspect(arrowAspect)

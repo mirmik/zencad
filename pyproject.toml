@@ -40,6 +40,12 @@ gui = [
   "PyQt5-sip",
 ]
 build = ["build>=1.2"]
+examples = [
+  "Pillow",
+  "scikit-image",
+  "scipy",
+  "trimesh",
+]
 
 [project.scripts]
 zencad = "zencad.__main__:main"

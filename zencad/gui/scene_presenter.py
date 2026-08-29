@@ -6,15 +6,18 @@ from numbers import Real
 from types import MappingProxyType
 from typing import Callable, Mapping
 
-from OCP.AIS import AIS_Shape
-from OCP.Aspect import Aspect_TOD_ABSOLUTE
-from OCP.gp import gp_Quaternion, gp_Trsf, gp_Vec
+from OCP.AIS import AIS_Line, AIS_Point, AIS_Shape
+from OCP.Aspect import Aspect_TOD_ABSOLUTE, Aspect_TOL_SOLID
+from OCP.Geom import Geom_CartesianPoint
+from OCP.gp import gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
+from OCP.Prs3d import Prs3d_ArrowAspect, Prs3d_LineAspect
 
 from zencad.color import Color
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
     decode_brep,
+    decode_json_payload,
 )
 from zencad.runtime.scene_patch_protocol import (
     ScenePatch,
@@ -38,6 +41,7 @@ class PresentedSceneObject:
     properties: Mapping = field(
         default_factory=lambda: MappingProxyType({})
     )
+    kind: str = "brep"
 
 
 def _rgba(value, name) -> tuple[float, float, float, float]:
@@ -134,19 +138,51 @@ def _transform(properties: Mapping) -> gp_Trsf:
 
 def materialize_scene_object(record: SceneObjectRecord) -> PresentedSceneObject:
     """Create a fully styled AIS object without binding it to a context."""
-    if record.kind != "brep":
-        raise ScenePresentationError(
-            f"Unsupported scene object kind: {record.kind!r}"
-        )
-
     state = _presentation_state(record.properties)
     color = state["color"]
     border = state["border_color"]
     wire = state["wire_color"]
     transformation = _transform(state)
 
-    shape = decode_brep(record.payload)
-    ais_object = AIS_Shape(shape)
+    if record.kind == "brep":
+        shape = decode_brep(record.payload)
+        ais_object = AIS_Shape(shape)
+    elif record.kind == "point":
+        point = _vector(decode_json_payload(record.payload), "point", 3)
+        shape = None
+        ais_object = AIS_Point(Geom_CartesianPoint(gp_Pnt(*point)))
+    elif record.kind == "line":
+        data = decode_json_payload(record.payload)
+        if not isinstance(data, Mapping):
+            raise ScenePresentationError("line payload must be an object")
+        start = _vector(data.get("start"), "line start", 3)
+        end = _vector(data.get("end"), "line end", 3)
+        width = data.get("width", 1)
+        if (
+            not isinstance(width, Real)
+            or isinstance(width, bool)
+            or not math.isfinite(width)
+            or width <= 0
+        ):
+            raise ScenePresentationError("line width must be positive")
+        arrow_length = data.get("arrow_length")
+        if arrow_length is not None and (
+            not isinstance(arrow_length, Real)
+            or isinstance(arrow_length, bool)
+            or not math.isfinite(arrow_length)
+            or arrow_length <= 0
+        ):
+            raise ScenePresentationError("arrow length must be positive")
+        shape = None
+        ais_object = AIS_Line(
+            Geom_CartesianPoint(gp_Pnt(*start)),
+            Geom_CartesianPoint(gp_Pnt(*end)),
+        )
+    else:
+        raise ScenePresentationError(
+            f"Unsupported scene object kind: {record.kind!r}"
+        )
+
     drawer = ais_object.Attributes()
     drawer.SetFaceBoundaryDraw(True)
     drawer.SetTypeOfDeflection(Aspect_TOD_ABSOLUTE)
@@ -157,14 +193,26 @@ def materialize_scene_object(record: SceneObjectRecord) -> PresentedSceneObject:
     face_color = Color(color).to_Quantity_Color()
     ais_object.SetColor(face_color)
     ais_object.SetTransparency(color[3])
-    line_aspect = drawer.LineAspect()
-    if line_aspect is not None:
-        line_aspect.SetColor(Color(border).to_Quantity_Color())
-        drawer.SetFaceBoundaryAspect(line_aspect)
-    wire_aspect = drawer.WireAspect()
-    if wire_aspect is not None:
-        wire_aspect.SetColor(Color(wire).to_Quantity_Color())
-        drawer.SetWireAspect(wire_aspect)
+    if record.kind == "brep":
+        line_aspect = drawer.LineAspect()
+        if line_aspect is not None:
+            line_aspect.SetColor(Color(border).to_Quantity_Color())
+            drawer.SetFaceBoundaryAspect(line_aspect)
+        wire_aspect = drawer.WireAspect()
+        if wire_aspect is not None:
+            wire_aspect.SetColor(Color(wire).to_Quantity_Color())
+            drawer.SetWireAspect(wire_aspect)
+    elif record.kind == "line":
+        drawer.SetLineAspect(Prs3d_LineAspect(
+            face_color,
+            Aspect_TOL_SOLID,
+            float(width),
+        ))
+        if arrow_length is not None:
+            arrow_aspect = Prs3d_ArrowAspect()
+            arrow_aspect.SetLength(float(arrow_length))
+            drawer.SetArrowAspect(arrow_aspect)
+            drawer.SetLineArrowDraw(True)
     ais_object.SetLocalTransformation(transformation)
     return PresentedSceneObject(
         object_id=record.object_id,
@@ -172,6 +220,7 @@ def materialize_scene_object(record: SceneObjectRecord) -> PresentedSceneObject:
         shape=shape,
         visible=state["visible"],
         properties=state,
+        kind=record.kind,
     )
 
 
@@ -326,14 +375,21 @@ class ScenePresenter:
                 ais_object.SetColor(Color(color).to_Quantity_Color())
                 ais_object.SetTransparency(color[3])
             drawer = ais_object.Attributes()
-            if "border_color" in changed:
+            if "color" in changed and item.kind == "line":
+                line_aspect = drawer.LineAspect()
+                if line_aspect is not None:
+                    line_aspect.SetColor(
+                        Color(new_state["color"]).to_Quantity_Color()
+                    )
+                    drawer.SetLineAspect(line_aspect)
+            if "border_color" in changed and item.kind == "brep":
                 line_aspect = drawer.LineAspect()
                 if line_aspect is not None:
                     line_aspect.SetColor(
                         Color(new_state["border_color"]).to_Quantity_Color()
                     )
                     drawer.SetFaceBoundaryAspect(line_aspect)
-            if "wire_color" in changed:
+            if "wire_color" in changed and item.kind == "brep":
                 wire_aspect = drawer.WireAspect()
                 if wire_aspect is not None:
                     wire_aspect.SetColor(
@@ -425,20 +481,26 @@ class ScenePresenter:
     def _update_widget_shape(self, prepared):
         if not hasattr(self.widget, "_first_shape"):
             return
-        first = next((item.shape for item in prepared if item.visible), None)
-        if first is None:
-            self.widget._first_shape = None
-            self.widget.scene_max0 = 1.0
-            return
+        first = next(
+            (
+                item.shape
+                for item in prepared
+                if item.visible and item.shape is not None
+            ),
+            None,
+        )
         try:
             from OCP.Bnd import Bnd_Box
             from zencad.geom.shape import Shape
 
-            self.widget._first_shape = Shape(first)
+            self.widget._first_shape = Shape(first) if first is not None else None
             bounds = Bnd_Box()
             for item in prepared:
                 if item.visible:
                     bounds.Add(item.ais_object.BoundingBox())
+            if bounds.IsVoid():
+                self.widget.scene_max0 = 1.0
+                return
             xmin, ymin, zmin, xmax, ymax, zmax = bounds.Get()
             self.widget.scene_max0 = max(
                 xmax - xmin,

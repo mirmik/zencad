@@ -10,6 +10,7 @@ import sys
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gui", action="store_true")
+    parser.add_argument("--examples", action="store_true")
     parser.add_argument("--dist-dir", default="dist")
     arguments = parser.parse_args()
 
@@ -21,8 +22,13 @@ def main():
         )
 
     requirement = str(wheels[0].resolve())
+    extras = []
     if arguments.gui:
-        requirement = f"{requirement}[gui]"
+        extras.append("gui")
+    if arguments.examples:
+        extras.append("examples")
+    if extras:
+        requirement = f"{requirement}[{','.join(extras)}]"
 
     subprocess.run(
         [

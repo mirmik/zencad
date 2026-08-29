@@ -124,19 +124,24 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
 
     def __setstate__(self, dct):
         from zencad.geom.offset import _shapefix_solid
-        try:
-            if "brep" in dct:
-                self._shp = TopoDS_Shape()
-                read_brep(self._shp, io.BytesIO(dct["brep"]))
-            else:
-                # Compatibility with in-memory state produced by pythonocc.
-                self._shp = dct["shape"]
+        if "brep" in dct:
+            self._shp = TopoDS_Shape()
+            read_brep(self._shp, io.BytesIO(dct["brep"]))
+            if self._shp.IsNull():
+                raise ValueError("Failed to restore cached BREP shape")
+        else:
+            # Compatibility with in-memory state produced by pythonocc. An
+            # incompatible backend object must fail unpickling so evalcache
+            # can discard and recompute the entry instead of retaining a
+            # half-initialized Shape.
+            self._shp = dct["shape"]
 
-            # thicksolid даёт невалидный пиклинг.
-            if self.is_solid():
-                self._shp = _shapefix_solid(Shape(self._shp)).Shape()
-        except Exception as ex:
-            print(ex)
+        if not isinstance(self._shp, TopoDS_Shape):
+            raise TypeError("Cached shape belongs to an incompatible backend")
+
+        # thicksolid даёт невалидный пиклинг.
+        if self.is_solid():
+            self._shp = _shapefix_solid(Shape(self._shp)).Shape()
 
     def transform(self, trans):
         if isinstance(trans, Transformation):

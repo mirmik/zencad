@@ -23,8 +23,11 @@ def main():
         script_path = Path(temporary_directory) / "model.py"
         script_path.write_text(
             "from zencad import *\n"
+            "from zencad.interactive import arrow\n"
             "print('managed reload')\n"
             "display(box(10))\n"
+            "display(point3(15, 0, 0), color=color.red)\n"
+            "display(arrow((0, 0, 0), (0, 15, 0), arrlen=2))\n"
             "show()\n",
             encoding="utf-8",
         )
@@ -169,7 +172,11 @@ def main():
                     return
                 state["generation"] = generation
                 state["commits"] += 1
-                assert display.scene_presenter.objects
+                assert len(display.scene_presenter.objects) == 3
+                assert [
+                    type(item.ais_object).__name__
+                    for item in display.scene_presenter.objects
+                ] == ["AIS_Shape", "AIS_Point", "AIS_Line"]
                 assert_persistent_viewer()
 
                 if state["commits"] == 1:

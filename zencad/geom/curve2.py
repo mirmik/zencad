@@ -1,6 +1,6 @@
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace
 from OCP.Geom import Geom_CylindricalSurface
-from OCP.Geom2d import Geom2d_Ellipse, Geom2d_Curve
+from OCP.Geom2d import Geom2d_Ellipse
 from OCP.gp import gp_Pnt, gp_Vec, gp_Ax3, gp_Dir, gp_Ax2d, gp_Dir2d, gp_Pnt2d, gp_Trsf2d
 from OCP.Geom2d import Geom2d_TrimmedCurve
 from OCP.GCE2d import GCE2d_MakeSegment
@@ -21,7 +21,7 @@ class Curve2:
     def rotate(self, angle):
         trsf = gp_Trsf2d()
         trsf.SetRotation(gp_Pnt2d(0, 0), angle)
-        return Curve2(Geom2d_Curve.DownCast(self._crv.Transformed(trsf)))
+        return Curve2(self._crv.Transformed(trsf))
 
     def value(self, arg):
         return self.Curve2().Value(arg)

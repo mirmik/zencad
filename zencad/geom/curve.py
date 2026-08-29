@@ -1,6 +1,6 @@
 from OCP.gp import gp
 from zencad.occ_compat import plane_xoy
-from OCP.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_Curve, Geom_BezierCurve, Geom_BSplineCurve
+from OCP.Geom import Geom_Line, Geom_Circle, Geom_Ellipse, Geom_BezierCurve, Geom_BSplineCurve
 from OCP.GeomAPI import GeomAPI_Interpolate
 from OCP.GeomAdaptor import GeomAdaptor_Curve
 
@@ -42,7 +42,7 @@ class Curve(CurveAlgo, Transformable):
         return point3(pnt)
 
     def transform(self, trsf):
-        return Curve(Geom_Curve.DownCast(self._crv.Transformed(trsf._trsf)))
+        return Curve(self._crv.Transformed(trsf._trsf))
 
     def AdaptorCurve(self):
         return GeomAdaptor_Curve(self._crv)

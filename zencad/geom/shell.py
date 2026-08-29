@@ -1,4 +1,4 @@
-from zencad.occ_compat import make_sewing
+from zencad.occ_compat import as_shell, make_sewing
 from OCP.ShapeFix import ShapeFix_Shell, ShapeFix_Solid
 from OCP.TopoDS import TopoDS_Solid, TopoDS_Shell
 from OCP.BRep import BRep_Builder
@@ -68,7 +68,7 @@ def _make_shell(vec):
     algo.Perform()
 
     if len(vec) > 1:
-        fixer = ShapeFix_Shell(algo.SewedShape())
+        fixer = ShapeFix_Shell(as_shell(algo.SewedShape()))
         fixer.Perform()
         return Shape(fixer.Shell())
     else:
