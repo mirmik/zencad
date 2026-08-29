@@ -68,20 +68,36 @@
 </nav>
       <article class="article"><h1 id="-1">Установка</h1>
 
-<p>ZenCad устанавливается из PyPI вместе с готовым бинарным wheel геометрического backend. Conda и отдельная установка OpenCascade не требуются.</p>
+<p>ZenCad устанавливается из PyPI вместе с готовым бинарным wheel геометрического
+backend. Conda и отдельная установка OpenCascade не требуются.</p>
 
-<h2 id="gui">Графический интерфейс</h2>
+<h2 id="-2">Графический интерфейс</h2>
 
-<div class="codehilite"><pre><span></span><code>python3 -m pip install "zencad[gui]"
-zencad
+<div class="codehilite"><pre><span></span><code><span class="go">python3 -m pip install &quot;zencad[gui]&quot;</span>
+<span class="go">zencad</span>
 </code></pre></div>
 
-<h2 id="headless">Только геометрия, без GUI</h2>
+<p>В Debian и Ubuntu перед первым запуском установите системные библиотеки Qt/X11:</p>
 
-<div class="codehilite"><pre><span></span><code>python3 -m pip install zencad
+<div class="codehilite"><pre><span></span><code><span class="go">sudo apt update</span>
+<span class="go">sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \</span>
+<span class="go">libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \</span>
+<span class="go">libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \</span>
+<span class="go">libxkbcommon-x11-0</span>
 </code></pre></div>
 
-<p>Поддерживаются CPython 3.10–3.14, Windows x86-64, macOS 11+ x86-64/arm64 и Linux x86-64/aarch64 с glibc 2.31 или новее.</p>
+<p>Графический интерфейс использует X11; в Wayland-сессии требуется XWayland.</p>
+
+<h2 id="gui">Только геометрия, без GUI</h2>
+
+<div class="codehilite"><pre><span></span><code><span class="go">python3 -m pip install zencad</span>
+</code></pre></div>
+
+<p>Требуется 64-битный CPython 3.10–3.14. Геометрическая часть имеет готовые
+wheel для Windows x86-64, macOS 11+ x86-64/arm64 и Linux x86-64/aarch64 с
+glibc 2.31 или новее. GUI-extra доступен для Windows x86-64, macOS
+x86-64/arm64 и Linux x86-64; PyQt5 сейчас не публикует wheel для Linux
+aarch64.</p>
 </article>
     </div>
     <div id="footer"></div>

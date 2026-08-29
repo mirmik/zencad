@@ -20,8 +20,9 @@ jobs:
           cache: pip
       - name: Build wheel and source distribution
         run: |
-          python -m pip install --upgrade pip build
+          python -m pip install --upgrade pip build twine
           python -m build
+          python -m twine check dist/*
       - name: Upload distributions
         uses: actions/upload-artifact@v7
         with:
@@ -49,7 +50,7 @@ jobs:
       - name: Install the prebuilt headless wheel
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --only-binary=cadquery-ocp-novtk dist/zencad-1.3.3-py3-none-any.whl
+          python utest/install_built_wheel.py
           python -m pip check
       - name: Verify the installed wheel outside the checkout
         working-directory: ${{ runner.temp }}
@@ -57,7 +58,29 @@ jobs:
       - name: Run the headless regression suite
         run: python utest/run_headless.py
 
-  gui-import:
+  sdist-smoke:
+    needs: build-distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/download-artifact@v8
+        with:
+          name: zencad-distributions
+          path: dist
+      - name: Install the source distribution
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --only-binary=:all: dist/zencad-*.tar.gz
+          python -m pip check
+      - name: Verify the installed source distribution outside the checkout
+        working-directory: ${{ runner.temp }}
+        run: python "${{ github.workspace }}/utest/installed_wheel_smoke.py"
+
+  gui-linux:
     needs: build-distributions
     runs-on: ubuntu-latest
     steps:
@@ -89,14 +112,13 @@ jobs:
       - name: Install GUI extra
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "dist/zencad-1.3.3-py3-none-any.whl[gui]"
+          python utest/install_built_wheel.py --gui
           python -m pip check
-      - name: Import the GUI stack
+      - name: Verify the installed GUI wheel outside the checkout
         env:
           QT_QPA_PLATFORM: offscreen
         working-directory: ${{ runner.temp }}
-        run: |
-          python -c "import zencad.gui.display, zencad.gui.mainwindow, zencad.gui.settingswdg; print('GUI import smoke: OK')"
+        run: python "${{ github.workspace }}/utest/installed_gui_wheel_smoke.py"
       - name: Exercise local OCP viewer
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
@@ -127,3 +149,30 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         working-directory: ${{ runner.temp }}
         run: xvfb-run -a python "${{ github.workspace }}/utest/gui_mainwindow_sigint_smoke.py"
+
+  gui-windows-macos:
+    needs: build-distributions
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        python-version: ["3.10", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - uses: actions/download-artifact@v8
+        with:
+          name: zencad-distributions
+          path: dist
+      - name: Install GUI extra entirely from wheels
+        run: |
+          python -m pip install --upgrade pip
+          python utest/install_built_wheel.py --gui
+          python -m pip check
+      - name: Verify GUI and native-window bindings outside the checkout
+        working-directory: ${{ runner.temp }}
+        run: python "${{ github.workspace }}/utest/installed_gui_wheel_smoke.py"

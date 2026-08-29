@@ -27,9 +27,7 @@ import zencad.geom.solid
 from zencad.settings import Settings, normalize_msaa_samples
 from zencad.gui.scene_presenter import ScenePresenter
 
-from OpenGL.GLUT import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL.GL import GL_RGBA, GL_UNSIGNED_BYTE, glReadPixels
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
 STARTED_YAW = math.pi * (7 / 16)
@@ -479,7 +477,7 @@ class DisplayWidget(BaseViewer):
 
     def InitDriver(self):
         if self._display._window is None:
-            self._display.Create(window_handle=int(self.winId()), parent=self)
+            self._display.Create(window_handle=self.winId(), parent=self)
             self._display.View.MustBeResized()
 
         self.Viewer.SetDefaultLights()

@@ -3,6 +3,7 @@
 import importlib.metadata
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -16,6 +17,7 @@ from zencad.convert.api import _from_brep, _to_brep, _to_stl
 def main():
     assert RunnerMessage is not None
     assert RunnerSupervisor is not None
+    assert zencad.__version__ == importlib.metadata.version("zencad")
     checkout = os.environ.get("GITHUB_WORKSPACE")
     if checkout:
         package_path = Path(zencad.__file__).resolve()
@@ -54,6 +56,13 @@ def main():
         )
         subprocess.run(
             [sys.executable, "-m", "zencad", "--no-show", str(script_path)],
+            cwd=temporary_path,
+            check=True,
+        )
+        console_script = shutil.which("zencad")
+        assert console_script is not None
+        subprocess.run(
+            [console_script, "--no-show", str(script_path)],
             cwd=temporary_path,
             check=True,
         )

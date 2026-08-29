@@ -6,7 +6,7 @@
 Окно графического интерфейса может быть вызвано следующими способами:
 
 * Вызов `zencad.show()` в интерпретаторе python.  
-* Выполнение `python3 -m pip zencad` в среде терминала. (usage: `python3 -m pip zencad [filepath]`)  
+* Выполнение `python3 -m zencad` в среде терминала. (usage: `python3 -m zencad [filepath]`)
 * Вызов утилиты командной строки `zencad` (usage: `zencad [filepath]`)  
 
 ## Обновление модели по обновлению файла источника

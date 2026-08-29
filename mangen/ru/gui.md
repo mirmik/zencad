@@ -12,14 +12,14 @@
 Окно графического интерфейса может быть вызвано следующими способами:
 
 * Вызов `zencad.show()` в интерпретаторе python.  
-* Выполнение `python3 -m pip zencad` в среде терминала. (usage: `python3 -m pip zencad [filepath]`)  
+* Выполнение `python3 -m zencad` в среде терминала. (usage: `python3 -m zencad [filepath]`)
 * Вызов утилиты командной строки `zencad` (usage: `zencad [filepath]`)
 :en
 ## Call
 The GUI window can be invoked in the following ways:
 
 * Calling `zencad.show ()` in the python interpreter.
-* Executing `python3 -m pip zencad` in a terminal environment. (usage: `python3 -m pip zencad [filepath]`)
+* Executing `python3 -m zencad` in a terminal environment. (usage: `python3 -m zencad [filepath]`)
 * Call the command line utility `zencad` (usage:` zencad [filepath] `) 
 ::  
 

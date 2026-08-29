@@ -19,10 +19,17 @@ Manual and Information
 
 Installation
 ------------
-### GUI system libraries on Linux
+### GUI system libraries on Debian and Ubuntu
 ```
-sudo apt install libxcb-xinerama0 libxkbcommon-x11-0
+sudo apt update
+sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \
+  libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+  libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \
+  libxkbcommon-x11-0
 ```
+
+The current Qt backend uses X11. On a Wayland desktop, an XWayland session
+must be available.
 
 ### Common
 
@@ -40,8 +47,22 @@ For headless geometry use:
 python3 -m pip install zencad
 ```
 
-The current OCP wheels support CPython 3.10-3.14 on Windows x86-64, macOS
-11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc 2.31 or newer.
+ZenCad requires 64-bit CPython 3.10-3.14. The geometry-only installation has
+prebuilt wheels for Windows x86-64, macOS 11+ x86-64/arm64, and Linux
+x86-64/aarch64 with glibc 2.31 or newer. The `gui` extra is available on
+Windows x86-64, macOS x86-64/arm64, and Linux x86-64; PyQt5 does not currently
+publish Linux aarch64 wheels.
+
+To run ZenCad from a Linux or macOS source checkout:
+
+```sh
+./start.sh
+```
+
+The script finds a supported Python, creates `venv`, installs the project with
+its GUI dependencies, and forwards any arguments to ZenCad. Once the
+environment is up to date, `./start.sh --skip-install` starts it without
+running pip again.
 
 ### For Windows:  
 The PyPI OCP wheel currently targets 64-bit Windows.

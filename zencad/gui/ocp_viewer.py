@@ -27,34 +27,46 @@ class Viewer3d:
         self._parent = None
         self._closed = False
 
+    @staticmethod
+    def _native_handle_capsule(window_handle):
+        """Wrap a Qt native pointer without transferring its ownership."""
+        if hasattr(window_handle, "ascapsule"):
+            return window_handle.ascapsule()
+
+        py_capsule_new = ctypes.pythonapi.PyCapsule_New
+        py_capsule_new.restype = ctypes.py_object
+        py_capsule_new.argtypes = (
+            ctypes.c_void_p,
+            ctypes.c_char_p,
+            ctypes.c_void_p,
+        )
+        return py_capsule_new(
+            ctypes.c_void_p(int(window_handle)), None, None
+        )
+
     def _create_native_window(self, window_handle, parent):
         if sys.platform.startswith("linux"):
             from OCP.Xw import Xw_Window
 
-            return Xw_Window(self._display_connection, window_handle)
+            return Xw_Window(self._display_connection, int(window_handle))
 
         if sys.platform.startswith("win"):
             from OCP.WNT import WNT_Window
 
             # Qt exposes HWND as an integer, while OCP's pybind11 wrapper
-            # intentionally models native pointer arguments as PyCapsules.
-            # Wrap the existing HWND without taking ownership of it.
-            py_capsule_new = ctypes.pythonapi.PyCapsule_New
-            py_capsule_new.restype = ctypes.py_object
-            py_capsule_new.argtypes = (
-                ctypes.c_void_p,
-                ctypes.c_char_p,
-                ctypes.c_void_p,
-            )
-            handle_capsule = py_capsule_new(
-                ctypes.c_void_p(window_handle), None, None
-            )
-            return WNT_Window(handle_capsule)
+            # models native pointer arguments as PyCapsules.
+            return WNT_Window(self._native_handle_capsule(window_handle))
 
-        # Aspect_NeutralWindow is the portable native-handle adapter used by
-        # OCCT on platforms where the binding has no dedicated window module.
+        if sys.platform == "darwin":
+            from OCP.Cocoa import Cocoa_Window
+
+            # QWidget.winId() is the NSView pointer on macOS. Cocoa_Window is
+            # OCCT's native adapter for embedding a view into that widget.
+            return Cocoa_Window(self._native_handle_capsule(window_handle))
+
+        # Keep a neutral adapter for any future platform port.
         window = Aspect_NeutralWindow()
-        window.SetNativeHandle(window_handle)
+        window.SetNativeHandle(int(window_handle))
         if parent is not None:
             window.SetSize(parent.width(), parent.height())
         return window

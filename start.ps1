@@ -109,9 +109,31 @@ if (-not (Test-Path -LiteralPath $venvPython -PathType Leaf)) {
         throw "Failed to create the virtual environment (exit code $LASTEXITCODE)."
     }
 }
+else {
+    $venvProbeOutput = & $venvPython -c $probeCode 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "The existing '$venvDirectory' does not use supported 64-bit CPython 3.10-3.14."
+    }
+    $venvProbe = $venvProbeOutput | ConvertFrom-Json
+    $venvVersionInfo = $venvProbe.version_info
+    $venvSupported = (
+        $venvProbe.implementation -eq "CPython" -and
+        $venvProbe.architecture -eq 64 -and
+        $venvVersionInfo[0] -eq 3 -and
+        $venvVersionInfo[1] -ge 10 -and
+        $venvVersionInfo[1] -lt 15
+    )
+    if (-not $venvSupported) {
+        throw "The existing '$venvDirectory' does not use supported 64-bit CPython 3.10-3.14."
+    }
+}
 
 if (-not $SkipInstall) {
     Write-Host "Installing ZenCad and its GUI dependencies..."
+    & $venvPython -m pip install --upgrade pip
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to upgrade pip (exit code $LASTEXITCODE)."
+    }
     & $venvPython -m pip install --editable "${projectRoot}[gui]"
     if ($LASTEXITCODE -ne 0) {
         throw "Dependency installation failed (exit code $LASTEXITCODE)."

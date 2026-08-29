@@ -17,7 +17,7 @@ _ZenCad_ может использоваться как самостоятель
 ------------
 ## Установка.
 ```sh
-python3 -m pip install zencad
+python3 -m pip install "zencad[gui]"
 ```
 
 --------------
@@ -26,7 +26,7 @@ python3 -m pip install zencad
 zencad
 
 # alternate:
-python3 -m pip zencad
+python3 -m zencad
 ```
 
 -------------
@@ -51,4 +51,3 @@ show()
 ## Ссылки
 github: [https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
 pypi: [https://pypi.org/project/zencad](https://pypi.org/project/zencad)  
-
