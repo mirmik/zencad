@@ -16,6 +16,7 @@ import zencad
 from zencad.occ_compat import add_to_bounds, volume_properties
 from zencad.runtime.scene_protocol import (
     decode_brep,
+    decode_mesh,
     decode_json_payload,
     decode_snapshot_frame,
     encode_snapshot_frame,
@@ -207,6 +208,55 @@ class SceneDraftTest(unittest.TestCase):
         self.assertEqual(line_data["width"], 2.0)
         arrow_data = decode_json_payload(snapshot.objects[2].payload)
         self.assertEqual(arrow_data["arrow_length"], 3.0)
+
+    def test_mesh_is_transportable_without_brep_conversion(self):
+        draft = SceneDraft(generation=16)
+        mesh = zencad.box(2).to_mesh().unlazy()
+        reference = draft.add(
+            mesh,
+            color=zencad.color.green,
+            display_mode="wireframe",
+        )
+        reference.right(4)
+
+        record = draft.snapshot().objects[0]
+        restored = decode_mesh(record.payload)
+
+        self.assertEqual(record.kind, "mesh")
+        self.assertEqual(record.properties["display_mode"], "wireframe")
+        self.assertEqual(restored.triangles, mesh.triangles)
+        self.assertEqual(
+            record.properties["transform"]["translation"],
+            (4, 0, 0),
+        )
+
+        published = draft.publish()
+        reference.set_mesh_display_mode("shaded")
+        patch = draft.drain_patch()
+        self.assertIsNotNone(published)
+        self.assertEqual(
+            patch.updates[0].properties["display_mode"],
+            "shaded",
+        )
+
+    def test_public_display_selects_mesh_mode(self):
+        with zencad.managed_scene(17) as draft:
+            reference = zencad.disp(
+                zencad.box(2).to_mesh(),
+                display_mode="wireframe",
+            )
+            snapshot = zencad.show()
+
+        self.assertEqual(len(draft), 1)
+        self.assertEqual(
+            snapshot.objects[0].properties["display_mode"],
+            "wireframe",
+        )
+        reference.set_mesh_display_mode("shaded+edges")
+        self.assertEqual(
+            draft.drain_patch().updates[0].properties["display_mode"],
+            "shaded_with_edges",
+        )
 
     def test_managed_preanimate_is_explicitly_unsupported(self):
         with zencad.managed_scene(13):

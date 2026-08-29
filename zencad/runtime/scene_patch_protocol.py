@@ -33,6 +33,7 @@ _PROPERTY_KEYS = frozenset({
     "color",
     "border_color",
     "wire_color",
+    "display_mode",
 })
 _TRANSFORM_KEYS = frozenset({"scale", "rotation", "translation"})
 
@@ -124,6 +125,13 @@ def _properties(value: Any) -> Mapping[str, Any]:
             if not isinstance(raw, bool):
                 raise ProtocolError("visible must be a boolean")
             normalized[name] = raw
+        elif name == "display_mode":
+            from zencad.geom.mesh import normalize_mesh_display_mode
+
+            try:
+                normalized[name] = normalize_mesh_display_mode(raw)
+            except (TypeError, ValueError) as exception:
+                raise ProtocolError(str(exception)) from exception
         else:
             normalized[name] = _rgba(raw, name)
     return MappingProxyType(normalized)

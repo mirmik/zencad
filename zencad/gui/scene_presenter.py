@@ -6,17 +6,19 @@ from numbers import Real
 from types import MappingProxyType
 from typing import Callable, Mapping
 
-from OCP.AIS import AIS_Line, AIS_Point, AIS_Shape
+from OCP.AIS import AIS_Line, AIS_Point, AIS_Shape, AIS_Triangulation
 from OCP.Aspect import Aspect_TOD_ABSOLUTE, Aspect_TOL_SOLID
 from OCP.Geom import Geom_CartesianPoint
 from OCP.gp import gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
 from OCP.Prs3d import Prs3d_ArrowAspect, Prs3d_LineAspect
 
 from zencad.color import Color
+from zencad.geom.mesh import normalize_mesh_display_mode
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
     decode_brep,
+    decode_mesh,
     decode_json_payload,
 )
 from zencad.runtime.scene_patch_protocol import (
@@ -121,6 +123,9 @@ def _presentation_state(properties: Mapping) -> Mapping:
             properties.get("wire_color", (0, 0, 0, 0)),
             "wire_color",
         ),
+        "display_mode": normalize_mesh_display_mode(
+            properties.get("display_mode")
+        ),
         "transform": _transform_state(properties),
     })
 
@@ -147,6 +152,15 @@ def materialize_scene_object(record: SceneObjectRecord) -> PresentedSceneObject:
     if record.kind == "brep":
         shape = decode_brep(record.payload)
         ais_object = AIS_Shape(shape)
+    elif record.kind == "mesh":
+        from zencad.geom.mesh import mesh_to_poly_triangulation
+
+        shape = None
+        mesh = decode_mesh(record.payload)
+        ais_object = AIS_Triangulation(mesh_to_poly_triangulation(mesh))
+        # DisplayWidget configures the context for AIS_Shaded (mode 1), but
+        # AIS_Triangulation renders its geometry in presentation mode 0.
+        ais_object.SetDisplayMode(0)
     elif record.kind == "point":
         point = _vector(decode_json_payload(record.payload), "point", 3)
         shape = None
@@ -202,6 +216,15 @@ def materialize_scene_object(record: SceneObjectRecord) -> PresentedSceneObject:
         if wire_aspect is not None:
             wire_aspect.SetColor(Color(wire).to_Quantity_Color())
             drawer.SetWireAspect(wire_aspect)
+    elif record.kind == "mesh":
+        from zencad.interactive.mesh import configure_mesh_presentation
+
+        configure_mesh_presentation(
+            ais_object,
+            state["display_mode"],
+            face_color,
+            Color(border).to_Quantity_Color(),
+        )
     elif record.kind == "line":
         drawer.SetLineAspect(Prs3d_LineAspect(
             face_color,
@@ -396,6 +419,19 @@ class ScenePresenter:
                         Color(new_state["wire_color"]).to_Quantity_Color()
                     )
                     drawer.SetWireAspect(wire_aspect)
+            if item.kind == "mesh" and changed & {
+                "color",
+                "border_color",
+                "display_mode",
+            }:
+                from zencad.interactive.mesh import configure_mesh_presentation
+
+                configure_mesh_presentation(
+                    ais_object,
+                    new_state["display_mode"],
+                    Color(new_state["color"]).to_Quantity_Color(),
+                    Color(new_state["border_color"]).to_Quantity_Color(),
+                )
             if changed - {"visible"}:
                 self.context.Redisplay(ais_object, False)
 
@@ -497,7 +533,12 @@ class ScenePresenter:
             bounds = Bnd_Box()
             for item in prepared:
                 if item.visible:
-                    bounds.Add(item.ais_object.BoundingBox())
+                    item_bounds = Bnd_Box()
+                    try:
+                        item.ais_object.BoundingBox(item_bounds)
+                    except TypeError:
+                        item_bounds = item.ais_object.BoundingBox()
+                    bounds.Add(item_bounds)
             if bounds.IsVoid():
                 self.widget.scene_max0 = 1.0
                 return

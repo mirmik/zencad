@@ -11,7 +11,7 @@ __default_scene = Scene()  # Сцена, с которой работают ко
 # disp и show по умолчанию
 
 
-def display(shp, color=None, deep=True, scene=None):
+def display(shp, color=None, deep=True, scene=None, display_mode=None):
     from zencad.settings import Settings
 
     if scene is None:
@@ -25,10 +25,12 @@ def display(shp, color=None, deep=True, scene=None):
     if (isinstance(shp, list)):
         ret = []
         for i in shp:
-            ret.append(display(i, color, deep, scene))
+            ret.append(display(i, color, deep, scene, display_mode))
         return ret
 
-    return scene.add(shp, color)
+    if display_mode is None:
+        return scene.add(shp, color)
+    return scene.add(shp, color, display_mode=display_mode)
 
 
 def disp(*args, **kwargs):

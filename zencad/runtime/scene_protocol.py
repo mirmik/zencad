@@ -25,6 +25,13 @@ INLINE_FRAME_LIMIT = 32 * 1024 * 1024
 
 _FRAME_HEADER = struct.Struct(">4sHII")
 _PAYLOAD_LENGTH = struct.Struct(">Q")
+_MESH_HEADER = struct.Struct(">4sB3xII")
+_MESH_VERTEX = struct.Struct(">6d")
+_MESH_TRIANGLE = struct.Struct(">III")
+MESH_MAGIC = b"ZCMS"
+MESH_PAYLOAD_VERSION = 1
+MAX_MESH_VERTICES = 50_000_000
+MAX_MESH_TRIANGLES = 100_000_000
 
 
 class ProtocolError(ValueError):
@@ -135,6 +142,85 @@ def decode_brep(payload: bytes) -> TopoDS_Shape:
     if shape.IsNull():
         raise PayloadIntegrityError("Invalid BREP payload")
     return shape
+
+
+def encode_mesh(mesh) -> bytes:
+    """Serialize display mesh geometry without JSON expansion or pickle."""
+    from zencad.geom.mesh import validated_mesh_data
+
+    positions, normals, triangles = validated_mesh_data(mesh)
+    if len(positions) > MAX_MESH_VERTICES:
+        raise ProtocolError("Mesh vertex count exceeds the limit")
+    if len(triangles) > MAX_MESH_TRIANGLES:
+        raise ProtocolError("Mesh triangle count exceeds the limit")
+
+    stream = io.BytesIO()
+    stream.write(_MESH_HEADER.pack(
+        MESH_MAGIC,
+        MESH_PAYLOAD_VERSION,
+        len(positions),
+        len(triangles),
+    ))
+    for position, normal in zip(positions, normals):
+        stream.write(_MESH_VERTEX.pack(*(position + normal)))
+    for triangle in triangles:
+        stream.write(_MESH_TRIANGLE.pack(*triangle))
+    return stream.getvalue()
+
+
+def decode_mesh(payload: bytes):
+    """Deserialize and fully validate a ZenCad display mesh payload."""
+    from zencad.geom.mesh import MeshData, validated_mesh_data
+
+    if not isinstance(payload, bytes):
+        raise TypeError("Mesh payload must be bytes")
+    if len(payload) < _MESH_HEADER.size:
+        raise PayloadIntegrityError("Truncated mesh payload header")
+    magic, version, vertex_count, triangle_count = _MESH_HEADER.unpack_from(
+        payload
+    )
+    if magic != MESH_MAGIC:
+        raise PayloadIntegrityError("Invalid mesh payload magic")
+    if version != MESH_PAYLOAD_VERSION:
+        raise PayloadIntegrityError(
+            f"Unsupported mesh payload version {version}"
+        )
+    if vertex_count > MAX_MESH_VERTICES:
+        raise PayloadIntegrityError("Mesh vertex count exceeds the limit")
+    if triangle_count > MAX_MESH_TRIANGLES:
+        raise PayloadIntegrityError("Mesh triangle count exceeds the limit")
+    expected_size = (
+        _MESH_HEADER.size
+        + vertex_count * _MESH_VERTEX.size
+        + triangle_count * _MESH_TRIANGLE.size
+    )
+    if len(payload) != expected_size:
+        raise PayloadIntegrityError("Mesh payload size mismatch")
+
+    cursor = _MESH_HEADER.size
+    positions = []
+    normals = []
+    for _ in range(vertex_count):
+        values = _MESH_VERTEX.unpack_from(payload, cursor)
+        cursor += _MESH_VERTEX.size
+        positions.append(values[:3])
+        normals.append(values[3:])
+    triangles = []
+    for _ in range(triangle_count):
+        triangles.append(_MESH_TRIANGLE.unpack_from(payload, cursor))
+        cursor += _MESH_TRIANGLE.size
+
+    mesh = MeshData(
+        positions=positions,
+        normals=normals,
+        triangles=triangles,
+        triangle_face_ids=[],
+    )
+    try:
+        validated_mesh_data(mesh)
+    except (TypeError, ValueError) as exception:
+        raise PayloadIntegrityError("Invalid mesh payload geometry") from exception
+    return mesh
 
 
 def encode_json_payload(value: Any) -> bytes:

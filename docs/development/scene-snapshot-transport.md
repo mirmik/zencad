@@ -18,8 +18,10 @@ frame before it returns a `SceneSnapshot`.  Unknown versions, malformed JSON,
 truncation, size mismatch, digest mismatch, duplicate object IDs, and an
 unexpected generation are errors; they cannot produce a partial snapshot.
 
-Shape payloads are OCCT BREP bytes.  Logical object identity and presentation
-properties remain in the manifest rather than being hidden in Python pickle.
+Shape payloads are OCCT BREP bytes.  Display meshes use a compact `ZCMS`
+binary payload containing double-precision positions and normals followed by
+32-bit triangle indices.  Logical object identity and presentation properties
+remain in the manifest rather than being hidden in Python pickle.
 
 ## Carrier selection
 
@@ -66,6 +68,7 @@ ordinary scenes and a file-backed escape path for unusually large scenes.
 `utest/scene_protocol_test.py` covers:
 
 - BREP round-trip for a primitive, boolean result, and compound;
+- indexed-mesh round-trip and malformed mesh rejection;
 - logical ID, properties, metadata, and camera-policy round-trip;
 - the repository organizer model in the repeatable benchmark;
 - binary frame and atomic file bundle carriers;

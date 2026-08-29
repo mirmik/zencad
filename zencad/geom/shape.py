@@ -239,6 +239,12 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         obj = zencad.geom.face._fill(self)
         return obj
 
+    def to_mesh(self, *args, **kwargs):
+        """Triangulate this shape into display-ready indexed mesh data."""
+        from zencad.geom.mesh import to_mesh
+
+        return to_mesh(self, *args, **kwargs)
+
     # def project(self, arg):
     #    import zencad.geom.project
     #    return zencad.geom.project._project(self, arg)
@@ -390,6 +396,7 @@ class LazyObjectShape(evalcache.LazyObject):
         "is_closed",
         "edges", "wires", "faces", "vertices", "native_vertices",
         "shells", "solids", "compounds", "bbox", "boundbox",
+        "to_mesh",
         "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points",
         "mass", "curvetype", 'ellipse_parameters', 'line_parameters', 'circle_parameters', 'lower_distance_parameter'
     ]

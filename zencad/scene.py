@@ -28,7 +28,7 @@ class Scene:
         self.interactives = []
         self.display = None
 
-    def add(self, obj, color=None):
+    def add(self, obj, color=None, display_mode=None):
         from zencad.interactive.displayable import Displayable
 
         obj = evalcache.unlazy_if_need(obj)
@@ -36,10 +36,21 @@ class Scene:
             color = default_color()
 
         if isinstance(obj, Displayable):
+            if display_mode is not None:
+                setter = getattr(obj, "set_mesh_display_mode", None)
+                if setter is None:
+                    raise ValueError(
+                        "display_mode is only supported for mesh objects"
+                    )
+                setter(display_mode)
             obj.bind_to_scene(self)
             iobj = obj
         else:
-            iobj = create_interactive_object(obj, color)
+            iobj = create_interactive_object(
+                obj,
+                color,
+                display_mode=display_mode,
+            )
             self.add(iobj)
 
         return iobj

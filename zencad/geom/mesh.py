@@ -2,19 +2,35 @@
 
 from dataclasses import dataclass
 import math
+from numbers import Integral, Real
 
 from OCP.BRep import BRep_Tool
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Copy
 from OCP.BRepLib import BRepLib_ToolTriangulatedShape
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
 from OCP.BRepTools import BRepTools
+from OCP.Poly import Poly_Triangle, Poly_Triangulation
 from OCP.TopAbs import TopAbs_FACE, TopAbs_REVERSED
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS
+from OCP.gp import gp_Dir, gp_Pnt
 
 
-__all__ = ["MeshData", "to_mesh"]
+MESH_DISPLAY_MODES = (
+    "shaded_with_edges",
+    "shaded",
+    "wireframe",
+)
+DEFAULT_MESH_DISPLAY_MODE = "shaded_with_edges"
+
+__all__ = [
+    "MeshData",
+    "to_mesh",
+    "mesh_to_poly_triangulation",
+    "MESH_DISPLAY_MODES",
+    "DEFAULT_MESH_DISPLAY_MODE",
+]
 
 
 @dataclass
@@ -34,6 +50,98 @@ class MeshData:
     @property
     def triangle_count(self):
         return len(self.triangles)
+
+
+def normalize_mesh_display_mode(mode):
+    if mode is None:
+        return DEFAULT_MESH_DISPLAY_MODE
+    if not isinstance(mode, str):
+        raise TypeError("mesh display mode must be a string")
+    mode = mode.strip().lower().replace("-", "_").replace("+", "_with_")
+    aliases = {
+        "surface": "shaded",
+        "surface_with_edges": "shaded_with_edges",
+        "shaded_edges": "shaded_with_edges",
+        "edges": "wireframe",
+        "wire": "wireframe",
+    }
+    mode = aliases.get(mode, mode)
+    if mode not in MESH_DISPLAY_MODES:
+        choices = ", ".join(MESH_DISPLAY_MODES)
+        raise ValueError(f"unknown mesh display mode {mode!r}; expected {choices}")
+    return mode
+
+
+def validated_mesh_data(mesh):
+    """Validate display mesh data and return normalized immutable values."""
+    if not isinstance(mesh, MeshData):
+        raise TypeError("mesh must be a MeshData object")
+
+    try:
+        positions = tuple(tuple(position) for position in mesh.positions)
+        normals = tuple(tuple(normal) for normal in mesh.normals)
+        triangles = tuple(tuple(triangle) for triangle in mesh.triangles)
+    except TypeError as exception:
+        raise ValueError("mesh data must contain iterable rows") from exception
+    if not positions:
+        raise ValueError("mesh must contain at least one vertex")
+    if not triangles:
+        raise ValueError("mesh must contain at least one triangle")
+    if len(normals) != len(positions):
+        raise ValueError("mesh must have exactly one normal per vertex")
+
+    for name, vectors in (("position", positions), ("normal", normals)):
+        for vector in vectors:
+            if len(vector) != 3 or any(
+                isinstance(component, bool)
+                or not isinstance(component, Real)
+                or not math.isfinite(component)
+                for component in vector
+            ):
+                raise ValueError(
+                    f"every mesh {name} must contain three finite numbers"
+                )
+    for normal in normals:
+        if sum(component * component for component in normal) <= 1e-30:
+            raise ValueError("mesh normals must be non-zero")
+
+    for triangle in triangles:
+        if len(triangle) != 3 or any(
+            isinstance(index, bool) or not isinstance(index, Integral)
+            for index in triangle
+        ):
+            raise ValueError("every mesh triangle must contain three indices")
+        if len(set(triangle)) != 3 or any(
+            index < 0 or index >= len(positions) for index in triangle
+        ):
+            raise ValueError("mesh triangle contains invalid vertex indices")
+
+    return (
+        tuple(tuple(float(component) for component in row) for row in positions),
+        tuple(tuple(float(component) for component in row) for row in normals),
+        tuple(tuple(int(index) for index in row) for row in triangles),
+    )
+
+
+def mesh_to_poly_triangulation(mesh):
+    """Build the native OCCT triangulation used by ``AIS_Triangulation``."""
+    positions, normals, triangles = validated_mesh_data(mesh)
+    triangulation = Poly_Triangulation(
+        len(positions),
+        len(triangles),
+        False,
+        True,
+    )
+    for index, (position, normal) in enumerate(zip(positions, normals), 1):
+        triangulation.SetNode(index, gp_Pnt(*position))
+        triangulation.SetNormal(index, gp_Dir(*normal))
+    for index, triangle in enumerate(triangles, 1):
+        triangulation.SetTriangle(
+            index,
+            Poly_Triangle(*(vertex + 1 for vertex in triangle)),
+        )
+    triangulation.UpdateCachedMinMax()
+    return triangulation
 
 
 def _distance_squared(a, b):

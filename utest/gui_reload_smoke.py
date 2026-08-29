@@ -28,6 +28,7 @@ def main():
             "from zencad.interactive import arrow\n"
             "print('managed reload')\n"
             "display(box(10))\n"
+            "display(box(6).right(20).to_mesh(), color=color.yellow)\n"
             "display(point3(15, 0, 0), color=color.red)\n"
             "display(arrow((0, 0, 0), (0, 15, 0), arrlen=2))\n"
             "show()\n",
@@ -207,11 +208,26 @@ def main():
                     return
                 state["generation"] = generation
                 state["commits"] += 1
-                assert len(display.scene_presenter.objects) == 3
+                assert len(display.scene_presenter.objects) == 4
                 assert [
                     type(item.ais_object).__name__
                     for item in display.scene_presenter.objects
-                ] == ["AIS_Shape", "AIS_Point", "AIS_Line"]
+                ] == [
+                    "AIS_Shape",
+                    "AIS_Triangulation",
+                    "AIS_Point",
+                    "AIS_Line",
+                ]
+                assert (
+                    display.scene_presenter.objects[1]
+                    .ais_object.DisplayMode()
+                    == 0
+                )
+                assert (
+                    display.scene_presenter.objects[1]
+                    .ais_object.Attributes()
+                    .ShadingAspect().Aspect().ToDrawEdges()
+                )
                 assert_persistent_viewer()
 
                 if state["commits"] == 1:

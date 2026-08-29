@@ -1,6 +1,7 @@
 import unittest
 
 import zencad
+from OCP.AIS import AIS_Triangulation
 from zencad.gui.scene_presenter import (
     PresentedSceneObject,
     ScenePresentationError,
@@ -11,6 +12,7 @@ from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
     encode_brep,
+    encode_mesh,
     encode_json_payload,
 )
 from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
@@ -242,6 +244,27 @@ class ScenePresenterTest(unittest.TestCase):
         self.assertAlmostEqual(translation.X(), 4)
         self.assertAlmostEqual(translation.Y(), 5)
         self.assertAlmostEqual(translation.Z(), 6)
+
+    def test_real_materializer_creates_native_mesh_presentation(self):
+        mesh = zencad.to_mesh(zencad.box(2))
+        presented = materialize_scene_object(SceneObjectRecord(
+            object_id="mesh",
+            kind="mesh",
+            payload=encode_mesh(mesh),
+            properties={"color": (0.2, 0.4, 0.8, 0.25)},
+        ))
+
+        self.assertIsInstance(presented.ais_object, AIS_Triangulation)
+        self.assertEqual(presented.ais_object.DisplayMode(), 0)
+        self.assertTrue(
+            presented.ais_object.Attributes()
+            .ShadingAspect().Aspect().ToDrawEdges()
+        )
+        self.assertEqual(
+            presented.ais_object.GetTriangulation().NbTriangles(),
+            mesh.triangle_count,
+        )
+        self.assertEqual(presented.kind, "mesh")
 
     def test_real_materializer_creates_points_lines_and_arrows(self):
         point = materialize_scene_object(SceneObjectRecord(

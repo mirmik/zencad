@@ -25,8 +25,10 @@ from zencad.runtime.scene_protocol import (
     SupersededGenerationError,
     UnsupportedProtocolVersion,
     decode_brep,
+    decode_mesh,
     decode_snapshot_frame,
     encode_brep,
+    encode_mesh,
     encode_snapshot_frame,
     ensure_current_generation,
     select_snapshot_transport,
@@ -136,6 +138,22 @@ class SceneProtocolTest(unittest.TestCase):
         )
         self.assertEqual(restored.objects[0].payload, source.objects[0].payload)
         decode_brep(restored.objects[0].payload)
+
+    def test_mesh_payload_round_trip_and_validation(self):
+        source = zencad.to_mesh(zencad.box(2))
+        restored = decode_mesh(encode_mesh(source))
+
+        self.assertEqual(restored.positions, source.positions)
+        self.assertEqual(restored.normals, source.normals)
+        self.assertEqual(restored.triangles, source.triangles)
+        self.assertEqual(restored.triangle_face_ids, [])
+
+        corrupt = bytearray(encode_mesh(source))
+        corrupt[-1] ^= 0x01
+        with self.assertRaisesRegex(PayloadIntegrityError, "geometry"):
+            decode_mesh(bytes(corrupt))
+        with self.assertRaises(PayloadIntegrityError):
+            decode_mesh(b"short")
 
     def test_file_bundle_round_trip_and_atomic_target(self):
         source = self.make_snapshot()

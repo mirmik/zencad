@@ -19,12 +19,14 @@ from zencad.color import (
 )
 from zencad.geom.exttrans import nulltrans
 from zencad.geom.shape import Shape
+from zencad.geom.mesh import MeshData, normalize_mesh_display_mode
 from zencad.geom.trans import Transformation
 from zencad.geom.transformable import Transformable
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
     encode_brep,
+    encode_mesh,
     encode_json_payload,
 )
 from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
@@ -93,6 +95,7 @@ class _DraftObject:
     color: Color
     border_color: Color
     wire_color: Color
+    display_mode: str | None = None
 
 
 class SceneObjectRef(Transformable):
@@ -160,6 +163,20 @@ class SceneObjectRef(Transformable):
     def color(self):
         return self._object().color
 
+    def set_mesh_display_mode(self, display_mode):
+        obj = self._object()
+        if obj.kind != "mesh":
+            raise SceneDraftError(
+                "mesh display mode can only be changed for a mesh object"
+            )
+        obj.display_mode = normalize_mesh_display_mode(display_mode)
+        self._draft._mark_dirty(
+            self.object_id,
+            "display_mode",
+            obj.display_mode,
+        )
+        return self
+
     def hide(self, enabled=True):
         obj = self._object()
         obj.visible = not enabled
@@ -216,7 +233,7 @@ class SceneDraft:
         properties = self._dirty.setdefault(object_id, {})
         properties[property_name] = value
 
-    def add(self, obj, color=None):
+    def add(self, obj, color=None, display_mode=None):
         if self._published:
             raise SceneDraftError(
                 "Managed scenes cannot add objects after initial publication"
@@ -228,8 +245,16 @@ class SceneDraft:
         from zencad.geombase import point3
 
         if isinstance(obj, unit):
+            if display_mode is not None:
+                raise SceneDraftError(
+                    "display_mode is only supported for mesh objects"
+                )
             return self._add_assembly(obj)
         if isinstance(obj, (Shape, TopoDS_Shape)):
+            if display_mode is not None:
+                raise SceneDraftError(
+                    "display_mode is only supported for mesh objects"
+                )
             kind = "brep"
             source = obj
             object_color = _color(color, default_color)
@@ -237,7 +262,20 @@ class SceneDraft:
             visible = True
             border_color = default_border_color()
             wire_color = default_wire_color()
+        elif isinstance(obj, MeshData):
+            kind = "mesh"
+            source = obj
+            display_mode = normalize_mesh_display_mode(display_mode)
+            object_color = _color(color, default_color)
+            location = nulltrans()
+            visible = True
+            border_color = default_border_color()
+            wire_color = default_wire_color()
         elif isinstance(obj, point3):
+            if display_mode is not None:
+                raise SceneDraftError(
+                    "display_mode is only supported for mesh objects"
+                )
             kind = "point"
             source = tuple(float(component) for component in obj)
             object_color = _color(color, default_point_color)
@@ -246,6 +284,10 @@ class SceneDraft:
             border_color = default_border_color()
             wire_color = default_wire_color()
         elif isinstance(obj, PointInteractiveObject):
+            if display_mode is not None:
+                raise SceneDraftError(
+                    "display_mode is only supported for mesh objects"
+                )
             point = obj.point.Pnt()
             kind = "point"
             source = (point.X(), point.Y(), point.Z())
@@ -255,6 +297,10 @@ class SceneDraft:
             border_color = obj._border_color
             wire_color = obj._wire_color
         elif isinstance(obj, LineInteractiveObject):
+            if display_mode is not None:
+                raise SceneDraftError(
+                    "display_mode is only supported for mesh objects"
+                )
             kind = "line"
             source = {
                 "start": tuple(float(component) for component in obj.p1),
@@ -286,6 +332,7 @@ class SceneDraft:
             color=object_color,
             border_color=border_color,
             wire_color=wire_color,
+            display_mode=display_mode,
         )
         return SceneObjectRef(self, object_id)
 
@@ -330,22 +377,26 @@ class SceneDraft:
     def snapshot(self, metadata=None) -> SceneSnapshot:
         records = []
         for obj in self._objects.values():
-            payload = (
-                encode_brep(obj.source)
-                if obj.kind == "brep"
-                else encode_json_payload(obj.source)
-            )
+            if obj.kind == "brep":
+                payload = encode_brep(obj.source)
+            elif obj.kind == "mesh":
+                payload = encode_mesh(obj.source)
+            else:
+                payload = encode_json_payload(obj.source)
+            properties = {
+                "visible": obj.visible,
+                "color": _color_tuple(obj.color),
+                "border_color": _color_tuple(obj.border_color),
+                "wire_color": _color_tuple(obj.wire_color),
+                "transform": _transformation_state(obj.location),
+            }
+            if obj.kind == "mesh":
+                properties["display_mode"] = obj.display_mode
             records.append(SceneObjectRecord(
                 object_id=obj.object_id,
                 kind=obj.kind,
                 payload=payload,
-                properties={
-                    "visible": obj.visible,
-                    "color": _color_tuple(obj.color),
-                    "border_color": _color_tuple(obj.border_color),
-                    "wire_color": _color_tuple(obj.wire_color),
-                    "transform": _transformation_state(obj.location),
-                },
+                properties=properties,
             ))
         return SceneSnapshot(
             generation=self.generation,

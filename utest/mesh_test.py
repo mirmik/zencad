@@ -2,6 +2,8 @@ import math
 import unittest
 
 import zencad
+from OCP.AIS import AIS_Triangulation
+from OCP.Aspect import Aspect_IS_EMPTY, Aspect_IS_SOLID
 from OCP.BRep import BRep_Builder
 from OCP.TopoDS import TopoDS_Compound
 
@@ -19,6 +21,56 @@ class CompactMeshTest(unittest.TestCase):
         self.assertEqual(mesh.vertex_count, 24)
         self.assertEqual(len(mesh.triangle_face_ids), 12)
         self.assertEqual(mesh.dropped_triangles, 0)
+
+    def test_shape_method_and_direct_display_factory(self):
+        from zencad.interactive import create_interactive_object
+
+        lazy_mesh = zencad.box(3).to_mesh()
+        mesh = lazy_mesh.unlazy()
+        interactive = create_interactive_object(mesh, zencad.color.red)
+
+        self.assertIsInstance(mesh, zencad.MeshData)
+        self.assertIsInstance(interactive.ais_object, AIS_Triangulation)
+        self.assertEqual(interactive.ais_object.DisplayMode(), 0)
+        self.assertTrue(
+            interactive.ais_object.Attributes()
+            .ShadingAspect().Aspect().ToDrawEdges()
+        )
+        self.assertEqual(interactive.triangulation.NbNodes(), mesh.vertex_count)
+        self.assertEqual(
+            interactive.triangulation.NbTriangles(), mesh.triangle_count
+        )
+        self.assertEqual(interactive.boundbox().xrange(), (0.0, 3.0))
+
+    def test_mesh_display_modes(self):
+        from zencad.interactive import create_interactive_object
+
+        mesh = zencad.to_mesh(zencad.box(2))
+        cases = (
+            ("shaded_with_edges", True, Aspect_IS_SOLID),
+            ("shaded", False, Aspect_IS_SOLID),
+            ("wireframe", True, Aspect_IS_EMPTY),
+        )
+        for mode, edges, interior in cases:
+            with self.subTest(mode=mode):
+                interactive = create_interactive_object(
+                    mesh,
+                    zencad.color.orange,
+                    display_mode=mode,
+                )
+                aspect = (
+                    interactive.ais_object.Attributes()
+                    .ShadingAspect().Aspect()
+                )
+                self.assertEqual(aspect.ToDrawEdges(), edges)
+                self.assertEqual(aspect.InteriorStyle(), interior)
+
+        with self.assertRaisesRegex(ValueError, "unknown mesh display mode"):
+            create_interactive_object(
+                mesh,
+                zencad.color.orange,
+                display_mode="points",
+            )
 
     def test_transformation_is_applied(self):
         mesh = zencad.to_mesh(zencad.box(2).translate(10, 20, 30))
