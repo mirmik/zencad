@@ -22,8 +22,6 @@ class ZencadSettings:
         self.list_of_settings = {
             "gui": {
                 "text_editor": default_text_editor_os(),
-                "start_widget": True,
-                "bind_widget": True,
             },
             "view": {
                 "default_color": (0.6, 0.6, 0.8, 0),
@@ -31,8 +29,8 @@ class ZencadSettings:
             },
             "memory": {
                 "recents": [],
-                "hsplitter_position": (300, 500),
-                "vsplitter_position": (500, 300),
+                "hsplitter_position": (430, 670),
+                "vsplitter_position": (540, 180),
                 "console_hidden": False,
                 "texteditor_hidden": False,
                 "wsize": None,
@@ -95,6 +93,8 @@ class ZencadSettings:
 
     def get_recent(self):
         recents = self.list_of_settings["memory"]["recents"] or []
+        if isinstance(recents, str):
+            recents = [recents]
         self.list_of_settings["memory"]["recents"] = recents
         self.clear_deleted_recent()
         return recents

@@ -13,9 +13,10 @@ from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
-from zenframe.configuration import Configuration
-if Configuration.FILTER_QT_WARNINGS:
-    QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
+from zencad.gui.defaults import EVENT_LOOP_PULSE_MS
+
+
+QtCore.QLoggingCategory.setFilterRules('qt.qpa.xcb=false')
 
 
 QAPP = None
@@ -53,7 +54,7 @@ def exec_display_only_mode():
         # control.  A small Python-backed Qt timer lets SIGINT escape the
         # native Qt event loop even while the viewer is otherwise idle.
         signal_pulse = QtCore.QTimer(QAPP)
-        signal_pulse.setInterval(max(1, int(Configuration.TIMER_PULSE * 1000)))
+        signal_pulse.setInterval(EVENT_LOOP_PULSE_MS)
         signal_pulse.timeout.connect(lambda: None)
         signal_pulse.start()
 

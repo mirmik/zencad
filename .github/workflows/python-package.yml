@@ -122,3 +122,8 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         working-directory: ${{ runner.temp }}
         run: xvfb-run -a python "${{ github.workspace }}/utest/gui_standalone_sigint_smoke.py"
+      - name: Exercise main-window startup and Ctrl+C handling
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python "${{ github.workspace }}/utest/gui_mainwindow_sigint_smoke.py"

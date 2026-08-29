@@ -1,5 +1,9 @@
 # Persistent viewer and scene snapshots
 
+> Historical note: the foreign-window design described below has since been
+> removed. The current application owns both its Qt shell and persistent OCCT
+> viewer directly and no longer depends on ZenFrame.
+
 - Date: 2026-08-01
 - Status: Accepted
 - Kanboard: #1211 `[architecture] Перейти к постоянному viewer и замене сцен`

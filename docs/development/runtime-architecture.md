@@ -135,7 +135,7 @@ The first managed adapter is the explicit `managed_scene(generation,
 publisher)` context.  Inside it, the regular public `display()` and `show()`
 functions target a data-only `SceneDraft`.  Static `show()` invokes the
 snapshot and ready publishers and returns the same snapshot without importing
-Qt or entering ZenFrame.  Animated `show()` keeps the runner alive, calls the
+Qt or entering the GUI application.  Animated `show()` keeps the runner alive, calls the
 user callback at `animate_step`, and emits a patch after each successful dirty
 iteration.  Shape references preserve transform, visibility, face color,
 border color, and wire color.  Unsupported presentation kinds fail explicitly
@@ -219,9 +219,9 @@ terminal state.
 
 ## Runtime entry points
 
-The default `zencad` application now keeps the ZenFrame editor, console, menus,
-and file watcher, but overrides file execution with `RunnerSupervisor`.  Its
-one `DisplayWidget` is constructed with the main window and never replaced.
+The default `zencad` application owns a small local Qt shell containing the
+editor, console, menus, file watcher, and `RunnerSupervisor`. Its one
+`DisplayWidget` is constructed with the main window and never replaced.
 Runner callbacks cross into the GUI thread through a queued Qt signal; a
 snapshot is staged until that generation reports successful completion and is
 then committed by `ScenePresenter`.  Animated snapshots commit on their

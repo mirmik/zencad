@@ -65,10 +65,17 @@ def main():
         )
 
         window = MainWindow(restore_gui=False)
+        assert window.size().width() == 1100
+        assert window.size().height() == 760
+        assert "zenframe" not in sys.modules
         display = window.display_widget
         window.resize(800, 600)
         window.show()
         application.processEvents()
+        assert window.hsplitter.count() == 2
+        assert window.vsplitter.count() == 2
+        assert not window.console.isHidden()
+        assert window.vsplitter.sizes()[1] >= 120
 
         native_window = int(display.winId())
         viewer = display.Viewer
@@ -97,22 +104,31 @@ def main():
             assert window.console is console
 
         def assert_visible_frame():
-            display.redraw()
-            application.processEvents()
             if sys.platform.startswith("win"):
+                display.redraw()
+                application.processEvents()
                 image_path = Path(temporary_directory) / "viewer.png"
                 assert display.View.Dump(str(image_path))
                 assert image_path.stat().st_size > 0
                 return
-            image = application.primaryScreen().grabWindow(
-                int(display.winId())
-            ).toImage()
-            colors = {
-                image.pixelColor(x, y).rgb()
-                for x in range(0, image.width(), max(1, image.width() // 16))
-                for y in range(0, image.height(), max(1, image.height() // 16))
-            }
-            assert len(colors) > 4, "viewer framebuffer is blank"
+            for _attempt in range(5):
+                display.redraw()
+                QtTest.QTest.qWait(20)
+                image = application.primaryScreen().grabWindow(
+                    int(display.winId())
+                ).toImage()
+                colors = {
+                    image.pixelColor(x, y).rgb()
+                    for x in range(
+                        0, image.width(), max(1, image.width() // 16)
+                    )
+                    for y in range(
+                        0, image.height(), max(1, image.height() // 16)
+                    )
+                }
+                if len(colors) > 4:
+                    return
+            raise AssertionError("viewer framebuffer is blank")
 
         def start_cancel_case():
             state["phase"] = "cancel"
@@ -134,7 +150,9 @@ def main():
                 assert_persistent_viewer()
 
                 if state["commits"] == 1:
-                    display.set_scale(3.5)
+                    # Keep a deliberately non-default camera while leaving
+                    # enough of the model visible in the full-size viewport.
+                    display.set_scale(20.0)
                     state["camera"] = display.store_location()
                 else:
                     current_camera = display.store_location()

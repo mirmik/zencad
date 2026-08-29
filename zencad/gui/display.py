@@ -18,7 +18,6 @@ from OCP.Aspect import Aspect_TOD_ABSOLUTE
 from zencad.gui import ocp_viewer
 from zencad.occ_compat import confusion
 from zencad.util import point3, to_Pnt
-from zenframe.util import print_to_stderr
 from zencad.geombase import vector3, point3
 from zencad.interactive import AxisInteractiveObject, ShapeInteractiveObject
 import zencad.color as color
@@ -67,7 +66,6 @@ class BaseViewer(QtOpenGL.QGLWidget):
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground)
 
         self.setAutoFillBackground(False)
-        self._display.Create(window_handle=int(self.winId()), parent=self)
 
         color1 = Quantity_Color(.55, .55, .55, Quantity_TOC_RGB)
         color2 = Quantity_Color(.22, .22, .22, Quantity_TOC_RGB)
@@ -100,7 +98,7 @@ class BaseViewer(QtOpenGL.QGLWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        if not self._display._closed:
+        if self._display._window is not None and not self._display._closed:
             self._display.View.MustBeResized()
 
     def paintEngine(self):
@@ -117,7 +115,9 @@ class DisplayWidget(BaseViewer):
         self.Viewer = self._display.Viewer
         self.Context = self._display.Context
 
-        self.init_driver_in_constructor = True
+        # A child viewer receives its final native window only when the full
+        # parent hierarchy is shown. Standalone viewers have no such reparent.
+        self.init_driver_in_constructor = parent is None
         self._orient = 1
         self._drawbox = False
         self._zoom_area = False
@@ -151,7 +151,7 @@ class DisplayWidget(BaseViewer):
         )
         for iobj in self.camera_center_axes:
             self.Context.Display(iobj.ais_object, False)
-            iobj.bind_context(self.Context)
+            iobj.bind_context(self.Context, update=False)
 
         self.msphere = zencad.geom.solid._sphere(1)
         self.MarkerQController = ShapeInteractiveObject(
@@ -160,8 +160,8 @@ class DisplayWidget(BaseViewer):
             self.msphere, color=zencad.color.Color(0, 1, 0))
         self.Context.Display(self.MarkerWController.ais_object, False)
         self.Context.Display(self.MarkerQController.ais_object, False)
-        self.MarkerQController.bind_context(self.Context)
-        self.MarkerWController.bind_context(self.Context)
+        self.MarkerQController.bind_context(self.Context, update=False)
+        self.MarkerWController.bind_context(self.Context, update=False)
         self.MarkerWController.hide(True)
         self.MarkerQController.hide(True)
         self.set_center_visible(False)
@@ -410,31 +410,34 @@ class DisplayWidget(BaseViewer):
         self.Context.Display(iobj.ais_object, False)
         iobj.bind_context(self.Context)
 
-    def autoscale(self, koeff=0.07):
+    def autoscale(self, koeff=0.07, redraw=True):
         self.View.FitAll(koeff)
-        self.View.Redraw()
+        if redraw:
+            self.redraw()
 
     def enable_axis_triedron(self, en):
         if en:
-            self.Context.Display(self.x_axis, True)
-            self.Context.Display(self.y_axis, True)
-            self.Context.Display(self.z_axis, True)
+            self.Context.Display(self.x_axis, False)
+            self.Context.Display(self.y_axis, False)
+            self.Context.Display(self.z_axis, False)
         else:
-            self.Context.Erase(self.x_axis, True)
-            self.Context.Erase(self.y_axis, True)
-            self.Context.Erase(self.z_axis, True)
+            self.Context.Erase(self.x_axis, False)
+            self.Context.Erase(self.y_axis, False)
+            self.Context.Erase(self.z_axis, False)
+        self.redraw()
 
     def enable_axis_biedron(self, en, colors=None):
         if en:
-            self.Context.Display(self.x_axis, True)
-            self.Context.Display(self.y_axis, True)
+            self.Context.Display(self.x_axis, False)
+            self.Context.Display(self.y_axis, False)
         else:
-            self.Context.Erase(self.x_axis, True)
-            self.Context.Erase(self.y_axis, True)
+            self.Context.Erase(self.x_axis, False)
+            self.Context.Erase(self.y_axis, False)
 
         if colors is not None:
             self.x_axis.SetColor(colors[0].to_Quantity_Color())
             self.y_axis.SetColor(colors[1].to_Quantity_Color())
+        self.redraw()
 
     def restore_location(self, dct, redraw=True):
         scale = dct["scale"]
@@ -464,14 +467,19 @@ class DisplayWidget(BaseViewer):
     def InitDriver(self):
         if self._display._window is None:
             self._display.Create(window_handle=int(self.winId()), parent=self)
+            self._display.View.MustBeResized()
 
         self.Viewer.SetDefaultLights()
         self.Viewer.SetLightOn()
         self.Context.SetDisplayMode(AIS_Shaded, False)
 
-        self.autoscale()
+        # showEvent runs while Qt is still mapping the parent hierarchy.
+        # NVIDIA GLX can block indefinitely if OCCT redraws synchronously at
+        # this point, so publish the first frame on the next event-loop turn.
+        self.autoscale(redraw=False)
         self.MarkerWController.hide(True)
         self.MarkerQController.hide(True)
+        QtCore.QTimer.singleShot(0, self.redraw)
 
     def redraw_marker(self, qw, x, y, z):
         if qw == "q":
@@ -669,9 +677,14 @@ class DisplayWidget(BaseViewer):
 
     def redraw(self):
         self.animate_updated.clear()
-        if self._display._closed:
+        if self._display._closed or self._display._window is None:
             self.animate_updated.set()
             return
+        # A splitter can settle after the child's first showEvent without
+        # delivering another resize event to the already native OCCT window.
+        # Synchronizing here is cheap and guarantees the GL viewport matches
+        # the visible widget before every explicit frame.
+        self._display.View.MustBeResized()
         self._display.View.Redraw()
         self.last_redraw = time.time()
         self.animate_updated.set()
@@ -838,7 +851,11 @@ class DisplayWidget(BaseViewer):
             elif cmd == "console":
                 sys.stdout.write(data["data"])
         except Exception as ex:
-            print_to_stderr("Error on external command handling", repr(ex))
+            print(
+                "Error on external command handling:",
+                repr(ex),
+                file=sys.stderr,
+            )
 
     def move_vector_cross(self, vecin, koeff):
         vec = self.center() - self.eye()

@@ -96,11 +96,11 @@ class InteractiveObject(Transformable, Displayable):
         self.relocate(trans * self.location())
         return self
 
-    def bind_context(self, context):
+    def bind_context(self, context, update=True):
         self._context = context
         self.relocate(self._location)
         self.hide(self._hide)
-        self._context.Update(self.ais_object, True)
+        self._context.Update(self.ais_object, update)
 
     def hide(self, en):
         self._hide = en

@@ -10,7 +10,6 @@ it is not an installation recommendation.
 - pythonocc/OCC 7.6.2
 - evalcache 1.15.0
 - NumPy 1.26.4
-- zenframe 1.2.0
 - pytest 8.4.2
 
 The currently published `termin==0.0.0` does not provide the historical

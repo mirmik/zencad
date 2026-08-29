@@ -13,13 +13,12 @@ datas.append(("zencad/techpriest.jpg", "zencad"))
 datas.append(("zencad/zencad_logo.png", "zencad"))
 
 path = os.getcwd()
-zenframe_path = os.path.join(os.getcwd(), "..", "zenframe")
 
 a = Analysis(['zencad/__main__.py'],
-             pathex=[path, zenframe_path],
+             pathex=[path],
              binaries=[],
              datas=datas,
-             hiddenimports=["zenframe", "PyQt5", "PyQt5.sip"],
+             hiddenimports=["PyQt5", "PyQt5.sip"],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],

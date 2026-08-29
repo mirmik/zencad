@@ -82,7 +82,6 @@ Source code
 Main project repo: 
 	[https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
 Related repos:  
-	[https://github.com/mirmik/zenframe](https://github.com/mirmik/zenframe)  
 	[https://github.com/mirmik/evalcache](https://github.com/mirmik/evalcache)  
 
 HelloWorld

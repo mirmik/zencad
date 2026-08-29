@@ -5,13 +5,12 @@ from PyQt5.QtGui import *
 import os
 import tempfile
 import subprocess
-import signal
 
 import zencad.gui.util
 import zencad.gui.settingswdg
 
+from zencad.gui.defaults import SCRIPT_TEMPLATE
 from zencad.settings import Settings
-from zenframe.actions import ZenFrameActionsMixin
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
 BANNER_TEXT = (  # "\n"
@@ -24,7 +23,192 @@ BANNER_TEXT = (  # "\n"
 )
 
 
-class MainWindowActionsMixin(ZenFrameActionsMixin):
+class MainWindowActionsMixin:
+    def create_action(
+        self,
+        text,
+        callback,
+        tip,
+        shortcut=None,
+        checkbox=False,
+        defcheck=False,
+    ):
+        action = QAction(self.tr(text), self)
+        action.setStatusTip(self.tr(tip))
+        if shortcut is not None:
+            action.setShortcut(self.tr(shortcut))
+        if checkbox:
+            action.setCheckable(True)
+            action.toggled.connect(callback)
+            action.setChecked(defcheck)
+        else:
+            action.triggered.connect(callback)
+        return action
+
+    def create_standard_actions(self):
+        self.mCreateAction = self.create_action(
+            "Create New...", self.createNewAction, "Create a Python script"
+        )
+        self.mCreateTemp = self.create_action(
+            "New Temporary", self.createNewTemporary, "Create a temporary script", "Ctrl+N"
+        )
+        self.mOpenAction = self.create_action(
+            "Open...", self.openAction, "Open a Python script", "Ctrl+O"
+        )
+        self.mSaveAction = self.create_action(
+            "Save", self.saveAction, "Save the current script", "Ctrl+S"
+        )
+        self.mSaveAs = self.create_action(
+            "Save As...", self.saveAsAction, "Save the current script under a new name"
+        )
+        self.mTEAction = self.create_action(
+            "Open in Editor",
+            self.externalTextEditorOpen,
+            "Open the script in an external editor",
+            "Ctrl+E",
+        )
+        self.mExitAction = self.create_action(
+            "Exit", self.close, "Exit ZenCad", "Ctrl+Q"
+        )
+        self.mHideConsole = self.create_action(
+            "Hide console", self.hideConsole, "Hide console", checkbox=True
+        )
+        self.mHideEditor = self.create_action(
+            "Hide editor", self.hideEditor, "Hide editor", checkbox=True
+        )
+        self.mAutoUpdate = self.create_action(
+            "Restart on update",
+            self.auto_update,
+            "Reload when the script changes",
+            checkbox=True,
+            defcheck=True,
+        )
+        self.mFullScreen = self.create_action(
+            "Full screen", self.fullScreen, "Toggle full screen", "F11"
+        )
+        self.mDisplayMode = self.create_action(
+            "Display mode", self.displayMode, "Toggle editor and console", "F10"
+        )
+        self.mViewOnly = self.create_action(
+            "Hide Bars", self.viewOnly, "Toggle menu and information bars", "F9"
+        )
+        self.mReopenCurrent = self.create_action(
+            "Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
+        )
+
+    def add_new_create_open_standard_actions(self):
+        self.mFileMenu.addAction(self.mReopenCurrent)
+        self.mFileMenu.addAction(self.mOpenAction)
+        self.mFileMenu.addAction(self.mCreateTemp)
+        self.mFileMenu.addAction(self.mCreateAction)
+        self.mFileMenu.addAction(self.mSaveAction)
+        self.mFileMenu.addAction(self.mSaveAs)
+
+    def add_exit_standard_action(self):
+        self.mFileMenu.addAction(self.mExitAction)
+
+    def add_editor_standard_action(self):
+        self.mEditMenu.addAction(self.mTEAction)
+
+    def create_new_do(self, path):
+        with open(path, "w", encoding="utf-8") as output:
+            output.write(SCRIPT_TEMPLATE)
+        self.open(path)
+
+    def createNewAction(self):
+        current = self.current_opened()
+        path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Create New File",
+            "" if current is None else os.path.dirname(current),
+            "*.py;;*.*",
+            "*.py",
+        )
+        if path:
+            self.create_new_do(path)
+
+    def createNewTemporary(self):
+        temporary = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+        temporary.close()
+        self.create_new_do(temporary.name)
+
+    def openAction(self):
+        current = self.current_opened()
+        path, _selected_filter = QFileDialog.getOpenFileName(
+            self,
+            "Open File",
+            "" if current is None else os.path.dirname(current),
+            "*.py;;*.*",
+            "*.py",
+        )
+        if path:
+            self.open(path)
+
+    def saveAction(self):
+        self.texteditor.save()
+
+    def saveAsAction(self):
+        path, _selected_filter = QFileDialog.getSaveFileName(
+            self, "Save File", "", "*.py;;*.*", "*.py"
+        )
+        if path:
+            self.texteditor.save_as(path)
+            self.open(path)
+
+    def externalTextEditorOpen(self):
+        current = self.current_opened()
+        if current is None:
+            return
+        command = Settings.get(["gui", "text_editor"])
+        subprocess.Popen(command.format(path=current), shell=True)
+
+    def hideConsole(self, hidden):
+        self.console.setHidden(hidden)
+        if not hidden:
+            self.ensure_console_visible()
+
+    def hideEditor(self, hidden):
+        self.texteditor.setEnabled(not hidden)
+        self.texteditor.setHidden(hidden)
+        if hidden:
+            self.display_widget.setFocus()
+
+    def fullScreen(self):
+        if self._fullscreen:
+            self.showNormal()
+        else:
+            self.showFullScreen()
+        self._fullscreen = not self._fullscreen
+
+    def viewOnly(self):
+        self.view_only(not self.view_mode)
+
+    def display_mode_enable(self, enabled):
+        self.mHideConsole.setChecked(enabled)
+        self.mHideEditor.setChecked(enabled)
+        if not enabled:
+            self.texteditor.setFocus()
+
+    def displayMode(self):
+        self.display_mode_enable(
+            not (self.texteditor.isHidden() or self.console.isHidden())
+        )
+
+    def auto_update(self, enabled):
+        self.notifier.set_enabled(enabled)
+
+    def _init_recent_menu(self, menu):
+        for path in Settings.get_recent():
+            self._add_open_action(menu, os.path.basename(path), path)
+
+    def update_recent_menu(self):
+        self.recentMenu.clear()
+        self._init_recent_menu(self.recentMenu)
+
+    def openStartEvent(self, path):
+        Settings.add_recent(os.path.abspath(path))
+        self.update_recent_menu()
+
     def _send_viewer_command(self, command):
         self.display_widget.external_communication_command(command)
 
@@ -184,7 +368,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
             self._init_example_menu(m, os.path.join(directory, d))
 
     def create_actions(self):
-        super().create_actions()
+        self.create_standard_actions()
         self.perspective_checkbox_state = False
 
         self.mStlExport = self.create_action(
@@ -268,10 +452,6 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
             "Debug info", self.debugInfoAction, "Debug info"
         )
 
-        self.mReopenCurrent = self.create_action(
-            "Reopen current", self.reopen_current, "Reopen current", "Ctrl+R"
-        )
-
         self.mWebManual = self.create_action(
             "Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser", "F1"
         )
@@ -288,7 +468,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
 
     def create_menus(self):
         self.mFileMenu = self.menuBar().addMenu(self.tr("&File"))
-        self.add_new_create_open_standart_actions()
+        self.add_new_create_open_standard_actions()
         self.mFileMenu.addSeparator()
         self.exampleMenu = self.mFileMenu.addMenu("Examples")
         self.recentMenu = self.mFileMenu.addMenu("Recent")
@@ -298,7 +478,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         self.mFileMenu.addAction(self.mToFreeCad)
         self.mFileMenu.addAction(self.mScreen)
         self.mFileMenu.addSeparator()
-        self.add_exit_standart_action()
+        self.add_exit_standard_action()
 
         moduledir = os.path.dirname(__file__)
         self._init_example_menu(
@@ -306,7 +486,7 @@ class MainWindowActionsMixin(ZenFrameActionsMixin):
         self._init_recent_menu(self.recentMenu)
 
         self.mEditMenu = self.menuBar().addMenu(self.tr("&Edit"))
-        self.add_editor_standart_action()
+        self.add_editor_standard_action()
         self.mEditMenu.addSeparator()
         self.mEditMenu.addAction(self.mSettings)
 

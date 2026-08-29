@@ -31,6 +31,15 @@ class RuntimeEmbeddingRemovalTest(unittest.TestCase):
                 self.assertNotIn(forbidden, source, f"{forbidden} remains in {path}")
         self.assertFalse((ROOT / "zencad/gui/display_unbounded.py").exists())
 
+    def test_gui_runtime_has_no_zenframe_dependency(self):
+        for path in (ROOT / "zencad").rglob("*.py"):
+            source = path.read_text(encoding="utf-8").lower()
+            self.assertNotIn("zenframe", source, str(path))
+        self.assertNotIn(
+            '"zenframe"',
+            (ROOT / "pyproject.toml").read_text(encoding="utf-8").lower(),
+        )
+
     def test_removed_process_modes_fail_with_migration_hint(self):
         for option in ("--unbound", "--frame", "--sleeped"):
             result = subprocess.run(

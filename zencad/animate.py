@@ -29,8 +29,6 @@ class AnimateThread(QThread):
     after_update_signal = pyqtSignal()
 
     def __init__(self, widget, updater_function, animate_step=1/100):
-        import zenframe.finisher
-
         QThread.__init__(self)
         self.updater_function = updater_function
         #self.parent = widget
@@ -42,8 +40,6 @@ class AnimateThread(QThread):
         self.state = AnimationState(self.wdg)
 
         self.after_update_signal.connect(widget.continuous_redraw)
-
-        zenframe.finisher.register_destructor(self, self.finish)
 
     def finish(self):
         self.cancelled = True

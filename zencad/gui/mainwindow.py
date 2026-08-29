@@ -1,13 +1,22 @@
 import threading
 
-import zencad.gui.actions
+from PyQt5 import QtCore, QtWidgets
+
+from zencad.gui.actions import MainWindowActionsMixin
+from zencad.gui.console import ConsoleWidget
+from zencad.gui.defaults import (
+    DEFAULT_HORIZONTAL_SIZES,
+    DEFAULT_VERTICAL_SIZES,
+    DEFAULT_WINDOW_SIZE,
+    MINIMUM_CONSOLE_HEIGHT,
+)
+from zencad.gui.editor import CodeEditor
+from zencad.gui.file_watcher import FileWatcher
 from zencad.gui.info_widget import InfoWidget
-from PyQt5 import QtCore
-
-from zenframe.mainwindow import ZenFrame
+from zencad.settings import Settings
 
 
-class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
+class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
     runner_message = QtCore.pyqtSignal(object)
     scene_patch_ready = QtCore.pyqtSignal()
 
@@ -15,9 +24,14 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
                  title="ZenCad",
                  restore_gui=True,
                  ):
-
-        # Init objects
-        self.info_widget = InfoWidget()
+        super().__init__()
+        self._persist_gui_state = restore_gui
+        self._current_opened = None
+        self._reopen_mode = False
+        self._fullscreen = False
+        self.view_mode = False
+        self._menu_bar_height = None
+        self._openlock = QtCore.QMutex(QtCore.QMutex.Recursive)
         self._pending_snapshots = {}
         self._generation_statuses = {}
         self._scene_patch_lock = threading.Lock()
@@ -25,10 +39,17 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self._scene_patch_bridge_error = None
         self._failed_live_generation = None
 
-        super().__init__(
-            title=title,
-            application_name="zencad",
-            restore_gui=restore_gui)
+        Settings.restore()
+        self.setWindowTitle(title)
+        self.setMinimumSize(960, 640)
+        self.resize(*DEFAULT_WINDOW_SIZE)
+        self.info_widget = InfoWidget()
+        self.notifier = FileWatcher(self)
+        self.notifier.changed.connect(self.reopen_current)
+        self.init_central_widget()
+        self._apply_default_layout()
+        if restore_gui:
+            self.restore_gui_state()
 
         from zencad.runtime import RunnerSupervisor, ScenePatchCoalescer
 
@@ -47,18 +68,124 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self._scene_patch_coalescer = ScenePatchCoalescer()
         self.display_widget.set_input_event_sink(self._forward_input_event)
         self.display_widget.set_viewer_event_sink(self._handle_viewer_event)
-
-    def spawn_process(self, application_name):
-        return None
+        self.create_actions()
+        self.create_menus()
+        self._sync_layout_actions()
 
     def init_central_widget(self):
-        super().init_central_widget()
         from zencad.gui.display import DisplayWidget
 
+        self.central = QtWidgets.QWidget(self)
+        layout = QtWidgets.QVBoxLayout(self.central)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self.hsplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.central)
+        self.texteditor = CodeEditor()
+        self.vsplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.hsplitter.addWidget(self.texteditor)
+        self.hsplitter.addWidget(self.vsplitter)
+        self.hsplitter.setStretchFactor(0, 2)
+        self.hsplitter.setStretchFactor(1, 3)
+
+        layout.addWidget(self.hsplitter, 1)
+        layout.addWidget(self.info_widget, 0)
+        self.setCentralWidget(self.central)
+
+        self.console = ConsoleWidget()
+        self.vsplitter.addWidget(self.console)
+
+        # Give the child a complete, non-empty parent hierarchy before its
+        # first showEvent binds OCCT to the final native Qt window. The console
+        # gives the splitter a valid initial extent.
         self.display_widget = DisplayWidget(parent=self.vsplitter)
         self.vsplitter.insertWidget(0, self.display_widget)
-        self.screen_saver.hide()
-        self.central_widget_layout().addWidget(self.info_widget)
+        self.vsplitter.setStretchFactor(0, 4)
+        self.vsplitter.setStretchFactor(1, 1)
+        self.vsplitter.setCollapsible(0, False)
+        self.vsplitter.setCollapsible(1, False)
+        self.console.setMinimumHeight(MINIMUM_CONSOLE_HEIGHT)
+
+    def _apply_default_layout(self):
+        self.hsplitter.setSizes(list(DEFAULT_HORIZONTAL_SIZES))
+        self.vsplitter.setSizes(list(DEFAULT_VERTICAL_SIZES))
+
+    @staticmethod
+    def _splitter_sizes(value, expected):
+        if not isinstance(value, (list, tuple)) or len(value) < expected:
+            return None
+        try:
+            values = [max(0, int(item)) for item in value]
+        except (TypeError, ValueError):
+            return None
+        if expected == 2 and len(values) > 2:
+            values = [values[0], values[-1]]
+        return values[:expected]
+
+    def restore_gui_state(self):
+        geometry = Settings.get(["memory", "wsize"])
+        if isinstance(geometry, QtCore.QRect) and geometry.isValid():
+            self.setGeometry(geometry)
+
+        horizontal = self._splitter_sizes(
+            Settings.get(["memory", "hsplitter_position"]), 2
+        )
+        vertical = self._splitter_sizes(
+            Settings.get(["memory", "vsplitter_position"]), 2
+        )
+        if horizontal and all(horizontal):
+            self.hsplitter.setSizes(horizontal)
+        if vertical:
+            self.vsplitter.setSizes(vertical)
+
+        editor_hidden = bool(Settings.get(["memory", "texteditor_hidden"]))
+        console_hidden = bool(Settings.get(["memory", "console_hidden"]))
+        self.texteditor.setHidden(editor_hidden)
+        self.console.setHidden(console_hidden)
+        if not console_hidden:
+            self.ensure_console_visible()
+
+    def store_gui_state(self):
+        Settings.set(["memory", "wsize"], self.geometry())
+        Settings.set(["memory", "hsplitter_position"], self.hsplitter.sizes())
+        Settings.set(["memory", "vsplitter_position"], self.vsplitter.sizes())
+        Settings.set(
+            ["memory", "texteditor_hidden"], self.texteditor.isHidden()
+        )
+        Settings.set(["memory", "console_hidden"], self.console.isHidden())
+        Settings.store()
+
+    def ensure_console_visible(self):
+        if self.console.isHidden():
+            return
+        viewer_size, console_size = self.vsplitter.sizes()
+        if console_size >= MINIMUM_CONSOLE_HEIGHT:
+            return
+        total = max(
+            viewer_size + console_size,
+            sum(DEFAULT_VERTICAL_SIZES),
+        )
+        console_size = max(MINIMUM_CONSOLE_HEIGHT, int(total * 0.24))
+        self.vsplitter.setSizes([total - console_size, console_size])
+
+    def _sync_layout_actions(self):
+        for action, checked in (
+            (self.mHideEditor, self.texteditor.isHidden()),
+            (self.mHideConsole, self.console.isHidden()),
+        ):
+            action.blockSignals(True)
+            action.setChecked(checked)
+            action.blockSignals(False)
+
+    def current_opened(self):
+        return self._current_opened
+
+    def reopen_current(self):
+        if self._current_opened is None:
+            return None
+        generation = self.open(self._current_opened, update_texteditor=False)
+        self.texteditor.reopen()
+        return generation
 
     def open(self, openpath, update_texteditor=True):
         self._openlock.lock()
@@ -262,8 +389,10 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
         self._runner_supervisor.cancel_current()
 
     def closeEvent(self, event):
+        if self._persist_gui_state:
+            self.store_gui_state()
         self._runner_supervisor.shutdown()
+        self.notifier.stop()
+        self.console.restore_stdout()
         self.display_widget.close_viewer()
         super().closeEvent(event)
-        if self.notifier.isRunning():
-            self.notifier.wait(1000)

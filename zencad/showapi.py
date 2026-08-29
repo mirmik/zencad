@@ -120,11 +120,6 @@ def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_s
     if NOSHOW:
         return
 
-    from zenframe.configuration import Configuration
-
-    if Configuration.NOSHOW:
-        return
-
     _show_local(scene, animate, preanimate, close_handle, animate_step)
 
 
