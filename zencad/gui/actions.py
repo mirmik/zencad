@@ -225,7 +225,7 @@ class MainWindowActionsMixin:
                 "<p><h3>Feedback</h3>"
                 "<pre>email: mirmikns@yandex.ru\n"
                 "github: https://github.com/mirmik/zencad\n"
-                "2018-2021<pre/>".format(
+                "2018-2021, 2026<pre/>".format(
                     BANNER_TEXT,
                     ABOUT_TEXT,
                     zencad.__version__)

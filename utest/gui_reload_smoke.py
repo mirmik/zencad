@@ -4,6 +4,7 @@
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 RELOAD_COUNT = 20
 
@@ -75,6 +76,13 @@ def main():
         window.resize(800, 600)
         window.show()
         application.processEvents()
+        with mock.patch(
+            "zencad.gui.actions.QMessageBox.about"
+        ) as about_dialog:
+            window.aboutAction()
+        about_html = about_dialog.call_args.args[2]
+        assert "ZenCad version: 2.0.0" in about_html
+        assert "2018-2021, 2026" in about_html
         assert window.hsplitter.count() == 2
         assert window.vsplitter.count() == 2
         assert not window.calculation_overlay.active
