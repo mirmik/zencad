@@ -76,6 +76,12 @@ def main():
         assert window.vsplitter.count() == 2
         assert not window.console.isHidden()
         assert window.vsplitter.sizes()[1] >= 120
+        assert not hasattr(window, "mCoordsDiff")
+        window.info_widget.set_marker_data("q", 4, 5, 6)
+        window.info_widget.set_marker_data("w", 1, 1, 1)
+        measurement = window.info_widget.markerDistLabel.text()
+        assert "Δ(F3−F4): (3.000, 4.000, 5.000)" in measurement
+        assert "Distance: 7.071" in measurement
 
         native_window = int(display.winId())
         viewer = display.Viewer

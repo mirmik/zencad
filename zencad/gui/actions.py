@@ -332,10 +332,6 @@ class MainWindowActionsMixin:
     def debugInfoAction(self):
         raise NotImplementedError
 
-    def coordsDifferenceMode(self, en):
-        self.info_widget.coords_difference_mode = en
-        self.info_widget.update_dist()
-
     def settings(self):
         wdg = zencad.gui.settingswdg.SettingsWidget()
         status = wdg.exec()
@@ -456,13 +452,6 @@ class MainWindowActionsMixin:
             "Online manual", zencad.gui.util.open_online_manual, "Open online manual in browser", "F1"
         )
 
-        self.mCoordsDiff = self.create_action(
-            "Coords difference",
-            self.coordsDifferenceMode,
-            "Coords difference mode",
-            checkbox=True,
-        )
-
     def set_center_visible(self, en):
         self._send_viewer_command({"cmd": "set_center_visible", "en": en})
 
@@ -506,7 +495,6 @@ class MainWindowActionsMixin:
         self.mUtilityMenu.addAction(self.mAutoUpdate)
         self.mUtilityMenu.addSeparator()
         self.mUtilityMenu.addAction(self.mTracking)
-        self.mUtilityMenu.addAction(self.mCoordsDiff)
         self.mUtilityMenu.addSeparator()
         self.mUtilityMenu.addAction(self.mCacheInfo)
         self.mUtilityMenu.addAction(self.mInvalCache)

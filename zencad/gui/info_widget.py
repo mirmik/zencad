@@ -6,7 +6,7 @@ import math
 
 QMARKER_MESSAGE = "Press 'F3' to set marker"
 WMARKER_MESSAGE = "Press 'F4' to set marker"
-DISTANCE_DEFAULT_MESSAGE = "Distance between markers"
+MEASUREMENT_DEFAULT_MESSAGE = "Marker difference and distance"
 
 
 class InfoWidget(QWidget):
@@ -34,7 +34,7 @@ class InfoWidget(QWidget):
         )
         self.marker2Label.setAlignment(Qt.AlignCenter)
 
-        self.markerDistLabel = QLabel(DISTANCE_DEFAULT_MESSAGE)
+        self.markerDistLabel = QLabel(MEASUREMENT_DEFAULT_MESSAGE)
         self.markerDistLabel.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.markerDistLabel.setAlignment(Qt.AlignCenter)
@@ -43,6 +43,10 @@ class InfoWidget(QWidget):
         self.infolay.addWidget(self.marker1Label)
         self.infolay.addWidget(self.marker2Label)
         self.infolay.addWidget(self.markerDistLabel)
+        self.infolay.setStretch(0, 3)
+        self.infolay.setStretch(1, 3)
+        self.infolay.setStretch(2, 3)
+        self.infolay.setStretch(3, 5)
 
         self.infolay.setContentsMargins(0, 0, 0, 0)
         self.infolay.setSpacing(0)
@@ -51,7 +55,6 @@ class InfoWidget(QWidget):
         self.setLayout(self.infolay)
 
         self.saved_data = {"q": None, "w": None}
-        self.coords_difference_mode = False
 
     def set_marker_data(self, qw, x, y, z):
         data = "x:{:8.3f},  y:{:8.3f},  z:{:8.3f}".format(x, y, z)
@@ -69,20 +72,19 @@ class InfoWidget(QWidget):
 
     def update_dist(self):
         if self.saved_data["q"] is None or self.saved_data["w"] is None:
-            self.markerDistLabel.setText(DISTANCE_DEFAULT_MESSAGE)
+            self.markerDistLabel.setText(MEASUREMENT_DEFAULT_MESSAGE)
             return
 
         qx, qy, qz = self.saved_data["q"]
         wx, wy, wz = self.saved_data["w"]
 
-        xx, yy, zz = wx - qx, wy - qy, wz - qz
-        dist = math.sqrt(xx ** 2 + yy ** 2 + zz ** 2)
-
-        if self.coords_difference_mode:
-            self.markerDistLabel.setText(
-                "x:{:8.3f} y:{:8.3f} z:{:8.3f}".format(qx - wx, qy - wy, qz - wz))
-        else:
-            self.markerDistLabel.setText("Distance: {:8.3f}".format(dist))
+        dx, dy, dz = qx - wx, qy - wy, qz - wz
+        dist = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        self.markerDistLabel.setText(
+            "Δ(F3−F4): ({:.3f}, {:.3f}, {:.3f})   Distance: {:.3f}".format(
+                dx, dy, dz, dist
+            )
+        )
 
     def set_tracking_info(self, data):
         ok = data[1]
