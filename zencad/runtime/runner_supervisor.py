@@ -62,12 +62,16 @@ class RunnerSupervisor:
         on_message: Callable[[RunnerMessage], None] | None = None,
         cancel_grace_period: float = 0.5,
         record_scene_patches: bool = True,
+        cache_directory: str | Path | None = None,
     ):
         if cancel_grace_period < 0:
             raise ValueError("Cancellation grace period must be non-negative")
         self.on_message = on_message
         self.cancel_grace_period = cancel_grace_period
         self.record_scene_patches = record_scene_patches
+        if cache_directory is None:
+            cache_directory = Path.home() / ".zencadcache"
+        self.cache_directory = Path(cache_directory).expanduser()
         self._context = multiprocessing.get_context("spawn")
         self._lock = threading.RLock()
         self._generation = 0
@@ -120,7 +124,7 @@ class RunnerSupervisor:
             script_path=str(script_path),
             cwd=str(cwd),
             arguments=arguments,
-            cache_directory=str(data_root / "cache"),
+            cache_directory=str(self.cache_directory),
         )
         process = self._context.Process(
             target=run_generation,

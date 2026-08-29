@@ -16,7 +16,10 @@ class RunnerSupervisorTest(unittest.TestCase):
     def setUp(self):
         self.directory = TemporaryDirectory()
         self.root = Path(self.directory.name)
-        self.supervisor = RunnerSupervisor(cancel_grace_period=0.1)
+        self.supervisor = RunnerSupervisor(
+            cancel_grace_period=0.1,
+            cache_directory=self.root / "cache",
+        )
 
     def tearDown(self):
         self.supervisor.shutdown()
@@ -48,6 +51,16 @@ class RunnerSupervisorTest(unittest.TestCase):
         self.fail(
             f"Runner generation {generation} did not emit {message_type!r}"
         )
+
+    def test_default_cache_directory_is_persistent(self):
+        supervisor = RunnerSupervisor()
+        try:
+            self.assertEqual(
+                supervisor.cache_directory,
+                Path.home() / ".zencadcache",
+            )
+        finally:
+            supervisor.shutdown()
 
     def test_control_message_round_trip_and_validation(self):
         frame = encode_control_message(
@@ -116,6 +129,32 @@ show()
             self.messages(generation, "finished")[-1].payload["status"],
             "success",
         )
+
+    def test_cache_is_reused_by_sequential_runner_generations(self):
+        counter = self.root / "evaluation-count.txt"
+        path = self.script("cached.py", f"""
+from pathlib import Path
+from zencad import box, display, show
+from zencad.lazifier import lazy
+
+counter = Path({str(counter)!r})
+
+@lazy
+def cached_box(size):
+    count = int(counter.read_text()) if counter.exists() else 0
+    counter.write_text(str(count + 1))
+    return box(size).unlazy()
+
+display(cached_box(2))
+show()
+""")
+
+        first = self.supervisor.start(path)
+        self.assertEqual(self.supervisor.wait(first, timeout=10), "success")
+        second = self.supervisor.start(path)
+        self.assertEqual(self.supervisor.wait(second, timeout=10), "success")
+
+        self.assertEqual(counter.read_text(), "1")
 
     def test_exception_contains_traceback_and_next_run_succeeds(self):
         failing = self.script("failing.py", "raise ValueError('broken script')\n")

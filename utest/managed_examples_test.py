@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import threading
 import time
 import unittest
@@ -19,6 +20,7 @@ EXAMPLES = (
 class ManagedExamplesTest(unittest.TestCase):
     def setUp(self):
         self.patch_events = {}
+        self.cache_directory = TemporaryDirectory()
 
         def on_message(message):
             if message.message_type == "scene_patch":
@@ -30,10 +32,12 @@ class ManagedExamplesTest(unittest.TestCase):
             on_message=on_message,
             cancel_grace_period=0.5,
             record_scene_patches=False,
+            cache_directory=self.cache_directory.name,
         )
 
     def tearDown(self):
         self.supervisor.shutdown()
+        self.cache_directory.cleanup()
 
     def wait_for_message(self, generation, message_type, timeout=30):
         deadline = time.monotonic() + timeout
