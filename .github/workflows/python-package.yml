@@ -117,3 +117,8 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         working-directory: ${{ runner.temp }}
         run: xvfb-run -a python -m zencad --display "${{ github.workspace }}/utest/gui_standalone_smoke.py"
+      - name: Exercise standalone Ctrl+C handling
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python "${{ github.workspace }}/utest/gui_standalone_sigint_smoke.py"

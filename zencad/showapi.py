@@ -61,14 +61,36 @@ def _show_local(scene, animate, preanimate, close_handle, animate_step):
         )
         if preanimate is not None:
             preanimate(DISPLAY, animate_thread)
+        animation_stopped = False
+
         def stop_animation():
+            nonlocal animation_stopped
+            if animation_stopped:
+                return
+            animation_stopped = True
             animate_thread.finish()
             animate_thread.wait(1000)
+
+        DISPLAY.add_close_callback(stop_animation)
         zencad.gui.display_only.QAPP.aboutToQuit.connect(stop_animation)
         animate_thread.start()
         ANIMATE_THREAD = animate_thread
     if close_handle is not None:
-        zencad.gui.display_only.QAPP.aboutToQuit.connect(close_handle)
+        close_handled = False
+
+        def handle_close():
+            nonlocal close_handled
+            if close_handled:
+                return
+            close_handled = True
+            close_handle()
+
+        DISPLAY.add_close_callback(handle_close)
+        zencad.gui.display_only.QAPP.aboutToQuit.connect(handle_close)
+    # Release the OCCT/OpenGL view before QApplication destroys its native
+    # window.  V3d_View finalization after the X11 drawable is gone otherwise
+    # produces a glXMakeCurrent() failure during an otherwise clean shutdown.
+    zencad.gui.display_only.QAPP.aboutToQuit.connect(DISPLAY.close_viewer)
     zencad.gui.display_only.exec_display_only_mode()
 
 

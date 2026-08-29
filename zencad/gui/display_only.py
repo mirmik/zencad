@@ -5,7 +5,9 @@ configure_qt_platform()
 
 import zencad.gui.display
 import zencad.showapi
+import signal
 import sys
+import threading
 
 from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 
@@ -31,8 +33,41 @@ def init_display_only_mode() -> zencad.gui.display.DisplayWidget:
 
 def exec_display_only_mode():
     zencad.showapi.DISPLAY.show()
-    QAPP.exec()
-    sys.exit()
+
+    interrupted = []
+    previous_sigint = None
+    sigint_replaced = False
+    signal_pulse = None
+    if threading.current_thread() is threading.main_thread():
+        previous_sigint = signal.getsignal(signal.SIGINT)
+
+        if previous_sigint in (signal.SIG_DFL, signal.default_int_handler):
+            def handle_sigint(signum, _frame):
+                interrupted.append(signum)
+                QAPP.quit()
+
+            signal.signal(signal.SIGINT, handle_sigint)
+            sigint_replaced = True
+
+        # Python signal handlers run only when the interpreter regains
+        # control.  A small Python-backed Qt timer lets SIGINT escape the
+        # native Qt event loop even while the viewer is otherwise idle.
+        signal_pulse = QtCore.QTimer(QAPP)
+        signal_pulse.setInterval(max(1, int(Configuration.TIMER_PULSE * 1000)))
+        signal_pulse.timeout.connect(lambda: None)
+        signal_pulse.start()
+
+    try:
+        exit_code = QAPP.exec()
+    finally:
+        if signal_pulse is not None:
+            signal_pulse.stop()
+        if sigint_replaced:
+            signal.signal(signal.SIGINT, previous_sigint)
+
+    if interrupted:
+        raise SystemExit(128 + interrupted[-1])
+    raise SystemExit(exit_code)
 
 
 if __name__ == "__main__":

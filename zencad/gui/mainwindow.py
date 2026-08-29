@@ -263,6 +263,7 @@ class MainWindow(ZenFrame, zencad.gui.actions.MainWindowActionsMixin):
 
     def closeEvent(self, event):
         self._runner_supervisor.shutdown()
+        self.display_widget.close_viewer()
         super().closeEvent(event)
         if self.notifier.isRunning():
             self.notifier.wait(1000)

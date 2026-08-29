@@ -25,6 +25,7 @@ class Viewer3d:
         self.Context = AIS_InteractiveContext(self.Viewer)
         self._window = None
         self._parent = None
+        self._closed = False
 
     def _create_native_window(self, window_handle, parent):
         if sys.platform.startswith("linux"):
@@ -59,11 +60,32 @@ class Viewer3d:
         return window
 
     def Create(self, window_handle, parent=None):
+        if self._closed:
+            raise RuntimeError("Cannot recreate a closed OCCT viewer")
         self._parent = parent
         self._window = self._create_native_window(window_handle, parent)
         self.View.SetWindow(self._window)
         if not self._window.IsMapped():
             self._window.Map()
+
+    def Close(self):
+        """Release OCCT view resources while its native window still exists."""
+        if self._closed:
+            return False
+        self._closed = True
+        try:
+            self.Context.RemoveAll(False)
+        finally:
+            # V3d_View.Remove() destroys the underlying Graphic3d/OpenGL view.
+            # Leaving this to Python finalization is too late: Qt may already
+            # have destroyed the X11 drawable needed by glXMakeCurrent().
+            try:
+                self.View.Remove()
+            finally:
+                self._graphic_driver.ReleaseContext()
+                self._window = None
+                self._parent = None
+        return True
 
     def Repaint(self):
         self.View.Redraw()
@@ -86,4 +108,3 @@ class Viewer3d:
 
     def StartRotation(self, x, y):
         self.View.StartRotation(x, y)
-

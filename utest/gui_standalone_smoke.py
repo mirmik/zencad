@@ -22,7 +22,7 @@ def main():
         assert application is not None
         assert widget.parent() is None
         state["window"] = int(widget.winId())
-        QtCore.QTimer.singleShot(500, application.quit)
+        QtCore.QTimer.singleShot(500, widget.close)
 
     def close_handle():
         state["closed"] = True

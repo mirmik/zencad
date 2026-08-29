@@ -48,6 +48,8 @@ def main():
 
     widget.close()
     application.processEvents()
+    assert widget._display._closed
+    assert widget.close_viewer() is False
 
     reopened = DisplayWidget(axis_triedron=False)
     reopened.resize(320, 240)
@@ -101,6 +103,8 @@ def main():
 
     reopened.close()
     application.processEvents()
+    assert reopened._display._closed
+    assert reopened.close_viewer() is False
     print("ZenCad OCP viewer smoke: OK")
 
 

@@ -46,11 +46,15 @@ class BaseViewer(QtOpenGL.QGLWidget):
         super().__init__(fmt, parent=parent)
         # OCCT embeds into this widget's own native child window. Declare that
         # relationship before winId() is created; wrapping the resulting XID
-        # in a second QWindow used to cause BadWindow/reparenting races.
-        self.setWindowFlag(QtCore.Qt.SubWindow, True)
+        # in a second QWindow used to cause BadWindow/reparenting races.  A
+        # parentless standalone viewer must remain a real top-level window so
+        # Qt emits lastWindowClosed and stops its application event loop.
+        if parent is not None:
+            self.setWindowFlag(QtCore.Qt.SubWindow, True)
 
         self._display = ocp_viewer.Viewer3d()
         self._inited = False
+        self._close_callbacks = []
 
         # enable Mouse Tracking
         self.setMouseTracking(True)
@@ -79,9 +83,25 @@ class BaseViewer(QtOpenGL.QGLWidget):
     def set_background_color(self, color):
         self.set_background_gradient(color, color)
 
+    def close_viewer(self):
+        return self._display.Close()
+
+    def add_close_callback(self, callback):
+        if not callable(callback):
+            raise TypeError("Close callback must be callable")
+        self._close_callbacks.append(callback)
+
+    def closeEvent(self, event):
+        callbacks, self._close_callbacks = self._close_callbacks, []
+        for callback in callbacks:
+            callback()
+        self.close_viewer()
+        super().closeEvent(event)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._display.View.MustBeResized()
+        if not self._display._closed:
+            self._display.View.MustBeResized()
 
     def paintEngine(self):
         return None
@@ -581,6 +601,8 @@ class DisplayWidget(BaseViewer):
                 self.InitDriver()
 
     def paintEvent(self, event):
+        if self._display._closed:
+            return
         if not self._inited1:
             self._inited1 = True
 
@@ -647,6 +669,9 @@ class DisplayWidget(BaseViewer):
 
     def redraw(self):
         self.animate_updated.clear()
+        if self._display._closed:
+            self.animate_updated.set()
+            return
         self._display.View.Redraw()
         self.last_redraw = time.time()
         self.animate_updated.set()
