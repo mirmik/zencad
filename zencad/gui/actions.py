@@ -8,6 +8,7 @@ import subprocess
 
 import zencad.gui.util
 import zencad.gui.settingswdg
+from zencad.gui.navigation import navigation_scheme_help
 
 from zencad.gui.defaults import SCRIPT_TEMPLATE
 from zencad.settings import Settings
@@ -236,8 +237,15 @@ class MainWindowActionsMixin:
         msgBox = QMessageBox()
         msgBox.setWindowTitle("Справка по навигации:")
         msgBox.setText(
-            "LeftButton+Move или Alt+Move: Вращение камеры вокруг центра\n"
-            "RightButton+Move или Shift+Move: Стрейф центра.\n"
+            navigation_scheme_help(
+                Settings.get(["view", "navigation_scheme"]),
+                {
+                    "rotate": Settings.get(["view", "navigation_rotate"]),
+                    "pan": Settings.get(["view", "navigation_pan"]),
+                    "zoom": Settings.get(["view", "navigation_zoom"]),
+                },
+            )
+            + "\n"
             "F5/F6: Перемещение центра фронтально. (режим с активной перспективой)\n"
             "PgUp/PgDown или MouseWheel: Изменение масштаба\n"
             "\n"
@@ -340,6 +348,7 @@ class MainWindowActionsMixin:
             self.display_widget.set_msaa_samples(
                 Settings.get(["view", "msaa_samples"])
             )
+            self.display_widget.reload_navigation_settings()
             self.reopen_current()
 
     def _add_open_action(self, menu, name, path):

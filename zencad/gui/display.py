@@ -25,6 +25,12 @@ from zencad.axis import Axis
 import zencad.geom.trans
 import zencad.geom.solid
 from zencad.settings import Settings, normalize_msaa_samples
+from zencad.gui.navigation import (
+    navigation_drag_action,
+    normalize_navigation_scheme,
+    normalized_custom_bindings,
+    wheel_zoom_factor,
+)
 from zencad.gui.scene_presenter import ScenePresenter
 
 from OpenGL.GL import GL_RGBA, GL_UNSIGNED_BYTE, glReadPixels
@@ -122,6 +128,7 @@ class DisplayWidget(BaseViewer):
                  parent=None):
 
         super().__init__(parent=parent)
+        self.reload_navigation_settings()
         self.View = self._display.View
         self.Viewer = self._display.Viewer
         self.Context = self._display.Context
@@ -279,6 +286,27 @@ class DisplayWidget(BaseViewer):
 
     def apply_scene_patch(self, patch):
         return self.scene_presenter.apply_patch(patch)
+
+    def set_navigation_scheme(self, scheme):
+        self.navigation_scheme = normalize_navigation_scheme(scheme)
+        return self.navigation_scheme
+
+    def reload_navigation_settings(self):
+        self.set_navigation_scheme(
+            Settings.get(["view", "navigation_scheme"])
+        )
+        self.navigation_custom_bindings = normalized_custom_bindings({
+            "rotate": Settings.get(["view", "navigation_rotate"]),
+            "pan": Settings.get(["view", "navigation_pan"]),
+            "zoom": Settings.get(["view", "navigation_zoom"]),
+        })
+        self.navigation_invert_wheel = bool(
+            Settings.get(["view", "navigation_invert_wheel"])
+        )
+        self.navigation_invert_orbit = bool(
+            Settings.get(["view", "navigation_invert_orbit"])
+        )
+        return self.navigation_scheme
 
     def set_perspective(self, en):
         self._perspective_mode = en
@@ -637,12 +665,10 @@ class DisplayWidget(BaseViewer):
             "y": position.y(),
             "modifiers": self._input_modifiers(event.modifiers()),
         })
-        mul = 1.1
-        delta = delta_point.y()
-        if delta > 0:
-            zoom_factor = mul
-        else:
-            zoom_factor = 1/mul
+        zoom_factor = wheel_zoom_factor(
+            delta_point.y(),
+            inverted=self.navigation_invert_wheel,
+        )
         self._display.ZoomFactor(zoom_factor)
         self.location_changed_handle()
 
@@ -762,7 +788,6 @@ class DisplayWidget(BaseViewer):
             "modifiers": self._input_modifiers(evt.modifiers()),
         })
         pt = evt.pos()
-        buttons = int(evt.buttons())
         modifiers = evt.modifiers()
         self.lastPosition = (evt.x(), evt.y())
 
@@ -770,16 +795,22 @@ class DisplayWidget(BaseViewer):
             ip, sts = self.intersect_point(evt.x(), evt.y())
             self._emit_viewer_event("trackinfo", (ip.to_tuple(), sts))
 
-        # ROTATE
-        if (buttons == QtCore.Qt.LeftButton or
-                modifiers == QtCore.Qt.AltModifier):
+        action = navigation_drag_action(
+            self.navigation_scheme,
+            self._input_buttons(evt.buttons()),
+            self._input_modifiers(modifiers),
+            self.navigation_custom_bindings,
+        )
+
+        if action == "rotate":
             if self._orient == 1:
 
                 mv = evt.pos() - self.temporary1
                 self.temporary1 = evt.pos()
 
-                self.yaw -= mv.x() * 0.01
-                self.pitch -= mv.y() * 0.01
+                direction = 1 if self.navigation_invert_orbit else -1
+                self.yaw += direction * mv.x() * 0.01
+                self.pitch += direction * mv.y() * 0.01
                 if self.pitch > math.pi * 0.4999:
                     self.pitch = math.pi * 0.4999
                 if self.pitch < -math.pi * 0.4999:
@@ -791,8 +822,7 @@ class DisplayWidget(BaseViewer):
 
             self.location_changed_handle()
 
-        # DYNAMIC ZOOM
-        elif (buttons == QtCore.Qt.MidButton):
+        elif action == "zoom":
             self._display.Repaint()
             self._display.DynamicZoom(abs(self.dragStartPosX),
                                       abs(self.dragStartPosY), abs(pt.x()),
@@ -801,9 +831,7 @@ class DisplayWidget(BaseViewer):
             self.dragStartPosY = pt.y()
             self.location_changed_handle()
 
-        # PAN
-        elif (buttons == QtCore.Qt.RightButton or
-                modifiers == QtCore.Qt.ShiftModifier):
+        elif action == "pan":
             dx = pt.x() - self.dragStartPosX
             dy = pt.y() - self.dragStartPosY
             self.dragStartPosX = pt.x()

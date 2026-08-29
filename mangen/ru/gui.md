@@ -65,15 +65,23 @@ To set markers, use the keys `Q (F1)`, `W (F2)`. After setting, the coordinates 
 :ru
 ## 3D навигация
 Вращение: MouseLeftClick/Alt + MouseMove  
-Смещение: MouseRightClick/Shift + MouseMove  
+Смещение: MouseMiddleClick/MouseRightClick/Shift + MouseMove
 Масштабирование: PgUp/PgDown/MouseWheel  
+
+Схему навигации можно выбрать в `Edit/Settings`: ZenCad, Legacy ZenCad,
+Blender, FreeCAD CAD, Maya или Custom. В Custom отдельно назначаются жесты
+Rotate, Pan и Zoom. Там же можно инвертировать колесо и направление вращения.
 
 Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - `Navigation/'Axionometric view'`, `Navigation/'Free rotation view'`
 :en
 ## 3D navigation
 Rotation: MouseLeftClick / Alt + MouseMove
-Offset: MouseRightClick / Shift + MouseMove
+Offset: MouseMiddleClick / MouseRightClick / Shift + MouseMove
 Scaling: PgUp / PgDown / MouseWheel
+
+The navigation preset can be selected in `Edit/Settings`: ZenCad, Legacy
+ZenCad, Blender, FreeCAD CAD, Maya, or Custom. Custom assigns separate Rotate,
+Pan, and Zoom gestures. Wheel zoom and orbit direction can also be inverted.
 
 The renderer supports two orientation modes. Orthogonal orientation (Z axis is always upward) and free rotation mode. Switch between them - `Navigation/'Axionometric view'`, `Navigation / 'Free rotation view'`. 
 ::

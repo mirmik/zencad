@@ -14,11 +14,12 @@ def main():
 
     configure_qt_platform()
 
-    from PyQt5 import QtCore, QtTest, QtWidgets
+    from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 
     application = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
     from zencad.gui.mainwindow import MainWindow
+    from zencad.gui.settingswdg import SettingsWidget
 
     with TemporaryDirectory() as temporary_directory:
         script_path = Path(temporary_directory) / "model.py"
@@ -83,6 +84,32 @@ def main():
         about_html = about_dialog.call_args.args[2]
         assert "ZenCad version: 2.0.0" in about_html
         assert "2018-2021, 2026" in about_html
+        settings_dialog = SettingsWidget()
+        navigation_combo = settings_dialog.navigation_scheme_edit.combo
+        for scheme in (
+            "zencad",
+            "classic",
+            "blender",
+            "freecad",
+            "maya",
+            "custom",
+        ):
+            assert navigation_combo.findData(scheme) >= 0
+        navigation_combo.setCurrentIndex(navigation_combo.findData("custom"))
+        assert settings_dialog.navigation_rotate_edit.isEnabled()
+        assert settings_dialog.navigation_pan_edit.isEnabled()
+        settings_dialog.navigation_rotate_edit.combo.setCurrentIndex(
+            settings_dialog.navigation_rotate_edit.combo.findData("middle")
+        )
+        settings_dialog.navigation_pan_edit.combo.setCurrentIndex(
+            settings_dialog.navigation_pan_edit.combo.findData("middle")
+        )
+        with mock.patch(
+            "zencad.gui.settingswdg.QMessageBox.warning"
+        ) as navigation_warning:
+            assert not settings_dialog.navigation_settings_are_valid()
+        navigation_warning.assert_called_once()
+        settings_dialog.close()
         assert window.hsplitter.count() == 2
         assert window.vsplitter.count() == 2
         assert not window.calculation_overlay.active
@@ -188,6 +215,34 @@ def main():
                 assert_persistent_viewer()
 
                 if state["commits"] == 1:
+                    display.set_navigation_scheme("zencad")
+                    camera_before_pan = display.store_location()
+                    start = QtCore.QPointF(150, 150)
+                    finish = QtCore.QPointF(190, 170)
+                    application.sendEvent(display, QtGui.QMouseEvent(
+                        QtCore.QEvent.MouseButtonPress,
+                        start,
+                        QtCore.Qt.MiddleButton,
+                        QtCore.Qt.MiddleButton,
+                        QtCore.Qt.NoModifier,
+                    ))
+                    application.sendEvent(display, QtGui.QMouseEvent(
+                        QtCore.QEvent.MouseMove,
+                        finish,
+                        QtCore.Qt.NoButton,
+                        QtCore.Qt.MiddleButton,
+                        QtCore.Qt.NoModifier,
+                    ))
+                    application.sendEvent(display, QtGui.QMouseEvent(
+                        QtCore.QEvent.MouseButtonRelease,
+                        finish,
+                        QtCore.Qt.MiddleButton,
+                        QtCore.Qt.NoButton,
+                        QtCore.Qt.NoModifier,
+                    ))
+                    camera_after_pan = display.store_location()
+                    assert camera_after_pan["center"] != camera_before_pan["center"]
+                    assert camera_after_pan["scale"] == camera_before_pan["scale"]
                     # Keep a deliberately non-default camera while leaving
                     # enough of the model visible in the full-size viewport.
                     display.set_scale(20.0)

@@ -1,5 +1,6 @@
 import unittest
 
+from zencad.gui.navigation import DEFAULT_NAVIGATION_SCHEME
 from zencad.settings import (
     DEFAULT_MSAA_SAMPLES,
     MSAA_SAMPLE_OPTIONS,
@@ -16,6 +17,19 @@ class MsaaSettingsTest(unittest.TestCase):
             DEFAULT_MSAA_SAMPLES,
         )
         self.assertEqual(DEFAULT_MSAA_SAMPLES, 4)
+        self.assertEqual(
+            settings.get(["view", "navigation_scheme"]),
+            DEFAULT_NAVIGATION_SCHEME,
+        )
+        self.assertEqual(settings.get(["view", "navigation_rotate"]), "left")
+        self.assertEqual(settings.get(["view", "navigation_pan"]), "middle")
+        self.assertEqual(settings.get(["view", "navigation_zoom"]), "none")
+        self.assertFalse(
+            settings.get(["view", "navigation_invert_wheel"])
+        )
+        self.assertFalse(
+            settings.get(["view", "navigation_invert_orbit"])
+        )
 
     def test_supported_values_are_preserved(self):
         for samples in MSAA_SAMPLE_OPTIONS:

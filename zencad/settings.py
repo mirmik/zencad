@@ -41,6 +41,12 @@ class ZencadSettings:
                 "default_color": (0.6, 0.6, 0.8, 0),
                 "default_chordial_deviation": 0.1,
                 "msaa_samples": DEFAULT_MSAA_SAMPLES,
+                "navigation_scheme": "zencad",
+                "navigation_rotate": "left",
+                "navigation_pan": "middle",
+                "navigation_zoom": "none",
+                "navigation_invert_wheel": False,
+                "navigation_invert_orbit": False,
             },
             "memory": {
                 "recents": [],
