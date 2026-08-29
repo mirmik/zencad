@@ -9,6 +9,20 @@ import os
 import sys
 
 
+MSAA_SAMPLE_OPTIONS = (0, 2, 4, 8)
+DEFAULT_MSAA_SAMPLES = 4
+
+
+def normalize_msaa_samples(value):
+    try:
+        samples = int(value)
+    except (TypeError, ValueError):
+        return DEFAULT_MSAA_SAMPLES
+    if samples not in MSAA_SAMPLE_OPTIONS:
+        return DEFAULT_MSAA_SAMPLES
+    return samples
+
+
 def default_text_editor_os():
     if sys.platform == "linux":
         return "xdg-open {path}"
@@ -26,6 +40,7 @@ class ZencadSettings:
             "view": {
                 "default_color": (0.6, 0.6, 0.8, 0),
                 "default_chordial_deviation": 0.1,
+                "msaa_samples": DEFAULT_MSAA_SAMPLES,
             },
             "memory": {
                 "recents": [],

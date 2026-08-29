@@ -76,6 +76,11 @@ def main():
         assert window.vsplitter.count() == 2
         assert not window.console.isHidden()
         assert window.vsplitter.sizes()[1] >= 120
+        assert display.msaa_samples in (0, 2, 4, 8)
+        assert (
+            display.View.RenderingParams().NbMsaaSamples
+            == display.msaa_samples
+        )
         assert not hasattr(window, "mCoordsDiff")
         window.info_widget.set_marker_data("q", 4, 5, 6)
         window.info_widget.set_marker_data("w", 1, 1, 1)

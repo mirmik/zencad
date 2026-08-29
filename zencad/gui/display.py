@@ -24,7 +24,7 @@ import zencad.color as color
 from zencad.axis import Axis
 import zencad.geom.trans
 import zencad.geom.solid
-from zencad.settings import Settings
+from zencad.settings import Settings, normalize_msaa_samples
 from zencad.gui.scene_presenter import ScenePresenter
 
 from OpenGL.GLUT import *
@@ -52,6 +52,11 @@ class BaseViewer(QtOpenGL.QGLWidget):
             self.setWindowFlag(QtCore.Qt.SubWindow, True)
 
         self._display = ocp_viewer.Viewer3d()
+        Settings.restore()
+        self.set_msaa_samples(
+            Settings.get(["view", "msaa_samples"]),
+            redraw=False,
+        )
         self._inited = False
         self._close_callbacks = []
 
@@ -80,6 +85,14 @@ class BaseViewer(QtOpenGL.QGLWidget):
 
     def set_background_color(self, color):
         self.set_background_gradient(color, color)
+
+    def set_msaa_samples(self, samples, redraw=True):
+        samples = normalize_msaa_samples(samples)
+        self._display.View.ChangeRenderingParams().NbMsaaSamples = samples
+        self.msaa_samples = samples
+        if redraw and self._display._window is not None:
+            self._display.View.Redraw()
+        return samples
 
     def close_viewer(self):
         return self._display.Close()

@@ -337,6 +337,9 @@ class MainWindowActionsMixin:
         status = wdg.exec()
 
         if status == 1:
+            self.display_widget.set_msaa_samples(
+                Settings.get(["view", "msaa_samples"])
+            )
             self.reopen_current()
 
     def _add_open_action(self, menu, name, path):

@@ -4,7 +4,11 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-from zencad.settings import Settings
+from zencad.settings import (
+    MSAA_SAMPLE_OPTIONS,
+    Settings,
+    normalize_msaa_samples,
+)
 from zencad.color import Color
 
 
@@ -64,6 +68,28 @@ class Checker(QWidget):
     def restore(self):
         self.check.setCheckState(
             2 if Settings.get(self.path) == "true" else 0)
+
+
+class ChoiceFieldChanger(QWidget):
+    def __init__(self, label, path, choices):
+        super().__init__()
+        self.path = path
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(QLabel(label))
+        self.combo = QComboBox()
+        for text, value in choices:
+            self.combo.addItem(text, value)
+        current = normalize_msaa_samples(Settings.get(path))
+        index = self.combo.findData(current)
+        self.combo.setCurrentIndex(max(0, index))
+        self.layout.addWidget(self.combo)
+        self.setLayout(self.layout)
+
+    def apply(self):
+        Settings.set(self.path, self.combo.currentData())
+
+    def restore(self):
+        pass
 
 
 class ColorChanger(QWidget):
@@ -127,6 +153,14 @@ class SettingsWidget(QDialog):
             path=["markers", "size"], label="Marker size:")
         self.chordial_deflection_edit = TextFieldChanger(
             path=["view", "default_chordial_deviation"], label="Chordial deflection:")
+        self.msaa_edit = ChoiceFieldChanger(
+            label="MSAA:",
+            path=["view", "msaa_samples"],
+            choices=[
+                ("Off" if samples == 0 else "{}×".format(samples), samples)
+                for samples in MSAA_SAMPLE_OPTIONS
+            ],
+        )
 
         self.appliers = []
         self.vlayout = QVBoxLayout()
@@ -139,6 +173,7 @@ class SettingsWidget(QDialog):
         append(self.default_color_edit)
         append(self.marker_size_edit)
         append(self.chordial_deflection_edit)
+        append(self.msaa_edit)
 
         self.vlayout.addLayout(self.hlayout)
 
@@ -166,6 +201,7 @@ class SettingsWidget(QDialog):
 def doit():
     import sys
     app = QApplication(sys.argv[1:])
+    Settings.restore()
     wdg = SettingsWidget()
     wdg.exec()
 

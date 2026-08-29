@@ -28,6 +28,15 @@ def main():
     application.processEvents()
 
     assert widget._display._window.IsMapped()
+    assert widget.msaa_samples in (0, 2, 4, 8)
+    assert (
+        widget.View.RenderingParams().NbMsaaSamples
+        == widget.msaa_samples
+    )
+    widget.set_msaa_samples(2)
+    assert widget.View.RenderingParams().NbMsaaSamples == 2
+    widget.set_msaa_samples(4)
+    assert widget.View.RenderingParams().NbMsaaSamples == 4
     widget.attach_scene(scene)
     assert widget.Context.IsDisplayed(interactive.ais_object)
     assert interactive.ais_object.Attributes().FaceBoundaryDraw()
