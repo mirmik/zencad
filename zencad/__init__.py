@@ -28,6 +28,7 @@ try:
     from zencad.geom.unify import *
     from zencad.geom.offset import *
     from zencad.geom.operations import *
+    from zencad.geom.mesh import *
     from zencad.geom.wire_builder import wire_builder
     from zencad.geom.near import *
 
