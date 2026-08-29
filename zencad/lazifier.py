@@ -29,6 +29,32 @@ onplace = None
 status_notify = None
 
 
+def _lazy_object_label(obj):
+    generic = getattr(obj, "generic", None)
+    value = getattr(generic, "__lazyvalue__", None)
+    if value is None:
+        value = getattr(obj, "__lazyvalue__", None)
+    name = getattr(value, "__qualname__", None)
+    if name is None:
+        name = getattr(value, "__name__", None)
+    if name is None and value is not None:
+        name = type(value).__name__
+    if name is None:
+        name = type(obj).__name__
+    return str(name)[:120]
+
+
+def _lazy_object_operation(obj):
+    if getattr(obj, "__lazyheap__", False):
+        return "memory"
+    if (
+        getattr(obj, "__decache__", False)
+        and obj.__lazyhexhash__ in obj.__lazybase__.cache
+    ):
+        return "load"
+    return "evaluate"
+
+
 def disable_lazy():
     global ensave, desave, onplace, diag, status_notify
     ensave = lazy.encache
@@ -63,21 +89,28 @@ def install_evalcahe_notication(comm):
                    "len": len(arr), "root": root.__lazyhexhash__})
 
     def sncb(root, obj):
+        operation = _lazy_object_operation(obj)
+        object_name = _lazy_object_label(obj)
         disable_lazy()
-        arrs = evalcache.lazy.tree_needeval(root)
+        try:
+            arrs = evalcache.lazy.tree_needeval(root)
+        finally:
+            restore_lazy()
         comm.send({"cmd": "evalcache", "subcmd": "progress",
-                   "toload": len(arrs.toload), "toeval": len(arrs.toeval)})
-        restore_lazy()
+                   "toload": len(arrs.toload), "toeval": len(arrs.toeval),
+                   "operation": operation, "object": object_name})
 
     def ftcb(root):
         pass
 
     def fncb(root, obj):
         disable_lazy()
-        arrs = evalcache.lazy.tree_needeval(root)
+        try:
+            arrs = evalcache.lazy.tree_needeval(root)
+        finally:
+            restore_lazy()
         comm.send({"cmd": "evalcache", "subcmd": "progress",
                    "toload": len(arrs.toload), "toeval": len(arrs.toeval)})
-        restore_lazy()
 
     lazy.set_start_tree_evaluation_callback(stcb)
     lazy.set_start_node_evaluation_callback(sncb)

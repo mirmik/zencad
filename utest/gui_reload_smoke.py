@@ -74,6 +74,7 @@ def main():
         application.processEvents()
         assert window.hsplitter.count() == 2
         assert window.vsplitter.count() == 2
+        assert not window.calculation_overlay.active
         assert not window.console.isHidden()
         assert window.vsplitter.sizes()[1] >= 120
         assert display.msaa_samples in (0, 2, 4, 8)
@@ -146,6 +147,17 @@ def main():
             state["target"] = window.open(
                 str(slow_path), update_texteditor=False
             )
+            assert window.calculation_overlay.active
+            assert window.calculation_overlay.isVisible()
+            application.processEvents()
+            if sys.platform.startswith("linux"):
+                overlay = window.calculation_overlay
+                screen = overlay.screen()
+                screenshot = screen.grabWindow(0).toImage()
+                sample = overlay.mapToGlobal(QtCore.QPoint(16, 16))
+                sample -= screen.geometry().topLeft()
+                color = screenshot.pixelColor(sample)
+                assert max(color.red(), color.green(), color.blue()) < 90, color
             QtCore.QTimer.singleShot(
                 100, window._runner_supervisor.cancel_current
             )
@@ -190,6 +202,7 @@ def main():
                 assert_persistent_viewer()
                 start_cancel_case()
             elif state["phase"] == "cancel" and status == "cancelled":
+                assert not window.calculation_overlay.active
                 assert display.scene_presenter.committed_generation == state["generation"]
                 assert display.scene_presenter.objects[0] is state["stable_object"]
                 assert display.store_location() == state["camera"]

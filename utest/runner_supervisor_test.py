@@ -125,6 +125,11 @@ show()
             item.payload.get("subcmd") in {"newtree", "progress"}
             for item in progress
         ))
+        self.assertTrue(any(
+            item.payload.get("operation") in {"load", "evaluate", "memory"}
+            and item.payload.get("object")
+            for item in progress
+        ))
         self.assertEqual(
             self.messages(generation, "finished")[-1].payload["status"],
             "success",

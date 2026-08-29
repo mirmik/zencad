@@ -3,6 +3,7 @@ import threading
 from PyQt5 import QtCore, QtWidgets
 
 from zencad.gui.actions import MainWindowActionsMixin
+from zencad.gui.calculation_overlay import CalculationOverlay
 from zencad.gui.console import ConsoleWidget
 from zencad.gui.defaults import (
     DEFAULT_HORIZONTAL_SIZES,
@@ -100,6 +101,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         # gives the splitter a valid initial extent.
         self.display_widget = DisplayWidget(parent=self.vsplitter)
         self.vsplitter.insertWidget(0, self.display_widget)
+        self.calculation_overlay = CalculationOverlay(self.display_widget)
         self.vsplitter.setStretchFactor(0, 4)
         self.vsplitter.setStretchFactor(1, 1)
         self.vsplitter.setCollapsible(0, False)
@@ -200,7 +202,12 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self.console.clear()
             self.setWindowTitle(openpath)
             self.openStartEvent(openpath)
-            generation = self._runner_supervisor.start(openpath)
+            self.enable_display_changed_mode(reset=True)
+            try:
+                generation = self._runner_supervisor.start(openpath)
+            except Exception:
+                self.calculation_overlay.finish()
+                raise
             self._pending_snapshots.clear()
             self._generation_statuses.clear()
             with self._scene_patch_lock:
@@ -212,8 +219,12 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         finally:
             self._openlock.unlock()
 
-    def enable_display_changed_mode(self):
+    def enable_display_changed_mode(self, reset=False):
         self.statusBar().showMessage("Calculating scene…")
+        if reset or not self.calculation_overlay.active:
+            self.calculation_overlay.begin(
+                capture_background=self._reopen_mode,
+            )
 
     def _queue_runner_message(self, message):
         """Coalesce patches before they can fill the queued Qt event stream."""
@@ -283,10 +294,12 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self.enable_display_changed_mode()
         elif message_type == "progress":
             self.statusBar().showMessage(self._progress_text(message.payload))
+            self.calculation_overlay.update_progress(message.payload)
         elif message_type == "output":
             self.console.write(message.payload.get("text", ""))
         elif message_type == "scene":
             self._pending_snapshots[generation] = message.snapshot
+            self.calculation_overlay.set_phase("Preparing scene…")
         elif message_type == "ready":
             snapshot = self._pending_snapshots.get(generation)
             if snapshot is None:
@@ -296,6 +309,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
                 return
             if not message.payload.get("animated"):
                 self.statusBar().showMessage("Finalizing scene…")
+                self.calculation_overlay.set_phase("Finalizing scene…")
                 return
             self._pending_snapshots.pop(generation, None)
             try:
@@ -310,6 +324,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
                 self._fail_live_scene("Scene presentation failed")
                 return
             self.statusBar().showMessage("Animation running")
+            self.calculation_overlay.finish()
         elif message_type == "error":
             self._apply_pending_scene_patch()
             details = message.payload.get("traceback")
@@ -353,6 +368,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             ):
                 self.statusBar().showMessage("Scene calculation cancelled", 2000)
             self._generation_statuses[generation] = status
+            self.calculation_overlay.finish()
 
     @QtCore.pyqtSlot()
     def _apply_pending_scene_patch(self):
@@ -386,6 +402,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self._scene_patch_notification_pending = False
             self._scene_patch_bridge_error = None
         self.statusBar().showMessage(message)
+        self.calculation_overlay.finish()
         self._runner_supervisor.cancel_current()
 
     def closeEvent(self, event):
