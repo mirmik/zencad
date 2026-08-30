@@ -216,6 +216,28 @@
             "to_Vec": {
               "status": "implemented",
               "typed": "Vector3.to_ocp()"
+            },
+            "points": {
+              "status": "implemented",
+              "typed": "Runtime.points() -> list[Point3]"
+            },
+            "points2": {
+              "status": "implemented",
+              "typed": "Runtime.points2() -> list[list[Point3]]"
+            },
+            "vectors": {
+              "status": "implemented",
+              "typed": "Runtime.vectors() -> list[Vector3]"
+            },
+            "to_Vertex": {
+              "status": "implemented",
+              "typed": "Runtime.to_Vertex() -> TopoDS_Vertex",
+              "materialization": "explicit native conversion"
+            },
+            "to_GeomPoint": {
+              "status": "implemented",
+              "typed": "Runtime.to_GeomPoint() -> Geom_CartesianPoint",
+              "materialization": "explicit native conversion"
             }
           }
         },
@@ -263,6 +285,26 @@
             "__mul__": {
               "status": "implemented",
               "typed": "Vector2/Vector3 scalar multiplication"
+            },
+            "__div__": {
+              "status": "repair",
+              "typed": "Vector3.__truediv__(); Point3 division is rejected"
+            },
+            "__iadd__": {
+              "status": "implemented",
+              "typed": "immutable typed point/vector __iadd__ algebra"
+            },
+            "__isub__": {
+              "status": "implemented",
+              "typed": "immutable typed point/vector __isub__ algebra"
+            },
+            "__lt__": {
+              "status": "implemented",
+              "typed": "Point3/Vector3 lexicographic comparison"
+            },
+            "__gt__": {
+              "status": "implemented",
+              "typed": "Point3/Vector3 lexicographic comparison"
             },
             "Pnt": {
               "status": "implemented",
@@ -316,6 +358,18 @@
             "to_vector3": {
               "status": "implemented",
               "typed": "Point3/Vector3.to_vector3() -> Vector3"
+            },
+            "x": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.x -> Scalar"
+            },
+            "y": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.y -> Scalar"
+            },
+            "z": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.z -> Scalar"
             }
           }
         },
@@ -367,6 +421,10 @@
             "to_array": {
               "status": "implemented",
               "typed": "Quaternion.value()"
+            },
+            "__str__": {
+              "status": "implemented",
+              "typed": "Quaternion.__str__()"
             }
           }
         }
@@ -485,11 +543,15 @@
             },
             "rotation": {
               "status": "implemented",
-              "typed": "Transform.rotation() -> Quaternion"
+              "typed": "Transform.rotation_axis_angle() -> tuple[Vector3, Scalar]"
             },
             "rotation_quat": {
               "status": "implemented",
               "typed": "Transform.rotation() -> Quaternion"
+            },
+            "rotation_euler": {
+              "status": "implemented",
+              "typed": "Transform.rotation_euler() -> Vector3"
             },
             "__call__": {
               "status": "implemented",
@@ -498,6 +560,16 @@
             "__mul__": {
               "status": "implemented",
               "typed": "Transform.then(Transform)"
+            },
+            "__repr__": {
+              "status": "implemented",
+              "typed": "Transform.__repr__()",
+              "materialization": "explicit representation"
+            },
+            "__str__": {
+              "status": "implemented",
+              "typed": "Transform.__str__()",
+              "materialization": "explicit representation"
             }
           }
         },
@@ -537,9 +609,33 @@
             "materialization": "none"
           },
           "overrides": {
+            "multitrans": {
+              "status": "implemented",
+              "typed": "Runtime.multitrans() -> MultiTransform"
+            },
             "nulltrans": {
               "status": "implemented",
               "typed": "Runtime.identity_transform()"
+            },
+            "rotate_array": {
+              "status": "implemented",
+              "typed": "Runtime.rotate_array() -> MultiTransform"
+            },
+            "rotate_array2": {
+              "status": "implemented",
+              "typed": "Runtime.rotate_array2() -> MultiTransform"
+            },
+            "short_rotate": {
+              "status": "implemented",
+              "typed": "Runtime.short_rotate() -> Transform"
+            },
+            "sqrmirror": {
+              "status": "implemented",
+              "typed": "Runtime.sqrmirror() -> MultiTransform"
+            },
+            "sqrtrans": {
+              "status": "implemented",
+              "typed": "Runtime.sqrtrans() -> MultiTransform"
             }
           }
         },
@@ -552,7 +648,17 @@
             "typed": "typed MultiTransform sequence for {name}",
             "materialization": "iteration materializes produced transforms/shapes"
           },
-          "overrides": {}
+          "overrides": {
+            "@type": {
+              "status": "implemented",
+              "typed": "MultiTransform"
+            },
+            "__call__": {
+              "status": "implemented",
+              "typed": "MultiTransform.__call__() -> Shape | list[Shape]",
+              "materialization": "none; returned Shape handles retain their graphs"
+            }
+          }
         }
       ]
     },

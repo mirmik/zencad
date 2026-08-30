@@ -10,6 +10,9 @@ def value_transform_compatibility(runtime: typed.Runtime) -> None:
     point = assert_type(runtime.point3(1, scalar), typed.Point3)
     vector = assert_type(runtime.vector3((1, 2, 3)), typed.Vector3)
     quaternion = assert_type(runtime.quat((0, 0, 0, 1)), typed.Quaternion)
+    assert_type(runtime.points(((1, 2, 3), point)), list[typed.Point3])
+    assert_type(runtime.points2((((1, 2, 3),),)), list[list[typed.Point3]])
+    assert_type(runtime.vectors(((1, 2, 3), vector)), list[typed.Vector3])
 
     assert_type(point.to_vector3(), typed.Vector3)
     assert_type(vector.to_point3(), typed.Point3)
@@ -36,6 +39,8 @@ def value_transform_compatibility(runtime: typed.Runtime) -> None:
     assert_type(transform.inverse_transform_point(point), typed.Point3)
     assert_type(transform.inverse_transform_vector(vector), typed.Vector3)
     assert_type(transform.rotation_quat(), typed.Quaternion)
+    assert_type(transform.rotation_euler(), typed.Vector3)
+    assert_type(transform.rotation_axis_angle(), tuple[typed.Vector3, typed.Scalar])
 
     solid = runtime.box(1)
     assert_type(solid.move(vector), typed.Solid)
@@ -45,3 +50,15 @@ def value_transform_compatibility(runtime: typed.Runtime) -> None:
     assert_type(solid.rotZ(scalar), typed.Solid)
     assert_type(solid.scale(scalar, point), typed.Solid)
     assert_type(solid.mirrorXY(), typed.Solid)
+
+    multi = assert_type(
+        runtime.multitrans((runtime.nulltrans(), transform), True, False),
+        typed.MultiTransform,
+    )
+    assert_type(multi.items(solid), list[typed.Solid])
+    assert_type(multi.fused(solid), typed.Shape)
+    assert_type(multi(solid), typed.Shape | list[typed.Solid])
+    assert_type(runtime.rotate_array(4), typed.MultiTransform)
+    assert_type(runtime.rotate_array2(4, scalar), typed.MultiTransform)
+    assert_type(runtime.sqrmirror(), typed.MultiTransform)
+    assert_type(runtime.short_rotate(vector, (0, 1, 0)), typed.Transform)

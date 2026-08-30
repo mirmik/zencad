@@ -12,6 +12,7 @@ import math
 from typing import Callable, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Vertex
+from OCP.Geom import Geom_CartesianPoint
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
 from evalcache.v2 import (
     CachePolicy,
@@ -34,6 +35,7 @@ from . import _transform_operations as transform_ops
 from ._core import State, require_same_runtime
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
+from .exttrans import MultiTransform
 from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .topology import (
     EDGE_SPEC,
@@ -615,6 +617,21 @@ class Runtime:
             runtime=self,
         )
 
+    def points(self, values: Sequence[object], /) -> list[Point3]:
+        return [self.point3(value) for value in values]
+
+    def points2(self, values: Sequence[Sequence[object]], /) -> list[list[Point3]]:
+        return [self.points(value) for value in values]
+
+    def vectors(self, values: Sequence[object], /) -> list[Vector3]:
+        return [self.vector3(value) for value in values]
+
+    def to_Vertex(self, value: object, /) -> TopoDS_Vertex:
+        return self.point3(value).Vtx()
+
+    def to_GeomPoint(self, value: object, /) -> Geom_CartesianPoint:
+        return Geom_CartesianPoint(self.point3(value).Pnt())
+
     def quaternion_axis_angle(
         self,
         axis: Vector3,
@@ -841,6 +858,91 @@ class Runtime:
     def mirrorO(self, *origin: object) -> Transform:
         return self.scale(-1, center=self.point3(*origin))
 
+    def multitransform(
+        self,
+        transforms: Sequence[Transform],
+        array: bool = False,
+        unit: bool = False,
+    ) -> MultiTransform:
+        return MultiTransform(transforms, runtime=self, array=array, unit=unit)
+
+    def multitrans(
+        self,
+        transforms: Sequence[Transform],
+        array: bool = False,
+        unit: bool = False,
+    ) -> MultiTransform:
+        return self.multitransform(transforms, array, unit)
+
+    def sqrmirror(
+        self,
+        array: bool = False,
+        unit: bool = False,
+    ) -> MultiTransform:
+        return self.multitransform(
+            (self.nulltrans(), self.mirrorYZ(), self.mirrorXZ(), self.mirrorZ()),
+            array,
+            unit,
+        )
+
+    def sqrtrans(
+        self,
+        array: bool = False,
+        unit: bool = False,
+    ) -> MultiTransform:
+        return self.sqrmirror(array, unit)
+
+    def rotate_array(
+        self,
+        n: int,
+        yaw: ScalarInput = 2 * math.pi,
+        endpoint: bool = False,
+        array: bool = False,
+        unit: bool = False,
+    ) -> MultiTransform:
+        fractions = _sample_fractions(n, endpoint)
+        transforms = [self.rotateZ(_as_scalar(self, yaw) * item) for item in fractions]
+        return self.multitransform(transforms, array, unit)
+
+    def rotate_array2(
+        self,
+        n: int,
+        r: ScalarInput | None = None,
+        yaw: tuple[ScalarInput, ScalarInput] = (0, 2 * math.pi),
+        roll: tuple[ScalarInput, ScalarInput] = (0, 0),
+        endpoint: bool = False,
+        array: bool = False,
+        unit: bool = False,
+    ) -> MultiTransform:
+        fractions = _sample_fractions(n, endpoint)
+        yaw_values = _sample_scalar_range(self, yaw, fractions, "yaw")
+        roll_values = _sample_scalar_range(self, roll, fractions, "roll")
+        radius: ScalarInput = 0 if r is None else r
+        transforms = [
+            self.rotateZ(yaw_value)
+            * self.right(radius)
+            * self.rotateX(math.pi / 2)
+            * self.rotateZ(roll_value)
+            for yaw_value, roll_value in zip(yaw_values, roll_values)
+        ]
+        return self.multitransform(transforms, array, unit)
+
+    def short_rotate(
+        self,
+        source: Vector3 | Sequence[ScalarInput],
+        target: Vector3 | Sequence[ScalarInput],
+        /,
+    ) -> Transform:
+        resolved_source = self.vector3(source)
+        resolved_target = self.vector3(target)
+        state = self._value_state(
+            transform_ops.shortest_rotation_transform,
+            result=TRANSFORM_SPEC,
+            args=(resolved_source._state, resolved_target._state),
+            operation_id="zencad.typed.transform.shortest_rotation",
+        )
+        return Transform._from_state(self, state)
+
 
 def _require_bool(value: object, name: str) -> None:
     if not isinstance(value, bool):
@@ -885,6 +987,34 @@ def _compat_components3(
         cast(ScalarInput, padded[1]),
         cast(ScalarInput, padded[2]),
     )
+
+
+def _sample_fractions(n: int, endpoint: bool) -> tuple[float, ...]:
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise TypeError("sample count must be int")
+    if n < 0:
+        raise ValueError("sample count must be non-negative")
+    if not isinstance(endpoint, bool):
+        raise TypeError("endpoint must be bool")
+    if n == 0:
+        return ()
+    if n == 1:
+        return (0.0,)
+    divisor = n - 1 if endpoint else n
+    return tuple(index / divisor for index in range(n))
+
+
+def _sample_scalar_range(
+    runtime: Runtime,
+    bounds: tuple[ScalarInput, ScalarInput],
+    fractions: tuple[float, ...],
+    name: str,
+) -> list[Scalar]:
+    if not isinstance(bounds, tuple) or len(bounds) != 2:
+        raise TypeError(f"{name} must contain two scalar bounds")
+    start = _as_scalar(runtime, bounds[0])
+    delta = _as_scalar(runtime, bounds[1]) - start
+    return [start + delta * fraction for fraction in fractions]
 
 
 def _require_positive_number(value: Number, name: str) -> float:

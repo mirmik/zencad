@@ -303,6 +303,18 @@ class _Coordinate3Handle(_CoordinateHandle[ValueT]):
     def Vtx(self) -> TopoDS_Vertex:
         return BRepBuilderAPI_MakeVertex(self.Pnt()).Vertex()
 
+    def __lt__(self, other: Point3 | Vector3) -> bool:
+        if not isinstance(other, (Point3, Vector3)):
+            return NotImplemented
+        require_same_runtime(self.runtime, other)
+        return self.value() < other.value()
+
+    def __gt__(self, other: Point3 | Vector3) -> bool:
+        if not isinstance(other, (Point3, Vector3)):
+            return NotImplemented
+        require_same_runtime(self.runtime, other)
+        return self.value() > other.value()
+
 
 class Point2(_CoordinateHandle[ops.Point2Value]):
     @overload
@@ -686,6 +698,9 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
         )
         return Point3._from_state(self.runtime, state)
 
+    def __iadd__(self, other: Vector3) -> Point3:
+        return self + other
+
     @overload
     def __sub__(self, other: Point3) -> Vector3: ...
 
@@ -711,6 +726,9 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
             operation_id="zencad.typed.point3.subtract_vector",
         )
         return Point3._from_state(self.runtime, state)
+
+    def __isub__(self, other: Vector3) -> Point3:
+        return self - other
 
     def distance_to(self, other: Point3) -> Scalar:
         if not isinstance(other, Point3):
@@ -841,6 +859,9 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
         )
         return Vector3._from_state(self.runtime, state)
 
+    def __iadd__(self, other: Vector3) -> Vector3:
+        return self + other
+
     def __sub__(self, other: Vector3) -> Vector3:
         if not isinstance(other, Vector3):
             raise TypeError("Vector3 can only subtract Vector3")
@@ -852,6 +873,9 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             operation_id="zencad.typed.vector3.subtract",
         )
         return Vector3._from_state(self.runtime, state)
+
+    def __isub__(self, other: Vector3) -> Vector3:
+        return self - other
 
     def __mul__(self, factor: ScalarInput) -> Vector3:
         state = self.runtime._value_state(

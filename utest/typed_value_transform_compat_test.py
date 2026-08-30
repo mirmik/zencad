@@ -2,6 +2,8 @@ import math
 import unittest
 
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
+from OCP.Geom import Geom_CartesianPoint
+from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_Pnt, gp_Quaternion, gp_Vec
 from evalcache.v2 import EvaluationMode, Expression
 
@@ -71,6 +73,30 @@ class TypedValueTransformCompatibilityTest(unittest.TestCase):
         self.assertIsInstance(point.Pnt(), gp_Pnt)
         self.assertIsInstance(vector.Vec(), gp_Vec)
         self.assertFalse(point.Vtx().IsNull())
+
+    def test_bulk_value_and_native_conversion_helpers(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        points = runtime.points(((1, 2), gp_Pnt(3, 4, 5)))
+        nested = runtime.points2((((1, 2, 3),), ((4, 5, 6),)))
+        vectors = runtime.vectors(((7, 8, 9), points[0]))
+
+        self.assertEqual(
+            [point.value() for point in points], [(1.0, 2.0, 0.0), (3.0, 4.0, 5.0)]
+        )
+        self.assertEqual(nested[1][0].value(), (4.0, 5.0, 6.0))
+        self.assertEqual(vectors[1].value(), (1.0, 2.0, 0.0))
+        self.assertIsInstance(runtime.to_Vertex((1, 2, 3)), TopoDS_Vertex)
+        self.assertIsInstance(runtime.to_GeomPoint(points[0]), Geom_CartesianPoint)
+
+        self.assertLess(runtime.point3(1, 2, 3), runtime.vector3(1, 2, 4))
+        point = runtime.point3(1, 2, 3)
+        point += runtime.vector3(1, 1, 1)
+        self.assertIs(type(point), typed.Point3)
+        self.assertEqual(point.value(), (2.0, 3.0, 4.0))
+        vector = runtime.vector3(3, 4, 5)
+        vector -= runtime.vector3(1, 1, 1)
+        self.assertIs(type(vector), typed.Vector3)
+        self.assertEqual(vector.value(), (2.0, 3.0, 4.0))
 
     def test_runtime_transform_aliases_match_legacy_geometry(self):
         runtime = typed.Runtime.deferred(cache=False)
@@ -145,6 +171,53 @@ class TypedValueTransformCompatibilityTest(unittest.TestCase):
         ):
             self.assertAlmostEqual(actual, expected, places=12)
         self.assertIs(type(transform.rotation_quat()), typed.Quaternion)
+        rotation_vector = transform.rotation_euler().value()
+        self.assertAlmostEqual(rotation_vector[0], math.pi / 4, places=12)
+        self.assertAlmostEqual(rotation_vector[1], 0.0, places=12)
+        self.assertAlmostEqual(rotation_vector[2], 0.0, places=12)
+        axis, angle = transform.rotation_axis_angle()
+        self.assertEqual(axis.value(), (1.0, 0.0, 0.0))
+        self.assertAlmostEqual(float(angle), math.pi / 4, places=12)
+        self.assertTrue(str(transform).startswith("Transform(matrix="))
+        self.assertEqual(str(runtime.quat((0, 0, 0, 1))), "quat(0.0,0.0,0.0,1.0)")
+
+    def test_multi_transform_helpers_keep_typed_members(self):
+        events = []
+        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
+        solid = runtime.box(1)
+        transforms = runtime.rotate_array(4, array=True)
+
+        self.assertIs(type(transforms), typed.MultiTransform)
+        self.assertEqual(len(transforms), 4)
+        items = transforms(solid)
+        self.assertIsInstance(items, list)
+        self.assertEqual(len(items), 4)
+        self.assertTrue(all(type(item) is typed.Solid for item in items))
+        self.assertTrue(all(isinstance(item._state, Expression) for item in items))
+        self.assertEqual(events, [])
+
+        fused = runtime.sqrmirror()(solid)
+        self.assertIs(type(fused), typed.Shape)
+        self.assertFalse(fused.native().IsNull())
+        self.assertTrue(events)
+
+        radial = runtime.rotate_array2(2, 3, endpoint=True, array=True)(solid)
+        self.assertIsInstance(radial, list)
+        self.assertEqual(len(radial), 2)
+
+    def test_short_rotate_handles_parallel_and_opposite_vectors(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        source = runtime.vector3(1, 0, 0)
+
+        self.assertEqual(runtime.short_rotate(source, source), runtime.nulltrans())
+        for target in (runtime.vector3(0, 1, 0), runtime.vector3(-1, 0, 0)):
+            rotated = runtime.short_rotate(source, target)(source).normalized().value()
+            expected = target.normalized().value()
+            for actual, wanted in zip(rotated, expected):
+                self.assertAlmostEqual(actual, wanted, places=12)
+
+        with self.assertRaisesRegex(ValueError, "cannot be zero-length"):
+            runtime.short_rotate(runtime.vector3(), source).matrix()
 
     def test_compatibility_helpers_reject_foreign_runtimes(self):
         first = typed.Runtime.deferred(cache=False)

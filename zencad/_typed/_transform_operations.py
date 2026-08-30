@@ -236,6 +236,42 @@ def rotation_transform(rotation: QuaternionValue) -> TransformValue:
     return TransformValue(1.0, rotation, _ZERO_VECTOR)
 
 
+def shortest_rotation_transform(
+    source: Vector3Value,
+    target: Vector3Value,
+) -> TransformValue:
+    source_length = math.hypot(source.x, source.y, source.z)
+    target_length = math.hypot(target.x, target.y, target.z)
+    if source_length == 0.0 or target_length == 0.0:
+        raise ValueError("shortest rotation vectors cannot be zero-length")
+    sx, sy, sz = (
+        source.x / source_length,
+        source.y / source_length,
+        source.z / source_length,
+    )
+    tx, ty, tz = (
+        target.x / target_length,
+        target.y / target_length,
+        target.z / target_length,
+    )
+    dot = max(-1.0, min(1.0, sx * tx + sy * ty + sz * tz))
+    if dot >= 1.0 - 1e-12:
+        return _IDENTITY_TRANSFORM
+    if dot <= -1.0 + 1e-12:
+        # Cross with the least-aligned basis to choose a deterministic axis.
+        if abs(sx) <= abs(sy) and abs(sx) <= abs(sz):
+            axis = Vector3Value(0.0, sz, -sy)
+        elif abs(sy) <= abs(sz):
+            axis = Vector3Value(-sz, 0.0, sx)
+        else:
+            axis = Vector3Value(sy, -sx, 0.0)
+        return rotation_transform(quaternion_axis_angle(axis, math.pi))
+    cross_x = sy * tz - sz * ty
+    cross_y = sz * tx - sx * tz
+    cross_z = sx * ty - sy * tx
+    return rotation_transform(quaternion(cross_x, cross_y, cross_z, 1.0 + dot))
+
+
 def scale_transform(factor: float, center: Point3Value) -> TransformValue:
     if not math.isfinite(factor) or abs(factor) <= sys.float_info.min:
         raise ValueError("typed transform scale magnitude must exceed the OCP minimum")
@@ -366,6 +402,37 @@ def transform_scale(value: TransformValue) -> float:
 
 def transform_rotation(value: TransformValue) -> QuaternionValue:
     return value.rotation
+
+
+def transform_rotation_vector(value: TransformValue) -> Vector3Value:
+    rotation = value.rotation
+    sine = math.hypot(rotation.x, rotation.y, rotation.z)
+    if sine == 0.0:
+        return _ZERO_VECTOR
+    angle = 2.0 * math.atan2(sine, rotation.w)
+    return Vector3Value(
+        rotation.x * angle / sine,
+        rotation.y * angle / sine,
+        rotation.z * angle / sine,
+    )
+
+
+def transform_rotation_axis(value: TransformValue) -> Vector3Value:
+    rotation = value.rotation
+    sine = math.hypot(rotation.x, rotation.y, rotation.z)
+    if sine == 0.0:
+        return Vector3Value(0.0, 0.0, 1.0)
+    return Vector3Value(
+        rotation.x / sine,
+        rotation.y / sine,
+        rotation.z / sine,
+    )
+
+
+def transform_rotation_angle(value: TransformValue) -> float:
+    rotation = value.rotation
+    sine = math.hypot(rotation.x, rotation.y, rotation.z)
+    return 2.0 * math.atan2(sine, rotation.w)
 
 
 def transform_translation(value: TransformValue) -> Vector3Value:

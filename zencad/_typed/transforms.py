@@ -201,6 +201,13 @@ class Quaternion(Handle[ops.QuaternionValue]):
         """Materialize a fresh mutable OCP quaternion."""
         return ops.quaternion_to_ocp(self._resolved())
 
+    def __str__(self) -> str:
+        x, y, z, w = self.value()
+        return f"quat({x},{y},{z},{w})"
+
+    def __repr__(self) -> str:
+        return str(self)
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Quaternion):
             return False
@@ -346,6 +353,33 @@ class Transform(Handle[ops.TransformValue]):
     def rotation_quat(self) -> Quaternion:
         return self.rotation
 
+    def rotation_euler(self) -> Vector3:
+        state = self.runtime._value_state(
+            ops.transform_rotation_vector,
+            result=VECTOR3_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.transform.rotation_euler",
+        )
+        return Vector3._from_state(self.runtime, state)
+
+    def rotation_axis_angle(self) -> tuple[Vector3, Scalar]:
+        axis_state = self.runtime._value_state(
+            ops.transform_rotation_axis,
+            result=VECTOR3_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.transform.rotation_axis",
+        )
+        angle_state = self.runtime._value_state(
+            ops.transform_rotation_angle,
+            result=SCALAR_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.transform.rotation_angle",
+        )
+        return (
+            Vector3._from_state(self.runtime, axis_state),
+            Scalar._from_state(self.runtime, angle_state),
+        )
+
     def matrix(
         self,
     ) -> tuple[
@@ -366,6 +400,12 @@ class Transform(Handle[ops.TransformValue]):
     def to_ocp(self) -> gp_Trsf:
         """Materialize a fresh mutable OCP transform."""
         return ops.transform_to_ocp(self._resolved())
+
+    def __str__(self) -> str:
+        return f"Transform(matrix={self.matrix()!r})"
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Transform):
