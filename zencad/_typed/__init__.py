@@ -4,6 +4,7 @@ Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
 from .runtime import Runtime
+from .curves import Curve, Curve2
 from .topology import (
     Compound,
     CompSolid,
@@ -38,6 +39,8 @@ from .values import (
 __all__ = [
     "Compound",
     "CompSolid",
+    "Curve",
+    "Curve2",
     "DeferredSequence",
     "Edge",
     "Face",

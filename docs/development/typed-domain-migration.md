@@ -2,8 +2,9 @@
 
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
 > private typed vertical slice, Scalar/Point/Vector/Quaternion/Transform
-> algebra, and the complete private Shape/topology stage are implemented; no
-> public typed-domain cutover described here is implemented yet. The accepted
+> algebra, complete private Shape/topology stage, and private Curve/Curve2
+> checkpoint are implemented; no public typed-domain cutover described here is
+> implemented yet. The accepted
 > direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
@@ -546,11 +547,65 @@ Verification on 2026-08-30 after the topology-core checkpoint:
 
 ## Stage 6: remaining geometry and boundaries
 
+Status: in progress. The private `Curve` and `Curve2` checkpoint is complete;
+Surface, laws, BoundaryBox, MeshData, and the integration boundaries remain.
+
 Migrate curves, 2D curves, surfaces, sweep laws, boundary boxes, triangulation,
 mesh values, conversion, display, scene transport, and file artifacts.
 
 Exit gate: every normal geometry result belongs to a documented domain type;
 all materialization boundaries are explicit and covered by tests.
+
+### Curve and Curve2 contract
+
+`Curve` and `Curve2` are stable handles containing either an immutable curve
+snapshot or an `Expression` that produces one. They do not inherit from OCP or
+`evalcache.LazyObject`, and their visible class does not depend on immediate/
+deferred evaluation or cache policy. This checkpoint remains private under
+`zencad._typed`; the legacy public curve API has not changed.
+
+The representative construction surface is:
+
+- `Runtime.line(Point3, Vector3)`, `circle(ScalarInput)`, and
+  `ellipse(major, minor)`, returning `Curve`;
+- `Runtime.segment2(Point2, Point2)` and `ellipse2(major, minor)`, returning
+  `Curve2`;
+- `Runtime.trim_curve2(curve, start, end)` and `Curve2.trim(start, end)`,
+  preserving `Curve2`.
+
+All point, direction, radius, and trim arguments remain expression-aware.
+`point(parameter)` returns `Point3` or `Point2`; `tangent(parameter)` returns
+the OCCT first derivative as `Vector3` or `Vector2`; and `range()` returns a
+pair of graph-preserving `Scalar` handles. Reading those methods does not
+materialize a deferred upstream graph. Calling `value()` on the returned
+point/vector, converting a range endpoint to `float`, `native()`, or
+`.unlazy()` is an explicit materialization boundary.
+
+The resolved representation is not a mutable OCP handle. It is frozen bytes
+written by OCCT's compact `GeomTools_CurveSet` or `GeomTools_Curve2dSet`
+format, with a family-specific deterministic evalcache key. `from_ocp()`
+captures that snapshot immediately; `native()` decodes a fresh OCP object on
+every call. Mutating either the source object or a returned native object
+therefore cannot alter the typed handle.
+
+Persistent cache records use distinct non-executable serializers and named
+`curve.geom` / `curve2.geom` artifacts. Payload tags, serializer IDs, result
+type IDs, and validators prevent a 2D curve record from being accepted as a
+3D curve or vice versa. Corrupt or wrong-family records are rejected and
+recomputed by evalcache's normal recovery path.
+
+Verification on 2026-08-30 after the Curve/Curve2 checkpoint:
+
+- `pytest -q`: 245 tests;
+- strict mypy with `--disallow-any-expr`: all six representative typed
+  contracts pass;
+- runtime tests cover exact handle and query result types in the four
+  evaluation/cache policy combinations, graph-aware scalar/point/vector
+  inputs, input validation, owned OCP snapshots, and bounded `.unlazy()`;
+- cache tests cover family-specific artifacts, wrong-family rejection,
+  fresh-runtime hits, and persistent reuse by a fresh process;
+- the installed-wheel smoke exercises both curve families outside the source
+  checkout.
 
 ## Stage 7: public cutover
 

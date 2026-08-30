@@ -11,6 +11,7 @@ from tempfile import TemporaryDirectory
 from evalcache.dircache_v2 import DirCache_v2
 from zencad.runtime import RunnerMessage, RunnerSupervisor
 import zencad
+from zencad import _typed as typed
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
 
 
@@ -43,6 +44,17 @@ def main():
         assert abs(restored.mass() - expected_mass) < 1e-8
         assert _to_stl(shape.unlazy(), str(stl_path), 0.1)
         assert stl_path.stat().st_size > 0
+
+        typed_runtime = typed.Runtime.deferred(cache=False)
+        curve = typed_runtime.circle(2)
+        curve2 = typed_runtime.segment2(
+            typed_runtime.point2(0, 0),
+            typed_runtime.point2(3, 0),
+        ).trim(0.5, 2.5)
+        assert type(curve) is typed.Curve
+        assert curve.point(0).value() == (2.0, 0.0, 0.0)
+        assert type(curve2) is typed.Curve2
+        assert curve2.point(0.5).value() == (0.5, 0.0)
 
         script_path = temporary_path / "headless_model.py"
         script_path.write_text(

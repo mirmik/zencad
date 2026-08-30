@@ -22,8 +22,10 @@ from evalcache.v2 import (
 )
 
 from . import _operations as ops
+from . import _curve_operations as curve_ops
 from . import _transform_operations as transform_ops
 from ._core import State, require_same_runtime
+from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .topology import (
     EDGE_SPEC,
     FACE_SPEC,
@@ -63,6 +65,8 @@ ResolvedT = TypeVar("ResolvedT")
 __all__ = [
     "Compound",
     "CompSolid",
+    "Curve",
+    "Curve2",
     "DeferredSequence",
     "Edge",
     "Face",
@@ -246,6 +250,99 @@ class Runtime:
             operation_id="zencad.typed.sphere",
         )
         return Solid._from_state(self, expression)
+
+    def line(self, origin: Point3, direction: Vector3, /) -> Curve:
+        if not isinstance(origin, Point3):
+            raise TypeError("line origin must be Point3")
+        if not isinstance(direction, Vector3):
+            raise TypeError("line direction must be Vector3")
+        require_same_runtime(self, origin)
+        require_same_runtime(self, direction)
+        expression = self._expression(
+            curve_ops.line,
+            result=CURVE_SPEC,
+            args=(origin._state, direction._state),
+            operation_id="zencad.typed.line",
+        )
+        return Curve._from_state(self, expression)
+
+    def circle(self, radius: ScalarInput, /) -> Curve:
+        expression = self._expression(
+            curve_ops.circle,
+            result=CURVE_SPEC,
+            args=(_scalar_state(self, radius),),
+            operation_id="zencad.typed.circle",
+        )
+        return Curve._from_state(self, expression)
+
+    def ellipse(
+        self,
+        major_radius: ScalarInput,
+        minor_radius: ScalarInput,
+        /,
+    ) -> Curve:
+        expression = self._expression(
+            curve_ops.ellipse,
+            result=CURVE_SPEC,
+            args=(
+                _scalar_state(self, major_radius),
+                _scalar_state(self, minor_radius),
+            ),
+            operation_id="zencad.typed.ellipse",
+        )
+        return Curve._from_state(self, expression)
+
+    def segment2(self, start: Point2, end: Point2, /) -> Curve2:
+        if not isinstance(start, Point2) or not isinstance(end, Point2):
+            raise TypeError("segment2 expects Point2 endpoints")
+        require_same_runtime(self, start)
+        require_same_runtime(self, end)
+        expression = self._expression(
+            curve_ops.segment2,
+            result=CURVE2_SPEC,
+            args=(start._state, end._state),
+            operation_id="zencad.typed.segment2",
+        )
+        return Curve2._from_state(self, expression)
+
+    def ellipse2(
+        self,
+        major_radius: ScalarInput,
+        minor_radius: ScalarInput,
+        /,
+    ) -> Curve2:
+        expression = self._expression(
+            curve_ops.ellipse2,
+            result=CURVE2_SPEC,
+            args=(
+                _scalar_state(self, major_radius),
+                _scalar_state(self, minor_radius),
+            ),
+            operation_id="zencad.typed.ellipse2",
+        )
+        return Curve2._from_state(self, expression)
+
+    def trim_curve2(
+        self,
+        curve: Curve2,
+        start: ScalarInput,
+        end: ScalarInput,
+        /,
+    ) -> Curve2:
+        if not isinstance(curve, Curve2):
+            raise TypeError("trim_curve2 expects Curve2")
+        require_same_runtime(self, curve)
+        expression = self._expression(
+            curve_ops.trim_curve2,
+            result=CURVE2_SPEC,
+            args=(
+                curve._state,
+                _scalar_state(self, start),
+                _scalar_state(self, end),
+            ),
+            operation_id="zencad.typed.trim_curve2",
+        )
+        return Curve2._from_state(self, expression)
 
     def segment(self, start: Point3, end: Point3, /) -> Edge:
         _require_points(self, (start, end), minimum=2, name="segment")
