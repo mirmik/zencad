@@ -11,6 +11,7 @@ from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 from ._curve_operations import Curve2Value, CurveValue
 from ._bound_operations import BoundaryBoxValue
+from ._mesh_operations import MeshValue, decode_mesh_value, encode_mesh_value
 from ._surface_operations import SurfaceValue
 
 
@@ -19,6 +20,7 @@ _CURVE_PAYLOAD = b"zencad.typed.curve\x00v2"
 _CURVE2_PAYLOAD = b"zencad.typed.curve2\x00v2"
 _SURFACE_PAYLOAD = b"zencad.typed.surface\x00v1"
 _BOUNDARY_BOX_PAYLOAD = b"zencad.typed.boundary-box\x00v1"
+_MESH_PAYLOAD = b"zencad.typed.mesh\x00v1"
 
 
 class ShapeBrepSerializer:
@@ -167,3 +169,30 @@ class BoundaryBoxSerializer:
         if len(data) != 49 or data[:1] != b"B":
             raise ValueError("invalid typed BoundaryBox cache payload")
         return BoundaryBoxValue(struct.unpack(">6d", data[1:]))
+
+
+class MeshSerializer:
+    """Store full-fidelity indexed mesh data in one deterministic artifact."""
+
+    serializer_id = "zencad.mesh.binary-artifact.v1"
+
+    def dumps(self, value: MeshValue) -> SerializedValue:
+        if not isinstance(value, MeshValue):
+            raise TypeError("mesh serializer requires MeshValue")
+        return SerializedValue(
+            payload=_MESH_PAYLOAD,
+            artifacts=(
+                Artifact(
+                    name="mesh.bin",
+                    data=encode_mesh_value(value),
+                    media_type="application/vnd.zencad.typed-mesh",
+                ),
+            ),
+        )
+
+    def loads(self, value: SerializedValue) -> MeshValue:
+        if value.payload != _MESH_PAYLOAD:
+            raise ValueError("unsupported typed MeshData cache payload")
+        if len(value.artifacts) != 1 or value.artifacts[0].name != "mesh.bin":
+            raise ValueError("typed MeshData cache record must have mesh.bin")
+        return decode_mesh_value(value.artifacts[0].data)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+import math
 from typing import TYPE_CHECKING, Callable, ClassVar, Generic, TypeVar, cast, overload
 
 from OCP.TopAbs import (
@@ -44,13 +45,16 @@ from zencad.runtime.scene_protocol import encode_brep
 
 from . import _operations as ops
 from . import _bound_operations as bound_ops
+from . import _mesh_operations as mesh_ops
 from ._core import Handle, State, require_same_runtime
 from ._serialization import ShapeBrepSerializer
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
+from .meshes import MESH_SPEC, MeshData
 from .transforms import Transform
 from .values import (
     POINT3_SPEC,
     SCALAR_SPEC,
+    Number,
     Point3,
     Scalar,
     ScalarInput,
@@ -133,6 +137,24 @@ _SHELL_SEQUENCE_SPEC = _topology_sequence_spec("Shell", TopAbs_SHELL)
 _SOLID_SEQUENCE_SPEC = _topology_sequence_spec("Solid", TopAbs_SOLID)
 _COMPOUND_SEQUENCE_SPEC = _topology_sequence_spec("Compound", TopAbs_COMPOUND)
 _COMPSOLID_SEQUENCE_SPEC = _topology_sequence_spec("CompSolid", TopAbs_COMPSOLID)
+
+
+def _mesh_positive_number(value: Number, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be int or float")
+    result = float(value)
+    if not math.isfinite(result) or result <= 0:
+        raise ValueError(f"{name} must be finite and positive")
+    return result
+
+
+def _mesh_crease_angle(value: Number) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError("crease_angle must be int or float")
+    result = float(value)
+    if not math.isfinite(result) or not 0 <= result <= math.pi:
+        raise ValueError("crease_angle must be finite and between zero and pi")
+    return result
 
 
 class Shape(Handle[ResolvedShape]):
@@ -412,6 +434,40 @@ class Shape(Handle[ResolvedShape]):
         """Short alias for :meth:`boundbox`."""
         return self.boundbox()
 
+    def to_mesh(
+        self,
+        linear_deflection: Number = 0.5,
+        angular_deflection: Number = 0.6,
+        *,
+        crease_angle: Number = math.radians(32),
+        relative: bool = False,
+        parallel: bool = True,
+        weld_tolerance: Number | None = None,
+    ) -> MeshData:
+        """Create a stable indexed mesh while retaining this shape graph."""
+        if not isinstance(relative, bool) or not isinstance(parallel, bool):
+            raise TypeError("relative and parallel must be bool")
+        resolved_weld_tolerance = (
+            None
+            if weld_tolerance is None
+            else _mesh_positive_number(weld_tolerance, "weld_tolerance")
+        )
+        expression = self.runtime._expression(
+            mesh_ops.mesh_shape,
+            result=MESH_SPEC,
+            args=(
+                self._state,
+                _mesh_positive_number(linear_deflection, "linear_deflection"),
+                _mesh_positive_number(angular_deflection, "angular_deflection"),
+                _mesh_crease_angle(crease_angle),
+                relative,
+                parallel,
+                resolved_weld_tolerance,
+            ),
+            operation_id="zencad.typed.shape.to-mesh",
+        )
+        return MeshData._from_state(self.runtime, expression)
+
     def native(self) -> TopoDS_Shape:
         """Materialize an independent snapshot at the explicit OCP boundary."""
         return ops.shape_to_ocp(self._resolved())
@@ -458,6 +514,26 @@ class Wire(Shape):
 class Face(Shape):
     __slots__ = ()
     _result_spec = FACE_SPEC
+
+    def triangulate(
+        self,
+        linear_deflection: Number = 0.5,
+        angular_deflection: Number = 0.6,
+        *,
+        crease_angle: Number = math.radians(32),
+        relative: bool = False,
+        parallel: bool = True,
+        weld_tolerance: Number | None = None,
+    ) -> MeshData:
+        """Truthful typed replacement for legacy ``triangulate_face``."""
+        return self.to_mesh(
+            linear_deflection,
+            angular_deflection,
+            crease_angle=crease_angle,
+            relative=relative,
+            parallel=parallel,
+            weld_tolerance=weld_tolerance,
+        )
 
     def native(self) -> TopoDS_Face:
         return as_face(super().native())

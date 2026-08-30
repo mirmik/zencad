@@ -549,7 +549,8 @@ Verification on 2026-08-30 after the topology-core checkpoint:
 
 Status: in progress. The private `Curve`, `Curve2`, representative
 `Surface`/sweep-law, and `BoundaryBox`/structured-range checkpoints are
-complete; MeshData, richer laws, and the integration boundaries remain.
+complete. The private `MeshData` checkpoint is also complete; richer laws and
+the remaining geometry integration boundary remain.
 
 Migrate curves, 2D curves, surfaces, sweep laws, boundary boxes, triangulation,
 mesh values, conversion, display, scene transport, and file artifacts.
@@ -714,6 +715,58 @@ Verification on 2026-08-30 after the BoundaryBox/structured-range checkpoint:
   return isolation, and the explicit void-box representation;
 - the installed-wheel smoke exercises `Interval`, `BoundaryBox`, and
   `BoundaryBoxRecord` outside the source checkout.
+
+### MeshData and triangulation contract
+
+`MeshData` is the stable typed replacement for both compact mesh extraction
+and the historically misdeclared `triangulate_face()` result. It contains a
+frozen, tuple-backed `MeshValue` or an expression producing one; evaluation
+policy and cache policy never change the visible handle class.
+`Shape.to_mesh(...)` retains the source shape graph, while
+`Face.triangulate(...)` provides the truthful face-specific spelling. The
+legacy public functions remain unchanged until the atomic public cutover.
+
+The resolved mesh stores finite positions and non-zero normals, valid indexed
+triangles, exactly one source face ID per triangle, and the dropped-degenerate
+triangle count. Every row and outer collection is a tuple. Meshing controls
+such as linear/angular deflection, crease angle, relative mode, parallel mode,
+and weld tolerance are eagerly validated policy values rather than hidden
+geometry graph inputs.
+
+`value()` returns a frozen `MeshDataRecord`. Collection and count properties
+are explicit materialization boundaries because ordinary Python and renderer
+consumers need concrete indexed arrays and integer sizes. `boundbox()` remains
+composable and returns typed `BoundaryBox` without first exposing mesh rows.
+`native()` creates a fresh `Poly_Triangulation`, and `to_numpy()` creates fresh
+arrays in a `MeshArrayRecord`; mutating either result cannot affect the handle.
+
+The full-fidelity cache serializer uses a versioned binary `mesh.bin` artifact
+and preserves positions, normals, triangles, face provenance, and dropped
+counts. Its binary layout uses big-endian IEEE-754 doubles and fixed-width
+indices and rejects wrong-family, truncated, invalid, and size-inconsistent
+records. `display_payload()` is a separate explicit adapter to the existing
+scene mesh protocol. That protocol intentionally carries render geometry but
+not modeling provenance; the typed cache does not inherit that information
+loss.
+
+Verification on 2026-08-30 after the MeshData/triangulation checkpoint:
+
+- `pytest -q`: 267 tests;
+- strict mypy with `--disallow-any-expr`: all nine representative typed
+  contracts pass;
+- the immediate/deferred × cache on/off matrix covers shape and face mesh
+  extraction with one stable result class and tuple-only materialized records;
+- graph and validation tests cover deferred shape transforms, meshing policy
+  controls, indexed geometry invariants, face provenance, and typed bounds;
+- native and NumPy ownership tests cover source mutation, fresh returned
+  snapshots, and non-round double precision;
+- cache tests cover the deterministic full-fidelity artifact, corrupt-family
+  rejection, fresh-runtime hits, and persistent reuse by a fresh process;
+- the current scene mesh transport round-trips typed render geometry through
+  the explicit display adapter;
+- the installed-wheel smoke exercises `Shape.to_mesh()`,
+  `Face.triangulate()`, `MeshDataRecord`, and display transport outside the
+  source checkout.
 
 ## Stage 7: public cutover
 

@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 
 from evalcache.dircache_v2 import DirCache_v2
 from zencad.runtime import RunnerMessage, RunnerSupervisor
+from zencad.runtime.scene_protocol import decode_mesh
 import zencad
 from zencad import _typed as typed
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
@@ -72,6 +73,13 @@ def main():
             abs(actual - expected) < 1e-12
             for actual, expected in zip(bounds.center.value(), (1.0, 1.5, 2.0))
         )
+        mesh = typed_runtime.box(2).to_mesh()
+        assert type(mesh) is typed.MeshData
+        assert type(mesh.value()) is typed.MeshDataRecord
+        assert mesh.vertex_count == 24
+        assert mesh.triangle_count == 12
+        assert type(typed_runtime.rectangle(2, 3).triangulate()) is typed.MeshData
+        assert decode_mesh(mesh.display_payload()).triangles == list(mesh.triangles)
 
         script_path = temporary_path / "headless_model.py"
         script_path.write_text(

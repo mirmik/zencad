@@ -5,6 +5,7 @@ Nothing in this package is re-exported from :mod:`zencad` yet.
 
 from .bounds import BoundaryBox, BoundaryBoxRecord
 from .curves import Curve, Curve2
+from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
 from .records import Interval
 from .runtime import Runtime
 from .surfaces import Surface, SweepTrihedron
@@ -50,6 +51,9 @@ __all__ = [
     "Edge",
     "Face",
     "Interval",
+    "MeshArrayRecord",
+    "MeshData",
+    "MeshDataRecord",
     "Point2",
     "Point3",
     "Quaternion",
