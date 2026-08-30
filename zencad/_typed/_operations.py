@@ -9,12 +9,15 @@ from __future__ import annotations
 
 from typing import Callable
 
+from OCP.BRep import BRep_Tool
 from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_MakeEdge,
     BRepBuilderAPI_MakeFace,
     BRepBuilderAPI_MakePolygon,
     BRepBuilderAPI_Transform,
 )
+from OCP.BRepTools import BRepTools
+from OCP.Geom import Geom_RectangularTrimmedSurface, Geom_TrimmedCurve
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import (
     TopAbs_COMPOUND,
@@ -48,6 +51,8 @@ from zencad.occ_compat import (
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 from ._transform_operations import TransformValue, transform_to_ocp
+from ._curve_operations import CurveValue, curve_from_ocp
+from ._surface_operations import SurfaceValue, surface_from_ocp
 from ._value_operations import Point3Value, Vector3Value
 
 
@@ -230,3 +235,33 @@ def vertex_point(shape: ResolvedShape) -> Point3Value:
         raise TypeError("vertex_point expects a non-null Vertex")
     value = ocp_vertex_point(shape.Vertex())
     return Point3Value(float(value.X()), float(value.Y()), float(value.Z()))
+
+
+def edge_curve(shape: ResolvedShape) -> CurveValue:
+    """Snapshot an edge's geometry with its finite topological range."""
+    native = shape.Shape()
+    if native.IsNull() or not shape.is_edge():
+        raise TypeError("edge_curve expects a non-null Edge")
+    edge = shape.Edge()
+    curve = BRep_Tool.Curve_s(edge, 0.0, 0.0)
+    first, last = BRep_Tool.Range_s(edge)
+    return curve_from_ocp(Geom_TrimmedCurve(curve, first, last))
+
+
+def face_surface(shape: ResolvedShape) -> SurfaceValue:
+    """Snapshot a face's basis surface over its finite UV bounds."""
+    native = shape.Shape()
+    if native.IsNull() or not shape.is_face():
+        raise TypeError("face_surface expects a non-null Face")
+    face = shape.Face()
+    surface = BRep_Tool.Surface_s(face)
+    u_first, u_last, v_first, v_last = BRepTools.UVBounds_s(face)
+    return surface_from_ocp(
+        Geom_RectangularTrimmedSurface(
+            surface,
+            u_first,
+            u_last,
+            v_first,
+            v_last,
+        )
+    )

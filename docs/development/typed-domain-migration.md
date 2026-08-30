@@ -549,8 +549,9 @@ Verification on 2026-08-30 after the topology-core checkpoint:
 
 Status: in progress. The private `Curve`, `Curve2`, representative
 `Surface`/sweep-law, and `BoundaryBox`/structured-range checkpoints are
-complete. The private `MeshData` checkpoint is also complete; richer laws and
-the remaining geometry integration boundary remain.
+complete. The private `MeshData` checkpoint and remaining-geometry integration
+gate are also complete. Richer variable laws remain an explicit non-blocking
+follow-up rather than an untyped hole in the completed representative slice.
 
 Migrate curves, 2D curves, surfaces, sweep laws, boundary boxes, triangulation,
 mesh values, conversion, display, scene transport, and file artifacts.
@@ -767,6 +768,54 @@ Verification on 2026-08-30 after the MeshData/triangulation checkpoint:
 - the installed-wheel smoke exercises `Shape.to_mesh()`,
   `Face.triangulate()`, `MeshDataRecord`, and display transport outside the
   source checkout.
+
+### Remaining-geometry integration contract
+
+The private typed slice now forms one connected domain graph. Topology reaches
+geometry through `Edge.curve()` and `Face.surface()`, while every `Shape`
+reaches `BoundaryBox` and `MeshData`. Extracted edge curves are snapshotted as
+`Geom_TrimmedCurve` over the edge's actual BRep parameter range rather than as
+an accidentally infinite basis curve. Extracted face surfaces are
+`Geom_RectangularTrimmedSurface` snapshots over the face's finite UV bounds.
+The latter represents the parametric support rectangle; topology trimming
+wires remain the responsibility of the `Face` handle.
+
+A representative deferred chain can therefore derive a shape from typed
+scalars, index its typed edge and face sequences, obtain `Curve` and `Surface`,
+and compose bounds and mesh extraction without materializing any intermediate
+or exposing an evalcache proxy. Immediate/deferred evaluation and cache on/off
+produce the same classes throughout this chain.
+
+Every name in `zencad._typed.__all__` resolves exactly once. Runtime tests
+check every representative handle, structured record, and materialized value
+against legacy `evalcache.LazyObject`; none inherits from or is an instance of
+that proxy family. `Expression` remains visible only in private implementation
+state and evaluator plumbing.
+
+The integration cache gate evaluates Curve, Surface, BoundaryBox, and MeshData
+from one topology graph, then reconstructs the graph in a fresh `Runtime` and
+observes family-specific cache hits for all four results. Existing persistent
+fresh-process tests retain coverage of each serialized family, and the
+installed-wheel gate repeats the connected edge/face/bounds/mesh path outside
+the checkout.
+
+Verification on 2026-08-30 after the remaining-geometry integration gate:
+
+- `pytest -q`: 271 tests;
+- strict mypy with `--disallow-any-expr`: all ten representative typed
+  contracts pass, including the complete connected domain chain;
+- runtime policy tests cover `Solid → Edge → Curve`,
+  `Solid → Face → Surface`, `Shape → BoundaryBox`, and `Shape → MeshData` in
+  all four immediate/deferred × cache on/off combinations;
+- isolation tests cover all exported representative handles, records, and
+  materialized results against the legacy LazyObject hierarchy;
+- cache tests observe fresh-runtime hits for all four remaining-geometry
+  families from one reconstructed topology graph;
+- export, finite curve/UV ranges, mesh-versus-shape bounds, Ruff, formatting,
+  compileall, diff integrity, and the installed-wheel chain all pass.
+
+Stage 6 is complete. The private typed proving ground is ready for the
+separate public-cutover decision and compatibility audit described by Stage 7.
 
 ## Stage 7: public cutover
 

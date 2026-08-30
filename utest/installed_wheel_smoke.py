@@ -80,6 +80,12 @@ def main():
         assert mesh.triangle_count == 12
         assert type(typed_runtime.rectangle(2, 3).triangulate()) is typed.MeshData
         assert decode_mesh(mesh.display_payload()).triangles == list(mesh.triangles)
+        edge_curve = typed_runtime.box(2).edges()[0].curve()
+        face_surface = typed_runtime.box(2).faces()[0].surface()
+        assert type(edge_curve) is typed.Curve
+        assert edge_curve.range().value() == (0.0, 2.0)
+        assert type(face_surface) is typed.Surface
+        assert face_surface.u_range().length().value() == 2.0
 
         script_path = temporary_path / "headless_model.py"
         script_path.write_text(

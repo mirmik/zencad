@@ -49,7 +49,9 @@ from . import _mesh_operations as mesh_ops
 from ._core import Handle, State, require_same_runtime
 from ._serialization import ShapeBrepSerializer
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
+from .curves import CURVE_SPEC, Curve
 from .meshes import MESH_SPEC, MeshData
+from .surfaces import SURFACE_SPEC, Surface
 from .transforms import Transform
 from .values import (
     POINT3_SPEC,
@@ -499,6 +501,15 @@ class Edge(Shape):
     __slots__ = ()
     _result_spec = EDGE_SPEC
 
+    def curve(self) -> Curve:
+        state = self.runtime._value_state(
+            ops.edge_curve,
+            result=CURVE_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.edge.curve",
+        )
+        return Curve._from_state(self.runtime, state)
+
     def native(self) -> TopoDS_Edge:
         return as_edge(super().native())
 
@@ -514,6 +525,15 @@ class Wire(Shape):
 class Face(Shape):
     __slots__ = ()
     _result_spec = FACE_SPEC
+
+    def surface(self) -> Surface:
+        state = self.runtime._value_state(
+            ops.face_surface,
+            result=SURFACE_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.face.surface",
+        )
+        return Surface._from_state(self.runtime, state)
 
     def triangulate(
         self,
