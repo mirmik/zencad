@@ -129,6 +129,15 @@ result rather than the earlier provisional parity label: mapping a p-curve onto
 a surface produces an `Edge`, with 3D curves built at resolved evaluation time.
 Both operations remain deferred and cacheable.
 
+The seventh #2041 tranche isolates OCCT text state from typed topology. The
+domain-level `FontAspect` enum replaces public native font enums, while
+`Runtime.register_font()` is deliberately immediate because OCCT registration
+mutates a process-wide manager. `text_to_brep()` and its `textshape()` legacy
+spelling return the exact `Compound` produced by the BREP text builder and keep
+graph scalar sizes deferred. Text expressions deliberately bypass cache
+read/write because the registered font table is external state absent from an
+expression key.
+
 The executable decomposition is:
 
 - #2039 — values and similarity-transform compatibility;

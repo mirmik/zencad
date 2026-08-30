@@ -853,6 +853,7 @@
         "utest/typed_solid_constructors_test.py",
         "utest/typed_curve_wire_constructors_test.py",
         "utest/typed_shell_constructors_test.py",
+        "utest/typed_text_test.py",
         "utest/typed_curves_test.py",
         "utest/typed_surfaces_test.py"
       ],
@@ -860,7 +861,10 @@
         {
           "source": "zencad.text",
           "default": {"status": "missing", "typed": "typed text geometry adapter for {name}", "materialization": "font registration is process state; text_to_brep returns Shape"},
-          "overrides": {}
+          "overrides": {
+            "register_font": {"status": "implemented", "typed": "Runtime.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
+            "text_to_brep": {"status": "implemented", "typed": "Runtime.text_to_brep() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"}
+          }
         },
         {
           "source": "zencad.geom.solid",
@@ -942,8 +946,10 @@
             "polygon": {"status": "implemented", "typed": "Runtime.polygon() -> Face | Wire"},
             "rectangle": {"status": "implemented", "typed": "Runtime.rectangle() -> Face | Wire"},
             "rectangle_wire": {"status": "implemented", "typed": "Runtime.rectangle_wire() -> Wire"},
+            "register_font": {"status": "implemented", "typed": "Runtime.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
             "ruled": {"status": "implemented", "typed": "Runtime.ruled() -> Face"},
-            "square": {"status": "implemented", "typed": "Runtime.square() -> Face | Wire"}
+            "square": {"status": "implemented", "typed": "Runtime.square() -> Face | Wire"},
+            "textshape": {"status": "implemented", "typed": "Runtime.textshape() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"}
           }
         },
         {

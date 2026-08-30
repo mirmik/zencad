@@ -16,6 +16,7 @@ from .records import (
 )
 from .runtime import Runtime
 from .surfaces import Surface, SweepTrihedron
+from .text import FontAspect
 from .topology import (
     Compound,
     CompSolid,
@@ -60,6 +61,7 @@ __all__ = [
     "DeferredSequence",
     "Edge",
     "Face",
+    "FontAspect",
     "Interval",
     "LineParameters",
     "CircleParameters",

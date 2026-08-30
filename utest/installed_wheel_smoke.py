@@ -115,6 +115,16 @@ def main():
         assert type(hexahedron_shell) is typed.Shell
         assert len(tetrahedron.faces()) == 4
         assert len(hexahedron_shell.faces()) == 6
+        font_path = (
+            Path(zencad.__file__).resolve().parent
+            / "examples"
+            / "fonts"
+            / "mandarinc.ttf"
+        )
+        typed_runtime.register_font(font_path)
+        typed_text = typed_runtime.textshape("Hello", "MandarinC", 10)
+        assert type(typed_text) is typed.Compound
+        assert len(typed_text.edges()) > 0
         builder = (
             typed_runtime.wire_builder(defrel=True)
             .l(2, 0)
