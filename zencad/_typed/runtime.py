@@ -1203,6 +1203,31 @@ class Runtime:
         )
         return Face._from_state(self, expression)
 
+    def widewire(
+        self,
+        spine: Edge | Wire,
+        r: ScalarInput,
+        circled_joints: bool = True,
+        circled_ends: bool = True,
+    ) -> Shape:
+        if not isinstance(spine, (Edge, Wire)):
+            raise TypeError("widewire spine must be Edge or Wire")
+        require_same_runtime(self, spine)
+        _require_bool(circled_joints, "widewire circled_joints")
+        _require_bool(circled_ends, "widewire circled_ends")
+        expression = self._expression(
+            ops.widewire,
+            result=SHAPE_SPEC,
+            args=(
+                spine._state,
+                _scalar_state(self, r),
+                circled_joints,
+                circled_ends,
+            ),
+            operation_id="zencad.typed.face.widewire",
+        )
+        return Shape._from_state(self, expression)
+
     def register_font(
         self,
         font_path: str | PathLike[str],

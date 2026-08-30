@@ -43,3 +43,7 @@ def face_constructor_contract(runtime: typed.Runtime) -> None:
         runtime.interpolate2(((points[0], points[1]), (points[3], points[2]))),
         typed.Face,
     )
+    assert_type(
+        runtime.widewire(runtime.segment(points[0], points[1]), 1),
+        typed.Shape,
+    )

@@ -949,7 +949,8 @@
             "register_font": {"status": "implemented", "typed": "Runtime.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
             "ruled": {"status": "implemented", "typed": "Runtime.ruled() -> Face"},
             "square": {"status": "implemented", "typed": "Runtime.square() -> Face | Wire"},
-            "textshape": {"status": "implemented", "typed": "Runtime.textshape() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"}
+            "textshape": {"status": "implemented", "typed": "Runtime.textshape() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"},
+            "widewire": {"status": "implemented", "typed": "Runtime.widewire(Edge | Wire, ScalarInput, bool, bool) -> Shape", "materialization": "none; legacy result topology varies between Face and Compound"}
           }
         },
         {

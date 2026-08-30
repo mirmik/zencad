@@ -429,6 +429,50 @@ def ruled_face(first: ResolvedShape, second: ResolvedShape) -> ResolvedShape:
     )
 
 
+def widewire(
+    spine: ResolvedShape,
+    radius: float,
+    circled_joints: bool,
+    circled_ends: bool,
+) -> ResolvedShape:
+    """Build the legacy planar wide-wire shape without a nested lazy graph."""
+    if spine.Shape().ShapeType() not in (TopAbs_EDGE, TopAbs_WIRE):
+        raise TypeError("widewire spine must be Edge or Wire")
+    if not math.isfinite(radius) or radius <= 0:
+        raise ValueError("widewire radius must be finite and positive")
+
+    from zencad.geom.boolops import _union
+    from zencad.geom.face import _circle, _wideedge
+    from zencad.geom.unify import _unify
+
+    edges = spine.edges()
+    if not edges:
+        raise ValueError("widewire spine must contain at least one Edge")
+
+    last_p0 = None
+    last_p1 = None
+    faces: list[ResolvedShape] = []
+    for edge in edges:
+        face, last_p0, last_p1 = _wideedge(
+            edge,
+            radius,
+            last_p0,
+            last_p1,
+            circled_joints=circled_joints,
+        )
+        faces.append(face)
+
+    if circled_ends:
+        start, finish = spine.endpoints()
+        faces.append(_circle(radius).transform(move(start)))
+        faces.append(_circle(radius).transform(move(finish)))
+
+    result = _unify(_union(faces))
+    if result.Shape().IsNull():
+        raise ValueError("widewire construction produced a null shape")
+    return result
+
+
 def surface_map_curve2(
     surface: SurfaceValue,
     curve: Curve2Value,

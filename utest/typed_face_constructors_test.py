@@ -181,6 +181,59 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             self.assertFalse(face.native().IsNull())
         self.assertTrue(events)
 
+    def test_widewire_preserves_graph_and_truthful_shape_type(self):
+        observed_types = set()
+
+        for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
+            for cache in (False, True):
+                with self.subTest(mode=mode, cache=cache):
+                    events = []
+                    runtime = typed.Runtime(
+                        mode=mode,
+                        cache=cache,
+                        cache_store=MemoryCacheStore(),
+                        progress_hooks=(events.append,),
+                    )
+                    unit = runtime.box(2).mass() / 8
+                    spine = runtime.make_wire(
+                        runtime.segment(
+                            runtime.point3(0, 0, 0),
+                            runtime.point3(unit * 10, 0, 0),
+                        ),
+                        runtime.segment(
+                            runtime.point3(unit * 10, 0, 0),
+                            runtime.point3(unit * 10, unit * 10, 0),
+                        ),
+                    )
+                    wide = runtime.widewire(spine, unit)
+                    square_ends = runtime.widewire(
+                        runtime.segment(
+                            runtime.point3(0, 0, 0),
+                            runtime.point3(unit * 10, 0, 0),
+                        ),
+                        unit,
+                        circled_joints=False,
+                        circled_ends=False,
+                    )
+
+                    observed_types.add((type(wide), type(square_ends)))
+                    self.assertIs(type(wide), typed.Shape)
+                    self.assertIs(type(square_ends), typed.Shape)
+                    if mode is EvaluationMode.DEFERRED:
+                        self.assertEqual(events, [])
+
+                    self.assertAlmostEqual(
+                        square_ends.SurfaceProperties().mass.value(),
+                        20,
+                    )
+                    self.assertGreater(
+                        wide.SurfaceProperties().mass.value(),
+                        40,
+                    )
+                    self.assertEqual(len(wide.faces()), 1)
+
+        self.assertEqual(observed_types, {(typed.Shape, typed.Shape)})
+
     def test_face_artifacts_restore_from_shared_cache(self):
         store = MemoryCacheStore()
 
@@ -232,6 +285,53 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             }.issubset(hits)
         )
 
+    def test_widewire_artifact_restores_from_shared_cache(self):
+        store = MemoryCacheStore()
+
+        def value(runtime: typed.Runtime) -> typed.Shape:
+            return runtime.widewire(
+                runtime.segment(
+                    runtime.point3(0, 0, 0),
+                    runtime.point3(10, 0, 0),
+                ),
+                1,
+            )
+
+        first_events = []
+        first = typed.Runtime.deferred(
+            cache=True,
+            cache_store=store,
+            progress_hooks=(first_events.append,),
+        )
+        first_value = value(first)
+        self.assertFalse(first_value.native().IsNull())
+        self.assertAlmostEqual(
+            first_value.SurfaceProperties().mass.value(), 20 + math.pi
+        )
+        self.assertTrue(
+            any(event.kind is EvaluationEventKind.CACHE_STORE for event in first_events)
+        )
+
+        second_events = []
+        second = typed.Runtime.deferred(
+            cache=True,
+            cache_store=store,
+            progress_hooks=(second_events.append,),
+        )
+        second_value = value(second)
+        self.assertFalse(second_value.native().IsNull())
+        self.assertAlmostEqual(
+            second_value.SurfaceProperties().mass.value(), 20 + math.pi
+        )
+        self.assertIn(
+            "zencad.typed.face.widewire",
+            {
+                event.operation_id
+                for event in second_events
+                if event.kind is EvaluationEventKind.CACHE_HIT
+            },
+        )
+
     def test_invalid_inputs_fail_at_the_typed_boundary(self):
         runtime = typed.Runtime.deferred(cache=False)
         other = typed.Runtime.deferred(cache=False)
@@ -255,6 +355,21 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             runtime.ruled(
                 runtime.segment(points[0], points[1]),
                 other.segment(other.point3(0, 1), other.point3(1, 1)),
+            )
+        with self.assertRaisesRegex(TypeError, "Edge or Wire"):
+            runtime.widewire(runtime.box(1), 1)  # type: ignore[arg-type]
+        with self.assertRaisesRegex(TypeError, "must be bool"):
+            runtime.widewire(
+                runtime.segment(points[0], points[1]),
+                1,
+                circled_joints=1,  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(ValueError, "positive"):
+            runtime.widewire(runtime.segment(points[0], points[1]), 0).native()
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.widewire(
+                other.segment(other.point3(0, 0), other.point3(1, 0)),
+                1,
             )
 
 

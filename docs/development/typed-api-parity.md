@@ -53,10 +53,10 @@ operators:
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
 | Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
-| Constructors | 92 | 73 | 0 | 19 | 0 | 0 |
+| Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **283** | **7** | **68** | **19** | **3** |
+| **Total** | **380** | **302** | **7** | **49** | **19** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -137,6 +137,14 @@ spelling return the exact `Compound` produced by the BREP text builder and keep
 graph scalar sizes deferred. Text expressions deliberately bypass cache
 read/write because the registered font table is external state absent from an
 expression key.
+
+The eighth #2041 tranche completes the constructor family with `widewire`.
+Its spine and radius remain graph operands and the resolved adapter performs
+the legacy planar pipe, joint, end-cap, boolean, and unification sequence
+without creating a nested legacy lazy graph. The truthful result is `Shape`,
+because OCCT returns a `Face` for a simple uncapped edge but a `Compound`
+containing the result for capped or multi-edge spines. Evaluation and cache
+policies do not change that public handle class.
 
 The executable decomposition is:
 

@@ -107,6 +107,18 @@ def main():
         assert type(polygon_wire) is typed.Wire
         assert type(holed_face) is typed.Face
         assert len(holed_face.edges()) == 8
+        wide_shape = typed_runtime.widewire(
+            typed_runtime.segment(
+                typed_runtime.point3(0, 0, 0),
+                typed_runtime.point3(10, 0, 0),
+            ),
+            1,
+        )
+        assert type(wide_shape) is typed.Shape
+        assert (
+            abs(wide_shape.SurfaceProperties().mass.value() - (20 + 3.141592653589793))
+            < 1e-8
+        )
         shell = typed_runtime.make_shell(circle_face)
         tetrahedron = typed_runtime.tetrahedron()
         hexahedron_shell = typed_runtime.hexahedron(shell=True)
