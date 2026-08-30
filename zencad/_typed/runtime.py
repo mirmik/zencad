@@ -25,8 +25,15 @@ from evalcache.v2 import (
 from zencad.geom.shape import Shape as ResolvedShape
 
 from . import _operations as ops
+from . import _transform_operations as transform_ops
 from ._core import Handle, State, require_same_runtime
 from ._serialization import ShapeBrepSerializer
+from .transforms import (
+    QUATERNION_SPEC,
+    TRANSFORM_SPEC,
+    Quaternion,
+    Transform,
+)
 from .values import (
     POINT3_SPEC,
     SCALAR_SPEC,
@@ -37,6 +44,7 @@ from .values import (
     ScalarInput,
     Vector2,
     Vector3,
+    _scalar_state,
 )
 
 
@@ -211,6 +219,132 @@ class Runtime:
     def vector2(self, x: ScalarInput, y: ScalarInput) -> Vector2:
         return Vector2(x, y, runtime=self)
 
+    def quaternion(
+        self,
+        x: ScalarInput,
+        y: ScalarInput,
+        z: ScalarInput,
+        w: ScalarInput,
+    ) -> Quaternion:
+        return Quaternion(x, y, z, w, runtime=self)
+
+    def quaternion_axis_angle(
+        self,
+        axis: Vector3,
+        angle: ScalarInput,
+        /,
+    ) -> Quaternion:
+        if not isinstance(axis, Vector3):
+            raise TypeError("quaternion_axis_angle expects Vector3")
+        require_same_runtime(self, axis)
+        state = self._value_state(
+            transform_ops.quaternion_axis_angle,
+            result=QUATERNION_SPEC,
+            args=(axis._state, _scalar_state(self, angle)),
+            operation_id="zencad.typed.quaternion.axis_angle",
+        )
+        return Quaternion._from_state(self, state)
+
+    def identity_transform(self) -> Transform:
+        return Transform(runtime=self)
+
+    @overload
+    def translation(self, vector: Vector3, /) -> Transform: ...
+
+    @overload
+    def translation(
+        self,
+        x: ScalarInput,
+        y: ScalarInput,
+        z: ScalarInput,
+        /,
+    ) -> Transform: ...
+
+    def translation(self, *args: object) -> Transform:
+        if len(args) == 1 and isinstance(args[0], Vector3):
+            vector = args[0]
+            require_same_runtime(self, vector)
+        elif len(args) == 3:
+            vector = Vector3(
+                cast(ScalarInput, args[0]),
+                cast(ScalarInput, args[1]),
+                cast(ScalarInput, args[2]),
+                runtime=self,
+            )
+        else:
+            raise TypeError("translation expects Vector3 or three scalar coordinates")
+        state = self._value_state(
+            transform_ops.translation_transform,
+            result=TRANSFORM_SPEC,
+            args=(vector._state,),
+            operation_id="zencad.typed.transform.translation",
+        )
+        return Transform._from_state(self, state)
+
+    @overload
+    def rotation(self, quaternion: Quaternion, /) -> Transform: ...
+
+    @overload
+    def rotation(
+        self,
+        axis: Vector3,
+        angle: ScalarInput,
+        /,
+    ) -> Transform: ...
+
+    def rotation(self, *args: object) -> Transform:
+        if len(args) == 1 and isinstance(args[0], Quaternion):
+            quaternion = args[0]
+            require_same_runtime(self, quaternion)
+        elif len(args) == 2 and isinstance(args[0], Vector3):
+            quaternion = self.quaternion_axis_angle(args[0], cast(ScalarInput, args[1]))
+        else:
+            raise TypeError("rotation expects Quaternion or Vector3 and angle")
+        return quaternion.to_transform()
+
+    def scale(
+        self,
+        factor: ScalarInput,
+        /,
+        *,
+        center: Point3 | None = None,
+    ) -> Transform:
+        if center is None:
+            center = self.point(0, 0, 0)
+        elif not isinstance(center, Point3):
+            raise TypeError("scale center must be Point3")
+        require_same_runtime(self, center)
+        state = self._value_state(
+            transform_ops.scale_transform,
+            result=TRANSFORM_SPEC,
+            args=(_scalar_state(self, factor), center._state),
+            operation_id="zencad.typed.transform.scale",
+        )
+        return Transform._from_state(self, state)
+
+    def mirror(
+        self,
+        normal: Vector3,
+        /,
+        *,
+        origin: Point3 | None = None,
+    ) -> Transform:
+        if not isinstance(normal, Vector3):
+            raise TypeError("mirror normal must be Vector3")
+        if origin is None:
+            origin = self.point(0, 0, 0)
+        elif not isinstance(origin, Point3):
+            raise TypeError("mirror origin must be Point3")
+        require_same_runtime(self, normal)
+        require_same_runtime(self, origin)
+        state = self._value_state(
+            transform_ops.mirror_transform,
+            result=TRANSFORM_SPEC,
+            args=(normal._state, origin._state),
+            operation_id="zencad.typed.transform.mirror",
+        )
+        return Transform._from_state(self, state)
+
 
 class Shape(Handle[ResolvedShape]):
     @classmethod
@@ -228,6 +362,18 @@ class Shape(Handle[ResolvedShape]):
             result=_SHAPE_SPEC,
             args=(self._state, other._state),
             operation_id="zencad.typed.shape.difference",
+        )
+        return Shape._from_expression(self.runtime, expression)
+
+    def transform(self, transformation: Transform, /) -> Shape:
+        if not isinstance(transformation, Transform):
+            raise TypeError("Shape.transform expects Transform")
+        require_same_runtime(self.runtime, transformation)
+        expression = self.runtime._expression(
+            ops.transform,
+            result=_SHAPE_SPEC,
+            args=(self._state, transformation._state),
+            operation_id="zencad.typed.shape.transform",
         )
         return Shape._from_expression(self.runtime, expression)
 

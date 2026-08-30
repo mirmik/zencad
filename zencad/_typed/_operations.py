@@ -7,10 +7,13 @@ return resolved values only; expression construction lives in ``runtime``.
 
 from __future__ import annotations
 
+from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.geom.solid import _box
 from zencad.geom.trans import move
 
+from ._transform_operations import TransformValue, transform_to_ocp
 from ._value_operations import Point3Value, Vector3Value
 
 
@@ -20,6 +23,13 @@ def box(x: float, y: float | None, z: float | None, center: bool) -> ResolvedSha
 
 def translate(shape: ResolvedShape, vector: Vector3Value) -> ResolvedShape:
     return shape.transform(move(vector.x, vector.y, vector.z))
+
+
+def transform(shape: ResolvedShape, value: TransformValue) -> ResolvedShape:
+    transformed = BRepBuilderAPI_Transform(
+        shape.Shape(), transform_to_ocp(value), True
+    ).Shape()
+    return ResolvedShape(transformed)
 
 
 def difference(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:

@@ -4,6 +4,7 @@ Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
 from .runtime import DeferredSequence, Face, Runtime, Shape
+from .transforms import Quaternion, Transform
 from .values import (
     Point2,
     Point3,
@@ -27,9 +28,11 @@ __all__ = [
     "Face",
     "Point2",
     "Point3",
+    "Quaternion",
     "Runtime",
     "Scalar",
     "Shape",
+    "Transform",
     "Vector2",
     "Vector3",
     "acos",

@@ -1,9 +1,9 @@
 # Typed domain migration
 
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
-> private typed vertical slice, and Scalar/Point/Vector algebra are
-> implemented; no public typed-domain cutover described here is implemented
-> yet. The accepted direction and rationale are recorded in
+> private typed vertical slice, and Scalar/Point/Vector/Quaternion/Transform
+> algebra are implemented; no public typed-domain cutover described here is
+> implemented yet. The accepted direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 ## Objective
@@ -42,7 +42,7 @@ evalcache Expression/Evaluator and cache protocols
           v
 internal typed vertical slice
           |
-          +--> Scalar/Point/Vector/Transform algebra
+          +--> Scalar/Point/Vector/Quaternion/Transform algebra
           +--> Shape/topology/typed sequences
           +--> Curve/Surface/Mesh and runtime boundaries
                          |
@@ -238,15 +238,14 @@ OCP work and need a dedicated benchmark suite during public cutover.
 
 ## Stage 4: value algebra
 
-Status: Scalar and 2D/3D point/vector algebra are complete in the private
-`zencad._typed` layer. Transformation and quaternion handles are deliberately
-split into their own follow-up because they have composition and OCP mutability
-contracts beyond this value card.
+Status: complete in the private `zencad._typed` layer for Scalar, 2D/3D
+points and vectors, Quaternion, and Transform. The implementation remains an
+internal proving ground and is not re-exported from the public `zencad` root.
 
-Implement immutable scalar, point, vector, transformation, and required 2D
-value types. Define exact result types for arithmetic, coercion from Python
-literals and tuples, comparison/materialization rules, NumPy conversion, and
-expression-aware numeric helpers.
+This stage implements immutable scalar, point, vector, quaternion, transform,
+and required 2D value types. It defines exact result types for arithmetic,
+coercion from Python literals and tuples, comparison/materialization rules,
+NumPy conversion, and expression-aware numeric helpers.
 
 Exit gate: algebra property tests and static type tests agree; vector
 operations never silently produce points, and immediate-only arithmetic avoids
@@ -293,25 +292,113 @@ Coordinates remain graph-preserving `Scalar` handles. The expression-aware
 helpers `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `sqrt`, `exp`,
 and `log` also preserve the graph.
 
-Verification on 2026-08-30:
+### Quaternion and Transform contract
 
-- `pytest -q`: 198 tests, including the four policy combinations, result-type
+`Quaternion` is a rotation type, not an arbitrary four-component vector. Its
+resolved value is an immutable canonical unit quaternion in `(x, y, z, w)`
+order. Construction normalizes the input and chooses one deterministic sign
+for the equivalent `q` and `-q` rotations. The `x`, `y`, `z`, and `w`
+properties remain graph-preserving `Scalar` handles.
+
+`Transform` is an immutable similarity transformation with the exact model
+
+```text
+p' = s R(p) + t
+```
+
+where `s` is a finite signed uniform scale whose magnitude exceeds OCP's
+minimum representable transform scale, `R` is a `Quaternion` rotation, and `t`
+is a `Vector3` translation. A signed scale together with a proper rotation
+represents the `gp_Trsf` family, including plane mirrors, without admitting
+shear or non-uniform scale. Arbitrary affine transformations will use a
+separate future type rather than weakening the invariants of `Transform`.
+
+Application has exact domain results: `Transform.apply(Point3)` and
+`transform(point)` return `Point3`, while the corresponding `Vector3`
+operations return `Vector3`. Translation affects points but not vectors:
+vectors follow `v' = s R(v)`. A transform can therefore never silently erase
+the distinction between positions and directions.
+
+Composition follows the existing mathematical and OCP order. For both
+rotations and transforms, `outer * inner` applies `inner` first and `outer`
+second. The fluent spelling reverses that visual order deliberately:
+`first.then(second) == second * first`. Transform composition is exact in the
+representation:
+
+```text
+s = s_outer * s_inner
+R = R_outer * R_inner
+t = t_outer + s_outer R_outer(t_inner)
+```
+
+Inverse, quaternion rotation, and composition preserve the same domain handle
+classes in every evaluator and cache policy.
+
+`Quaternion.rotate(Vector3)` returns `Vector3`, and
+`Quaternion.to_transform()` lifts the rotation without changing its graph.
+The `Transform.scale`, `Transform.rotation`, and `Transform.translation`
+properties return `Scalar`, `Quaternion`, and `Vector3` handles respectively;
+reading those properties is not a materialization boundary.
+
+The private constructor surface currently consists of:
+
+- `Quaternion(x, y, z, w, runtime=...)`, its four-element tuple form,
+  `Quaternion.identity(runtime=...)`, `Runtime.quaternion(...)`, and
+  `Runtime.quaternion_axis_angle(axis, angle)` with the angle in radians;
+- `Transform(runtime=...)` and `Runtime.identity_transform()`;
+- `Runtime.translation(Vector3)` or `Runtime.translation(x, y, z)`;
+- `Runtime.rotation(Quaternion)` or `Runtime.rotation(axis, angle)`;
+- `Runtime.scale(factor, center=Point3 | None)`;
+- `Runtime.mirror(normal, origin=Point3 | None)`, where the arguments describe
+  a plane.
+
+Cheap operations with only resolved inputs fold directly to immutable
+`QuaternionValue` and `TransformValue` values. A `Scalar`, `Point3`, or
+`Vector3` backed by an `Expression` instead contributes its node to the typed
+graph; the returned object is still `Quaternion` or `Transform`. This includes
+axis-angle construction, translation, centered scale, mirrors, composition,
+inverse, and point/vector application.
+
+Quaternion `value()` and Transform `matrix()` are Python materialization
+boundaries. `matrix()` returns a conventional homogeneous 4-by-4 matrix.
+`to_ocp()` returns a fresh mutable `gp_Quaternion` or `gp_Trsf`; `from_ocp()`
+copies a native value into the immutable representation. OCP types do not
+become domain handles and never live inside an expression node.
+
+The private `Shape.transform(Transform)` adapter retains both the shape and
+transform dependencies in one typed Shape expression and materializes the OCP
+transformation only inside the resolved operation. This is the integration
+point for the broader Shape migration, not a public API cutover.
+
+Verification on 2026-08-30 after the Quaternion/Transform checkpoint:
+
+- `pytest -q`: 213 tests, including the four policy combinations, result-type
   tables, algebraic identities, boundaries, invalid operations, and folding;
-- strict mypy with `--disallow-any-expr`: both representative type-contract
-  files pass;
+- strict mypy with `--disallow-any-expr`: all three representative
+  type-contract files pass;
 - literal folding is checked with zero evaluator events and zero cache-store
   accesses;
 - dependent scalar math is checked from `Shape.mass()` through deferred and
   immediate runtimes;
-- the built wheel contains the value modules and passes an isolated installed
-  algebra smoke.
+- the built wheel contains the value and transform modules and passes an
+  isolated installed algebra/OCP/Shape-transform smoke.
+
+The completed Quaternion/Transform gate additionally covers exact result
+types, composition order, identities and inverses, point-versus-vector
+semantics, mirrors and centered scales, invalid values, OCP round trips,
+resolved folding, deferred dependencies, the four evaluation/cache policy
+combinations, and `Shape.transform`. The strict result table in
+`utest/typecheck/typed_transform.py` uses `--disallow-any-expr`; native OCP
+returns remain runtime-tested boundaries because the installed OCP package
+does not provide mypy stubs.
 
 ## Stage 5: shape and topology
 
 Introduce `Shape` and precise topology handles, typed topology sequences,
 resolved OCP adapters, result validators, BREP codecs, and materializing native
-accessors. Migrate primitives, transformations, booleans, topology reflection,
-and heavy shape operations behind the typed layer.
+accessors. Extend the existing typed `Shape.transform(Transform)` adapter while
+migrating primitives, booleans, topology reflection, and heavy shape
+operations behind the typed layer.
 
 Exit gate: representative models require no `LazyObjectShape` or
 `evalcache.unlazy_if_need()` in the typed path, and topology declarations are
