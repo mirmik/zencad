@@ -38,13 +38,13 @@ _CURVE2_SERIALIZER = Curve2Serializer()
 
 CURVE_SPEC = ResultSpec.for_type(
     ops.CurveValue,
-    type_id="zencad.typed.Curve.v1",
+    type_id="zencad.typed.Curve.v2",
     serializer=_CURVE_SERIALIZER,
     validator=ops.valid_curve,
 )
 CURVE2_SPEC = ResultSpec.for_type(
     ops.Curve2Value,
-    type_id="zencad.typed.Curve2.v1",
+    type_id="zencad.typed.Curve2.v2",
     serializer=_CURVE2_SERIALIZER,
     validator=ops.valid_curve2,
 )

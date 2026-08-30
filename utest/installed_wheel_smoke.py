@@ -55,6 +55,15 @@ def main():
         assert curve.point(0).value() == (2.0, 0.0, 0.0)
         assert type(curve2) is typed.Curve2
         assert curve2.point(0.5).value() == (0.5, 0.0)
+        surface = typed_runtime.cylinder_surface(2)
+        sweep_surface = typed_runtime.sweep_surface(
+            typed_runtime.circle(1),
+            typed_runtime.circle(3),
+        )
+        assert type(surface) is typed.Surface
+        assert surface.point(0, 3).value() == (2.0, 0.0, 3.0)
+        assert type(sweep_surface) is typed.Surface
+        assert len(sweep_surface.native().Bounds()) == 4
 
         script_path = temporary_path / "headless_model.py"
         script_path.write_text(

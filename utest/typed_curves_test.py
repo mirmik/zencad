@@ -23,6 +23,16 @@ from zencad._typed import _curve_operations as curve_ops
 from zencad._typed._serialization import Curve2Serializer
 
 
+def _assert_coordinates(
+    testcase: unittest.TestCase,
+    actual: tuple[float, ...],
+    expected: tuple[float, ...],
+) -> None:
+    testcase.assertEqual(len(actual), len(expected))
+    for left, right in zip(actual, expected):
+        testcase.assertAlmostEqual(left, right, places=10)
+
+
 class TypedCurveHandlesTest(unittest.TestCase):
     def test_factories_and_queries_are_policy_independent(self):
         observed_types = set()
@@ -122,12 +132,13 @@ class TypedCurveHandlesTest(unittest.TestCase):
         trimmed = runtime.trim_curve2(segment, radius / 4, radius + 0.5)
 
         self.assertEqual(events, [])
-        self.assertEqual(circle.point(0).value(), (2.0, 0.0, 0.0))
-        self.assertEqual(ellipse.point(0).value(), (3.0, 0.0, 0.0))
-        self.assertEqual(line.point(3).value(), (4.0, 1.0, 1.0))
-        self.assertEqual(segment.point(4).value(), (4.0, 0.0))
-        self.assertEqual(ellipse2.point(0).value(), (3.0, 0.0))
-        self.assertEqual(
+        _assert_coordinates(self, circle.point(0).value(), (2.0, 0.0, 0.0))
+        _assert_coordinates(self, ellipse.point(0).value(), (3.0, 0.0, 0.0))
+        _assert_coordinates(self, line.point(3).value(), (4.0, 1.0, 1.0))
+        _assert_coordinates(self, segment.point(4).value(), (4.0, 0.0))
+        _assert_coordinates(self, ellipse2.point(0).value(), (3.0, 0.0))
+        _assert_coordinates(
+            self,
             tuple(float(value) for value in trimmed.range()),
             (0.5, 2.5),
         )
@@ -201,12 +212,12 @@ class TypedCurveCacheTest(unittest.TestCase):
 
         self.assertEqual(len(store.records), 1)
         key, record = next(iter(store.records.items()))
-        self.assertEqual(record.result_type_id, "zencad.typed.Curve.v1")
+        self.assertEqual(record.result_type_id, "zencad.typed.Curve.v2")
         self.assertEqual(
             record.serializer_id,
-            "zencad.curve.occt-compact-artifact.v1",
+            "zencad.curve.occt-set-artifact.v2",
         )
-        self.assertEqual(record.value.payload, b"zencad.typed.curve\x00v1")
+        self.assertEqual(record.value.payload, b"zencad.typed.curve\x00v2")
         self.assertEqual(record.value.artifacts[0].name, "curve.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 10)
 

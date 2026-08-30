@@ -31,7 +31,7 @@ from ._value_operations import (
 
 @dataclass(frozen=True, slots=True)
 class CurveValue:
-    """Immutable OCCT compact-format snapshot of a three-dimensional curve."""
+    """Immutable full-precision OCCT snapshot of a three-dimensional curve."""
 
     data: bytes
 
@@ -40,12 +40,12 @@ class CurveValue:
             raise TypeError("CurveValue data must be non-empty bytes")
 
     def __evalcache_key__(self) -> bytes:
-        return b"zencad-curve-value-v1\x00" + self.data
+        return b"zencad-curve-value-v2\x00" + self.data
 
 
 @dataclass(frozen=True, slots=True)
 class Curve2Value:
-    """Immutable OCCT compact-format snapshot of a two-dimensional curve."""
+    """Immutable full-precision OCCT snapshot of a two-dimensional curve."""
 
     data: bytes
 
@@ -54,14 +54,16 @@ class Curve2Value:
             raise TypeError("Curve2Value data must be non-empty bytes")
 
     def __evalcache_key__(self) -> bytes:
-        return b"zencad-curve2-value-v1\x00" + self.data
+        return b"zencad-curve2-value-v2\x00" + self.data
 
 
 def curve_from_ocp(value: Geom_Curve) -> CurveValue:
     if not isinstance(value, Geom_Curve):
         raise TypeError("curve_from_ocp expects Geom_Curve")
+    curves = GeomTools_CurveSet()
+    curves.Add(value)
     stream = BytesIO()
-    GeomTools_CurveSet.PrintCurve_s(value, stream, True)
+    curves.Write(stream)
     data = stream.getvalue()
     if not data:
         raise ValueError("OCCT produced an empty Curve serialization")
@@ -71,7 +73,9 @@ def curve_from_ocp(value: Geom_Curve) -> CurveValue:
 def curve_to_ocp(value: CurveValue) -> Geom_Curve:
     if not isinstance(value, CurveValue):
         raise TypeError("curve_to_ocp expects CurveValue")
-    curve = GeomTools_CurveSet.ReadCurve_s(BytesIO(value.data))
+    curves = GeomTools_CurveSet()
+    curves.Read(BytesIO(value.data))
+    curve = curves.Curve(1)
     if not isinstance(curve, Geom_Curve):
         raise ValueError("invalid OCCT Curve serialization")
     return curve
@@ -80,8 +84,10 @@ def curve_to_ocp(value: CurveValue) -> Geom_Curve:
 def curve2_from_ocp(value: Geom2d_Curve) -> Curve2Value:
     if not isinstance(value, Geom2d_Curve):
         raise TypeError("curve2_from_ocp expects Geom2d_Curve")
+    curves = GeomTools_Curve2dSet()
+    curves.Add(value)
     stream = BytesIO()
-    GeomTools_Curve2dSet.PrintCurve2d_s(value, stream, True)
+    curves.Write(stream)
     data = stream.getvalue()
     if not data:
         raise ValueError("OCCT produced an empty Curve2 serialization")
@@ -91,7 +97,9 @@ def curve2_from_ocp(value: Geom2d_Curve) -> Curve2Value:
 def curve2_to_ocp(value: Curve2Value) -> Geom2d_Curve:
     if not isinstance(value, Curve2Value):
         raise TypeError("curve2_to_ocp expects Curve2Value")
-    curve = GeomTools_Curve2dSet.ReadCurve2d_s(BytesIO(value.data))
+    curves = GeomTools_Curve2dSet()
+    curves.Read(BytesIO(value.data))
+    curve = curves.Curve2d(1)
     if not isinstance(curve, Geom2d_Curve):
         raise ValueError("invalid OCCT Curve2 serialization")
     return curve

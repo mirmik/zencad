@@ -3,8 +3,8 @@
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
 > private typed vertical slice, Scalar/Point/Vector/Quaternion/Transform
 > algebra, complete private Shape/topology stage, and private Curve/Curve2
-> checkpoint are implemented; no public typed-domain cutover described here is
-> implemented yet. The accepted
+> and Surface/sweep checkpoints are implemented; no public typed-domain
+> cutover described here is implemented yet. The accepted
 > direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
@@ -547,8 +547,9 @@ Verification on 2026-08-30 after the topology-core checkpoint:
 
 ## Stage 6: remaining geometry and boundaries
 
-Status: in progress. The private `Curve` and `Curve2` checkpoint is complete;
-Surface, laws, BoundaryBox, MeshData, and the integration boundaries remain.
+Status: in progress. The private `Curve`, `Curve2`, and representative
+`Surface`/sweep-law checkpoints are complete; BoundaryBox, MeshData, richer
+laws, and the integration boundaries remain.
 
 Migrate curves, 2D curves, surfaces, sweep laws, boundary boxes, triangulation,
 mesh values, conversion, display, scene transport, and file artifacts.
@@ -582,8 +583,9 @@ point/vector, converting a range endpoint to `float`, `native()`, or
 `.unlazy()` is an explicit materialization boundary.
 
 The resolved representation is not a mutable OCP handle. It is frozen bytes
-written by OCCT's compact `GeomTools_CurveSet` or `GeomTools_Curve2dSet`
-format, with a family-specific deterministic evalcache key. `from_ocp()`
+written by OCCT's full-precision `GeomTools_CurveSet` or
+`GeomTools_Curve2dSet` set format, with a family-specific deterministic
+evalcache key. `from_ocp()`
 captures that snapshot immediately; `native()` decodes a fresh OCP object on
 every call. Mutating either the source object or a returned native object
 therefore cannot alter the typed handle.
@@ -593,6 +595,14 @@ Persistent cache records use distinct non-executable serializers and named
 type IDs, and validators prevent a 2D curve record from being accepted as a
 3D curve or vice versa. Corrupt or wrong-family records are rejected and
 recomputed by evalcache's normal recovery path.
+
+The original Curve checkpoint briefly used the single-item compact writer,
+which rounds geometry to roughly six significant decimal digits. The Surface
+checkpoint exposed that loss on generated BSpline poles. Curve and Curve2 now
+use version-2 full-precision set codecs; their old disposable cache records
+are rejected by changed result, serializer, payload, and value-key versions.
+A regression test preserves non-round decimal locations and radii through all
+three native snapshot families.
 
 Verification on 2026-08-30 after the Curve/Curve2 checkpoint:
 
@@ -606,6 +616,53 @@ Verification on 2026-08-30 after the Curve/Curve2 checkpoint:
   fresh-runtime hits, and persistent reuse by a fresh process;
 - the installed-wheel smoke exercises both curve families outside the source
   checkout.
+
+### Surface and sweep-law contract
+
+`Surface` follows the same stable-handle and immutable-snapshot model as
+`Curve`. `Runtime.cylinder_surface(radius)` is the representative analytic
+factory. `point(u, v)` returns `Point3`, `normal(u, v)` returns a unit
+`Vector3`, `u_range()` and `v_range()` return pairs of graph-preserving
+`Scalar` handles, and `u_iso(parameter)` / `v_iso(parameter)` return `Curve`.
+No query exposes a generic evalcache proxy.
+
+`Runtime.sweep_surface(section, spine, ...)` covers the currently live legacy
+law chain without publishing its mutable OCP wrappers. Both section and spine
+are explicit `Curve` handles, the constant scale is a `ScalarInput`, and the
+trihedron law is the `SweepTrihedron.CORRECTED_FRENET` or
+`SweepTrihedron.FRENET` enum. Tolerance, requested continuity, maximum degree,
+and maximum segment count are validated construction options. The resolved
+operation alone creates `Law_Constant`, `GeomFill_EvolvedSection`, the
+trihedron/location laws, and `GeomFill_Sweep`. The constant law domain follows
+the spine parameter range rather than the section curve range; a trimmed-spine
+regression test makes that distinction observable.
+
+This representative adapter intentionally does not declare the four legacy
+`LawFunction`, `LawSection`, `LawLocation`, and `LawTrihedron` wrappers as new
+domain types. They only encapsulate mutable OCP implementation objects and do
+not form a useful stable user contract. Richer variable section, scale, or
+location laws require a separate typed design and a separate closable task;
+they are not silently accepted as untyped objects by this checkpoint.
+
+Resolved surfaces are full-precision `GeomTools_SurfaceSet` bytes with a
+deterministic value key. `Surface.from_ocp()` captures an owned snapshot and
+`native()` reconstructs a fresh mutable `Geom_Surface` on every call. The
+family-specific non-executable cache record contains one `surface.geom`
+artifact and rejects Curve artifacts, wrong payloads, and invalid surfaces.
+
+Verification on 2026-08-30 after the Surface/sweep checkpoint:
+
+- `pytest -q`: 252 tests;
+- strict mypy with `--disallow-any-expr`: all seven representative typed
+  contracts pass;
+- the immediate/deferred × cache on/off matrix covers analytic and swept
+  surfaces, typed queries, iso-curves, both trihedron choices, graph-aware
+  Scalar/Curve inputs, validation, and bounded `.unlazy()`;
+- cache tests cover non-pickle artifacts, wrong-family rejection,
+  fresh-runtime reuse, and persistent reuse by a fresh process;
+- full-precision and native ownership tests cover Curve, Curve2, and Surface;
+- the installed-wheel smoke exercises cylinder and sweep surfaces outside the
+  source checkout.
 
 ## Stage 7: public cutover
 

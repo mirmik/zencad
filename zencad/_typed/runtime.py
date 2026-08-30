@@ -8,6 +8,7 @@ exposing lazy proxy types to callers.
 from __future__ import annotations
 
 from collections.abc import Sequence
+import math
 from typing import Callable, TypeVar, cast, overload
 
 from evalcache.v2 import (
@@ -23,9 +24,11 @@ from evalcache.v2 import (
 
 from . import _operations as ops
 from . import _curve_operations as curve_ops
+from . import _surface_operations as surface_ops
 from . import _transform_operations as transform_ops
 from ._core import State, require_same_runtime
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
+from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .topology import (
     EDGE_SPEC,
     FACE_SPEC,
@@ -74,6 +77,8 @@ __all__ = [
     "Shape",
     "Shell",
     "Solid",
+    "Surface",
+    "SweepTrihedron",
     "Vertex",
     "Wire",
 ]
@@ -344,6 +349,71 @@ class Runtime:
         )
         return Curve2._from_state(self, expression)
 
+    def cylinder_surface(self, radius: ScalarInput, /) -> Surface:
+        expression = self._expression(
+            surface_ops.cylinder_surface,
+            result=SURFACE_SPEC,
+            args=(_scalar_state(self, radius),),
+            operation_id="zencad.typed.cylinder_surface",
+        )
+        return Surface._from_state(self, expression)
+
+    def sweep_surface(
+        self,
+        section: Curve,
+        spine: Curve,
+        /,
+        *,
+        scale: ScalarInput = 1,
+        trihedron: SweepTrihedron = SweepTrihedron.CORRECTED_FRENET,
+        tolerance: Number = 1e-6,
+        continuity: int = 2,
+        max_degree: int = 5,
+        max_segments: int = 20,
+    ) -> Surface:
+        if not isinstance(section, Curve):
+            raise TypeError("sweep_surface section must be Curve")
+        if not isinstance(spine, Curve):
+            raise TypeError("sweep_surface spine must be Curve")
+        require_same_runtime(self, section)
+        require_same_runtime(self, spine)
+        if not isinstance(trihedron, SweepTrihedron):
+            raise TypeError("sweep_surface trihedron must be SweepTrihedron")
+        resolved_tolerance = _require_positive_number(
+            tolerance,
+            "sweep_surface tolerance",
+        )
+        resolved_continuity = _require_int_between(
+            continuity,
+            "sweep_surface continuity",
+            minimum=0,
+            maximum=3,
+        )
+        resolved_max_degree = _require_positive_int(
+            max_degree,
+            "sweep_surface max_degree",
+        )
+        resolved_max_segments = _require_positive_int(
+            max_segments,
+            "sweep_surface max_segments",
+        )
+        expression = self._expression(
+            surface_ops.sweep_surface,
+            result=SURFACE_SPEC,
+            args=(
+                section._state,
+                spine._state,
+                _scalar_state(self, scale),
+                trihedron.value,
+                resolved_tolerance,
+                resolved_continuity,
+                resolved_max_degree,
+                resolved_max_segments,
+            ),
+            operation_id="zencad.typed.sweep_surface",
+        )
+        return Surface._from_state(self, expression)
+
     def segment(self, start: Point3, end: Point3, /) -> Edge:
         _require_points(self, (start, end), minimum=2, name="segment")
         expression = self._expression(
@@ -548,6 +618,37 @@ class Runtime:
 def _require_bool(value: object, name: str) -> None:
     if not isinstance(value, bool):
         raise TypeError(f"{name} must be bool")
+
+
+def _require_positive_number(value: Number, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be int or float")
+    result = float(value)
+    if not math.isfinite(result) or result <= 0:
+        raise ValueError(f"{name} must be finite and positive")
+    return result
+
+
+def _require_positive_int(value: int, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be int")
+    if value <= 0:
+        raise ValueError(f"{name} must be positive")
+    return value
+
+
+def _require_int_between(
+    value: int,
+    name: str,
+    *,
+    minimum: int,
+    maximum: int,
+) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be int")
+    if not minimum <= value <= maximum:
+        raise ValueError(f"{name} must be between {minimum} and {maximum}")
+    return value
 
 
 def _require_points(
