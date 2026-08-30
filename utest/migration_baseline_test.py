@@ -5,7 +5,13 @@ import unittest
 
 import evalcache.dircache_v2
 import zencad
+from OCP.TopoDS import TopoDS_Shape
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
+from zencad.geombase import point3, vector3
+from zencad.geom.curve import Curve, circle as curve_circle
+from zencad.geom.curve2 import Curve2, ellipse as curve2_ellipse
+from zencad.geom.shape import LazyObjectShape, Shape
+from zencad.geom.surface import Surface, cylinder as cylinder_surface
 
 
 def unlazy(value):
@@ -27,9 +33,142 @@ class MigrationBaseline(unittest.TestCase):
         cls.cache_directory.cleanup()
 
     def setUp(self):
+        self.previous_policy = (
+            zencad.lazy.encache,
+            zencad.lazy.decache,
+            zencad.lazy.fastdo,
+            zencad.lazy.onplace,
+        )
         zencad.lazy.encache = False
         zencad.lazy.decache = False
         zencad.lazy.fastdo = True
+        zencad.lazy.onplace = False
+
+    def tearDown(self):
+        (
+            zencad.lazy.encache,
+            zencad.lazy.decache,
+            zencad.lazy.fastdo,
+            zencad.lazy.onplace,
+        ) = self.previous_policy
+
+    def test_lazy_and_onplace_use_different_runtime_type_worlds(self):
+        lazy_box = zencad.box(2)
+
+        self.assertIs(type(lazy_box), LazyObjectShape)
+        self.assertIs(type(lazy_box.mass()), evalcache.LazyObject)
+        self.assertIs(type(lazy_box.faces()), evalcache.LazyObject)
+        self.assertIs(type(lazy_box.unlazy()), Shape)
+
+        zencad.lazy.onplace = True
+        eager_box = zencad.box(2)
+
+        self.assertIs(type(eager_box), Shape)
+        self.assertIs(type(eager_box.mass()), float)
+        self.assertIs(type(eager_box.faces()), list)
+        self.assertTrue(all(type(face) is Shape for face in eager_box.faces()))
+
+    def test_topology_sequence_and_index_are_generic_lazy_objects(self):
+        faces = zencad.box(2).faces()
+        first_face = faces[0]
+
+        self.assertIs(type(faces), evalcache.LazyObject)
+        self.assertIs(type(first_face), evalcache.LazyObject)
+        self.assertIs(type(first_face.unlazy()), Shape)
+        self.assertEqual(len(faces), 6)
+
+    def test_unlazy_and_native_shape_accessor_materialize(self):
+        lazy_box = zencad.box(2)
+
+        self.assertIs(type(lazy_box.unlazy()), Shape)
+        self.assertIsInstance(lazy_box.Shape(), TopoDS_Shape)
+
+    def test_custom_lazy_extension_is_untyped_and_expands_tuples(self):
+        @zencad.lazy
+        def pair(left, right):
+            return left, right
+
+        proxy = pair(1, 2)
+        self.assertIs(type(proxy), evalcache.LazyObject)
+        self.assertEqual(evalcache.unlazy(proxy), [1, 2])
+
+        zencad.lazy.onplace = True
+        self.assertEqual(pair(1, 2), [1, 2])
+
+    def test_curve_surface_types_are_hidden_by_generic_lazy_objects(self):
+        cases = (
+            (lambda: curve_circle(2), Curve),
+            (lambda: curve2_ellipse(2, 1), Curve2),
+            (lambda: cylinder_surface(2), Surface),
+        )
+
+        for factory, resolved_type in cases:
+            with self.subTest(resolved_type=resolved_type.__name__):
+                proxy = factory()
+                self.assertIs(type(proxy), evalcache.LazyObject)
+                self.assertIs(type(evalcache.unlazy(proxy)), resolved_type)
+
+        zencad.lazy.onplace = True
+        for factory, resolved_type in cases:
+            with self.subTest(
+                resolved_type=resolved_type.__name__,
+                policy="onplace",
+            ):
+                self.assertIs(type(factory()), resolved_type)
+
+    def test_historical_point_vector_result_type_mismatches(self):
+        # Characterization only: these are known defects, not target algebra.
+        vector = vector3(1, 2, 3)
+
+        self.assertIs(type(vector + vector3(4, 5, 6)), point3)
+        self.assertIs(type(vector * 2), point3)
+        self.assertIs(
+            type(point3(4, 5, 6) - point3(1, 1, 1)),
+            vector3,
+        )
+
+    def test_historical_triangulate_face_proxy_mismatch(self):
+        proxy = zencad.triangulate_face(zencad.rectangle(2, 2), 0.1)
+
+        self.assertIs(type(proxy), LazyObjectShape)
+        with self.assertRaisesRegex(
+            Exception,
+            "LazyObjectShape wraped type is not Shape",
+        ):
+            proxy.unlazy()
+
+        # Bypassing LazyObjectShape's validator exposes evalcache.expand's
+        # tuple-to-list conversion and the real structured result.
+        result = evalcache.unlazy(proxy)
+        self.assertIs(type(result), list)
+        self.assertEqual(len(result), 2)
+        self.assertTrue(all(type(node) is point3 for node in result[0]))
+        self.assertTrue(all(type(triangle) is list for triangle in result[1]))
+
+    def test_cached_shape_graph_key_and_serialized_round_trip(self):
+        zencad.lazy.encache = True
+        zencad.lazy.decache = True
+        zencad.lazy.fastdo = False
+
+        first = zencad.box(12.345) - zencad.sphere(2.345)
+        same = zencad.box(12.345) - zencad.sphere(2.345)
+        different = zencad.box(12.345) - zencad.sphere(2.346)
+        cache_key = first.__lazyhexhash__
+
+        self.assertEqual(cache_key, same.__lazyhexhash__)
+        self.assertNotEqual(cache_key, different.__lazyhexhash__)
+        self.assertNotIn(cache_key, zencad.lazy.cache)
+
+        first_value = first.unlazy()
+        self.assertIs(type(first_value), Shape)
+        self.assertIn(cache_key, zencad.lazy.cache)
+
+        restored = zencad.box(12.345) - zencad.sphere(2.345)
+        self.assertFalse(restored.__lazyheap__)
+        restored_value = restored.unlazy()
+        self.assertTrue(restored.__lazyheap__)
+        self.assertIs(type(restored_value), Shape)
+        self.assertAlmostEqual(restored_value.mass(), first_value.mass())
 
     def test_primitive_mass_and_topology(self):
         box = zencad.box(20, center=True)
