@@ -279,3 +279,11 @@ def vector3_normalized(value: Vector3Value) -> Vector3Value:
     if length == 0:
         raise ValueError("cannot normalize a zero-length vector")
     return vector3_divide(value, length)
+
+
+def vector3_normalize_compat(value: Vector3Value) -> Vector3Value:
+    """Legacy ``normalize`` spelling, whose zero vector remains zero."""
+    length = vector3_length(value)
+    if length == 0:
+        return value
+    return vector3_divide(value, length)

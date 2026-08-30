@@ -327,6 +327,25 @@ class Transform(Handle[ops.TransformValue]):
     def __call__(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
         return self.apply(value)
 
+    def transform_point(self, point: Point3, /) -> Point3:
+        if not isinstance(point, Point3):
+            raise TypeError("Transform.transform_point expects Point3")
+        return self.apply(point)
+
+    def transform_vector(self, vector: Vector3, /) -> Vector3:
+        if not isinstance(vector, Vector3):
+            raise TypeError("Transform.transform_vector expects Vector3")
+        return self.apply(vector)
+
+    def inverse_transform_point(self, point: Point3, /) -> Point3:
+        return self.inverse().transform_point(point)
+
+    def inverse_transform_vector(self, vector: Vector3, /) -> Vector3:
+        return self.inverse().transform_vector(vector)
+
+    def rotation_quat(self) -> Quaternion:
+        return self.rotation
+
     def matrix(
         self,
     ) -> tuple[

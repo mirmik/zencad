@@ -11,6 +11,8 @@ from collections.abc import Sequence
 import math
 from typing import Callable, TypeVar, cast, overload
 
+from OCP.TopoDS import TopoDS_Vertex
+from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
 from evalcache.v2 import (
     CachePolicy,
     CacheStore,
@@ -21,6 +23,8 @@ from evalcache.v2 import (
     ProgressHook,
     ResultSpec,
 )
+
+from zencad.occ_compat import vertex_point
 
 from . import _operations as ops
 from . import _bound_operations as bound_ops
@@ -518,6 +522,99 @@ class Runtime:
     ) -> Quaternion:
         return Quaternion(x, y, z, w, runtime=self)
 
+    @overload
+    def point3(self) -> Point3: ...
+
+    @overload
+    def point3(self, value: Point3 | Vector3 | Sequence[ScalarInput], /) -> Point3: ...
+
+    @overload
+    def point3(
+        self,
+        x: ScalarInput,
+        y: ScalarInput | None = None,
+        z: ScalarInput | None = None,
+        /,
+    ) -> Point3: ...
+
+    def point3(self, *args: object) -> Point3:
+        """Compatibility constructor with legacy coordinate padding."""
+        if len(args) == 1 and isinstance(args[0], Point3):
+            require_same_runtime(self, args[0])
+            return args[0]
+        components = _compat_components3(self, args, "point3")
+        return Point3(*components, runtime=self)
+
+    @overload
+    def vector3(self) -> Vector3: ...
+
+    @overload
+    def vector3(
+        self,
+        value: Point3 | Vector3 | Sequence[ScalarInput],
+        /,
+    ) -> Vector3: ...
+
+    @overload
+    def vector3(
+        self,
+        x: ScalarInput,
+        y: ScalarInput | None = None,
+        z: ScalarInput | None = None,
+        /,
+    ) -> Vector3: ...
+
+    def vector3(self, *args: object) -> Vector3:
+        """Compatibility constructor with legacy coordinate padding."""
+        if len(args) == 1 and isinstance(args[0], Vector3):
+            require_same_runtime(self, args[0])
+            return args[0]
+        components = _compat_components3(self, args, "vector3")
+        return Vector3(*components, runtime=self)
+
+    @overload
+    def quat(self, value: Quaternion | gp_Quaternion, /) -> Quaternion: ...
+
+    @overload
+    def quat(
+        self,
+        values: Sequence[ScalarInput],
+        /,
+    ) -> Quaternion: ...
+
+    @overload
+    def quat(
+        self,
+        x: ScalarInput,
+        y: ScalarInput,
+        z: ScalarInput,
+        w: ScalarInput,
+        /,
+    ) -> Quaternion: ...
+
+    def quat(self, *args: object) -> Quaternion:
+        """Compatibility quaternion constructor returning the stable handle."""
+        if len(args) == 1:
+            value = args[0]
+            if isinstance(value, Quaternion):
+                require_same_runtime(self, value)
+                return value
+            if isinstance(value, gp_Quaternion):
+                return Quaternion.from_ocp(value, runtime=self)
+            if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+                args = tuple(value)
+        if len(args) != 4:
+            raise TypeError(
+                "quat expects Quaternion, gp_Quaternion, or four components"
+            )
+        return Quaternion(
+            cast(ScalarInput, args[0]),
+            cast(ScalarInput, args[1]),
+            cast(ScalarInput, args[2]),
+            cast(ScalarInput, args[3]),
+            runtime=self,
+        )
+
     def quaternion_axis_angle(
         self,
         axis: Vector3,
@@ -537,6 +634,9 @@ class Runtime:
 
     def identity_transform(self) -> Transform:
         return Transform(runtime=self)
+
+    def nulltrans(self) -> Transform:
+        return self.identity_transform()
 
     @overload
     def translation(self, vector: Vector3, /) -> Transform: ...
@@ -571,6 +671,57 @@ class Runtime:
         )
         return Transform._from_state(self, state)
 
+    def move(self, *args: object) -> Transform:
+        return self.translation(self.vector3(*args))
+
+    def translate(self, *args: object) -> Transform:
+        return self.move(*args)
+
+    def moveX(self, value: ScalarInput, /) -> Transform:
+        return self.translation(value, 0, 0)
+
+    def moveY(self, value: ScalarInput, /) -> Transform:
+        return self.translation(0, value, 0)
+
+    def moveZ(self, value: ScalarInput, /) -> Transform:
+        return self.translation(0, 0, value)
+
+    def movX(self, value: ScalarInput, /) -> Transform:
+        return self.moveX(value)
+
+    def movY(self, value: ScalarInput, /) -> Transform:
+        return self.moveY(value)
+
+    def movZ(self, value: ScalarInput, /) -> Transform:
+        return self.moveZ(value)
+
+    def translateX(self, value: ScalarInput, /) -> Transform:
+        return self.moveX(value)
+
+    def translateY(self, value: ScalarInput, /) -> Transform:
+        return self.moveY(value)
+
+    def translateZ(self, value: ScalarInput, /) -> Transform:
+        return self.moveZ(value)
+
+    def right(self, value: ScalarInput, /) -> Transform:
+        return self.moveX(value)
+
+    def left(self, value: ScalarInput, /) -> Transform:
+        return self.moveX(-_as_scalar(self, value))
+
+    def forw(self, value: ScalarInput, /) -> Transform:
+        return self.moveY(value)
+
+    def back(self, value: ScalarInput, /) -> Transform:
+        return self.moveY(-_as_scalar(self, value))
+
+    def up(self, value: ScalarInput, /) -> Transform:
+        return self.moveZ(value)
+
+    def down(self, value: ScalarInput, /) -> Transform:
+        return self.moveZ(-_as_scalar(self, value))
+
     @overload
     def rotation(self, quaternion: Quaternion, /) -> Transform: ...
 
@@ -591,6 +742,34 @@ class Runtime:
         else:
             raise TypeError("rotation expects Quaternion or Vector3 and angle")
         return quaternion.to_transform()
+
+    def rotate(
+        self,
+        axis: Vector3 | Sequence[ScalarInput],
+        angle: ScalarInput | None = None,
+        /,
+    ) -> Transform:
+        resolved_axis = self.vector3(axis)
+        if angle is None:
+            angle = resolved_axis.length()
+            resolved_axis = resolved_axis.normalized()
+        return self.rotation(resolved_axis, angle)
+
+    def rotate_quat(
+        self,
+        quaternion: Quaternion | gp_Quaternion | Sequence[ScalarInput],
+        /,
+    ) -> Transform:
+        return self.rotation(self.quat(quaternion))
+
+    def rotateX(self, angle: ScalarInput, /) -> Transform:
+        return self.rotation(self.vector3(1, 0, 0), angle)
+
+    def rotateY(self, angle: ScalarInput, /) -> Transform:
+        return self.rotation(self.vector3(0, 1, 0), angle)
+
+    def rotateZ(self, angle: ScalarInput, /) -> Transform:
+        return self.rotation(self.vector3(0, 0, 1), angle)
 
     def scale(
         self,
@@ -635,10 +814,77 @@ class Runtime:
         )
         return Transform._from_state(self, state)
 
+    def mirror_plane(self, *normal: object) -> Transform:
+        return self.mirror(self.vector3(*normal))
+
+    def mirrorXY(self) -> Transform:
+        return self.mirror_plane(0, 0, 1)
+
+    def mirrorYZ(self) -> Transform:
+        return self.mirror_plane(1, 0, 0)
+
+    def mirrorXZ(self) -> Transform:
+        return self.mirror_plane(0, 1, 0)
+
+    def mirror_axis(self, *axis: object) -> Transform:
+        return self.rotation(self.vector3(*axis), math.pi)
+
+    def mirrorX(self) -> Transform:
+        return self.mirror_axis(1, 0, 0)
+
+    def mirrorY(self) -> Transform:
+        return self.mirror_axis(0, 1, 0)
+
+    def mirrorZ(self) -> Transform:
+        return self.mirror_axis(0, 0, 1)
+
+    def mirrorO(self, *origin: object) -> Transform:
+        return self.scale(-1, center=self.point3(*origin))
+
 
 def _require_bool(value: object, name: str) -> None:
     if not isinstance(value, bool):
         raise TypeError(f"{name} must be bool")
+
+
+def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:
+    if isinstance(value, Scalar):
+        require_same_runtime(runtime, value)
+        return value
+    return runtime.scalar(value)
+
+
+def _compat_components3(
+    runtime: Runtime,
+    args: tuple[object, ...],
+    name: str,
+) -> tuple[ScalarInput, ScalarInput, ScalarInput]:
+    if not args:
+        values: tuple[object, ...] = ()
+    elif len(args) == 1:
+        value = args[0]
+        if isinstance(value, (Point3, Vector3)):
+            require_same_runtime(runtime, value)
+            values = (value.x, value.y, value.z)
+        elif isinstance(value, TopoDS_Vertex):
+            point = vertex_point(value)
+            values = (point.X(), point.Y(), point.Z())
+        elif isinstance(value, (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
+            values = (value.X(), value.Y(), value.Z())
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            values = tuple(value)
+        else:
+            values = (value,)
+    else:
+        values = args
+    if len(values) > 3:
+        raise TypeError(f"{name} expects at most three coordinates")
+    padded = values + (0,) * (3 - len(values))
+    return (
+        cast(ScalarInput, padded[0]),
+        cast(ScalarInput, padded[1]),
+        cast(ScalarInput, padded[2]),
+    )
 
 
 def _require_positive_number(value: Number, name: str) -> float:

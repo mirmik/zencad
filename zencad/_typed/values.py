@@ -6,6 +6,8 @@ from collections.abc import Iterator
 from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 
 import numpy
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
+from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d
 from evalcache.v2 import ResultSpec
 
@@ -235,6 +237,71 @@ class _CoordinateHandle(Handle[ValueT]):
 
     def to_numpy(self) -> numpy.ndarray:
         return numpy.asarray(tuple(self), dtype=float)
+
+
+class _Coordinate3Handle(_CoordinateHandle[ValueT]):
+    """Compatibility spellings shared by typed 3D points and vectors."""
+
+    @property
+    def x(self) -> Scalar:
+        raise NotImplementedError
+
+    @property
+    def y(self) -> Scalar:
+        raise NotImplementedError
+
+    @property
+    def z(self) -> Scalar:
+        raise NotImplementedError
+
+    def value(self) -> tuple[float, float, float]:
+        raise NotImplementedError
+
+    def to_tuple(self) -> tuple[float, float, float]:
+        return self.value()
+
+    def to_array(self) -> numpy.ndarray:
+        return self.to_numpy()
+
+    def to_vector3(self) -> Vector3:
+        if isinstance(self, Vector3):
+            return self
+        return Vector3(self.x, self.y, self.z, runtime=self.runtime)
+
+    def to_point3(self) -> Point3:
+        if isinstance(self, Point3):
+            return self
+        return Point3(self.x, self.y, self.z, runtime=self.runtime)
+
+    def to_unit_vector(self) -> Vector3:
+        return self.to_vector3().normalized()
+
+    def length(self) -> Scalar:
+        return self.to_vector3().length()
+
+    def early(self, other: Point3 | Vector3, tolerance: Number = 1e-5) -> bool:
+        if not isinstance(other, (Point3, Vector3)):
+            return False
+        require_same_runtime(self.runtime, other)
+        if isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)):
+            raise TypeError("early tolerance must be int or float")
+        if tolerance < 0:
+            raise ValueError("early tolerance must be non-negative")
+        return all(
+            abs(left - right) < tolerance
+            for left, right in zip(self.value(), other.value())
+        )
+
+    def Pnt(self) -> gp_Pnt:
+        x, y, z = self.value()
+        return gp_Pnt(x, y, z)
+
+    def Vec(self) -> gp_Vec:
+        x, y, z = self.value()
+        return gp_Vec(x, y, z)
+
+    def Vtx(self) -> TopoDS_Vertex:
+        return BRepBuilderAPI_MakeVertex(self.Pnt()).Vertex()
 
 
 class Point2(_CoordinateHandle[ops.Point2Value]):
@@ -539,7 +606,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
         return self.value() == other.value()
 
 
-class Point3(_CoordinateHandle[ops.Point3Value]):
+class Point3(_Coordinate3Handle[ops.Point3Value]):
     @overload
     def __init__(
         self,
@@ -657,6 +724,18 @@ class Point3(_CoordinateHandle[ops.Point3Value]):
         )
         return Scalar._from_state(self.runtime, state)
 
+    def distance(self, other: Point3) -> Scalar:
+        return self.distance_to(other)
+
+    def cross(self, other: Vector3) -> Vector3:
+        return self.to_vector3().cross(other)
+
+    def angle(self, other: Vector3) -> Scalar:
+        if not isinstance(other, Vector3):
+            raise TypeError("Point3 angle expects Vector3")
+        require_same_runtime(self.runtime, other)
+        return acos(self.to_unit_vector().dot(other.normalized()))
+
     def to_ocp(self) -> gp_Pnt:
         x, y, z = self.value()
         return gp_Pnt(x, y, z)
@@ -668,7 +747,7 @@ class Point3(_CoordinateHandle[ops.Point3Value]):
         return self.value() == other.value()
 
 
-class Vector3(_CoordinateHandle[ops.Vector3Value]):
+class Vector3(_Coordinate3Handle[ops.Vector3Value]):
     @overload
     def __init__(
         self,
@@ -816,6 +895,18 @@ class Vector3(_CoordinateHandle[ops.Vector3Value]):
         )
         return Scalar._from_state(self.runtime, state)
 
+    def distance(self, other: Vector3) -> Scalar:
+        if not isinstance(other, Vector3):
+            raise TypeError("Vector3 distance expects Vector3")
+        require_same_runtime(self.runtime, other)
+        return (self - other).length()
+
+    def angle(self, other: Vector3) -> Scalar:
+        if not isinstance(other, Vector3):
+            raise TypeError("Vector3 angle expects Vector3")
+        require_same_runtime(self.runtime, other)
+        return acos(self.normalized().dot(other.normalized()))
+
     def cross(self, other: Vector3) -> Vector3:
         if not isinstance(other, Vector3):
             raise TypeError("Vector3 cross product requires Vector3")
@@ -843,6 +934,15 @@ class Vector3(_CoordinateHandle[ops.Vector3Value]):
             result=VECTOR3_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.vector3.normalized",
+        )
+        return Vector3._from_state(self.runtime, state)
+
+    def normalize(self) -> Vector3:
+        state = self.runtime._value_state(
+            ops.vector3_normalize_compat,
+            result=VECTOR3_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.vector3.normalize_compat",
         )
         return Vector3._from_state(self.runtime, state)
 

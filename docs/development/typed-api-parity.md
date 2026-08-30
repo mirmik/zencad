@@ -45,23 +45,30 @@ their existing modules but are outside the typed-domain replacement surface.
   immutable typed model and needs a deliberate repaired spelling.
 - `unchanged`: the entry remains outside the lazy/domain migration.
 
-The initial expanded inventory contains 380 types, functions, methods, and
+The expanded inventory contains 380 types, functions, methods, and
 operators:
 
 | Family | Total | Implemented | Partial | Missing | Repair | Unchanged |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Values | 44 | 22 | 21 | 0 | 1 | 0 |
-| Transforms | 64 | 16 | 5 | 34 | 9 | 0 |
-| Topology and bounds | 117 | 44 | 7 | 62 | 3 | 1 |
+| Values | 44 | 29 | 14 | 0 | 1 | 0 |
+| Transforms | 64 | 44 | 3 | 8 | 9 | 0 |
+| Topology and bounds | 117 | 73 | 7 | 33 | 3 | 1 |
 | Constructors | 92 | 22 | 6 | 63 | 1 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **109** | **46** | **208** | **14** | **3** |
+| **Total** | **380** | **173** | **37** | **153** | **14** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
 Conversely, a sweep or affine-transform row can require a substantial domain
 design.
+
+The first #2039 compatibility slice adds the legacy `point3`, `vector3`, and
+`quat` constructor spellings to `Runtime`, the similarity-transform aliases,
+and their inherited `Shape` methods. These adapters keep the graph behind
+stable typed handles and preserve concrete topology subtypes. Non-uniform
+affine scaling, multi-transform sequences, bulk value constructors, and the
+remaining quaternion representation methods are still explicit matrix work.
 
 The executable decomposition is:
 

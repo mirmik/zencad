@@ -187,7 +187,8 @@
       "checks": [
         "utest/migration_baseline_test.py",
         "utest/math_test.py",
-        "utest/typed_value_algebra_test.py"
+        "utest/typed_value_algebra_test.py",
+        "utest/typed_value_transform_compat_test.py"
       ],
       "surfaces": [
         {
@@ -263,13 +264,34 @@
               "status": "implemented",
               "typed": "Vector2/Vector3 scalar multiplication"
             },
+            "Pnt": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.Pnt() -> gp_Pnt"
+            },
+            "Vec": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.Vec() -> gp_Vec"
+            },
+            "Vtx": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.Vtx() -> TopoDS_Vertex"
+            },
+            "angle": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.angle() -> Scalar"
+            },
             "cross": {
               "status": "implemented",
-              "typed": "Vector3.cross()"
+              "typed": "Point3/Vector3.cross() -> Vector3"
             },
             "distance": {
               "status": "implemented",
-              "typed": "Point2/Point3.distance_to() -> Scalar"
+              "typed": "Point3/Vector3.distance() -> Scalar"
+            },
+            "early": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.early() -> bool",
+              "materialization": "explicit approximate comparison"
             },
             "length": {
               "status": "implemented",
@@ -277,15 +299,23 @@
             },
             "to_array": {
               "status": "implemented",
-              "typed": "numpy.asarray(typed value)"
+              "typed": "Point3/Vector3.to_array()"
+            },
+            "to_point3": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_point3() -> Point3"
             },
             "to_tuple": {
               "status": "implemented",
-              "typed": "typed value.value()"
+              "typed": "Point3/Vector3.to_tuple()"
             },
             "to_unit_vector": {
               "status": "implemented",
-              "typed": "Vector2/Vector3.normalized()"
+              "typed": "Point3/Vector3.to_unit_vector() -> Vector3"
+            },
+            "to_vector3": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_vector3() -> Vector3"
             }
           }
         },
@@ -348,7 +378,8 @@
       "checks": [
         "utest/trans_test.py",
         "utest/general_transformation_test.py",
-        "utest/typed_transform_test.py"
+        "utest/typed_transform_test.py",
+        "utest/typed_value_transform_compat_test.py"
       ],
       "surfaces": [
         {
@@ -370,6 +401,21 @@
               "status": "implemented",
               "typed": "Runtime.translation() -> Transform"
             },
+            "moveX": {"status": "implemented", "typed": "Runtime.moveX() -> Transform"},
+            "moveY": {"status": "implemented", "typed": "Runtime.moveY() -> Transform"},
+            "moveZ": {"status": "implemented", "typed": "Runtime.moveZ() -> Transform"},
+            "movX": {"status": "implemented", "typed": "Runtime.moveX() -> Transform"},
+            "movY": {"status": "implemented", "typed": "Runtime.moveY() -> Transform"},
+            "movZ": {"status": "implemented", "typed": "Runtime.moveZ() -> Transform"},
+            "translateX": {"status": "implemented", "typed": "Runtime.translateX() -> Transform"},
+            "translateY": {"status": "implemented", "typed": "Runtime.translateY() -> Transform"},
+            "translateZ": {"status": "implemented", "typed": "Runtime.translateZ() -> Transform"},
+            "right": {"status": "implemented", "typed": "Runtime.right() -> Transform"},
+            "left": {"status": "implemented", "typed": "Runtime.left() -> Transform"},
+            "forw": {"status": "implemented", "typed": "Runtime.forw() -> Transform"},
+            "back": {"status": "implemented", "typed": "Runtime.back() -> Transform"},
+            "up": {"status": "implemented", "typed": "Runtime.up() -> Transform"},
+            "down": {"status": "implemented", "typed": "Runtime.down() -> Transform"},
             "rotate": {
               "status": "implemented",
               "typed": "Runtime.rotation() -> Transform"
@@ -378,10 +424,21 @@
               "status": "implemented",
               "typed": "Runtime.rotation(Quaternion) -> Transform"
             },
+            "rotateX": {"status": "implemented", "typed": "Runtime.rotateX() -> Transform"},
+            "rotateY": {"status": "implemented", "typed": "Runtime.rotateY() -> Transform"},
+            "rotateZ": {"status": "implemented", "typed": "Runtime.rotateZ() -> Transform"},
             "mirror_plane": {
               "status": "implemented",
               "typed": "Runtime.mirror(normal) -> Transform"
             },
+            "mirrorXY": {"status": "implemented", "typed": "Runtime.mirrorXY() -> Transform"},
+            "mirrorYZ": {"status": "implemented", "typed": "Runtime.mirrorYZ() -> Transform"},
+            "mirrorXZ": {"status": "implemented", "typed": "Runtime.mirrorXZ() -> Transform"},
+            "mirror_axis": {"status": "implemented", "typed": "Runtime.mirror_axis() -> Transform"},
+            "mirrorX": {"status": "implemented", "typed": "Runtime.mirrorX() -> Transform"},
+            "mirrorY": {"status": "implemented", "typed": "Runtime.mirrorY() -> Transform"},
+            "mirrorZ": {"status": "implemented", "typed": "Runtime.mirrorZ() -> Transform"},
+            "mirrorO": {"status": "implemented", "typed": "Runtime.mirrorO() -> Transform"},
             "scale": {
               "status": "implemented",
               "typed": "Runtime.scale() -> Transform"
@@ -417,6 +474,14 @@
             "transform_point": {
               "status": "implemented",
               "typed": "Transform.apply(Point3) -> Point3"
+            },
+            "inverse_transform_point": {
+              "status": "implemented",
+              "typed": "Transform.inverse_transform_point() -> Point3"
+            },
+            "inverse_transform_vector": {
+              "status": "implemented",
+              "typed": "Transform.inverse_transform_vector() -> Vector3"
             },
             "rotation": {
               "status": "implemented",
@@ -493,11 +558,12 @@
     },
     {
       "id": "topology-and-bounds",
-      "tasks": [2040],
+      "tasks": [2039, 2040],
       "checks": [
         "utest/migration_baseline_test.py",
         "utest/typed_topology_handles_test.py",
         "utest/typed_topology_queries_test.py",
+        "utest/typed_value_transform_compat_test.py",
         "utest/typed_bounds_test.py"
       ],
       "surfaces": [
@@ -574,10 +640,39 @@
           "overrides": {
             "@type": {"status": "unchanged", "typed": "protocol-like compatibility facade"},
             "move": {"status": "implemented", "typed": "Shape.translate()"},
+            "mov": {"status": "implemented", "typed": "Shape.move()"},
+            "moveX": {"status": "implemented", "typed": "Shape.moveX()"},
+            "moveY": {"status": "implemented", "typed": "Shape.moveY()"},
+            "moveZ": {"status": "implemented", "typed": "Shape.moveZ()"},
+            "movX": {"status": "implemented", "typed": "Shape.movX()"},
+            "movY": {"status": "implemented", "typed": "Shape.movY()"},
+            "movZ": {"status": "implemented", "typed": "Shape.movZ()"},
             "translate": {"status": "implemented", "typed": "Shape.translate()"},
+            "translateX": {"status": "implemented", "typed": "Shape.translateX()"},
+            "translateY": {"status": "implemented", "typed": "Shape.translateY()"},
+            "translateZ": {"status": "implemented", "typed": "Shape.translateZ()"},
+            "right": {"status": "implemented", "typed": "Shape.right()"},
+            "left": {"status": "implemented", "typed": "Shape.left()"},
+            "forw": {"status": "implemented", "typed": "Shape.forw()"},
+            "back": {"status": "implemented", "typed": "Shape.back()"},
+            "up": {"status": "implemented", "typed": "Shape.up()"},
+            "down": {"status": "implemented", "typed": "Shape.down()"},
             "rotate": {"status": "implemented", "typed": "Shape.transform(Runtime.rotation())"},
+            "rot": {"status": "implemented", "typed": "Shape.rotate()"},
+            "rotateX": {"status": "implemented", "typed": "Shape.rotateX()"},
+            "rotateY": {"status": "implemented", "typed": "Shape.rotateY()"},
+            "rotateZ": {"status": "implemented", "typed": "Shape.rotateZ()"},
+            "rotX": {"status": "implemented", "typed": "Shape.rotX()"},
+            "rotY": {"status": "implemented", "typed": "Shape.rotY()"},
+            "rotZ": {"status": "implemented", "typed": "Shape.rotZ()"},
             "scale": {"status": "implemented", "typed": "Shape.transform(Runtime.scale())"},
-            "mirror": {"status": "implemented", "typed": "Shape.transform(Runtime.mirror())"}
+            "mirror": {"status": "implemented", "typed": "Shape.transform(Runtime.mirror())"},
+            "mirrorX": {"status": "implemented", "typed": "Shape.mirrorX()"},
+            "mirrorY": {"status": "implemented", "typed": "Shape.mirrorY()"},
+            "mirrorZ": {"status": "implemented", "typed": "Shape.mirrorZ()"},
+            "mirrorXY": {"status": "implemented", "typed": "Shape.mirrorXY()"},
+            "mirrorXZ": {"status": "implemented", "typed": "Shape.mirrorXZ()"},
+            "mirrorYZ": {"status": "implemented", "typed": "Shape.mirrorYZ()"}
           }
         },
         {

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 import math
 from typing import TYPE_CHECKING, Callable, ClassVar, Generic, TypeVar, cast, overload
 
@@ -288,18 +288,7 @@ class Shape(Handle[ResolvedShape]):
     ) -> ShapeT: ...
 
     def translate(self: ShapeT, *args: object) -> ShapeT:
-        if len(args) == 1 and isinstance(args[0], Vector3):
-            vector = args[0]
-            require_same_runtime(self.runtime, vector)
-        elif len(args) == 3:
-            vector = Vector3(
-                cast(ScalarInput, args[0]),
-                cast(ScalarInput, args[1]),
-                cast(ScalarInput, args[2]),
-                runtime=self.runtime,
-            )
-        else:
-            raise TypeError("translate expects Vector3 or three scalar coordinates")
+        vector = self.runtime.vector3(*args)
         expression = self.runtime._expression(
             ops.translate,
             result=self._result_spec,
@@ -307,6 +296,125 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.translate",
         )
         return type(self)._from_state(self.runtime, expression)
+
+    def move(self: ShapeT, *args: object) -> ShapeT:
+        return self.transform(self.runtime.move(*args))
+
+    def mov(self: ShapeT, *args: object) -> ShapeT:
+        return self.move(*args)
+
+    def moveX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.moveX(value))
+
+    def moveY(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.moveY(value))
+
+    def moveZ(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.moveZ(value))
+
+    def movX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.moveX(value)
+
+    def movY(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.moveY(value)
+
+    def movZ(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.moveZ(value)
+
+    def translateX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.moveX(value)
+
+    def translateY(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.moveY(value)
+
+    def translateZ(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.moveZ(value)
+
+    def right(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.right(value))
+
+    def left(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.left(value))
+
+    def forw(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.forw(value))
+
+    def back(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.back(value))
+
+    def up(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.up(value))
+
+    def down(self: ShapeT, value: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.down(value))
+
+    def rotate(
+        self: ShapeT,
+        axis: Vector3 | Sequence[ScalarInput],
+        angle: ScalarInput | None = None,
+        /,
+    ) -> ShapeT:
+        return self.transform(self.runtime.rotate(axis, angle))
+
+    def rot(
+        self: ShapeT,
+        axis: Vector3 | Sequence[ScalarInput],
+        angle: ScalarInput | None = None,
+        /,
+    ) -> ShapeT:
+        return self.rotate(axis, angle)
+
+    def rotateX(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.rotateX(angle))
+
+    def rotateY(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.rotateY(angle))
+
+    def rotateZ(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
+        return self.transform(self.runtime.rotateZ(angle))
+
+    def rotX(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
+        return self.rotateX(angle)
+
+    def rotY(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
+        return self.rotateY(angle)
+
+    def rotZ(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
+        return self.rotateZ(angle)
+
+    def scale(
+        self: ShapeT,
+        factor: ScalarInput,
+        center: Point3 | Sequence[ScalarInput] | None = None,
+        /,
+    ) -> ShapeT:
+        resolved_center = None if center is None else self.runtime.point3(center)
+        return self.transform(self.runtime.scale(factor, center=resolved_center))
+
+    def mirror(
+        self: ShapeT,
+        normal: Vector3 | Sequence[ScalarInput],
+        /,
+    ) -> ShapeT:
+        return self.transform(self.runtime.mirror(self.runtime.vector3(normal)))
+
+    def mirrorX(self: ShapeT) -> ShapeT:
+        return self.transform(self.runtime.mirrorX())
+
+    def mirrorY(self: ShapeT) -> ShapeT:
+        return self.transform(self.runtime.mirrorY())
+
+    def mirrorZ(self: ShapeT) -> ShapeT:
+        return self.transform(self.runtime.mirrorZ())
+
+    def mirrorXY(self: ShapeT) -> ShapeT:
+        return self.transform(self.runtime.mirrorXY())
+
+    def mirrorXZ(self: ShapeT) -> ShapeT:
+        return self.transform(self.runtime.mirrorXZ())
+
+    def mirrorYZ(self: ShapeT) -> ShapeT:
+        return self.transform(self.runtime.mirrorYZ())
 
     def _topology_query(
         self,
