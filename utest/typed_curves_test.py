@@ -51,8 +51,8 @@ class TypedCurveHandlesTest(unittest.TestCase):
                         runtime.point(1, 2, 3),
                         runtime.vector(1, 0, 0),
                     )
-                    circle = runtime.circle(2)
-                    ellipse = runtime.ellipse(3, 2)
+                    circle = runtime.circle_curve(2)
+                    ellipse = runtime.ellipse_curve(3, 2)
                     segment = runtime.segment2(
                         runtime.point2(0, 0),
                         runtime.point2(4, 0),
@@ -121,8 +121,8 @@ class TypedCurveHandlesTest(unittest.TestCase):
         radius = seed.mass() / 4
         origin = seed.center()
 
-        circle = runtime.circle(radius)
-        ellipse = runtime.ellipse(radius + 1, radius)
+        circle = runtime.circle_curve(radius)
+        ellipse = runtime.ellipse_curve(radius + 1, radius)
         line = runtime.line(origin, runtime.vector(radius, 0, 0))
         segment = runtime.segment2(
             runtime.point2(0, 0),
@@ -188,27 +188,27 @@ class TypedCurveHandlesTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
             runtime.trim_curve2(other.ellipse2(2, 1), 0, 1)
 
-        invalid = runtime.circle(0)
+        invalid = runtime.circle_curve(0)
         with self.assertRaisesRegex(ValueError, "positive scalar"):
             invalid.native()
         with self.assertRaisesRegex(ValueError, "non-zero Vector3"):
             runtime.line(runtime.point(0, 0, 0), runtime.vector(0, 0, 0)).native()
         with self.assertRaisesRegex(ValueError, "must not be less"):
-            runtime.ellipse(1, 2).native()
+            runtime.ellipse_curve(1, 2).native()
         with self.assertRaisesRegex(ValueError, "endpoints must be distinct"):
             point = runtime.point2(0, 0)
             runtime.segment2(point, point).native()
 
         immediate = typed.Runtime.immediate(cache=False)
         with self.assertRaisesRegex(ValueError, "positive scalar"):
-            immediate.circle(0)
+            immediate.circle_curve(0)
 
 
 class TypedCurveCacheTest(unittest.TestCase):
     def test_curve_cache_uses_family_specific_non_pickle_artifacts(self):
         store = MemoryCacheStore()
         first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.circle(2).native()
+        first.circle_curve(2).native()
 
         self.assertEqual(len(store.records), 1)
         key, record = next(iter(store.records.items()))
@@ -236,7 +236,7 @@ class TypedCurveCacheTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.circle(2)
+        restored = second.circle_curve(2)
         self.assertIs(type(restored.native()), Geom_Circle)
         self.assertIn(
             EvaluationEventKind.CACHE_REJECTED,
@@ -275,7 +275,7 @@ runtime = typed.Runtime.deferred(
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-runtime.circle(2).point(0).value()
+runtime.circle_curve(2).point(0).value()
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:

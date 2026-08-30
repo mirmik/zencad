@@ -74,8 +74,8 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         events = []
         runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
         line = runtime.line(runtime.point3(1, 2, 3), runtime.vector3(1, 0, 0))
-        circle = runtime.circle(2)
-        ellipse = runtime.ellipse(3, 2)
+        circle = runtime.circle_curve(2)
+        ellipse = runtime.ellipse_curve(3, 2)
 
         line_parameters = line.line_parameters()
         circle_parameters = circle.circle_parameters()
@@ -110,7 +110,7 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
             0.75,
         )
 
-        circle = runtime.circle(2)
+        circle = runtime.circle_curve(2)
         parameters = circle.uniform(4)
         points = circle.uniform_points(4)
         self.assertEqual(len(parameters), 4)

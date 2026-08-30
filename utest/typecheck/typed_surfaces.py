@@ -11,8 +11,8 @@ def surface_contract(runtime: typed.Runtime) -> None:
     cylinder = assert_type(runtime.cylinder_surface(radius), typed.Surface)
     sweep = assert_type(
         runtime.sweep_surface(
-            runtime.circle(radius / 2),
-            runtime.circle(radius + 1),
+            runtime.circle_curve(radius / 2),
+            runtime.circle_curve(radius + 1),
             scale=radius,
             trihedron=typed.SweepTrihedron.CORRECTED_FRENET,
         ),

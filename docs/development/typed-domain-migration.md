@@ -820,7 +820,7 @@ separate public-cutover decision and compatibility audit described by Stage 7.
 
 ## Stage 7: public cutover
 
-Status: parity inventory complete; family migrations have not started. The
+Status: parity inventory complete; family migrations are in progress. The
 machine-readable source of truth is
 [`typed-api-parity.json`](typed-api-parity.json), with rationale and current
 counts in [`typed-api-parity.md`](typed-api-parity.md).

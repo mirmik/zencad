@@ -158,7 +158,7 @@ class WireBuilder:
         rel: bool | None = None,
     ) -> WireBuilder:
         resolved_center = self.prepare((center,), rel)[0]
-        curve = self.runtime.circle(radius).transform(
+        curve = self.runtime.circle_curve(radius).transform(
             self.runtime.translation(resolved_center.to_vector3())
         )
         first = curve.lower_distance_parameter(self.current)
@@ -179,7 +179,7 @@ class WireBuilder:
     ) -> WireBuilder:
         resolved_center = self.prepare((center,), rel)[0]
         curve = (
-            self.runtime.ellipse(radius1, radius2)
+            self.runtime.ellipse_curve(radius1, radius2)
             .transform(self.runtime.rotateZ(rotate))
             .transform(self.runtime.translation(resolved_center.to_vector3()))
         )
@@ -211,8 +211,7 @@ class WireBuilder:
             if len(tangs) != len(points):
                 raise ValueError("WireBuilder tangents must match point count")
             resolved_tangents = [
-                None if tangent is None else self._vector(tangent)
-                for tangent in tangs
+                None if tangent is None else self._vector(tangent) for tangent in tangs
             ]
         if approx:
             if not self.edges:

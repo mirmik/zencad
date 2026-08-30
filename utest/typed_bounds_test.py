@@ -178,7 +178,7 @@ class TypedBoundaryBoxTest(unittest.TestCase):
             cache=False,
             progress_hooks=(events.append,),
         )
-        curve_range = runtime.circle(runtime.box(2).mass() / 4).range()
+        curve_range = runtime.circle_curve(runtime.box(2).mass() / 4).range()
         surface_range = runtime.cylinder_surface(2).u_range()
 
         self.assertIs(type(curve_range), typed.Interval)

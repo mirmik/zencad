@@ -115,7 +115,7 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
             muls=(3, 1, 3),
             degree=2,
         )
-        circle = runtime.circle(2)
+        circle = runtime.circle_curve(2)
         moved = circle.transform(runtime.moveX(3))
         half_circle = circle.edge((0, math.pi))
         interval_edge = runtime.make_edge(circle, circle.range())
@@ -251,7 +251,7 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "equal length"):
             runtime.bspline_curve(points, (0, 1), (3,), 2)
         with self.assertRaisesRegex(TypeError, "two scalar bounds"):
-            runtime.make_edge(runtime.circle(1), (0, 1, 2))
+            runtime.make_edge(runtime.circle_curve(1), (0, 1, 2))
         with self.assertRaisesRegex(ValueError, "at least one Edge or Wire"):
             runtime.make_wire()
         with self.assertRaisesRegex(TypeError, "only Edge or Wire"):
@@ -259,7 +259,7 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "requires step or pitch"):
             runtime.helix(1, 2)
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.circle(1).transform(other.moveX(1))
+            runtime.circle_curve(1).transform(other.moveX(1))
 
 
 if __name__ == "__main__":

@@ -47,7 +47,7 @@ def main():
         assert stl_path.stat().st_size > 0
 
         typed_runtime = typed.Runtime.deferred(cache=False)
-        curve = typed_runtime.circle(2)
+        curve = typed_runtime.circle_curve(2)
         curve2 = typed_runtime.segment2(
             typed_runtime.point2(0, 0),
             typed_runtime.point2(3, 0),
@@ -58,8 +58,8 @@ def main():
         assert curve2.point(0.5).value() == (0.5, 0.0)
         surface = typed_runtime.cylinder_surface(2)
         sweep_surface = typed_runtime.sweep_surface(
-            typed_runtime.circle(1),
-            typed_runtime.circle(3),
+            typed_runtime.circle_curve(1),
+            typed_runtime.circle_curve(3),
         )
         assert type(surface) is typed.Surface
         assert surface.point(0, 3).value() == (2.0, 0.0, 3.0)
@@ -86,6 +86,17 @@ def main():
         assert edge_curve.range().value() == (0.0, 2.0)
         assert type(face_surface) is typed.Surface
         assert face_surface.u_range().length().value() == 2.0
+        circle_face = typed_runtime.circle(3)
+        ellipse_edge = typed_runtime.ellipse(4, 2, wire=True)
+        polygon_wire = typed_runtime.rectangle(4, 3, wire=True)
+        holed_face = typed_runtime.fill(
+            (polygon_wire, typed_runtime.rectangle(2, 1, wire=True))
+        )
+        assert type(circle_face) is typed.Face
+        assert type(ellipse_edge) is typed.Edge
+        assert type(polygon_wire) is typed.Wire
+        assert type(holed_face) is typed.Face
+        assert len(holed_face.edges()) == 8
         builder = (
             typed_runtime.wire_builder(defrel=True)
             .l(2, 0)

@@ -924,8 +924,18 @@
           "source": "zencad.geom.face",
           "default": {"status": "missing", "typed": "Runtime.{name}() -> Face | Wire", "materialization": "none"},
           "overrides": {
-            "polygon": {"status": "partial", "typed": "Runtime.polygon() -> Face; wire=True remains"},
-            "rectangle": {"status": "partial", "typed": "Runtime.rectangle() -> Face; wire=True remains"}
+            "circle": {"status": "implemented", "typed": "Runtime.circle() -> Face | Edge"},
+            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse() -> Face | Edge"},
+            "fill": {"status": "implemented", "typed": "Runtime.fill() -> Face"},
+            "fix_face": {"status": "implemented", "typed": "Runtime.fix_face() -> Face"},
+            "infplane": {"status": "implemented", "typed": "Runtime.infplane() -> Face"},
+            "interpolate2": {"status": "implemented", "typed": "Runtime.interpolate2() -> Face"},
+            "ngon": {"status": "implemented", "typed": "Runtime.ngon() -> Face | Wire"},
+            "polygon": {"status": "implemented", "typed": "Runtime.polygon() -> Face | Wire"},
+            "rectangle": {"status": "implemented", "typed": "Runtime.rectangle() -> Face | Wire"},
+            "rectangle_wire": {"status": "implemented", "typed": "Runtime.rectangle_wire() -> Wire"},
+            "ruled": {"status": "implemented", "typed": "Runtime.ruled() -> Face"},
+            "square": {"status": "implemented", "typed": "Runtime.square() -> Face | Wire"}
           }
         },
         {
@@ -942,8 +952,8 @@
           "default": {"status": "missing", "typed": "Runtime.{name}() -> Curve", "materialization": "none"},
           "overrides": {
             "line": {"status": "implemented", "typed": "Runtime.line() -> Curve"},
-            "circle": {"status": "implemented", "typed": "Runtime.circle() -> Curve"},
-            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse() -> Curve"},
+            "circle": {"status": "implemented", "typed": "Runtime.circle_curve() -> Curve"},
+            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse_curve() -> Curve"},
             "interpolate": {"status": "implemented", "typed": "Runtime.interpolate_curve() -> Curve"},
             "bezier": {"status": "implemented", "typed": "Runtime.bezier_curve() -> Curve"},
             "bspline": {"status": "implemented", "typed": "Runtime.bspline_curve() -> Curve"}

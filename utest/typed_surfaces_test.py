@@ -63,8 +63,8 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                     )
                     cylinder = runtime.cylinder_surface(2)
                     sweep = runtime.sweep_surface(
-                        runtime.circle(1),
-                        runtime.circle(3),
+                        runtime.circle_curve(1),
+                        runtime.circle_curve(3),
                     )
 
                     observed_types.add((type(cylinder), type(sweep)))
@@ -129,8 +129,8 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         scale = seed.mass() / 8
         cylinder = runtime.cylinder_surface(radius)
         sweep = runtime.sweep_surface(
-            runtime.circle(radius / 2),
-            runtime.circle(radius + 1),
+            runtime.circle_curve(radius / 2),
+            runtime.circle_curve(radius + 1),
             scale=scale,
             trihedron=typed.SweepTrihedron.FRENET,
         )
@@ -212,7 +212,7 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             runtime=runtime,
         )
 
-        surface = runtime.sweep_surface(runtime.circle(1), spine)
+        surface = runtime.sweep_surface(runtime.circle_curve(1), spine)
 
         _assert_coordinates(
             self,
@@ -225,31 +225,31 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         other = typed.Runtime.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "section must be Curve"):
-            runtime.sweep_surface(runtime.ellipse2(2, 1), runtime.circle(3))  # type: ignore[arg-type]
+            runtime.sweep_surface(runtime.ellipse2(2, 1), runtime.circle_curve(3))  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.sweep_surface(runtime.circle(1), other.circle(3))
+            runtime.sweep_surface(runtime.circle_curve(1), other.circle_curve(3))
         with self.assertRaisesRegex(TypeError, "must be SweepTrihedron"):
             runtime.sweep_surface(
-                runtime.circle(1),
-                runtime.circle(3),
+                runtime.circle_curve(1),
+                runtime.circle_curve(3),
                 trihedron="frenet",  # type: ignore[arg-type]
             )
         with self.assertRaisesRegex(TypeError, "tolerance must be int or float"):
             runtime.sweep_surface(
-                runtime.circle(1),
-                runtime.circle(3),
+                runtime.circle_curve(1),
+                runtime.circle_curve(3),
                 tolerance=True,
             )
         with self.assertRaisesRegex(ValueError, "between 0 and 3"):
             runtime.sweep_surface(
-                runtime.circle(1),
-                runtime.circle(3),
+                runtime.circle_curve(1),
+                runtime.circle_curve(3),
                 continuity=4,
             )
         with self.assertRaisesRegex(ValueError, "max_degree must be positive"):
             runtime.sweep_surface(
-                runtime.circle(1),
-                runtime.circle(3),
+                runtime.circle_curve(1),
+                runtime.circle_curve(3),
                 max_degree=0,
             )
 
@@ -257,8 +257,8 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             runtime.cylinder_surface(0).native()
         with self.assertRaisesRegex(ValueError, "positive scalar"):
             runtime.sweep_surface(
-                runtime.circle(1),
-                runtime.circle(3),
+                runtime.circle_curve(1),
+                runtime.circle_curve(3),
                 scale=0,
             ).native()
 
@@ -284,7 +284,7 @@ class TypedSurfaceCacheTest(unittest.TestCase):
         self.assertEqual(record.value.artifacts[0].name, "surface.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 20)
 
-        wrong_native = typed.Runtime.deferred(cache=False).circle(2).native()
+        wrong_native = typed.Runtime.deferred(cache=False).circle_curve(2).native()
         wrong_value = CurveSerializer().dumps(curve_ops.curve_from_ocp(wrong_native))
         store.records[key] = CacheRecord(
             schema=record.schema,
@@ -309,7 +309,7 @@ class TypedSurfaceCacheTest(unittest.TestCase):
     def test_fresh_runtime_and_fresh_process_reuse_surface_cache(self):
         store = MemoryCacheStore()
         first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.sweep_surface(first.circle(1), first.circle(3)).native()
+        first.sweep_surface(first.circle_curve(1), first.circle_curve(3)).native()
 
         events = []
         second = typed.Runtime.deferred(
@@ -317,7 +317,7 @@ class TypedSurfaceCacheTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.sweep_surface(second.circle(1), second.circle(3)).native()
+        restored = second.sweep_surface(second.circle_curve(1), second.circle_curve(3)).native()
         self.assertIs(type(restored), Geom_BSplineSurface)
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,

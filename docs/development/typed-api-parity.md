@@ -53,10 +53,10 @@ operators:
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
 | Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
-| Constructors | 92 | 61 | 2 | 29 | 0 | 0 |
+| Constructors | 92 | 73 | 0 | 19 | 0 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **271** | **9** | **78** | **19** | **3** |
+| **Total** | **380** | **283** | **7** | **68** | **19** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -102,6 +102,16 @@ while ordinary circular, elliptical, interpolation, relative, and closing
 operations compose the existing typed primitives. Descending curve intervals
 are represented as correctly oriented edges instead of OCCT's periodic
 complement.
+
+The fourth #2041 tranche restores the planar constructor surface. Geometric
+curve factories now use the unambiguous `circle_curve` and `ellipse_curve`
+spellings, while root-compatible `circle` and `ellipse` return `Face` or
+`Edge` according to `wire`. Polygon, rectangle, square, and ngon variants
+return exact `Face`/`Wire` handles; fill supports outer boundaries and holes.
+`interpolate2`, `ruled`, `fix_face`, and `infplane` complete the non-text,
+non-sweep Face constructors. The historically inverted partial-ellipse
+`wire` branch is repaired consistently: `wire=True` means an edge boundary,
+and `wire=False` means a filled sector.
 
 The executable decomposition is:
 

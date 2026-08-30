@@ -20,8 +20,17 @@ from OCP.BRepBuilderAPI import (
 )
 from OCP.BRepTools import BRepTools
 from OCP.GC import GC_MakeArcOfCircle
-from OCP.Geom import Geom_Ellipse, Geom_RectangularTrimmedSurface, Geom_TrimmedCurve
-from OCP.gp import gp_Ax2, gp_Dir, gp_Pnt
+from OCP.Geom import (
+    Geom_Circle,
+    Geom_Ellipse,
+    Geom_RectangularTrimmedSurface,
+    Geom_TrimmedCurve,
+)
+from OCP.GeomAPI import GeomAPI_PointsToBSplineSurface
+from OCP.GeomAbs import GeomAbs_C2
+from OCP.ShapeFix import ShapeFix_Face
+from OCP.TColgp import TColgp_Array2OfPnt
+from OCP.gp import gp_Ax2, gp_Dir, gp_Pln, gp_Pnt
 from OCP.TopAbs import (
     TopAbs_COMPOUND,
     TopAbs_COMPSOLID,
@@ -57,6 +66,7 @@ from zencad.occ_compat import (
     as_solid,
     as_vertex,
     as_wire,
+    make_fill_face,
     vertex_point as ocp_vertex_point,
 )
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
@@ -165,6 +175,170 @@ def polygon(points: tuple[Point3Value, ...]) -> ResolvedShape:
     if not builder.IsDone():
         raise ValueError("cannot build a face from the supplied points")
     return ResolvedShape(builder.Face())
+
+
+def fill_wires(shapes: tuple[ResolvedShape, ...]) -> ResolvedShape:
+    if not shapes:
+        raise ValueError("fill requires at least one Edge or Wire")
+    wires = tuple(as_wire(wire_from_wire_or_edge(shape).Shape()) for shape in shapes)
+    builder = BRepBuilderAPI_MakeFace(wires[0])
+    for wire in wires[1:]:
+        builder.Add(wire)
+    builder.Build()
+    if not builder.IsDone():
+        raise ValueError("cannot fill the supplied wires")
+    fixer = ShapeFix_Face(builder.Face())
+    fixer.Perform()
+    fixer.FixOrientation()
+    return ResolvedShape(fixer.Face())
+
+
+def _angle_pair(
+    angle: float | tuple[float, float] | None,
+) -> tuple[float, float] | None:
+    if angle is None:
+        return None
+    if isinstance(angle, tuple):
+        start, end = angle
+    elif angle >= 0:
+        start, end = 0.0, angle
+    else:
+        start, end = angle, 0.0
+    if not math.isfinite(start) or not math.isfinite(end):
+        raise ValueError("conic angle bounds must be finite")
+    if start == end:
+        raise ValueError("conic angle bounds must be distinct")
+    return (start, end)
+
+
+def _conic_shape(
+    curve: Geom_Circle | Geom_Ellipse,
+    angle: float | tuple[float, float] | None,
+    wire: bool,
+) -> ResolvedShape:
+    interval = _angle_pair(angle)
+    if interval is None:
+        edge_builder = BRepBuilderAPI_MakeEdge(curve)
+    else:
+        lower, upper = sorted(interval)
+        edge_builder = BRepBuilderAPI_MakeEdge(curve, lower, upper)
+    if not edge_builder.IsDone():
+        raise ValueError("conic edge construction failed")
+    edge = edge_builder.Edge()
+    if interval is not None and interval[1] < interval[0]:
+        edge = as_edge(edge.Reversed())
+    if wire:
+        return ResolvedShape(edge)
+
+    wire_builder = BRepBuilderAPI_MakeWire()
+    wire_builder.Add(edge)
+    if interval is not None:
+        start = curve.Value(interval[0])
+        end = curve.Value(interval[1])
+        origin = curve.Location()
+        wire_builder.Add(BRepBuilderAPI_MakeEdge(end, origin).Edge())
+        wire_builder.Add(BRepBuilderAPI_MakeEdge(origin, start).Edge())
+    if not wire_builder.IsDone():
+        raise ValueError("conic boundary construction failed")
+    face_builder = BRepBuilderAPI_MakeFace(wire_builder.Wire())
+    if not face_builder.IsDone():
+        raise ValueError("conic face construction failed")
+    return ResolvedShape(face_builder.Face())
+
+
+def circle_shape(
+    radius: float,
+    angle: float | tuple[float, float] | None,
+    wire: bool,
+) -> ResolvedShape:
+    if not math.isfinite(radius) or radius <= 0:
+        raise ValueError("circle radius must be finite and positive")
+    curve = Geom_Circle(
+        gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)),
+        radius,
+    )
+    return _conic_shape(curve, angle, wire)
+
+
+def ellipse_shape(
+    radius1: float,
+    radius2: float,
+    angle: float | tuple[float, float] | None,
+    wire: bool,
+) -> ResolvedShape:
+    if not math.isfinite(radius1) or radius1 <= 0:
+        raise ValueError("ellipse radius1 must be finite and positive")
+    if not math.isfinite(radius2) or radius2 <= 0:
+        raise ValueError("ellipse radius2 must be finite and positive")
+    axis_angle = 0.0
+    if radius2 > radius1:
+        radius1, radius2 = radius2, radius1
+        axis_angle = math.pi / 2
+    curve = Geom_Ellipse(
+        gp_Ax2(
+            gp_Pnt(0, 0, 0),
+            gp_Dir(0, 0, 1),
+            gp_Dir(math.cos(axis_angle), math.sin(axis_angle), 0),
+        ),
+        radius1,
+        radius2,
+    )
+    return _conic_shape(curve, angle, wire)
+
+
+def interpolate_face(
+    rows: tuple[tuple[Point3Value, ...], ...],
+    degree_min: int,
+    degree_max: int,
+) -> ResolvedShape:
+    if len(rows) < 2 or len(rows[0]) < 2:
+        raise ValueError("interpolate2 requires at least a 2x2 point grid")
+    width = len(rows[0])
+    if any(len(row) != width for row in rows):
+        raise ValueError("interpolate2 point grid must be rectangular")
+    points = TColgp_Array2OfPnt(1, len(rows), 1, width)
+    for row_index, row in enumerate(rows, 1):
+        for column_index, point in enumerate(row, 1):
+            points.SetValue(row_index, column_index, _point(point))
+    surface = GeomAPI_PointsToBSplineSurface(
+        points,
+        degree_min,
+        degree_max,
+        GeomAbs_C2,
+        1e-3,
+    )
+    if not surface.IsDone():
+        raise ValueError("interpolate2 surface construction failed")
+    builder = BRepBuilderAPI_MakeFace(surface.Surface(), 1e-5)
+    if not builder.IsDone():
+        raise ValueError("interpolate2 face construction failed")
+    return ResolvedShape(builder.Face())
+
+
+def fix_face(shape: ResolvedShape) -> ResolvedShape:
+    if shape.Shape().ShapeType() != TopAbs_FACE:
+        raise TypeError("fix_face expects Face")
+    fixer = ShapeFix_Face(as_face(shape.Shape()))
+    fixer.Perform()
+    fixer.FixOrientation()
+    return ResolvedShape(fixer.Face())
+
+
+def infinite_plane() -> ResolvedShape:
+    builder = BRepBuilderAPI_MakeFace(gp_Pln(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)))
+    if not builder.IsDone():
+        raise ValueError("infinite plane construction failed")
+    return ResolvedShape(builder.Face())
+
+
+def ruled_face(first: ResolvedShape, second: ResolvedShape) -> ResolvedShape:
+    if first.Shape().ShapeType() != TopAbs_EDGE:
+        raise TypeError("ruled first argument must be Edge")
+    if second.Shape().ShapeType() != TopAbs_EDGE:
+        raise TypeError("ruled second argument must be Edge")
+    return ResolvedShape(
+        make_fill_face(as_edge(first.Shape()), as_edge(second.Shape()))
+    )
 
 
 def rectangle(width: float, height: float, center: bool) -> ResolvedShape:
@@ -419,9 +593,8 @@ def svg_elliptic_arc(
     local_x = cosine * half_dx + sine * half_dy
     local_y = -sine * half_dx + cosine * half_dy
 
-    radii_scale = (
-        local_x * local_x / (radius_x * radius_x)
-        + local_y * local_y / (radius_y * radius_y)
+    radii_scale = local_x * local_x / (radius_x * radius_x) + local_y * local_y / (
+        radius_y * radius_y
     )
     if radii_scale > 1:
         scale = math.sqrt(radii_scale)
@@ -443,16 +616,8 @@ def svg_elliptic_arc(
     factor = sign * math.sqrt(max(0.0, numerator / denominator))
     center_local_x = factor * radius_x * local_y / radius_y
     center_local_y = -factor * radius_y * local_x / radius_x
-    center_x = (
-        cosine * center_local_x
-        - sine * center_local_y
-        + (start.x + end.x) / 2
-    )
-    center_y = (
-        sine * center_local_x
-        + cosine * center_local_y
-        + (start.y + end.y) / 2
-    )
+    center_x = cosine * center_local_x - sine * center_local_y + (start.x + end.x) / 2
+    center_y = sine * center_local_x + cosine * center_local_y + (start.y + end.y) / 2
 
     def vector_angle(ax: float, ay: float, bx: float, by: float) -> float:
         return math.atan2(ax * by - ay * bx, ax * bx + ay * by)
