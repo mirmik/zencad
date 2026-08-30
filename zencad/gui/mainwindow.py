@@ -128,6 +128,11 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         geometry = Settings.get(["memory", "wsize"])
         if isinstance(geometry, QtCore.QRect) and geometry.isValid():
             self.setGeometry(geometry)
+        elif isinstance(geometry, (list, tuple)) and len(geometry) == 4:
+            try:
+                self.setGeometry(*(int(item) for item in geometry))
+            except (TypeError, ValueError):
+                pass
 
         horizontal = self._splitter_sizes(
             Settings.get(["memory", "hsplitter_position"]), 2
