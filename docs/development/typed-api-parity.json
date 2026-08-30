@@ -851,6 +851,7 @@
         "utest/curve2_test.py",
         "utest/typed_shape_factories_test.py",
         "utest/typed_solid_constructors_test.py",
+        "utest/typed_curve_wire_constructors_test.py",
         "utest/typed_curves_test.py",
         "utest/typed_surfaces_test.py"
       ],
@@ -885,7 +886,15 @@
           "default": {"status": "missing", "typed": "Runtime.{name}() -> Edge | Wire", "materialization": "none"},
           "overrides": {
             "segment": {"status": "implemented", "typed": "Runtime.segment() -> Edge"},
-            "polysegment": {"status": "implemented", "typed": "Runtime.polysegment() -> Wire"}
+            "polysegment": {"status": "implemented", "typed": "Runtime.polysegment() -> Wire"},
+            "circle_arc": {"status": "implemented", "typed": "Runtime.circle_arc() -> Edge"},
+            "interpolate": {"status": "implemented", "typed": "Runtime.interpolate() -> Edge"},
+            "bezier": {"status": "implemented", "typed": "Runtime.bezier() -> Edge"},
+            "bspline": {"status": "implemented", "typed": "Runtime.bspline() -> Edge"},
+            "make_edge": {"status": "implemented", "typed": "Runtime.make_edge()/Curve.edge() -> Edge"},
+            "make_wire": {"status": "implemented", "typed": "Runtime.make_wire() -> Wire"},
+            "rounded_polysegment": {"status": "implemented", "typed": "Runtime.rounded_polysegment() -> Wire"},
+            "helix": {"status": "implemented", "typed": "Runtime.helix() -> Wire"}
           }
         },
         {
@@ -917,7 +926,10 @@
           "overrides": {
             "line": {"status": "implemented", "typed": "Runtime.line() -> Curve"},
             "circle": {"status": "implemented", "typed": "Runtime.circle() -> Curve"},
-            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse() -> Curve"}
+            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse() -> Curve"},
+            "interpolate": {"status": "implemented", "typed": "Runtime.interpolate_curve() -> Curve"},
+            "bezier": {"status": "implemented", "typed": "Runtime.bezier_curve() -> Curve"},
+            "bspline": {"status": "implemented", "typed": "Runtime.bspline_curve() -> Curve"}
           }
         },
         {
@@ -928,8 +940,10 @@
             "@type": {"status": "implemented", "typed": "Curve"},
             "Curve": {"status": "implemented", "typed": "Curve.native()", "materialization": "native()"},
             "d0": {"status": "implemented", "typed": "Curve.point() -> Point3"},
-            "AdaptorCurve": {"status": "partial", "typed": "Curve.native() compatibility adapter", "materialization": "native()"},
-            "HCurveAdaptor": {"status": "partial", "typed": "Curve.native() compatibility adapter", "materialization": "native()"}
+            "AdaptorCurve": {"status": "implemented", "typed": "Curve.AdaptorCurve() -> GeomAdaptor_Curve", "materialization": "native()"},
+            "HCurveAdaptor": {"status": "implemented", "typed": "Curve.HCurveAdaptor() -> GeomAdaptor_Curve", "materialization": "native()"},
+            "edge": {"status": "implemented", "typed": "Curve.edge() -> Edge"},
+            "transform": {"status": "implemented", "typed": "Curve.transform(Transform) -> Curve"}
           }
         },
         {

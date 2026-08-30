@@ -53,10 +53,10 @@ operators:
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
 | Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
-| Constructors | 92 | 30 | 4 | 58 | 0 | 0 |
+| Constructors | 92 | 45 | 2 | 45 | 0 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **240** | **11** | **107** | **19** | **3** |
+| **Total** | **380** | **255** | **9** | **94** | **19** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -83,6 +83,14 @@ Angular, centering, and graph-scalar variants retain exact `Solid` handles.
 `nullshape` is represented as an ordinary empty `Shape`, the algebraic zero of
 topology, with `empty_shape` as its explicit spelling; it is neither optional
 nor a separate domain type.
+
+The second #2041 tranche separates geometric Curve factories from root-compatible
+topological constructors: `interpolate_curve`, `bezier_curve`, and
+`bspline_curve` return Curve, while `interpolate`, `bezier`, and `bspline`
+return Edge. `circle_arc`, `make_edge`, `make_wire`, `rounded_polysegment`, and
+`helix` complete the legacy wire factory set. Curve-to-Edge conversion and
+Curve transforms remain graph operations; only the explicit native adaptor
+methods materialize OCP objects.
 
 The executable decomposition is:
 

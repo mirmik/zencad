@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Literal, TypeVar, cast
 
 from OCP.Geom import Geom_Curve
+from OCP.GeomAdaptor import GeomAdaptor_Curve
 from OCP.Geom2d import Geom2d_Curve
 from evalcache.v2 import Expression, ResultSpec
 
@@ -30,6 +31,7 @@ from .values import (
 if TYPE_CHECKING:
     from .runtime import Runtime
     from .topology import Edge
+    from .transforms import Transform
 
 
 CurveHandleT = TypeVar("CurveHandleT", bound="Curve")
@@ -365,6 +367,27 @@ class Curve(Handle[ops.CurveValue]):
     ) -> list[Point3]:
         return [self.point(parameter) for parameter in self.uniform(count, start, end)]
 
+    def edge(
+        self,
+        interval: Interval | tuple[ScalarInput, ScalarInput] | None = None,
+        /,
+    ) -> Edge:
+        return self.runtime.make_edge(self, interval)
+
+    def transform(self, transformation: Transform, /) -> Curve:
+        from .transforms import Transform
+
+        if not isinstance(transformation, Transform):
+            raise TypeError("Curve.transform expects Transform")
+        require_same_runtime(self.runtime, transformation)
+        expression = self.runtime._expression(
+            ops.curve_transform,
+            result=CURVE_SPEC,
+            args=(self._state, transformation._state),
+            operation_id="zencad.typed.curve.transform",
+        )
+        return Curve._from_state(self.runtime, expression)
+
     def native(self) -> Geom_Curve:
         """Materialize an independent mutable OCP curve snapshot."""
         return ops.curve_to_ocp(self._resolved())
@@ -372,6 +395,15 @@ class Curve(Handle[ops.CurveValue]):
     def unlazy(self) -> Curve:
         super().unlazy()
         return self
+
+    def Curve(self) -> Geom_Curve:
+        return self.native()
+
+    def AdaptorCurve(self) -> GeomAdaptor_Curve:
+        return GeomAdaptor_Curve(self.native())
+
+    def HCurveAdaptor(self) -> GeomAdaptor_Curve:
+        return self.AdaptorCurve()
 
 
 class Curve2(Handle[ops.Curve2Value]):

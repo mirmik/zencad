@@ -32,6 +32,21 @@ def curve_contract(runtime: typed.Runtime) -> None:
     assert_type(line.trimmed_edge(0, 1), typed.Edge)
     assert_type(circle.uniform(4), list[typed.Scalar])
     assert_type(circle.uniform_points(4), list[typed.Point3])
+    points = (
+        origin,
+        origin + runtime.vector(radius, 0, 0),
+        origin + runtime.vector(radius, radius, 0),
+    )
+    interpolated = assert_type(runtime.interpolate_curve(points), typed.Curve)
+    assert_type(runtime.interpolate(points), typed.Edge)
+    bezier = assert_type(runtime.bezier_curve(points), typed.Curve)
+    assert_type(runtime.bezier(points), typed.Edge)
+    bspline = assert_type(runtime.bspline_curve(points, (0, 1), (3, 3), 2), typed.Curve)
+    assert_type(runtime.bspline(points, (0, 1), (3, 3), 2), typed.Edge)
+    assert_type(interpolated.edge(), typed.Edge)
+    assert_type(bezier.edge((0, 1)), typed.Edge)
+    assert_type(runtime.make_edge(bspline, bspline.range()), typed.Edge)
+    assert_type(circle.transform(runtime.moveX(1)), typed.Curve)
 
     segment = assert_type(
         runtime.segment2(runtime.point2(0, 0), runtime.point2(radius, 0)),

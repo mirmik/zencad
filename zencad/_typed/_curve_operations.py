@@ -8,8 +8,15 @@ import math
 
 from OCP.GCE2d import GCE2d_MakeSegment
 from OCP.GCPnts import GCPnts_UniformAbscissa
-from OCP.Geom import Geom_Circle, Geom_Curve, Geom_Ellipse, Geom_Line
-from OCP.GeomAPI import GeomAPI_ProjectPointOnCurve
+from OCP.Geom import (
+    Geom_BSplineCurve,
+    Geom_BezierCurve,
+    Geom_Circle,
+    Geom_Curve,
+    Geom_Ellipse,
+    Geom_Line,
+)
+from OCP.GeomAPI import GeomAPI_Interpolate, GeomAPI_ProjectPointOnCurve
 from OCP.GeomAbs import (
     GeomAbs_BSplineCurve,
     GeomAbs_BezierCurve,
@@ -24,6 +31,7 @@ from OCP.GeomAbs import (
 from OCP.GeomAdaptor import GeomAdaptor_Curve
 from OCP.Geom2d import Geom2d_Curve, Geom2d_Ellipse, Geom2d_TrimmedCurve
 from OCP.GeomTools import GeomTools_Curve2dSet, GeomTools_CurveSet
+from OCP.TColStd import TColStd_HArray1OfBoolean
 from OCP.gp import (
     gp_Ax2,
     gp_Ax2d,
@@ -35,6 +43,15 @@ from OCP.gp import (
     gp_Vec2d,
 )
 
+from zencad.opencascade_types import (
+    opencascade_array1_of_int,
+    opencascade_array1_of_pnt,
+    opencascade_array1_of_real,
+    opencascade_array1_of_vec,
+    opencascade_h_array1_of_pnt,
+)
+
+from ._transform_operations import TransformValue, transform_to_ocp
 from ._value_operations import (
     Point2Value,
     Point3Value,
@@ -207,6 +224,107 @@ def ellipse(major_radius: float, minor_radius: float) -> CurveValue:
         minor_radius,
     )
     return curve_from_ocp(native)
+
+
+def interpolate(
+    points: tuple[Point3Value, ...],
+    tangents: tuple[Vector3Value | None, ...] | None,
+    closed: bool,
+) -> CurveValue:
+    if len(points) < 2:
+        raise ValueError("interpolate requires at least two points")
+    native_points = opencascade_h_array1_of_pnt(
+        tuple((point.x, point.y, point.z) for point in points)
+    )
+    algorithm = GeomAPI_Interpolate(native_points, closed, 1e-7)
+    if tangents is not None:
+        if len(tangents) != len(points):
+            raise ValueError("interpolate tangents must match point count")
+        native_tangents = opencascade_array1_of_vec(
+            tuple(
+                (0.0, 0.0, 0.0)
+                if tangent is None
+                else (tangent.x, tangent.y, tangent.z)
+                for tangent in tangents
+            )
+        )
+        tangent_flags = TColStd_HArray1OfBoolean(1, len(tangents))
+        for index, tangent in enumerate(tangents, start=1):
+            tangent_flags.SetValue(
+                index,
+                tangent is not None
+                and (tangent.x != 0 or tangent.y != 0 or tangent.z != 0),
+            )
+        algorithm.Load(native_tangents, tangent_flags)
+    algorithm.Perform()
+    if not algorithm.IsDone():
+        raise ValueError("curve interpolation failed")
+    return curve_from_ocp(algorithm.Curve())
+
+
+def bezier(
+    poles: tuple[Point3Value, ...],
+    weights: tuple[float, ...] | None,
+) -> CurveValue:
+    if len(poles) < 2:
+        raise ValueError("bezier requires at least two poles")
+    native_poles = opencascade_array1_of_pnt(
+        tuple((pole.x, pole.y, pole.z) for pole in poles)
+    )
+    if weights is None:
+        return curve_from_ocp(Geom_BezierCurve(native_poles))
+    if len(weights) != len(poles):
+        raise ValueError("bezier weights must match pole count")
+    return curve_from_ocp(
+        Geom_BezierCurve(native_poles, opencascade_array1_of_real(weights))
+    )
+
+
+def bspline(
+    poles: tuple[Point3Value, ...],
+    knots: tuple[float, ...],
+    multiplicities: tuple[int, ...],
+    degree: int,
+    periodic: bool,
+    weights: tuple[float, ...] | None,
+    check_rational: bool | None,
+) -> CurveValue:
+    if len(poles) < 2:
+        raise ValueError("bspline requires at least two poles")
+    if len(knots) != len(multiplicities):
+        raise ValueError("bspline knots and multiplicities must have equal length")
+    if isinstance(degree, bool) or not isinstance(degree, int) or degree < 1:
+        raise ValueError("bspline degree must be a positive int")
+    native_poles = opencascade_array1_of_pnt(
+        tuple((pole.x, pole.y, pole.z) for pole in poles)
+    )
+    native_knots = opencascade_array1_of_real(knots)
+    native_multiplicities = opencascade_array1_of_int(multiplicities)
+    if weights is None:
+        native = Geom_BSplineCurve(
+            native_poles,
+            native_knots,
+            native_multiplicities,
+            degree,
+            periodic,
+        )
+    else:
+        if len(weights) != len(poles):
+            raise ValueError("bspline weights must match pole count")
+        native = Geom_BSplineCurve(
+            native_poles,
+            opencascade_array1_of_real(weights),
+            native_knots,
+            native_multiplicities,
+            degree,
+            periodic,
+            True if check_rational is None else check_rational,
+        )
+    return curve_from_ocp(native)
+
+
+def curve_transform(value: CurveValue, transform: TransformValue) -> CurveValue:
+    return curve_from_ocp(curve_to_ocp(value).Transformed(transform_to_ocp(transform)))
 
 
 def curve_point(value: CurveValue, parameter: float) -> Point3Value:

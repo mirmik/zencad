@@ -33,6 +33,15 @@ def topology_contract(
     assert_type(runtime.make_solid((shell,)), typed.Solid)
     assert_type(runtime.empty_shape(), typed.Shape)
     assert_type(runtime.nullshape(), typed.Shape)
+    points = (
+        runtime.point3(0, 0, 0),
+        runtime.point3(1, 0, 0),
+        runtime.point3(1, 1, 0),
+    )
+    assert_type(runtime.circle_arc(*points), typed.Edge)
+    assert_type(runtime.make_wire((edge, wire)), typed.Wire)
+    assert_type(runtime.rounded_polysegment(points, 0.1), typed.Wire)
+    assert_type(runtime.helix(1, 2, step=0.5), typed.Wire)
     assert_type(runtime.box(1).translate(1, 2, 3), typed.Solid)
     assert_type(runtime.box(1).transform(transform), typed.Solid)
 

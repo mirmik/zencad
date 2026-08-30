@@ -19,6 +19,7 @@ from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_Transform,
 )
 from OCP.BRepTools import BRepTools
+from OCP.GC import GC_MakeArcOfCircle
 from OCP.Geom import Geom_RectangularTrimmedSurface, Geom_TrimmedCurve
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import (
@@ -341,6 +342,190 @@ def curve_trimmed_edge(
     if edge.IsNull():
         raise ValueError("trimmed edge construction failed")
     return ResolvedShape(edge)
+
+
+def curve_edge(
+    curve: CurveValue,
+    interval: tuple[float, float] | None,
+) -> ResolvedShape:
+    native_curve = curve_to_ocp(curve)
+    builder = (
+        BRepBuilderAPI_MakeEdge(native_curve)
+        if interval is None
+        else BRepBuilderAPI_MakeEdge(native_curve, interval[0], interval[1])
+    )
+    if not builder.IsDone():
+        raise ValueError("edge construction from Curve failed")
+    return ResolvedShape(builder.Edge())
+
+
+def circle_arc(
+    start: Point3Value,
+    middle: Point3Value,
+    end: Point3Value,
+) -> ResolvedShape:
+    arc = GC_MakeArcOfCircle(_point(start), _point(middle), _point(end))
+    if not arc.IsDone():
+        raise ValueError("circle arc construction failed")
+    builder = BRepBuilderAPI_MakeEdge(arc.Value())
+    if not builder.IsDone():
+        raise ValueError("circle arc edge construction failed")
+    return ResolvedShape(builder.Edge())
+
+
+def make_wire(shapes: tuple[ResolvedShape, ...]) -> ResolvedShape:
+    if not shapes:
+        raise ValueError("make_wire requires at least one Edge or Wire")
+    builder = BRepBuilderAPI_MakeWire()
+    for shape in shapes:
+        native = shape.Shape()
+        if native.ShapeType() == TopAbs_EDGE:
+            builder.Add(as_edge(native))
+        elif native.ShapeType() == TopAbs_WIRE:
+            builder.Add(as_wire(native))
+        else:
+            raise TypeError("make_wire accepts only Edge or Wire")
+    if not builder.IsDone():
+        raise ValueError("wire construction failed")
+    return ResolvedShape(builder.Wire())
+
+
+def helix(
+    radius: float,
+    height: float,
+    step: float | None,
+    pitch: float | None,
+    angle: float,
+    left: bool,
+) -> ResolvedShape:
+    from zencad.geom.wire import _helix
+
+    return _helix(radius, height, step=step, pitch=pitch, angle=angle, left=left)
+
+
+def rounded_polysegment(
+    points: tuple[Point3Value, ...],
+    radius: float,
+    closed: bool,
+) -> ResolvedShape:
+    from . import _curve_operations as curve_ops
+
+    if len(points) < 2:
+        raise ValueError("rounded_polysegment requires at least two points")
+    if not math.isfinite(radius) or radius <= 0:
+        raise ValueError("rounded_polysegment radius must be finite and positive")
+
+    def subtract(left: Point3Value, right: Point3Value) -> Vector3Value:
+        return Vector3Value(left.x - right.x, left.y - right.y, left.z - right.z)
+
+    def add(point: Point3Value, vector: Vector3Value) -> Point3Value:
+        return Point3Value(
+            point.x + vector.x,
+            point.y + vector.y,
+            point.z + vector.z,
+        )
+
+    def scale(vector: Vector3Value, factor: float) -> Vector3Value:
+        return Vector3Value(vector.x * factor, vector.y * factor, vector.z * factor)
+
+    def dot(left: Vector3Value, right: Vector3Value) -> float:
+        return left.x * right.x + left.y * right.y + left.z * right.z
+
+    def cross(left: Vector3Value, right: Vector3Value) -> Vector3Value:
+        return Vector3Value(
+            left.y * right.z - left.z * right.y,
+            left.z * right.x - left.x * right.z,
+            left.x * right.y - left.y * right.x,
+        )
+
+    def length(vector: Vector3Value) -> float:
+        return math.sqrt(dot(vector, vector))
+
+    def project(
+        point: Point3Value,
+        line_start: Point3Value,
+        line_end: Point3Value,
+    ) -> Point3Value:
+        direction = subtract(line_end, line_start)
+        denominator = dot(direction, direction)
+        if denominator == 0:
+            raise ValueError("rounded_polysegment contains duplicate points")
+        parameter = dot(subtract(point, line_start), direction) / denominator
+        return add(line_start, scale(direction, parameter))
+
+    source = list(points)
+    if closed:
+        if len(source) < 3:
+            raise ValueError(
+                "closed rounded_polysegment requires at least three points"
+            )
+        source.insert(0, source[-1])
+        source.append(source[1])
+
+    corners = source[1:-1]
+    pairs: list[tuple[Point3Value | None, Point3Value | None]] = [(None, source[0])]
+    tangent_pairs: list[tuple[Vector3Value, Vector3Value] | None] = []
+
+    for index, corner in enumerate(corners):
+        first_direction = subtract(source[index + 1], source[index])
+        second_direction = subtract(source[index + 2], source[index + 1])
+        normal = cross(second_direction, first_direction)
+        if length(normal) <= 1e-12:
+            pairs.append((corner, corner))
+            tangent_pairs.append(None)
+            continue
+        first_normal = cross(first_direction, normal)
+        second_normal = cross(second_direction, normal)
+        bisector = Vector3Value(
+            first_normal.x + second_normal.x,
+            first_normal.y + second_normal.y,
+            first_normal.z + second_normal.z,
+        )
+        bisector_length = length(bisector)
+        if bisector_length <= 1e-12:
+            pairs.append((corner, corner))
+            tangent_pairs.append(None)
+            continue
+        center = add(corner, scale(bisector, radius / bisector_length))
+        first_projection = project(center, source[index], source[index + 1])
+        second_projection = project(center, source[index + 1], source[index + 2])
+        pairs.append((first_projection, second_projection))
+        tangent_pairs.append((first_direction, second_direction))
+
+    pairs.append((source[-1], None))
+    nodes: list[ResolvedShape] = []
+    for index, tangents in enumerate(tangent_pairs):
+        line_start = pairs[index][1]
+        line_end = pairs[index + 1][0]
+        arc_start = pairs[index + 1][0]
+        arc_end = pairs[index + 1][1]
+        assert line_start is not None and line_end is not None
+        nodes.append(segment(line_start, line_end))
+        if tangents is not None:
+            assert arc_start is not None and arc_end is not None
+            curve = curve_ops.interpolate(
+                (arc_start, arc_end),
+                tangents,
+                False,
+            )
+            nodes.append(curve_edge(curve, None))
+
+    final_start = pairs[-2][1]
+    final_end = pairs[-1][0]
+    assert final_start is not None and final_end is not None
+    nodes.append(segment(final_start, final_end))
+
+    if closed:
+        nodes = nodes[1:-1]
+    result = make_wire(tuple(nodes))
+    if closed:
+        start, end = result.endpoints()
+        closing = segment(
+            Point3Value(start.x, start.y, start.z),
+            Point3Value(end.x, end.y, end.z),
+        )
+        result = make_wire((result, closing))
+    return result
 
 
 def _legacy_points(values: tuple[Point3Value, ...] | None):

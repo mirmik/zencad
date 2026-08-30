@@ -36,6 +36,7 @@ from ._core import State, require_same_runtime
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .exttrans import MultiTransform
+from .records import Interval
 from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .topology import (
     EDGE_SPEC,
@@ -411,6 +412,216 @@ class Runtime:
             operation_id="zencad.typed.ellipse",
         )
         return Curve._from_state(self, expression)
+
+    def interpolate_curve(
+        self,
+        pnts: Sequence[Point3],
+        tangs: Sequence[Vector3 | None] | None = None,
+        closed: bool = False,
+    ) -> Curve:
+        _require_bool(closed, "interpolate_curve closed")
+        points = _require_points(self, pnts, minimum=2, name="interpolate_curve")
+        tangents = _require_tangents(self, tangs, len(points), "interpolate_curve")
+        expression = self._expression(
+            curve_ops.interpolate,
+            result=CURVE_SPEC,
+            args=(
+                tuple(point._state for point in points),
+                None
+                if tangents is None
+                else tuple(
+                    None if tangent is None else tangent._state for tangent in tangents
+                ),
+                closed,
+            ),
+            operation_id="zencad.typed.interpolate_curve",
+        )
+        return Curve._from_state(self, expression)
+
+    def interpolate(
+        self,
+        pnts: Sequence[Point3],
+        tangs: Sequence[Vector3 | None] | None = None,
+        closed: bool = False,
+    ) -> Edge:
+        return self.interpolate_curve(pnts, tangs, closed).edge()
+
+    def bezier_curve(
+        self,
+        poles: Sequence[Point3],
+        weights: Sequence[ScalarInput] | None = None,
+    ) -> Curve:
+        points = _require_points(self, poles, minimum=2, name="bezier_curve")
+        resolved_weights = _optional_scalar_sequence_state(
+            self,
+            weights,
+            "bezier_curve weights",
+        )
+        expression = self._expression(
+            curve_ops.bezier,
+            result=CURVE_SPEC,
+            args=(tuple(point._state for point in points), resolved_weights),
+            operation_id="zencad.typed.bezier_curve",
+        )
+        return Curve._from_state(self, expression)
+
+    def bezier(
+        self,
+        pnts: Sequence[Point3],
+        weights: Sequence[ScalarInput] | None = None,
+    ) -> Edge:
+        return self.bezier_curve(pnts, weights).edge()
+
+    def bspline_curve(
+        self,
+        poles: Sequence[Point3],
+        knots: Sequence[ScalarInput],
+        muls: Sequence[int],
+        degree: int,
+        periodic: bool = False,
+        weights: Sequence[ScalarInput] | None = None,
+        check_rational: bool | None = None,
+    ) -> Curve:
+        points = _require_points(self, poles, minimum=2, name="bspline_curve")
+        if isinstance(degree, bool) or not isinstance(degree, int) or degree < 1:
+            raise ValueError("bspline_curve degree must be a positive int")
+        _require_bool(periodic, "bspline_curve periodic")
+        if check_rational is not None:
+            _require_bool(check_rational, "bspline_curve check_rational")
+        knot_states = _scalar_sequence_state(self, knots, "bspline_curve knots")
+        multiplicities = _int_sequence(muls, "bspline_curve multiplicities")
+        if len(knot_states) != len(multiplicities):
+            raise ValueError(
+                "bspline_curve knots and multiplicities must have equal length"
+            )
+        resolved_weights = _optional_scalar_sequence_state(
+            self,
+            weights,
+            "bspline_curve weights",
+        )
+        expression = self._expression(
+            curve_ops.bspline,
+            result=CURVE_SPEC,
+            args=(
+                tuple(point._state for point in points),
+                knot_states,
+                multiplicities,
+                degree,
+                periodic,
+                resolved_weights,
+                check_rational,
+            ),
+            operation_id="zencad.typed.bspline_curve",
+        )
+        return Curve._from_state(self, expression)
+
+    def bspline(
+        self,
+        poles: Sequence[Point3],
+        knots: Sequence[ScalarInput],
+        muls: Sequence[int],
+        degree: int,
+        periodic: bool = False,
+        weights: Sequence[ScalarInput] | None = None,
+        check_rational: bool | None = None,
+    ) -> Edge:
+        return self.bspline_curve(
+            poles,
+            knots,
+            muls,
+            degree,
+            periodic,
+            weights,
+            check_rational,
+        ).edge()
+
+    def make_edge(
+        self,
+        curve: Curve,
+        interval: Interval | Sequence[ScalarInput] | None = None,
+        /,
+    ) -> Edge:
+        if not isinstance(curve, Curve):
+            raise TypeError("make_edge expects Curve")
+        require_same_runtime(self, curve)
+        resolved_interval = _interval_state(self, interval, "make_edge interval")
+        expression = self._expression(
+            ops.curve_edge,
+            result=EDGE_SPEC,
+            args=(curve._state, resolved_interval),
+            operation_id="zencad.typed.make_edge",
+        )
+        return Edge._from_state(self, expression)
+
+    def circle_arc(self, p1: Point3, p2: Point3, p3: Point3, /) -> Edge:
+        points = _require_points(self, (p1, p2, p3), minimum=3, name="circle_arc")
+        expression = self._expression(
+            ops.circle_arc,
+            result=EDGE_SPEC,
+            args=tuple(point._state for point in points),
+            operation_id="zencad.typed.circle_arc",
+        )
+        return Edge._from_state(self, expression)
+
+    def make_wire(
+        self,
+        *shapes: Edge | Wire | Sequence[Edge | Wire],
+    ) -> Wire:
+        values = _require_wire_parts(self, shapes, "make_wire")
+        expression = self._expression(
+            ops.make_wire,
+            result=WIRE_SPEC,
+            args=(tuple(shape._state for shape in values),),
+            operation_id="zencad.typed.make_wire",
+        )
+        return Wire._from_state(self, expression)
+
+    def rounded_polysegment(
+        self,
+        pnts: Sequence[Point3],
+        r: ScalarInput,
+        closed: bool = False,
+    ) -> Wire:
+        _require_bool(closed, "rounded_polysegment closed")
+        points = _require_points(self, pnts, minimum=2, name="rounded_polysegment")
+        expression = self._expression(
+            ops.rounded_polysegment,
+            result=WIRE_SPEC,
+            args=(
+                tuple(point._state for point in points),
+                _scalar_state(self, r),
+                closed,
+            ),
+            operation_id="zencad.typed.rounded_polysegment",
+        )
+        return Wire._from_state(self, expression)
+
+    def helix(
+        self,
+        r: ScalarInput,
+        h: ScalarInput,
+        step: ScalarInput | None = None,
+        pitch: ScalarInput | None = None,
+        angle: ScalarInput = 0,
+        left: bool = False,
+    ) -> Wire:
+        if step is None and pitch is None:
+            raise TypeError("helix requires step or pitch")
+        _require_bool(left, "helix left")
+        expression = self._expression(
+            ops.helix,
+            result=WIRE_SPEC,
+            args=(
+                _scalar_state(self, r),
+                _scalar_state(self, h),
+                _optional_scalar_state(self, step),
+                _optional_scalar_state(self, pitch),
+                _scalar_state(self, angle),
+                left,
+            ),
+            operation_id="zencad.typed.helix",
+        )
+        return Wire._from_state(self, expression)
 
     def segment2(self, start: Point2, end: Point2, /) -> Curve2:
         if not isinstance(start, Point2) or not isinstance(end, Point2):
@@ -1122,6 +1333,102 @@ def _require_shells(
         raise TypeError(f"{name} expects only Shell values")
     for shell in values:
         require_same_runtime(runtime, shell)
+    return values
+
+
+def _require_tangents(
+    runtime: Runtime,
+    tangents: Sequence[Vector3 | None] | None,
+    point_count: int,
+    name: str,
+) -> tuple[Vector3 | None, ...] | None:
+    if tangents is None:
+        return None
+    if isinstance(tangents, (str, bytes)) or not isinstance(tangents, Sequence):
+        raise TypeError(f"{name} tangents must be a sequence")
+    values = tuple(tangents)
+    if len(values) != point_count:
+        raise ValueError(f"{name} tangents must match point count")
+    if not all(tangent is None or isinstance(tangent, Vector3) for tangent in values):
+        raise TypeError(f"{name} tangents must contain only Vector3 or None")
+    for tangent in values:
+        if tangent is not None:
+            require_same_runtime(runtime, tangent)
+    return values
+
+
+def _scalar_sequence_state(
+    runtime: Runtime,
+    values: Sequence[ScalarInput],
+    name: str,
+) -> tuple[State[float], ...]:
+    if isinstance(values, (str, bytes)) or not isinstance(values, Sequence):
+        raise TypeError(f"{name} must be a scalar sequence")
+    result = tuple(_scalar_state(runtime, value) for value in values)
+    if not result:
+        raise ValueError(f"{name} must not be empty")
+    return result
+
+
+def _optional_scalar_sequence_state(
+    runtime: Runtime,
+    values: Sequence[ScalarInput] | None,
+    name: str,
+) -> tuple[State[float], ...] | None:
+    if values is None:
+        return None
+    return _scalar_sequence_state(runtime, values, name)
+
+
+def _int_sequence(values: Sequence[int], name: str) -> tuple[int, ...]:
+    if isinstance(values, (str, bytes)) or not isinstance(values, Sequence):
+        raise TypeError(f"{name} must be an int sequence")
+    result = tuple(values)
+    if not result:
+        raise ValueError(f"{name} must not be empty")
+    if not all(
+        isinstance(value, int) and not isinstance(value, bool) for value in result
+    ):
+        raise TypeError(f"{name} must contain only int values")
+    return result
+
+
+def _interval_state(
+    runtime: Runtime,
+    interval: Interval | Sequence[ScalarInput] | None,
+    name: str,
+) -> tuple[State[float], State[float]] | None:
+    if interval is None:
+        return None
+    if isinstance(interval, Interval):
+        require_same_runtime(runtime, interval.lower)
+        return (interval.lower._state, interval.upper._state)
+    if isinstance(interval, (str, bytes)) or not isinstance(interval, Sequence):
+        raise TypeError(f"{name} must contain two scalar bounds")
+    values = tuple(interval)
+    if len(values) != 2:
+        raise TypeError(f"{name} must contain two scalar bounds")
+    return (_scalar_state(runtime, values[0]), _scalar_state(runtime, values[1]))
+
+
+def _require_wire_parts(
+    runtime: Runtime,
+    shapes: tuple[Edge | Wire | Sequence[Edge | Wire], ...],
+    name: str,
+) -> tuple[Edge | Wire, ...]:
+    if len(shapes) == 1 and isinstance(shapes[0], Sequence):
+        candidate = shapes[0]
+        if isinstance(candidate, (str, bytes)):
+            raise TypeError(f"{name} expects Edge or Wire handles")
+        values = tuple(candidate)
+    else:
+        values = cast(tuple[Edge | Wire, ...], shapes)
+    if not values:
+        raise ValueError(f"{name} requires at least one Edge or Wire")
+    if not all(isinstance(shape, (Edge, Wire)) for shape in values):
+        raise TypeError(f"{name} accepts only Edge or Wire handles")
+    for shape in values:
+        require_same_runtime(runtime, shape)
     return values
 
 
