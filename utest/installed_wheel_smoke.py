@@ -97,6 +97,14 @@ def main():
         assert type(polygon_wire) is typed.Wire
         assert type(holed_face) is typed.Face
         assert len(holed_face.edges()) == 8
+        shell = typed_runtime.make_shell(circle_face)
+        tetrahedron = typed_runtime.tetrahedron()
+        hexahedron_shell = typed_runtime.hexahedron(shell=True)
+        assert type(shell) is typed.Shell
+        assert type(tetrahedron) is typed.Solid
+        assert type(hexahedron_shell) is typed.Shell
+        assert len(tetrahedron.faces()) == 4
+        assert len(hexahedron_shell.faces()) == 6
         builder = (
             typed_runtime.wire_builder(defrel=True)
             .l(2, 0)

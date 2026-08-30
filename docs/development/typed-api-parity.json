@@ -852,6 +852,7 @@
         "utest/typed_shape_factories_test.py",
         "utest/typed_solid_constructors_test.py",
         "utest/typed_curve_wire_constructors_test.py",
+        "utest/typed_shell_constructors_test.py",
         "utest/typed_curves_test.py",
         "utest/typed_surfaces_test.py"
       ],
@@ -879,7 +880,14 @@
         {
           "source": "zencad.geom.platonic",
           "default": {"status": "missing", "typed": "Runtime.{name}() -> Solid | Shell", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "dodecahedron": {"status": "implemented", "typed": "Runtime.dodecahedron() -> Solid | Shell"},
+            "hexahedron": {"status": "implemented", "typed": "Runtime.hexahedron() -> Solid | Shell"},
+            "icosahedron": {"status": "implemented", "typed": "Runtime.icosahedron() -> Solid | Shell"},
+            "octahedron": {"status": "implemented", "typed": "Runtime.octahedron() -> Solid | Shell"},
+            "platonic": {"status": "implemented", "typed": "Runtime.platonic() -> Solid | Shell"},
+            "tetrahedron": {"status": "implemented", "typed": "Runtime.tetrahedron() -> Solid | Shell"}
+          }
         },
         {
           "source": "zencad.geom.wire",
@@ -941,7 +949,14 @@
         {
           "source": "zencad.geom.shell",
           "default": {"status": "missing", "typed": "Runtime.{name}() -> Shell | Solid | structured points", "materialization": "convex_hull numeric result materializes"},
-          "overrides": {}
+          "overrides": {
+            "convex_hull": {"status": "implemented", "typed": "Runtime.convex_hull() -> tuple[tuple[int, ...], ...]", "materialization": "numeric result materializes"},
+            "convex_hull_shape": {"status": "implemented", "typed": "Runtime.convex_hull_shape() -> Solid | Shell", "materialization": "none"},
+            "fill3d": {"status": "implemented", "typed": "Runtime.fill3d(Shell) -> Solid", "materialization": "none"},
+            "make_shell": {"status": "implemented", "typed": "Runtime.make_shell(Face | Sequence[Face]) -> Shell", "materialization": "none"},
+            "polyhedron": {"status": "implemented", "typed": "Runtime.polyhedron() -> Solid | Shell", "materialization": "none"},
+            "polyhedron_shell": {"status": "implemented", "typed": "Runtime.polyhedron_shell() -> Shell", "materialization": "none"}
+          }
         },
         {
           "source": "zencad.geom.curve",

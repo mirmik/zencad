@@ -113,6 +113,15 @@ non-sweep Face constructors. The historically inverted partial-ellipse
 `wire` branch is repaired consistently: `wire=True` means an edge boundary,
 and `wire=False` means a filled sector.
 
+The fifth #2041 tranche completes shell, polyhedron, convex-hull, and Platonic
+factories. Sewing one or more `Face` handles now always produces an exact
+`Shell`; filling accepts only that shell type and returns `Solid`. Polyhedron,
+convex-hull shape, and all five Platonic factories preserve graph points and
+scalars while selecting exact `Shell`/`Solid` handles through literal flag
+overloads. The numeric `convex_hull` triangulation is the deliberate exception:
+it returns immutable integer-index tuples and explicitly materializes its input
+points at the SciPy/Qhull boundary.
+
 The executable decomposition is:
 
 - #2039 — values and similarity-transform compatibility;

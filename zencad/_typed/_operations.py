@@ -28,7 +28,7 @@ from OCP.Geom import (
 )
 from OCP.GeomAPI import GeomAPI_PointsToBSplineSurface
 from OCP.GeomAbs import GeomAbs_C2
-from OCP.ShapeFix import ShapeFix_Face
+from OCP.ShapeFix import ShapeFix_Face, ShapeFix_Shell, ShapeFix_Solid
 from OCP.TColgp import TColgp_Array2OfPnt
 from OCP.gp import gp_Ax2, gp_Dir, gp_Pln, gp_Pnt
 from OCP.TopAbs import (
@@ -44,7 +44,7 @@ from OCP.TopAbs import (
 )
 from OCP.TopExp import TopExp, TopExp_Explorer
 from OCP.TopTools import TopTools_IndexedMapOfShape
-from OCP.TopoDS import TopoDS_Compound, TopoDS_Shape, TopoDS_Wire
+from OCP.TopoDS import TopoDS_Compound, TopoDS_Shape, TopoDS_Shell, TopoDS_Wire
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.geom.solid import (
@@ -67,6 +67,7 @@ from zencad.occ_compat import (
     as_vertex,
     as_wire,
     make_fill_face,
+    make_sewing,
     vertex_point as ocp_vertex_point,
 )
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
@@ -130,6 +131,82 @@ def halfspace() -> ResolvedShape:
 
 def make_solid(shells: tuple[ResolvedShape, ...]) -> ResolvedShape:
     return _make_solid(shells)
+
+
+def _single_face_shell(face: ResolvedShape) -> ResolvedShape:
+    shell = TopoDS_Shell()
+    builder = BRep_Builder()
+    builder.MakeShell(shell)
+    builder.Add(shell, as_face(face.Shape()))
+    return ResolvedShape(shell)
+
+
+def make_shell(faces: tuple[ResolvedShape, ...]) -> ResolvedShape:
+    if not faces:
+        raise ValueError("make_shell requires at least one Face")
+    if len(faces) == 1:
+        return _single_face_shell(faces[0])
+
+    sewing = make_sewing()
+    for face in faces:
+        sewing.Add(as_face(face.Shape()))
+    sewing.Perform()
+    sewed = sewing.SewedShape()
+    if sewed.IsNull():
+        raise ValueError("cannot sew the supplied faces into a Shell")
+    if sewed.ShapeType() == TopAbs_FACE:
+        return _single_face_shell(ResolvedShape(as_face(sewed)))
+    if sewed.ShapeType() != TopAbs_SHELL:
+        raise ValueError("supplied faces do not form one Shell")
+    fixer = ShapeFix_Shell(as_shell(sewed))
+    fixer.Perform()
+    return ResolvedShape(fixer.Shell())
+
+
+def fill_shell(shell: ResolvedShape) -> ResolvedShape:
+    fixer = ShapeFix_Solid()
+    solid = fixer.SolidFromShell(as_shell(shell.Shape()))
+    fixer.Init(solid)
+    fixer.Perform()
+    return ResolvedShape(fixer.Solid())
+
+
+def polyhedron_shell(
+    points: tuple[Point3Value, ...],
+    faces: tuple[tuple[int, ...], ...],
+) -> ResolvedShape:
+    built_faces = tuple(
+        polygon(tuple(points[index] for index in face)) for face in faces
+    )
+    return make_shell(built_faces)
+
+
+def convex_hull_faces(
+    points: tuple[Point3Value, ...],
+    incremental: bool,
+    qhull_options: str | None,
+) -> tuple[tuple[int, ...], ...]:
+    from scipy.spatial import ConvexHull
+
+    hull = ConvexHull(
+        tuple((point.x, point.y, point.z) for point in points),
+        incremental=incremental,
+        qhull_options=qhull_options,
+    )
+    return tuple(tuple(int(index) for index in face) for face in hull.simplices)
+
+
+def convex_hull_shape(
+    points: tuple[Point3Value, ...],
+    incremental: bool,
+    qhull_options: str | None,
+    shell: bool,
+) -> ResolvedShape:
+    faces = convex_hull_faces(points, incremental, qhull_options)
+    hull_shell = polyhedron_shell(points, faces)
+    if shell:
+        return hull_shell
+    return fill_shell(hull_shell)
 
 
 def empty_shape() -> ResolvedShape:
