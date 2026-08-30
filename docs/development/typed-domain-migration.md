@@ -2,9 +2,9 @@
 
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
 > private typed vertical slice, Scalar/Point/Vector/Quaternion/Transform
-> algebra, and the topology-handle core are implemented; no public
-> typed-domain cutover described here is implemented yet. The accepted
-> direction and rationale are recorded in
+> algebra, the topology-handle core, and the complete typed topology-query
+> surface are implemented; no public typed-domain cutover described here is
+> implemented yet. The accepted direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 ## Objective
@@ -398,8 +398,8 @@ does not provide mypy stubs.
 ## Stage 5: shape and topology
 
 Status: in progress in the private `zencad._typed` layer. The topology-handle
-core is implemented; the uniform topology-query surface and the broader Shape
-factory/boolean migration remain separate follow-up gates.
+core and the uniform topology-query surface are implemented. The broader
+Shape factory/boolean migration remains the next separate gate.
 
 Introduce `Shape` and precise topology handles, typed topology sequences,
 resolved OCP adapters, result validators, BREP codecs, and materializing native
@@ -438,13 +438,64 @@ borrowed compatibility boundary for existing eager implementation adapters.
 It is intentionally not part of the normal typed contract and must not leak
 into user-facing code.
 
-Completing all topology queries is the next gate. They will return typed
-`DeferredSequence` values with elements matching their topology kind. In
-particular, `vertices()` returns topology-unique `Vertex` handles; it must not
-repeat the legacy coordinate-distance deduplication. Callers that need
-positions obtain them explicitly with `Vertex.point()`. The minimal `faces()`
-path retained by the vertical slice does not by itself complete this query
-migration.
+All eight topology queries now return a `DeferredSequence` whose element type
+matches the requested topology kind:
+
+- `vertices() -> DeferredSequence[Vertex]`;
+- `edges() -> DeferredSequence[Edge]`;
+- `wires() -> DeferredSequence[Wire]`;
+- `faces() -> DeferredSequence[Face]`;
+- `shells() -> DeferredSequence[Shell]`;
+- `solids() -> DeferredSequence[Solid]`;
+- `compounds() -> DeferredSequence[Compound]`;
+- `compsolids() -> DeferredSequence[CompSolid]`.
+
+In deferred mode, indexing, including a negative index, adds a typed item
+expression without evaluating the sequence. `len(sequence)` and consumption
+through iteration are explicit materialization boundaries for the query tuple.
+In immediate mode, query and item expressions evaluate when constructed, as
+required by that policy. The tuple expression is deliberately
+`cacheable=False`: persisting an intermediate collection of OCP values would
+require a separate collection format without improving the normal indexed
+path. Each indexed item expression is independently cacheable and uses the
+precise topology handle's validated BREP serializer. A cache hit for an item
+can therefore restore that item without recomputing or persisting the query
+tuple.
+
+`vertices()` is the one intentional departure from the legacy query
+semantics. It returns values unique by OCCT `IsSame` identity: the underlying
+TShape and Location participate in identity, while Orientation does not.
+Consequently, different TShapes at the same geometric coordinate remain two
+vertices, and occurrences of one TShape at different Locations remain two
+vertices. The order is the order of each identity's first topology-traversal
+occurrence. This is deterministic for that shape traversal, but is not a
+stable topological-naming guarantee across modeling operations. Callers that
+need coordinates obtain them explicitly with `Vertex.point()`.
+
+The other seven queries intentionally retain the legacy `TopExp_Explorer`
+occurrence semantics. They do not globally deduplicate shared subshapes; for
+example, a box reports 24 edge occurrences rather than 12 unique edges. When
+the queried root already has the requested kind, the root is included and
+nested shapes of that same kind are not traversed. This behavior is part of
+the migration contract rather than an accidental consequence of the typed
+wrapper.
+
+The next Stage 5 gate is the broader typed Shape factory and boolean surface;
+it remains separate from the completed topology-query work.
+
+Verification on 2026-08-30 after the complete topology-query checkpoint:
+
+- `pytest -q`: 231 tests;
+- strict mypy with `--disallow-any-expr`: all four representative typed
+  contracts pass, including all eight `DeferredSequence[T]` query results;
+- runtime tests cover exact query types and counts in all four evaluation/
+  cache policy combinations, deferred indexing boundaries, `IsSame` identity
+  and traversal order, cache hit/rejection behavior, and graph-aware
+  `Vertex.point()`;
+- an isolated wheel build/install smoke executes all eight typed topology
+  queries outside the source checkout, alongside the headless geometry/I/O
+  smoke;
+- Ruff, formatting, `compileall`, and diff-integrity checks pass.
 
 Verification on 2026-08-30 after the topology-core checkpoint:
 

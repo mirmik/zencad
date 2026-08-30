@@ -7,13 +7,38 @@ return resolved values only; expression construction lives in ``runtime``.
 
 from __future__ import annotations
 
+from typing import Callable
+
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCP.TopAbs import (
+    TopAbs_COMPOUND,
+    TopAbs_COMPSOLID,
+    TopAbs_EDGE,
+    TopAbs_FACE,
+    TopAbs_SHELL,
+    TopAbs_SOLID,
+    TopAbs_WIRE,
+    TopAbs_ShapeEnum,
+    TopAbs_VERTEX,
+)
+from OCP.TopExp import TopExp, TopExp_Explorer
+from OCP.TopTools import TopTools_IndexedMapOfShape
 from OCP.TopoDS import TopoDS_Shape
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.geom.solid import _box
 from zencad.geom.trans import move
-from zencad.occ_compat import vertex_point as ocp_vertex_point
+from zencad.occ_compat import (
+    as_compound,
+    as_compsolid,
+    as_edge,
+    as_face,
+    as_shell,
+    as_solid,
+    as_vertex,
+    as_wire,
+    vertex_point as ocp_vertex_point,
+)
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 from ._transform_operations import TransformValue, transform_to_ocp
@@ -56,8 +81,62 @@ def shape_to_ocp(value: ResolvedShape) -> TopoDS_Shape:
     return decode_brep(encode_brep(native))
 
 
+def _subshapes(
+    shape: ResolvedShape,
+    kind: TopAbs_ShapeEnum,
+    convert: Callable[[TopoDS_Shape], TopoDS_Shape],
+) -> tuple[ResolvedShape, ...]:
+    """Preserve the legacy TopExp_Explorer occurrence semantics."""
+    native = shape.Shape()
+    if native.IsNull():
+        raise ValueError("cannot enumerate a null shape")
+    explorer = TopExp_Explorer(native, kind)
+    values: list[ResolvedShape] = []
+    while explorer.More():
+        values.append(ResolvedShape(convert(explorer.Current())))
+        explorer.Next()
+    return tuple(values)
+
+
+def vertices(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    """Return vertices unique by OCCT IsSame topology identity."""
+    native = shape.Shape()
+    if native.IsNull():
+        raise ValueError("cannot enumerate a null shape")
+    values = TopTools_IndexedMapOfShape()
+    TopExp.MapShapes_s(native, TopAbs_VERTEX, values)
+    return tuple(
+        ResolvedShape(as_vertex(values.FindKey(index)))
+        for index in range(1, values.Extent() + 1)
+    )
+
+
+def edges(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    return _subshapes(shape, TopAbs_EDGE, as_edge)
+
+
+def wires(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    return _subshapes(shape, TopAbs_WIRE, as_wire)
+
+
 def faces(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
-    return tuple(shape.faces())
+    return _subshapes(shape, TopAbs_FACE, as_face)
+
+
+def shells(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    return _subshapes(shape, TopAbs_SHELL, as_shell)
+
+
+def solids(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    return _subshapes(shape, TopAbs_SOLID, as_solid)
+
+
+def compounds(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    return _subshapes(shape, TopAbs_COMPOUND, as_compound)
+
+
+def compsolids(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    return _subshapes(shape, TopAbs_COMPSOLID, as_compsolid)
 
 
 def sequence_item(sequence: tuple[ResolvedShape, ...], index: int) -> ResolvedShape:

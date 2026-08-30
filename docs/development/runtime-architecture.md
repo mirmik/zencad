@@ -83,9 +83,27 @@ resolved Shapes cross the cache boundary as BREP artifacts rather than pickled
 OCP objects. Topology handles likewise hide their expression state.
 `from_ocp()` and `native()` form deep-copy snapshot boundaries; only the
 private `_legacy()` adapter borrows a resolved Shape value for compatibility.
-The complete typed topology-query surface remains a following migration gate;
-its future `vertices()` result is unique by topology identity, not by
-coordinate-distance deduplication.
+The complete typed topology-query surface now consists of `vertices()`,
+`edges()`, `wires()`, `faces()`, `shells()`, `solids()`, `compounds()`, and
+`compsolids()`. Each returns `DeferredSequence` parameterized by the exact
+topology-handle type. Indexing composes a typed expression without evaluating
+the sequence in deferred mode; `len()` and consumption through iteration then
+materialize the query tuple. In immediate mode, query and item expressions are
+evaluated when constructed, as required by the runtime policy. Query tuples
+are deliberately not cacheable, while indexed items are independently
+cacheable through their precise validated BREP serializers.
+
+`vertices()` deduplicates by OCCT `IsSame` identity (TShape plus Location,
+ignoring Orientation), not by coordinate distance. Distinct TShapes at one
+coordinate are retained, as are occurrences of one TShape at different
+Locations. Results follow first topology-traversal occurrence order; this is
+not a stable topological-naming facility. The other seven queries preserve
+the legacy `TopExp_Explorer` occurrence semantics, including repeated shared
+subshapes (a box has 24 edge occurrences). A root of the requested kind is
+included, and nested shapes of that same kind are not traversed.
+
+The broader typed Shape factory and boolean surface is the next computation-
+type migration gate.
 
 The private slice is not wired into the runner or public root API yet. Its
 accepted constraints, measurements, and remaining staged gates are recorded in

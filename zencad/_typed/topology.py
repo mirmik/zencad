@@ -90,6 +90,24 @@ def _topology_spec(name: str, kind: TopAbs_ShapeEnum) -> ResultSpec[ResolvedShap
     )
 
 
+def _topology_sequence_spec(
+    name: str,
+    kind: TopAbs_ShapeEnum,
+) -> ResultSpec[tuple[ResolvedShape, ...]]:
+    item_validator = _topology_validator(kind)
+    return cast(
+        ResultSpec[tuple[ResolvedShape, ...]],
+        ResultSpec.for_type(
+            tuple,
+            type_id=f"zencad.typed.Sequence[{name}].v1",
+            validator=lambda values: all(
+                isinstance(value, ResolvedShape) and item_validator(value)
+                for value in values
+            ),
+        ),
+    )
+
+
 SHAPE_SPEC = ResultSpec.for_type(
     ResolvedShape,
     type_id="zencad.typed.Shape.v1",
@@ -105,14 +123,14 @@ SOLID_SPEC = _topology_spec("Solid", TopAbs_SOLID)
 COMPOUND_SPEC = _topology_spec("Compound", TopAbs_COMPOUND)
 COMPSOLID_SPEC = _topology_spec("CompSolid", TopAbs_COMPSOLID)
 
-_valid_face = _topology_validator(TopAbs_FACE)
-_FACE_SEQUENCE_SPEC = ResultSpec.for_type(
-    tuple,
-    type_id="zencad.typed.Sequence[Face].v1",
-    validator=lambda values: all(
-        isinstance(value, ResolvedShape) and _valid_face(value) for value in values
-    ),
-)
+_VERTEX_SEQUENCE_SPEC = _topology_sequence_spec("Vertex", TopAbs_VERTEX)
+_EDGE_SEQUENCE_SPEC = _topology_sequence_spec("Edge", TopAbs_EDGE)
+_WIRE_SEQUENCE_SPEC = _topology_sequence_spec("Wire", TopAbs_WIRE)
+_FACE_SEQUENCE_SPEC = _topology_sequence_spec("Face", TopAbs_FACE)
+_SHELL_SEQUENCE_SPEC = _topology_sequence_spec("Shell", TopAbs_SHELL)
+_SOLID_SEQUENCE_SPEC = _topology_sequence_spec("Solid", TopAbs_SOLID)
+_COMPOUND_SEQUENCE_SPEC = _topology_sequence_spec("Compound", TopAbs_COMPOUND)
+_COMPSOLID_SEQUENCE_SPEC = _topology_sequence_spec("CompSolid", TopAbs_COMPSOLID)
 
 
 class Shape(Handle[ResolvedShape]):
@@ -229,20 +247,100 @@ class Shape(Handle[ResolvedShape]):
         )
         return type(self)._from_state(self.runtime, expression)
 
-    def faces(self) -> DeferredSequence[Face]:
+    def _topology_query(
+        self,
+        operation: Callable[[ResolvedShape], tuple[ResolvedShape, ...]],
+        *,
+        sequence_spec: ResultSpec[tuple[ResolvedShape, ...]],
+        item_type: type[ShapeHandleT],
+        item_spec: ResultSpec[ResolvedShape],
+        operation_id: str,
+    ) -> DeferredSequence[ShapeHandleT]:
         expression = self.runtime._expression(
-            ops.faces,
-            result=_FACE_SEQUENCE_SPEC,
+            operation,
+            result=sequence_spec,
             args=(self._state,),
-            operation_id="zencad.typed.shape.faces",
+            operation_id=operation_id,
             cacheable=False,
         )
         return DeferredSequence(
             self.runtime,
             expression,
+            item_type=item_type,
+            item_spec=item_spec,
+            operation_id=f"{operation_id}.item",
+        )
+
+    def vertices(self) -> DeferredSequence[Vertex]:
+        return self._topology_query(
+            ops.vertices,
+            sequence_spec=_VERTEX_SEQUENCE_SPEC,
+            item_type=Vertex,
+            item_spec=VERTEX_SPEC,
+            operation_id="zencad.typed.shape.vertices",
+        )
+
+    def edges(self) -> DeferredSequence[Edge]:
+        return self._topology_query(
+            ops.edges,
+            sequence_spec=_EDGE_SEQUENCE_SPEC,
+            item_type=Edge,
+            item_spec=EDGE_SPEC,
+            operation_id="zencad.typed.shape.edges",
+        )
+
+    def wires(self) -> DeferredSequence[Wire]:
+        return self._topology_query(
+            ops.wires,
+            sequence_spec=_WIRE_SEQUENCE_SPEC,
+            item_type=Wire,
+            item_spec=WIRE_SPEC,
+            operation_id="zencad.typed.shape.wires",
+        )
+
+    def faces(self) -> DeferredSequence[Face]:
+        return self._topology_query(
+            ops.faces,
+            sequence_spec=_FACE_SEQUENCE_SPEC,
             item_type=Face,
             item_spec=FACE_SPEC,
-            operation_id="zencad.typed.shape.faces.item",
+            operation_id="zencad.typed.shape.faces",
+        )
+
+    def shells(self) -> DeferredSequence[Shell]:
+        return self._topology_query(
+            ops.shells,
+            sequence_spec=_SHELL_SEQUENCE_SPEC,
+            item_type=Shell,
+            item_spec=SHELL_SPEC,
+            operation_id="zencad.typed.shape.shells",
+        )
+
+    def solids(self) -> DeferredSequence[Solid]:
+        return self._topology_query(
+            ops.solids,
+            sequence_spec=_SOLID_SEQUENCE_SPEC,
+            item_type=Solid,
+            item_spec=SOLID_SPEC,
+            operation_id="zencad.typed.shape.solids",
+        )
+
+    def compounds(self) -> DeferredSequence[Compound]:
+        return self._topology_query(
+            ops.compounds,
+            sequence_spec=_COMPOUND_SEQUENCE_SPEC,
+            item_type=Compound,
+            item_spec=COMPOUND_SPEC,
+            operation_id="zencad.typed.shape.compounds",
+        )
+
+    def compsolids(self) -> DeferredSequence[CompSolid]:
+        return self._topology_query(
+            ops.compsolids,
+            sequence_spec=_COMPSOLID_SEQUENCE_SPEC,
+            item_type=CompSolid,
+            item_spec=COMPSOLID_SPEC,
+            operation_id="zencad.typed.shape.compsolids",
         )
 
     def mass(self) -> Scalar:
