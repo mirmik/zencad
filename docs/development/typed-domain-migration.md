@@ -1,9 +1,10 @@
 # Typed domain migration
 
-> Status: in progress. The characterization baseline, evalcache v2 substrate,
-> private typed vertical slice, Scalar/Point/Vector/Quaternion/Transform
-> algebra, complete private Shape/topology stage, and private Curve/Curve2
-> and Surface/sweep checkpoints are implemented; no public typed-domain
+> Status: private typed kernel complete; full public API parity is in progress.
+> The characterization baseline, evalcache v2 substrate, value/transform
+> algebra, Shape/topology, Curve/Curve2/Surface, BoundaryBox, MeshData, and
+> connected integration gates are implemented. The legacy public API remains
+> active while the complete parity contract is migrated; no public typed-domain
 > cutover described here is implemented yet. The accepted
 > direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
@@ -547,11 +548,11 @@ Verification on 2026-08-30 after the topology-core checkpoint:
 
 ## Stage 6: remaining geometry and boundaries
 
-Status: in progress. The private `Curve`, `Curve2`, representative
-`Surface`/sweep-law, and `BoundaryBox`/structured-range checkpoints are
-complete. The private `MeshData` checkpoint and remaining-geometry integration
-gate are also complete. Richer variable laws remain an explicit non-blocking
-follow-up rather than an untyped hole in the completed representative slice.
+Status: complete for the connected private typed kernel. The private `Curve`,
+`Curve2`, representative `Surface`/sweep-law,
+`BoundaryBox`/structured-range, `MeshData`, and remaining-geometry integration
+gates are complete. Full compatibility with every legacy factory, operation,
+and method is tracked separately by the Stage 7 parity contract.
 
 Migrate curves, 2D curves, surfaces, sweep laws, boundary boxes, triangulation,
 mesh values, conversion, display, scene transport, and file artifacts.
@@ -819,14 +820,24 @@ separate public-cutover decision and compatibility audit described by Stage 7.
 
 ## Stage 7: public cutover
 
-Switch the public geometry API as one coherent change. Keep only bounded
-compatibility helpers: `.unlazy()` returning the same materialized domain
-type, selected native accessors, lowercase point/vector aliases, and an
-explicitly legacy lazy extension surface.
+Status: parity inventory complete; family migrations have not started. The
+machine-readable source of truth is
+[`typed-api-parity.json`](typed-api-parity.json), with rationale and current
+counts in [`typed-api-parity.md`](typed-api-parity.md).
 
-Exit gate: unit, subprocess, example, GUI/headless smoke, cache, performance,
-and installed-wheel checks pass without requiring `.unlazy()` in ordinary
-models.
+First bring the private typed layer to complete functional parity with the
+intentionally supported legacy geometry API. Keep the legacy root active
+during this work. Only after every missing, partial, and repair row has been
+resolved, switch the public geometry API as one coherent change. Keep bounded
+compatibility helpers such as `.unlazy()` returning the same domain handle,
+selected native accessors, lowercase point/vector aliases, and an explicitly
+legacy lazy extension surface.
+
+Exit gate: the parity checker contains only `implemented` or explicitly
+`unchanged` rows; the root export contract and legacy signature snapshot are
+reviewed; unit, subprocess, example, GUI/headless smoke, cache, performance,
+type, and installed-wheel checks pass without requiring `.unlazy()` in
+ordinary models.
 
 ## Stage 8: typing and cleanup
 
