@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 from typing import Callable
 
-from OCP.BRep import BRep_Tool
+from OCP.BRep import BRep_Builder, BRep_Tool
 from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_MakeEdge,
     BRepBuilderAPI_MakeFace,
@@ -34,10 +34,18 @@ from OCP.TopAbs import (
 )
 from OCP.TopExp import TopExp, TopExp_Explorer
 from OCP.TopTools import TopTools_IndexedMapOfShape
-from OCP.TopoDS import TopoDS_Shape, TopoDS_Wire
+from OCP.TopoDS import TopoDS_Compound, TopoDS_Shape, TopoDS_Wire
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.geom.solid import _box, _sphere
+from zencad.geom.solid import (
+    _box,
+    _cone,
+    _cylinder,
+    _halfspace,
+    _make_solid,
+    _sphere,
+    _torus,
+)
 from zencad.geom.trans import move
 from zencad.occ_compat import (
     as_compound,
@@ -62,12 +70,62 @@ def _point(value: Point3Value) -> gp_Pnt:
     return gp_Pnt(value.x, value.y, value.z)
 
 
-def box(size: Vector3Value, center: bool) -> ResolvedShape:
+def box(
+    size: Vector3Value,
+    center: bool | str | None,
+) -> ResolvedShape:
     return _box(size.x, size.y, size.z, center=center)
 
 
-def sphere(radius: float) -> ResolvedShape:
-    return _sphere(radius)
+def sphere(
+    radius: float,
+    yaw: float | None,
+    pitch: float | tuple[float, float] | None,
+) -> ResolvedShape:
+    return _sphere(radius, yaw=yaw, pitch=pitch)
+
+
+def cylinder(
+    radius: float,
+    height: float,
+    yaw: float | None,
+    center: bool,
+) -> ResolvedShape:
+    return _cylinder(radius, height, yaw=yaw, center=center)
+
+
+def cone(
+    radius1: float,
+    radius2: float,
+    height: float,
+    yaw: float | None,
+    center: bool,
+) -> ResolvedShape:
+    return _cone(radius1, radius2, height, yaw=yaw, center=center)
+
+
+def torus(
+    radius1: float,
+    radius2: float,
+    yaw: float | None,
+    pitch: float | tuple[float, float] | None,
+) -> ResolvedShape:
+    return _torus(radius1, radius2, yaw=yaw, pitch=pitch)
+
+
+def halfspace() -> ResolvedShape:
+    return _halfspace()
+
+
+def make_solid(shells: tuple[ResolvedShape, ...]) -> ResolvedShape:
+    return _make_solid(shells)
+
+
+def empty_shape() -> ResolvedShape:
+    """Return the algebraic zero of topology as a serializable empty Shape."""
+    compound = TopoDS_Compound()
+    BRep_Builder().MakeCompound(compound)
+    return ResolvedShape(compound)
 
 
 def segment(start: Point3Value, end: Point3Value) -> ResolvedShape:

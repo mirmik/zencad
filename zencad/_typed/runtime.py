@@ -40,6 +40,7 @@ from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .topology import (
     EDGE_SPEC,
     FACE_SPEC,
+    SHAPE_SPEC,
     SOLID_SPEC,
     WIRE_SPEC,
     Compound,
@@ -208,62 +209,149 @@ class Runtime:
             return self._evaluator.evaluate(expression)
         return expression
 
-    @overload
     def box(
         self,
-        size: Vector3,
-        /,
-        *,
-        center: bool = False,
-    ) -> Solid: ...
-
-    @overload
-    def box(
-        self,
-        x: ScalarInput,
+        x: ScalarInput | Vector3 | Sequence[ScalarInput] = 0,
         y: ScalarInput | None = None,
         z: ScalarInput | None = None,
-        *,
-        center: bool = False,
-    ) -> Solid: ...
-
-    def box(
-        self,
-        x: ScalarInput | Vector3,
-        y: ScalarInput | None = None,
-        z: ScalarInput | None = None,
-        *,
-        center: bool = False,
+        center: bool | str | None = None,
+        size: ScalarInput | Vector3 | Sequence[ScalarInput] | None = None,
     ) -> Solid:
-        _require_bool(center, "box center")
-        if isinstance(x, Vector3):
-            if y is not None or z is not None:
-                raise TypeError("box Vector3 size cannot be combined with y or z")
-            require_same_runtime(self, x)
-            size = x
-        else:
-            if y is None and z is None:
-                size = Vector3(x, x, x, runtime=self)
-            elif y is not None and z is not None:
-                size = Vector3(x, y, z, runtime=self)
-            else:
-                raise TypeError("box expects one size or all three dimensions")
+        resolved_center = _require_center(center, "box center")
+        resolved_size = _box_size(self, x, y, z, size)
         expression = self._expression(
             ops.box,
             result=SOLID_SPEC,
-            args=(size._state, center),
+            args=(resolved_size._state, resolved_center),
             operation_id="zencad.typed.box",
         )
         return Solid._from_state(self, expression)
 
-    def sphere(self, radius: ScalarInput, /) -> Solid:
+    def cube(
+        self,
+        x: ScalarInput | Vector3 | Sequence[ScalarInput] = 0,
+        y: ScalarInput | None = None,
+        z: ScalarInput | None = None,
+        center: bool | str | None = None,
+        size: ScalarInput | Vector3 | Sequence[ScalarInput] | None = None,
+    ) -> Solid:
+        """Compatibility alias for :meth:`box` with the legacy signature."""
+        return self.box(x, y, z, center, size)
+
+    def sphere(
+        self,
+        r: ScalarInput,
+        yaw: ScalarInput | None = None,
+        pitch: ScalarInput | Sequence[ScalarInput] | None = None,
+    ) -> Solid:
         expression = self._expression(
             ops.sphere,
             result=SOLID_SPEC,
-            args=(_scalar_state(self, radius),),
+            args=(
+                _scalar_state(self, r),
+                _optional_scalar_state(self, yaw),
+                _angle_state(self, pitch, "sphere pitch"),
+            ),
             operation_id="zencad.typed.sphere",
         )
         return Solid._from_state(self, expression)
+
+    def cylinder(
+        self,
+        r: ScalarInput,
+        h: ScalarInput,
+        yaw: ScalarInput | None = None,
+        center: bool = False,
+    ) -> Solid:
+        _require_bool(center, "cylinder center")
+        expression = self._expression(
+            ops.cylinder,
+            result=SOLID_SPEC,
+            args=(
+                _scalar_state(self, r),
+                _scalar_state(self, h),
+                _optional_scalar_state(self, yaw),
+                center,
+            ),
+            operation_id="zencad.typed.cylinder",
+        )
+        return Solid._from_state(self, expression)
+
+    def cone(
+        self,
+        r1: ScalarInput,
+        r2: ScalarInput,
+        h: ScalarInput,
+        yaw: ScalarInput | None = None,
+        center: bool = False,
+    ) -> Solid:
+        _require_bool(center, "cone center")
+        expression = self._expression(
+            ops.cone,
+            result=SOLID_SPEC,
+            args=(
+                _scalar_state(self, r1),
+                _scalar_state(self, r2),
+                _scalar_state(self, h),
+                _optional_scalar_state(self, yaw),
+                center,
+            ),
+            operation_id="zencad.typed.cone",
+        )
+        return Solid._from_state(self, expression)
+
+    def torus(
+        self,
+        r1: ScalarInput,
+        r2: ScalarInput,
+        yaw: ScalarInput | None = None,
+        pitch: ScalarInput | Sequence[ScalarInput] | None = None,
+    ) -> Solid:
+        expression = self._expression(
+            ops.torus,
+            result=SOLID_SPEC,
+            args=(
+                _scalar_state(self, r1),
+                _scalar_state(self, r2),
+                _optional_scalar_state(self, yaw),
+                _angle_state(self, pitch, "torus pitch"),
+            ),
+            operation_id="zencad.typed.torus",
+        )
+        return Solid._from_state(self, expression)
+
+    def halfspace(self) -> Solid:
+        expression = self._expression(
+            ops.halfspace,
+            result=SOLID_SPEC,
+            args=(),
+            operation_id="zencad.typed.halfspace",
+        )
+        return Solid._from_state(self, expression)
+
+    def make_solid(self, shells: Shell | Sequence[Shell], /) -> Solid:
+        values = _require_shells(self, shells, "make_solid")
+        expression = self._expression(
+            ops.make_solid,
+            result=SOLID_SPEC,
+            args=(tuple(shell._state for shell in values),),
+            operation_id="zencad.typed.make_solid",
+        )
+        return Solid._from_state(self, expression)
+
+    def empty_shape(self) -> Shape:
+        """Return the algebraic zero of topology without materializing it."""
+        expression = self._expression(
+            ops.empty_shape,
+            result=SHAPE_SPEC,
+            args=(),
+            operation_id="zencad.typed.empty_shape",
+        )
+        return Shape._from_state(self, expression)
+
+    def nullshape(self) -> Shape:
+        """Legacy spelling for :meth:`empty_shape`."""
+        return self.empty_shape()
 
     def empty_boundary_box(self) -> BoundaryBox:
         """Return the identity value for boundary-box union."""
@@ -947,6 +1035,94 @@ class Runtime:
 def _require_bool(value: object, name: str) -> None:
     if not isinstance(value, bool):
         raise TypeError(f"{name} must be bool")
+
+
+def _require_center(
+    value: bool | str | None,
+    name: str,
+) -> bool | str | None:
+    if value is not None and not isinstance(value, (bool, str)):
+        raise TypeError(f"{name} must be bool, str, or None")
+    return value
+
+
+def _optional_scalar_state(
+    runtime: Runtime,
+    value: ScalarInput | None,
+) -> State[float] | None:
+    if value is None:
+        return None
+    return _scalar_state(runtime, value)
+
+
+def _angle_state(
+    runtime: Runtime,
+    value: ScalarInput | Sequence[ScalarInput] | None,
+    name: str,
+) -> State[float] | tuple[State[float], State[float]] | None:
+    if value is None:
+        return None
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        values = tuple(value)
+        if len(values) != 2:
+            raise TypeError(f"{name} must contain exactly two scalar bounds")
+        return (
+            _scalar_state(runtime, values[0]),
+            _scalar_state(runtime, values[1]),
+        )
+    return _scalar_state(runtime, cast(ScalarInput, value))
+
+
+def _box_size(
+    runtime: Runtime,
+    x: ScalarInput | Vector3 | Sequence[ScalarInput],
+    y: ScalarInput | None,
+    z: ScalarInput | None,
+    size: ScalarInput | Vector3 | Sequence[ScalarInput] | None,
+) -> Vector3:
+    source = x if size is None else size
+    if size is not None:
+        y = None
+        z = None
+    if isinstance(source, Vector3):
+        if y is not None or z is not None:
+            raise TypeError("box Vector3 size cannot be combined with y or z")
+        require_same_runtime(runtime, source)
+        return source
+    if isinstance(source, Sequence) and not isinstance(source, (str, bytes)):
+        if y is not None or z is not None:
+            raise TypeError("box sequence size cannot be combined with y or z")
+        values = tuple(source)
+        if len(values) != 3:
+            raise TypeError("box size must contain exactly three dimensions")
+        return runtime.vector(values[0], values[1], values[2])
+    scalar = cast(ScalarInput, source)
+    if y is None and z is None:
+        return runtime.vector(scalar, scalar, scalar)
+    if y is not None and z is not None:
+        return runtime.vector(scalar, y, z)
+    raise TypeError("box expects one size or all three dimensions")
+
+
+def _require_shells(
+    runtime: Runtime,
+    shells: Shell | Sequence[Shell],
+    name: str,
+) -> tuple[Shell, ...]:
+    values: tuple[Shell, ...]
+    if isinstance(shells, Shell):
+        values = (shells,)
+    elif isinstance(shells, Sequence) and not isinstance(shells, (str, bytes)):
+        values = tuple(shells)
+    else:
+        raise TypeError(f"{name} expects Shell or a sequence of Shell")
+    if not values:
+        raise ValueError(f"{name} requires at least one Shell")
+    if not all(isinstance(shell, Shell) for shell in values):
+        raise TypeError(f"{name} expects only Shell values")
+    for shell in values:
+        require_same_runtime(runtime, shell)
+    return values
 
 
 def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:

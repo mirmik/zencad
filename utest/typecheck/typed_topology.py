@@ -22,6 +22,17 @@ def topology_contract(
     transform = runtime.translation(1, 2, 3)
 
     assert_type(runtime.box(1), typed.Solid)
+    assert_type(runtime.box(size=(1, 2, 3), center="xz"), typed.Solid)
+    assert_type(runtime.cube(1, 2, 3, True), typed.Solid)
+    assert_type(runtime.sphere(1, yaw=1, pitch=(-1, 1)), typed.Solid)
+    assert_type(runtime.cylinder(1, 2, yaw=1, center=True), typed.Solid)
+    assert_type(runtime.cone(2, 1, 3, yaw=1, center=True), typed.Solid)
+    assert_type(runtime.torus(4, 1, yaw=1, pitch=(-1, 1)), typed.Solid)
+    assert_type(runtime.halfspace(), typed.Solid)
+    assert_type(runtime.make_solid(shell), typed.Solid)
+    assert_type(runtime.make_solid((shell,)), typed.Solid)
+    assert_type(runtime.empty_shape(), typed.Shape)
+    assert_type(runtime.nullshape(), typed.Shape)
     assert_type(runtime.box(1).translate(1, 2, 3), typed.Solid)
     assert_type(runtime.box(1).transform(transform), typed.Solid)
 

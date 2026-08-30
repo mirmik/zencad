@@ -53,10 +53,10 @@ operators:
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
 | Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
-| Constructors | 92 | 22 | 6 | 63 | 1 | 0 |
+| Constructors | 92 | 30 | 4 | 58 | 0 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **232** | **13** | **112** | **20** | **3** |
+| **Total** | **380** | **240** | **11** | **107** | **19** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -76,6 +76,13 @@ methods, native adaptor boundaries, structured shape properties, and immutable
 BoundaryBox compatibility. Its four BoundaryBox repairs replace mutation with
 constructors or returned values. The other four repairs in this family are
 the non-uniform `scaleX/Y/Z/XYZ` methods owned by affine card #2024.
+
+The first #2041 constructor tranche completes all legacy solid factories:
+`cube`, `sphere`, `cylinder`, `cone`, `torus`, `halfspace`, and `make_solid`.
+Angular, centering, and graph-scalar variants retain exact `Solid` handles.
+`nullshape` is represented as an ordinary empty `Shape`, the algebraic zero of
+topology, with `empty_shape` as its explicit spelling; it is neither optional
+nor a separate domain type.
 
 The executable decomposition is:
 

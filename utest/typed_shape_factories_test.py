@@ -163,8 +163,8 @@ class TypedShapeFactoriesTest(unittest.TestCase):
             runtime.box(1, 2)
         with self.assertRaisesRegex(TypeError, "cannot be combined"):
             runtime.box(runtime.vector(1, 2, 3), 2, 3)
-        with self.assertRaisesRegex(TypeError, "center must be bool"):
-            runtime.box(1, center="x")  # type: ignore[arg-type]
+        with self.assertRaisesRegex(TypeError, "center must be bool, str, or None"):
+            runtime.box(1, center=object())  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "expects only Point3"):
             runtime.polysegment((point, (1, 0, 0)))  # type: ignore[list-item]
         with self.assertRaisesRegex(ValueError, "at least 3 points"):

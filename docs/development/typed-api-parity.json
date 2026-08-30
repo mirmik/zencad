@@ -850,6 +850,7 @@
         "utest/curve3_test.py",
         "utest/curve2_test.py",
         "utest/typed_shape_factories_test.py",
+        "utest/typed_solid_constructors_test.py",
         "utest/typed_curves_test.py",
         "utest/typed_surfaces_test.py"
       ],
@@ -864,9 +865,14 @@
           "default": {"status": "missing", "typed": "Runtime.{name}() -> typed topology handle", "materialization": "none"},
           "overrides": {
             "box": {"status": "implemented", "typed": "Runtime.box() -> Solid"},
-            "cube": {"status": "partial", "typed": "Runtime.box() compatibility alias -> Solid"},
-            "sphere": {"status": "partial", "typed": "Runtime.sphere() -> Solid; yaw/pitch variants remain"},
-            "nullshape": {"status": "repair", "typed": "explicit optional/empty topology result; non-null Shape invariant remains"}
+            "cube": {"status": "implemented", "typed": "Runtime.cube() compatibility alias -> Solid"},
+            "sphere": {"status": "implemented", "typed": "Runtime.sphere() -> Solid, including yaw/pitch variants"},
+            "cylinder": {"status": "implemented", "typed": "Runtime.cylinder() -> Solid"},
+            "cone": {"status": "implemented", "typed": "Runtime.cone() -> Solid"},
+            "torus": {"status": "implemented", "typed": "Runtime.torus() -> Solid, including yaw/pitch variants"},
+            "halfspace": {"status": "implemented", "typed": "Runtime.halfspace() -> Solid"},
+            "make_solid": {"status": "implemented", "typed": "Runtime.make_solid(Shell | Sequence[Shell]) -> Solid"},
+            "nullshape": {"status": "implemented", "typed": "Runtime.nullshape()/empty_shape() -> Shape algebraic zero"}
           }
         },
         {
