@@ -1,8 +1,9 @@
 # Typed domain migration
 
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
-> and private typed vertical slice are implemented; no public typed-domain
-> cutover described here is implemented yet. The accepted direction and rationale are recorded in
+> private typed vertical slice, and Scalar/Point/Vector algebra are
+> implemented; no public typed-domain cutover described here is implemented
+> yet. The accepted direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 ## Objective
@@ -189,11 +190,12 @@ individual indexed `Face` results use the same validated BREP path. Cache-off
 constructs the evaluator without a store, so it cannot touch the configured
 directory.
 
-The compatibility adapter is deliberately narrow: 15 resolved functions in
+The compatibility adapter was deliberately narrow at the vertical-slice
+checkpoint: 15 resolved functions in
 `_operations.py` bridge box construction, translation, difference, topology,
 mass/center, and the minimum scalar/vector algebra to the current eager
-implementation. The private production package is 647 lines and its runtime
-and subprocess tests are 226 lines. As an inventory signal, the current
+implementation. At that checkpoint the private production package was 647
+lines and its runtime and subprocess tests were 226 lines. As an inventory signal, the current
 ZenCad tree still contains 91 legacy lazy decorators across 19 modules and 34
 `LazyObject`/`LazyObjectShape` references. A full migration is therefore a
 systematic API conversion, not a small facade rename; the next work remains
@@ -236,6 +238,11 @@ OCP work and need a dedicated benchmark suite during public cutover.
 
 ## Stage 4: value algebra
 
+Status: Scalar and 2D/3D point/vector algebra are complete in the private
+`zencad._typed` layer. Transformation and quaternion handles are deliberately
+split into their own follow-up because they have composition and OCP mutability
+contracts beyond this value card.
+
 Implement immutable scalar, point, vector, transformation, and required 2D
 value types. Define exact result types for arithmetic, coercion from Python
 literals and tuples, comparison/materialization rules, NumPy conversion, and
@@ -244,6 +251,60 @@ expression-aware numeric helpers.
 Exit gate: algebra property tests and static type tests agree; vector
 operations never silently produce points, and immediate-only arithmetic avoids
 unnecessary expression nodes.
+
+### Algebra contract
+
+The implemented result table is independent of evaluation and cache policy:
+
+| Operation | Result |
+| --- | --- |
+| `Scalar op Scalar/literal` | `Scalar` |
+| `Vector + Vector`, `Vector - Vector` | same-dimensional `Vector` |
+| `Point + Vector`, `Vector + Point` | same-dimensional `Point` |
+| `Point - Vector` | same-dimensional `Point` |
+| `Point - Point` | same-dimensional `Vector` |
+| `Vector * Scalar`, `Scalar * Vector`, `Vector / Scalar` | same-dimensional `Vector` |
+| `Vector.dot(Vector)`, 2D `Vector.cross(Vector)` | `Scalar` |
+| 3D `Vector.cross(Vector)` | `Vector3` |
+| length, point distance, scalar math helpers | `Scalar` |
+
+`Point + Point` and cross-dimensional operations fail explicitly. Handles are
+logically immutable, unhashable, and use composition rather than inheriting
+from Python numbers, NumPy, OCP, or evalcache classes. Literal and tuple
+constructors require an owning `Runtime` when no component handle can supply
+one.
+
+Every operation whose operands are all resolved inexpensive values is folded
+directly into another resolved value, even when the runtime policy is
+deferred. This path emits no evaluator event and performs no cache access. If
+any operand contains an `Expression`, the operation adds a typed expression
+node. Under immediate policy, a value derived from geometry is first evaluated
+through the configured cache and subsequent inexpensive arithmetic folds from
+that resolved result.
+
+The documented materialization boundaries are:
+
+- `float()`, `int()`, `bool()`, and scalar comparisons;
+- point/vector equality, `value()`, iteration, and `to_numpy()`;
+- `to_ocp()` conversion to `gp_Pnt`, `gp_Vec`, `gp_Pnt2d`, or `gp_Vec2d`;
+- ordinary Python `math` functions through `Scalar.__float__()`.
+
+Coordinates remain graph-preserving `Scalar` handles. The expression-aware
+helpers `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `sqrt`, `exp`,
+and `log` also preserve the graph.
+
+Verification on 2026-08-30:
+
+- `pytest -q`: 198 tests, including the four policy combinations, result-type
+  tables, algebraic identities, boundaries, invalid operations, and folding;
+- strict mypy with `--disallow-any-expr`: both representative type-contract
+  files pass;
+- literal folding is checked with zero evaluator events and zero cache-store
+  accesses;
+- dependent scalar math is checked from `Shape.mass()` through deferred and
+  immediate runtimes;
+- the built wheel contains the value modules and passes an isolated installed
+  algebra smoke.
 
 ## Stage 5: shape and topology
 

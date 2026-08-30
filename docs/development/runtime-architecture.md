@@ -64,9 +64,12 @@ are recorded in
 The current runner still evaluates public `evalcache.LazyObject` values and
 materializes them at scene and export boundaries. A private `zencad._typed`
 vertical slice now proves the replacement model with stable Shape, Face,
-Scalar, Point3, Vector3, and typed-sequence handles. Its immediate/deferred and
-cache on/off policies do not change domain classes, and resolved Shapes cross
-the cache boundary as BREP artifacts rather than pickled OCP objects.
+Scalar, Point2/Point3, Vector2/Vector3, and typed-sequence handles. The private
+value layer now has policy-independent algebra, constant folding for resolved
+operands, and explicit Python/NumPy/OCP materialization boundaries. Its
+immediate/deferred and cache on/off policies do not change domain classes, and
+resolved Shapes cross the cache boundary as BREP artifacts rather than pickled
+OCP objects.
 
 The private slice is not wired into the runner or public root API yet. Its
 accepted constraints, measurements, and remaining staged gates are recorded in

@@ -8,7 +8,7 @@ exposing lazy proxy types to callers.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Callable, Generic, TypeVar, Union, cast, overload
+from typing import Callable, Generic, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Shape
 from evalcache.v2 import (
@@ -25,13 +25,23 @@ from evalcache.v2 import (
 from zencad.geom.shape import Shape as ResolvedShape
 
 from . import _operations as ops
+from ._core import Handle, State, require_same_runtime
 from ._serialization import ShapeBrepSerializer
+from .values import (
+    POINT3_SPEC,
+    SCALAR_SPEC,
+    Number,
+    Point2,
+    Point3,
+    Scalar,
+    ScalarInput,
+    Vector2,
+    Vector3,
+)
 
 
 ResolvedT = TypeVar("ResolvedT")
 ShapeHandleT = TypeVar("ShapeHandleT", bound="Shape")
-Number = int | float
-ScalarInput = Union[Number, "Scalar"]
 
 
 _SHAPE_SERIALIZER = ShapeBrepSerializer()
@@ -53,9 +63,6 @@ _FACE_SEQUENCE_SPEC = ResultSpec.for_type(
         isinstance(value, ResolvedShape) and value.is_face() for value in values
     ),
 )
-_SCALAR_SPEC = ResultSpec.for_type(float, type_id="zencad.typed.Scalar.v1")
-_POINT_SPEC = ResultSpec.for_type(ops.PointValue, type_id="zencad.typed.Point3.v1")
-_VECTOR_SPEC = ResultSpec.for_type(ops.VectorValue, type_id="zencad.typed.Vector3.v1")
 
 
 class Runtime:
@@ -150,6 +157,29 @@ class Runtime:
     def _resolve(self, expression: Expression[ResolvedT]) -> ResolvedT:
         return self._evaluator.evaluate(expression)
 
+    def _value_state(
+        self,
+        operation: Callable[..., ResolvedT],
+        *,
+        result: ResultSpec[ResolvedT],
+        args: tuple[object, ...],
+        operation_id: str,
+    ) -> State[ResolvedT]:
+        """Fold resolved value operands; otherwise retain a typed expression."""
+        if all(not isinstance(argument, Expression) for argument in args):
+            value = operation(*args)
+            return result.validate(value, operation_id)
+        expression = self._evaluator.expression(
+            operation,
+            result=result,
+            args=args,
+            operation_id=operation_id,
+            operation_version="1",
+        )
+        if self.mode is EvaluationMode.IMMEDIATE:
+            return self._evaluator.evaluate(expression)
+        return expression
+
     def box(
         self,
         x: Number,
@@ -172,169 +202,17 @@ class Runtime:
     def vector(self, x: ScalarInput, y: ScalarInput, z: ScalarInput) -> Vector3:
         return Vector3(x, y, z, runtime=self)
 
+    def scalar(self, value: Number) -> Scalar:
+        return Scalar(value, runtime=self)
 
-class _Handle(Generic[ResolvedT]):
-    __slots__ = ("_runtime", "_expression")
+    def point2(self, x: ScalarInput, y: ScalarInput) -> Point2:
+        return Point2(x, y, runtime=self)
 
-    def _bind(self, runtime: Runtime, expression: Expression[ResolvedT]) -> None:
-        self._runtime = runtime
-        self._expression = expression
-
-    @property
-    def runtime(self) -> Runtime:
-        return self._runtime
-
-    def _resolved(self) -> ResolvedT:
-        return self._runtime._resolve(self._expression)
-
-    def unlazy(self):
-        """Compatibility boundary: materialize but preserve the handle type."""
-        self._resolved()
-        return self
+    def vector2(self, x: ScalarInput, y: ScalarInput) -> Vector2:
+        return Vector2(x, y, runtime=self)
 
 
-class Scalar(_Handle[float]):
-    @classmethod
-    def _from_expression(
-        cls, runtime: Runtime, expression: Expression[float]
-    ) -> Scalar:
-        value = cls.__new__(cls)
-        value._bind(runtime, expression)
-        return value
-
-    def value(self) -> float:
-        return self._resolved()
-
-    def __float__(self) -> float:
-        return self.value()
-
-    def _binary(
-        self,
-        other: ScalarInput,
-        operation: Callable[[float, float], float],
-        operation_id: str,
-    ) -> Scalar:
-        argument = _scalar_argument(self.runtime, other)
-        expression = self.runtime._expression(
-            operation,
-            result=_SCALAR_SPEC,
-            args=(self._expression, argument),
-            operation_id=operation_id,
-        )
-        return Scalar._from_expression(self.runtime, expression)
-
-    def __add__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_add, "zencad.typed.scalar.add")
-
-    def __sub__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_subtract, "zencad.typed.scalar.subtract")
-
-    def __mul__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_multiply, "zencad.typed.scalar.multiply")
-
-    def __truediv__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_divide, "zencad.typed.scalar.divide")
-
-
-class _XYZHandle(_Handle[ResolvedT], Generic[ResolvedT]):
-    def _coordinate_function(self) -> Callable[[ResolvedT, int], float]:
-        raise NotImplementedError
-
-    def _coordinate(self, axis: int) -> Scalar:
-        expression = self.runtime._expression(
-            self._coordinate_function(),
-            result=_SCALAR_SPEC,
-            args=(self._expression, axis),
-            operation_id=f"zencad.typed.{type(self).__name__.lower()}.coordinate",
-        )
-        return Scalar._from_expression(self.runtime, expression)
-
-    @property
-    def x(self) -> Scalar:
-        return self._coordinate(0)
-
-    @property
-    def y(self) -> Scalar:
-        return self._coordinate(1)
-
-    @property
-    def z(self) -> Scalar:
-        return self._coordinate(2)
-
-
-class Point3(_XYZHandle[ops.PointValue]):
-    def _coordinate_function(
-        self,
-    ) -> Callable[[ops.PointValue, int], float]:
-        return ops.point_coordinate
-
-    def __init__(
-        self,
-        x: ScalarInput,
-        y: ScalarInput,
-        z: ScalarInput,
-        *,
-        runtime: Runtime | None = None,
-    ) -> None:
-        resolved_runtime = _infer_runtime(runtime, (x, y, z))
-        expression = resolved_runtime._expression(
-            ops.point,
-            result=_POINT_SPEC,
-            args=tuple(_scalar_argument(resolved_runtime, item) for item in (x, y, z)),
-            operation_id="zencad.typed.point3",
-        )
-        self._bind(resolved_runtime, expression)
-
-    @classmethod
-    def _from_expression(
-        cls, runtime: Runtime, expression: Expression[ops.PointValue]
-    ) -> Point3:
-        value = cls.__new__(cls)
-        value._bind(runtime, expression)
-        return value
-
-    def value(self) -> tuple[float, float, float]:
-        point = self._resolved()
-        return (point.x, point.y, point.z)
-
-
-class Vector3(_XYZHandle[ops.VectorValue]):
-    def _coordinate_function(
-        self,
-    ) -> Callable[[ops.VectorValue, int], float]:
-        return ops.vector_coordinate
-
-    def __init__(
-        self,
-        x: ScalarInput,
-        y: ScalarInput,
-        z: ScalarInput,
-        *,
-        runtime: Runtime | None = None,
-    ) -> None:
-        resolved_runtime = _infer_runtime(runtime, (x, y, z))
-        expression = resolved_runtime._expression(
-            ops.vector,
-            result=_VECTOR_SPEC,
-            args=tuple(_scalar_argument(resolved_runtime, item) for item in (x, y, z)),
-            operation_id="zencad.typed.vector3",
-        )
-        self._bind(resolved_runtime, expression)
-
-    @classmethod
-    def _from_expression(
-        cls, runtime: Runtime, expression: Expression[ops.VectorValue]
-    ) -> Vector3:
-        value = cls.__new__(cls)
-        value._bind(runtime, expression)
-        return value
-
-    def value(self) -> tuple[float, float, float]:
-        vector = self._resolved()
-        return (vector.x, vector.y, vector.z)
-
-
-class Shape(_Handle[ResolvedShape]):
+class Shape(Handle[ResolvedShape]):
     @classmethod
     def _from_expression(
         cls, runtime: Runtime, expression: Expression[ResolvedShape]
@@ -344,11 +222,11 @@ class Shape(_Handle[ResolvedShape]):
         return value
 
     def __sub__(self, other: Shape) -> Shape:
-        _require_same_runtime(self.runtime, other)
+        require_same_runtime(self.runtime, other)
         expression = self.runtime._expression(
             ops.difference,
             result=_SHAPE_SPEC,
-            args=(self._expression, other._expression),
+            args=(self._state, other._state),
             operation_id="zencad.typed.shape.difference",
         )
         return Shape._from_expression(self.runtime, expression)
@@ -362,7 +240,7 @@ class Shape(_Handle[ResolvedShape]):
     def translate(self, *args: object) -> Shape:
         if len(args) == 1 and isinstance(args[0], Vector3):
             vector = args[0]
-            _require_same_runtime(self.runtime, vector)
+            require_same_runtime(self.runtime, vector)
         elif len(args) == 3:
             vector = Vector3(
                 cast(ScalarInput, args[0]),
@@ -375,7 +253,7 @@ class Shape(_Handle[ResolvedShape]):
         expression = self.runtime._expression(
             ops.translate,
             result=_SHAPE_SPEC,
-            args=(self._expression, vector._expression),
+            args=(self._state, vector._state),
             operation_id="zencad.typed.shape.translate",
         )
         return Shape._from_expression(self.runtime, expression)
@@ -384,7 +262,7 @@ class Shape(_Handle[ResolvedShape]):
         expression = self.runtime._expression(
             ops.faces,
             result=_FACE_SEQUENCE_SPEC,
-            args=(self._expression,),
+            args=(self._state,),
             operation_id="zencad.typed.shape.faces",
             cacheable=False,
         )
@@ -397,22 +275,22 @@ class Shape(_Handle[ResolvedShape]):
         )
 
     def mass(self) -> Scalar:
-        expression = self.runtime._expression(
+        state = self.runtime._value_state(
             ops.mass,
-            result=_SCALAR_SPEC,
-            args=(self._expression,),
+            result=SCALAR_SPEC,
+            args=(self._state,),
             operation_id="zencad.typed.shape.mass",
         )
-        return Scalar._from_expression(self.runtime, expression)
+        return Scalar._from_state(self.runtime, state)
 
     def center(self) -> Point3:
-        expression = self.runtime._expression(
+        state = self.runtime._value_state(
             ops.center,
-            result=_POINT_SPEC,
-            args=(self._expression,),
+            result=POINT3_SPEC,
+            args=(self._state,),
             operation_id="zencad.typed.shape.center",
         )
-        return Point3._from_expression(self.runtime, expression)
+        return Point3._from_state(self.runtime, state)
 
     def native(self) -> TopoDS_Shape:
         """Materialize at the explicit OCP boundary."""
@@ -472,30 +350,3 @@ class DeferredSequence(Generic[ShapeHandleT]):
 
 def _optional_float(value: Number | None) -> float | None:
     return None if value is None else float(value)
-
-
-def _infer_runtime(
-    explicit: Runtime | None, values: tuple[ScalarInput, ...]
-) -> Runtime:
-    runtimes = {value.runtime for value in values if isinstance(value, Scalar)}
-    if explicit is not None:
-        runtimes.add(explicit)
-    if not runtimes:
-        raise TypeError("literal Point3/Vector3 construction requires runtime=")
-    if len(runtimes) != 1:
-        raise ValueError("cannot mix handles from different typed runtimes")
-    return next(iter(runtimes))
-
-
-def _scalar_argument(runtime: Runtime, value: ScalarInput) -> object:
-    if isinstance(value, Scalar):
-        _require_same_runtime(runtime, value)
-        return value._expression
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError("expected Scalar, int, or float")
-    return float(value)
-
-
-def _require_same_runtime(runtime: Runtime, handle: _Handle[ResolvedT]) -> None:
-    if handle.runtime is not runtime:
-        raise ValueError("cannot mix handles from different typed runtimes")
