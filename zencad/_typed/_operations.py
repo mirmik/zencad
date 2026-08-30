@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from typing import Callable
 
-from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCP.BRepBuilderAPI import (
+    BRepBuilderAPI_MakeEdge,
+    BRepBuilderAPI_MakeFace,
+    BRepBuilderAPI_MakePolygon,
+    BRepBuilderAPI_Transform,
+)
+from OCP.gp import gp_Pnt
 from OCP.TopAbs import (
     TopAbs_COMPOUND,
     TopAbs_COMPSOLID,
@@ -23,10 +29,10 @@ from OCP.TopAbs import (
 )
 from OCP.TopExp import TopExp, TopExp_Explorer
 from OCP.TopTools import TopTools_IndexedMapOfShape
-from OCP.TopoDS import TopoDS_Shape
+from OCP.TopoDS import TopoDS_Shape, TopoDS_Wire
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.geom.solid import _box
+from zencad.geom.solid import _box, _sphere
 from zencad.geom.trans import move
 from zencad.occ_compat import (
     as_compound,
@@ -45,8 +51,66 @@ from ._transform_operations import TransformValue, transform_to_ocp
 from ._value_operations import Point3Value, Vector3Value
 
 
-def box(x: float, y: float | None, z: float | None, center: bool) -> ResolvedShape:
-    return _box(x, y, z, center=center)
+def _point(value: Point3Value) -> gp_Pnt:
+    return gp_Pnt(value.x, value.y, value.z)
+
+
+def box(size: Vector3Value, center: bool) -> ResolvedShape:
+    return _box(size.x, size.y, size.z, center=center)
+
+
+def sphere(radius: float) -> ResolvedShape:
+    return _sphere(radius)
+
+
+def segment(start: Point3Value, end: Point3Value) -> ResolvedShape:
+    return ResolvedShape(BRepBuilderAPI_MakeEdge(_point(start), _point(end)).Edge())
+
+
+def _polygon_wire(
+    points: tuple[Point3Value, ...],
+    *,
+    closed: bool,
+) -> TopoDS_Wire:
+    if len(points) < 2:
+        raise ValueError("polysegment requires at least two points")
+    builder = BRepBuilderAPI_MakePolygon()
+    for point in points:
+        builder.Add(_point(point))
+    if closed:
+        builder.Close()
+    if not builder.IsDone():
+        raise ValueError("cannot build a wire from the supplied points")
+    return builder.Wire()
+
+
+def polysegment(
+    points: tuple[Point3Value, ...],
+    closed: bool,
+) -> ResolvedShape:
+    return ResolvedShape(_polygon_wire(points, closed=closed))
+
+
+def polygon(points: tuple[Point3Value, ...]) -> ResolvedShape:
+    if len(points) < 3:
+        raise ValueError("polygon requires at least three points")
+    wire = _polygon_wire(points, closed=True)
+    builder = BRepBuilderAPI_MakeFace(wire)
+    if not builder.IsDone():
+        raise ValueError("cannot build a face from the supplied points")
+    return ResolvedShape(builder.Face())
+
+
+def rectangle(width: float, height: float, center: bool) -> ResolvedShape:
+    x0 = -width / 2 if center else 0.0
+    y0 = -height / 2 if center else 0.0
+    points = (
+        Point3Value(x0, y0, 0.0),
+        Point3Value(x0 + width, y0, 0.0),
+        Point3Value(x0 + width, y0 + height, 0.0),
+        Point3Value(x0, y0 + height, 0.0),
+    )
+    return polygon(points)
 
 
 def translate(shape: ResolvedShape, vector: Vector3Value) -> ResolvedShape:
@@ -62,6 +126,14 @@ def transform(shape: ResolvedShape, value: TransformValue) -> ResolvedShape:
 
 def difference(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
     return left - right
+
+
+def union(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
+    return left + right
+
+
+def intersection(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
+    return left ^ right
 
 
 def shape_from_brep(payload: bytes) -> ResolvedShape:

@@ -189,17 +189,52 @@ class Shape(Handle[ResolvedShape]):
             expression,
         )
 
-    def __sub__(self, other: Shape) -> Shape:
+    def _boolean(
+        self,
+        other: Shape,
+        operation: Callable[[ResolvedShape, ResolvedShape], ResolvedShape],
+        operation_id: str,
+        name: str,
+    ) -> Shape:
         if not isinstance(other, Shape):
-            raise TypeError("Shape difference expects Shape")
+            raise TypeError(f"Shape {name} expects Shape")
         require_same_runtime(self.runtime, other)
         expression = self.runtime._expression(
-            ops.difference,
+            operation,
             result=SHAPE_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.shape.difference",
+            operation_id=operation_id,
         )
         return Shape._from_state(self.runtime, expression)
+
+    def __add__(self, other: Shape) -> Shape:
+        return self._boolean(
+            other,
+            ops.union,
+            "zencad.typed.shape.union",
+            "union",
+        )
+
+    def __sub__(self, other: Shape) -> Shape:
+        return self._boolean(
+            other,
+            ops.difference,
+            "zencad.typed.shape.difference",
+            "difference",
+        )
+
+    def __xor__(self, other: Shape) -> Shape:
+        return self._boolean(
+            other,
+            ops.intersection,
+            "zencad.typed.shape.intersection",
+            "intersection",
+        )
+
+    def unlazy(self: ShapeT) -> ShapeT:
+        """Compatibility boundary that materializes and preserves the handle."""
+        self._resolved()
+        return self
 
     def transform(self: ShapeT, transformation: Transform, /) -> ShapeT:
         """Apply a typed similarity transform without changing topology kind."""

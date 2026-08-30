@@ -67,8 +67,11 @@ vertical slice now proves the replacement model with stable Shape, Face,
 Scalar, Point2/Point3, Vector2/Vector3, Quaternion, Transform, and
 typed-sequence handles. Its topology core adds the direct Shape subtypes
 Vertex, Edge, Wire, Face, Shell, Solid, Compound, and CompSolid. `box()` now
-returns `Solid`; typed transform and translation preserve the precise topology
-subtype, while boolean difference conservatively returns `Shape`.
+accepts scalar or graph-aware `Vector3` dimensions and returns `Solid`;
+`sphere()` also returns `Solid`, `segment()` returns `Edge`, `polysegment()`
+returns `Wire`, and `polygon()`/`rectangle()` return `Face`. Typed transform
+and translation preserve the precise topology subtype, while binary union,
+difference, and intersection conservatively return `Shape`.
 `Vertex.point()` is the explicit transition from topology to a geometric
 `Point3`. The private value layer now has policy-independent algebra, constant
 folding for resolved operands, and explicit Python/NumPy/OCP materialization
@@ -102,7 +105,13 @@ the legacy `TopExp_Explorer` occurrence semantics, including repeated shared
 subshapes (a box has 24 edge occurrences). A root of the requested kind is
 included, and nested shapes of that same kind are not traversed.
 
-The broader typed Shape factory and boolean surface is the next computation-
+Factory arguments can retain deferred `Scalar`, `Point3`, and `Vector3`
+dependencies. All shape-producing operations cross persistent cache through
+validated BREP records; a cached boolean result can bypass both input graphs.
+The bounded private `.unlazy()` compatibility method materializes and returns
+the same handle, while `native()` returns an owned OCP snapshot and `_legacy()`
+remains the only borrowed internal adapter. The Shape/topology stage is now
+complete; remaining geometry and runtime boundaries are the next computation-
 type migration gate.
 
 The private slice is not wired into the runner or public root API yet. Its

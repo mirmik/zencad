@@ -7,6 +7,7 @@ exposing lazy proxy types to callers.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Callable, TypeVar, cast, overload
 
 from evalcache.v2 import (
@@ -24,7 +25,10 @@ from . import _operations as ops
 from . import _transform_operations as transform_ops
 from ._core import State, require_same_runtime
 from .topology import (
+    EDGE_SPEC,
+    FACE_SPEC,
     SOLID_SPEC,
+    WIRE_SPEC,
     Compound,
     CompSolid,
     DeferredSequence,
@@ -186,21 +190,121 @@ class Runtime:
             return self._evaluator.evaluate(expression)
         return expression
 
+    @overload
     def box(
         self,
-        x: Number,
-        y: Number | None = None,
-        z: Number | None = None,
+        size: Vector3,
+        /,
+        *,
+        center: bool = False,
+    ) -> Solid: ...
+
+    @overload
+    def box(
+        self,
+        x: ScalarInput,
+        y: ScalarInput | None = None,
+        z: ScalarInput | None = None,
+        *,
+        center: bool = False,
+    ) -> Solid: ...
+
+    def box(
+        self,
+        x: ScalarInput | Vector3,
+        y: ScalarInput | None = None,
+        z: ScalarInput | None = None,
         *,
         center: bool = False,
     ) -> Solid:
+        _require_bool(center, "box center")
+        if isinstance(x, Vector3):
+            if y is not None or z is not None:
+                raise TypeError("box Vector3 size cannot be combined with y or z")
+            require_same_runtime(self, x)
+            size = x
+        else:
+            if y is None and z is None:
+                size = Vector3(x, x, x, runtime=self)
+            elif y is not None and z is not None:
+                size = Vector3(x, y, z, runtime=self)
+            else:
+                raise TypeError("box expects one size or all three dimensions")
         expression = self._expression(
             ops.box,
             result=SOLID_SPEC,
-            args=(float(x), _optional_float(y), _optional_float(z), center),
+            args=(size._state, center),
             operation_id="zencad.typed.box",
         )
         return Solid._from_state(self, expression)
+
+    def sphere(self, radius: ScalarInput, /) -> Solid:
+        expression = self._expression(
+            ops.sphere,
+            result=SOLID_SPEC,
+            args=(_scalar_state(self, radius),),
+            operation_id="zencad.typed.sphere",
+        )
+        return Solid._from_state(self, expression)
+
+    def segment(self, start: Point3, end: Point3, /) -> Edge:
+        _require_points(self, (start, end), minimum=2, name="segment")
+        expression = self._expression(
+            ops.segment,
+            result=EDGE_SPEC,
+            args=(start._state, end._state),
+            operation_id="zencad.typed.segment",
+        )
+        return Edge._from_state(self, expression)
+
+    def polysegment(
+        self,
+        points: Sequence[Point3],
+        /,
+        *,
+        closed: bool = False,
+    ) -> Wire:
+        _require_bool(closed, "polysegment closed")
+        values = _require_points(self, points, minimum=2, name="polysegment")
+        expression = self._expression(
+            ops.polysegment,
+            result=WIRE_SPEC,
+            args=(tuple(point._state for point in values), closed),
+            operation_id="zencad.typed.polysegment",
+        )
+        return Wire._from_state(self, expression)
+
+    def polygon(self, points: Sequence[Point3], /) -> Face:
+        values = _require_points(self, points, minimum=3, name="polygon")
+        expression = self._expression(
+            ops.polygon,
+            result=FACE_SPEC,
+            args=(tuple(point._state for point in values),),
+            operation_id="zencad.typed.polygon",
+        )
+        return Face._from_state(self, expression)
+
+    def rectangle(
+        self,
+        width: ScalarInput,
+        height: ScalarInput | None = None,
+        /,
+        *,
+        center: bool = False,
+    ) -> Face:
+        _require_bool(center, "rectangle center")
+        resolved_height = width if height is None else height
+        expression = self._expression(
+            ops.rectangle,
+            result=FACE_SPEC,
+            args=(
+                _scalar_state(self, width),
+                _scalar_state(self, resolved_height),
+                center,
+            ),
+            operation_id="zencad.typed.rectangle",
+        )
+        return Face._from_state(self, expression)
 
     def point(self, x: ScalarInput, y: ScalarInput, z: ScalarInput) -> Point3:
         return Point3(x, y, z, runtime=self)
@@ -344,5 +448,25 @@ class Runtime:
         return Transform._from_state(self, state)
 
 
-def _optional_float(value: Number | None) -> float | None:
-    return None if value is None else float(value)
+def _require_bool(value: object, name: str) -> None:
+    if not isinstance(value, bool):
+        raise TypeError(f"{name} must be bool")
+
+
+def _require_points(
+    runtime: Runtime,
+    points: Sequence[Point3],
+    *,
+    minimum: int,
+    name: str,
+) -> tuple[Point3, ...]:
+    if isinstance(points, (str, bytes)) or not isinstance(points, Sequence):
+        raise TypeError(f"{name} expects a sequence of Point3")
+    values = tuple(points)
+    if len(values) < minimum:
+        raise ValueError(f"{name} requires at least {minimum} points")
+    if not all(isinstance(point, Point3) for point in values):
+        raise TypeError(f"{name} expects only Point3 values")
+    for point in values:
+        require_same_runtime(runtime, point)
+    return values

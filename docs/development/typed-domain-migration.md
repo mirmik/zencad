@@ -2,9 +2,9 @@
 
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
 > private typed vertical slice, Scalar/Point/Vector/Quaternion/Transform
-> algebra, the topology-handle core, and the complete typed topology-query
-> surface are implemented; no public typed-domain cutover described here is
-> implemented yet. The accepted direction and rationale are recorded in
+> algebra, and the complete private Shape/topology stage are implemented; no
+> public typed-domain cutover described here is implemented yet. The accepted
+> direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 ## Objective
@@ -397,9 +397,9 @@ does not provide mypy stubs.
 
 ## Stage 5: shape and topology
 
-Status: in progress in the private `zencad._typed` layer. The topology-handle
-core and the uniform topology-query surface are implemented. The broader
-Shape factory/boolean migration remains the next separate gate.
+Status: complete in the private `zencad._typed` layer. The topology-handle
+core, uniform topology-query surface, representative precise factories, and
+binary boolean surface are implemented. The public root API remains unchanged.
 
 Introduce `Shape` and precise topology handles, typed topology sequences,
 resolved OCP adapters, result validators, BREP codecs, and materializing native
@@ -422,13 +422,30 @@ class visible to the caller.
 
 Operations advertise only the precision they can guarantee:
 
-- `Runtime.box(...)` returns `Solid`;
+- `Runtime.box(...)` and `Runtime.sphere(...)` return `Solid`;
+- `Runtime.segment(...)` returns `Edge`;
+- `Runtime.polysegment(...)` returns `Wire`;
+- `Runtime.polygon(...)` and `Runtime.rectangle(...)` return `Face`;
 - `transform()` and `translate()` preserve the receiver's precise topology
   subtype;
-- boolean difference conservatively returns `Shape`, because a boolean can
-  change topology kind;
+- binary union (`+`), difference (`-`), and intersection (`^`) conservatively
+  return `Shape`, because a boolean can change topology kind;
 - `Vertex.point()` returns the geometric position as `Point3` without
   conflating a topological vertex with a coordinate value.
+
+Factory arguments remain part of the typed graph. Box dimensions, sphere
+radius, and rectangle dimensions accept `Scalar` dependencies; `box()` also
+accepts a `Vector3` size. Segment, polysegment, and polygon accept `Point3`
+handles, including points derived from deferred geometry and vector algebra.
+No factory converts a handle through `float()`, tuple iteration, or an OCP
+accessor while constructing the graph. The private `box()` contract accepts
+one scalar for a cube, three scalar dimensions, or one `Vector3`; the ambiguous
+two-dimension legacy spelling is deliberately rejected.
+
+All three boolean operators use the general `Shape` ResultSpec and BREP codec.
+This keeps their declaration truthful even when OCCT produces a solid,
+compound, or a non-null empty compound. A fresh-runtime cache hit for the
+boolean result restores the final BREP without evaluating either input graph.
 
 The OCP boundary has explicit ownership. `from_ocp()` takes a deep-copy
 snapshot and validates it against the requested handle class; `native()`
@@ -436,7 +453,10 @@ returns a fresh deep-copy snapshot, so mutating the returned OCP object cannot
 mutate the handle's resolved value. The private `_legacy()` escape hatch is a
 borrowed compatibility boundary for existing eager implementation adapters.
 It is intentionally not part of the normal typed contract and must not leak
-into user-facing code.
+into user-facing code. The bounded `.unlazy()` compatibility spelling
+materializes and returns the same precise handle; `native()` remains the
+explicit owned OCP snapshot boundary. No public `.Shape()` alias is introduced
+inside the private layer.
 
 All eight topology queries now return a `DeferredSequence` whose element type
 matches the requested topology kind:
@@ -480,8 +500,23 @@ nested shapes of that same kind are not traversed. This behavior is part of
 the migration contract rather than an accidental consequence of the typed
 wrapper.
 
-The next Stage 5 gate is the broader typed Shape factory and boolean surface;
-it remains separate from the completed topology-query work.
+Verification on 2026-08-30 after the completed Shape/topology stage:
+
+- `pytest -q`: 239 tests;
+- strict mypy with `--disallow-any-expr`: all five representative typed
+  contracts pass, including precise factory and boolean result types;
+- runtime tests cover exact `Solid`/`Face`/`Wire`/`Edge` factories and all
+  binary booleans in the immediate/deferred × cache on/off matrix;
+- graph tests feed deferred `Scalar`, `Point3`, and `Vector3` dependencies into
+  factories without early materialization;
+- fresh-runtime cache tests restore the final boolean BREP directly, while a
+  representative creation → transform → boolean → topology → value → native/
+  export chain contains no `LazyObjectShape`;
+- an isolated wheel build/install smoke executes every representative factory
+  and boolean outside the source checkout;
+- Ruff, formatting, `compileall`, and diff-integrity checks pass.
+
+The next migration gate is Stage 6: remaining geometry and runtime boundaries.
 
 Verification on 2026-08-30 after the complete topology-query checkpoint:
 
