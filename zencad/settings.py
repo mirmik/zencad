@@ -11,6 +11,8 @@ import re
 import sys
 import tempfile
 
+from zencad.cache_config import default_cache_directory
+
 
 MSAA_SAMPLE_OPTIONS = (0, 2, 4, 8)
 DEFAULT_MSAA_SAMPLES = 4
@@ -217,6 +219,10 @@ class ZencadSettings:
                 "wsize": None,
             },
             "markers": {"size": 1},
+            "cache": {
+                "directory": str(default_cache_directory()),
+                "enabled": True,
+            },
         }
         self.restored = False
 

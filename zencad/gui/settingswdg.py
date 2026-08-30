@@ -161,6 +161,12 @@ class SettingsWidget(QDialog):
             path=["gui", "text_editor"], label="Text editor command:")
         self.marker_size_edit = TextFieldChanger(
             path=["markers", "size"], label="Marker size:")
+        self.cache_directory_edit = TextFieldChanger(
+            path=["cache", "directory"], label="Cache directory:")
+        self.cache_enabled_edit = Checker(
+            "Enable disk cache:",
+            ["cache", "enabled"],
+        )
         self.chordial_deflection_edit = TextFieldChanger(
             path=["view", "default_chordial_deviation"], label="Chordial deflection:")
         self.msaa_edit = ChoiceFieldChanger(
@@ -215,6 +221,8 @@ class SettingsWidget(QDialog):
         append(self.texteditor_edit)
         append(self.default_color_edit)
         append(self.marker_size_edit)
+        append(self.cache_directory_edit)
+        append(self.cache_enabled_edit)
         append(self.chordial_deflection_edit)
         append(self.msaa_edit)
         append(self.navigation_scheme_edit)
@@ -267,8 +275,31 @@ class SettingsWidget(QDialog):
         )
         return False
 
+    def cache_settings_are_valid(self):
+        from zencad.cache_config import (
+            normalize_cache_directory,
+            prepare_cache_directory,
+        )
+
+        try:
+            directory = normalize_cache_directory(
+                self.cache_directory_edit.edit.text()
+            )
+            if self.cache_enabled_edit.check.isChecked():
+                prepare_cache_directory(directory)
+        except (OSError, ValueError, RuntimeError) as exception:
+            QMessageBox.warning(
+                self,
+                "Invalid cache configuration",
+                str(exception),
+            )
+            return False
+        return True
+
     def ok_handle(self):
         if not self.navigation_settings_are_valid():
+            return
+        if not self.cache_settings_are_valid():
             return
         self.save_all()
         self.accept()

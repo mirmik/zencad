@@ -41,11 +41,35 @@ zencad.lazy.onplace=True # Раскрывать объект в момент е�
 
 ----
 ### Где лежит кэш?
-По умолчанию кеш располагается по локальному адресу `~/.zencadcache`, где _~_ - домашний директорий пользователя.
+По умолчанию все процессы ZenCad текущего пользователя используют один общий
+каталог tempfile.gettempdir()/zencad-cache-<uid>. ZenCad не удаляет его при
+завершении, но операционная система может очистить временный каталог.
+
+Путь и состояние кэша можно изменить в окне настроек ZenCad. Переменная
+окружения ZENCAD_CACHE_DIR переопределяет сохранённый путь, а
+ZENCAD_CACHE_DISABLE=1 полностью отключает чтение и запись дискового кэша.
+Ленивые вычисления при этом остаются включёнными.
+
+В пользовательском скрипте конфигурацию можно изменить до создания геометрии:
+
+    zencad.configure(cache_dir="/path/to/cache")
+    zencad.configure(cache_enabled=False)
 :en
 Additional options can be found in the documentation for the evalcache library code.
 
 ----
 ### Where is the cache?
-By default, the cache is located at the local address `~/.zencadcache`, where _~_ is the user's home directory. 
+By default, every ZenCad process of the current user shares
+tempfile.gettempdir()/zencad-cache-<uid>. ZenCad does not remove it at process
+exit, although the operating system may clean its temporary area.
+
+The ZenCad settings dialog can change the directory and enabled state.
+ZENCAD_CACHE_DIR overrides the saved directory, while
+ZENCAD_CACHE_DISABLE=1 disables both disk-cache reads and writes. Lazy
+evaluation remains enabled.
+
+A user script can configure caching before creating geometry:
+
+    zencad.configure(cache_dir="/path/to/cache")
+    zencad.configure(cache_enabled=False)
 ::

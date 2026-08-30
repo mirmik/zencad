@@ -296,6 +296,9 @@ class MainWindowActionsMixin:
         self._send_viewer_command({"cmd": "orient2"})
 
     def invalidateCacheAction(self):
+        if not zencad.lazifier.get_cache_configuration().enabled:
+            print("Invalidate cache: cache is disabled")
+            return
         files = zencad.lazy.cache.keys()
         for f in zencad.lazy.cache.keys():
             del zencad.lazy.cache[f]
@@ -324,15 +327,28 @@ class MainWindowActionsMixin:
         msgBox = QMessageBox(self)
         msgBox.setWindowTitle("Cache Info")
         msgBox.setWindowModality(Qt.WindowModal)
+        configuration = zencad.lazifier.get_cache_configuration()
+        cache = zencad.lazifier.lazy.cache
+        file_count = 0 if not configuration.enabled else len(cache.keys())
+        cache_size = (
+            0
+            if (
+                not configuration.enabled
+                or not os.path.isdir(zencad.lazifier.cachepath)
+            )
+            else get_size(zencad.lazifier.cachepath)
+        )
         msgBox.setInformativeText(
-            "Path: {}"
+            "Enabled: {}"
+            "<p>Path: {}"
             "<p>Hashing algorithm: {}"
             "<p>Files: {}"
             "<p>Size: {}".format(
+                "yes" if configuration.enabled else "no",
                 zencad.lazifier.cachepath,
                 zencad.lazifier.algo().name,
-                len(zencad.lazifier.lazy.cache.keys()),
-                sizeof_fmt(get_size(zencad.lazifier.cachepath)),
+                file_count,
+                sizeof_fmt(cache_size),
             )
         )
         msgBox.exec()
@@ -345,6 +361,12 @@ class MainWindowActionsMixin:
         status = wdg.exec()
 
         if status == 1:
+            from zencad.cache_config import reload_cache_configuration
+
+            cache_configuration = reload_cache_configuration()
+            self._runner_supervisor.set_cache_configuration(
+                cache_configuration
+            )
             self.display_widget.set_msaa_samples(
                 Settings.get(["view", "msaa_samples"])
             )

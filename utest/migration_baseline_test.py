@@ -15,6 +15,7 @@ def unlazy(value):
 class MigrationBaseline(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.previous_cache = zencad.lazy.cache
         cls.cache_directory = TemporaryDirectory()
         zencad.lazy.cache = evalcache.dircache_v2.DirCache_v2(
             cls.cache_directory.name
@@ -22,6 +23,7 @@ class MigrationBaseline(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        zencad.lazy.cache = cls.previous_cache
         cls.cache_directory.cleanup()
 
     def setUp(self):

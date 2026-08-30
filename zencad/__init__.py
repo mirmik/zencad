@@ -45,6 +45,7 @@ try:
     from zencad.color import set_default_border_color, default_border_color
     import zencad.color as color
     from zencad.lazifier import lazy
+    from zencad.cache_config import configure
 
     from zencad.color import (white,
 black,

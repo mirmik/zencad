@@ -3,8 +3,6 @@ import subprocess
 import unittest
 from pathlib import Path
 
-import zencad
-
 
 class ImportProbe(unittest.TestCase):
     def test_missing_ocp_has_actionable_error_without_gui_side_effects(self):
@@ -64,10 +62,22 @@ assert abs(zencad.box(1).unlazy().mass() - 1.0) < 1e-8
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_local_assembly_is_lazy_and_has_no_termin_dependency(self):
-        self.assertNotIn("zencad.assemble", sys.modules)
-        module = zencad.assemble
-        self.assertIs(module, sys.modules["zencad.assemble"])
-        self.assertNotIn("termin", sys.modules)
+        code = """
+import sys
+import zencad
+
+assert "zencad.assemble" not in sys.modules
+module = zencad.assemble
+assert module is sys.modules["zencad.assemble"]
+assert "termin" not in sys.modules
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            cwd=Path(__file__).parents[1],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

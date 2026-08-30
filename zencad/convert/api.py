@@ -35,8 +35,14 @@ def _to_stl(shp, path, delta):
 
 
 @lazy.file_creator(pathfield="path")
-def to_stl(model, path, delta):
+def _cached_to_stl(model, path, delta):
     return _to_stl(model, path, delta)
+
+
+def to_stl(model, path, delta):
+    if not zencad.lazifier.get_cache_configuration().enabled:
+        return _to_stl(evalcache.unlazy_if_need(model), path, delta)
+    return _cached_to_stl(model, path, delta)
 
 
 def _to_brep(model, path):
@@ -45,8 +51,14 @@ def _to_brep(model, path):
 
 
 @lazy.file_creator(pathfield="path")
-def to_brep(model, path):
+def _cached_to_brep(model, path):
     return _to_brep(model, path)
+
+
+def to_brep(model, path):
+    if not zencad.lazifier.get_cache_configuration().enabled:
+        return _to_brep(evalcache.unlazy_if_need(model), path)
+    return _cached_to_brep(model, path)
 
 
 def _from_brep(path):
@@ -70,12 +82,28 @@ def from_brep(path):
     return obj
 
 
-@lazy.file_creator(pathfield="path", prevent_unwrap_in_child=["model"])
-def to_svg(model, path, color=(0, 0, 0), mapping=False):
+def _to_svg(model, path, color=(0, 0, 0), mapping=False):
     path = os.path.expanduser(path)
     string = zencad.convert.svg.shape_to_svg_string(model, color, mapping)
     with open(path, "wb") as f:
         f.write(string.encode("utf-8"))
+
+
+_cached_to_svg = lazy.file_creator(
+    pathfield="path",
+    prevent_unwrap_in_child=["model"],
+)(_to_svg)
+
+
+def to_svg(model, path, color=(0, 0, 0), mapping=False):
+    if not zencad.lazifier.get_cache_configuration().enabled:
+        return _to_svg(
+            evalcache.unlazy_if_need(model),
+            path,
+            color,
+            mapping,
+        )
+    return _cached_to_svg(model, path, color, mapping)
 
 
 @lazy.lazy(prevent_unwrap_in_child=["model"])

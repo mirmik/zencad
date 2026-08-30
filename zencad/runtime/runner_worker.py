@@ -170,14 +170,18 @@ def run_generation(
             raise NotADirectoryError(cwd)
 
         import zencad
-        from evalcache.dircache_v2 import DirCache_v2
         from zencad.lazifier import install_evalcahe_notication
         from zencad.showapi import managed_scene
 
         cache_directory = request.get("cache_directory")
-        if cache_directory:
-            Path(cache_directory).mkdir(parents=True, exist_ok=True)
-            zencad.lazy.cache = DirCache_v2(cache_directory)
+        cache_enabled = request.get("cache_enabled", True)
+        if cache_directory is None:
+            zencad.configure(cache_enabled=cache_enabled)
+        else:
+            zencad.configure(
+                cache_dir=cache_directory,
+                cache_enabled=cache_enabled,
+            )
 
         install_evalcahe_notication(_EvalCacheCommunicator(reporter))
         reporter.control("started", pid=os.getpid(), cwd=str(cwd))

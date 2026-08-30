@@ -39,6 +39,26 @@ A runner must not import or initialize the ZenCad GUI stack.  It is disposable:
 a superseded, crashed, or unresponsive runner can be replaced without
 restarting the GUI.
 
+## Cache configuration
+
+ZenCad uses one disk cache shared by all processes of the current
+operating-system user. The path and enabled state live in the Qt-independent
+user settings. By default the path is
+tempfile.gettempdir()/zencad-cache-<uid>; ZenCad does not remove it on process
+exit.
+
+The effective configuration is selected in this order:
+
+1. the current process's explicit zencad.configure(...) call;
+2. ZENCAD_CACHE_DIR and ZENCAD_CACHE_DISABLE;
+3. cache.directory and cache.enabled in user settings.
+
+RunnerSupervisor sends the resolved directory and enabled state to each
+runner before evaluating the user script. Disabling cache reads and writes
+does not disable lazy evaluation. The accepted rationale and security boundary
+are recorded in
+[Shared user cache and Qt-independent configuration](../architecture-council/2026-08-30-shared-user-cache.md).
+
 ## Snapshot lifecycle
 
 ```text

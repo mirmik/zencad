@@ -95,7 +95,21 @@
 
 <h3 id="where-is-the-cache">Where is the cache?</h3>
 
-<p>By default, the cache is located at the local address <code>~/.zencadcache</code>, where <em>~</em> is the user's home directory.</p>
+<p>By default, every ZenCad process of the current user shares
+<code>tempfile.gettempdir()/zencad-cache-&lt;uid&gt;</code>. ZenCad does not
+remove it at process exit, although the operating system may clean its
+temporary area.</p>
+
+<p>The ZenCad settings dialog can change the directory and enabled state.
+<code>ZENCAD_CACHE_DIR</code> overrides the saved directory, while
+<code>ZENCAD_CACHE_DISABLE=1</code> disables both disk-cache reads and writes.
+Lazy evaluation remains enabled.</p>
+
+<p>A user script can configure caching before creating geometry:</p>
+
+<pre><code class="language-python">zencad.configure(cache_dir="/path/to/cache")
+zencad.configure(cache_enabled=False)
+</code></pre>
 </article>
     </div>
     <div id="footer"></div>

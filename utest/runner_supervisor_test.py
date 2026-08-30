@@ -8,6 +8,7 @@ from zencad.runtime.runner_protocol import (
     decode_control_message,
     encode_control_message,
 )
+from zencad.cache_config import resolve_cache_configuration
 from zencad.runtime.runner_supervisor import RunnerSupervisor
 from zencad.runtime.scene_protocol import ProtocolError
 
@@ -52,13 +53,42 @@ class RunnerSupervisorTest(unittest.TestCase):
             f"Runner generation {generation} did not emit {message_type!r}"
         )
 
-    def test_default_cache_directory_is_persistent(self):
+    def test_default_cache_configuration_is_shared(self):
+        expected = resolve_cache_configuration()
         supervisor = RunnerSupervisor()
         try:
+            self.assertEqual(supervisor.cache_directory, expected.directory)
+            self.assertEqual(supervisor.cache_enabled, expected.enabled)
+        finally:
+            supervisor.shutdown()
+
+    def test_disabled_cache_is_passed_to_runner_without_creating_it(self):
+        cache_directory = self.root / "disabled-cache"
+        supervisor = RunnerSupervisor(
+            cancel_grace_period=0.1,
+            cache_directory=cache_directory,
+            cache_enabled=False,
+        )
+        try:
+            path = self.script("cache-disabled.py", f"""
+from pathlib import Path
+import zencad
+assert zencad.lazy.cache.keys() == []
+assert not Path({str(cache_directory)!r}).exists()
+zencad.box(1).unlazy()
+""")
+            generation = supervisor.start(path)
+            status = supervisor.wait(generation, timeout=10)
             self.assertEqual(
-                supervisor.cache_directory,
-                Path.home() / ".zencadcache",
+                status,
+                "success",
+                [
+                    message.payload
+                    for message in supervisor.messages
+                    if message.generation == generation
+                ],
             )
+            self.assertFalse(cache_directory.exists())
         finally:
             supervisor.shutdown()
 

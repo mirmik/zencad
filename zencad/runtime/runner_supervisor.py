@@ -8,6 +8,11 @@ import tempfile
 import threading
 from typing import Callable
 
+from zencad.cache_config import (
+    CacheConfiguration,
+    normalize_cache_directory,
+    resolve_cache_configuration,
+)
 from zencad.runtime.input_protocol import (
     InputEvent,
     InputEventBuffer,
@@ -63,15 +68,24 @@ class RunnerSupervisor:
         cancel_grace_period: float = 0.5,
         record_scene_patches: bool = True,
         cache_directory: str | Path | None = None,
+        cache_enabled: bool | None = None,
     ):
         if cancel_grace_period < 0:
             raise ValueError("Cancellation grace period must be non-negative")
         self.on_message = on_message
         self.cancel_grace_period = cancel_grace_period
         self.record_scene_patches = record_scene_patches
-        if cache_directory is None:
-            cache_directory = Path.home() / ".zencadcache"
-        self.cache_directory = Path(cache_directory).expanduser()
+        resolved_cache = resolve_cache_configuration()
+        self.cache_directory = (
+            resolved_cache.directory
+            if cache_directory is None
+            else normalize_cache_directory(cache_directory)
+        )
+        self.cache_enabled = (
+            resolved_cache.enabled
+            if cache_enabled is None
+            else bool(cache_enabled)
+        )
         self._context = multiprocessing.get_context("spawn")
         self._lock = threading.RLock()
         self._generation = 0
@@ -79,6 +93,13 @@ class RunnerSupervisor:
         self._handles: dict[int, _RunnerHandle] = {}
         self.messages: list[RunnerMessage] = []
         self.callback_errors: list[BaseException] = []
+
+    def set_cache_configuration(self, configuration):
+        if not isinstance(configuration, CacheConfiguration):
+            raise TypeError("configuration must be a CacheConfiguration")
+        with self._lock:
+            self.cache_directory = configuration.directory
+            self.cache_enabled = configuration.enabled
 
     @property
     def current_generation(self):
@@ -125,6 +146,7 @@ class RunnerSupervisor:
             cwd=str(cwd),
             arguments=arguments,
             cache_directory=str(self.cache_directory),
+            cache_enabled=self.cache_enabled,
         )
         process = self._context.Process(
             target=run_generation,

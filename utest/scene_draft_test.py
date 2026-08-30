@@ -42,6 +42,7 @@ def shape_signature(shape):
 class SceneDraftTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.previous_cache = zencad.lazy.cache
         cls.cache_directory = TemporaryDirectory()
         zencad.lazy.cache = DirCache_v2(cls.cache_directory.name)
         zencad.lazy.encache = False
@@ -50,6 +51,7 @@ class SceneDraftTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        zencad.lazy.cache = cls.previous_cache
         cls.cache_directory.cleanup()
 
     def test_mutations_are_frozen_into_snapshot_properties(self):

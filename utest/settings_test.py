@@ -100,6 +100,10 @@ class SettingsTest(unittest.TestCase):
                 restored.get(["memory", "recents"]),
                 ["one.py", "two.py"],
             )
+            self.assertTrue(restored.get(["cache", "enabled"]))
+            self.assertTrue(
+                str(restored.get(["cache", "directory"])).startswith("/")
+            )
 
     def test_reads_legacy_qsettings_ini_values(self):
         with TemporaryDirectory() as directory:

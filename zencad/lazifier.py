@@ -1,4 +1,3 @@
-import os
 import hashlib
 
 import evalcache
@@ -6,12 +5,57 @@ import evalcache.dircache
 import evalcache.dircache_v2
 from evalcache.lazyfile import LazyFile
 
-cachepath = os.path.expanduser("~/.zencadcache")
+from zencad.cache_config import (
+    CacheConfiguration,
+    prepare_cache_directory,
+    resolve_cache_configuration,
+)
+
+
 algo = hashlib.sha512
 
+
+class DisabledCache:
+    """Dict-like EvalCache backend that never reads or writes anything."""
+
+    def __contains__(self, key):
+        return False
+
+    def __getitem__(self, key):
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        return None
+
+    def __delitem__(self, key):
+        raise KeyError(key)
+
+    def keys(self):
+        return []
+
+    def makePathTo(self, key):
+        raise RuntimeError(
+            "EvalCache file storage is unavailable while cache is disabled"
+        )
+
+    def clean_tmp(self):
+        return None
+
+
+def _cache_backend(configuration):
+    if not configuration.enabled:
+        return DisabledCache()
+    directory = prepare_cache_directory(configuration.directory)
+    return evalcache.dircache_v2.DirCache_v2(str(directory))
+
+
+_cache_configuration = resolve_cache_configuration()
+cachepath = str(_cache_configuration.directory)
 lazy = evalcache.Lazy(
-    cache=evalcache.dircache_v2.DirCache_v2(cachepath),
+    cache=_cache_backend(_cache_configuration),
     algo=algo,
+    encache=_cache_configuration.enabled,
+    decache=_cache_configuration.enabled,
     onbool=True,
     onstr=True,
     pedantic=True,
@@ -21,6 +65,24 @@ lazy = evalcache.Lazy(
     # print_invokes=True,
     # fastdo=True
 )
+
+
+def get_cache_configuration():
+    return _cache_configuration
+
+
+def apply_cache_configuration(configuration):
+    global _cache_configuration, cachepath
+    if not isinstance(configuration, CacheConfiguration):
+        raise TypeError("configuration must be a CacheConfiguration")
+
+    backend = _cache_backend(configuration)
+    lazy.cache = backend
+    lazy.encache = configuration.enabled
+    lazy.decache = configuration.enabled
+    _cache_configuration = configuration
+    cachepath = str(configuration.directory)
+    return configuration
 
 diag = None
 ensave = None
