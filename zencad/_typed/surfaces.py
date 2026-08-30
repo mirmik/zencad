@@ -12,6 +12,7 @@ from . import _surface_operations as ops
 from ._core import Handle, State
 from ._serialization import SurfaceSerializer
 from .curves import CURVE_SPEC, Curve
+from .records import Interval
 from .values import (
     POINT3_SPEC,
     SCALAR_SPEC,
@@ -100,7 +101,7 @@ class Surface(Handle[ops.SurfaceValue]):
         )
         return Vector3._from_state(self.runtime, state)
 
-    def _range(self, first_index: int, name: str) -> tuple[Scalar, Scalar]:
+    def _range(self, first_index: int, name: str) -> Interval:
         first = self.runtime._value_state(
             ops.surface_bound,
             result=SCALAR_SPEC,
@@ -113,15 +114,15 @@ class Surface(Handle[ops.SurfaceValue]):
             args=(self._state, first_index + 1),
             operation_id=f"zencad.typed.surface.{name}.last",
         )
-        return (
+        return Interval(
             Scalar._from_state(self.runtime, first),
             Scalar._from_state(self.runtime, last),
         )
 
-    def u_range(self) -> tuple[Scalar, Scalar]:
+    def u_range(self) -> Interval:
         return self._range(0, "u_range")
 
-    def v_range(self) -> tuple[Scalar, Scalar]:
+    def v_range(self) -> Interval:
         return self._range(2, "v_range")
 
     def u_iso(self, parameter: ScalarInput, /) -> Curve:

@@ -3,8 +3,10 @@
 Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
-from .runtime import Runtime
+from .bounds import BoundaryBox, BoundaryBoxRecord
 from .curves import Curve, Curve2
+from .records import Interval
+from .runtime import Runtime
 from .surfaces import Surface, SweepTrihedron
 from .topology import (
     Compound,
@@ -40,11 +42,14 @@ from .values import (
 __all__ = [
     "Compound",
     "CompSolid",
+    "BoundaryBox",
+    "BoundaryBoxRecord",
     "Curve",
     "Curve2",
     "DeferredSequence",
     "Edge",
     "Face",
+    "Interval",
     "Point2",
     "Point3",
     "Quaternion",

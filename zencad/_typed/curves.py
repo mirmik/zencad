@@ -11,6 +11,7 @@ from evalcache.v2 import Expression, ResultSpec
 from . import _curve_operations as ops
 from ._core import Handle, State
 from ._serialization import Curve2Serializer, CurveSerializer
+from .records import Interval
 from .values import (
     POINT2_SPEC,
     POINT3_SPEC,
@@ -97,7 +98,7 @@ class Curve(Handle[ops.CurveValue]):
         )
         return Vector3._from_state(self.runtime, state)
 
-    def range(self) -> tuple[Scalar, Scalar]:
+    def range(self) -> Interval:
         first = self.runtime._value_state(
             ops.curve_first_parameter,
             result=SCALAR_SPEC,
@@ -110,7 +111,7 @@ class Curve(Handle[ops.CurveValue]):
             args=(self._state,),
             operation_id="zencad.typed.curve.last_parameter",
         )
-        return (
+        return Interval(
             Scalar._from_state(self.runtime, first),
             Scalar._from_state(self.runtime, last),
         )
@@ -171,7 +172,7 @@ class Curve2(Handle[ops.Curve2Value]):
         )
         return Vector2._from_state(self.runtime, state)
 
-    def range(self) -> tuple[Scalar, Scalar]:
+    def range(self) -> Interval:
         first = self.runtime._value_state(
             ops.curve2_first_parameter,
             result=SCALAR_SPEC,
@@ -184,7 +185,7 @@ class Curve2(Handle[ops.Curve2Value]):
             args=(self._state,),
             operation_id="zencad.typed.curve2.last_parameter",
         )
-        return (
+        return Interval(
             Scalar._from_state(self.runtime, first),
             Scalar._from_state(self.runtime, last),
         )

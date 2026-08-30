@@ -43,8 +43,10 @@ from zencad.occ_compat import (
 from zencad.runtime.scene_protocol import encode_brep
 
 from . import _operations as ops
+from . import _bound_operations as bound_ops
 from ._core import Handle, State, require_same_runtime
 from ._serialization import ShapeBrepSerializer
+from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .transforms import Transform
 from .values import (
     POINT3_SPEC,
@@ -395,6 +397,20 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.center",
         )
         return Point3._from_state(self.runtime, state)
+
+    def boundbox(self) -> BoundaryBox:
+        """Return graph-preserving axis-aligned bounds for this shape."""
+        expression = self.runtime._expression(
+            bound_ops.shape_boundary_box,
+            result=BOUNDARY_BOX_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.boundbox",
+        )
+        return BoundaryBox._from_state(self.runtime, expression)
+
+    def bbox(self) -> BoundaryBox:
+        """Short alias for :meth:`boundbox`."""
+        return self.boundbox()
 
     def native(self) -> TopoDS_Shape:
         """Materialize an independent snapshot at the explicit OCP boundary."""

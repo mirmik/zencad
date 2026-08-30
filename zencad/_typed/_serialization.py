@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import struct
+
 from evalcache.v2 import Artifact, SerializedValue
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 from ._curve_operations import Curve2Value, CurveValue
+from ._bound_operations import BoundaryBoxValue
 from ._surface_operations import SurfaceValue
 
 
@@ -15,6 +18,7 @@ _SHAPE_PAYLOAD = b"zencad.typed.shape\x00v1"
 _CURVE_PAYLOAD = b"zencad.typed.curve\x00v2"
 _CURVE2_PAYLOAD = b"zencad.typed.curve2\x00v2"
 _SURFACE_PAYLOAD = b"zencad.typed.surface\x00v1"
+_BOUNDARY_BOX_PAYLOAD = b"zencad.typed.boundary-box\x00v1"
 
 
 class ShapeBrepSerializer:
@@ -135,3 +139,31 @@ class SurfaceSerializer:
         if artifact.name != "surface.geom":
             raise ValueError("typed Surface cache record has no surface.geom artifact")
         return SurfaceValue(artifact.data)
+
+
+class BoundaryBoxSerializer:
+    """Store six IEEE-754 bounds, or an explicit empty marker."""
+
+    serializer_id = "zencad.boundary-box.struct.v1"
+
+    def dumps(self, value: BoundaryBoxValue) -> SerializedValue:
+        if not isinstance(value, BoundaryBoxValue):
+            raise TypeError("boundary-box serializer requires BoundaryBoxValue")
+        if value.coordinates is None:
+            data = b"E"
+        else:
+            data = b"B" + struct.pack(">6d", *value.coordinates)
+        return SerializedValue(payload=_BOUNDARY_BOX_PAYLOAD + b"\x00" + data)
+
+    def loads(self, value: SerializedValue) -> BoundaryBoxValue:
+        if value.artifacts:
+            raise ValueError("typed BoundaryBox cache record cannot have artifacts")
+        prefix = _BOUNDARY_BOX_PAYLOAD + b"\x00"
+        if not value.payload.startswith(prefix):
+            raise ValueError("unsupported typed BoundaryBox cache payload")
+        data = value.payload[len(prefix) :]
+        if data == b"E":
+            return BoundaryBoxValue(None)
+        if len(data) != 49 or data[:1] != b"B":
+            raise ValueError("invalid typed BoundaryBox cache payload")
+        return BoundaryBoxValue(struct.unpack(">6d", data[1:]))

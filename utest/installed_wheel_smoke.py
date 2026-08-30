@@ -62,8 +62,16 @@ def main():
         )
         assert type(surface) is typed.Surface
         assert surface.point(0, 3).value() == (2.0, 0.0, 3.0)
+        assert type(surface.u_range()) is typed.Interval
         assert type(sweep_surface) is typed.Surface
         assert len(sweep_surface.native().Bounds()) == 4
+        bounds = typed_runtime.box(2, 3, 4).boundbox()
+        assert type(bounds) is typed.BoundaryBox
+        assert type(bounds.value()) is typed.BoundaryBoxRecord
+        assert all(
+            abs(actual - expected) < 1e-12
+            for actual, expected in zip(bounds.center.value(), (1.0, 1.5, 2.0))
+        )
 
         script_path = temporary_path / "headless_model.py"
         script_path.write_text(

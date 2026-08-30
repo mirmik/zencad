@@ -547,9 +547,9 @@ Verification on 2026-08-30 after the topology-core checkpoint:
 
 ## Stage 6: remaining geometry and boundaries
 
-Status: in progress. The private `Curve`, `Curve2`, and representative
-`Surface`/sweep-law checkpoints are complete; BoundaryBox, MeshData, richer
-laws, and the integration boundaries remain.
+Status: in progress. The private `Curve`, `Curve2`, representative
+`Surface`/sweep-law, and `BoundaryBox`/structured-range checkpoints are
+complete; MeshData, richer laws, and the integration boundaries remain.
 
 Migrate curves, 2D curves, surfaces, sweep laws, boundary boxes, triangulation,
 mesh values, conversion, display, scene transport, and file artifacts.
@@ -577,7 +577,7 @@ The representative construction surface is:
 All point, direction, radius, and trim arguments remain expression-aware.
 `point(parameter)` returns `Point3` or `Point2`; `tangent(parameter)` returns
 the OCCT first derivative as `Vector3` or `Vector2`; and `range()` returns a
-pair of graph-preserving `Scalar` handles. Reading those methods does not
+named `Interval` containing graph-preserving `Scalar` bounds. Reading those methods does not
 materialize a deferred upstream graph. Calling `value()` on the returned
 point/vector, converting a range endpoint to `float`, `native()`, or
 `.unlazy()` is an explicit materialization boundary.
@@ -622,8 +622,8 @@ Verification on 2026-08-30 after the Curve/Curve2 checkpoint:
 `Surface` follows the same stable-handle and immutable-snapshot model as
 `Curve`. `Runtime.cylinder_surface(radius)` is the representative analytic
 factory. `point(u, v)` returns `Point3`, `normal(u, v)` returns a unit
-`Vector3`, `u_range()` and `v_range()` return pairs of graph-preserving
-`Scalar` handles, and `u_iso(parameter)` / `v_iso(parameter)` return `Curve`.
+`Vector3`, `u_range()` and `v_range()` return named graph-preserving
+`Interval` records, and `u_iso(parameter)` / `v_iso(parameter)` return `Curve`.
 No query exposes a generic evalcache proxy.
 
 `Runtime.sweep_surface(section, spine, ...)` covers the currently live legacy
@@ -663,6 +663,57 @@ Verification on 2026-08-30 after the Surface/sweep checkpoint:
 - full-precision and native ownership tests cover Curve, Curve2, and Surface;
 - the installed-wheel smoke exercises cylinder and sweep surfaces outside the
   source checkout.
+
+### BoundaryBox and structured-range contract
+
+`BoundaryBox` is an immutable stable handle containing either six resolved
+axis bounds or an expression that produces them. Empty bounds are represented
+explicitly rather than by mutable initialization state. `Shape.boundbox()`
+and its `bbox()` alias preserve the upstream shape graph;
+`Runtime.boundary_box(minimum, maximum)` accepts typed `Point3` corners, and
+`Runtime.empty_boundary_box()` provides the identity for `union()`.
+
+Coordinate properties return `Scalar`, `minimum` and `maximum` return
+`Point3`, and `size` returns `Vector3`. `center` and all three named axis
+ranges remain composable without exposing an evalcache proxy. `is_empty()` is
+an intentional materialization boundary because it returns a Python `bool`.
+Reading coordinates, corners, center, size, or a materialized record from an
+empty box raises `ValueError` instead of manufacturing zero bounds.
+
+`BoundaryBox.value()` returns a frozen `BoundaryBoxRecord`; `native()` returns
+a fresh mutable `Bnd_Box` snapshot, including a void native box for an empty
+value. Shape-derived coordinates intentionally retain the same OCCT bounding
+gap as the legacy `Shape.boundbox()` implementation. Source and returned OCP
+objects have no shared mutable ownership with the typed handle.
+
+`Interval` replaces unnamed range tuples on `Curve`, `Curve2`, `Surface`, and
+`BoundaryBox`. Its `lower` and `upper` fields are `Scalar` handles,
+`length()` remains graph-aware, and `value()` explicitly materializes a fixed
+pair of floats. Iteration yields the same two `Scalar` handles for bounded
+compatibility, but tuple/list expansion is not the structured public model.
+
+Resolved boundary boxes use a deterministic binary serializer with an
+explicit empty marker or six big-endian IEEE-754 doubles. The cache format is
+non-executable, has no artifacts, rejects wrong-family payloads, and preserves
+full double precision across runtimes and processes.
+
+Verification on 2026-08-30 after the BoundaryBox/structured-range checkpoint:
+
+- `pytest -q`: 260 tests;
+- strict mypy with `--disallow-any-expr`: all eight representative typed
+  contracts pass;
+- the immediate/deferred × cache on/off matrix covers shape-derived bounds,
+  named records and ranges, corners, center, size, native conversion, and
+  bounded `.unlazy()`;
+- graph tests cover bounds built from deferred points and scalars, union with
+  shape-derived bounds, and the explicit materialization behavior of empty
+  boxes;
+- cache tests cover the non-pickle binary payload, wrong-family rejection,
+  fresh-runtime hits, and persistent reuse by a fresh process;
+- native ownership tests cover non-round double precision, mutable source and
+  return isolation, and the explicit void-box representation;
+- the installed-wheel smoke exercises `Interval`, `BoundaryBox`, and
+  `BoundaryBoxRecord` outside the source checkout.
 
 ## Stage 7: public cutover
 

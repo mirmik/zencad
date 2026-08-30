@@ -23,10 +23,12 @@ from evalcache.v2 import (
 )
 
 from . import _operations as ops
+from . import _bound_operations as bound_ops
 from . import _curve_operations as curve_ops
 from . import _surface_operations as surface_ops
 from . import _transform_operations as transform_ops
 from ._core import State, require_same_runtime
+from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .topology import (
@@ -68,6 +70,7 @@ ResolvedT = TypeVar("ResolvedT")
 __all__ = [
     "Compound",
     "CompSolid",
+    "BoundaryBox",
     "Curve",
     "Curve2",
     "DeferredSequence",
@@ -255,6 +258,24 @@ class Runtime:
             operation_id="zencad.typed.sphere",
         )
         return Solid._from_state(self, expression)
+
+    def empty_boundary_box(self) -> BoundaryBox:
+        """Return the identity value for boundary-box union."""
+        return BoundaryBox._from_state(self, bound_ops.empty_boundary_box())
+
+    def boundary_box(self, minimum: Point3, maximum: Point3, /) -> BoundaryBox:
+        """Create a graph-preserving box from its opposite corner points."""
+        if not isinstance(minimum, Point3) or not isinstance(maximum, Point3):
+            raise TypeError("boundary_box expects Point3 corners")
+        require_same_runtime(self, minimum)
+        require_same_runtime(self, maximum)
+        state = self._value_state(
+            bound_ops.boundary_box_from_points,
+            result=BOUNDARY_BOX_SPEC,
+            args=(minimum._state, maximum._state),
+            operation_id="zencad.typed.boundary-box.from-points",
+        )
+        return BoundaryBox._from_state(self, state)
 
     def line(self, origin: Point3, direction: Vector3, /) -> Curve:
         if not isinstance(origin, Point3):
