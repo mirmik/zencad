@@ -52,11 +52,11 @@ operators:
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
-| Topology and bounds | 117 | 73 | 7 | 33 | 3 | 1 |
+| Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
 | Constructors | 92 | 22 | 6 | 63 | 1 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **197** | **20** | **145** | **15** | **3** |
+| **Total** | **380** | **232** | **13** | **112** | **20** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -70,6 +70,12 @@ keep their graphs behind stable typed handles. The two value repairs are the
 split of ambiguous `xyz` into `Point3`/`Vector3` and rejection of historical
 point division. The nine remaining transform repairs are exclusively the
 non-uniform affine contract owned by #2024.
+
+#2040 closes topology predicates, CurveAlgo queries, modeling convenience
+methods, native adaptor boundaries, structured shape properties, and immutable
+BoundaryBox compatibility. Its four BoundaryBox repairs replace mutation with
+constructors or returned values. The other four repairs in this family are
+the non-uniform `scaleX/Y/Z/XYZ` methods owned by affine card #2024.
 
 The executable decomposition is:
 

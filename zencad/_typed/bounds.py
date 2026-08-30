@@ -23,6 +23,7 @@ from .values import (
 
 if TYPE_CHECKING:
     from .runtime import Runtime
+    from .topology import Solid
 
 
 BoundaryBoxHandleT = TypeVar("BoundaryBoxHandleT", bound="BoundaryBox")
@@ -96,6 +97,10 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
             operation_id="zencad.typed.boundary-box.union",
         )
         return BoundaryBox._from_state(self.runtime, state)
+
+    def add(self, other: BoundaryBox, /) -> BoundaryBox:
+        """Immutable compatibility spelling: return the combined box."""
+        return self.union(other)
 
     def is_empty(self) -> bool:
         """Materialize the box because Python control flow needs a bool."""
@@ -177,11 +182,33 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
     def x_range(self) -> Interval:
         return Interval(self.xmin, self.xmax)
 
+    def xrange(self) -> Interval:
+        return self.x_range()
+
     def y_range(self) -> Interval:
         return Interval(self.ymin, self.ymax)
 
+    def yrange(self) -> Interval:
+        return self.y_range()
+
     def z_range(self) -> Interval:
         return Interval(self.zmin, self.zmax)
+
+    def zrange(self) -> Interval:
+        return self.z_range()
+
+    def xlength(self) -> Scalar:
+        return self.size.x
+
+    def ylength(self) -> Scalar:
+        return self.size.y
+
+    def zlength(self) -> Scalar:
+        return self.size.z
+
+    def shape(self) -> Solid:
+        """Return a graph-preserving Solid occupying these bounds."""
+        return self.runtime.box(self.size).move(self.minimum)
 
     def value(self) -> BoundaryBoxRecord:
         resolved = self._resolved()

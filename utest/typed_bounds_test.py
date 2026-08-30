@@ -92,6 +92,30 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         _assert_coordinates(self, combined.value().maximum, (4.0, 4.0, 5.0))
         self.assertTrue(events)
 
+    def test_legacy_accessors_and_shape_keep_immutable_typed_contract(self):
+        events = []
+        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
+        first = runtime.boundary_box(runtime.point3(1, 2, 3), runtime.point3(4, 6, 8))
+        second = runtime.box(1).boundbox()
+        combined = first.add(second)
+        shape = first.shape()
+
+        self.assertIs(type(combined), typed.BoundaryBox)
+        self.assertIs(type(shape), typed.Solid)
+        self.assertEqual(events, [])
+        self.assertEqual(first.xrange().value(), (1.0, 4.0))
+        self.assertEqual(first.yrange().value(), (2.0, 6.0))
+        self.assertEqual(first.zrange().value(), (3.0, 8.0))
+        self.assertEqual(float(first.xlength()), 3.0)
+        self.assertEqual(float(first.ylength()), 4.0)
+        self.assertEqual(float(first.zlength()), 5.0)
+        shape_record = shape.boundbox().value()
+        first_record = first.value()
+        _assert_coordinates(self, shape_record.minimum, first_record.minimum)
+        _assert_coordinates(self, shape_record.maximum, first_record.maximum)
+        self.assertEqual(first.value().minimum, (1.0, 2.0, 3.0))
+        self.assertTrue(events)
+
     def test_empty_bounds_are_explicit_and_union_identity(self):
         runtime = typed.Runtime.deferred(cache=False)
         empty = (runtime.box(1) - runtime.box(1)).boundbox()

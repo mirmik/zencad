@@ -4,10 +4,16 @@ Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
 from .bounds import BoundaryBox, BoundaryBoxRecord
-from .curves import Curve, Curve2
+from .curves import Curve, Curve2, CurveKind
 from .exttrans import MultiTransform
 from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
-from .records import Interval
+from .records import (
+    CircleParameters,
+    EllipseParameters,
+    Interval,
+    LineParameters,
+    ShapeProperties,
+)
 from .runtime import Runtime
 from .surfaces import Surface, SweepTrihedron
 from .topology import (
@@ -17,6 +23,7 @@ from .topology import (
     Edge,
     Face,
     Shape,
+    ShapeKind,
     Shell,
     Solid,
     Vertex,
@@ -48,10 +55,14 @@ __all__ = [
     "BoundaryBoxRecord",
     "Curve",
     "Curve2",
+    "CurveKind",
     "DeferredSequence",
     "Edge",
     "Face",
     "Interval",
+    "LineParameters",
+    "CircleParameters",
+    "EllipseParameters",
     "MeshArrayRecord",
     "MeshData",
     "MeshDataRecord",
@@ -62,6 +73,8 @@ __all__ = [
     "Runtime",
     "Scalar",
     "Shape",
+    "ShapeKind",
+    "ShapeProperties",
     "Shell",
     "Solid",
     "Surface",

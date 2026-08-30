@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Literal, TypeVar, cast
 
 from OCP.Geom import Geom_Curve
 from OCP.Geom2d import Geom2d_Curve
 from evalcache.v2 import Expression, ResultSpec
 
 from . import _curve_operations as ops
-from ._core import Handle, State
+from ._core import Handle, State, require_same_runtime
 from ._serialization import Curve2Serializer, CurveSerializer
-from .records import Interval
+from .records import CircleParameters, EllipseParameters, Interval, LineParameters
 from .values import (
     POINT2_SPEC,
     POINT3_SPEC,
@@ -29,6 +29,7 @@ from .values import (
 
 if TYPE_CHECKING:
     from .runtime import Runtime
+    from .topology import Edge
 
 
 CurveHandleT = TypeVar("CurveHandleT", bound="Curve")
@@ -49,6 +50,52 @@ CURVE2_SPEC = ResultSpec.for_type(
     serializer=_CURVE2_SERIALIZER,
     validator=ops.valid_curve2,
 )
+CURVE_KIND_SPEC = ResultSpec.for_type(
+    str,
+    type_id="zencad.typed.CurveKind.v1",
+    validator=lambda value: (
+        value
+        in {
+            "line",
+            "circle",
+            "ellipse",
+            "hyperbola",
+            "parabola",
+            "bezier",
+            "bspline",
+            "offset",
+            "other",
+        }
+    ),
+)
+LINE_PARAMETERS_SPEC = ResultSpec.for_type(
+    ops.LineParametersValue,
+    type_id="zencad.typed.LineParameters.v1",
+)
+CIRCLE_PARAMETERS_SPEC = ResultSpec.for_type(
+    ops.CircleParametersValue,
+    type_id="zencad.typed.CircleParameters.v1",
+)
+ELLIPSE_PARAMETERS_SPEC = ResultSpec.for_type(
+    ops.EllipseParametersValue,
+    type_id="zencad.typed.EllipseParameters.v1",
+)
+SCALAR_SEQUENCE_SPEC = cast(
+    ResultSpec[tuple[float, ...]],
+    ResultSpec.for_type(tuple, type_id="zencad.typed.Sequence[Scalar].v1"),
+)
+
+CurveKind = Literal[
+    "line",
+    "circle",
+    "ellipse",
+    "hyperbola",
+    "parabola",
+    "bezier",
+    "bspline",
+    "offset",
+    "other",
+]
 
 
 class Curve(Handle[ops.CurveValue]):
@@ -88,6 +135,12 @@ class Curve(Handle[ops.CurveValue]):
         )
         return Point3._from_state(self.runtime, state)
 
+    def d0(self, parameter: ScalarInput, /) -> Point3:
+        return self.point(parameter)
+
+    def value(self, parameter: ScalarInput, /) -> Point3:
+        return self.point(parameter)
+
     def tangent(self, parameter: ScalarInput, /) -> Vector3:
         """Return the first derivative vector at ``parameter``."""
         state = self.runtime._value_state(
@@ -97,6 +150,9 @@ class Curve(Handle[ops.CurveValue]):
             operation_id="zencad.typed.curve.tangent",
         )
         return Vector3._from_state(self.runtime, state)
+
+    def d1(self, parameter: ScalarInput, /) -> Vector3:
+        return self.tangent(parameter)
 
     def range(self) -> Interval:
         first = self.runtime._value_state(
@@ -115,6 +171,199 @@ class Curve(Handle[ops.CurveValue]):
             Scalar._from_state(self.runtime, first),
             Scalar._from_state(self.runtime, last),
         )
+
+    def curvetype(self) -> CurveKind:
+        state = self.runtime._value_state(
+            ops.curve_kind,
+            result=CURVE_KIND_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.curve.kind",
+        )
+        if isinstance(state, Expression):
+            state = self.runtime._resolve(state)
+        return cast(CurveKind, state)
+
+    def endpoints(self) -> tuple[Point3, Point3]:
+        parameters = self.range()
+        return (self.point(parameters.lower), self.point(parameters.upper))
+
+    def line_parameters(self) -> LineParameters:
+        state = self.runtime._value_state(
+            ops.curve_line_parameters,
+            result=LINE_PARAMETERS_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.curve.line_parameters",
+        )
+        origin = self.runtime._value_state(
+            ops.line_parameters_origin,
+            result=POINT3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.line_parameters.origin",
+        )
+        direction = self.runtime._value_state(
+            ops.line_parameters_direction,
+            result=VECTOR3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.line_parameters.direction",
+        )
+        return LineParameters(
+            Point3._from_state(self.runtime, origin),
+            Vector3._from_state(self.runtime, direction),
+        )
+
+    def circle_parameters(self) -> CircleParameters:
+        state = self.runtime._value_state(
+            ops.curve_circle_parameters,
+            result=CIRCLE_PARAMETERS_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.curve.circle_parameters",
+        )
+        center = self.runtime._value_state(
+            ops.circle_parameters_center,
+            result=POINT3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.circle_parameters.center",
+        )
+        radius = self.runtime._value_state(
+            ops.circle_parameters_radius,
+            result=SCALAR_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.circle_parameters.radius",
+        )
+        x_direction = self.runtime._value_state(
+            ops.circle_parameters_x_direction,
+            result=VECTOR3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.circle_parameters.x_direction",
+        )
+        y_direction = self.runtime._value_state(
+            ops.circle_parameters_y_direction,
+            result=VECTOR3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.circle_parameters.y_direction",
+        )
+        return CircleParameters(
+            Point3._from_state(self.runtime, center),
+            Scalar._from_state(self.runtime, radius),
+            Vector3._from_state(self.runtime, x_direction),
+            Vector3._from_state(self.runtime, y_direction),
+        )
+
+    def ellipse_parameters(self) -> EllipseParameters:
+        state = self.runtime._value_state(
+            ops.curve_ellipse_parameters,
+            result=ELLIPSE_PARAMETERS_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.curve.ellipse_parameters",
+        )
+        center = self.runtime._value_state(
+            ops.ellipse_parameters_center,
+            result=POINT3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.ellipse_parameters.center",
+        )
+        major_radius = self.runtime._value_state(
+            ops.ellipse_parameters_major_radius,
+            result=SCALAR_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.ellipse_parameters.major_radius",
+        )
+        minor_radius = self.runtime._value_state(
+            ops.ellipse_parameters_minor_radius,
+            result=SCALAR_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.ellipse_parameters.minor_radius",
+        )
+        x_direction = self.runtime._value_state(
+            ops.ellipse_parameters_x_direction,
+            result=VECTOR3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.ellipse_parameters.x_direction",
+        )
+        y_direction = self.runtime._value_state(
+            ops.ellipse_parameters_y_direction,
+            result=VECTOR3_SPEC,
+            args=(state,),
+            operation_id="zencad.typed.curve.ellipse_parameters.y_direction",
+        )
+        return EllipseParameters(
+            Point3._from_state(self.runtime, center),
+            Scalar._from_state(self.runtime, major_radius),
+            Scalar._from_state(self.runtime, minor_radius),
+            Vector3._from_state(self.runtime, x_direction),
+            Vector3._from_state(self.runtime, y_direction),
+        )
+
+    def lower_distance_parameter(self, point: Point3, /) -> Scalar:
+        if not isinstance(point, Point3):
+            raise TypeError("lower_distance_parameter expects Point3")
+        require_same_runtime(self.runtime, point)
+        state = self.runtime._value_state(
+            ops.curve_lower_distance_parameter,
+            result=SCALAR_SPEC,
+            args=(self._state, point._state),
+            operation_id="zencad.typed.curve.lower_distance_parameter",
+        )
+        return Scalar._from_state(self.runtime, state)
+
+    def trimmed_edge(self, start: ScalarInput, end: ScalarInput, /) -> Edge:
+        from . import _operations as topology_ops
+        from .topology import EDGE_SPEC, Edge
+
+        expression = self.runtime._expression(
+            topology_ops.curve_trimmed_edge,
+            result=EDGE_SPEC,
+            args=(
+                self._state,
+                _scalar_state(self.runtime, start),
+                _scalar_state(self.runtime, end),
+            ),
+            operation_id="zencad.typed.curve.trimmed_edge",
+        )
+        return Edge._from_state(self.runtime, expression)
+
+    def uniform(
+        self,
+        count: int,
+        start: ScalarInput | None = None,
+        end: ScalarInput | None = None,
+        /,
+    ) -> list[Scalar]:
+        if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+            raise ValueError("uniform sample count must be a positive int")
+        if (start is None) != (end is None):
+            raise TypeError("uniform start and end must be provided together")
+        expression = self.runtime._expression(
+            ops.curve_uniform_parameters,
+            result=SCALAR_SEQUENCE_SPEC,
+            args=(
+                self._state,
+                count,
+                None if start is None else _scalar_state(self.runtime, start),
+                None if end is None else _scalar_state(self.runtime, end),
+            ),
+            operation_id="zencad.typed.curve.uniform",
+            cacheable=False,
+        )
+        parameters = []
+        for index in range(count):
+            state = self.runtime._value_state(
+                ops.scalar_sequence_item,
+                result=SCALAR_SPEC,
+                args=(expression, index),
+                operation_id="zencad.typed.curve.uniform.item",
+            )
+            parameters.append(Scalar._from_state(self.runtime, state))
+        return parameters
+
+    def uniform_points(
+        self,
+        count: int,
+        start: ScalarInput | None = None,
+        end: ScalarInput | None = None,
+        /,
+    ) -> list[Point3]:
+        return [self.point(parameter) for parameter in self.uniform(count, start, end)]
 
     def native(self) -> Geom_Curve:
         """Materialize an independent mutable OCP curve snapshot."""

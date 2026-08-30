@@ -664,11 +664,12 @@
     },
     {
       "id": "topology-and-bounds",
-      "tasks": [2039, 2040],
+      "tasks": [2039, 2040, 2024],
       "checks": [
         "utest/migration_baseline_test.py",
         "utest/typed_topology_handles_test.py",
         "utest/typed_topology_queries_test.py",
+        "utest/typed_topology_compat_test.py",
         "utest/typed_value_transform_compat_test.py",
         "utest/typed_bounds_test.py"
       ],
@@ -700,6 +701,19 @@
             "__sub__": {"status": "implemented", "typed": "Shape.__sub__() -> Shape"},
             "__xor__": {"status": "implemented", "typed": "Shape.__xor__() -> Shape"},
             "transform": {"status": "implemented", "typed": "Shape.transform(Transform)"},
+            "Wire_orEdgeToWire": {"status": "implemented", "typed": "Shape.to_wire() -> Wire"},
+            "shapetype": {"status": "implemented", "typed": "Shape.shapetype() -> ShapeKind", "materialization": "explicit Python query"},
+            "is_vertex": {"status": "implemented", "typed": "Shape.is_vertex() -> bool", "materialization": "explicit Python predicate"},
+            "is_edge": {"status": "implemented", "typed": "Shape.is_edge() -> bool", "materialization": "explicit Python predicate"},
+            "is_wire": {"status": "implemented", "typed": "Shape.is_wire() -> bool", "materialization": "explicit Python predicate"},
+            "is_face": {"status": "implemented", "typed": "Shape.is_face() -> bool", "materialization": "explicit Python predicate"},
+            "is_shell": {"status": "implemented", "typed": "Shape.is_shell() -> bool", "materialization": "explicit Python predicate"},
+            "is_solid": {"status": "implemented", "typed": "Shape.is_solid() -> bool", "materialization": "explicit Python predicate"},
+            "is_compsolid": {"status": "implemented", "typed": "Shape.is_compsolid() -> bool", "materialization": "explicit Python predicate"},
+            "is_compound": {"status": "implemented", "typed": "Shape.is_compound() -> bool", "materialization": "explicit Python predicate"},
+            "is_wire_or_edge": {"status": "implemented", "typed": "Shape.is_wire_or_edge() -> bool", "materialization": "explicit Python predicate"},
+            "is_closed": {"status": "implemented", "typed": "Shape.is_closed() -> bool", "materialization": "explicit Python predicate"},
+            "is_volumed": {"status": "implemented", "typed": "Shape.is_volumed() -> bool", "materialization": "explicit Python predicate"},
             "edges": {"status": "implemented", "typed": "Shape.edges() -> DeferredSequence[Edge]"},
             "wires": {"status": "implemented", "typed": "Shape.wires() -> DeferredSequence[Wire]"},
             "faces": {"status": "implemented", "typed": "Shape.faces() -> DeferredSequence[Face]"},
@@ -707,18 +721,27 @@
             "compounds": {"status": "implemented", "typed": "Shape.compounds() -> DeferredSequence[Compound]"},
             "shells": {"status": "implemented", "typed": "Shape.shells() -> DeferredSequence[Shell]"},
             "vertices": {"status": "implemented", "typed": "Shape.vertices() -> DeferredSequence[Vertex]"},
+            "native_vertices": {"status": "implemented", "typed": "Shape.native_vertices() -> DeferredSequence[Vertex]"},
+            "fill": {"status": "implemented", "typed": "Shape.fill() -> Face"},
+            "extrude": {"status": "implemented", "typed": "Shape.extrude() -> Shape"},
+            "fillet": {"status": "implemented", "typed": "Shape.fillet() -> Shape"},
+            "chamfer": {"status": "implemented", "typed": "Shape.chamfer() -> Shape"},
+            "fillet2d": {"status": "implemented", "typed": "Shape.fillet2d() -> Face"},
+            "chamfer2d": {"status": "implemented", "typed": "Shape.chamfer2d() -> Face"},
+            "uniform": {"status": "implemented", "typed": "Shape.uniform() -> list[Scalar]"},
+            "uniform_points": {"status": "implemented", "typed": "Shape.uniform_points() -> list[Point3]"},
             "to_mesh": {"status": "implemented", "typed": "Shape.to_mesh() -> MeshData", "materialization": "MeshData.value()/native()/display_payload()"},
             "Curve": {"status": "implemented", "typed": "Edge.curve() -> Curve"},
             "center": {"status": "implemented", "typed": "Shape.center() -> Point3"},
             "mass": {"status": "implemented", "typed": "Shape.mass() -> Scalar"},
             "bbox": {"status": "implemented", "typed": "Shape.bbox() -> BoundaryBox"},
             "boundbox": {"status": "implemented", "typed": "Shape.boundbox() -> BoundaryBox"},
-            "normal": {"status": "partial", "typed": "Face.surface().normal(u, v) -> Vector3"},
-            "AdaptorSurface": {"status": "partial", "typed": "Face.surface().native()", "materialization": "native()"},
-            "AdaptorCurve": {"status": "partial", "typed": "Edge.curve().native()", "materialization": "native()"},
-            "HCurveAdaptor": {"status": "partial", "typed": "Edge.curve().native() compatibility adapter", "materialization": "native()"},
-            "SurfaceProperties": {"status": "partial", "typed": "typed surface-property records", "materialization": "explicit native compatibility adapter"},
-            "VolumeProperties": {"status": "partial", "typed": "typed volume-property records", "materialization": "explicit native compatibility adapter"}
+            "normal": {"status": "implemented", "typed": "Face.normal(u, v) -> Vector3"},
+            "AdaptorSurface": {"status": "implemented", "typed": "Face.AdaptorSurface() -> Geom_Surface", "materialization": "explicit native compatibility boundary"},
+            "AdaptorCurve": {"status": "implemented", "typed": "Edge.AdaptorCurve() -> Geom_Curve", "materialization": "explicit native compatibility boundary"},
+            "HCurveAdaptor": {"status": "implemented", "typed": "Edge.HCurveAdaptor() -> Geom_Curve", "materialization": "explicit native compatibility boundary"},
+            "SurfaceProperties": {"status": "implemented", "typed": "Shape.SurfaceProperties() -> ShapeProperties"},
+            "VolumeProperties": {"status": "implemented", "typed": "Shape.VolumeProperties() -> ShapeProperties"}
           }
         },
         {
@@ -732,7 +755,14 @@
             "d0": {"status": "implemented", "typed": "Curve.point() -> Point3"},
             "value": {"status": "implemented", "typed": "Curve.point() -> Point3"},
             "d1": {"status": "implemented", "typed": "Curve.tangent() -> Vector3"},
-            "range": {"status": "implemented", "typed": "Curve.range() -> Interval"}
+            "range": {"status": "implemented", "typed": "Curve.range() -> Interval"},
+            "curvetype": {"status": "implemented", "typed": "Curve.curvetype() -> CurveKind", "materialization": "explicit Python query"},
+            "endpoints": {"status": "implemented", "typed": "Curve/Shape.endpoints() -> tuple[Point3, Point3]"},
+            "line_parameters": {"status": "implemented", "typed": "Curve.line_parameters() -> LineParameters"},
+            "circle_parameters": {"status": "implemented", "typed": "Curve.circle_parameters() -> CircleParameters"},
+            "ellipse_parameters": {"status": "implemented", "typed": "Curve.ellipse_parameters() -> EllipseParameters"},
+            "lower_distance_parameter": {"status": "implemented", "typed": "Curve.lower_distance_parameter() -> Scalar"},
+            "trimmed_edge": {"status": "implemented", "typed": "Curve.trimmed_edge() -> Edge"}
           }
         },
         {
@@ -778,7 +808,11 @@
             "mirrorZ": {"status": "implemented", "typed": "Shape.mirrorZ()"},
             "mirrorXY": {"status": "implemented", "typed": "Shape.mirrorXY()"},
             "mirrorXZ": {"status": "implemented", "typed": "Shape.mirrorXZ()"},
-            "mirrorYZ": {"status": "implemented", "typed": "Shape.mirrorYZ()"}
+            "mirrorYZ": {"status": "implemented", "typed": "Shape.mirrorYZ()"},
+            "scaleX": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleX()), tracked by #2024"},
+            "scaleY": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleY()), tracked by #2024"},
+            "scaleZ": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleZ()), tracked by #2024"},
+            "scaleXYZ": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleXYZ()), tracked by #2024"}
           }
         },
         {
@@ -794,13 +828,14 @@
             "assign_coords": {"status": "repair", "typed": "immutable Runtime.boundary_box()"},
             "assign": {"status": "repair", "typed": "immutable BoundaryBox value"},
             "assign_Bnd_Box": {"status": "repair", "typed": "BoundaryBox.from_ocp()", "materialization": "native input snapshot"},
-            "add": {"status": "implemented", "typed": "BoundaryBox.union() -> BoundaryBox"},
+            "add": {"status": "repair", "typed": "BoundaryBox.add() -> new BoundaryBox; no mutation"},
             "xrange": {"status": "implemented", "typed": "BoundaryBox.x_range() -> Interval"},
             "yrange": {"status": "implemented", "typed": "BoundaryBox.y_range() -> Interval"},
             "zrange": {"status": "implemented", "typed": "BoundaryBox.z_range() -> Interval"},
             "xlength": {"status": "implemented", "typed": "BoundaryBox.size().x -> Scalar"},
             "ylength": {"status": "implemented", "typed": "BoundaryBox.size().y -> Scalar"},
-            "zlength": {"status": "implemented", "typed": "BoundaryBox.size().z -> Scalar"}
+            "zlength": {"status": "implemented", "typed": "BoundaryBox.zlength() -> Scalar"},
+            "shape": {"status": "implemented", "typed": "BoundaryBox.shape() -> Solid"}
           }
         }
       ]

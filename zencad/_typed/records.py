@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 from ._core import require_same_runtime
-from .values import Scalar
+from .values import Point3, Scalar, Vector3
 
 
 class Interval:
@@ -45,3 +45,89 @@ class Interval:
     def unlazy(self) -> Interval:
         self.value()
         return self
+
+
+class LineParameters:
+    __slots__ = ("origin", "direction")
+
+    def __init__(self, origin: Point3, direction: Vector3, /) -> None:
+        require_same_runtime(origin.runtime, direction)
+        self.origin = origin
+        self.direction = direction
+
+    def __iter__(self) -> Iterator[Point3 | Vector3]:
+        return iter((self.origin, self.direction))
+
+
+class CircleParameters:
+    __slots__ = ("center", "radius", "x_direction", "y_direction")
+
+    def __init__(
+        self,
+        center: Point3,
+        radius: Scalar,
+        x_direction: Vector3,
+        y_direction: Vector3,
+        /,
+    ) -> None:
+        for value in (radius, x_direction, y_direction):
+            require_same_runtime(center.runtime, value)
+        self.center = center
+        self.radius = radius
+        self.x_direction = x_direction
+        self.y_direction = y_direction
+
+    def __iter__(self) -> Iterator[Point3 | Scalar | Vector3]:
+        return iter((self.center, self.radius, self.x_direction, self.y_direction))
+
+
+class EllipseParameters:
+    __slots__ = (
+        "center",
+        "major_radius",
+        "minor_radius",
+        "x_direction",
+        "y_direction",
+    )
+
+    def __init__(
+        self,
+        center: Point3,
+        major_radius: Scalar,
+        minor_radius: Scalar,
+        x_direction: Vector3,
+        y_direction: Vector3,
+        /,
+    ) -> None:
+        for value in (major_radius, minor_radius, x_direction, y_direction):
+            require_same_runtime(center.runtime, value)
+        self.center = center
+        self.major_radius = major_radius
+        self.minor_radius = minor_radius
+        self.x_direction = x_direction
+        self.y_direction = y_direction
+
+    def __iter__(self) -> Iterator[Point3 | Scalar | Vector3]:
+        return iter(
+            (
+                self.center,
+                self.major_radius,
+                self.minor_radius,
+                self.x_direction,
+                self.y_direction,
+            )
+        )
+
+
+class ShapeProperties:
+    """Named graph-preserving mass and center result."""
+
+    __slots__ = ("center", "mass")
+
+    def __init__(self, center: Point3, mass: Scalar, /) -> None:
+        require_same_runtime(center.runtime, mass)
+        self.center = center
+        self.mass = mass
+
+    def __iter__(self) -> Iterator[Point3 | Scalar]:
+        return iter((self.center, self.mass))

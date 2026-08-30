@@ -17,8 +17,21 @@ def curve_contract(runtime: typed.Runtime) -> None:
     circle = assert_type(runtime.circle(radius), typed.Curve)
     assert_type(runtime.ellipse(radius + 1, radius), typed.Curve)
     assert_type(line.point(1), typed.Point3)
+    assert_type(line.d0(1), typed.Point3)
+    assert_type(line.value(1), typed.Point3)
     assert_type(line.tangent(1), typed.Vector3)
+    assert_type(line.d1(1), typed.Vector3)
     assert_type(circle.range(), typed.Interval)
+    assert_type(circle.curvetype(), typed.CurveKind)
+    assert_type(line.endpoints(), tuple[typed.Point3, typed.Point3])
+    assert_type(line.line_parameters(), typed.LineParameters)
+    assert_type(circle.circle_parameters(), typed.CircleParameters)
+    ellipse = runtime.ellipse(radius + 1, radius)
+    assert_type(ellipse.ellipse_parameters(), typed.EllipseParameters)
+    assert_type(line.lower_distance_parameter(origin), typed.Scalar)
+    assert_type(line.trimmed_edge(0, 1), typed.Edge)
+    assert_type(circle.uniform(4), list[typed.Scalar])
+    assert_type(circle.uniform_points(4), list[typed.Point3])
 
     segment = assert_type(
         runtime.segment2(runtime.point2(0, 0), runtime.point2(radius, 0)),

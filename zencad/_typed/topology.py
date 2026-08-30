@@ -4,7 +4,16 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
 import math
-from typing import TYPE_CHECKING, Callable, ClassVar, Generic, TypeVar, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    ClassVar,
+    Generic,
+    Literal,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from OCP.TopAbs import (
     TopAbs_COMPOUND,
@@ -28,6 +37,7 @@ from OCP.TopoDS import (
     TopoDS_Vertex,
     TopoDS_Wire,
 )
+from OCP.Geom import Geom_Curve, Geom_Surface
 from evalcache.v2 import Expression, ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
@@ -49,8 +59,15 @@ from . import _mesh_operations as mesh_ops
 from ._core import Handle, State, require_same_runtime
 from ._serialization import ShapeBrepSerializer
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
-from .curves import CURVE_SPEC, Curve
+from .curves import CURVE_SPEC, Curve, CurveKind
 from .meshes import MESH_SPEC, MeshData
+from .records import (
+    CircleParameters,
+    EllipseParameters,
+    Interval,
+    LineParameters,
+    ShapeProperties,
+)
 from .surfaces import SURFACE_SPEC, Surface
 from .transforms import Transform
 from .values import (
@@ -61,6 +78,7 @@ from .values import (
     Scalar,
     ScalarInput,
     Vector3,
+    _scalar_state,
 )
 
 if TYPE_CHECKING:
@@ -122,6 +140,24 @@ SHAPE_SPEC = ResultSpec.for_type(
     serializer=_SHAPE_SERIALIZER,
     validator=_valid_shape,
 )
+BOOL_SPEC = ResultSpec.for_type(bool, type_id="zencad.typed.bool.v1")
+SHAPE_KIND_SPEC = ResultSpec.for_type(
+    str,
+    type_id="zencad.typed.ShapeKind.v1",
+    validator=lambda value: (
+        value
+        in {
+            "vertex",
+            "edge",
+            "wire",
+            "face",
+            "shell",
+            "solid",
+            "compsolid",
+            "compound",
+        }
+    ),
+)
 VERTEX_SPEC = _topology_spec("Vertex", TopAbs_VERTEX)
 EDGE_SPEC = _topology_spec("Edge", TopAbs_EDGE)
 WIRE_SPEC = _topology_spec("Wire", TopAbs_WIRE)
@@ -139,6 +175,17 @@ _SHELL_SEQUENCE_SPEC = _topology_sequence_spec("Shell", TopAbs_SHELL)
 _SOLID_SEQUENCE_SPEC = _topology_sequence_spec("Solid", TopAbs_SOLID)
 _COMPOUND_SEQUENCE_SPEC = _topology_sequence_spec("Compound", TopAbs_COMPOUND)
 _COMPSOLID_SEQUENCE_SPEC = _topology_sequence_spec("CompSolid", TopAbs_COMPSOLID)
+
+ShapeKind = Literal[
+    "vertex",
+    "edge",
+    "wire",
+    "face",
+    "shell",
+    "solid",
+    "compsolid",
+    "compound",
+]
 
 
 def _mesh_positive_number(value: Number, name: str) -> float:
@@ -416,6 +463,94 @@ class Shape(Handle[ResolvedShape]):
     def mirrorYZ(self: ShapeT) -> ShapeT:
         return self.transform(self.runtime.mirrorYZ())
 
+    def _materialized_bool(
+        self,
+        operation: Callable[..., bool],
+        *args: object,
+        operation_id: str,
+    ) -> bool:
+        state = self.runtime._value_state(
+            operation,
+            result=BOOL_SPEC,
+            args=(self._state, *args),
+            operation_id=operation_id,
+        )
+        if isinstance(state, Expression):
+            return self.runtime._resolve(state)
+        return state
+
+    def shapetype(self) -> ShapeKind:
+        state = self.runtime._value_state(
+            ops.shape_kind,
+            result=SHAPE_KIND_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.kind",
+        )
+        if isinstance(state, Expression):
+            state = self.runtime._resolve(state)
+        return cast(ShapeKind, state)
+
+    def _is_kind(self, kind: TopAbs_ShapeEnum, name: str) -> bool:
+        return self._materialized_bool(
+            ops.shape_has_kind,
+            int(kind),
+            operation_id=f"zencad.typed.shape.is_{name}",
+        )
+
+    def is_vertex(self) -> bool:
+        return self._is_kind(TopAbs_VERTEX, "vertex")
+
+    def is_edge(self) -> bool:
+        return self._is_kind(TopAbs_EDGE, "edge")
+
+    def is_wire(self) -> bool:
+        return self._is_kind(TopAbs_WIRE, "wire")
+
+    def is_face(self) -> bool:
+        return self._is_kind(TopAbs_FACE, "face")
+
+    def is_shell(self) -> bool:
+        return self._is_kind(TopAbs_SHELL, "shell")
+
+    def is_solid(self) -> bool:
+        return self._is_kind(TopAbs_SOLID, "solid")
+
+    def is_compsolid(self) -> bool:
+        return self._is_kind(TopAbs_COMPSOLID, "compsolid")
+
+    def is_compound(self) -> bool:
+        return self._is_kind(TopAbs_COMPOUND, "compound")
+
+    def is_wire_or_edge(self) -> bool:
+        return self._materialized_bool(
+            ops.shape_is_wire_or_edge,
+            operation_id="zencad.typed.shape.is_wire_or_edge",
+        )
+
+    def is_closed(self) -> bool:
+        return self._materialized_bool(
+            ops.shape_is_closed,
+            operation_id="zencad.typed.shape.is_closed",
+        )
+
+    def is_volumed(self) -> bool:
+        return self._materialized_bool(
+            ops.shape_is_volumed,
+            operation_id="zencad.typed.shape.is_volumed",
+        )
+
+    def Wire_orEdgeToWire(self) -> Wire:
+        expression = self.runtime._expression(
+            ops.wire_from_wire_or_edge,
+            result=WIRE_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.to_wire",
+        )
+        return Wire._from_state(self.runtime, expression)
+
+    def to_wire(self) -> Wire:
+        return self.Wire_orEdgeToWire()
+
     def _topology_query(
         self,
         operation: Callable[[ResolvedShape], tuple[ResolvedShape, ...]],
@@ -448,6 +583,257 @@ class Shape(Handle[ResolvedShape]):
             item_spec=VERTEX_SPEC,
             operation_id="zencad.typed.shape.vertices",
         )
+
+    def native_vertices(self) -> DeferredSequence[Vertex]:
+        return self.vertices()
+
+    def curve(self) -> Curve:
+        state = self.runtime._value_state(
+            ops.edge_curve,
+            result=CURVE_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.curve",
+        )
+        return Curve._from_state(self.runtime, state)
+
+    def Curve(self) -> Geom_Curve:
+        return self.curve().native()
+
+    def AdaptorCurve(self) -> Geom_Curve:
+        return self.curve().native()
+
+    def HCurveAdaptor(self) -> Geom_Curve:
+        return self.curve().native()
+
+    def d0(self, parameter: ScalarInput, /) -> Point3:
+        return self.curve().point(parameter)
+
+    def value(self, parameter: ScalarInput, /) -> Point3:
+        return self.d0(parameter)
+
+    def d1(self, parameter: ScalarInput, /) -> Vector3:
+        return self.curve().tangent(parameter)
+
+    def range(self) -> Interval:
+        return self.curve().range()
+
+    def endpoints(self) -> tuple[Point3, Point3]:
+        start = self.runtime._value_state(
+            ops.shape_endpoint,
+            result=POINT3_SPEC,
+            args=(self._state, False),
+            operation_id="zencad.typed.shape.endpoint.start",
+        )
+        end = self.runtime._value_state(
+            ops.shape_endpoint,
+            result=POINT3_SPEC,
+            args=(self._state, True),
+            operation_id="zencad.typed.shape.endpoint.end",
+        )
+        return (
+            Point3._from_state(self.runtime, start),
+            Point3._from_state(self.runtime, end),
+        )
+
+    def curvetype(self) -> CurveKind:
+        return self.curve().curvetype()
+
+    def line_parameters(self) -> LineParameters:
+        return self.curve().line_parameters()
+
+    def circle_parameters(self) -> CircleParameters:
+        return self.curve().circle_parameters()
+
+    def ellipse_parameters(self) -> EllipseParameters:
+        return self.curve().ellipse_parameters()
+
+    def lower_distance_parameter(self, pnt: Point3) -> Scalar:
+        return self.curve().lower_distance_parameter(pnt)
+
+    def trimmed_edge(self, start: ScalarInput, finish: ScalarInput) -> Edge:
+        return self.curve().trimmed_edge(start, finish)
+
+    def uniform(
+        self,
+        npoints: int,
+        strt: ScalarInput | None = None,
+        fini: ScalarInput | None = None,
+    ) -> list[Scalar]:
+        return self.curve().uniform(npoints, strt, fini)
+
+    def uniform_points(
+        self,
+        npoints: int,
+        strt: ScalarInput | None = None,
+        fini: ScalarInput | None = None,
+    ) -> list[Point3]:
+        return self.curve().uniform_points(npoints, strt, fini)
+
+    def surface(self) -> Surface:
+        state = self.runtime._value_state(
+            ops.face_surface,
+            result=SURFACE_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.surface",
+        )
+        return Surface._from_state(self.runtime, state)
+
+    def AdaptorSurface(self) -> Geom_Surface:
+        return self.surface().native()
+
+    def normal(
+        self,
+        u: ScalarInput = 0,
+        v: ScalarInput = 0,
+    ) -> Vector3:
+        return self.surface().normal(u, v)
+
+    def SurfaceProperties(self) -> ShapeProperties:
+        center = self.runtime._value_state(
+            ops.surface_center,
+            result=POINT3_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.surface_properties.center",
+        )
+        mass = self.runtime._value_state(
+            ops.surface_mass,
+            result=SCALAR_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.surface_properties.mass",
+        )
+        return ShapeProperties(
+            Point3._from_state(self.runtime, center),
+            Scalar._from_state(self.runtime, mass),
+        )
+
+    def VolumeProperties(self) -> ShapeProperties:
+        center = self.runtime._value_state(
+            ops.volume_center,
+            result=POINT3_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.volume_properties.center",
+        )
+        mass = self.runtime._value_state(
+            ops.volume_mass,
+            result=SCALAR_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.volume_properties.mass",
+        )
+        return ShapeProperties(
+            Point3._from_state(self.runtime, center),
+            Scalar._from_state(self.runtime, mass),
+        )
+
+    def fill(self) -> Face:
+        expression = self.runtime._expression(
+            ops.fill_shape,
+            result=FACE_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.fill",
+        )
+        return Face._from_state(self.runtime, expression)
+
+    def extrude(
+        self,
+        vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
+        center: bool = False,
+    ) -> Shape:
+        if not isinstance(center, bool):
+            raise TypeError("extrude center must be bool")
+        resolved_vector = (
+            self.runtime.vector3(0, 0, vec)
+            if isinstance(vec, (Scalar, int, float)) and not isinstance(vec, bool)
+            else self.runtime.vector3(vec)
+        )
+        expression = self.runtime._expression(
+            ops.extrude_shape,
+            result=SHAPE_SPEC,
+            args=(self._state, resolved_vector._state, center),
+            operation_id="zencad.typed.shape.extrude",
+        )
+        return Shape._from_state(self.runtime, expression)
+
+    def _reference_states(
+        self,
+        references: Sequence[Point3] | None,
+        name: str,
+    ) -> tuple[State[ops.Point3Value], ...] | None:
+        if references is None:
+            return None
+        values = tuple(references)
+        for value in values:
+            if not isinstance(value, Point3):
+                raise TypeError(f"{name} references must be Point3 values")
+            require_same_runtime(self.runtime, value)
+        return tuple(value._state for value in values)
+
+    def _rounded_operation(
+        self,
+        operation: Callable[..., ResolvedShape],
+        radius: ScalarInput,
+        references: Sequence[Point3] | None,
+        name: str,
+        result_spec: ResultSpec[ResolvedShape] = SHAPE_SPEC,
+    ) -> Shape:
+        expression = self.runtime._expression(
+            operation,
+            result=result_spec,
+            args=(
+                self._state,
+                _scalar_state(self.runtime, radius),
+                self._reference_states(references, name),
+            ),
+            operation_id=f"zencad.typed.shape.{name}",
+        )
+        return Shape._from_state(self.runtime, expression)
+
+    def fillet(
+        self,
+        r: ScalarInput,
+        refs: Sequence[Point3] | None = None,
+    ) -> Shape:
+        return self._rounded_operation(ops.fillet_shape, r, refs, "fillet")
+
+    def chamfer(
+        self,
+        r: ScalarInput,
+        refs: Sequence[Point3] | None = None,
+    ) -> Shape:
+        return self._rounded_operation(ops.chamfer_shape, r, refs, "chamfer")
+
+    def fillet2d(
+        self,
+        r: ScalarInput,
+        refs: Sequence[Point3] | None = None,
+    ) -> Face:
+        expression = self.runtime._expression(
+            ops.fillet2d_shape,
+            result=FACE_SPEC,
+            args=(
+                self._state,
+                _scalar_state(self.runtime, r),
+                self._reference_states(refs, "fillet2d"),
+            ),
+            operation_id="zencad.typed.shape.fillet2d",
+        )
+        return Face._from_state(self.runtime, expression)
+
+    def chamfer2d(
+        self,
+        r: ScalarInput,
+        refs: Sequence[Point3] | None = None,
+    ) -> Face:
+        expression = self.runtime._expression(
+            ops.chamfer2d_shape,
+            result=FACE_SPEC,
+            args=(
+                self._state,
+                _scalar_state(self.runtime, r),
+                self._reference_states(refs, "chamfer2d"),
+            ),
+            operation_id="zencad.typed.shape.chamfer2d",
+        )
+        return Face._from_state(self.runtime, expression)
 
     def edges(self) -> DeferredSequence[Edge]:
         return self._topology_query(

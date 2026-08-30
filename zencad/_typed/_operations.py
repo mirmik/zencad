@@ -7,6 +7,7 @@ return resolved values only; expression construction lives in ``runtime``.
 
 from __future__ import annotations
 
+import math
 from typing import Callable
 
 from OCP.BRep import BRep_Tool
@@ -14,6 +15,7 @@ from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_MakeEdge,
     BRepBuilderAPI_MakeFace,
     BRepBuilderAPI_MakePolygon,
+    BRepBuilderAPI_MakeWire,
     BRepBuilderAPI_Transform,
 )
 from OCP.BRepTools import BRepTools
@@ -51,7 +53,7 @@ from zencad.occ_compat import (
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 from ._transform_operations import TransformValue, transform_to_ocp
-from ._curve_operations import CurveValue, curve_from_ocp
+from ._curve_operations import CurveValue, curve_from_ocp, curve_to_ocp
 from ._surface_operations import SurfaceValue, surface_from_ocp
 from ._value_operations import Point3Value, Vector3Value
 
@@ -216,6 +218,165 @@ def compsolids(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
     return _subshapes(shape, TopAbs_COMPSOLID, as_compsolid)
 
 
+_SHAPE_KIND_NAMES = {
+    int(TopAbs_VERTEX): "vertex",
+    int(TopAbs_EDGE): "edge",
+    int(TopAbs_WIRE): "wire",
+    int(TopAbs_FACE): "face",
+    int(TopAbs_SHELL): "shell",
+    int(TopAbs_SOLID): "solid",
+    int(TopAbs_COMPSOLID): "compsolid",
+    int(TopAbs_COMPOUND): "compound",
+}
+
+
+def shape_kind(shape: ResolvedShape) -> str:
+    native = shape.Shape()
+    if native.IsNull():
+        raise ValueError("typed Shape cannot be null")
+    try:
+        return _SHAPE_KIND_NAMES[int(native.ShapeType())]
+    except KeyError as exception:
+        raise ValueError("unsupported topology kind") from exception
+
+
+def shape_has_kind(shape: ResolvedShape, kind: int) -> bool:
+    return int(shape.Shape().ShapeType()) == kind
+
+
+def shape_is_wire_or_edge(shape: ResolvedShape) -> bool:
+    return int(shape.Shape().ShapeType()) in (int(TopAbs_WIRE), int(TopAbs_EDGE))
+
+
+def shape_is_closed(shape: ResolvedShape) -> bool:
+    if not shape_is_wire_or_edge(shape):
+        raise TypeError("is_closed is only defined for Edge or Wire")
+    return bool(shape.is_closed())
+
+
+def shape_is_volumed(shape: ResolvedShape) -> bool:
+    explorer = TopExp_Explorer(shape.Shape(), TopAbs_SOLID)
+    return explorer.More()
+
+
+def wire_from_wire_or_edge(shape: ResolvedShape) -> ResolvedShape:
+    native = shape.Shape()
+    if native.ShapeType() == TopAbs_WIRE:
+        return ResolvedShape(as_wire(native))
+    if native.ShapeType() == TopAbs_EDGE:
+        return ResolvedShape(BRepBuilderAPI_MakeWire(as_edge(native)).Wire())
+    raise TypeError("Wire_orEdgeToWire expects Edge or Wire")
+
+
+def shape_endpoint(shape: ResolvedShape, finish: bool) -> Point3Value:
+    start, end = shape.endpoints()
+    point = end if finish else start
+    return Point3Value(float(point.x), float(point.y), float(point.z))
+
+
+def curve_trimmed_edge(
+    curve: CurveValue,
+    start: float,
+    end: float,
+) -> ResolvedShape:
+    edge = BRepBuilderAPI_MakeEdge(curve_to_ocp(curve), start, end).Edge()
+    if edge.IsNull():
+        raise ValueError("trimmed edge construction failed")
+    return ResolvedShape(edge)
+
+
+def _legacy_points(values: tuple[Point3Value, ...] | None):
+    if values is None:
+        return None
+    return [(value.x, value.y, value.z) for value in values]
+
+
+def fill_shape(shape: ResolvedShape) -> ResolvedShape:
+    from zencad.geom.face import _fill
+
+    return _fill(shape)
+
+
+def extrude_shape(
+    shape: ResolvedShape,
+    vector: Vector3Value,
+    center: bool,
+) -> ResolvedShape:
+    from zencad.geom.sweep import _extrude
+
+    return _extrude(shape, (vector.x, vector.y, vector.z), center=center)
+
+
+def fillet_shape(
+    shape: ResolvedShape,
+    radius: float,
+    references: tuple[Point3Value, ...] | None,
+) -> ResolvedShape:
+    from zencad.geom.operations import _fillet
+
+    return _fillet(shape, radius, refs=_legacy_points(references))
+
+
+def chamfer_shape(
+    shape: ResolvedShape,
+    radius: float,
+    references: tuple[Point3Value, ...] | None,
+) -> ResolvedShape:
+    from zencad.geom.operations import _chamfer
+
+    return _chamfer(shape, radius, refs=_legacy_points(references))
+
+
+def fillet2d_shape(
+    shape: ResolvedShape,
+    radius: float,
+    references: tuple[Point3Value, ...] | None,
+) -> ResolvedShape:
+    from zencad.geom.operations import _fillet2d
+
+    return _fillet2d(shape, radius, refs=_legacy_points(references))
+
+
+def chamfer2d_shape(
+    shape: ResolvedShape,
+    radius: float,
+    references: tuple[Point3Value, ...] | None,
+) -> ResolvedShape:
+    from OCP.BRepFilletAPI import BRepFilletAPI_MakeFillet2d
+    from OCP.TopExp import TopExp_Explorer
+
+    from zencad.geom.near import _near_vertex
+
+    if radius <= 0:
+        raise ValueError("chamfer2d radius must be positive")
+    if not shape.is_face():
+        raise TypeError("chamfer2d expects Face")
+    builder = BRepFilletAPI_MakeFillet2d(shape.Face())
+    resolved_references = _legacy_points(references)
+    if resolved_references is None:
+        resolved_references = shape.vertices()
+    for reference in resolved_references:
+        vertex = _near_vertex(shape, reference).Vertex()
+        edges = TopExp_Explorer(shape.Shape(), TopAbs_EDGE)
+        selected_edge = None
+        while edges.More() and selected_edge is None:
+            edge = as_edge(edges.Current())
+            edge_vertices = TopExp_Explorer(edge, TopAbs_VERTEX)
+            while edge_vertices.More():
+                if as_vertex(edge_vertices.Current()).IsSame(vertex):
+                    selected_edge = edge
+                    break
+                edge_vertices.Next()
+            edges.Next()
+        if selected_edge is None:
+            raise ValueError("cannot find an edge adjacent to chamfer vertex")
+        builder.AddChamfer(selected_edge, vertex, radius, math.pi / 4)
+    result = builder.Shape()
+    if result.IsNull():
+        raise ValueError("chamfer2d construction failed")
+    return ResolvedShape(result)
+
+
 def sequence_item(sequence: tuple[ResolvedShape, ...], index: int) -> ResolvedShape:
     return sequence[index]
 
@@ -227,6 +388,24 @@ def mass(shape: ResolvedShape) -> float:
 def center(shape: ResolvedShape) -> Point3Value:
     value = shape.center()
     return Point3Value(float(value.x), float(value.y), float(value.z))
+
+
+def surface_mass(shape: ResolvedShape) -> float:
+    return float(shape.SurfaceProperties().Mass())
+
+
+def surface_center(shape: ResolvedShape) -> Point3Value:
+    point = shape.SurfaceProperties().CentreOfMass()
+    return Point3Value(float(point.X()), float(point.Y()), float(point.Z()))
+
+
+def volume_mass(shape: ResolvedShape) -> float:
+    return float(shape.VolumeProperties().Mass())
+
+
+def volume_center(shape: ResolvedShape) -> Point3Value:
+    point = shape.VolumeProperties().CentreOfMass()
+    return Point3Value(float(point.X()), float(point.Y()), float(point.Z()))
 
 
 def vertex_point(shape: ResolvedShape) -> Point3Value:

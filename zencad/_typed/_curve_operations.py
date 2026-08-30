@@ -7,7 +7,21 @@ from io import BytesIO
 import math
 
 from OCP.GCE2d import GCE2d_MakeSegment
+from OCP.GCPnts import GCPnts_UniformAbscissa
 from OCP.Geom import Geom_Circle, Geom_Curve, Geom_Ellipse, Geom_Line
+from OCP.GeomAPI import GeomAPI_ProjectPointOnCurve
+from OCP.GeomAbs import (
+    GeomAbs_BSplineCurve,
+    GeomAbs_BezierCurve,
+    GeomAbs_Circle,
+    GeomAbs_Ellipse,
+    GeomAbs_Hyperbola,
+    GeomAbs_Line,
+    GeomAbs_OffsetCurve,
+    GeomAbs_OtherCurve,
+    GeomAbs_Parabola,
+)
+from OCP.GeomAdaptor import GeomAdaptor_Curve
 from OCP.Geom2d import Geom2d_Curve, Geom2d_Ellipse, Geom2d_TrimmedCurve
 from OCP.GeomTools import GeomTools_Curve2dSet, GeomTools_CurveSet
 from OCP.gp import (
@@ -55,6 +69,29 @@ class Curve2Value:
 
     def __evalcache_key__(self) -> bytes:
         return b"zencad-curve2-value-v2\x00" + self.data
+
+
+@dataclass(frozen=True, slots=True)
+class LineParametersValue:
+    origin: Point3Value
+    direction: Vector3Value
+
+
+@dataclass(frozen=True, slots=True)
+class CircleParametersValue:
+    center: Point3Value
+    radius: float
+    x_direction: Vector3Value
+    y_direction: Vector3Value
+
+
+@dataclass(frozen=True, slots=True)
+class EllipseParametersValue:
+    center: Point3Value
+    major_radius: float
+    minor_radius: float
+    x_direction: Vector3Value
+    y_direction: Vector3Value
 
 
 def curve_from_ocp(value: Geom_Curve) -> CurveValue:
@@ -194,6 +231,153 @@ def curve_first_parameter(value: CurveValue) -> float:
 
 def curve_last_parameter(value: CurveValue) -> float:
     return float(curve_to_ocp(value).LastParameter())
+
+
+_CURVE_KIND_NAMES = {
+    GeomAbs_Line: "line",
+    GeomAbs_Circle: "circle",
+    GeomAbs_Ellipse: "ellipse",
+    GeomAbs_Hyperbola: "hyperbola",
+    GeomAbs_Parabola: "parabola",
+    GeomAbs_BezierCurve: "bezier",
+    GeomAbs_BSplineCurve: "bspline",
+    GeomAbs_OffsetCurve: "offset",
+    GeomAbs_OtherCurve: "other",
+}
+
+
+def _curve_adaptor(value: CurveValue) -> GeomAdaptor_Curve:
+    return GeomAdaptor_Curve(curve_to_ocp(value))
+
+
+def curve_kind(value: CurveValue) -> str:
+    try:
+        return _CURVE_KIND_NAMES[_curve_adaptor(value).GetType()]
+    except KeyError as exception:
+        raise ValueError("unsupported curve kind") from exception
+
+
+def _point3_value(point: gp_Pnt) -> Point3Value:
+    return Point3Value(float(point.X()), float(point.Y()), float(point.Z()))
+
+
+def _vector3_value(vector: gp_Vec | gp_Dir) -> Vector3Value:
+    return Vector3Value(float(vector.X()), float(vector.Y()), float(vector.Z()))
+
+
+def curve_line_parameters(value: CurveValue) -> LineParametersValue:
+    adaptor = _curve_adaptor(value)
+    if adaptor.GetType() != GeomAbs_Line:
+        raise TypeError("curve is not a line")
+    line_value = adaptor.Line()
+    return LineParametersValue(
+        _point3_value(line_value.Location()),
+        _vector3_value(line_value.Direction()),
+    )
+
+
+def curve_circle_parameters(value: CurveValue) -> CircleParametersValue:
+    adaptor = _curve_adaptor(value)
+    if adaptor.GetType() != GeomAbs_Circle:
+        raise TypeError("curve is not a circle")
+    circle_value = adaptor.Circle()
+    position = circle_value.Position()
+    return CircleParametersValue(
+        _point3_value(position.Location()),
+        float(circle_value.Radius()),
+        _vector3_value(position.XDirection()),
+        _vector3_value(position.YDirection()),
+    )
+
+
+def curve_ellipse_parameters(value: CurveValue) -> EllipseParametersValue:
+    adaptor = _curve_adaptor(value)
+    if adaptor.GetType() != GeomAbs_Ellipse:
+        raise TypeError("curve is not an ellipse")
+    ellipse_value = adaptor.Ellipse()
+    position = ellipse_value.Position()
+    return EllipseParametersValue(
+        _point3_value(position.Location()),
+        float(ellipse_value.MajorRadius()),
+        float(ellipse_value.MinorRadius()),
+        _vector3_value(position.XDirection()),
+        _vector3_value(position.YDirection()),
+    )
+
+
+def line_parameters_origin(value: LineParametersValue) -> Point3Value:
+    return value.origin
+
+
+def line_parameters_direction(value: LineParametersValue) -> Vector3Value:
+    return value.direction
+
+
+def circle_parameters_center(value: CircleParametersValue) -> Point3Value:
+    return value.center
+
+
+def circle_parameters_radius(value: CircleParametersValue) -> float:
+    return value.radius
+
+
+def circle_parameters_x_direction(value: CircleParametersValue) -> Vector3Value:
+    return value.x_direction
+
+
+def circle_parameters_y_direction(value: CircleParametersValue) -> Vector3Value:
+    return value.y_direction
+
+
+def ellipse_parameters_center(value: EllipseParametersValue) -> Point3Value:
+    return value.center
+
+
+def ellipse_parameters_major_radius(value: EllipseParametersValue) -> float:
+    return value.major_radius
+
+
+def ellipse_parameters_minor_radius(value: EllipseParametersValue) -> float:
+    return value.minor_radius
+
+
+def ellipse_parameters_x_direction(value: EllipseParametersValue) -> Vector3Value:
+    return value.x_direction
+
+
+def ellipse_parameters_y_direction(value: EllipseParametersValue) -> Vector3Value:
+    return value.y_direction
+
+
+def curve_lower_distance_parameter(value: CurveValue, point: Point3Value) -> float:
+    projector = GeomAPI_ProjectPointOnCurve(_point3(point), curve_to_ocp(value))
+    if projector.NbPoints() == 0:
+        raise ValueError("point projection onto curve failed")
+    return float(projector.LowerDistanceParameter())
+
+
+def curve_uniform_parameters(
+    value: CurveValue,
+    count: int,
+    start: float | None,
+    end: float | None,
+) -> tuple[float, ...]:
+    if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+        raise ValueError("uniform sample count must be a positive int")
+    adaptor = _curve_adaptor(value)
+    if start is None and end is None:
+        start = float(adaptor.FirstParameter())
+        end = float(adaptor.LastParameter())
+    elif start is None or end is None:
+        raise TypeError("uniform start and end must be provided together")
+    algorithm = GCPnts_UniformAbscissa(adaptor, count, start, end)
+    if not algorithm.IsDone():
+        raise ValueError("uniform curve sampling failed")
+    return tuple(float(algorithm.Parameter(index + 1)) for index in range(count))
+
+
+def scalar_sequence_item(values: tuple[float, ...], index: int) -> float:
+    return values[index]
 
 
 def segment2(start: Point2Value, end: Point2Value) -> Curve2Value:
