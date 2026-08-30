@@ -1,8 +1,8 @@
 # Typed domain migration
 
-> Status: in progress. The characterization baseline and evalcache v2
-> substrate are implemented; no public typed-domain cutover described here is
-> implemented yet. The accepted direction and rationale are recorded in
+> Status: in progress. The characterization baseline, evalcache v2 substrate,
+> and private typed vertical slice are implemented; no public typed-domain
+> cutover described here is implemented yet. The accepted direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 ## Objective
@@ -129,6 +129,9 @@ while new tests exercise expressions without dynamic Python-type imitation.
 
 ## Stage 3: internal vertical slice
 
+Status: complete as a private proving ground in `zencad._typed`. Nothing is
+re-exported from the public `zencad` root.
+
 Build a non-public ZenCad path that covers:
 
 ```python
@@ -152,6 +155,84 @@ Exit gate:
 
 This is the primary rollback point: the internal slice can be removed without
 changing user code.
+
+### Implemented slice
+
+The representative path now runs as:
+
+```python
+from zencad import _typed as typed
+
+runtime = typed.Runtime.deferred(cache=True)
+outer: typed.Shape = runtime.box(10)
+inner: typed.Shape = runtime.box(4).translate(3, 3, 3)
+result: typed.Shape = outer - inner
+face: typed.Face = result.faces()[0]
+mass: typed.Scalar = result.mass()
+center: typed.Point3 = result.center()
+offset: typed.Vector3 = typed.Vector3(mass / 1000, center.y, 0)
+moved: typed.Shape = result.translate(offset)
+native = moved.native()
+```
+
+`Shape`, `Face`, `Scalar`, `Point3`, `Vector3`, and
+`DeferredSequence[Face]` are stable classes in all four combinations of
+immediate/deferred evaluation and cache on/off. Handles from different
+runtimes cannot be mixed accidentally. `faces()[0]` adds an expression node
+without evaluating the graph; `len(faces)` and iteration are declared
+materialization boundaries.
+
+Resolved Shape values use a non-executable serializer whose cache record holds
+only version metadata and a named `shape.brep` artifact. No OCP object is
+stored in the record. The topology collection itself is not persisted;
+individual indexed `Face` results use the same validated BREP path. Cache-off
+constructs the evaluator without a store, so it cannot touch the configured
+directory.
+
+The compatibility adapter is deliberately narrow: 15 resolved functions in
+`_operations.py` bridge box construction, translation, difference, topology,
+mass/center, and the minimum scalar/vector algebra to the current eager
+implementation. The private production package is 647 lines and its runtime
+and subprocess tests are 226 lines. As an inventory signal, the current
+ZenCad tree still contains 91 legacy lazy decorators across 19 modules and 34
+`LazyObject`/`LazyObjectShape` references. A full migration is therefore a
+systematic API conversion, not a small facade rename; the next work remains
+split between value algebra and Shape/topology cards.
+
+### Verification and measurements
+
+On 2026-08-30 the following gates passed:
+
+- `pytest -q`: 186 tests;
+- `uvx mypy --strict --follow-imports=silent --disallow-any-expr
+  utest/typecheck/typed_vertical_slice.py`: no issues in the representative
+  domain chain;
+- a two-process `DirCache_v2` test: the second process reports a cache hit and
+  no cache store;
+- BREP export/decode from the explicit `native()` boundary in every policy
+  combination;
+- an isolated wheel build/install smoke containing all `zencad._typed`
+  modules;
+- Ruff and `compileall` checks for the new package and tests.
+
+The OCP-native return itself is excluded from the no-`Any` static assertion
+because the installed OCP distribution provides no mypy stubs; that explicit
+boundary is covered at runtime as `TopoDS_Shape`.
+
+A local cache-off microbenchmark used one warm-up and 15 samples of the whole
+representative chain, including final Shape and Face materialization:
+
+| Runtime | Median | p95 |
+| --- | ---: | ---: |
+| legacy deferred | 1.198 ms | 1.339 ms |
+| legacy onplace | 2.869 ms | 2.915 ms |
+| typed deferred | 3.088 ms | 3.147 ms |
+| typed immediate | 3.110 ms | 3.148 ms |
+
+The relevant comparison is against the eager resolved path: the prototype is
+about 8% slower in this tiny chain. These numbers are architectural evidence,
+not a stable CI performance threshold; broader operations will be dominated by
+OCP work and need a dedicated benchmark suite during public cutover.
 
 ## Stage 4: value algebra
 

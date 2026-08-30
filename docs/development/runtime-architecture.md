@@ -59,16 +59,17 @@ does not disable lazy evaluation. The accepted rationale and security boundary
 are recorded in
 [Shared user cache and Qt-independent configuration](../architecture-council/2026-08-30-shared-user-cache.md).
 
-## Planned computation-type migration
+## Computation-type migration
 
 The current runner still evaluates public `evalcache.LazyObject` values and
-materializes them at scene and export boundaries. A planned migration will
-replace that public proxy model with stable ZenCad domain handles containing an
-internal typed expression or resolved value. Evaluation and cache policy will
-then change internal state without changing the public result class.
+materializes them at scene and export boundaries. A private `zencad._typed`
+vertical slice now proves the replacement model with stable Shape, Face,
+Scalar, Point3, Vector3, and typed-sequence handles. Its immediate/deferred and
+cache on/off policies do not change domain classes, and resolved Shapes cross
+the cache boundary as BREP artifacts rather than pickled OCP objects.
 
-This migration is not implemented yet. Its accepted constraints and staged
-gates are recorded in
+The private slice is not wired into the runner or public root API yet. Its
+accepted constraints, measurements, and remaining staged gates are recorded in
 [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md)
 and the
 [typed domain migration plan](typed-domain-migration.md).
