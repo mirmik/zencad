@@ -39,6 +39,7 @@ from OCP.gp import (
     gp_Dir2d,
     gp_Pnt,
     gp_Pnt2d,
+    gp_Trsf2d,
     gp_Vec,
     gp_Vec2d,
 )
@@ -325,6 +326,14 @@ def bspline(
 
 def curve_transform(value: CurveValue, transform: TransformValue) -> CurveValue:
     return curve_from_ocp(curve_to_ocp(value).Transformed(transform_to_ocp(transform)))
+
+
+def curve2_rotate(value: Curve2Value, angle: float) -> Curve2Value:
+    if not math.isfinite(angle):
+        raise ValueError("Curve2 rotation angle must be finite")
+    transform = gp_Trsf2d()
+    transform.SetRotation(gp_Pnt2d(0, 0), angle)
+    return curve2_from_ocp(curve2_to_ocp(value).Transformed(transform))
 
 
 def curve_point(value: CurveValue, parameter: float) -> Point3Value:

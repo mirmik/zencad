@@ -474,6 +474,15 @@ class Curve2(Handle[ops.Curve2Value]):
     def trim(self, start: ScalarInput, end: ScalarInput, /) -> Curve2:
         return self.runtime.trim_curve2(self, start, end)
 
+    def rotate(self, angle: ScalarInput, /) -> Curve2:
+        expression = self.runtime._expression(
+            ops.curve2_rotate,
+            result=CURVE2_SPEC,
+            args=(self._state, _scalar_state(self.runtime, angle)),
+            operation_id="zencad.typed.curve2.rotate",
+        )
+        return Curve2._from_state(self.runtime, expression)
+
     def native(self) -> Geom2d_Curve:
         """Materialize an independent mutable OCP curve snapshot."""
         return ops.curve2_to_ocp(self._resolved())

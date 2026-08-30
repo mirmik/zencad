@@ -9,9 +9,9 @@ from OCP.Geom import Geom_Surface
 from evalcache.v2 import Expression, ResultSpec
 
 from . import _surface_operations as ops
-from ._core import Handle, State
+from ._core import Handle, State, require_same_runtime
 from ._serialization import SurfaceSerializer
-from .curves import CURVE_SPEC, Curve
+from .curves import CURVE_SPEC, Curve, Curve2
 from .records import Interval
 from .values import (
     POINT3_SPEC,
@@ -26,6 +26,7 @@ from .values import (
 
 if TYPE_CHECKING:
     from .runtime import Runtime
+    from .topology import Edge
 
 
 SurfaceHandleT = TypeVar("SurfaceHandleT", bound="Surface")
@@ -142,6 +143,22 @@ class Surface(Handle[ops.SurfaceValue]):
             operation_id="zencad.typed.surface.v_iso",
         )
         return Curve._from_state(self.runtime, state)
+
+    def map(self, curve: Curve2, /) -> Edge:
+        """Map a parametric 2D curve onto this surface as a topology edge."""
+        from . import _operations as topology_ops
+        from .topology import EDGE_SPEC, Edge
+
+        if not isinstance(curve, Curve2):
+            raise TypeError("Surface.map expects Curve2")
+        require_same_runtime(self.runtime, curve)
+        expression = self.runtime._expression(
+            topology_ops.surface_map_curve2,
+            result=EDGE_SPEC,
+            args=(self._state, curve._state),
+            operation_id="zencad.typed.surface.map",
+        )
+        return Edge._from_state(self.runtime, expression)
 
     def native(self) -> Geom_Surface:
         """Materialize an independent mutable OCP surface snapshot."""

@@ -66,6 +66,7 @@ from zencad.occ_compat import (
     as_solid,
     as_vertex,
     as_wire,
+    build_curves_3d,
     make_fill_face,
     make_sewing,
     vertex_point as ocp_vertex_point,
@@ -73,8 +74,18 @@ from zencad.occ_compat import (
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 from ._transform_operations import TransformValue, transform_to_ocp
-from ._curve_operations import CurveValue, curve_from_ocp, curve_to_ocp
-from ._surface_operations import SurfaceValue, surface_from_ocp
+from ._curve_operations import (
+    Curve2Value,
+    CurveValue,
+    curve2_to_ocp,
+    curve_from_ocp,
+    curve_to_ocp,
+)
+from ._surface_operations import (
+    SurfaceValue,
+    surface_from_ocp,
+    surface_to_ocp,
+)
 from ._value_operations import Point3Value, Vector3Value
 
 
@@ -416,6 +427,21 @@ def ruled_face(first: ResolvedShape, second: ResolvedShape) -> ResolvedShape:
     return ResolvedShape(
         make_fill_face(as_edge(first.Shape()), as_edge(second.Shape()))
     )
+
+
+def surface_map_curve2(
+    surface: SurfaceValue,
+    curve: Curve2Value,
+) -> ResolvedShape:
+    builder = BRepBuilderAPI_MakeEdge(
+        curve2_to_ocp(curve),
+        surface_to_ocp(surface),
+    )
+    if not builder.IsDone():
+        raise ValueError("cannot map Curve2 onto Surface")
+    edge = builder.Edge()
+    build_curves_3d(edge)
+    return ResolvedShape(edge)
 
 
 def rectangle(width: float, height: float, center: bool) -> ResolvedShape:

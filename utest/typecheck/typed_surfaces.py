@@ -25,5 +25,11 @@ def surface_contract(runtime: typed.Runtime) -> None:
     assert_type(cylinder.v_range(), typed.Interval)
     assert_type(cylinder.u_iso(radius), typed.Curve)
     assert_type(cylinder.v_iso(radius), typed.Curve)
+    assert_type(
+        cylinder.map(
+            runtime.segment2(runtime.point2(0, 0), runtime.point2(radius, radius))
+        ),
+        typed.Edge,
+    )
     assert_type(cylinder.unlazy(), typed.Surface)
     assert_type(sweep, typed.Surface)

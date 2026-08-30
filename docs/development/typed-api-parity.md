@@ -122,6 +122,13 @@ overloads. The numeric `convex_hull` triangulation is the deliberate exception:
 it returns immutable integer-index tuples and explicitly materializes its input
 points at the SciPy/Qhull boundary.
 
+The sixth #2041 tranche closes the remaining pure curve/surface methods.
+`Curve2.rotate(ScalarInput)` is a serializable graph operation and keeps its
+exact `Curve2` handle. `Surface.map(Curve2)` follows the truthful legacy native
+result rather than the earlier provisional parity label: mapping a p-curve onto
+a surface produces an `Edge`, with 3D curves built at resolved evaluation time.
+Both operations remain deferred and cacheable.
+
 The executable decomposition is:
 
 - #2039 — values and similarity-transform compatibility;

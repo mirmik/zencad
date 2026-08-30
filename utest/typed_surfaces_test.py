@@ -66,10 +66,17 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                         runtime.circle_curve(1),
                         runtime.circle_curve(3),
                     )
+                    mapped = cylinder.map(
+                        runtime.segment2(
+                            runtime.point2(0, 0),
+                            runtime.point2(math.pi / 2, 3),
+                        )
+                    )
 
-                    observed_types.add((type(cylinder), type(sweep)))
+                    observed_types.add((type(cylinder), type(sweep), type(mapped)))
                     self.assertIs(type(cylinder), typed.Surface)
                     self.assertIs(type(sweep), typed.Surface)
+                    self.assertIs(type(mapped), typed.Edge)
                     if mode is EvaluationMode.DEFERRED:
                         self.assertEqual(events, [])
 
@@ -105,6 +112,9 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                     )
                     self.assertIs(type(cylinder.native()), Geom_CylindricalSurface)
                     self.assertIs(type(sweep.native()), Geom_BSplineSurface)
+                    mapped_endpoints = mapped.endpoints()
+                    _assert_coordinates(self, mapped_endpoints[0].value(), (2, 0, 0))
+                    _assert_coordinates(self, mapped_endpoints[1].value(), (0, 2, 3))
                     self.assertEqual(
                         tuple(float(value) for value in sweep.u_range()),
                         (0.0, 2 * math.pi),
@@ -137,6 +147,12 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         point = cylinder.point(seed.center().x, seed.center().z)
         normal = cylinder.normal(seed.center().x, seed.center().z)
         iso = cylinder.v_iso(seed.center().z)
+        mapped = cylinder.map(
+            runtime.segment2(
+                runtime.point2(0, 0),
+                runtime.point2(seed.center().x, seed.center().z),
+            )
+        )
 
         self.assertEqual(events, [])
         _assert_coordinates(
@@ -153,6 +169,11 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             self,
             iso.point(0).value(),
             (2.0, 0.0, 1.0),
+        )
+        _assert_coordinates(
+            self,
+            mapped.endpoints()[1].value(),
+            (2 * math.cos(1), 2 * math.sin(1), 1),
         )
         self.assertIs(type(sweep.native()), Geom_BSplineSurface)
         self.assertTrue(events)
@@ -228,6 +249,12 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             runtime.sweep_surface(runtime.ellipse2(2, 1), runtime.circle_curve(3))  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
             runtime.sweep_surface(runtime.circle_curve(1), other.circle_curve(3))
+        with self.assertRaisesRegex(TypeError, "expects Curve2"):
+            runtime.cylinder_surface(2).map(runtime.circle_curve(1))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.cylinder_surface(2).map(
+                other.segment2(other.point2(0, 0), other.point2(1, 1))
+            )
         with self.assertRaisesRegex(TypeError, "must be SweepTrihedron"):
             runtime.sweep_surface(
                 runtime.circle_curve(1),
@@ -268,6 +295,35 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
 
 
 class TypedSurfaceCacheTest(unittest.TestCase):
+    def test_mapped_edge_restores_from_shared_cache(self):
+        store = MemoryCacheStore()
+
+        def mapped(runtime: typed.Runtime) -> typed.Edge:
+            return runtime.cylinder_surface(2).map(
+                runtime.segment2(
+                    runtime.point2(0, 0),
+                    runtime.point2(math.pi / 2, 3),
+                )
+            )
+
+        first = typed.Runtime.deferred(cache=True, cache_store=store)
+        self.assertFalse(mapped(first).native().IsNull())
+
+        events = []
+        second = typed.Runtime.deferred(
+            cache=True,
+            cache_store=store,
+            progress_hooks=(events.append,),
+        )
+        self.assertFalse(mapped(second).native().IsNull())
+        self.assertTrue(
+            any(
+                event.kind is EvaluationEventKind.CACHE_HIT
+                and event.operation_id == "zencad.typed.surface.map"
+                for event in events
+            )
+        )
+
     def test_surface_cache_uses_non_pickle_artifact_and_rejects_curve(self):
         store = MemoryCacheStore()
         first = typed.Runtime.deferred(cache=True, cache_store=store)
@@ -317,7 +373,9 @@ class TypedSurfaceCacheTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.sweep_surface(second.circle_curve(1), second.circle_curve(3)).native()
+        restored = second.sweep_surface(
+            second.circle_curve(1), second.circle_curve(3)
+        ).native()
         self.assertIs(type(restored), Geom_BSplineSurface)
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,

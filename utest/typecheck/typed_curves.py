@@ -55,6 +55,7 @@ def curve_contract(runtime: typed.Runtime) -> None:
     ellipse2 = assert_type(runtime.ellipse2(radius + 1, radius), typed.Curve2)
     trimmed = assert_type(runtime.trim_curve2(segment, 0, radius), typed.Curve2)
     assert_type(segment.trim(0, radius), typed.Curve2)
+    assert_type(segment.rotate(radius), typed.Curve2)
     assert_type(ellipse2.point(0), typed.Point2)
     assert_type(trimmed.tangent(0), typed.Vector2)
     assert_type(trimmed.range(), typed.Interval)

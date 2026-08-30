@@ -1008,6 +1008,7 @@
           "overrides": {
             "@type": {"status": "implemented", "typed": "Curve2"},
             "Curve2": {"status": "implemented", "typed": "Curve2.native()", "materialization": "native()"},
+            "rotate": {"status": "implemented", "typed": "Curve2.rotate(ScalarInput) -> Curve2"},
             "value": {"status": "implemented", "typed": "Curve2.point() -> Point2"}
           }
         },
@@ -1033,7 +1034,7 @@
             "u_iso_curve": {"typed": "Surface.u_iso() -> Curve"},
             "urange": {"typed": "Surface.u_range() -> Interval"},
             "vrange": {"typed": "Surface.v_range() -> Interval"},
-            "map": {"status": "missing", "typed": "Surface.map(Curve2) -> Curve"}
+            "map": {"status": "implemented", "typed": "Surface.map(Curve2) -> Edge"}
           }
         }
       ]

@@ -59,6 +59,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
                     )
                     ellipse2 = runtime.ellipse2(3, 2)
                     trimmed = segment.trim(0.5, 2.5)
+                    rotated = segment.rotate(math.pi / 2)
 
                     policy_types = tuple(
                         type(value)
@@ -69,6 +70,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
                             segment,
                             ellipse2,
                             trimmed,
+                            rotated,
                         )
                     )
                     observed_types.add(policy_types)
@@ -78,6 +80,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
                             typed.Curve,
                             typed.Curve,
                             typed.Curve,
+                            typed.Curve2,
                             typed.Curve2,
                             typed.Curve2,
                             typed.Curve2,
@@ -96,6 +99,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
                     self.assertEqual(ellipse2.point(0).value(), (3.0, 0.0))
                     self.assertEqual(trimmed.point(0.5).value(), (0.5, 0.0))
                     self.assertEqual(trimmed.point(2.5).value(), (2.5, 0.0))
+                    _assert_coordinates(self, rotated.point(2).value(), (0.0, 2.0))
                     self.assertEqual(
                         tuple(float(value) for value in circle.range()),
                         (0.0, 2 * math.pi),
@@ -130,6 +134,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
         )
         ellipse2 = runtime.ellipse2(radius + 1, radius)
         trimmed = runtime.trim_curve2(segment, radius / 4, radius + 0.5)
+        rotated = segment.rotate(radius * math.pi / 4)
 
         self.assertEqual(events, [])
         _assert_coordinates(self, circle.point(0).value(), (2.0, 0.0, 0.0))
@@ -137,6 +142,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
         _assert_coordinates(self, line.point(3).value(), (4.0, 1.0, 1.0))
         _assert_coordinates(self, segment.point(4).value(), (4.0, 0.0))
         _assert_coordinates(self, ellipse2.point(0).value(), (3.0, 0.0))
+        _assert_coordinates(self, rotated.point(4).value(), (0.0, 4.0))
         _assert_coordinates(
             self,
             tuple(float(value) for value in trimmed.range()),
@@ -198,6 +204,8 @@ class TypedCurveHandlesTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "endpoints must be distinct"):
             point = runtime.point2(0, 0)
             runtime.segment2(point, point).native()
+        with self.assertRaisesRegex(ValueError, "angle must be finite"):
+            runtime.ellipse2(2, 1).rotate(math.inf).native()
 
         immediate = typed.Runtime.immediate(cache=False)
         with self.assertRaisesRegex(ValueError, "positive scalar"):
@@ -246,7 +254,7 @@ class TypedCurveCacheTest(unittest.TestCase):
     def test_fresh_runtime_and_fresh_process_reuse_curve_cache(self):
         store = MemoryCacheStore()
         first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.ellipse2(3, 2).native()
+        first.ellipse2(3, 2).rotate(0.5).native()
 
         events = []
         second = typed.Runtime.deferred(
@@ -254,7 +262,9 @@ class TypedCurveCacheTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        self.assertIsInstance(second.ellipse2(3, 2).native(), Geom2d_Ellipse)
+        self.assertIsInstance(
+            second.ellipse2(3, 2).rotate(0.5).native(), Geom2d_Ellipse
+        )
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,
             [event.kind for event in events],
