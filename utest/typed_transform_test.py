@@ -121,7 +121,7 @@ class TypedTransformTest(unittest.TestCase):
                             typed.Vector3,
                             typed.Point3,
                             typed.Vector3,
-                            typed.Shape,
+                            typed.Solid,
                         ),
                     )
 
@@ -515,7 +515,7 @@ class TypedTransformTest(unittest.TestCase):
         )
         moved = shape.transform(transform)
 
-        self.assertIs(type(moved), typed.Shape)
+        self.assertIs(type(moved), typed.Solid)
         self.assertFalse(moved.native().IsNull())
         self.assertAlmostEqual(float(moved.mass()), 6.0, delta=TOLERANCE)
         self.assertCoordinatesAlmostEqual(

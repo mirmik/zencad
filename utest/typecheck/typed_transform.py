@@ -1,6 +1,6 @@
 """Static result-type table for typed quaternions and transforms."""
 
-from typing import assert_type
+from typing_extensions import assert_type
 
 from zencad import _typed as typed
 
@@ -66,4 +66,4 @@ def transform_algebra(runtime: typed.Runtime) -> None:
     assert_type(identity.matrix(), Matrix4x4)
 
     shape = runtime.box(1)
-    assert_type(shape.transform(translation), typed.Shape)
+    assert_type(shape.transform(translation), typed.Solid)

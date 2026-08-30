@@ -44,8 +44,8 @@ class SpyCacheStore:
 
 
 def representative_chain(runtime: typed.Runtime):
-    outer: typed.Shape = runtime.box(10)
-    inner: typed.Shape = runtime.box(4).translate(3, 3, 3)
+    outer: typed.Solid = runtime.box(10)
+    inner: typed.Solid = runtime.box(4).translate(3, 3, 3)
     result: typed.Shape = outer - inner
     faces: typed.DeferredSequence[typed.Face] = result.faces()
     face: typed.Face = faces[0]
@@ -141,7 +141,7 @@ class TypedVerticalSliceTest(unittest.TestCase):
 
         self.assertEqual(len(store.records), 1)
         record = next(iter(store.records.values()))
-        self.assertEqual(record.result_type_id, "zencad.typed.Shape.v1")
+        self.assertEqual(record.result_type_id, "zencad.typed.Solid.v1")
         self.assertEqual(record.serializer_id, "zencad.shape.brep-artifact.v1")
         self.assertEqual(record.value.payload, b"zencad.typed.shape\x00v1")
         self.assertEqual(len(record.value.artifacts), 1)

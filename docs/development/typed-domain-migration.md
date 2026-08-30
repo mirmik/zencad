@@ -1,9 +1,10 @@
 # Typed domain migration
 
 > Status: in progress. The characterization baseline, evalcache v2 substrate,
-> private typed vertical slice, and Scalar/Point/Vector/Quaternion/Transform
-> algebra are implemented; no public typed-domain cutover described here is
-> implemented yet. The accepted direction and rationale are recorded in
+> private typed vertical slice, Scalar/Point/Vector/Quaternion/Transform
+> algebra, and the topology-handle core are implemented; no public
+> typed-domain cutover described here is implemented yet. The accepted
+> direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 ## Objective
@@ -165,8 +166,8 @@ The representative path now runs as:
 from zencad import _typed as typed
 
 runtime = typed.Runtime.deferred(cache=True)
-outer: typed.Shape = runtime.box(10)
-inner: typed.Shape = runtime.box(4).translate(3, 3, 3)
+outer: typed.Solid = runtime.box(10)
+inner: typed.Solid = runtime.box(4).translate(3, 3, 3)
 result: typed.Shape = outer - inner
 face: typed.Face = result.faces()[0]
 mass: typed.Scalar = result.mass()
@@ -176,7 +177,7 @@ moved: typed.Shape = result.translate(offset)
 native = moved.native()
 ```
 
-`Shape`, `Face`, `Scalar`, `Point3`, `Vector3`, and
+`Shape`, `Solid`, `Face`, `Scalar`, `Point3`, `Vector3`, and
 `DeferredSequence[Face]` are stable classes in all four combinations of
 immediate/deferred evaluation and cache on/off. Handles from different
 runtimes cannot be mixed accidentally. `faces()[0]` adds an expression node
@@ -366,9 +367,11 @@ copies a native value into the immutable representation. OCP types do not
 become domain handles and never live inside an expression node.
 
 The private `Shape.transform(Transform)` adapter retains both the shape and
-transform dependencies in one typed Shape expression and materializes the OCP
-transformation only inside the resolved operation. This is the integration
-point for the broader Shape migration, not a public API cutover.
+transform dependencies in one typed expression and materializes the OCP
+transformation only inside the resolved operation. `transform()` and
+`translate()` preserve the concrete topology handle subtype, so transforming
+a `Solid` still returns a `Solid`. This is the integration point for the
+broader Shape migration, not a public API cutover.
 
 Verification on 2026-08-30 after the Quaternion/Transform checkpoint:
 
@@ -394,6 +397,10 @@ does not provide mypy stubs.
 
 ## Stage 5: shape and topology
 
+Status: in progress in the private `zencad._typed` layer. The topology-handle
+core is implemented; the uniform topology-query surface and the broader Shape
+factory/boolean migration remain separate follow-up gates.
+
 Introduce `Shape` and precise topology handles, typed topology sequences,
 resolved OCP adapters, result validators, BREP codecs, and materializing native
 accessors. Extend the existing typed `Shape.transform(Transform)` adapter while
@@ -403,6 +410,53 @@ operations behind the typed layer.
 Exit gate: representative models require no `LazyObjectShape` or
 `evalcache.unlazy_if_need()` in the typed path, and topology declarations are
 validated when resolved.
+
+### Topology-handle contract
+
+`Shape` is the conservative general shape handle. The eight precise topology
+handles are direct `Shape` subtypes: `Vertex`, `Edge`, `Wire`, `Face`, `Shell`,
+`Solid`, `Compound`, and `CompSolid`. Every handle contains either a validated
+resolved shape snapshot or its typed expression; neither state is exposed as
+an `evalcache` proxy. Evaluation and cache policy therefore do not change the
+class visible to the caller.
+
+Operations advertise only the precision they can guarantee:
+
+- `Runtime.box(...)` returns `Solid`;
+- `transform()` and `translate()` preserve the receiver's precise topology
+  subtype;
+- boolean difference conservatively returns `Shape`, because a boolean can
+  change topology kind;
+- `Vertex.point()` returns the geometric position as `Point3` without
+  conflating a topological vertex with a coordinate value.
+
+The OCP boundary has explicit ownership. `from_ocp()` takes a deep-copy
+snapshot and validates it against the requested handle class; `native()`
+returns a fresh deep-copy snapshot, so mutating the returned OCP object cannot
+mutate the handle's resolved value. The private `_legacy()` escape hatch is a
+borrowed compatibility boundary for existing eager implementation adapters.
+It is intentionally not part of the normal typed contract and must not leak
+into user-facing code.
+
+Completing all topology queries is the next gate. They will return typed
+`DeferredSequence` values with elements matching their topology kind. In
+particular, `vertices()` returns topology-unique `Vertex` handles; it must not
+repeat the legacy coordinate-distance deduplication. Callers that need
+positions obtain them explicitly with `Vertex.point()`. The minimal `faces()`
+path retained by the vertical slice does not by itself complete this query
+migration.
+
+Verification on 2026-08-30 after the topology-core checkpoint:
+
+- `pytest -q`: 220 tests;
+- strict mypy with `--disallow-any-expr`: all four representative typed
+  contracts pass, including every topology handle subtype;
+- runtime tests cover all eight handles, all four evaluation/cache policy
+  combinations, exact native OCP classes, topology validators, subtype-
+  preserving transforms, and BREP snapshot mutation isolation;
+- an isolated wheel build/install smoke imports `zencad._typed.topology` and
+  executes the typed `Solid -> Face` path outside the source checkout;
+- Ruff, formatting, `compileall`, and diff-integrity checks pass.
 
 ## Stage 6: remaining geometry and boundaries
 

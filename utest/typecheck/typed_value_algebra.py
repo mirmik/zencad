@@ -1,6 +1,6 @@
 """Static result-type table for private typed value algebra."""
 
-from typing import assert_type
+from typing_extensions import assert_type
 
 from zencad import _typed as typed
 

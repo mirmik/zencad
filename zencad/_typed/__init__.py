@@ -3,7 +3,19 @@
 Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
-from .runtime import DeferredSequence, Face, Runtime, Shape
+from .runtime import Runtime
+from .topology import (
+    Compound,
+    CompSolid,
+    DeferredSequence,
+    Edge,
+    Face,
+    Shape,
+    Shell,
+    Solid,
+    Vertex,
+    Wire,
+)
 from .transforms import Quaternion, Transform
 from .values import (
     Point2,
@@ -24,7 +36,10 @@ from .values import (
 )
 
 __all__ = [
+    "Compound",
+    "CompSolid",
     "DeferredSequence",
+    "Edge",
     "Face",
     "Point2",
     "Point3",
@@ -32,9 +47,13 @@ __all__ = [
     "Runtime",
     "Scalar",
     "Shape",
+    "Shell",
+    "Solid",
     "Transform",
     "Vector2",
     "Vector3",
+    "Vertex",
+    "Wire",
     "acos",
     "asin",
     "atan",

@@ -65,9 +65,14 @@ The current runner still evaluates public `evalcache.LazyObject` values and
 materializes them at scene and export boundaries. A private `zencad._typed`
 vertical slice now proves the replacement model with stable Shape, Face,
 Scalar, Point2/Point3, Vector2/Vector3, Quaternion, Transform, and
-typed-sequence handles. The private value layer now has policy-independent
-algebra, constant folding for resolved operands, and explicit
-Python/NumPy/OCP materialization boundaries. `Transform` is the immutable
+typed-sequence handles. Its topology core adds the direct Shape subtypes
+Vertex, Edge, Wire, Face, Shell, Solid, Compound, and CompSolid. `box()` now
+returns `Solid`; typed transform and translation preserve the precise topology
+subtype, while boolean difference conservatively returns `Shape`.
+`Vertex.point()` is the explicit transition from topology to a geometric
+`Point3`. The private value layer now has policy-independent algebra, constant
+folding for resolved operands, and explicit Python/NumPy/OCP materialization
+boundaries. `Transform` is the immutable
 similarity model `p' = s R(p) + t`; signed uniform scale includes mirrors while
 shear and non-uniform scale remain reserved for a separate future affine type.
 Quaternion and Transform composition, inverse, and point/vector application
@@ -75,7 +80,12 @@ preserve typed expression dependencies. A private `Shape.transform(Transform)`
 adapter converts to mutable `gp_Trsf` only inside its resolved operation. The
 immediate/deferred and cache on/off policies do not change domain classes, and
 resolved Shapes cross the cache boundary as BREP artifacts rather than pickled
-OCP objects.
+OCP objects. Topology handles likewise hide their expression state.
+`from_ocp()` and `native()` form deep-copy snapshot boundaries; only the
+private `_legacy()` adapter borrows a resolved Shape value for compatibility.
+The complete typed topology-query surface remains a following migration gate;
+its future `vertices()` result is unique by topology identity, not by
+coordinate-distance deduplication.
 
 The private slice is not wired into the runner or public root API yet. Its
 accepted constraints, measurements, and remaining staged gates are recorded in
