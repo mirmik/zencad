@@ -20,8 +20,8 @@ from OCP.BRepBuilderAPI import (
 )
 from OCP.BRepTools import BRepTools
 from OCP.GC import GC_MakeArcOfCircle
-from OCP.Geom import Geom_RectangularTrimmedSurface, Geom_TrimmedCurve
-from OCP.gp import gp_Pnt
+from OCP.Geom import Geom_Ellipse, Geom_RectangularTrimmedSurface, Geom_TrimmedCurve
+from OCP.gp import gp_Ax2, gp_Dir, gp_Pnt
 from OCP.TopAbs import (
     TopAbs_COMPOUND,
     TopAbs_COMPSOLID,
@@ -328,6 +328,16 @@ def wire_from_wire_or_edge(shape: ResolvedShape) -> ResolvedShape:
 
 
 def shape_endpoint(shape: ResolvedShape, finish: bool) -> Point3Value:
+    native = shape.Shape()
+    if native.ShapeType() == TopAbs_EDGE:
+        edge = as_edge(native)
+        vertex = (
+            TopExp.LastVertex_s(edge, True)
+            if finish
+            else TopExp.FirstVertex_s(edge, True)
+        )
+        point = ocp_vertex_point(vertex)
+        return Point3Value(float(point.X()), float(point.Y()), float(point.Z()))
     start, end = shape.endpoints()
     point = end if finish else start
     return Point3Value(float(point.x), float(point.y), float(point.z))
@@ -338,9 +348,12 @@ def curve_trimmed_edge(
     start: float,
     end: float,
 ) -> ResolvedShape:
-    edge = BRepBuilderAPI_MakeEdge(curve_to_ocp(curve), start, end).Edge()
+    lower, upper = sorted((start, end))
+    edge = BRepBuilderAPI_MakeEdge(curve_to_ocp(curve), lower, upper).Edge()
     if edge.IsNull():
         raise ValueError("trimmed edge construction failed")
+    if end < start:
+        edge = as_edge(edge.Reversed())
     return ResolvedShape(edge)
 
 
@@ -349,14 +362,17 @@ def curve_edge(
     interval: tuple[float, float] | None,
 ) -> ResolvedShape:
     native_curve = curve_to_ocp(curve)
-    builder = (
-        BRepBuilderAPI_MakeEdge(native_curve)
-        if interval is None
-        else BRepBuilderAPI_MakeEdge(native_curve, interval[0], interval[1])
-    )
+    if interval is None:
+        builder = BRepBuilderAPI_MakeEdge(native_curve)
+    else:
+        lower, upper = sorted(interval)
+        builder = BRepBuilderAPI_MakeEdge(native_curve, lower, upper)
     if not builder.IsDone():
         raise ValueError("edge construction from Curve failed")
-    return ResolvedShape(builder.Edge())
+    edge = builder.Edge()
+    if interval is not None and interval[1] < interval[0]:
+        edge = as_edge(edge.Reversed())
+    return ResolvedShape(edge)
 
 
 def circle_arc(
@@ -371,6 +387,117 @@ def circle_arc(
     if not builder.IsDone():
         raise ValueError("circle arc edge construction failed")
     return ResolvedShape(builder.Edge())
+
+
+def svg_elliptic_arc(
+    start: Point3Value,
+    end: Point3Value,
+    radius_x: float,
+    radius_y: float,
+    x_axis_angle: float,
+    large: bool,
+    sweep: bool,
+) -> ResolvedShape:
+    """Build one SVG endpoint-parameterized elliptical arc."""
+    radius_x = abs(radius_x)
+    radius_y = abs(radius_y)
+    if not math.isfinite(radius_x) or radius_x == 0:
+        raise ValueError("SVG arc radius_x must be finite and non-zero")
+    if not math.isfinite(radius_y) or radius_y == 0:
+        raise ValueError("SVG arc radius_y must be finite and non-zero")
+    if not math.isfinite(x_axis_angle):
+        raise ValueError("SVG arc x_axis_angle must be finite")
+    if abs(start.z - end.z) > 1e-9:
+        raise ValueError("SVG arc endpoints must lie in one XY plane")
+    if math.hypot(start.x - end.x, start.y - end.y) <= 1e-12:
+        raise ValueError("SVG arc endpoints must be distinct")
+
+    cosine = math.cos(x_axis_angle)
+    sine = math.sin(x_axis_angle)
+    half_dx = (start.x - end.x) / 2
+    half_dy = (start.y - end.y) / 2
+    local_x = cosine * half_dx + sine * half_dy
+    local_y = -sine * half_dx + cosine * half_dy
+
+    radii_scale = (
+        local_x * local_x / (radius_x * radius_x)
+        + local_y * local_y / (radius_y * radius_y)
+    )
+    if radii_scale > 1:
+        scale = math.sqrt(radii_scale)
+        radius_x *= scale
+        radius_y *= scale
+
+    numerator = (
+        radius_x * radius_x * radius_y * radius_y
+        - radius_x * radius_x * local_y * local_y
+        - radius_y * radius_y * local_x * local_x
+    )
+    denominator = (
+        radius_x * radius_x * local_y * local_y
+        + radius_y * radius_y * local_x * local_x
+    )
+    if denominator <= 0:
+        raise ValueError("cannot determine SVG arc center")
+    sign = -1.0 if large == sweep else 1.0
+    factor = sign * math.sqrt(max(0.0, numerator / denominator))
+    center_local_x = factor * radius_x * local_y / radius_y
+    center_local_y = -factor * radius_y * local_x / radius_x
+    center_x = (
+        cosine * center_local_x
+        - sine * center_local_y
+        + (start.x + end.x) / 2
+    )
+    center_y = (
+        sine * center_local_x
+        + cosine * center_local_y
+        + (start.y + end.y) / 2
+    )
+
+    def vector_angle(ax: float, ay: float, bx: float, by: float) -> float:
+        return math.atan2(ax * by - ay * bx, ax * bx + ay * by)
+
+    unit_start_x = (local_x - center_local_x) / radius_x
+    unit_start_y = (local_y - center_local_y) / radius_y
+    unit_end_x = (-local_x - center_local_x) / radius_x
+    unit_end_y = (-local_y - center_local_y) / radius_y
+    start_parameter = vector_angle(1, 0, unit_start_x, unit_start_y)
+    delta = vector_angle(
+        unit_start_x,
+        unit_start_y,
+        unit_end_x,
+        unit_end_y,
+    )
+    if sweep and delta < 0:
+        delta += 2 * math.pi
+    elif not sweep and delta > 0:
+        delta -= 2 * math.pi
+
+    major_radius = radius_x
+    minor_radius = radius_y
+    major_angle = x_axis_angle
+    if radius_y > radius_x:
+        major_radius, minor_radius = radius_y, radius_x
+        major_angle += math.pi / 2
+        start_parameter -= math.pi / 2
+    ellipse = Geom_Ellipse(
+        gp_Ax2(
+            gp_Pnt(center_x, center_y, start.z),
+            gp_Dir(0, 0, 1),
+            gp_Dir(math.cos(major_angle), math.sin(major_angle), 0),
+        ),
+        major_radius,
+        minor_radius,
+    )
+    end_parameter = start_parameter + delta
+    lower, upper = sorted((start_parameter, end_parameter))
+    builder = BRepBuilderAPI_MakeEdge(ellipse, lower, upper)
+    if not builder.IsDone():
+        raise ValueError("SVG elliptical arc construction failed")
+    edge = builder.Edge()
+    if delta < 0:
+        edge = as_edge(edge.Reversed())
+    return ResolvedShape(edge)
 
 
 def make_wire(shapes: tuple[ResolvedShape, ...]) -> ResolvedShape:

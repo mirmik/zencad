@@ -53,10 +53,10 @@ operators:
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
 | Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
-| Constructors | 92 | 45 | 2 | 45 | 0 | 0 |
+| Constructors | 92 | 61 | 2 | 29 | 0 | 0 |
 | Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **255** | **9** | **94** | **19** | **3** |
+| **Total** | **380** | **271** | **9** | **78** | **19** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -91,6 +91,17 @@ return Edge. `circle_arc`, `make_edge`, `make_wire`, `rounded_polysegment`, and
 `helix` complete the legacy wire factory set. Curve-to-Edge conversion and
 Curve transforms remain graph operations; only the explicit native adaptor
 methods materialize OCP objects.
+
+The third #2041 tranche completes the legacy `wire_builder` surface as typed
+`WireBuilder`. The builder is a deliberately mutable authoring cursor, but its
+edge list, current point, tangents, curve parameters, and final wire are stable
+typed graph handles. Fluent editing therefore emits no deferred evaluation;
+`build()` and `doit()` return `Wire` without themselves materializing it. SVG
+endpoint arcs choose their center inside one resolved, cacheable operation,
+while ordinary circular, elliptical, interpolation, relative, and closing
+operations compose the existing typed primitives. Descending curve intervals
+are represented as correctly oriented edges instead of OCCT's periodic
+complement.
 
 The executable decomposition is:
 

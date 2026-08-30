@@ -901,7 +901,24 @@
           "source": "zencad.geom.wire_builder:wire_builder",
           "include_type": true,
           "default": {"status": "missing", "typed": "typed WireBuilder.{name}", "materialization": "doit()/build() returns Wire"},
-          "overrides": {}
+          "overrides": {
+            "@type": {"status": "implemented", "typed": "WireBuilder"},
+            "arc": {"status": "implemented", "typed": "WireBuilder.arc() -> WireBuilder"},
+            "arc_by_points": {"status": "implemented", "typed": "WireBuilder.arc_by_points() -> WireBuilder"},
+            "close": {"status": "implemented", "typed": "WireBuilder.close() -> WireBuilder"},
+            "collect_point": {"status": "implemented", "typed": "WireBuilder.collect_point()"},
+            "doit": {"status": "implemented", "typed": "WireBuilder.doit() -> Wire", "materialization": "none"},
+            "elliptic_arc": {"status": "implemented", "typed": "WireBuilder.elliptic_arc() -> WireBuilder"},
+            "interpolate": {"status": "implemented", "typed": "WireBuilder.interpolate() -> WireBuilder"},
+            "l": {"status": "implemented", "typed": "WireBuilder.l() -> WireBuilder"},
+            "line": {"status": "implemented", "typed": "WireBuilder.line() -> WireBuilder"},
+            "plane_circle_arc": {"status": "implemented", "typed": "WireBuilder.plane_circle_arc() -> WireBuilder"},
+            "prepare": {"status": "implemented", "typed": "WireBuilder.prepare() -> list[Point3]"},
+            "restart": {"status": "implemented", "typed": "WireBuilder.restart() -> WireBuilder"},
+            "segment": {"status": "implemented", "typed": "WireBuilder.segment() -> WireBuilder"},
+            "svg_circle_arc": {"status": "implemented", "typed": "WireBuilder.svg_circle_arc() -> WireBuilder"},
+            "svg_elliptic_arc": {"status": "implemented", "typed": "WireBuilder.svg_elliptic_arc() -> WireBuilder"}
+          }
         },
         {
           "source": "zencad.geom.face",

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 import math
-from typing import Callable, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Callable, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
@@ -71,6 +71,9 @@ from .values import (
     Vector3,
     _scalar_state,
 )
+
+if TYPE_CHECKING:
+    from .wire_builder import WireBuilder
 
 
 ResolvedT = TypeVar("ResolvedT")
@@ -563,6 +566,35 @@ class Runtime:
         )
         return Edge._from_state(self, expression)
 
+    def _svg_elliptic_arc(
+        self,
+        start: Point3,
+        end: Point3,
+        radius_x: ScalarInput,
+        radius_y: ScalarInput,
+        x_axis_angle: ScalarInput,
+        large: bool,
+        sweep: bool,
+    ) -> Edge:
+        _require_points(self, (start, end), minimum=2, name="SVG arc")
+        _require_bool(large, "SVG arc large")
+        _require_bool(sweep, "SVG arc sweep")
+        expression = self._expression(
+            ops.svg_elliptic_arc,
+            result=EDGE_SPEC,
+            args=(
+                start._state,
+                end._state,
+                _scalar_state(self, radius_x),
+                _scalar_state(self, radius_y),
+                _scalar_state(self, x_axis_angle),
+                large,
+                sweep,
+            ),
+            operation_id="zencad.typed.svg_elliptic_arc",
+        )
+        return Edge._from_state(self, expression)
+
     def make_wire(
         self,
         *shapes: Edge | Wire | Sequence[Edge | Wire],
@@ -575,6 +607,16 @@ class Runtime:
             operation_id="zencad.typed.make_wire",
         )
         return Wire._from_state(self, expression)
+
+    def wire_builder(
+        self,
+        start: Point3 | Vector3 | Sequence[ScalarInput] = (0, 0, 0),
+        defrel: bool = False,
+    ) -> WireBuilder:
+        """Create a fluent authoring cursor over immutable typed graph nodes."""
+        from .wire_builder import WireBuilder
+
+        return WireBuilder(start=start, defrel=defrel, runtime=self)
 
     def rounded_polysegment(
         self,

@@ -47,6 +47,7 @@ from .values import (
     sqrt,
     tan,
 )
+from .wire_builder import WireBuilder, wire_builder
 
 __all__ = [
     "Compound",
@@ -84,6 +85,7 @@ __all__ = [
     "Vector3",
     "Vertex",
     "Wire",
+    "WireBuilder",
     "acos",
     "asin",
     "atan",
@@ -94,4 +96,5 @@ __all__ = [
     "sin",
     "sqrt",
     "tan",
+    "wire_builder",
 ]

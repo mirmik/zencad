@@ -86,6 +86,18 @@ def main():
         assert edge_curve.range().value() == (0.0, 2.0)
         assert type(face_surface) is typed.Surface
         assert face_surface.u_range().length().value() == 2.0
+        builder = (
+            typed_runtime.wire_builder(defrel=True)
+            .l(2, 0)
+            .svg_circle_arc(2, 0, False, True, 0, 4)
+            .l(-2, 0)
+            .close()
+        )
+        built_wire = builder.build()
+        assert type(builder) is typed.WireBuilder
+        assert type(built_wire) is typed.Wire
+        assert built_wire.is_closed()
+        assert len(built_wire.edges()) == 4
 
         script_path = temporary_path / "headless_model.py"
         script_path.write_text(
