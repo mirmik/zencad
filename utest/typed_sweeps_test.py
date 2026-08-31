@@ -29,14 +29,31 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     linear = profile.linear_extrude(4, center=True)
                     revolved = runtime.revol(profile, 3)
                     partial = profile.revol(3, math.pi)
+                    first_section = runtime.rectangle_wire(1, 2, center=True)
+                    second_section = runtime.rectangle_wire(2, 1, center=True).up(3)
+                    lofted = runtime.loft((first_section, second_section))
+                    loft_shell = runtime.loft(
+                        (first_section, second_section),
+                        smooth=True,
+                        shell=True,
+                    )
 
                     observed_types.add(
-                        (type(extruded), type(linear), type(revolved), type(partial))
+                        (
+                            type(extruded),
+                            type(linear),
+                            type(revolved),
+                            type(partial),
+                            type(lofted),
+                            type(loft_shell),
+                        )
                     )
                     self.assertIs(type(extruded), typed.Shape)
                     self.assertIs(type(linear), typed.Shape)
                     self.assertIs(type(revolved), typed.Shape)
                     self.assertIs(type(partial), typed.Shape)
+                    self.assertIs(type(lofted), typed.Solid)
+                    self.assertIs(type(loft_shell), typed.Shell)
                     if mode is EvaluationMode.DEFERRED:
                         self.assertEqual(events, [])
 
@@ -44,6 +61,8 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     self.assertAlmostEqual(linear.mass().value(), 8)
                     self.assertAlmostEqual(revolved.mass().value(), 12 * math.pi)
                     self.assertAlmostEqual(partial.mass().value(), 6 * math.pi)
+                    self.assertGreater(lofted.mass().value(), 0)
+                    self.assertGreater(loft_shell.mass().value(), 0)
                     bounds = extruded.boundbox().value()
                     self.assertAlmostEqual(bounds.zmin, -2.0000001)
                     self.assertAlmostEqual(bounds.zmax, 2.0000001)
@@ -74,6 +93,20 @@ class TypedBasicSweepsTest(unittest.TestCase):
             runtime.extrude(profile, 2, center=1)  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
             runtime.extrude(other.rectangle(1, 2), 2)
+        with self.assertRaisesRegex(ValueError, "at least two sections"):
+            runtime.loft((runtime.rectangle_wire(1, 2),))
+        with self.assertRaisesRegex(TypeError, "only Edge or Wire"):
+            runtime.loft((profile, runtime.rectangle_wire(1, 2)))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(TypeError, "loft smooth must be bool"):
+            runtime.loft(
+                (runtime.rectangle_wire(1, 2), runtime.rectangle_wire(2, 1).up(2)),
+                smooth=1,  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(ValueError, "max_degree must be positive"):
+            runtime.loft(
+                (runtime.rectangle_wire(1, 2), runtime.rectangle_wire(2, 1).up(2)),
+                max_degree=0,
+            )
         with self.assertRaisesRegex(ValueError, "revol radius must be finite"):
             runtime.revol(profile, math.inf).native()
         with self.assertRaisesRegex(ValueError, "revol yaw must be finite"):

@@ -1099,6 +1099,21 @@ def revolve_shape(
     return _revol(shape, r=radius, yaw=yaw)
 
 
+def loft_shapes(
+    sections: tuple[ResolvedShape, ...],
+    smooth: bool,
+    shell: bool,
+    max_degree: int,
+) -> ResolvedShape:
+    from zencad.geom.sweep import _loft
+
+    if len(sections) < 2:
+        raise ValueError("loft requires at least two sections")
+    if max_degree <= 0:
+        raise ValueError("loft max_degree must be positive")
+    return _loft(sections, smooth=smooth, shell=shell, maxdegree=max_degree)
+
+
 def fillet_shape(
     shape: ResolvedShape,
     radius: float,

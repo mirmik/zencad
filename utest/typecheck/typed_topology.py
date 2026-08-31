@@ -47,6 +47,8 @@ def topology_contract(
     assert_type(face.linear_extrude(2), typed.Shape)
     assert_type(runtime.revol(face, 3, 1), typed.Shape)
     assert_type(face.revol(3, 1), typed.Shape)
+    assert_type(runtime.loft((edge, wire)), typed.Solid)
+    assert_type(runtime.loft((edge, wire), shell=True), typed.Shell)
     assert_type(runtime.fillet(solid, 0.1), typed.Shape)
     assert_type(runtime.chamfer(solid, 0.1), typed.Shape)
     assert_type(runtime.fillet2d(face, 0.1), typed.Face)

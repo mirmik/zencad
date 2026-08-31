@@ -1065,7 +1065,8 @@
           "overrides": {
             "extrude": {"status": "implemented", "typed": "Runtime.extrude() / Shape.extrude() -> Shape"},
             "linear_extrude": {"status": "implemented", "typed": "Runtime.linear_extrude() / Shape.linear_extrude() -> Shape"},
-            "revol": {"status": "implemented", "typed": "Runtime.revol() / Shape.revol() -> Shape"}
+            "revol": {"status": "implemented", "typed": "Runtime.revol() / Shape.revol() -> Shape"},
+            "loft": {"status": "implemented", "typed": "Runtime.loft(Sequence[Edge | Wire], ...) -> Solid | Shell"}
           }
         },
         {

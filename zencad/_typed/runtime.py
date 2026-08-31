@@ -480,6 +480,72 @@ class Runtime:
         _require_shape(self, shape, "revol")
         return shape.revol(r, yaw)
 
+    @overload
+    def loft(
+        self,
+        sections: Sequence[Edge | Wire],
+        smooth: bool = False,
+        shell: Literal[False] = False,
+        max_degree: int = 4,
+    ) -> Solid: ...
+
+    @overload
+    def loft(
+        self,
+        sections: Sequence[Edge | Wire],
+        smooth: bool = False,
+        *,
+        shell: Literal[True],
+        max_degree: int = 4,
+    ) -> Shell: ...
+
+    @overload
+    def loft(
+        self,
+        sections: Sequence[Edge | Wire],
+        smooth: bool,
+        shell: Literal[True],
+        max_degree: int = 4,
+    ) -> Shell: ...
+
+    @overload
+    def loft(
+        self,
+        sections: Sequence[Edge | Wire],
+        smooth: bool = False,
+        shell: bool = False,
+        max_degree: int = 4,
+    ) -> Solid | Shell: ...
+
+    def loft(
+        self,
+        sections: Sequence[Edge | Wire],
+        smooth: bool = False,
+        shell: bool = False,
+        max_degree: int = 4,
+    ) -> Solid | Shell:
+        _require_bool(smooth, "loft smooth")
+        _require_bool(shell, "loft shell")
+        resolved_degree = _require_positive_int(max_degree, "loft max_degree")
+        values = _require_wire_parts(self, (sections,), "loft")
+        if len(values) < 2:
+            raise ValueError("loft requires at least two sections")
+        result_spec = SHELL_SPEC if shell else SOLID_SPEC
+        expression = self._expression(
+            ops.loft_shapes,
+            result=result_spec,
+            args=(
+                tuple(value._state for value in values),
+                smooth,
+                shell,
+                resolved_degree,
+            ),
+            operation_id="zencad.typed.loft",
+        )
+        if shell:
+            return Shell._from_state(self, expression)
+        return Solid._from_state(self, expression)
+
     def fillet(
         self,
         shape: Shape,
