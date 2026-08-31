@@ -857,6 +857,36 @@ the legacy similarity/general-transformation pickle and composition defects,
 so existing root users do not retain half-initialized native transforms while
 the root cutover is pending.
 
+### Modeling operations and geometry-query checkpoint
+
+Task #2043 completes every non-sweep row in the sweeps-and-operations family.
+Sequence and variadic booleans, boundary sectioning, fillet/chamfer aliases,
+offset and thick-solid construction, sewing, solid repair, same-domain
+unification, topology restoration, and triangulation compatibility all retain
+stable typed handles. Results use the most precise truthful topology subtype;
+operations whose topology can change continue to return general `Shape`.
+
+Nearest-topology queries return the requested `Vertex`, `Edge`, `Wire`,
+`Face`, `Shell`, `Solid`, `CompSolid`, or `Compound` handle. Curve projection
+returns `CurveProjection`, a named record of typed point, parameter, and
+distance handles. Mesh node and triangle compatibility produces immutable
+numeric tuples and normalizes triangle indices to zero-based rows.
+
+Verification on 2026-08-31 after this checkpoint:
+
+- the headless runner passes its isolated 3-test and 13-test groups plus 336
+  discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 15 representative typed
+  contracts;
+- the parity inventory reports 341 implemented, 27 missing, 3 partial, 6
+  repair, and 3 unchanged rows; all 16 missing rows in this family are owned
+  by the separate sweep and sweep-law tasks;
+- immediate/deferred × cache on/off matrices cover booleans, offset and
+  thick-solid construction, unification, and nearest-topology results;
+- a clean wheel using the local evalcache checkout passes the installed
+  geometry/I/O smoke outside the source tree, including the new boolean,
+  section, offset, unification, nearest-topology, and projection APIs.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

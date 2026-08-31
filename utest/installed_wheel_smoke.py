@@ -90,6 +90,27 @@ def main():
         assert mesh.triangle_count == 12
         assert type(typed_runtime.rectangle(2, 3).triangulate()) is typed.MeshData
         assert decode_mesh(mesh.display_payload()).triangles == list(mesh.triangles)
+        boolean_left = typed_runtime.box(2)
+        boolean_right = typed_runtime.box(2).translate(1, 0, 0)
+        assert abs(typed_runtime.union(boolean_left, boolean_right).mass() - 12) < 1e-8
+        assert abs(typed_runtime.intersect((boolean_left, boolean_right)).mass() - 4) < 1e-8
+        assert len(typed_runtime.section(boolean_left, 1).edges()) > 0
+        nearest_face = typed_runtime.near_face(
+            boolean_left,
+            typed_runtime.point3(0.5, 0.5, 3),
+        )
+        assert type(nearest_face) is typed.Face
+        projection = typed_runtime.project(
+            typed_runtime.point3(1, 2, 0),
+            typed_runtime.segment(
+                typed_runtime.point3(0, 0, 0),
+                typed_runtime.point3(3, 0, 0),
+            ),
+        )
+        assert type(projection) is typed.CurveProjection
+        assert projection.value() == ((1.0, 0.0, 0.0), 1.0, 2.0)
+        assert type(typed_runtime.unify(boolean_left)) is typed.Solid
+        assert type(typed_runtime.offset(boolean_left, 0.1)) is typed.Shape
         edge_curve = typed_runtime.box(2).edges()[0].curve()
         face_surface = typed_runtime.box(2).faces()[0].surface()
         assert type(edge_curve) is typed.Curve
