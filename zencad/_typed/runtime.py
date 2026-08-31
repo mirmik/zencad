@@ -50,6 +50,7 @@ from .surfaces import (
     SweepSectionLaw,
     SweepTrihedron,
 )
+from .sweeps import PipeTransition, PipeTrihedron
 from .text import FontAspect
 from .topology import (
     COMPOUND_SPEC,
@@ -106,6 +107,8 @@ __all__ = [
     "Edge",
     "Face",
     "FontAspect",
+    "PipeTransition",
+    "PipeTrihedron",
     "Runtime",
     "Shape",
     "Shell",
@@ -545,6 +548,145 @@ class Runtime:
         if shell:
             return Shell._from_state(self, expression)
         return Solid._from_state(self, expression)
+
+    def pipe(
+        self,
+        profile: Shape,
+        spine: Edge | Wire,
+        /,
+        *,
+        trihedron: PipeTrihedron = PipeTrihedron.CORRECTED_FRENET,
+        force_approx_c1: bool = False,
+    ) -> Shape:
+        _require_shape(self, profile, "pipe profile")
+        _require_pipe_spine(self, spine, "pipe spine")
+        if not isinstance(trihedron, PipeTrihedron):
+            raise TypeError("pipe trihedron must be PipeTrihedron")
+        _require_bool(force_approx_c1, "pipe force_approx_c1")
+        expression = self._expression(
+            ops.pipe_shape,
+            result=SHAPE_SPEC,
+            args=(
+                profile._state,
+                spine._state,
+                trihedron.value,
+                force_approx_c1,
+            ),
+            operation_id="zencad.typed.pipe",
+        )
+        return Shape._from_state(self, expression)
+
+    @overload
+    def pipe_shell(
+        self,
+        profiles: Sequence[Edge | Wire],
+        spine: Edge | Wire,
+        /,
+        *,
+        frenet: bool = False,
+        approx_c1: bool = False,
+        binormal: Vector3 | None = None,
+        parallel: Vector3 | None = None,
+        discrete: bool = False,
+        solid: Literal[True] = True,
+        transition: PipeTransition = PipeTransition.TRANSFORMED,
+    ) -> Solid: ...
+
+    @overload
+    def pipe_shell(
+        self,
+        profiles: Sequence[Edge | Wire],
+        spine: Edge | Wire,
+        /,
+        *,
+        frenet: bool = False,
+        approx_c1: bool = False,
+        binormal: Vector3 | None = None,
+        parallel: Vector3 | None = None,
+        discrete: bool = False,
+        solid: Literal[False],
+        transition: PipeTransition = PipeTransition.TRANSFORMED,
+    ) -> Shell: ...
+
+    @overload
+    def pipe_shell(
+        self,
+        profiles: Sequence[Edge | Wire],
+        spine: Edge | Wire,
+        /,
+        *,
+        frenet: bool = False,
+        approx_c1: bool = False,
+        binormal: Vector3 | None = None,
+        parallel: Vector3 | None = None,
+        discrete: bool = False,
+        solid: bool = True,
+        transition: PipeTransition = PipeTransition.TRANSFORMED,
+    ) -> Solid | Shell: ...
+
+    def pipe_shell(
+        self,
+        profiles: Sequence[Edge | Wire],
+        spine: Edge | Wire,
+        /,
+        *,
+        frenet: bool = False,
+        approx_c1: bool = False,
+        binormal: Vector3 | None = None,
+        parallel: Vector3 | None = None,
+        discrete: bool = False,
+        solid: bool = True,
+        transition: PipeTransition = PipeTransition.TRANSFORMED,
+    ) -> Solid | Shell:
+        values = _require_wire_parts(self, (profiles,), "pipe_shell profiles")
+        _require_pipe_spine(self, spine, "pipe_shell spine")
+        _require_bool(frenet, "pipe_shell frenet")
+        _require_bool(approx_c1, "pipe_shell approx_c1")
+        _require_bool(discrete, "pipe_shell discrete")
+        _require_bool(solid, "pipe_shell solid")
+        if not isinstance(transition, PipeTransition):
+            raise TypeError("pipe_shell transition must be PipeTransition")
+        for value, name in ((binormal, "binormal"), (parallel, "parallel")):
+            if value is not None:
+                if not isinstance(value, Vector3):
+                    raise TypeError(f"pipe_shell {name} must be Vector3 or None")
+                require_same_runtime(self, value)
+        selected_modes = sum(
+            (frenet, binormal is not None, parallel is not None, discrete)
+        )
+        if selected_modes > 1:
+            raise ValueError("pipe_shell orientation modes are mutually exclusive")
+        result_spec = SOLID_SPEC if solid else SHELL_SPEC
+        expression = self._expression(
+            ops.pipe_shell_shapes,
+            result=result_spec,
+            args=(
+                tuple(value._state for value in values),
+                spine._state,
+                frenet,
+                approx_c1,
+                None if binormal is None else binormal._state,
+                None if parallel is None else parallel._state,
+                discrete,
+                solid,
+                transition.value,
+            ),
+            operation_id="zencad.typed.pipe_shell",
+        )
+        if solid:
+            return Solid._from_state(self, expression)
+        return Shell._from_state(self, expression)
+
+    def sweep(
+        self,
+        profile: Edge | Wire,
+        path: Edge | Wire,
+        /,
+        *,
+        frenet: bool = False,
+    ) -> Solid:
+        """Compatibility spelling for a single-profile solid pipe shell."""
+        return self.pipe_shell((profile,), path, frenet=frenet)
 
     def fillet(
         self,
@@ -3307,6 +3449,16 @@ def _require_wire_parts(
     for shape in values:
         require_same_runtime(runtime, shape)
     return values
+
+
+def _require_pipe_spine(
+    runtime: Runtime,
+    spine: Edge | Wire,
+    name: str,
+) -> None:
+    if not isinstance(spine, (Edge, Wire)):
+        raise TypeError(f"{name} must be Edge or Wire")
+    require_same_runtime(runtime, spine)
 
 
 def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:

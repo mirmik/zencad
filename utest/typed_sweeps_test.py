@@ -37,6 +37,28 @@ class TypedBasicSweepsTest(unittest.TestCase):
                         smooth=True,
                         shell=True,
                     )
+                    pipe_profile = runtime.circle(1, wire=True)
+                    pipe_spine = runtime.segment(
+                        runtime.point3(0, 0, 0),
+                        runtime.point3(0, 0, 5),
+                    )
+                    piped = runtime.pipe(
+                        pipe_profile,
+                        pipe_spine,
+                        trihedron=typed.PipeTrihedron.DISCRETE,
+                    )
+                    pipe_solid = runtime.pipe_shell(
+                        (pipe_profile,),
+                        pipe_spine,
+                        transition=typed.PipeTransition.ROUND_CORNER,
+                    )
+                    pipe_surface = runtime.pipe_shell(
+                        (pipe_profile,),
+                        pipe_spine,
+                        binormal=runtime.vector3(1, 0, 0),
+                        solid=False,
+                    )
+                    swept = runtime.sweep(pipe_profile, pipe_spine, frenet=True)
 
                     observed_types.add(
                         (
@@ -46,6 +68,10 @@ class TypedBasicSweepsTest(unittest.TestCase):
                             type(partial),
                             type(lofted),
                             type(loft_shell),
+                            type(piped),
+                            type(pipe_solid),
+                            type(pipe_surface),
+                            type(swept),
                         )
                     )
                     self.assertIs(type(extruded), typed.Shape)
@@ -54,6 +80,10 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     self.assertIs(type(partial), typed.Shape)
                     self.assertIs(type(lofted), typed.Solid)
                     self.assertIs(type(loft_shell), typed.Shell)
+                    self.assertIs(type(piped), typed.Shape)
+                    self.assertIs(type(pipe_solid), typed.Solid)
+                    self.assertIs(type(pipe_surface), typed.Shell)
+                    self.assertIs(type(swept), typed.Solid)
                     if mode is EvaluationMode.DEFERRED:
                         self.assertEqual(events, [])
 
@@ -63,6 +93,10 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     self.assertAlmostEqual(partial.mass().value(), 6 * math.pi)
                     self.assertGreater(lofted.mass().value(), 0)
                     self.assertGreater(loft_shell.mass().value(), 0)
+                    self.assertGreater(piped.mass().value(), 0)
+                    self.assertAlmostEqual(pipe_solid.mass().value(), 5 * math.pi)
+                    self.assertGreater(pipe_surface.mass().value(), 0)
+                    self.assertAlmostEqual(swept.mass().value(), 5 * math.pi)
                     bounds = extruded.boundbox().value()
                     self.assertAlmostEqual(bounds.zmin, -2.0000001)
                     self.assertAlmostEqual(bounds.zmax, 2.0000001)
@@ -81,6 +115,29 @@ class TypedBasicSweepsTest(unittest.TestCase):
         self.assertAlmostEqual(extruded.mass().value(), 8)
         self.assertAlmostEqual(revolved.mass().value(), 6 * math.pi)
         self.assertTrue(events)
+
+    def test_pipe_modes_and_transitions_are_explicit(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        profile = runtime.circle(1, wire=True)
+        spine = runtime.segment(runtime.point3(), runtime.point3(0, 0, 5))
+
+        self.assertEqual(len(tuple(typed.PipeTrihedron)), 10)
+        for trihedron in typed.PipeTrihedron:
+            with self.subTest(trihedron=trihedron):
+                self.assertGreater(
+                    runtime.pipe(profile, spine, trihedron=trihedron).mass().value(),
+                    0,
+                )
+        for transition in typed.PipeTransition:
+            with self.subTest(transition=transition):
+                self.assertAlmostEqual(
+                    runtime.pipe_shell(
+                        (profile,),
+                        spine,
+                        transition=transition,
+                    ).mass().value(),
+                    5 * math.pi,
+                )
 
     def test_invalid_inputs_fail_at_the_typed_or_resolved_boundary(self):
         runtime = typed.Runtime.deferred(cache=False)
@@ -106,6 +163,34 @@ class TypedBasicSweepsTest(unittest.TestCase):
             runtime.loft(
                 (runtime.rectangle_wire(1, 2), runtime.rectangle_wire(2, 1).up(2)),
                 max_degree=0,
+            )
+        pipe_profile = runtime.circle(1, wire=True)
+        pipe_spine = runtime.segment(runtime.point3(), runtime.point3(0, 0, 5))
+        with self.assertRaisesRegex(TypeError, "trihedron must be PipeTrihedron"):
+            runtime.pipe(
+                pipe_profile,
+                pipe_spine,
+                trihedron="frenet",  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(TypeError, "spine must be Edge or Wire"):
+            runtime.pipe(pipe_profile, profile)  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.pipe(
+                pipe_profile,
+                other.segment(other.point3(), other.point3(0, 0, 5)),
+            )
+        with self.assertRaisesRegex(TypeError, "transition must be PipeTransition"):
+            runtime.pipe_shell(
+                (pipe_profile,),
+                pipe_spine,
+                transition=0,  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(ValueError, "orientation modes are mutually exclusive"):
+            runtime.pipe_shell(
+                (pipe_profile,),
+                pipe_spine,
+                frenet=True,
+                discrete=True,
             )
         with self.assertRaisesRegex(ValueError, "revol radius must be finite"):
             runtime.revol(profile, math.inf).native()

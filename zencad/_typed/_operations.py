@@ -1114,6 +1114,59 @@ def loft_shapes(
     return _loft(sections, smooth=smooth, shell=shell, maxdegree=max_degree)
 
 
+def pipe_shape(
+    profile: ResolvedShape,
+    spine: ResolvedShape,
+    trihedron: str,
+    force_approx_c1: bool,
+) -> ResolvedShape:
+    from zencad.geom.sweep import _pipe
+
+    return _pipe(
+        profile,
+        spine,
+        mode=trihedron,
+        force_approx_c1=force_approx_c1,
+    )
+
+
+def pipe_shell_shapes(
+    profiles: tuple[ResolvedShape, ...],
+    spine: ResolvedShape,
+    frenet: bool,
+    approx_c1: bool,
+    binormal: Vector3Value | None,
+    parallel: Vector3Value | None,
+    discrete: bool,
+    solid: bool,
+    transition: int,
+) -> ResolvedShape:
+    from zencad.geom.sweep import _pipe_shell
+    from zencad.util import vector3
+
+    resolved_binormal = (
+        None
+        if binormal is None
+        else vector3(binormal.x, binormal.y, binormal.z)
+    )
+    resolved_parallel = (
+        None
+        if parallel is None
+        else vector3(parallel.x, parallel.y, parallel.z)
+    )
+    return _pipe_shell(
+        profiles,
+        spine,
+        frenet=frenet,
+        approx_c1=approx_c1,
+        binormal=resolved_binormal,
+        parallel=resolved_parallel,
+        discrete=discrete,
+        solid=solid,
+        transition=transition,
+    )
+
+
 def fillet_shape(
     shape: ResolvedShape,
     radius: float,

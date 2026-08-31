@@ -23,6 +23,12 @@ try:
     from zencad.geom.face import *
     from zencad.geom.shell import *
     from zencad.geom.sweep import *
+    from zencad.geom.sweep_law import (
+        law_constant_function as law_constant_function,
+        law_corrected_frenet_trihedron as law_corrected_frenet_trihedron,
+        law_evolved_section as law_evolved_section,
+        law_spine_and_trihedron as law_spine_and_trihedron,
+    )
     from zencad.geom.boolops import *
     from zencad.geom.exttrans import *
     from zencad.geom.unify import *

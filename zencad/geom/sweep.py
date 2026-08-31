@@ -17,15 +17,6 @@ from zencad.util import deg
 from zencad.geom.operations import _restore_shapetype
 
 import zencad.geom.face as face
-import zencad.geom.curve as curve
-from zencad.geom.sweep_law import law_evolved_section, law_constant_function, law_spine_and_trihedron, law_corrected_frenet_trihedron
-
-from zencad.geom.surface import _sweep_surface
-from zencad.geom.wire import _make_edge
-from zencad.geom.face import _make_face
-from zencad.geom.shell import _make_shell
-
-import math
 
 
 def _extrude(shp, vec, center=False):
@@ -209,10 +200,15 @@ def _pipe_shell(
     mkPipeShell.SetForceApproxC1(approx_c1)
 
     if binormal is not None:
-        mkPipeShell.SetMode(binormal.Dir())
+        mkPipeShell.SetMode(gp_Dir(binormal.x, binormal.y, binormal.z))
 
     if parallel is not None:
-        mkPipeShell.SetMode(gp_Ax2(gp_Pnt(0, 0, 0), parallel.Dir()))
+        mkPipeShell.SetMode(
+            gp_Ax2(
+                gp_Pnt(0, 0, 0),
+                gp_Dir(parallel.x, parallel.y, parallel.z),
+            )
+        )
 
     if discrete:
         mkPipeShell.SetDiscreteMode()

@@ -16,6 +16,7 @@ from .records import (
     ShapeProperties,
 )
 from .runtime import Runtime
+from .sweeps import PipeTransition, PipeTrihedron
 from .surfaces import (
     Surface,
     SweepLocationLaw,
@@ -82,6 +83,8 @@ __all__ = [
     "MultiTransform",
     "Point2",
     "Point3",
+    "PipeTransition",
+    "PipeTrihedron",
     "Quaternion",
     "Runtime",
     "Scalar",

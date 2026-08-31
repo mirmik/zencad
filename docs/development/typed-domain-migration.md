@@ -657,6 +657,20 @@ operation alone creates `Law_Constant`, `GeomFill_EvolvedSection`, the
 trihedron/location laws, and `GeomFill_Sweep`; a trimmed-spine regression test
 makes the default domain choice observable.
 
+Topology sweeps use a separate explicit option algebra. `PipeTrihedron`
+replaces the legacy string-to-OCCT `geomfill_triedron_map` and names all ten
+accepted builder modes. `PipeTransition` replaces the integer transition
+flags. `Runtime.pipe()` returns a general `Shape` because OCCT's result kind
+depends on the profile, while `Runtime.pipe_shell()` returns an exact `Solid`
+or `Shell` from its `solid` policy. Its Frenet, binormal, parallel, and discrete
+orientation modes are mutually exclusive instead of silently overriding one
+another. `Runtime.sweep()` is only the characterized single-profile solid
+compatibility spelling.
+
+Binormal and parallel pipe-shell modes also repair a legacy boundary bug: the
+old code called a nonexistent `vector3.Dir()` method. Both paths now construct
+an owned `gp_Dir` explicitly, and legacy plus typed regressions exercise them.
+
 Resolved surfaces are full-precision `GeomTools_SurfaceSet` bytes with a
 deterministic value key. `Surface.from_ocp()` captures an owned snapshot and
 `native()` reconstructs a fresh mutable `Geom_Surface` on every call. The

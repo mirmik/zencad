@@ -49,6 +49,22 @@ def topology_contract(
     assert_type(face.revol(3, 1), typed.Shape)
     assert_type(runtime.loft((edge, wire)), typed.Solid)
     assert_type(runtime.loft((edge, wire), shell=True), typed.Shell)
+    assert_type(
+        runtime.pipe(wire, edge, trihedron=typed.PipeTrihedron.FRENET),
+        typed.Shape,
+    )
+    assert_type(runtime.pipe_shell((wire,), edge), typed.Solid)
+    assert_type(runtime.pipe_shell((wire,), edge, solid=False), typed.Shell)
+    assert_type(
+        runtime.pipe_shell(
+            (wire,),
+            edge,
+            binormal=runtime.vector3(1, 0, 0),
+            transition=typed.PipeTransition.ROUND_CORNER,
+        ),
+        typed.Solid,
+    )
+    assert_type(runtime.sweep(wire, edge, frenet=True), typed.Solid)
     assert_type(runtime.fillet(solid, 0.1), typed.Shape)
     assert_type(runtime.chamfer(solid, 0.1), typed.Shape)
     assert_type(runtime.fillet2d(face, 0.1), typed.Face)
