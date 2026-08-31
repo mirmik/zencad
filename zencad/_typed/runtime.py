@@ -86,6 +86,7 @@ if TYPE_CHECKING:
 
 
 ResolvedT = TypeVar("ResolvedT")
+ShapeValueT = TypeVar("ShapeValueT", bound=Shape)
 
 __all__ = [
     "Compound",
@@ -548,6 +549,73 @@ class Runtime:
             tuple(value - 1 for value in triangulation.Triangle(index).Get())
             for index in range(1, triangulation.NbTriangles() + 1)
         )
+
+    @overload
+    def sew(
+        self,
+        shapes: Sequence[Edge | Wire],
+        sort: bool = True,
+        /,
+    ) -> Wire: ...
+
+    @overload
+    def sew(
+        self,
+        shapes: Sequence[Face | Shell],
+        sort: bool = True,
+        /,
+    ) -> Shell: ...
+
+    def sew(
+        self,
+        shapes: Sequence[Edge | Wire] | Sequence[Face | Shell],
+        sort: bool = True,
+        /,
+    ) -> Wire | Shell:
+        _require_bool(sort, "sew sort")
+        values = _require_sew_shapes(self, shapes)
+        states = tuple(shape._state for shape in values)
+        if all(isinstance(shape, (Edge, Wire)) for shape in values):
+            expression = self._expression(
+                ops.sew_wire,
+                result=WIRE_SPEC,
+                args=(states, sort),
+                operation_id="zencad.typed.sew.wire",
+            )
+            return Wire._from_state(self, expression)
+        expression = self._expression(
+            ops.sew_shell,
+            result=SHELL_SPEC,
+            args=(states,),
+            operation_id="zencad.typed.sew.shell",
+        )
+        return Shell._from_state(self, expression)
+
+    def offset(self, shape: Shape, distance: ScalarInput, /) -> Shape:
+        _require_shape(self, shape, "offset")
+        return shape.offset(distance)
+
+    def thicksolid(
+        self,
+        shape: Solid,
+        thickness: ScalarInput,
+        references: Sequence[Point3],
+        /,
+    ) -> Solid:
+        if not isinstance(shape, Solid):
+            raise TypeError("thicksolid expects Solid")
+        require_same_runtime(self, shape)
+        return shape.thicksolid(thickness, references)
+
+    def shapefix_solid(self, shape: Solid, /) -> Solid:
+        if not isinstance(shape, Solid):
+            raise TypeError("shapefix_solid expects Solid")
+        require_same_runtime(self, shape)
+        return shape.shapefix_solid()
+
+    def unify(self, shape: ShapeValueT, /) -> ShapeValueT:
+        _require_shape(self, shape, "unify")
+        return shape.unify()
 
     def empty_boundary_box(self) -> BoundaryBox:
         """Return the identity value for boundary-box union."""
@@ -2697,6 +2765,24 @@ def _require_shape(runtime: Runtime, shape: Shape, name: str) -> None:
     if not isinstance(shape, Shape):
         raise TypeError(f"{name} expects Shape")
     require_same_runtime(runtime, shape)
+
+
+def _require_sew_shapes(
+    runtime: Runtime,
+    shapes: Sequence[Edge | Wire] | Sequence[Face | Shell],
+) -> tuple[Edge | Wire | Face | Shell, ...]:
+    if isinstance(shapes, (str, bytes)) or not isinstance(shapes, Sequence):
+        raise TypeError("sew expects a sequence of topology handles")
+    values = tuple(shapes)
+    if not values:
+        raise ValueError("sew requires at least one topology handle")
+    wire_family = all(isinstance(shape, (Edge, Wire)) for shape in values)
+    shell_family = all(isinstance(shape, (Face, Shell)) for shape in values)
+    if not wire_family and not shell_family:
+        raise TypeError("sew operands must all be Edge/Wire or all be Face/Shell")
+    for shape in values:
+        require_same_runtime(runtime, shape)
+    return values
 
 
 def _section_operand(

@@ -55,6 +55,16 @@ def topology_contract(
         runtime.get_nodes(mesh), tuple[tuple[float, float, float], ...]
     )
     assert_type(runtime.get_triangles(mesh), tuple[tuple[int, int, int], ...])
+    assert_type(runtime.sew((edge, wire)), typed.Wire)
+    assert_type(runtime.sew((face, shell)), typed.Shell)
+    assert_type(runtime.offset(solid, 0.1), typed.Shape)
+    assert_type(solid.offset(0.1), typed.Shape)
+    assert_type(runtime.thicksolid(solid, -0.1, (runtime.point3(),)), typed.Solid)
+    assert_type(solid.thicksolid(-0.1, (runtime.point3(),)), typed.Solid)
+    assert_type(runtime.shapefix_solid(solid), typed.Solid)
+    assert_type(solid.shapefix_solid(), typed.Solid)
+    assert_type(runtime.unify(solid), typed.Solid)
+    assert_type(solid.unify(), typed.Solid)
     points = (
         runtime.point3(0, 0, 0),
         runtime.point3(1, 0, 0),

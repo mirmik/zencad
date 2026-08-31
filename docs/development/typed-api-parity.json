@@ -1097,17 +1097,25 @@
         {
           "source": "zencad.geom.offset",
           "default": {"status": "missing", "typed": "typed topology operation {name}", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "offset": {"status": "implemented", "typed": "Runtime.offset() / Shape.offset() -> Shape"},
+            "shapefix_solid": {"status": "implemented", "typed": "Runtime.shapefix_solid() / Solid.shapefix_solid() -> Solid"},
+            "thicksolid": {"status": "implemented", "typed": "Runtime.thicksolid() / Solid.thicksolid() -> Solid"}
+          }
         },
         {
           "source": "zencad.geom.sew",
           "default": {"status": "missing", "typed": "typed sew() -> Wire | Shell", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "sew": {"status": "implemented", "typed": "Runtime.sew(Sequence[Edge | Wire]) -> Wire | Runtime.sew(Sequence[Face | Shell]) -> Shell"}
+          }
         },
         {
           "source": "zencad.geom.unify",
           "default": {"status": "missing", "typed": "typed unify() -> Shape", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "unify": {"status": "implemented", "typed": "Runtime.unify() / Shape.unify() preserves the concrete topology handle"}
+          }
         },
         {
           "source": "zencad.geom.near",

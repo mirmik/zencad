@@ -54,9 +54,9 @@ operators:
 | Transforms | 64 | 64 | 0 | 0 | 0 | 0 |
 | Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
-| Sweeps and operations | 45 | 14 | 0 | 31 | 0 | 0 |
+| Sweeps and operations | 45 | 19 | 0 | 26 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **326** | **3** | **42** | **6** | **3** |
+| **Total** | **380** | **331** | **3** | **37** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -81,6 +81,10 @@ The compatibility tranche exposes root-style fillet/chamfer entry points,
 dynamic topology restoration, and `triangulate` aliases without weakening the
 stable handle contracts. Mesh node and triangle access now returns immutable,
 zero-based rows for either `MeshData` or an explicit native triangulation.
+Offset, thick-solid construction, solid repair, sewing, and same-domain
+unification now remain inside typed expression graphs. Sewing overloads expose
+the knowable result family (`Wire` or `Shell`), while thick-solid and repair
+operations retain `Solid` and unification retains the input handle subtype.
 
 #2040 closes topology predicates, CurveAlgo queries, modeling convenience
 methods, native adaptor boundaries, structured shape properties, and immutable

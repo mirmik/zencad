@@ -25,6 +25,10 @@ from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_MakeWire,
     BRepBuilderAPI_Transform,
 )
+from OCP.BRepOffsetAPI import (
+    BRepOffsetAPI_MakeOffsetShape,
+    BRepOffsetAPI_MakeThickSolid,
+)
 from OCP.BRepTools import BRepTools
 from OCP.GC import GC_MakeArcOfCircle
 from OCP.Geom import (
@@ -36,6 +40,7 @@ from OCP.Geom import (
 from OCP.GeomAPI import GeomAPI_PointsToBSplineSurface
 from OCP.GeomAbs import GeomAbs_C2
 from OCP.ShapeFix import ShapeFix_Face, ShapeFix_Shell, ShapeFix_Solid
+from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
 from OCP.TColgp import TColgp_Array2OfPnt
 from OCP.gp import gp_Ax2, gp_Dir, gp_Pln, gp_Pnt
 from OCP.TopAbs import (
@@ -50,7 +55,7 @@ from OCP.TopAbs import (
     TopAbs_VERTEX,
 )
 from OCP.TopExp import TopExp, TopExp_Explorer
-from OCP.TopTools import TopTools_IndexedMapOfShape
+from OCP.TopTools import TopTools_IndexedMapOfShape, TopTools_ListOfShape
 from OCP.TopoDS import TopoDS_Compound, TopoDS_Shape, TopoDS_Shell, TopoDS_Wire
 
 from zencad.geom.shape import Shape as ResolvedShape
@@ -1146,6 +1151,90 @@ def chamfer2d_shape(
     if result.IsNull():
         raise ValueError("chamfer2d construction failed")
     return ResolvedShape(result)
+
+
+def offset_shape(shape: ResolvedShape, distance: float) -> ResolvedShape:
+    algorithm = BRepOffsetAPI_MakeOffsetShape()
+    algorithm.PerformByJoin(shape.Shape(), distance, 1e-6)
+    algorithm.Build()
+    if not algorithm.IsDone() or algorithm.Shape().IsNull():
+        raise ValueError(f"offset failed for distance {distance}")
+    return ResolvedShape(algorithm.Shape())
+
+
+def thicksolid_shape(
+    shape: ResolvedShape,
+    thickness: float,
+    references: tuple[Point3Value, ...],
+) -> ResolvedShape:
+    from zencad.geom.near import _near_face
+
+    faces_to_remove = TopTools_ListOfShape()
+    for reference in _legacy_points(references) or ():
+        faces_to_remove.Append(_near_face(shape, reference).Face())
+    algorithm = BRepOffsetAPI_MakeThickSolid()
+    algorithm.MakeThickSolidByJoin(
+        shape.Shape(),
+        faces_to_remove,
+        thickness,
+        1e-3,
+    )
+    if not algorithm.IsDone() or algorithm.Shape().IsNull():
+        raise ValueError(
+            f"thicksolid failed for thickness {thickness} and "
+            f"{len(references)} face references"
+        )
+    return ResolvedShape(algorithm.Shape())
+
+
+def shapefix_solid_shape(shape: ResolvedShape) -> ResolvedShape:
+    fixer = ShapeFix_Solid(as_solid(shape.Shape()))
+    fixer.Perform()
+    result = fixer.Solid()
+    if result.IsNull():
+        raise ValueError("shapefix_solid produced a null Solid")
+    return ResolvedShape(result)
+
+
+def unify_shape(shape: ResolvedShape) -> ResolvedShape:
+    algorithm = ShapeUpgrade_UnifySameDomain(shape.Shape(), True, True, True)
+    algorithm.Build()
+    result = algorithm.Shape()
+    if result.IsNull():
+        raise ValueError("unify produced a null Shape")
+    return ResolvedShape(result)
+
+
+def sew_wire(
+    shapes: tuple[ResolvedShape, ...],
+    sort: bool,
+) -> ResolvedShape:
+    from zencad.geom.sew import _sew_wire
+
+    try:
+        result = _sew_wire(list(shapes), sort=sort)
+    except Exception as error:
+        raise ValueError(
+            f"sew could not connect {len(shapes)} Edge/Wire operands"
+        ) from error
+    if result.Shape().IsNull():
+        raise ValueError("sew produced a null Wire")
+    return result
+
+
+def sew_shell(shapes: tuple[ResolvedShape, ...]) -> ResolvedShape:
+    faces: list[ResolvedShape] = []
+    for shape in shapes:
+        if shape.Shape().ShapeType() == TopAbs_FACE:
+            faces.append(shape)
+        else:
+            faces.extend(shape.faces())
+    try:
+        return make_shell(tuple(faces))
+    except Exception as error:
+        raise ValueError(
+            f"sew could not connect {len(shapes)} Face/Shell operands"
+        ) from error
 
 
 def sequence_item(sequence: tuple[ResolvedShape, ...], index: int) -> ResolvedShape:

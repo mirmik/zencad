@@ -892,6 +892,24 @@ class Shape(Handle[ResolvedShape]):
         """Recover a precise topology handle when exactly one subtype exists."""
         return self.runtime.restore_shapetype(self)
 
+    def offset(self, distance: ScalarInput, /) -> Shape:
+        expression = self.runtime._expression(
+            ops.offset_shape,
+            result=SHAPE_SPEC,
+            args=(self._state, _scalar_state(self.runtime, distance)),
+            operation_id="zencad.typed.shape.offset",
+        )
+        return Shape._from_state(self.runtime, expression)
+
+    def unify(self: ShapeT) -> ShapeT:
+        expression = self.runtime._expression(
+            ops.unify_shape,
+            result=self._result_spec,
+            args=(self._state,),
+            operation_id="zencad.typed.shape.unify",
+        )
+        return type(self)._from_state(self.runtime, expression)
+
     def edges(self) -> DeferredSequence[Edge]:
         return self._topology_query(
             ops.edges,
@@ -1121,6 +1139,35 @@ class Shell(Shape):
 class Solid(Shape):
     __slots__ = ()
     _result_spec = SOLID_SPEC
+
+    def thicksolid(
+        self,
+        thickness: ScalarInput,
+        references: Sequence[Point3],
+        /,
+    ) -> Solid:
+        reference_states = self._reference_states(references, "thicksolid")
+        assert reference_states is not None
+        expression = self.runtime._expression(
+            ops.thicksolid_shape,
+            result=SOLID_SPEC,
+            args=(
+                self._state,
+                _scalar_state(self.runtime, thickness),
+                reference_states,
+            ),
+            operation_id="zencad.typed.solid.thicksolid",
+        )
+        return Solid._from_state(self.runtime, expression)
+
+    def shapefix_solid(self) -> Solid:
+        expression = self.runtime._expression(
+            ops.shapefix_solid_shape,
+            result=SOLID_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.solid.shapefix",
+        )
+        return Solid._from_state(self.runtime, expression)
 
     def native(self) -> TopoDS_Solid:
         return as_solid(super().native())

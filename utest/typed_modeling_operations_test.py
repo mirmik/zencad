@@ -120,5 +120,76 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
         self.assertEqual(runtime.get_triangles(native), mesh.triangles)
 
 
+class TypedOffsetSewUnifyTest(unittest.TestCase):
+    def test_sew_returns_precise_wire_and_shell_handles(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        points = (
+            runtime.point3(0, 0, 0),
+            runtime.point3(1, 0, 0),
+            runtime.point3(1, 1, 0),
+        )
+        edges = (
+            runtime.segment(points[1], points[2]),
+            runtime.segment(points[0], points[1]),
+        )
+        wire = runtime.sew(edges)
+        shell = runtime.sew((runtime.box(1).faces()[0],))
+
+        self.assertIs(type(wire), typed.Wire)
+        self.assertEqual(len(wire.edges()), 2)
+        self.assertIs(type(shell), typed.Shell)
+        self.assertEqual(len(shell.faces()), 1)
+
+    def test_offset_thicksolid_shapefix_and_unify(self):
+        for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
+            for cache in (False, True):
+                with self.subTest(mode=mode, cache=cache):
+                    runtime = typed.Runtime(
+                        mode=mode,
+                        cache=cache,
+                        cache_store=MemoryCacheStore(),
+                    )
+                    solid = runtime.box(4)
+
+                    offset = runtime.offset(solid, 0.25)
+                    thick = runtime.thicksolid(
+                        solid,
+                        -0.25,
+                        (runtime.point3(2, 2, 4),),
+                    )
+                    fixed = runtime.shapefix_solid(solid)
+                    unified = runtime.unify(solid)
+
+                    self.assertIs(type(offset), typed.Shape)
+                    self.assertGreater(float(offset.mass()), float(solid.mass()))
+                    self.assertIs(type(thick), typed.Solid)
+                    self.assertGreater(float(thick.mass()), 0)
+                    self.assertIs(type(fixed), typed.Solid)
+                    self.assertAlmostEqual(float(fixed.mass()), float(solid.mass()))
+                    self.assertIs(type(unified), typed.Solid)
+                    self.assertAlmostEqual(
+                        float(unified.mass()),
+                        float(solid.mass()),
+                    )
+
+    def test_modeling_boundaries_reject_mixed_or_wrong_runtime_inputs(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        other = typed.Runtime.deferred(cache=False)
+
+        with self.assertRaisesRegex(ValueError, "at least one"):
+            runtime.sew(())
+        with self.assertRaisesRegex(TypeError, "all be"):
+            runtime.sew(  # type: ignore[arg-type]
+                (
+                    runtime.segment(runtime.point3(), runtime.point3(1, 0, 0)),
+                    runtime.rectangle(1, 1),
+                )
+            )
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.sew((other.rectangle(1, 1),))
+        with self.assertRaisesRegex(TypeError, "expects Solid"):
+            runtime.thicksolid(runtime.rectangle(1, 1), 0.1, ())  # type: ignore[arg-type]
+
+
 if __name__ == "__main__":
     unittest.main()
