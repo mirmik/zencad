@@ -158,6 +158,10 @@ class MeshData(Handle[ops.MeshValue]):
     def native(self) -> Poly_Triangulation:
         return ops.mesh_to_poly_triangulation(self._resolved())
 
+    def mesh_to_poly_triangulation(self) -> Poly_Triangulation:
+        """Legacy spelling for the explicit native triangulation boundary."""
+        return self.native()
+
     def to_numpy(self) -> MeshArrayRecord:
         value = self._resolved()
         return MeshArrayRecord(

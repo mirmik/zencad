@@ -55,6 +55,8 @@ def topology_contract(
         runtime.get_nodes(mesh), tuple[tuple[float, float, float], ...]
     )
     assert_type(runtime.get_triangles(mesh), tuple[tuple[int, int, int], ...])
+    assert_type(runtime.to_brep(shape, "shape.brep"), None)
+    assert_type(runtime.from_brep("shape.brep"), typed.Shape)
     assert_type(runtime.sew((edge, wire)), typed.Wire)
     assert_type(runtime.sew((face, shell)), typed.Shell)
     assert_type(runtime.offset(solid, 0.1), typed.Shape)

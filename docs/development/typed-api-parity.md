@@ -55,8 +55,8 @@ operators:
 | Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
 | Sweeps and operations | 45 | 29 | 0 | 16 | 0 | 0 |
-| Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **341** | **3** | **27** | **6** | **3** |
+| Mesh, convert, display | 18 | 5 | 0 | 11 | 0 | 2 |
+| **Total** | **380** | **344** | **0** | **27** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -90,6 +90,12 @@ fail explicitly when that topology is absent. Curve projection returns a
 `CurveProjection` record containing graph-preserving point, parameter, and
 distance handles. With this tranche, every non-sweep operation owned by #2043
 is implemented; the remaining rows in this family belong to the sweep tasks.
+
+The first #2044 tranche makes BREP file round-trips and native mesh conversion
+explicit typed boundaries. `Runtime.from_brep()` snapshots imported topology
+into a stable `Shape`; `Runtime.to_brep()` materializes only for the write.
+`MeshData.mesh_to_poly_triangulation()` and its Runtime adapter return fresh
+native triangulations without exposing mutable mesh state.
 
 #2040 closes topology predicates, CurveAlgo queries, modeling convenience
 methods, native adaptor boundaries, structured shape properties, and immutable

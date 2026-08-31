@@ -1164,15 +1164,15 @@
             "DEFAULT_MESH_DISPLAY_MODE": {"status": "unchanged", "typed": "DEFAULT_MESH_DISPLAY_MODE"},
             "MeshData": {"typed": "MeshData"},
             "to_mesh": {"typed": "Shape.to_mesh() -> MeshData"},
-            "mesh_to_poly_triangulation": {"status": "partial", "typed": "MeshData.native() compatibility adapter", "materialization": "native()"}
+            "mesh_to_poly_triangulation": {"status": "implemented", "typed": "Runtime.mesh_to_poly_triangulation() / MeshData.mesh_to_poly_triangulation() / MeshData.native()", "materialization": "native()"}
           }
         },
         {
           "source": "zencad.convert.api",
           "default": {"status": "missing", "typed": "typed Shape import/export adapter {name}", "materialization": "file/string I/O materializes the domain value"},
           "overrides": {
-            "to_brep": {"status": "partial", "typed": "Shape.native() plus BREP writer"},
-            "from_brep": {"status": "partial", "typed": "Shape.from_ocp() plus BREP reader"}
+            "to_brep": {"status": "implemented", "typed": "Runtime.to_brep(Shape, path) -> None"},
+            "from_brep": {"status": "implemented", "typed": "Runtime.from_brep(path) -> Shape"}
           }
         },
         {

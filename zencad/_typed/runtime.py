@@ -10,9 +10,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 import math
 from os import PathLike
+from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Literal, TypeVar, cast, overload
 
-from OCP.TopoDS import TopoDS_Vertex
+from OCP.TopoDS import TopoDS_Shape, TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
@@ -27,7 +28,7 @@ from evalcache.v2 import (
     ResultSpec,
 )
 
-from zencad.occ_compat import vertex_point
+from zencad.occ_compat import read_brep, vertex_point, write_brep
 
 from . import _operations as ops
 from . import _bound_operations as bound_ops
@@ -549,6 +550,31 @@ class Runtime:
             tuple(value - 1 for value in triangulation.Triangle(index).Get())
             for index in range(1, triangulation.NbTriangles() + 1)
         )
+
+    def mesh_to_poly_triangulation(
+        self,
+        mesh: MeshData,
+        /,
+    ) -> Poly_Triangulation:
+        if not isinstance(mesh, MeshData):
+            raise TypeError("mesh_to_poly_triangulation expects MeshData")
+        require_same_runtime(self, mesh)
+        return mesh.mesh_to_poly_triangulation()
+
+    def to_brep(self, shape: Shape, path: str | PathLike[str], /) -> None:
+        """Materialize and write a typed Shape at an explicit file boundary."""
+        _require_shape(self, shape, "to_brep")
+        resolved_path = str(Path(path).expanduser())
+        if not write_brep(shape.native(), resolved_path):
+            raise OSError(f"Failed to write BREP file: {resolved_path}")
+
+    def from_brep(self, path: str | PathLike[str], /) -> Shape:
+        """Read a BREP snapshot without retaining mutable native ownership."""
+        resolved_path = str(Path(path).expanduser())
+        native = TopoDS_Shape()
+        if not read_brep(native, resolved_path):
+            raise OSError(f"Failed to read BREP file: {resolved_path}")
+        return Shape.from_ocp(native, runtime=self)
 
     @overload
     def sew(
