@@ -1142,13 +1142,9 @@ class Edge(Shape):
     _result_spec = EDGE_SPEC
 
     def curve(self) -> Curve:
-        state = self.runtime._value_state(
-            ops.edge_curve,
-            result=CURVE_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.edge.curve",
-        )
-        return Curve._from_state(self.runtime, state)
+        from .curve_constructors import _edge_curve
+
+        return _edge_curve(self)
 
     def native(self) -> TopoDS_Edge:
         return as_edge(super().native())

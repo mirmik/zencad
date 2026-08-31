@@ -7,6 +7,7 @@ from OCP.GeomAdaptor import GeomAdaptor_Curve
 from OCP.TopAbs import TopAbs_EDGE, TopAbs_WIRE
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 def _points(runtime: typed.Runtime) -> tuple[typed.Point3, ...]:
@@ -19,6 +20,125 @@ def _points(runtime: typed.Runtime) -> tuple[typed.Point3, ...]:
 
 
 class TypedCurveWireConstructorsTest(unittest.TestCase):
+    def test_curve_and_wire_family_is_declared_at_module_level(self):
+        for name in (
+            "line",
+            "circle_curve",
+            "ellipse_curve",
+            "interpolate_curve",
+            "bezier_curve",
+            "bspline_curve",
+            "make_edge",
+            "circle_arc",
+            "make_wire",
+            "rounded_polysegment",
+            "helix",
+            "segment2",
+            "ellipse2",
+            "trim_curve2",
+            "segment",
+            "polysegment",
+        ):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        points = _points(runtime)
+        with using_runtime(runtime):
+            line = typed.line(points[0], runtime.vector3(1, 0, 0))
+            circle = typed.circle_curve(2)
+            ellipse = typed.ellipse_curve(2, 1)
+            interpolated = typed.interpolate_curve(points)
+            bezier = typed.bezier_curve(points[:3])
+            bspline = typed.bspline_curve(points, (0, 0.5, 1), (3, 1, 3), 2)
+            edge = typed.make_edge(circle)
+            arc = typed.circle_arc(points[0], points[1], points[2])
+            segment = typed.segment(points[0], points[1])
+            wire = typed.make_wire(segment)
+            rounded = typed.rounded_polysegment(points, 0.2)
+            helix = typed.helix(2, 5, step=1)
+            curve2 = typed.segment2(runtime.point2(0, 0), runtime.point2(1, 0))
+            ellipse2 = typed.ellipse2(2, 1)
+            trimmed2 = typed.trim_curve2(curve2, 0, 1)
+            polyline = typed.polysegment(points)
+            transformed = circle.transform(runtime.moveX(1))
+            trimmed_edge = line.trimmed_edge(0, 1)
+            method_edge = line.edge()
+            rotated2 = curve2.rotate(0.5)
+            method_trimmed2 = curve2.trim(0, 1)
+            recovered_curve = edge.curve()
+            aliases = (
+                typed.interpolate(points),
+                typed.bezier(points),
+                typed.bspline(points, (0, 1), (3, 3), 2),
+            )
+
+        values = (
+            line,
+            circle,
+            ellipse,
+            interpolated,
+            bezier,
+            bspline,
+            edge,
+            arc,
+            segment,
+            wire,
+            rounded,
+            helix,
+            curve2,
+            ellipse2,
+            trimmed2,
+            polyline,
+        )
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertTrue(all(value.runtime is runtime for value in aliases))
+        self.assertEqual(events, [])
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.line",
+                "zencad.typed.circle_curve",
+                "zencad.typed.ellipse_curve",
+                "zencad.typed.interpolate_curve",
+                "zencad.typed.bezier_curve",
+                "zencad.typed.bspline_curve",
+                "zencad.typed.make_edge",
+                "zencad.typed.circle_arc",
+                "zencad.typed.segment",
+                "zencad.typed.make_wire",
+                "zencad.typed.rounded_polysegment",
+                "zencad.typed.helix",
+                "zencad.typed.segment2",
+                "zencad.typed.ellipse2",
+                "zencad.typed.trim_curve2",
+                "zencad.typed.polysegment",
+            ),
+        )
+        self.assertEqual(
+            (
+                transformed._state.operation_id,
+                trimmed_edge._state.operation_id,
+                method_edge._state.operation_id,
+                rotated2._state.operation_id,
+                method_trimmed2._state.operation_id,
+                recovered_curve._state.operation_id,
+            ),
+            (
+                "zencad.typed.curve.transform",
+                "zencad.typed.curve.trimmed_edge",
+                "zencad.typed.make_edge",
+                "zencad.typed.curve2.rotate",
+                "zencad.typed.trim_curve2",
+                "zencad.typed.edge.curve",
+            ),
+        )
+        self.assertTrue(all(type(value) is typed.Edge for value in aliases))
+
     def test_curve_and_wire_factories_are_policy_independent(self):
         observed_types = set()
 

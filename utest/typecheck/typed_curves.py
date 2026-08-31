@@ -61,3 +61,34 @@ def curve_contract(runtime: typed.Runtime) -> None:
     assert_type(trimmed.range(), typed.Interval)
     assert_type(circle.unlazy(), typed.Curve)
     assert_type(trimmed.unlazy(), typed.Curve2)
+
+
+def module_curve_contract(runtime: typed.Runtime) -> None:
+    origin = runtime.point3(0, 0, 0)
+    second = runtime.point3(1, 0, 0)
+    third = runtime.point3(1, 1, 0)
+    points = (origin, second, third)
+
+    line = assert_type(typed.line(origin, runtime.vector3(1, 0, 0)), typed.Curve)
+    circle = assert_type(typed.circle_curve(2), typed.Curve)
+    assert_type(typed.ellipse_curve(2, 1), typed.Curve)
+    assert_type(typed.interpolate_curve(points), typed.Curve)
+    assert_type(typed.interpolate(points), typed.Edge)
+    assert_type(typed.bezier_curve(points), typed.Curve)
+    assert_type(typed.bezier(points), typed.Edge)
+    assert_type(typed.bspline_curve(points, (0, 1), (3, 3), 2), typed.Curve)
+    assert_type(typed.bspline(points, (0, 1), (3, 3), 2), typed.Edge)
+    edge = assert_type(typed.make_edge(circle), typed.Edge)
+    assert_type(typed.circle_arc(*points), typed.Edge)
+    assert_type(typed.segment(origin, second), typed.Edge)
+    assert_type(typed.make_wire(edge), typed.Wire)
+    assert_type(typed.polysegment(points), typed.Wire)
+    assert_type(typed.rounded_polysegment(points, 0.1), typed.Wire)
+    assert_type(typed.helix(1, 2, step=0.5), typed.Wire)
+    curve2 = assert_type(
+        typed.segment2(runtime.point2(0, 0), runtime.point2(1, 0)),
+        typed.Curve2,
+    )
+    assert_type(typed.ellipse2(2, 1), typed.Curve2)
+    assert_type(typed.trim_curve2(curve2, 0, 1), typed.Curve2)
+    assert_type(line.edge(), typed.Edge)

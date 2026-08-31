@@ -1027,6 +1027,21 @@ so one decorated topology transform can preserve the receiver's exact
 `Vertex`/`Edge`/`Wire`/`Face`/`Shell`/`Solid`/`Compound` cache type. This is
 adapter plumbing in ZenCad; evalcache itself did not require a change.
 
+Task #2068 extracts the curve and wire constructor family. Module-level
+declarations in `_typed/curve_constructors.py` now own line, circle, ellipse,
+interpolation, Bezier and B-spline curves; edge, arc, segment, wire,
+polysegment, rounded-polysegment and helix construction; and the related 2D
+curve constructors. The historical edge-returning interpolation, Bezier and
+B-spline spellings remain lightweight compositions over those declarations.
+
+`Curve`, `Curve2`, and `Edge` graph-building methods delegate to the same
+declarations, while `Runtime` keeps only evaluator-selecting compatibility
+forwarders. Existing operation IDs and result specs are unchanged, including
+literal folding for extracting a curve from an already materialized edge.
+Resolved geometry remains in `_curve_operations.py` and the existing topology
+backend module; argument normalization has moved out of `Runtime` with the
+declarations.
+
 The public root `zencad.box` is intentionally not switched independently:
 doing that before the neighboring transforms, booleans, and queries move would
 create a mixed legacy/typed object graph. Public replacement proceeds by a
@@ -1039,14 +1054,24 @@ No evalcache change is required for this checkpoint. ZenCad consumes
 types from the canonical top-level package; a future evaluator-binding helper
 could reduce adapter plumbing but is not a migration blocker.
 
-Verification on 2026-09-01 after this checkpoint:
+The release dependency remains the separate #2019 gate: published evalcache
+1.15.1 does not yet export that top-level v2 API, while the local 2.0.0a1
+checkout does. The extraction therefore needs no evalcache source change, but
+a standalone ZenCad install cannot drop the local checkout until v2 is
+published and the dependency constraint is updated.
 
-- all 376 tests pass;
+Verification on 2026-09-01 after the curve/wire checkpoint:
+
+- the headless runner passes its isolated 3-test and 13-test groups plus 361
+  discovered tests (377 total);
 - strict mypy with `--disallow-any-expr` passes all 16 representative typed
   contracts;
 - the decorator tests cover module declaration, Runtime forwarding, operation
-  identity, immediate literal folding, cross-runtime rejection, and both bare
-  compatibility decorators.
+  identity, immediate literal folding, cross-runtime rejection, both bare
+  compatibility decorators, and the curve/wire module declarations;
+- targeted Ruff and diff-integrity checks pass, and a clean wheel installed
+  with the local evalcache 2.0.0a1 checkout exercises both direct module
+  declarations and Runtime forwarding outside the ZenCad checkout.
 
 ## Stage 8: typing and cleanup
 

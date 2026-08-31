@@ -309,20 +309,9 @@ class Curve(Handle[ops.CurveValue]):
         return Scalar._from_state(self.runtime, state)
 
     def trimmed_edge(self, start: ScalarInput, end: ScalarInput, /) -> Edge:
-        from . import _operations as topology_ops
-        from .topology import EDGE_SPEC, Edge
+        from .curve_constructors import _curve_trimmed_edge
 
-        expression = self.runtime._expression(
-            topology_ops.curve_trimmed_edge,
-            result=EDGE_SPEC,
-            args=(
-                self._state,
-                _scalar_state(self.runtime, start),
-                _scalar_state(self.runtime, end),
-            ),
-            operation_id="zencad.typed.curve.trimmed_edge",
-        )
-        return Edge._from_state(self.runtime, expression)
+        return _curve_trimmed_edge(self, start, end)
 
     def uniform(
         self,
@@ -372,21 +361,14 @@ class Curve(Handle[ops.CurveValue]):
         interval: Interval | tuple[ScalarInput, ScalarInput] | None = None,
         /,
     ) -> Edge:
-        return self.runtime.make_edge(self, interval)
+        from .curve_constructors import make_edge
+
+        return make_edge(self, interval)
 
     def transform(self, transformation: Transform, /) -> Curve:
-        from .transforms import Transform
+        from .curve_constructors import _curve_transform
 
-        if not isinstance(transformation, Transform):
-            raise TypeError("Curve.transform expects Transform")
-        require_same_runtime(self.runtime, transformation)
-        expression = self.runtime._expression(
-            ops.curve_transform,
-            result=CURVE_SPEC,
-            args=(self._state, transformation._state),
-            operation_id="zencad.typed.curve.transform",
-        )
-        return Curve._from_state(self.runtime, expression)
+        return _curve_transform(self, transformation)
 
     def native(self) -> Geom_Curve:
         """Materialize an independent mutable OCP curve snapshot."""
@@ -472,16 +454,14 @@ class Curve2(Handle[ops.Curve2Value]):
         )
 
     def trim(self, start: ScalarInput, end: ScalarInput, /) -> Curve2:
-        return self.runtime.trim_curve2(self, start, end)
+        from .curve_constructors import trim_curve2
+
+        return trim_curve2(self, start, end)
 
     def rotate(self, angle: ScalarInput, /) -> Curve2:
-        expression = self.runtime._expression(
-            ops.curve2_rotate,
-            result=CURVE2_SPEC,
-            args=(self._state, _scalar_state(self.runtime, angle)),
-            operation_id="zencad.typed.curve2.rotate",
-        )
-        return Curve2._from_state(self.runtime, expression)
+        from .curve_constructors import _curve2_rotate
+
+        return _curve2_rotate(self, angle)
 
     def native(self) -> Geom2d_Curve:
         """Materialize an independent mutable OCP curve snapshot."""

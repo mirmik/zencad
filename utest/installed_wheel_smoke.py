@@ -16,6 +16,7 @@ from zencad.scene_draft import SceneDraft
 import zencad
 from zencad import _typed as typed
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
+from zencad.operation import DomainOperation, using_runtime
 
 
 def main():
@@ -49,6 +50,17 @@ def main():
         assert stl_path.stat().st_size > 0
 
         typed_runtime = typed.Runtime.deferred(cache=False)
+        assert isinstance(typed.circle_curve, DomainOperation)
+        assert isinstance(typed.make_wire, DomainOperation)
+        with using_runtime(typed_runtime):
+            module_curve = typed.circle_curve(2)
+            module_segment = typed.segment(
+                typed_runtime.point3(0, 0, 0),
+                typed_runtime.point3(1, 0, 0),
+            )
+            module_wire = typed.make_wire(module_segment)
+        assert type(module_curve) is typed.Curve
+        assert type(module_wire) is typed.Wire
         curve = typed_runtime.circle_curve(2)
         curve2 = typed_runtime.segment2(
             typed_runtime.point2(0, 0),
