@@ -1172,7 +1172,12 @@
           "default": {"status": "missing", "typed": "typed Shape import/export adapter {name}", "materialization": "file/string I/O materializes the domain value"},
           "overrides": {
             "to_brep": {"status": "implemented", "typed": "Runtime.to_brep(Shape, path) -> None"},
-            "from_brep": {"status": "implemented", "typed": "Runtime.from_brep(path) -> Shape"}
+            "from_brep": {"status": "implemented", "typed": "Runtime.from_brep(path) -> Shape"},
+            "to_stl": {"status": "implemented", "typed": "Runtime.to_stl(Shape, path, deflection) -> bool"},
+            "to_svg": {"status": "implemented", "typed": "Runtime.to_svg(Shape, path, color, mapping) -> None"},
+            "to_svg_string": {"status": "implemented", "typed": "Runtime.to_svg_string(Shape, color, mapping) -> str"},
+            "from_svg": {"status": "implemented", "typed": "Runtime.from_svg(path) -> Shape"},
+            "from_svg_string": {"status": "implemented", "typed": "Runtime.from_svg_string(str) -> Shape"}
           }
         },
         {

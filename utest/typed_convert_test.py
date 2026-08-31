@@ -41,6 +41,40 @@ class TypedBrepBoundaryTest(unittest.TestCase):
                 runtime.from_brep(missing)
 
 
+class TypedStlSvgBoundaryTest(unittest.TestCase):
+    def test_stl_and_svg_exports_use_explicit_owned_snapshots(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        source = runtime.rectangle(4, 3)
+        with TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            stl_path = root / "shape.stl"
+            svg_path = root / "shape.svg"
+
+            self.assertTrue(runtime.to_stl(runtime.box(1), stl_path, 0.1))
+            svg = runtime.to_svg_string(source)
+            self.assertIs(type(svg), str)
+            self.assertIn("<svg", svg)
+            self.assertIsNone(runtime.to_svg(source, svg_path))
+
+            from_string = runtime.from_svg_string(svg)
+            from_file = runtime.from_svg(svg_path)
+            self.assertIs(type(from_string), typed.Shape)
+            self.assertIs(type(from_file), typed.Shape)
+            self.assertEqual(len(from_string.edges()), 4)
+            self.assertEqual(len(from_file.edges()), 4)
+            self.assertGreater(stl_path.stat().st_size, 0)
+            self.assertGreater(svg_path.stat().st_size, 0)
+
+    def test_convert_inputs_are_validated_at_the_typed_boundary(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        with self.assertRaisesRegex(ValueError, "deflection"):
+            runtime.to_stl(runtime.box(1), "unused.stl", 0)
+        with self.assertRaisesRegex(TypeError, "expects str"):
+            runtime.from_svg_string(b"<svg/>")  # type: ignore[arg-type]
+        with self.assertRaisesRegex(TypeError, "mapping must be bool"):
+            runtime.to_svg_string(runtime.rectangle(1, 1), mapping=1)  # type: ignore[arg-type]
+
+
 class TypedMeshCompatibilityBoundaryTest(unittest.TestCase):
     def test_mesh_native_aliases_return_fresh_triangulations(self):
         runtime = typed.Runtime.deferred(cache=False)
