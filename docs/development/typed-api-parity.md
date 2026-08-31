@@ -55,8 +55,8 @@ operators:
 | Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
 | Sweeps and operations | 45 | 29 | 0 | 16 | 0 | 0 |
-| Mesh, convert, display | 18 | 10 | 0 | 6 | 0 | 2 |
-| **Total** | **380** | **349** | **0** | **22** | **6** | **3** |
+| Mesh, convert, display | 18 | 16 | 0 | 0 | 0 | 2 |
+| **Total** | **380** | **355** | **0** | **16** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -100,6 +100,11 @@ STL and SVG file/string adapters now share the same explicit boundary model.
 Exports operate on isolated native snapshots, while SVG imports snapshot the
 legacy parser result into the receiving Runtime. Paths, meshing controls, and
 mapping policy are validated before file or native work begins.
+Managed and direct display scenes now accept typed `Shape`, `MeshData`, and
+`Point3` handles. Managed drafts retain the handles until snapshot encoding;
+direct scenes convert them only while constructing the interactive renderer
+object. No typed geometry module imports Qt, and the existing display aliases
+and highlighting functions preserve their compatibility behavior.
 
 #2040 closes topology predicates, CurveAlgo queries, modeling convenience
 methods, native adaptor boundaries, structured shape properties, and immutable

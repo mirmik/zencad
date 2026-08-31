@@ -1188,7 +1188,14 @@
             "ANIMATE_THREAD": "private runtime state"
           },
           "default": {"status": "missing", "typed": "display adapter accepting typed handles for {name}", "materialization": "display transport is an explicit materialization boundary"},
-          "overrides": {}
+          "overrides": {
+            "disp": {"status": "implemented", "typed": "disp() accepts typed Shape, MeshData, and Point3"},
+            "display": {"status": "implemented", "typed": "display() accepts typed Shape, MeshData, and Point3"},
+            "highlight": {"status": "implemented", "typed": "highlight() accepts and returns typed handles"},
+            "hl": {"status": "implemented", "typed": "hl() accepts and returns typed handles"},
+            "managed_scene": {"status": "implemented", "typed": "managed_scene() retains typed sources until snapshot transport"},
+            "show": {"status": "implemented", "typed": "show() publishes typed managed-scene sources at the transport boundary"}
+          }
         }
       ]
     }

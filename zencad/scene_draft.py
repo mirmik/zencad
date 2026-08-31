@@ -22,6 +22,9 @@ from zencad.geom.shape import Shape
 from zencad.geom.mesh import MeshData, normalize_mesh_display_mode
 from zencad.geom.trans import Transformation
 from zencad.geom.transformable import Transformable
+from zencad._typed.meshes import MeshData as TypedMeshData
+from zencad._typed.topology import Shape as TypedShape
+from zencad._typed.values import Point3 as TypedPoint3
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
@@ -250,7 +253,7 @@ class SceneDraft:
                     "display_mode is only supported for mesh objects"
                 )
             return self._add_assembly(obj)
-        if isinstance(obj, (Shape, TopoDS_Shape)):
+        if isinstance(obj, (Shape, TopoDS_Shape, TypedShape)):
             if display_mode is not None:
                 raise SceneDraftError(
                     "display_mode is only supported for mesh objects"
@@ -262,7 +265,7 @@ class SceneDraft:
             visible = True
             border_color = default_border_color()
             wire_color = default_wire_color()
-        elif isinstance(obj, MeshData):
+        elif isinstance(obj, (MeshData, TypedMeshData)):
             kind = "mesh"
             source = obj
             display_mode = normalize_mesh_display_mode(display_mode)
@@ -271,13 +274,13 @@ class SceneDraft:
             visible = True
             border_color = default_border_color()
             wire_color = default_wire_color()
-        elif isinstance(obj, point3):
+        elif isinstance(obj, (point3, TypedPoint3)):
             if display_mode is not None:
                 raise SceneDraftError(
                     "display_mode is only supported for mesh objects"
                 )
             kind = "point"
-            source = tuple(float(component) for component in obj)
+            source = obj
             object_color = _color(color, default_point_color)
             location = nulltrans()
             visible = True
@@ -378,11 +381,23 @@ class SceneDraft:
         records = []
         for obj in self._objects.values():
             if obj.kind == "brep":
-                payload = encode_brep(obj.source)
+                payload = encode_brep(
+                    obj.source.native()
+                    if isinstance(obj.source, TypedShape)
+                    else obj.source
+                )
             elif obj.kind == "mesh":
-                payload = encode_mesh(obj.source)
+                payload = (
+                    obj.source.display_payload()
+                    if isinstance(obj.source, TypedMeshData)
+                    else encode_mesh(obj.source)
+                )
             else:
-                payload = encode_json_payload(obj.source)
+                payload = encode_json_payload(
+                    obj.source.value()
+                    if isinstance(obj.source, TypedPoint3)
+                    else obj.source
+                )
             properties = {
                 "visible": obj.visible,
                 "color": _color_tuple(obj.color),

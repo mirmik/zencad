@@ -26,7 +26,30 @@ from zencad.geom.shape import Shape
 from zencad.geom.mesh import MeshData
 
 
+def _typed_display_value(obj):
+    """Materialize typed handles only at the direct viewer boundary."""
+    from zencad._typed.meshes import MeshData as TypedMeshData
+    from zencad._typed.topology import Shape as TypedShape
+    from zencad._typed.values import Point3 as TypedPoint3
+
+    if isinstance(obj, TypedShape):
+        return Shape(obj.native())
+    if isinstance(obj, TypedMeshData):
+        value = obj.value()
+        return MeshData(
+            positions=list(value.positions),
+            normals=list(value.normals),
+            triangles=list(value.triangles),
+            triangle_face_ids=list(value.triangle_face_ids),
+            dropped_triangles=value.dropped_triangles,
+        )
+    if isinstance(obj, TypedPoint3):
+        return point3(*obj.value())
+    return obj
+
+
 def create_interactive_object(obj, color=None, display_mode=None):
+    obj = _typed_display_value(obj)
     if isinstance(obj, InteractiveObject):
         return obj
 
