@@ -7,7 +7,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from OCP.Geom import Geom_Surface
-from evalcache.v2 import Expression, ResultSpec
+from evalcache import Expression, ResultSpec
 
 from . import _surface_operations as ops
 from ._core import Handle, State, require_same_runtime

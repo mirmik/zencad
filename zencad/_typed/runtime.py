@@ -17,7 +17,7 @@ from OCP.TopoDS import TopoDS_Shape, TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
-from evalcache.v2 import (
+from evalcache import (
     CachePolicy,
     CacheStore,
     EvaluationMode,
@@ -246,15 +246,12 @@ class Runtime:
         center: bool | str | None = None,
         size: ScalarInput | Vector3 | Sequence[ScalarInput] | None = None,
     ) -> Solid:
-        resolved_center = _require_center(center, "box center")
-        resolved_size = _box_size(self, x, y, z, size)
-        expression = self._expression(
-            ops.box,
-            result=SOLID_SPEC,
-            args=(resolved_size._state, resolved_center),
-            operation_id="zencad.typed.box",
-        )
-        return Solid._from_state(self, expression)
+        from zencad.operation import using_runtime
+
+        from .solid import box
+
+        with using_runtime(self):
+            return box(x, y, z, center, size)
 
     def cube(
         self,
@@ -3176,15 +3173,6 @@ def _require_font_aspect(value: object, name: str) -> FontAspect:
     return value
 
 
-def _require_center(
-    value: bool | str | None,
-    name: str,
-) -> bool | str | None:
-    if value is not None and not isinstance(value, (bool, str)):
-        raise TypeError(f"{name} must be bool, str, or None")
-    return value
-
-
 def _optional_scalar_state(
     runtime: Runtime,
     value: ScalarInput | None,
@@ -3210,37 +3198,6 @@ def _angle_state(
             _scalar_state(runtime, values[1]),
         )
     return _scalar_state(runtime, cast(ScalarInput, value))
-
-
-def _box_size(
-    runtime: Runtime,
-    x: ScalarInput | Vector3 | Sequence[ScalarInput],
-    y: ScalarInput | None,
-    z: ScalarInput | None,
-    size: ScalarInput | Vector3 | Sequence[ScalarInput] | None,
-) -> Vector3:
-    source = x if size is None else size
-    if size is not None:
-        y = None
-        z = None
-    if isinstance(source, Vector3):
-        if y is not None or z is not None:
-            raise TypeError("box Vector3 size cannot be combined with y or z")
-        require_same_runtime(runtime, source)
-        return source
-    if isinstance(source, Sequence) and not isinstance(source, (str, bytes)):
-        if y is not None or z is not None:
-            raise TypeError("box sequence size cannot be combined with y or z")
-        values = tuple(source)
-        if len(values) != 3:
-            raise TypeError("box size must contain exactly three dimensions")
-        return runtime.vector(values[0], values[1], values[2])
-    scalar = cast(ScalarInput, source)
-    if y is None and z is None:
-        return runtime.vector(scalar, scalar, scalar)
-    if y is not None and z is not None:
-        return runtime.vector(scalar, y, z)
-    raise TypeError("box expects one size or all three dimensions")
 
 
 def _require_shells(

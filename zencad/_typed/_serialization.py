@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import struct
 
-from evalcache.v2 import Artifact, SerializedValue
+from evalcache import Artifact, SerializedValue
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.runtime.scene_protocol import decode_brep, encode_brep

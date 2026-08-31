@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, overload
 
 from OCP.gp import gp_GTrsf, gp_Quaternion, gp_Trsf
-from evalcache.v2 import ResultSpec
+from evalcache import ResultSpec
 
 from . import _transform_operations as ops
 from ._core import Handle, State, require_same_runtime

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Generic, TypeVar, Union
 
-from evalcache.v2 import Expression
+from evalcache import Expression
 
 if TYPE_CHECKING:
     from .runtime import Runtime
@@ -17,6 +17,7 @@ State = Union[ResolvedT, Expression[ResolvedT]]
 class Handle(Generic[ResolvedT]):
     """A stable domain object containing a resolved value or expression."""
 
+    __zencad_handle__ = True
     __slots__ = ("_runtime", "_state")
     __hash__ = None
 

@@ -9,7 +9,7 @@ import numpy
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d
-from evalcache.v2 import ResultSpec
+from evalcache import ResultSpec
 
 from . import _value_operations as ops
 from ._core import Handle, State, require_same_runtime
@@ -125,7 +125,7 @@ class Scalar(Handle[float]):
         return Scalar._from_state(self.runtime, state)
 
     def __add__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_add, "zencad.typed.scalar.add")
+        return _scalar_add_operation(self, other)
 
     def __radd__(self, other: ScalarInput) -> Scalar:
         return self.__add__(other)
@@ -1067,3 +1067,22 @@ def atan2(y: ScalarInput, x: ScalarInput) -> Scalar:
         operation_id="zencad.typed.math.atan2",
     )
     return Scalar._from_state(runtime, state)
+
+
+from zencad.operation import arguments as _operation_arguments
+from zencad.operation import operation as _domain_operation
+
+
+@_domain_operation(
+    backend=ops.scalar_add,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.scalar.add",
+    operation_version="1",
+    fold_literals=True,
+)
+def _scalar_add_operation(left: Scalar, right: ScalarInput):
+    return _operation_arguments(
+        left,
+        _scalar_state(left.runtime, right),
+    )

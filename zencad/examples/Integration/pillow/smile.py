@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+import zencad
 from zencad import *
 from PIL import Image
 import numpy
 import evalcache
 
 
-@lazy
+@zencad.operation
 def numpy_highmap(arr):
     result = numpy.ndarray(arr.shape, dtype=point3)
 

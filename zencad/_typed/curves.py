@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar, Literal, TypeVar, cast
 from OCP.Geom import Geom_Curve
 from OCP.GeomAdaptor import GeomAdaptor_Curve
 from OCP.Geom2d import Geom2d_Curve
-from evalcache.v2 import Expression, ResultSpec
+from evalcache import Expression, ResultSpec
 
 from . import _curve_operations as ops
 from ._core import Handle, State, require_same_runtime

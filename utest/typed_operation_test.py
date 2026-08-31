@@ -1,0 +1,118 @@
+import inspect
+import unittest
+
+import evalcache
+
+import zencad
+from zencad import _typed as typed
+from zencad._typed.topology import SHAPE_SPEC
+from zencad.operation import DomainOperation, arguments, operation, using_runtime
+
+
+def _identity_shape(value):
+    return value
+
+
+def _selected_shape_type(args, kwargs):
+    if kwargs.get("exact", False):
+        return type(args[0])
+    return typed.Shape
+
+
+@operation(
+    backend=_identity_shape,
+    result=SHAPE_SPEC,
+    returns=_selected_shape_type,
+    operation_id="zencad.test.selected_shape",
+)
+def _selected_shape(shape, *, exact=False):
+    del exact
+    return arguments(shape)
+
+
+class TypedOperationTest(unittest.TestCase):
+    def test_module_operation_and_runtime_shim_share_the_same_graph_contract(self):
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+
+        with using_runtime(runtime):
+            direct = typed.box(2, 3, 4)
+        forwarded = runtime.box(2, 3, 4)
+
+        self.assertIs(type(direct), typed.Solid)
+        self.assertIs(type(forwarded), typed.Solid)
+        self.assertIs(direct.runtime, runtime)
+        self.assertIs(forwarded.runtime, runtime)
+        self.assertIsInstance(direct._state, evalcache.Expression)
+        self.assertEqual(direct._state.operation_id, "zencad.typed.box")
+        self.assertEqual(events, [])
+        self.assertAlmostEqual(float(direct.mass()), 24.0)
+
+    def test_operation_metadata_and_public_signature_live_on_the_declaration(self):
+        declaration = typed.box
+
+        self.assertIsInstance(declaration, DomainOperation)
+        self.assertEqual(declaration.backend.operation_id, "zencad.typed.box")
+        self.assertIs(
+            inspect.signature(declaration).return_annotation,
+            typed.Solid,
+        )
+        self.assertIn("size", inspect.signature(declaration).parameters)
+
+    def test_decorated_scalar_operation_keeps_immediate_constant_folding(self):
+        events = []
+        runtime = typed.Runtime.immediate(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        left = runtime.scalar(2)
+
+        result = left + 3
+
+        self.assertIs(type(result), typed.Scalar)
+        self.assertNotIsInstance(result._state, evalcache.Expression)
+        self.assertEqual(float(result), 5.0)
+        self.assertEqual(events, [])
+
+    def test_operation_rejects_handles_from_different_runtimes(self):
+        first = typed.Runtime.deferred(cache=False)
+        second = typed.Runtime.deferred(cache=False)
+
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            _ = first.box(1) + second.box(1)
+
+    def test_result_adapter_can_preserve_or_select_a_domain_subtype(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        shape = runtime.box(1)
+
+        preserved = _selected_shape(shape)
+        selected = _selected_shape(shape, exact=True)
+
+        self.assertIs(type(preserved), typed.Shape)
+        self.assertIs(type(selected), typed.Solid)
+        self.assertEqual(preserved._state.operation_id, "zencad.test.selected_shape")
+        self.assertFalse(selected.native().IsNull())
+
+    def test_bare_operation_preserves_legacy_lazy_contract(self):
+        @zencad.operation
+        def doubled(value):
+            return value * 2
+
+        @zencad.lazy
+        def incremented(value):
+            return value + 1
+
+        doubled_value = doubled(21)
+        incremented_value = incremented(41)
+
+        self.assertIsInstance(doubled_value, evalcache.LazyObject)
+        self.assertIsInstance(incremented_value, evalcache.LazyObject)
+        self.assertEqual(evalcache.unlazy(doubled_value), 42)
+        self.assertEqual(evalcache.unlazy(incremented_value), 42)
+
+
+if __name__ == "__main__":
+    unittest.main()

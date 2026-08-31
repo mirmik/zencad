@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 import numpy as np
 from OCP.Poly import Poly_Triangulation
-from evalcache.v2 import Expression, ResultSpec
+from evalcache import Expression, ResultSpec
 
 from . import _mesh_operations as ops
 from ._core import Handle, State

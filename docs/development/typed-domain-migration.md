@@ -101,11 +101,11 @@ Expected historical defects are named explicitly in characterization tests so
 that later fixes are reviewed as intentional baseline updates rather than
 silent regressions.
 
-## Stage 2: evalcache v2 substrate
+## Stage 2: evalcache substrate
 
-Status: complete on the evalcache `v2` branch. The additive public layer is
-exported from `evalcache.v2` while the original `LazyObject` API remains
-available unchanged.
+Status: complete in the current evalcache API. The decorator-first layer is
+exported directly from `evalcache`; `evalcache.v2` remains a compatibility
+import surface, as does the original `LazyObject` API.
 
 Introduce generic `Expression[T]`, evaluation, hashing, cache policies,
 cache-store and serializer protocols, type-preserving container resolution,
@@ -970,6 +970,46 @@ Verification on 2026-08-31 after this checkpoint:
 - a clean wheel built with the local evalcache checkout passes the installed
   smoke outside the source tree with laws, extrusion, revolution, loft, pipe,
   pipe-shell, and `revol2` exercised.
+
+### Decorator-owned operation extraction checkpoint
+
+Task #2052 starts dismantling the typed `Runtime` as an operation container.
+`zencad.operation` now has two deliberately separate forms:
+
+- bare `@zencad.operation` delegates to the historical `lazy` implementation,
+  so existing extension functions retain their current dynamic behavior;
+- configured `@zencad.operation(backend=..., result=..., returns=...)`
+  declares a typed domain operation over the current top-level evalcache API.
+
+The configured decorator lowers nested ZenCad handles to expression state,
+selects their common evaluator context, rejects mixed runtimes, applies an
+explicit literal-folding policy, and wraps the result in a stable domain
+handle. `typed.box` is the first complete module-level declaration in
+`_typed/solid.py`; `Runtime.box` is now only a compatibility forwarding shim.
+Representative scalar addition and Shape union declarations prove value
+folding and method forwarding without keeping their operation construction in
+`Runtime`.
+
+The public root `zencad.box` is intentionally not switched independently:
+doing that before the neighboring transforms, booleans, and queries move would
+create a mixed legacy/typed object graph. Public replacement proceeds by a
+coherent operation family after its module-level declarations are complete.
+Examples that own custom operations now use `@zencad.operation`, while
+`@lazy` remains tested and supported.
+
+No evalcache change is required for this checkpoint. ZenCad consumes
+`evalcache.operation`, `ResultSpec`, `Expression`, `Evaluator`, and related
+types from the canonical top-level package; a future evaluator-binding helper
+could reduce adapter plumbing but is not a migration blocker.
+
+Verification on 2026-08-31 after this checkpoint:
+
+- all 373 tests pass;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts;
+- the decorator tests cover module declaration, Runtime forwarding, operation
+  identity, immediate literal folding, cross-runtime rejection, and both bare
+  compatibility decorators.
 
 ## Stage 8: typing and cleanup
 

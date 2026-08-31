@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from OCP.Bnd import Bnd_Box
-from evalcache.v2 import Expression, ResultSpec
+from evalcache import Expression, ResultSpec
 
 from . import _bound_operations as ops
 from ._core import Handle, State, require_same_runtime

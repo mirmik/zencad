@@ -38,7 +38,7 @@ from OCP.TopoDS import (
     TopoDS_Wire,
 )
 from OCP.Geom import Geom_Curve, Geom_Surface
-from evalcache.v2 import Expression, ResultSpec
+from evalcache import Expression, ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.occ_compat import (
@@ -281,12 +281,9 @@ class Shape(Handle[ResolvedShape]):
         return Shape._from_state(self.runtime, expression)
 
     def __add__(self, other: Shape) -> Shape:
-        return self._boolean(
-            other,
-            ops.union,
-            "zencad.typed.shape.union",
-            "union",
-        )
+        if not isinstance(other, Shape):
+            raise TypeError("Shape union expects Shape")
+        return _shape_union_operation(self, other)
 
     def __sub__(self, other: Shape) -> Shape:
         return self._boolean(
@@ -1312,3 +1309,18 @@ class DeferredSequence(Generic[ShapeHandleT]):
     def __iter__(self) -> Iterator[ShapeHandleT]:
         for index in range(len(self)):
             yield self[index]
+
+
+from zencad.operation import arguments as _operation_arguments
+from zencad.operation import operation as _domain_operation
+
+
+@_domain_operation(
+    backend=ops.union,
+    result=SHAPE_SPEC,
+    returns=Shape,
+    operation_id="zencad.typed.shape.union",
+    operation_version="1",
+)
+def _shape_union_operation(left: Shape, right: Shape):
+    return _operation_arguments(left, right)
