@@ -453,6 +453,33 @@ class Runtime:
         )
         return Shape._from_state(self, expression)
 
+    def extrude(
+        self,
+        shape: Shape,
+        vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
+        center: bool = False,
+    ) -> Shape:
+        _require_shape(self, shape, "extrude")
+        return shape.extrude(vec, center)
+
+    def linear_extrude(
+        self,
+        shape: Shape,
+        vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
+        center: bool = False,
+    ) -> Shape:
+        """Compatibility spelling for :meth:`extrude`."""
+        return self.extrude(shape, vec, center)
+
+    def revol(
+        self,
+        shape: Shape,
+        r: ScalarInput | None = None,
+        yaw: ScalarInput = 0,
+    ) -> Shape:
+        _require_shape(self, shape, "revol")
+        return shape.revol(r, yaw)
+
     def fillet(
         self,
         shape: Shape,

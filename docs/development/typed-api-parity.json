@@ -1055,13 +1055,18 @@
         "utest/boolean_test.py",
         "utest/make_test.py",
         "utest/typed_integration_test.py",
-        "utest/typed_surfaces_test.py"
+        "utest/typed_surfaces_test.py",
+        "utest/typed_sweeps_test.py"
       ],
       "surfaces": [
         {
           "source": "zencad.geom.sweep",
           "default": {"status": "missing", "typed": "typed sweep operation {name}", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "extrude": {"status": "implemented", "typed": "Runtime.extrude() / Shape.extrude() -> Shape"},
+            "linear_extrude": {"status": "implemented", "typed": "Runtime.linear_extrude() / Shape.linear_extrude() -> Shape"},
+            "revol": {"status": "implemented", "typed": "Runtime.revol() / Shape.revol() -> Shape"}
+          }
         },
         {
           "source": "zencad.geom.sweep_law",

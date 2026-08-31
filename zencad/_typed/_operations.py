@@ -1085,6 +1085,20 @@ def extrude_shape(
     return _extrude(shape, (vector.x, vector.y, vector.z), center=center)
 
 
+def revolve_shape(
+    shape: ResolvedShape,
+    radius: float | None,
+    yaw: float,
+) -> ResolvedShape:
+    from zencad.geom.sweep import _revol
+
+    if radius is not None and not math.isfinite(radius):
+        raise ValueError("revol radius must be finite")
+    if not math.isfinite(yaw):
+        raise ValueError("revol yaw must be finite")
+    return _revol(shape, r=radius, yaw=yaw)
+
+
 def fillet_shape(
     shape: ResolvedShape,
     radius: float,

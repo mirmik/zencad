@@ -806,6 +806,31 @@ class Shape(Handle[ResolvedShape]):
         )
         return Shape._from_state(self.runtime, expression)
 
+    def linear_extrude(
+        self,
+        vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
+        center: bool = False,
+    ) -> Shape:
+        """Compatibility spelling for :meth:`extrude`."""
+        return self.extrude(vec, center)
+
+    def revol(
+        self,
+        r: ScalarInput | None = None,
+        yaw: ScalarInput = 0,
+    ) -> Shape:
+        expression = self.runtime._expression(
+            ops.revolve_shape,
+            result=SHAPE_SPEC,
+            args=(
+                self._state,
+                None if r is None else _scalar_state(self.runtime, r),
+                _scalar_state(self.runtime, yaw),
+            ),
+            operation_id="zencad.typed.shape.revol",
+        )
+        return Shape._from_state(self.runtime, expression)
+
     def _reference_states(
         self,
         references: Sequence[Point3] | None,
