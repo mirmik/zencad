@@ -13,13 +13,11 @@ from typing import Callable
 from OCP.BRep import BRep_Builder, BRep_Tool
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepBuilderAPI import (
-    BRepBuilderAPI_GTransform,
     BRepBuilderAPI_MakeEdge,
     BRepBuilderAPI_MakeFace,
     BRepBuilderAPI_MakePolygon,
     BRepBuilderAPI_MakeVertex,
     BRepBuilderAPI_MakeWire,
-    BRepBuilderAPI_Transform,
 )
 from OCP.BRepOffsetAPI import (
     BRepOffsetAPI_MakeOffsetShape,
@@ -72,12 +70,6 @@ from zencad.occ_compat import (
 )
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
-from ._transform_operations import (
-    AffineTransformValue,
-    TransformValue,
-    affine_to_ocp,
-    transform_to_ocp,
-)
 from ._curve_operations import (
     Curve2Value,
     CurveValue,
@@ -444,29 +436,6 @@ def rectangle(width: float, height: float, center: bool) -> ResolvedShape:
         Point3Value(x0, y0 + height, 0.0),
     )
     return polygon(points)
-
-
-def translate(shape: ResolvedShape, vector: Vector3Value) -> ResolvedShape:
-    return shape.transform(move(vector.x, vector.y, vector.z))
-
-
-def transform(shape: ResolvedShape, value: TransformValue) -> ResolvedShape:
-    transformed = BRepBuilderAPI_Transform(
-        shape.Shape(), transform_to_ocp(value), True
-    ).Shape()
-    return ResolvedShape(transformed)
-
-
-def affine_transform(
-    shape: ResolvedShape,
-    value: AffineTransformValue,
-) -> ResolvedShape:
-    transformed = BRepBuilderAPI_GTransform(
-        shape.Shape(), affine_to_ocp(value), True
-    ).Shape()
-    if transformed.IsNull():
-        raise ValueError("affine transformation produced a null shape")
-    return ResolvedShape(transformed)
 
 
 def shape_from_brep(payload: bytes) -> ResolvedShape:

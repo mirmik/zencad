@@ -3,10 +3,21 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
+from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_GTrsf, gp_Quaternion, gp_Trsf
+from OCP.gp import gp_Dir, gp_Pnt, gp_Vec, gp_XYZ
 from evalcache import ResultSpec
+
+from zencad.occ_compat import vertex_point
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _transform_operations as ops
 from ._core import Handle, State, require_same_runtime
@@ -76,15 +87,9 @@ class Quaternion(Handle[ops.QuaternionValue]):
     ) -> None:
         components = _components4(x, y, z, w)
         resolved_runtime = _infer_runtime(runtime, components)
-        state = resolved_runtime._value_state(
-            ops.quaternion,
-            result=QUATERNION_SPEC,
-            args=tuple(
-                _scalar_state(resolved_runtime, component) for component in components
-            ),
-            operation_id="zencad.typed.quaternion",
-        )
-        self._bind(resolved_runtime, state)
+        with using_runtime(resolved_runtime):
+            value = quaternion(*components)
+        self._bind(value.runtime, value._state)
 
     @classmethod
     def _from_state(
@@ -112,13 +117,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
         return cls._from_state(runtime, ops.quaternion_from_ocp(value))
 
     def _coordinate(self, axis: int) -> Scalar:
-        state = self.runtime._value_state(
-            ops.quaternion_coordinate,
-            result=SCALAR_SPEC,
-            args=(self._state, axis),
-            operation_id="zencad.typed.quaternion.coordinate",
-        )
-        return Scalar._from_state(self.runtime, state)
+        return _quaternion_coordinate(self, axis)
 
     @property
     def x(self) -> Scalar:
@@ -139,14 +138,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
     def __mul__(self, other: Quaternion) -> Quaternion:
         if not isinstance(other, Quaternion):
             raise TypeError("Quaternion can only compose with Quaternion")
-        require_same_runtime(self.runtime, other)
-        state = self.runtime._value_state(
-            ops.quaternion_compose,
-            result=QUATERNION_SPEC,
-            args=(self._state, other._state),
-            operation_id="zencad.typed.quaternion.compose",
-        )
-        return Quaternion._from_state(self.runtime, state)
+        return _quaternion_compose(self, other)
 
     def then(self, other: Quaternion) -> Quaternion:
         """Apply this rotation first and ``other`` second."""
@@ -158,13 +150,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
         return self.inverse()
 
     def inverse(self) -> Quaternion:
-        state = self.runtime._value_state(
-            ops.quaternion_inverse,
-            result=QUATERNION_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.quaternion.inverse",
-        )
-        return Quaternion._from_state(self.runtime, state)
+        return _quaternion_inverse(self)
 
     def normalized(self) -> Quaternion:
         """Return self: construction keeps every Quaternion normalized."""
@@ -172,34 +158,15 @@ class Quaternion(Handle[ops.QuaternionValue]):
 
     def norm(self) -> Scalar:
         """Return the unit norm while preserving deferred validation."""
-        state = self.runtime._value_state(
-            ops.quaternion_norm,
-            result=SCALAR_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.quaternion.norm",
-        )
-        return Scalar._from_state(self.runtime, state)
+        return _quaternion_norm(self)
 
     def rotate(self, vector: Vector3) -> Vector3:
         if not isinstance(vector, Vector3):
             raise TypeError("Quaternion.rotate expects Vector3")
-        require_same_runtime(self.runtime, vector)
-        state = self.runtime._value_state(
-            ops.quaternion_rotate_vector,
-            result=VECTOR3_SPEC,
-            args=(self._state, vector._state),
-            operation_id="zencad.typed.quaternion.rotate_vector",
-        )
-        return Vector3._from_state(self.runtime, state)
+        return _quaternion_rotate_vector(self, vector)
 
     def to_transform(self) -> Transform:
-        state = self.runtime._value_state(
-            ops.rotation_transform,
-            result=TRANSFORM_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.rotation",
-        )
-        return Transform._from_state(self.runtime, state)
+        return rotation(self)
 
     def value(self) -> tuple[float, float, float, float]:
         value = self._resolved()
@@ -227,7 +194,9 @@ class Transform(Handle[ops.TransformValue]):
     """Immutable similarity transform containing a resolved value or graph."""
 
     def __init__(self, *, runtime: Runtime) -> None:
-        self._bind(runtime, ops.identity_transform())
+        with using_runtime(runtime):
+            value = identity_transform()
+        self._bind(value.runtime, value._state)
 
     @classmethod
     def _from_state(
@@ -252,33 +221,15 @@ class Transform(Handle[ops.TransformValue]):
 
     @property
     def scale(self) -> Scalar:
-        state = self.runtime._value_state(
-            ops.transform_scale,
-            result=SCALAR_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.scale_value",
-        )
-        return Scalar._from_state(self.runtime, state)
+        return _transform_scale(self)
 
     @property
     def rotation(self) -> Quaternion:
-        state = self.runtime._value_state(
-            ops.transform_rotation,
-            result=QUATERNION_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.rotation_value",
-        )
-        return Quaternion._from_state(self.runtime, state)
+        return _transform_rotation(self)
 
     @property
     def translation(self) -> Vector3:
-        state = self.runtime._value_state(
-            ops.transform_translation,
-            result=VECTOR3_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.translation_value",
-        )
-        return Vector3._from_state(self.runtime, state)
+        return _transform_translation(self)
 
     @overload
     def __mul__(self, other: Transform) -> Transform: ...
@@ -294,15 +245,10 @@ class Transform(Handle[ops.TransformValue]):
             require_same_runtime(self.runtime, other)
             return self.to_affine() * other
         if not isinstance(other, Transform):
-            raise TypeError("Transform can only compose with Transform or AffineTransform")
-        require_same_runtime(self.runtime, other)
-        state = self.runtime._value_state(
-            ops.transform_compose,
-            result=TRANSFORM_SPEC,
-            args=(self._state, other._state),
-            operation_id="zencad.typed.transform.compose",
-        )
-        return Transform._from_state(self.runtime, state)
+            raise TypeError(
+                "Transform can only compose with Transform or AffineTransform"
+            )
+        return _transform_compose(self, other)
 
     @overload
     def then(self, other: Transform) -> Transform: ...
@@ -320,13 +266,7 @@ class Transform(Handle[ops.TransformValue]):
         return other * self
 
     def inverse(self) -> Transform:
-        state = self.runtime._value_state(
-            ops.transform_inverse,
-            result=TRANSFORM_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.inverse",
-        )
-        return Transform._from_state(self.runtime, state)
+        return _transform_inverse(self)
 
     @overload
     def apply(self, value: Point3, /) -> Point3: ...
@@ -337,22 +277,9 @@ class Transform(Handle[ops.TransformValue]):
     def apply(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
         if not isinstance(value, (Point3, Vector3)):
             raise TypeError("Transform.apply expects Point3 or Vector3")
-        require_same_runtime(self.runtime, value)
         if isinstance(value, Point3):
-            state = self.runtime._value_state(
-                ops.transform_point,
-                result=POINT3_SPEC,
-                args=(self._state, value._state),
-                operation_id="zencad.typed.transform.point",
-            )
-            return Point3._from_state(self.runtime, state)
-        state = self.runtime._value_state(
-            ops.transform_vector,
-            result=VECTOR3_SPEC,
-            args=(self._state, value._state),
-            operation_id="zencad.typed.transform.vector",
-        )
-        return Vector3._from_state(self.runtime, state)
+            return _transform_point(self, value)
+        return _transform_vector(self, value)
 
     @overload
     def __call__(self, value: Point3, /) -> Point3: ...
@@ -383,30 +310,12 @@ class Transform(Handle[ops.TransformValue]):
         return self.rotation
 
     def rotation_euler(self) -> Vector3:
-        state = self.runtime._value_state(
-            ops.transform_rotation_vector,
-            result=VECTOR3_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.rotation_euler",
-        )
-        return Vector3._from_state(self.runtime, state)
+        return _transform_rotation_euler(self)
 
     def rotation_axis_angle(self) -> tuple[Vector3, Scalar]:
-        axis_state = self.runtime._value_state(
-            ops.transform_rotation_axis,
-            result=VECTOR3_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.rotation_axis",
-        )
-        angle_state = self.runtime._value_state(
-            ops.transform_rotation_angle,
-            result=SCALAR_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.transform.rotation_angle",
-        )
         return (
-            Vector3._from_state(self.runtime, axis_state),
-            Scalar._from_state(self.runtime, angle_state),
+            _transform_rotation_axis(self),
+            _transform_rotation_angle(self),
         )
 
     def matrix(
@@ -431,13 +340,7 @@ class Transform(Handle[ops.TransformValue]):
         return ops.transform_to_ocp(self._resolved())
 
     def to_affine(self) -> AffineTransform:
-        state = self.runtime._value_state(
-            ops.affine_from_transform,
-            result=AFFINE_TRANSFORM_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.affine.from_transform",
-        )
-        return AffineTransform._from_state(self.runtime, state)
+        return _affine_from_transform(self)
 
     def __str__(self) -> str:
         return f"Transform(matrix={self.matrix()!r})"
@@ -462,16 +365,13 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         runtime: Runtime,
     ) -> None:
         if rows is None:
-            self._bind(runtime, ops.identity_affine_transform())
+            with using_runtime(runtime):
+                value = identity_affine_transform()
+            self._bind(value.runtime, value._state)
             return
-        components = _matrix3x4_components(rows)
-        state = runtime._value_state(
-            ops.affine_transform,
-            result=AFFINE_TRANSFORM_SPEC,
-            args=tuple(_scalar_state(runtime, component) for component in components),
-            operation_id="zencad.typed.affine.matrix",
-        )
-        self._bind(runtime, state)
+        with using_runtime(runtime):
+            value = affine_transform(rows)
+        self._bind(value.runtime, value._state)
 
     @classmethod
     def _from_state(
@@ -515,7 +415,8 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         runtime: Runtime,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return runtime.scaleXYZ(x, y, z, center=center)
+        with using_runtime(runtime):
+            return scaleXYZ(x, y, z, center=center)
 
     @classmethod
     def scaleX(
@@ -526,7 +427,8 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         runtime: Runtime,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return runtime.scaleX(factor, center=center)
+        with using_runtime(runtime):
+            return scaleX(factor, center=center)
 
     @classmethod
     def scaleY(
@@ -537,7 +439,8 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         runtime: Runtime,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return runtime.scaleY(factor, center=center)
+        with using_runtime(runtime):
+            return scaleY(factor, center=center)
 
     @classmethod
     def scaleZ(
@@ -548,7 +451,8 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         runtime: Runtime,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return runtime.scaleZ(factor, center=center)
+        with using_runtime(runtime):
+            return scaleZ(factor, center=center)
 
     @overload
     def __mul__(self, other: AffineTransform) -> AffineTransform: ...
@@ -563,14 +467,7 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
             raise TypeError(
                 "AffineTransform can only compose with AffineTransform or Transform"
             )
-        require_same_runtime(self.runtime, other)
-        state = self.runtime._value_state(
-            ops.affine_compose,
-            result=AFFINE_TRANSFORM_SPEC,
-            args=(self._state, other._state),
-            operation_id="zencad.typed.affine.compose",
-        )
-        return AffineTransform._from_state(self.runtime, state)
+        return _affine_compose(self, other)
 
     @overload
     def then(self, other: AffineTransform) -> AffineTransform: ...
@@ -584,13 +481,7 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         return other * self
 
     def inverse(self) -> AffineTransform:
-        state = self.runtime._value_state(
-            ops.affine_inverse,
-            result=AFFINE_TRANSFORM_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.affine.inverse",
-        )
-        return AffineTransform._from_state(self.runtime, state)
+        return _affine_inverse(self)
 
     @overload
     def apply(self, value: Point3, /) -> Point3: ...
@@ -601,22 +492,9 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
     def apply(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
         if not isinstance(value, (Point3, Vector3)):
             raise TypeError("AffineTransform.apply expects Point3 or Vector3")
-        require_same_runtime(self.runtime, value)
         if isinstance(value, Point3):
-            state = self.runtime._value_state(
-                ops.affine_point,
-                result=POINT3_SPEC,
-                args=(self._state, value._state),
-                operation_id="zencad.typed.affine.point",
-            )
-            return Point3._from_state(self.runtime, state)
-        state = self.runtime._value_state(
-            ops.affine_vector,
-            result=VECTOR3_SPEC,
-            args=(self._state, value._state),
-            operation_id="zencad.typed.affine.vector",
-        )
-        return Vector3._from_state(self.runtime, state)
+            return _affine_point(self, value)
+        return _affine_vector(self, value)
 
     @overload
     def __call__(self, value: Point3, /) -> Point3: ...
@@ -639,23 +517,11 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
 
     @property
     def translation(self) -> Vector3:
-        state = self.runtime._value_state(
-            ops.affine_translation,
-            result=VECTOR3_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.affine.translation",
-        )
-        return Vector3._from_state(self.runtime, state)
+        return _affine_translation(self)
 
     @property
     def determinant(self) -> Scalar:
-        state = self.runtime._value_state(
-            ops.affine_determinant,
-            result=SCALAR_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.affine.determinant",
-        )
-        return Scalar._from_state(self.runtime, state)
+        return _affine_determinant(self)
 
     def matrix(
         self,
@@ -740,3 +606,879 @@ def _matrix3x4_components(
         rows[2][2],
         rows[2][3],
     )
+
+
+@operation(
+    backend=ops.quaternion,
+    result=QUATERNION_SPEC,
+    returns=Quaternion,
+    operation_id="zencad.typed.quaternion",
+    operation_version="1",
+    fold_literals=True,
+)
+def quaternion(
+    x: ScalarInput,
+    y: ScalarInput,
+    z: ScalarInput,
+    w: ScalarInput,
+    /,
+) -> OperationArguments:
+    runtime = resolve_runtime(x, y, z, w)
+    return arguments(
+        _scalar_state(runtime, x),
+        _scalar_state(runtime, y),
+        _scalar_state(runtime, z),
+        _scalar_state(runtime, w),
+    )
+
+
+@operation(
+    backend=ops.quaternion_coordinate,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.quaternion.coordinate",
+    operation_version="1",
+    fold_literals=True,
+)
+def _quaternion_coordinate(
+    value: Quaternion,
+    axis: int,
+    /,
+) -> OperationArguments:
+    if not isinstance(value, Quaternion):
+        raise TypeError("quaternion coordinate expects Quaternion")
+    if isinstance(axis, bool) or not isinstance(axis, int) or not 0 <= axis <= 3:
+        raise ValueError("quaternion coordinate axis must be between 0 and 3")
+    return arguments(value, axis)
+
+
+@operation(
+    backend=ops.quaternion_axis_angle,
+    result=QUATERNION_SPEC,
+    returns=Quaternion,
+    operation_id="zencad.typed.quaternion.axis_angle",
+    operation_version="1",
+    fold_literals=True,
+)
+def quaternion_axis_angle(
+    axis: Vector3,
+    angle: ScalarInput,
+    /,
+) -> OperationArguments:
+    if not isinstance(axis, Vector3):
+        raise TypeError("quaternion_axis_angle expects Vector3")
+    runtime = resolve_runtime(axis, angle)
+    return arguments(axis, _scalar_state(runtime, angle))
+
+
+@operation(
+    backend=ops.quaternion_compose,
+    result=QUATERNION_SPEC,
+    returns=Quaternion,
+    operation_id="zencad.typed.quaternion.compose",
+    operation_version="1",
+    fold_literals=True,
+)
+def _quaternion_compose(
+    left: Quaternion,
+    right: Quaternion,
+    /,
+) -> OperationArguments:
+    _require_pair(left, right, Quaternion, "Quaternion composition")
+    return arguments(left, right)
+
+
+@operation(
+    backend=ops.quaternion_inverse,
+    result=QUATERNION_SPEC,
+    returns=Quaternion,
+    operation_id="zencad.typed.quaternion.inverse",
+    operation_version="1",
+    fold_literals=True,
+)
+def _quaternion_inverse(value: Quaternion, /) -> OperationArguments:
+    _require_type(value, Quaternion, "quaternion inverse")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.quaternion_norm,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.quaternion.norm",
+    operation_version="1",
+    fold_literals=True,
+)
+def _quaternion_norm(value: Quaternion, /) -> OperationArguments:
+    _require_type(value, Quaternion, "quaternion norm")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.quaternion_rotate_vector,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.quaternion.rotate_vector",
+    operation_version="1",
+    fold_literals=True,
+)
+def _quaternion_rotate_vector(
+    value: Quaternion,
+    vector: Vector3,
+    /,
+) -> OperationArguments:
+    _require_type(value, Quaternion, "quaternion rotation")
+    _require_type(vector, Vector3, "quaternion rotation vector")
+    return arguments(value, vector)
+
+
+@operation(
+    backend=ops.identity_transform,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.identity",
+    operation_version="1",
+    fold_literals=True,
+)
+def identity_transform() -> OperationArguments:
+    return arguments()
+
+
+@operation(
+    backend=ops.translation_transform,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.translation",
+    operation_version="1",
+    fold_literals=True,
+)
+def translation(
+    vector: Vector3 | ScalarInput,
+    y: ScalarInput | None = None,
+    z: ScalarInput | None = None,
+    /,
+) -> OperationArguments:
+    runtime = resolve_runtime(vector, y, z)
+    if isinstance(vector, Vector3):
+        if y is not None or z is not None:
+            raise TypeError("translation Vector3 cannot be combined with coordinates")
+        resolved_vector = vector
+    elif y is not None and z is not None:
+        resolved_vector = Vector3(vector, y, z, runtime=runtime)
+    else:
+        raise TypeError("translation expects Vector3 or three scalar coordinates")
+    return arguments(resolved_vector)
+
+
+@operation(
+    backend=ops.rotation_transform,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.rotation",
+    operation_version="1",
+    fold_literals=True,
+)
+def rotation(
+    quaternion: Quaternion | Vector3,
+    angle: ScalarInput | None = None,
+    /,
+) -> OperationArguments:
+    if isinstance(quaternion, Quaternion):
+        if angle is not None:
+            raise TypeError("rotation Quaternion cannot be combined with an angle")
+        resolved_quaternion = quaternion
+    elif isinstance(quaternion, Vector3) and angle is not None:
+        resolved_quaternion = quaternion_axis_angle(quaternion, angle)
+    else:
+        raise TypeError("rotation expects Quaternion or Vector3 and angle")
+    return arguments(resolved_quaternion)
+
+
+@operation(
+    backend=ops.scale_transform,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.scale",
+    operation_version="1",
+    fold_literals=True,
+)
+def scale(
+    factor: ScalarInput,
+    /,
+    *,
+    center: Point3 | None = None,
+) -> OperationArguments:
+    runtime = resolve_runtime(factor, center)
+    resolved_center = _scale_center(runtime, center, "scale")
+    return arguments(_scalar_state(runtime, factor), resolved_center)
+
+
+@operation(
+    backend=ops.mirror_transform,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.mirror",
+    operation_version="1",
+    fold_literals=True,
+)
+def mirror(
+    normal: Vector3,
+    /,
+    *,
+    origin: Point3 | None = None,
+) -> OperationArguments:
+    _require_type(normal, Vector3, "mirror normal")
+    runtime = resolve_runtime(normal, origin)
+    resolved_origin = _scale_center(runtime, origin, "mirror")
+    return arguments(normal, resolved_origin)
+
+
+@operation(
+    backend=ops.shortest_rotation_transform,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.shortest_rotation",
+    operation_version="1",
+    fold_literals=True,
+)
+def short_rotate(
+    source: Vector3 | Sequence[ScalarInput],
+    target: Vector3 | Sequence[ScalarInput],
+    /,
+) -> OperationArguments:
+    runtime = resolve_runtime(source, target)
+    resolved_source = _compat_vector3(runtime, (source,), "short_rotate source")
+    resolved_target = _compat_vector3(runtime, (target,), "short_rotate target")
+    return arguments(resolved_source, resolved_target)
+
+
+@operation(
+    backend=ops.transform_scale,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.transform.scale_value",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_scale(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform scale")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.transform_rotation,
+    result=QUATERNION_SPEC,
+    returns=Quaternion,
+    operation_id="zencad.typed.transform.rotation_value",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_rotation(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform rotation")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.transform_translation,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.transform.translation_value",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_translation(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform translation")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.transform_compose,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.compose",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_compose(
+    left: Transform,
+    right: Transform,
+    /,
+) -> OperationArguments:
+    _require_pair(left, right, Transform, "Transform composition")
+    return arguments(left, right)
+
+
+@operation(
+    backend=ops.transform_inverse,
+    result=TRANSFORM_SPEC,
+    returns=Transform,
+    operation_id="zencad.typed.transform.inverse",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_inverse(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform inverse")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.transform_point,
+    result=POINT3_SPEC,
+    returns=Point3,
+    operation_id="zencad.typed.transform.point",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_point(
+    transform: Transform,
+    point: Point3,
+    /,
+) -> OperationArguments:
+    _require_type(transform, Transform, "point transform")
+    _require_type(point, Point3, "transformed point")
+    return arguments(transform, point)
+
+
+@operation(
+    backend=ops.transform_vector,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.transform.vector",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_vector(
+    transform: Transform,
+    vector: Vector3,
+    /,
+) -> OperationArguments:
+    _require_type(transform, Transform, "vector transform")
+    _require_type(vector, Vector3, "transformed vector")
+    return arguments(transform, vector)
+
+
+@operation(
+    backend=ops.transform_rotation_vector,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.transform.rotation_euler",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_rotation_euler(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform rotation_euler")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.transform_rotation_axis,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.transform.rotation_axis",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_rotation_axis(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform rotation axis")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.transform_rotation_angle,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.transform.rotation_angle",
+    operation_version="1",
+    fold_literals=True,
+)
+def _transform_rotation_angle(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "transform rotation angle")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.identity_affine_transform,
+    result=AFFINE_TRANSFORM_SPEC,
+    returns=AffineTransform,
+    operation_id="zencad.typed.affine.identity",
+    operation_version="1",
+    fold_literals=True,
+)
+def identity_affine_transform() -> OperationArguments:
+    return arguments()
+
+
+@operation(
+    backend=ops.affine_transform,
+    result=AFFINE_TRANSFORM_SPEC,
+    returns=AffineTransform,
+    operation_id="zencad.typed.affine.matrix",
+    operation_version="1",
+    fold_literals=True,
+)
+def affine_transform(
+    rows: Sequence[Sequence[ScalarInput]],
+    /,
+) -> OperationArguments:
+    components = _matrix3x4_components(rows)
+    runtime = resolve_runtime(components)
+    return arguments(*(_scalar_state(runtime, value) for value in components))
+
+
+def affine(rows: Sequence[Sequence[ScalarInput]], /) -> AffineTransform:
+    return affine_transform(rows)
+
+
+@operation(
+    backend=ops.affine_from_transform,
+    result=AFFINE_TRANSFORM_SPEC,
+    returns=AffineTransform,
+    operation_id="zencad.typed.affine.from_transform",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_from_transform(value: Transform, /) -> OperationArguments:
+    _require_type(value, Transform, "affine conversion")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.affine_scale_transform,
+    result=AFFINE_TRANSFORM_SPEC,
+    returns=AffineTransform,
+    operation_id="zencad.typed.affine.scale_xyz",
+    operation_version="1",
+    fold_literals=True,
+)
+def scaleXYZ(
+    x: ScalarInput,
+    y: ScalarInput,
+    z: ScalarInput,
+    /,
+    *,
+    center: Point3 | None = None,
+) -> OperationArguments:
+    runtime = resolve_runtime(x, y, z, center)
+    resolved_center = _scale_center(runtime, center, "affine scale")
+    return arguments(
+        _scalar_state(runtime, x),
+        _scalar_state(runtime, y),
+        _scalar_state(runtime, z),
+        resolved_center,
+    )
+
+
+def scaleX(
+    factor: ScalarInput,
+    /,
+    *,
+    center: Point3 | None = None,
+) -> AffineTransform:
+    return scaleXYZ(factor, 1, 1, center=center)
+
+
+def scaleY(
+    factor: ScalarInput,
+    /,
+    *,
+    center: Point3 | None = None,
+) -> AffineTransform:
+    return scaleXYZ(1, factor, 1, center=center)
+
+
+def scaleZ(
+    factor: ScalarInput,
+    /,
+    *,
+    center: Point3 | None = None,
+) -> AffineTransform:
+    return scaleXYZ(1, 1, factor, center=center)
+
+
+@operation(
+    backend=ops.affine_compose,
+    result=AFFINE_TRANSFORM_SPEC,
+    returns=AffineTransform,
+    operation_id="zencad.typed.affine.compose",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_compose(
+    left: AffineTransform,
+    right: AffineTransform,
+    /,
+) -> OperationArguments:
+    _require_pair(left, right, AffineTransform, "AffineTransform composition")
+    return arguments(left, right)
+
+
+@operation(
+    backend=ops.affine_inverse,
+    result=AFFINE_TRANSFORM_SPEC,
+    returns=AffineTransform,
+    operation_id="zencad.typed.affine.inverse",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_inverse(value: AffineTransform, /) -> OperationArguments:
+    _require_type(value, AffineTransform, "affine inverse")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.affine_point,
+    result=POINT3_SPEC,
+    returns=Point3,
+    operation_id="zencad.typed.affine.point",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_point(
+    transform: AffineTransform,
+    point: Point3,
+    /,
+) -> OperationArguments:
+    _require_type(transform, AffineTransform, "affine point transform")
+    _require_type(point, Point3, "affine transformed point")
+    return arguments(transform, point)
+
+
+@operation(
+    backend=ops.affine_vector,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.affine.vector",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_vector(
+    transform: AffineTransform,
+    vector: Vector3,
+    /,
+) -> OperationArguments:
+    _require_type(transform, AffineTransform, "affine vector transform")
+    _require_type(vector, Vector3, "affine transformed vector")
+    return arguments(transform, vector)
+
+
+@operation(
+    backend=ops.affine_translation,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.affine.translation",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_translation(value: AffineTransform, /) -> OperationArguments:
+    _require_type(value, AffineTransform, "affine translation")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.affine_determinant,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.affine.determinant",
+    operation_version="1",
+    fold_literals=True,
+)
+def _affine_determinant(value: AffineTransform, /) -> OperationArguments:
+    _require_type(value, AffineTransform, "affine determinant")
+    return arguments(value)
+
+
+def move(*args: object) -> Transform:
+    runtime = resolve_runtime(args)
+    return translation(_compat_vector3(runtime, args, "move"))
+
+
+def translate(*args: object) -> Transform:
+    return move(*args)
+
+
+def moveX(value: ScalarInput, /) -> Transform:
+    return move(value, 0, 0)
+
+
+def moveY(value: ScalarInput, /) -> Transform:
+    return move(0, value, 0)
+
+
+def moveZ(value: ScalarInput, /) -> Transform:
+    return move(0, 0, value)
+
+
+movX = moveX
+movY = moveY
+movZ = moveZ
+translateX = moveX
+translateY = moveY
+translateZ = moveZ
+right = moveX
+forw = moveY
+up = moveZ
+
+
+def left(value: ScalarInput, /) -> Transform:
+    runtime = resolve_runtime(value)
+    return moveX(-_as_scalar(runtime, value))
+
+
+def back(value: ScalarInput, /) -> Transform:
+    runtime = resolve_runtime(value)
+    return moveY(-_as_scalar(runtime, value))
+
+
+def down(value: ScalarInput, /) -> Transform:
+    runtime = resolve_runtime(value)
+    return moveZ(-_as_scalar(runtime, value))
+
+
+def rotate(
+    axis: Vector3 | Sequence[ScalarInput],
+    angle: ScalarInput | None = None,
+    /,
+) -> Transform:
+    runtime = resolve_runtime(axis, angle)
+    resolved_axis = _compat_vector3(runtime, (axis,), "rotate")
+    if angle is None:
+        angle = resolved_axis.length()
+        resolved_axis = resolved_axis.normalized()
+    return rotation(resolved_axis, angle)
+
+
+def rotate_quat(
+    value: Quaternion | gp_Quaternion | Sequence[ScalarInput],
+    /,
+) -> Transform:
+    runtime = resolve_runtime(value)
+    return rotation(_compat_quaternion(runtime, value))
+
+
+def rotateX(angle: ScalarInput, /) -> Transform:
+    runtime = resolve_runtime(angle)
+    return rotate(Vector3(1, 0, 0, runtime=runtime), angle)
+
+
+def rotateY(angle: ScalarInput, /) -> Transform:
+    runtime = resolve_runtime(angle)
+    return rotate(Vector3(0, 1, 0, runtime=runtime), angle)
+
+
+def rotateZ(angle: ScalarInput, /) -> Transform:
+    runtime = resolve_runtime(angle)
+    return rotate(Vector3(0, 0, 1, runtime=runtime), angle)
+
+
+def mirror_plane(*normal: object) -> Transform:
+    runtime = resolve_runtime(normal)
+    return mirror(_compat_vector3(runtime, normal, "mirror_plane"))
+
+
+def mirrorXY() -> Transform:
+    return mirror_plane(0, 0, 1)
+
+
+def mirrorYZ() -> Transform:
+    return mirror_plane(1, 0, 0)
+
+
+def mirrorXZ() -> Transform:
+    return mirror_plane(0, 1, 0)
+
+
+def mirror_axis(*axis: object) -> Transform:
+    runtime = resolve_runtime(axis)
+    return rotate(_compat_vector3(runtime, axis, "mirror_axis"), 3.141592653589793)
+
+
+def mirrorX() -> Transform:
+    return mirror_axis(1, 0, 0)
+
+
+def mirrorY() -> Transform:
+    return mirror_axis(0, 1, 0)
+
+
+def mirrorZ() -> Transform:
+    return mirror_axis(0, 0, 1)
+
+
+def mirrorO(*origin: object) -> Transform:
+    runtime = resolve_runtime(origin)
+    return scale(-1, center=_compat_point3(runtime, origin, "mirrorO"))
+
+
+def nulltrans() -> Transform:
+    return identity_transform()
+
+
+def _scale_center(
+    runtime: Runtime,
+    center: Point3 | None,
+    name: str,
+) -> Point3:
+    if center is None:
+        return Point3(0, 0, 0, runtime=runtime)
+    if not isinstance(center, Point3):
+        raise TypeError(f"{name} center must be Point3")
+    require_same_runtime(runtime, center)
+    return center
+
+
+def _require_type(value: object, expected: type[object], name: str) -> None:
+    if not isinstance(value, expected):
+        raise TypeError(f"{name} expects {expected.__name__}")
+
+
+def _require_pair(
+    left: object,
+    right: object,
+    expected: type[object],
+    name: str,
+) -> None:
+    _require_type(left, expected, name)
+    _require_type(right, expected, name)
+
+
+def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:
+    if isinstance(value, Scalar):
+        require_same_runtime(runtime, value)
+        return value
+    return Scalar(value, runtime=runtime)
+
+
+def _compat_vector3(
+    runtime: Runtime,
+    args: tuple[object, ...],
+    name: str,
+) -> Vector3:
+    if len(args) == 1 and isinstance(args[0], Vector3):
+        require_same_runtime(runtime, args[0])
+        return args[0]
+    components = _compat_components3(runtime, args, name)
+    return Vector3(*components, runtime=runtime)
+
+
+def _compat_point3(
+    runtime: Runtime,
+    args: tuple[object, ...],
+    name: str,
+) -> Point3:
+    if len(args) == 1 and isinstance(args[0], Point3):
+        require_same_runtime(runtime, args[0])
+        return args[0]
+    components = _compat_components3(runtime, args, name)
+    return Point3(*components, runtime=runtime)
+
+
+def _compat_components3(
+    runtime: Runtime,
+    args: tuple[object, ...],
+    name: str,
+) -> tuple[ScalarInput, ScalarInput, ScalarInput]:
+    if not args:
+        values: tuple[object, ...] = ()
+    elif len(args) == 1:
+        value = args[0]
+        if isinstance(value, (Point3, Vector3)):
+            require_same_runtime(runtime, value)
+            values = (value.x, value.y, value.z)
+        elif isinstance(value, TopoDS_Vertex):
+            point = vertex_point(value)
+            values = (point.X(), point.Y(), point.Z())
+        elif isinstance(value, (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
+            values = (value.X(), value.Y(), value.Z())
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            values = tuple(value)
+        else:
+            values = (value,)
+    else:
+        values = args
+    if len(values) > 3:
+        raise TypeError(f"{name} expects at most three coordinates")
+    padded = values + (0,) * (3 - len(values))
+    return (
+        cast(ScalarInput, padded[0]),
+        cast(ScalarInput, padded[1]),
+        cast(ScalarInput, padded[2]),
+    )
+
+
+def _compat_quaternion(
+    runtime: Runtime,
+    value: Quaternion | gp_Quaternion | Sequence[ScalarInput],
+) -> Quaternion:
+    if isinstance(value, Quaternion):
+        require_same_runtime(runtime, value)
+        return value
+    if isinstance(value, gp_Quaternion):
+        return Quaternion.from_ocp(value, runtime=runtime)
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        components = tuple(value)
+        if len(components) == 4:
+            return quaternion(
+                *cast(
+                    tuple[ScalarInput, ScalarInput, ScalarInput, ScalarInput],
+                    components,
+                )
+            )
+    raise TypeError("rotate_quat expects Quaternion, gp_Quaternion, or four components")
+
+
+__all__ = [
+    "AFFINE_TRANSFORM_SPEC",
+    "AffineTransform",
+    "GeneralTransformation",
+    "QUATERNION_SPEC",
+    "Quaternion",
+    "TRANSFORM_SPEC",
+    "Transform",
+    "affine",
+    "affine_transform",
+    "back",
+    "down",
+    "forw",
+    "identity_affine_transform",
+    "identity_transform",
+    "left",
+    "mirror",
+    "mirrorO",
+    "mirrorX",
+    "mirrorXY",
+    "mirrorXZ",
+    "mirrorY",
+    "mirrorYZ",
+    "mirrorZ",
+    "mirror_axis",
+    "mirror_plane",
+    "movX",
+    "movY",
+    "movZ",
+    "move",
+    "moveX",
+    "moveY",
+    "moveZ",
+    "nulltrans",
+    "quaternion",
+    "quaternion_axis_angle",
+    "right",
+    "rotate",
+    "rotateX",
+    "rotateY",
+    "rotateZ",
+    "rotate_quat",
+    "rotation",
+    "scale",
+    "scaleX",
+    "scaleXYZ",
+    "scaleY",
+    "scaleZ",
+    "short_rotate",
+    "translate",
+    "translateX",
+    "translateY",
+    "translateZ",
+    "translation",
+    "up",
+]

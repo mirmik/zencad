@@ -36,7 +36,7 @@ from . import _bound_operations as bound_ops
 from . import _curve_operations as curve_ops
 from . import _surface_operations as surface_ops
 from . import _text_operations as text_ops
-from . import _transform_operations as transform_ops
+from . import transforms as transform_api
 from ._core import State, require_same_runtime
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
@@ -72,14 +72,7 @@ from .topology import (
     Vertex,
     Wire,
 )
-from .transforms import (
-    AFFINE_TRANSFORM_SPEC,
-    QUATERNION_SPEC,
-    TRANSFORM_SPEC,
-    AffineTransform,
-    Quaternion,
-    Transform,
-)
+from .transforms import AffineTransform, Quaternion, Transform
 from .values import (
     Number,
     Point2,
@@ -2606,7 +2599,8 @@ class Runtime:
         z: ScalarInput,
         w: ScalarInput,
     ) -> Quaternion:
-        return Quaternion(x, y, z, w, runtime=self)
+        with using_runtime(self):
+            return transform_api.quaternion(x, y, z, w)
 
     @overload
     def point3(self) -> Point3: ...
@@ -2722,39 +2716,36 @@ class Runtime:
         angle: ScalarInput,
         /,
     ) -> Quaternion:
-        if not isinstance(axis, Vector3):
-            raise TypeError("quaternion_axis_angle expects Vector3")
-        require_same_runtime(self, axis)
-        state = self._value_state(
-            transform_ops.quaternion_axis_angle,
-            result=QUATERNION_SPEC,
-            args=(axis._state, _scalar_state(self, angle)),
-            operation_id="zencad.typed.quaternion.axis_angle",
-        )
-        return Quaternion._from_state(self, state)
+        with using_runtime(self):
+            return transform_api.quaternion_axis_angle(axis, angle)
 
     def identity_transform(self) -> Transform:
-        return Transform(runtime=self)
+        with using_runtime(self):
+            return transform_api.identity_transform()
 
     def identity_affine_transform(self) -> AffineTransform:
-        return AffineTransform(runtime=self)
+        with using_runtime(self):
+            return transform_api.identity_affine_transform()
 
     def affine_transform(
         self,
         rows: Sequence[Sequence[ScalarInput]],
         /,
     ) -> AffineTransform:
-        return AffineTransform(rows, runtime=self)
+        with using_runtime(self):
+            return transform_api.affine_transform(rows)
 
     def affine(
         self,
         rows: Sequence[Sequence[ScalarInput]],
         /,
     ) -> AffineTransform:
-        return self.affine_transform(rows)
+        with using_runtime(self):
+            return transform_api.affine(rows)
 
     def nulltrans(self) -> Transform:
-        return self.identity_transform()
+        with using_runtime(self):
+            return transform_api.identity_transform()
 
     @overload
     def translation(self, vector: Vector3, /) -> Transform: ...
@@ -2769,76 +2760,80 @@ class Runtime:
     ) -> Transform: ...
 
     def translation(self, *args: object) -> Transform:
-        if len(args) == 1 and isinstance(args[0], Vector3):
-            vector = args[0]
-            require_same_runtime(self, vector)
-        elif len(args) == 3:
-            vector = Vector3(
-                cast(ScalarInput, args[0]),
-                cast(ScalarInput, args[1]),
-                cast(ScalarInput, args[2]),
-                runtime=self,
-            )
-        else:
+        with using_runtime(self):
+            if len(args) == 1 and isinstance(args[0], Vector3):
+                return transform_api.translation(args[0])
+            if len(args) == 3:
+                return transform_api.move(*args)
             raise TypeError("translation expects Vector3 or three scalar coordinates")
-        state = self._value_state(
-            transform_ops.translation_transform,
-            result=TRANSFORM_SPEC,
-            args=(vector._state,),
-            operation_id="zencad.typed.transform.translation",
-        )
-        return Transform._from_state(self, state)
 
     def move(self, *args: object) -> Transform:
-        return self.translation(self.vector3(*args))
+        with using_runtime(self):
+            return transform_api.move(*args)
 
     def translate(self, *args: object) -> Transform:
-        return self.move(*args)
+        with using_runtime(self):
+            return transform_api.move(*args)
 
     def moveX(self, value: ScalarInput, /) -> Transform:
-        return self.translation(value, 0, 0)
+        with using_runtime(self):
+            return transform_api.moveX(value)
 
     def moveY(self, value: ScalarInput, /) -> Transform:
-        return self.translation(0, value, 0)
+        with using_runtime(self):
+            return transform_api.moveY(value)
 
     def moveZ(self, value: ScalarInput, /) -> Transform:
-        return self.translation(0, 0, value)
+        with using_runtime(self):
+            return transform_api.moveZ(value)
 
     def movX(self, value: ScalarInput, /) -> Transform:
-        return self.moveX(value)
+        with using_runtime(self):
+            return transform_api.moveX(value)
 
     def movY(self, value: ScalarInput, /) -> Transform:
-        return self.moveY(value)
+        with using_runtime(self):
+            return transform_api.moveY(value)
 
     def movZ(self, value: ScalarInput, /) -> Transform:
-        return self.moveZ(value)
+        with using_runtime(self):
+            return transform_api.moveZ(value)
 
     def translateX(self, value: ScalarInput, /) -> Transform:
-        return self.moveX(value)
+        with using_runtime(self):
+            return transform_api.moveX(value)
 
     def translateY(self, value: ScalarInput, /) -> Transform:
-        return self.moveY(value)
+        with using_runtime(self):
+            return transform_api.moveY(value)
 
     def translateZ(self, value: ScalarInput, /) -> Transform:
-        return self.moveZ(value)
+        with using_runtime(self):
+            return transform_api.moveZ(value)
 
     def right(self, value: ScalarInput, /) -> Transform:
-        return self.moveX(value)
+        with using_runtime(self):
+            return transform_api.moveX(value)
 
     def left(self, value: ScalarInput, /) -> Transform:
-        return self.moveX(-_as_scalar(self, value))
+        with using_runtime(self):
+            return transform_api.left(value)
 
     def forw(self, value: ScalarInput, /) -> Transform:
-        return self.moveY(value)
+        with using_runtime(self):
+            return transform_api.forw(value)
 
     def back(self, value: ScalarInput, /) -> Transform:
-        return self.moveY(-_as_scalar(self, value))
+        with using_runtime(self):
+            return transform_api.back(value)
 
     def up(self, value: ScalarInput, /) -> Transform:
-        return self.moveZ(value)
+        with using_runtime(self):
+            return transform_api.up(value)
 
     def down(self, value: ScalarInput, /) -> Transform:
-        return self.moveZ(-_as_scalar(self, value))
+        with using_runtime(self):
+            return transform_api.down(value)
 
     @overload
     def rotation(self, quaternion: Quaternion, /) -> Transform: ...
@@ -2852,14 +2847,12 @@ class Runtime:
     ) -> Transform: ...
 
     def rotation(self, *args: object) -> Transform:
-        if len(args) == 1 and isinstance(args[0], Quaternion):
-            quaternion = args[0]
-            require_same_runtime(self, quaternion)
-        elif len(args) == 2 and isinstance(args[0], Vector3):
-            quaternion = self.quaternion_axis_angle(args[0], cast(ScalarInput, args[1]))
-        else:
+        with using_runtime(self):
+            if len(args) == 1 and isinstance(args[0], Quaternion):
+                return transform_api.rotation(args[0])
+            if len(args) == 2 and isinstance(args[0], Vector3):
+                return transform_api.rotate(args[0], cast(ScalarInput, args[1]))
             raise TypeError("rotation expects Quaternion or Vector3 and angle")
-        return quaternion.to_transform()
 
     def rotate(
         self,
@@ -2867,27 +2860,28 @@ class Runtime:
         angle: ScalarInput | None = None,
         /,
     ) -> Transform:
-        resolved_axis = self.vector3(axis)
-        if angle is None:
-            angle = resolved_axis.length()
-            resolved_axis = resolved_axis.normalized()
-        return self.rotation(resolved_axis, angle)
+        with using_runtime(self):
+            return transform_api.rotate(axis, angle)
 
     def rotate_quat(
         self,
         quaternion: Quaternion | gp_Quaternion | Sequence[ScalarInput],
         /,
     ) -> Transform:
-        return self.rotation(self.quat(quaternion))
+        with using_runtime(self):
+            return transform_api.rotate_quat(quaternion)
 
     def rotateX(self, angle: ScalarInput, /) -> Transform:
-        return self.rotation(self.vector3(1, 0, 0), angle)
+        with using_runtime(self):
+            return transform_api.rotateX(angle)
 
     def rotateY(self, angle: ScalarInput, /) -> Transform:
-        return self.rotation(self.vector3(0, 1, 0), angle)
+        with using_runtime(self):
+            return transform_api.rotateY(angle)
 
     def rotateZ(self, angle: ScalarInput, /) -> Transform:
-        return self.rotation(self.vector3(0, 0, 1), angle)
+        with using_runtime(self):
+            return transform_api.rotateZ(angle)
 
     def scale(
         self,
@@ -2896,18 +2890,8 @@ class Runtime:
         *,
         center: Point3 | None = None,
     ) -> Transform:
-        if center is None:
-            center = self.point(0, 0, 0)
-        elif not isinstance(center, Point3):
-            raise TypeError("scale center must be Point3")
-        require_same_runtime(self, center)
-        state = self._value_state(
-            transform_ops.scale_transform,
-            result=TRANSFORM_SPEC,
-            args=(_scalar_state(self, factor), center._state),
-            operation_id="zencad.typed.transform.scale",
-        )
-        return Transform._from_state(self, state)
+        with using_runtime(self):
+            return transform_api.scale(factor, center=center)
 
     def scaleXYZ(
         self,
@@ -2918,23 +2902,8 @@ class Runtime:
         *,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        if center is None:
-            center = self.point(0, 0, 0)
-        elif not isinstance(center, Point3):
-            raise TypeError("affine scale center must be Point3")
-        require_same_runtime(self, center)
-        state = self._value_state(
-            transform_ops.affine_scale_transform,
-            result=AFFINE_TRANSFORM_SPEC,
-            args=(
-                _scalar_state(self, x),
-                _scalar_state(self, y),
-                _scalar_state(self, z),
-                center._state,
-            ),
-            operation_id="zencad.typed.affine.scale_xyz",
-        )
-        return AffineTransform._from_state(self, state)
+        with using_runtime(self):
+            return transform_api.scaleXYZ(x, y, z, center=center)
 
     def scaleX(
         self,
@@ -2943,7 +2912,8 @@ class Runtime:
         *,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return self.scaleXYZ(factor, 1, 1, center=center)
+        with using_runtime(self):
+            return transform_api.scaleX(factor, center=center)
 
     def scaleY(
         self,
@@ -2952,7 +2922,8 @@ class Runtime:
         *,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return self.scaleXYZ(1, factor, 1, center=center)
+        with using_runtime(self):
+            return transform_api.scaleY(factor, center=center)
 
     def scaleZ(
         self,
@@ -2961,7 +2932,8 @@ class Runtime:
         *,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        return self.scaleXYZ(1, 1, factor, center=center)
+        with using_runtime(self):
+            return transform_api.scaleZ(factor, center=center)
 
     def mirror(
         self,
@@ -2970,48 +2942,44 @@ class Runtime:
         *,
         origin: Point3 | None = None,
     ) -> Transform:
-        if not isinstance(normal, Vector3):
-            raise TypeError("mirror normal must be Vector3")
-        if origin is None:
-            origin = self.point(0, 0, 0)
-        elif not isinstance(origin, Point3):
-            raise TypeError("mirror origin must be Point3")
-        require_same_runtime(self, normal)
-        require_same_runtime(self, origin)
-        state = self._value_state(
-            transform_ops.mirror_transform,
-            result=TRANSFORM_SPEC,
-            args=(normal._state, origin._state),
-            operation_id="zencad.typed.transform.mirror",
-        )
-        return Transform._from_state(self, state)
+        with using_runtime(self):
+            return transform_api.mirror(normal, origin=origin)
 
     def mirror_plane(self, *normal: object) -> Transform:
-        return self.mirror(self.vector3(*normal))
+        with using_runtime(self):
+            return transform_api.mirror_plane(*normal)
 
     def mirrorXY(self) -> Transform:
-        return self.mirror_plane(0, 0, 1)
+        with using_runtime(self):
+            return transform_api.mirrorXY()
 
     def mirrorYZ(self) -> Transform:
-        return self.mirror_plane(1, 0, 0)
+        with using_runtime(self):
+            return transform_api.mirrorYZ()
 
     def mirrorXZ(self) -> Transform:
-        return self.mirror_plane(0, 1, 0)
+        with using_runtime(self):
+            return transform_api.mirrorXZ()
 
     def mirror_axis(self, *axis: object) -> Transform:
-        return self.rotation(self.vector3(*axis), math.pi)
+        with using_runtime(self):
+            return transform_api.mirror_axis(*axis)
 
     def mirrorX(self) -> Transform:
-        return self.mirror_axis(1, 0, 0)
+        with using_runtime(self):
+            return transform_api.mirrorX()
 
     def mirrorY(self) -> Transform:
-        return self.mirror_axis(0, 1, 0)
+        with using_runtime(self):
+            return transform_api.mirrorY()
 
     def mirrorZ(self) -> Transform:
-        return self.mirror_axis(0, 0, 1)
+        with using_runtime(self):
+            return transform_api.mirrorZ()
 
     def mirrorO(self, *origin: object) -> Transform:
-        return self.scale(-1, center=self.point3(*origin))
+        with using_runtime(self):
+            return transform_api.mirrorO(*origin)
 
     def multitransform(
         self,
@@ -3088,15 +3056,8 @@ class Runtime:
         target: Vector3 | Sequence[ScalarInput],
         /,
     ) -> Transform:
-        resolved_source = self.vector3(source)
-        resolved_target = self.vector3(target)
-        state = self._value_state(
-            transform_ops.shortest_rotation_transform,
-            result=TRANSFORM_SPEC,
-            args=(resolved_source._state, resolved_target._state),
-            operation_id="zencad.typed.transform.shortest_rotation",
-        )
-        return Transform._from_state(self, state)
+        with using_runtime(self):
+            return transform_api.short_rotate(source, target)
 
 
 def _require_bool(value: object, name: str) -> None:

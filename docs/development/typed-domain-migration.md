@@ -1005,9 +1005,27 @@ and `section` declarations live in `_typed/booleans.py`, with resolved OCCT
 implementations in `_boolean_operations.py`. Binary `Shape` operators delegate
 to private declarations in the same module and retain the established
 `zencad.typed.shape.union`, `.difference`, and `.intersection` identities.
-`section` owns its plane-operand normalization but temporarily composes the
-still-unmigrated transform entry points through the selected Runtime context.
-All corresponding Runtime methods are forwarding shims.
+At that checkpoint, `section` owned its plane-operand normalization but still
+composed the then-unmigrated transform entry points through the selected
+Runtime context. All corresponding Runtime methods were forwarding shims.
+
+Task #2063 extracts that transform family. Module-level declarations now own
+quaternion construction and axis-angle conversion, translation, rotation,
+uniform and affine scaling, reflection, shortest rotation, transform and
+affine-transform construction, composition, accessors, and application to
+points and vectors. `Quaternion`, `Transform`, and `AffineTransform` delegate
+their graph-building methods to those declarations; topology-preserving shape
+transforms use declarations in `_typed/shape_transforms.py`. Their resolved
+backends live together in `_transform_operations.py`, including the three
+shape-transform adapters removed from the monolithic `_operations.py`.
+`Runtime` retains only compatibility forwarding and transform-array
+orchestration. `section` now composes module-level transform declarations and
+no longer depends on subject transform implementation in `Runtime`.
+
+The ZenCad operation adapter gained an optional per-call result-spec selector
+so one decorated topology transform can preserve the receiver's exact
+`Vertex`/`Edge`/`Wire`/`Face`/`Shell`/`Solid`/`Compound` cache type. This is
+adapter plumbing in ZenCad; evalcache itself did not require a change.
 
 The public root `zencad.box` is intentionally not switched independently:
 doing that before the neighboring transforms, booleans, and queries move would
@@ -1021,9 +1039,9 @@ No evalcache change is required for this checkpoint. ZenCad consumes
 types from the canonical top-level package; a future evaluator-binding helper
 could reduce adapter plumbing but is not a migration blocker.
 
-Verification on 2026-08-31 after this checkpoint:
+Verification on 2026-09-01 after this checkpoint:
 
-- all 375 tests pass;
+- all 376 tests pass;
 - strict mypy with `--disallow-any-expr` passes all 16 representative typed
   contracts;
 - the decorator tests cover module declaration, Runtime forwarding, operation

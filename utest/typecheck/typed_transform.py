@@ -27,6 +27,8 @@ def transform_algebra(runtime: typed.Runtime) -> None:
         typed.Quaternion,
     )
     assert_type(typed.Quaternion.identity(runtime=runtime), typed.Quaternion)
+    assert_type(typed.quaternion(0, 0, 0, 1), typed.Quaternion)
+    assert_type(typed.quaternion_axis_angle(vector, scalar), typed.Quaternion)
 
     assert_type(quaternion.x, typed.Scalar)
     assert_type(quaternion.y, typed.Scalar)
@@ -43,15 +45,24 @@ def transform_algebra(runtime: typed.Runtime) -> None:
     assert_type(quaternion.value(), tuple[float, float, float, float])
 
     identity = assert_type(runtime.identity_transform(), typed.Transform)
+    assert_type(typed.identity_transform(), typed.Transform)
     assert_type(typed.Transform(runtime=runtime), typed.Transform)
     translation = assert_type(runtime.translation(vector), typed.Transform)
     assert_type(runtime.translation(1, scalar, 3), typed.Transform)
+    assert_type(typed.translation(vector), typed.Transform)
+    assert_type(typed.translation(1, scalar, 3), typed.Transform)
     rotation = assert_type(runtime.rotation(quaternion), typed.Transform)
     assert_type(runtime.rotation(vector, scalar), typed.Transform)
+    assert_type(typed.rotation(quaternion), typed.Transform)
+    assert_type(typed.rotation(vector, scalar), typed.Transform)
+    assert_type(typed.rotate(vector, scalar), typed.Transform)
     scaling = assert_type(runtime.scale(scalar), typed.Transform)
     assert_type(runtime.scale(scalar, center=point), typed.Transform)
+    assert_type(typed.scale(scalar, center=point), typed.Transform)
     reflection = assert_type(runtime.mirror(vector), typed.Transform)
     assert_type(runtime.mirror(vector, origin=point), typed.Transform)
+    assert_type(typed.mirror(vector, origin=point), typed.Transform)
+    assert_type(typed.short_rotate(vector, (1, 0, 0)), typed.Transform)
 
     assert_type(translation.scale, typed.Scalar)
     assert_type(rotation.rotation, typed.Quaternion)
@@ -69,6 +80,7 @@ def transform_algebra(runtime: typed.Runtime) -> None:
         runtime.identity_affine_transform(),
         typed.AffineTransform,
     )
+    assert_type(typed.identity_affine_transform(), typed.AffineTransform)
     affine = assert_type(
         runtime.affine(
             (
@@ -94,6 +106,7 @@ def transform_algebra(runtime: typed.Runtime) -> None:
     assert_type(runtime.scaleY(scalar, center=point), typed.AffineTransform)
     assert_type(runtime.scaleZ(scalar), typed.AffineTransform)
     assert_type(runtime.scaleXYZ(2, 3, scalar), typed.AffineTransform)
+    assert_type(typed.scaleXYZ(2, 3, scalar), typed.AffineTransform)
     assert_type(translation.to_affine(), typed.AffineTransform)
     assert_type(
         typed.AffineTransform.from_transform(translation),

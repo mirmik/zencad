@@ -19,10 +19,17 @@ def _selected_shape_type(args, kwargs):
     return typed.Shape
 
 
+def _selected_shape_result(args, kwargs):
+    if kwargs.get("exact", False):
+        return args[0]._result_spec
+    return SHAPE_SPEC
+
+
 @operation(
     backend=_identity_shape,
     result=SHAPE_SPEC,
     returns=_selected_shape_type,
+    select_result=_selected_shape_result,
     operation_id="zencad.test.selected_shape",
 )
 def _selected_shape(shape, *, exact=False):
@@ -94,6 +101,8 @@ class TypedOperationTest(unittest.TestCase):
         self.assertIs(type(preserved), typed.Shape)
         self.assertIs(type(selected), typed.Solid)
         self.assertEqual(preserved._state.operation_id, "zencad.test.selected_shape")
+        self.assertEqual(preserved._state.result.type_id, "zencad.typed.Shape.v1")
+        self.assertEqual(selected._state.result.type_id, "zencad.typed.Solid.v1")
         self.assertFalse(selected.native().IsNull())
 
     def test_bare_operation_preserves_legacy_lazy_contract(self):

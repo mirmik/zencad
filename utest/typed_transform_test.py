@@ -7,6 +7,7 @@ from OCP.gp import gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
 from evalcache.v2 import CacheRecord, EvaluationMode, Expression
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 TOLERANCE = 1e-12
@@ -37,6 +38,60 @@ class SpyStore:
 
 
 class TypedTransformTest(unittest.TestCase):
+    def test_transform_family_is_declared_at_module_level(self):
+        for name in (
+            "quaternion",
+            "quaternion_axis_angle",
+            "identity_transform",
+            "translation",
+            "rotation",
+            "scale",
+            "mirror",
+            "short_rotate",
+            "identity_affine_transform",
+            "affine_transform",
+            "scaleXYZ",
+        ):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        mass = runtime.box(1).mass()
+        axis = runtime.vector3(0, 0, 1)
+        offset = runtime.vector3(mass, 0, 0)
+        point = runtime.point3(0, 0, 0)
+        with using_runtime(runtime):
+            quaternion = typed.quaternion_axis_angle(axis, mass)
+            values = (
+                typed.translation(offset),
+                typed.rotation(quaternion),
+                typed.scale(mass, center=point),
+                typed.mirror(offset, origin=point),
+                typed.short_rotate(axis, offset),
+                typed.scaleXYZ(mass, 1, 1, center=point),
+            )
+
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertEqual(events, [])
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.transform.translation",
+                "zencad.typed.transform.rotation",
+                "zencad.typed.transform.scale",
+                "zencad.typed.transform.mirror",
+                "zencad.typed.transform.shortest_rotation",
+                "zencad.typed.affine.scale_xyz",
+            ),
+        )
+        moved = runtime.box(1).transform(values[0])
+        self.assertIs(type(moved), typed.Solid)
+        self.assertEqual(moved._state.result.type_id, "zencad.typed.Solid.v1")
+
     def assertCoordinatesAlmostEqual(
         self,
         actual,

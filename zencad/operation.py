@@ -137,6 +137,10 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
         result: evalcache.ResultSpec[ResolvedT],
         returns: type[PublicT]
         | Callable[[tuple[object, ...], Mapping[str, object]], type[PublicT]],
+        select_result: Callable[
+            [tuple[object, ...], Mapping[str, object]], evalcache.ResultSpec[ResolvedT]
+        ]
+        | None,
         operation_id: str | None,
         operation_version: str | None,
         cacheable: bool,
@@ -151,6 +155,7 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
             cacheable=cacheable,
         )
         self.returns = returns
+        self.select_result = select_result
         self.fold_literals = fold_literals
         functools.update_wrapper(self, prepare)
         if isinstance(returns, type):
@@ -174,17 +179,22 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
         lowered_kwargs = {
             name: _lower(runtime, value) for name, value in prepared.kwargs.items()
         }
+        result = (
+            self.select_result(args, kwargs)
+            if self.select_result is not None
+            else self.backend.result
+        )
         if self.fold_literals and not _contains_expression(
             (lowered_args, lowered_kwargs)
         ):
-            state = self.backend.result.validate(
+            state = result.validate(
                 self.backend.function(*lowered_args, **lowered_kwargs),
                 self.backend.operation_id or self.backend.__name__,
             )
         else:
             expression = runtime._evaluator.expression(
                 self.backend.function,
-                result=self.backend.result,
+                result=result,
                 args=lowered_args,
                 kwargs=lowered_kwargs,
                 operation_id=self.backend.operation_id,
@@ -223,6 +233,10 @@ def operation(
     result: evalcache.ResultSpec[ResolvedT],
     returns: type[PublicT]
     | Callable[[tuple[object, ...], Mapping[str, object]], type[PublicT]],
+    select_result: Callable[
+        [tuple[object, ...], Mapping[str, object]], evalcache.ResultSpec[ResolvedT]
+    ]
+    | None = None,
     operation_id: str | None = None,
     operation_version: str | None = "1",
     cacheable: bool = True,
@@ -238,6 +252,10 @@ def operation(
     result: evalcache.ResultSpec[Any] | None = None,
     returns: type[Any]
     | Callable[[tuple[object, ...], Mapping[str, object]], type[Any]]
+    | None = None,
+    select_result: Callable[
+        [tuple[object, ...], Mapping[str, object]], evalcache.ResultSpec[Any]
+    ]
     | None = None,
     operation_id: str | None = None,
     operation_version: str | None = "1",
@@ -255,6 +273,7 @@ def operation(
         backend is None
         and result is None
         and returns is None
+        and select_result is None
         and operation_id is None
         and operation_version == "1"
         and cacheable
@@ -281,6 +300,7 @@ def operation(
             backend=backend,
             result=result,
             returns=returns,
+            select_result=select_result,
             operation_id=operation_id,
             operation_version=operation_version,
             cacheable=cacheable,

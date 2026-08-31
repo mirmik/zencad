@@ -5,10 +5,18 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _boolean_operations as ops
+from .solid import halfspace
 from .topology import SHAPE_SPEC, Shape
+from .transforms import moveZ, short_rotate, translation
 from .values import Point3, ScalarInput, Vector3
 
 if TYPE_CHECKING:
@@ -197,11 +205,13 @@ def _section_operand(
             raise TypeError(f"{name} plane vector must contain three coordinates")
         direction = runtime.vector3(coordinates)
     else:
-        return runtime.halfspace().up(cast(ScalarInput, value))
-    transform = runtime.translation(direction) * runtime.short_rotate(
-        runtime.vector3(0, 0, 1), direction
-    )
-    return runtime.halfspace().transform(transform)
+        with using_runtime(runtime):
+            return halfspace().transform(moveZ(cast(ScalarInput, value)))
+    with using_runtime(runtime):
+        transform = translation(direction) * short_rotate(
+            runtime.vector3(0, 0, 1), direction
+        )
+        return halfspace().transform(transform)
 
 
 __all__ = [

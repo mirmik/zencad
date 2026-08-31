@@ -12,7 +12,11 @@ import math
 import struct
 import sys
 
+from OCP.BRepBuilderAPI import BRepBuilderAPI_GTransform, BRepBuilderAPI_Transform
 from OCP.gp import gp_GTrsf, gp_Mat, gp_Quaternion, gp_Trsf, gp_Vec, gp_XYZ
+
+from zencad.geom.shape import Shape as ResolvedShape
+from zencad.geom.trans import move
 
 from ._value_operations import Point3Value, Vector3Value
 
@@ -674,6 +678,32 @@ def affine_to_ocp(value: AffineTransformValue) -> gp_GTrsf:
     )
     transform.SetTranslationPart(gp_XYZ(matrix[3], matrix[7], matrix[11]))
     return transform
+
+
+def translate_shape(shape: ResolvedShape, vector: Vector3Value) -> ResolvedShape:
+    return shape.transform(move(vector.x, vector.y, vector.z))
+
+
+def transform_shape(
+    shape: ResolvedShape,
+    value: TransformValue,
+) -> ResolvedShape:
+    transformed = BRepBuilderAPI_Transform(
+        shape.Shape(), transform_to_ocp(value), True
+    ).Shape()
+    return ResolvedShape(transformed)
+
+
+def affine_transform_shape(
+    shape: ResolvedShape,
+    value: AffineTransformValue,
+) -> ResolvedShape:
+    transformed = BRepBuilderAPI_GTransform(
+        shape.Shape(), affine_to_ocp(value), True
+    ).Shape()
+    if transformed.IsNull():
+        raise ValueError("affine transformation produced a null shape")
+    return ResolvedShape(transformed)
 
 
 def quaternion_from_ocp(value: gp_Quaternion) -> QuaternionValue:

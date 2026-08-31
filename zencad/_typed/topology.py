@@ -41,6 +41,7 @@ from OCP.Geom import Geom_Curve, Geom_Surface
 from evalcache import Expression, ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
+from zencad.operation import using_runtime
 from zencad.occ_compat import (
     as_compound,
     as_compsolid,
@@ -54,6 +55,7 @@ from zencad.occ_compat import (
 from zencad.runtime.scene_protocol import encode_brep
 
 from . import _operations as ops
+from . import transforms as transform_api
 from . import _bound_operations as bound_ops
 from . import _mesh_operations as mesh_ops
 from ._core import Handle, State, require_same_runtime
@@ -290,23 +292,11 @@ class Shape(Handle[ResolvedShape]):
         """Apply a typed similarity or general affine transformation."""
         if not isinstance(transformation, (Transform, AffineTransform)):
             raise TypeError("Shape.transform expects Transform or AffineTransform")
-        require_same_runtime(self.runtime, transformation)
-        operation = (
-            ops.affine_transform
-            if isinstance(transformation, AffineTransform)
-            else ops.transform
-        )
-        expression = self.runtime._expression(
-            operation,
-            result=self._result_spec,
-            args=(self._state, transformation._state),
-            operation_id=(
-                "zencad.typed.shape.affine_transform"
-                if isinstance(transformation, AffineTransform)
-                else "zencad.typed.shape.transform"
-            ),
-        )
-        return type(self)._from_state(self.runtime, expression)
+        from .shape_transforms import _shape_affine_transform, _shape_transform
+
+        if isinstance(transformation, AffineTransform):
+            return cast(ShapeT, _shape_affine_transform(self, transformation))
+        return cast(ShapeT, _shape_transform(self, transformation))
 
     @overload
     def translate(self: ShapeT, vector: Vector3, /) -> ShapeT: ...
@@ -321,29 +311,29 @@ class Shape(Handle[ResolvedShape]):
     ) -> ShapeT: ...
 
     def translate(self: ShapeT, *args: object) -> ShapeT:
+        from .shape_transforms import _shape_translate
+
         vector = self.runtime.vector3(*args)
-        expression = self.runtime._expression(
-            ops.translate,
-            result=self._result_spec,
-            args=(self._state, vector._state),
-            operation_id="zencad.typed.shape.translate",
-        )
-        return type(self)._from_state(self.runtime, expression)
+        return cast(ShapeT, _shape_translate(self, vector))
 
     def move(self: ShapeT, *args: object) -> ShapeT:
-        return self.transform(self.runtime.move(*args))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.move(*args))
 
     def mov(self: ShapeT, *args: object) -> ShapeT:
         return self.move(*args)
 
     def moveX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.moveX(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.moveX(value))
 
     def moveY(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.moveY(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.moveY(value))
 
     def moveZ(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.moveZ(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.moveZ(value))
 
     def movX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
         return self.moveX(value)
@@ -364,22 +354,28 @@ class Shape(Handle[ResolvedShape]):
         return self.moveZ(value)
 
     def right(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.right(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.right(value))
 
     def left(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.left(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.left(value))
 
     def forw(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.forw(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.forw(value))
 
     def back(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.back(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.back(value))
 
     def up(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.up(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.up(value))
 
     def down(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.down(value))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.down(value))
 
     def rotate(
         self: ShapeT,
@@ -387,7 +383,8 @@ class Shape(Handle[ResolvedShape]):
         angle: ScalarInput | None = None,
         /,
     ) -> ShapeT:
-        return self.transform(self.runtime.rotate(axis, angle))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.rotate(axis, angle))
 
     def rot(
         self: ShapeT,
@@ -398,13 +395,16 @@ class Shape(Handle[ResolvedShape]):
         return self.rotate(axis, angle)
 
     def rotateX(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.rotateX(angle))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.rotateX(angle))
 
     def rotateY(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.rotateY(angle))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.rotateY(angle))
 
     def rotateZ(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
-        return self.transform(self.runtime.rotateZ(angle))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.rotateZ(angle))
 
     def rotX(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
         return self.rotateX(angle)
@@ -422,7 +422,8 @@ class Shape(Handle[ResolvedShape]):
         /,
     ) -> ShapeT:
         resolved_center = None if center is None else self.runtime.point3(center)
-        return self.transform(self.runtime.scale(factor, center=resolved_center))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.scale(factor, center=resolved_center))
 
     def scaleXYZ(
         self: ShapeT,
@@ -433,9 +434,10 @@ class Shape(Handle[ResolvedShape]):
         /,
     ) -> ShapeT:
         resolved_center = None if center is None else self.runtime.point3(center)
-        return self.transform(
-            self.runtime.scaleXYZ(x, y, z, center=resolved_center)
-        )
+        with using_runtime(self.runtime):
+            return self.transform(
+                transform_api.scaleXYZ(x, y, z, center=resolved_center)
+            )
 
     def scaleX(
         self: ShapeT,
@@ -444,7 +446,10 @@ class Shape(Handle[ResolvedShape]):
         /,
     ) -> ShapeT:
         resolved_center = None if center is None else self.runtime.point3(center)
-        return self.transform(self.runtime.scaleX(factor, center=resolved_center))
+        with using_runtime(self.runtime):
+            return self.transform(
+                transform_api.scaleX(factor, center=resolved_center)
+            )
 
     def scaleY(
         self: ShapeT,
@@ -453,7 +458,10 @@ class Shape(Handle[ResolvedShape]):
         /,
     ) -> ShapeT:
         resolved_center = None if center is None else self.runtime.point3(center)
-        return self.transform(self.runtime.scaleY(factor, center=resolved_center))
+        with using_runtime(self.runtime):
+            return self.transform(
+                transform_api.scaleY(factor, center=resolved_center)
+            )
 
     def scaleZ(
         self: ShapeT,
@@ -462,32 +470,42 @@ class Shape(Handle[ResolvedShape]):
         /,
     ) -> ShapeT:
         resolved_center = None if center is None else self.runtime.point3(center)
-        return self.transform(self.runtime.scaleZ(factor, center=resolved_center))
+        with using_runtime(self.runtime):
+            return self.transform(
+                transform_api.scaleZ(factor, center=resolved_center)
+            )
 
     def mirror(
         self: ShapeT,
         normal: Vector3 | Sequence[ScalarInput],
         /,
     ) -> ShapeT:
-        return self.transform(self.runtime.mirror(self.runtime.vector3(normal)))
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirror(self.runtime.vector3(normal)))
 
     def mirrorX(self: ShapeT) -> ShapeT:
-        return self.transform(self.runtime.mirrorX())
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirrorX())
 
     def mirrorY(self: ShapeT) -> ShapeT:
-        return self.transform(self.runtime.mirrorY())
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirrorY())
 
     def mirrorZ(self: ShapeT) -> ShapeT:
-        return self.transform(self.runtime.mirrorZ())
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirrorZ())
 
     def mirrorXY(self: ShapeT) -> ShapeT:
-        return self.transform(self.runtime.mirrorXY())
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirrorXY())
 
     def mirrorXZ(self: ShapeT) -> ShapeT:
-        return self.transform(self.runtime.mirrorXZ())
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirrorXZ())
 
     def mirrorYZ(self: ShapeT) -> ShapeT:
-        return self.transform(self.runtime.mirrorYZ())
+        with using_runtime(self.runtime):
+            return self.transform(transform_api.mirrorYZ())
 
     def _materialized_bool(
         self,
