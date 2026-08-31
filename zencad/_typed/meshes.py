@@ -138,6 +138,14 @@ class MeshData(Handle[ops.MeshValue]):
     def triangle_count(self) -> int:
         return len(self._resolved().triangles)
 
+    def get_nodes(self) -> tuple[VectorRow, ...]:
+        """Compatibility spelling returning immutable numeric node rows."""
+        return self.positions
+
+    def get_triangles(self) -> tuple[TriangleRow, ...]:
+        """Compatibility spelling returning immutable zero-based indices."""
+        return self.triangles
+
     def boundbox(self) -> BoundaryBox:
         state = self.runtime._value_state(
             ops.mesh_boundary_box,

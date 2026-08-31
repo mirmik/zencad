@@ -1084,8 +1084,14 @@
           "source": "zencad.geom.operations",
           "default": {"status": "missing", "typed": "typed topology operation/result for {name}", "materialization": "structured native data only at explicit boundary"},
           "overrides": {
-            "triangulate": {"status": "partial", "typed": "Shape.to_mesh() -> MeshData"},
-            "triangulate_face": {"status": "implemented", "typed": "Face.triangulate() -> MeshData"}
+            "chamfer": {"status": "implemented", "typed": "Runtime.chamfer() / Shape.chamfer() -> Shape"},
+            "fillet": {"status": "implemented", "typed": "Runtime.fillet() / Shape.fillet() -> Shape"},
+            "fillet2d": {"status": "implemented", "typed": "Runtime.fillet2d() / Face.fillet2d() -> Face"},
+            "get_nodes": {"status": "implemented", "typed": "Runtime.get_nodes(MeshData | Poly_Triangulation) -> tuple[VectorRow, ...]"},
+            "get_triangles": {"status": "implemented", "typed": "Runtime.get_triangles(MeshData | Poly_Triangulation) -> tuple[TriangleRow, ...]"},
+            "restore_shapetype": {"status": "implemented", "typed": "Runtime.restore_shapetype() / Shape.restore_shapetype() -> precise Shape subtype"},
+            "triangulate": {"status": "implemented", "typed": "Runtime.triangulate() / Shape.to_mesh() -> MeshData"},
+            "triangulate_face": {"status": "implemented", "typed": "Runtime.triangulate_face() / Face.triangulate() -> MeshData"}
           }
         },
         {

@@ -41,6 +41,20 @@ def topology_contract(
     assert_type(runtime.section(shape, solid), typed.Shape)
     assert_type(runtime.section(shape, 0), typed.Shape)
     assert_type(runtime.section(shape, runtime.vector3(0, 0, 1)), typed.Shape)
+    assert_type(runtime.fillet(solid, 0.1), typed.Shape)
+    assert_type(runtime.chamfer(solid, 0.1), typed.Shape)
+    assert_type(runtime.fillet2d(face, 0.1), typed.Face)
+    assert_type(runtime.restore_shapetype(solid), typed.Solid)
+    assert_type(runtime.restore_shapetype(shape), typed.Shape)
+    assert_type(shape.restore_shapetype(), typed.Shape)
+    mesh = assert_type(runtime.triangulate(shape, 0.1), typed.MeshData)
+    assert_type(runtime.triangulate_face(face, 0.1), typed.MeshData)
+    assert_type(mesh.get_nodes(), tuple[tuple[float, float, float], ...])
+    assert_type(mesh.get_triangles(), tuple[tuple[int, int, int], ...])
+    assert_type(
+        runtime.get_nodes(mesh), tuple[tuple[float, float, float], ...]
+    )
+    assert_type(runtime.get_triangles(mesh), tuple[tuple[int, int, int], ...])
     points = (
         runtime.point3(0, 0, 0),
         runtime.point3(1, 0, 0),

@@ -84,5 +84,41 @@ class TypedSectionTest(unittest.TestCase):
             runtime.section(runtime.box(1), other.box(1))
 
 
+class TypedOperationCompatibilityTest(unittest.TestCase):
+    def test_root_style_fillet_wrappers_preserve_typed_results(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        solid = runtime.box(3)
+        face = runtime.rectangle(3, 3)
+
+        self.assertIs(type(runtime.fillet(solid, 0.1)), typed.Shape)
+        self.assertIs(type(runtime.chamfer(solid, 0.1)), typed.Shape)
+        self.assertIs(type(runtime.fillet2d(face, 0.1)), typed.Face)
+
+    def test_restore_shapetype_returns_the_precise_handle_when_unique(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        solid_as_shape = runtime.union((runtime.box(1),))
+        face_as_shape = runtime.section(runtime.box(1), 0.5)
+
+        self.assertIs(type(solid_as_shape), typed.Shape)
+        self.assertIs(type(solid_as_shape.restore_shapetype()), typed.Solid)
+        self.assertIs(type(face_as_shape.restore_shapetype()), typed.Shape)
+
+    def test_triangulation_compatibility_returns_immutable_rows(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        mesh = runtime.triangulate(runtime.box(1), 0.1)
+        face_mesh = runtime.triangulate_face(runtime.rectangle(1, 1), 0.1)
+
+        self.assertIs(type(mesh), typed.MeshData)
+        self.assertIs(type(face_mesh), typed.MeshData)
+        self.assertEqual(runtime.get_nodes(mesh), mesh.positions)
+        self.assertEqual(runtime.get_triangles(mesh), mesh.triangles)
+        self.assertEqual(mesh.get_nodes(), mesh.positions)
+        self.assertEqual(mesh.get_triangles(), mesh.triangles)
+
+        native = mesh.native()
+        self.assertEqual(runtime.get_nodes(native), mesh.positions)
+        self.assertEqual(runtime.get_triangles(native), mesh.triangles)
+
+
 if __name__ == "__main__":
     unittest.main()

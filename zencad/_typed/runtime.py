@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Callable, Literal, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
+from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
 from evalcache.v2 import (
     CachePolicy,
@@ -38,6 +39,7 @@ from ._core import State, require_same_runtime
 from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .exttrans import MultiTransform
+from .meshes import MeshData
 from .records import Interval
 from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .text import FontAspect
@@ -438,6 +440,114 @@ class Runtime:
             operation_id="zencad.typed.section",
         )
         return Shape._from_state(self, expression)
+
+    def fillet(
+        self,
+        shape: Shape,
+        radius: ScalarInput,
+        references: Sequence[Point3] | None = None,
+        /,
+    ) -> Shape:
+        _require_shape(self, shape, "fillet")
+        return shape.fillet(radius, references)
+
+    def chamfer(
+        self,
+        shape: Shape,
+        radius: ScalarInput,
+        references: Sequence[Point3] | None = None,
+        /,
+    ) -> Shape:
+        _require_shape(self, shape, "chamfer")
+        return shape.chamfer(radius, references)
+
+    def fillet2d(
+        self,
+        shape: Face,
+        radius: ScalarInput,
+        references: Sequence[Point3] | None = None,
+        /,
+    ) -> Face:
+        if not isinstance(shape, Face):
+            raise TypeError("fillet2d expects Face")
+        require_same_runtime(self, shape)
+        return shape.fillet2d(radius, references)
+
+    @overload
+    def restore_shapetype(self, shape: Solid, /) -> Solid: ...
+
+    @overload
+    def restore_shapetype(self, shape: Shell, /) -> Shell: ...
+
+    @overload
+    def restore_shapetype(self, shape: Face, /) -> Face: ...
+
+    @overload
+    def restore_shapetype(self, shape: Wire, /) -> Wire: ...
+
+    @overload
+    def restore_shapetype(self, shape: Edge, /) -> Edge: ...
+
+    @overload
+    def restore_shapetype(self, shape: Shape, /) -> Shape: ...
+
+    def restore_shapetype(self, shape: Shape, /) -> Shape:
+        _require_shape(self, shape, "restore_shapetype")
+        candidates = (
+            shape.solids(),
+            shape.shells(),
+            shape.faces(),
+            shape.wires(),
+            shape.edges(),
+        )
+        for candidates_of_kind in candidates:
+            if len(candidates_of_kind) == 1:
+                return candidates_of_kind[0]
+        return shape
+
+    def triangulate(self, shape: Shape, deflection: Number, /) -> MeshData:
+        _require_shape(self, shape, "triangulate")
+        return shape.to_mesh(linear_deflection=deflection)
+
+    def triangulate_face(self, shape: Face, deflection: Number, /) -> MeshData:
+        if not isinstance(shape, Face):
+            raise TypeError("triangulate_face expects Face")
+        require_same_runtime(self, shape)
+        return shape.triangulate(linear_deflection=deflection)
+
+    def get_nodes(
+        self,
+        triangulation: MeshData | Poly_Triangulation,
+        /,
+    ) -> tuple[tuple[float, float, float], ...]:
+        if isinstance(triangulation, MeshData):
+            require_same_runtime(self, triangulation)
+            return triangulation.get_nodes()
+        if not isinstance(triangulation, Poly_Triangulation):
+            raise TypeError("get_nodes expects MeshData or Poly_Triangulation")
+        return tuple(
+            (
+                float(triangulation.Node(index).X()),
+                float(triangulation.Node(index).Y()),
+                float(triangulation.Node(index).Z()),
+            )
+            for index in range(1, triangulation.NbNodes() + 1)
+        )
+
+    def get_triangles(
+        self,
+        triangulation: MeshData | Poly_Triangulation,
+        /,
+    ) -> tuple[tuple[int, int, int], ...]:
+        if isinstance(triangulation, MeshData):
+            require_same_runtime(self, triangulation)
+            return triangulation.get_triangles()
+        if not isinstance(triangulation, Poly_Triangulation):
+            raise TypeError("get_triangles expects MeshData or Poly_Triangulation")
+        return tuple(
+            tuple(value - 1 for value in triangulation.Triangle(index).Get())
+            for index in range(1, triangulation.NbTriangles() + 1)
+        )
 
     def empty_boundary_box(self) -> BoundaryBox:
         """Return the identity value for boundary-box union."""
@@ -2581,6 +2691,12 @@ def _require_shapes(
     for shape in values:
         require_same_runtime(runtime, shape)
     return values
+
+
+def _require_shape(runtime: Runtime, shape: Shape, name: str) -> None:
+    if not isinstance(shape, Shape):
+        raise TypeError(f"{name} expects Shape")
+    require_same_runtime(runtime, shape)
 
 
 def _section_operand(

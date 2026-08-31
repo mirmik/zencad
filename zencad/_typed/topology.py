@@ -888,6 +888,10 @@ class Shape(Handle[ResolvedShape]):
         )
         return Face._from_state(self.runtime, expression)
 
+    def restore_shapetype(self) -> Shape:
+        """Recover a precise topology handle when exactly one subtype exists."""
+        return self.runtime.restore_shapetype(self)
+
     def edges(self) -> DeferredSequence[Edge]:
         return self._topology_query(
             ops.edges,
