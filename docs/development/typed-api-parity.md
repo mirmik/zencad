@@ -51,12 +51,12 @@ operators:
 | Family | Total | Implemented | Partial | Missing | Repair | Unchanged |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
-| Transforms | 64 | 55 | 0 | 0 | 9 | 0 |
-| Topology and bounds | 117 | 108 | 0 | 0 | 8 | 1 |
+| Transforms | 64 | 64 | 0 | 0 | 0 | 0 |
+| Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
-| Sweeps and operations | 45 | 3 | 4 | 38 | 0 | 0 |
+| Sweeps and operations | 45 | 7 | 1 | 37 | 0 | 0 |
 | Mesh, convert, display | 18 | 2 | 3 | 11 | 0 | 2 |
-| **Total** | **380** | **302** | **7** | **49** | **19** | **3** |
+| **Total** | **380** | **319** | **4** | **48** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 missing entries are aliases; a single typed operation can close several rows.
@@ -72,6 +72,11 @@ point division. The affine repair #2024 now provides an immutable
 `AffineTransform` domain handle, deterministic matrix serialization, general
 composition, and explicit `gp_GTrsf` materialization. `GeneralTransformation`
 remains a compatibility alias in the typed surface.
+
+The first #2043 tranche adds graph-preserving sequence and variadic boolean
+operations alongside the pairwise operators. `section` now accepts typed shape
+operands and the legacy scalar/vector plane forms, while every result remains
+an explicit general `Shape` because boolean topology is not subtype-stable.
 
 #2040 closes topology predicates, CurveAlgo queries, modeling convenience
 methods, native adaptor boundaries, structured shape properties, and immutable

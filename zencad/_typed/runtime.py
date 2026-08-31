@@ -365,6 +365,80 @@ class Runtime:
         """Legacy spelling for :meth:`empty_shape`."""
         return self.empty_shape()
 
+    def union(
+        self,
+        shapes: Shape | Sequence[Shape],
+        /,
+        *others: Shape,
+    ) -> Shape:
+        values = _require_shapes(self, shapes, others, "union")
+        expression = self._expression(
+            ops.union_shapes,
+            result=SHAPE_SPEC,
+            args=(tuple(shape._state for shape in values),),
+            operation_id="zencad.typed.union",
+        )
+        return Shape._from_state(self, expression)
+
+    def intersect(
+        self,
+        shapes: Shape | Sequence[Shape],
+        /,
+        *others: Shape,
+    ) -> Shape:
+        values = _require_shapes(self, shapes, others, "intersect")
+        expression = self._expression(
+            ops.intersection_shapes,
+            result=SHAPE_SPEC,
+            args=(tuple(shape._state for shape in values),),
+            operation_id="zencad.typed.intersect",
+        )
+        return Shape._from_state(self, expression)
+
+    def intersection(
+        self,
+        shapes: Shape | Sequence[Shape],
+        /,
+        *others: Shape,
+    ) -> Shape:
+        """Descriptive alias for the legacy :meth:`intersect` spelling."""
+        return self.intersect(shapes, *others)
+
+    def difference(
+        self,
+        shapes: Shape | Sequence[Shape],
+        /,
+        *others: Shape,
+    ) -> Shape:
+        values = _require_shapes(self, shapes, others, "difference")
+        expression = self._expression(
+            ops.difference_shapes,
+            result=SHAPE_SPEC,
+            args=(tuple(shape._state for shape in values),),
+            operation_id="zencad.typed.difference",
+        )
+        return Shape._from_state(self, expression)
+
+    def section(
+        self,
+        left: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput],
+        right: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput] = 0,
+        /,
+        *,
+        pretty: bool = False,
+    ) -> Shape:
+        """Intersect shape boundaries, accepting legacy plane operands."""
+        _require_bool(pretty, "section pretty")
+        left_shape = _section_operand(self, left, "section left")
+        right_shape = _section_operand(self, right, "section right")
+        expression = self._expression(
+            ops.section,
+            result=SHAPE_SPEC,
+            args=(left_shape._state, right_shape._state, pretty),
+            operation_id="zencad.typed.section",
+        )
+        return Shape._from_state(self, expression)
+
     def empty_boundary_box(self) -> BoundaryBox:
         """Return the identity value for boundary-box union."""
         return BoundaryBox._from_state(self, bound_ops.empty_boundary_box())
@@ -2484,6 +2558,52 @@ def _require_shells(
     for shell in values:
         require_same_runtime(runtime, shell)
     return values
+
+
+def _require_shapes(
+    runtime: Runtime,
+    shapes: Shape | Sequence[Shape],
+    others: tuple[Shape, ...],
+    name: str,
+) -> tuple[Shape, ...]:
+    if isinstance(shapes, Shape):
+        values = (shapes, *others)
+    elif isinstance(shapes, Sequence) and not isinstance(shapes, (str, bytes)):
+        if others:
+            raise TypeError(f"{name} cannot combine a Shape sequence with extra operands")
+        values = tuple(shapes)
+    else:
+        raise TypeError(f"{name} expects Shape operands or a sequence of Shape")
+    if not values:
+        raise ValueError(f"{name} requires at least one Shape")
+    if not all(isinstance(shape, Shape) for shape in values):
+        raise TypeError(f"{name} expects only Shape operands")
+    for shape in values:
+        require_same_runtime(runtime, shape)
+    return values
+
+
+def _section_operand(
+    runtime: Runtime,
+    value: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput],
+    name: str,
+) -> Shape:
+    if isinstance(value, Shape):
+        require_same_runtime(runtime, value)
+        return value
+    if isinstance(value, (Point3, Vector3)):
+        direction = runtime.vector3(value)
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        coordinates = tuple(value)
+        if len(coordinates) != 3:
+            raise TypeError(f"{name} plane vector must contain three coordinates")
+        direction = runtime.vector3(coordinates)
+    else:
+        return runtime.halfspace().up(cast(ScalarInput, value))
+    transform = runtime.translation(direction) * runtime.short_rotate(
+        runtime.vector3(0, 0, 1), direction
+    )
+    return runtime.halfspace().transform(transform)
 
 
 def _require_faces(

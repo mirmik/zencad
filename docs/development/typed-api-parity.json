@@ -1074,9 +1074,10 @@
           "source": "zencad.geom.boolops",
           "default": {"status": "missing", "typed": "typed boolean operation {name}", "materialization": "none"},
           "overrides": {
-            "union": {"status": "partial", "typed": "Shape.__add__() pairwise; list reduction remains"},
-            "intersect": {"status": "partial", "typed": "Shape.__xor__() pairwise; list reduction remains"},
-            "difference": {"status": "partial", "typed": "Shape.__sub__() pairwise; list reduction remains"}
+            "union": {"status": "implemented", "typed": "Runtime.union(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__add__() pairwise"},
+            "intersect": {"status": "implemented", "typed": "Runtime.intersect(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__xor__() pairwise"},
+            "difference": {"status": "implemented", "typed": "Runtime.difference(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__sub__() pairwise"},
+            "section": {"status": "implemented", "typed": "Runtime.section(Shape | plane, Shape | plane) -> Shape"}
           }
         },
         {

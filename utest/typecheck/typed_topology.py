@@ -33,6 +33,14 @@ def topology_contract(
     assert_type(runtime.make_solid((shell,)), typed.Solid)
     assert_type(runtime.empty_shape(), typed.Shape)
     assert_type(runtime.nullshape(), typed.Shape)
+    assert_type(runtime.union((shape, solid)), typed.Shape)
+    assert_type(runtime.union(shape, solid), typed.Shape)
+    assert_type(runtime.intersect((shape, solid)), typed.Shape)
+    assert_type(runtime.intersection(shape, solid), typed.Shape)
+    assert_type(runtime.difference((shape, solid)), typed.Shape)
+    assert_type(runtime.section(shape, solid), typed.Shape)
+    assert_type(runtime.section(shape, 0), typed.Shape)
+    assert_type(runtime.section(shape, runtime.vector3(0, 0, 1)), typed.Shape)
     points = (
         runtime.point3(0, 0, 0),
         runtime.point3(1, 0, 0),
