@@ -670,6 +670,10 @@ compatibility spelling.
 Binormal and parallel pipe-shell modes also repair a legacy boundary bug: the
 old code called a nonexistent `vector3.Dir()` method. Both paths now construct
 an owned `gp_Dir` explicitly, and legacy plus typed regressions exercise them.
+`Runtime.revol2()` retains the documented radius, section-count, yaw, roll,
+and multipart approximation controls, but returns an exact `Solid` instead of
+the legacy lazy wrapper. Scalar interval bounds remain graph operands and the
+resolved boundary rejects empty/non-finite sweeps and undersampled parts.
 
 Resolved surfaces are full-precision `GeomTools_SurfaceSet` bytes with a
 deterministic value key. `Surface.from_ocp()` captures an owned snapshot and
@@ -844,7 +848,7 @@ separate public-cutover decision and compatibility audit described by Stage 7.
 
 ## Stage 7: public cutover
 
-Status: parity inventory complete; family migrations are in progress. The
+Status: parity inventory and private family migrations are complete. The
 machine-readable source of truth is
 [`typed-api-parity.json`](typed-api-parity.json), with rationale and current
 counts in [`typed-api-parity.md`](typed-api-parity.md).
@@ -937,6 +941,35 @@ Verification on 2026-08-31 after this checkpoint:
   and STL/SVG/mesh compatibility and managed/direct scene tests pass;
 - a clean wheel using the local evalcache checkout passes the installed smoke
   outside the source tree, including typed scene snapshot transport.
+
+### Sweep and sweep-law checkpoint
+
+Tasks #2036 and #2042 complete the final missing parity family. Immutable
+`SweepScaleLaw`, `SweepSectionLaw`, and `SweepLocationLaw` descriptions retain
+their typed graph operands until terminal surface evaluation. Topology
+extrusion, revolution, loft, pipe, pipe-shell, single-profile sweep, and rolled
+revolution all return stable domain handles. Literal policies select exact
+`Solid`/`Shell` results where OCCT topology is knowable; ordinary pipe and
+extrusion/revolution remain general `Shape` where the profile controls the
+result kind.
+
+Verification on 2026-08-31 after this checkpoint:
+
+- the headless runner passes its isolated 3-test and 13-test groups plus 351
+  discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 15 representative typed
+  contracts;
+- the parity inventory reports 371 implemented, 0 partial, 0 missing, 6
+  explicitly characterized repair, and 3 unchanged rows;
+- the immediate/deferred x cache on/off matrix covers all topology sweep
+  families, all ten pipe trihedron modes, every pipe transition, immutable
+  surface laws, validation, and exact result classes;
+- shared-store and fresh-process tests observe cache hits for typed revolution
+  graphs, including the multipart rolled-revolution path;
+- the parity checker, Ruff F checks, compileall, and diff integrity pass;
+- a clean wheel built with the local evalcache checkout passes the installed
+  smoke outside the source tree with laws, extrusion, revolution, loft, pipe,
+  pipe-shell, and `revol2` exercised.
 
 ## Stage 8: typing and cleanup
 

@@ -1070,7 +1070,8 @@
             "geomfill_triedron_map": {"status": "implemented", "typed": "PipeTrihedron"},
             "pipe": {"status": "implemented", "typed": "Runtime.pipe(Shape, Edge | Wire, ...) -> Shape"},
             "pipe_shell": {"status": "implemented", "typed": "Runtime.pipe_shell(Sequence[Edge | Wire], Edge | Wire, ...) -> Solid | Shell"},
-            "sweep": {"status": "implemented", "typed": "Runtime.sweep(Edge | Wire, Edge | Wire, ...) -> Solid"}
+            "sweep": {"status": "implemented", "typed": "Runtime.sweep(Edge | Wire, Edge | Wire, ...) -> Solid"},
+            "revol2": {"status": "implemented", "typed": "Runtime.revol2(Shape, ScalarInput, ...) -> Solid"}
           }
         },
         {

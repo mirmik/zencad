@@ -54,12 +54,12 @@ operators:
 | Transforms | 64 | 64 | 0 | 0 | 0 | 0 |
 | Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
-| Sweeps and operations | 45 | 29 | 0 | 16 | 0 | 0 |
+| Sweeps and operations | 45 | 45 | 0 | 0 | 0 | 0 |
 | Mesh, convert, display | 18 | 16 | 0 | 0 | 0 | 2 |
-| **Total** | **380** | **355** | **0** | **16** | **6** | **3** |
+| **Total** | **380** | **371** | **0** | **0** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
-missing entries are aliases; a single typed operation can close several rows.
+rows are aliases, so a single typed operation can close several of them.
 Conversely, a sweep or affine-transform row can require a substantial domain
 design.
 
@@ -90,6 +90,14 @@ fail explicitly when that topology is absent. Curve projection returns a
 `CurveProjection` record containing graph-preserving point, parameter, and
 distance handles. With this tranche, every non-sweep operation owned by #2043
 is implemented; the remaining rows in this family belong to the sweep tasks.
+
+#2036 and #2042 complete the sweep family. Sweep laws are frozen compositions
+of typed curves, scalars, intervals, and enums; only the terminal Surface
+operation materializes mutable OCCT laws. Topology extrusion, revolution,
+loft, pipe, pipe-shell, and rolled `revol2` operations preserve graph inputs
+and return stable `Shape`, `Shell`, or `Solid` handles. `PipeTrihedron` and
+`PipeTransition` replace string/integer option tables, and the single-profile
+`sweep` spelling is a characterized compatibility alias.
 
 The first #2044 tranche makes BREP file round-trips and native mesh conversion
 explicit typed boundaries. `Runtime.from_brep()` snapshots imported topology
@@ -222,7 +230,8 @@ Family migration cards may change `missing`, `partial`, and `repair` rows to
 `implemented` only together with runtime characterization and static type
 coverage. The final public cutover remains blocked until:
 
-1. every typed-domain row is `implemented` or explicitly `unchanged`;
+1. every typed-domain row is `implemented`, has an explicitly characterized
+   `repair` contract, or is intentionally `unchanged`;
 2. the signature snapshot and public root snapshot are reviewed;
 3. the evalcache release and release-vehicle gates are complete;
 4. installed-wheel, example, headless/display, and type-check gates pass.

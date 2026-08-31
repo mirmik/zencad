@@ -65,6 +65,10 @@ def topology_contract(
         typed.Solid,
     )
     assert_type(runtime.sweep(wire, edge, frenet=True), typed.Solid)
+    assert_type(
+        runtime.revol2(face, 3, sections=12, yaw=(0, 1), roll=(0, 2)),
+        typed.Solid,
+    )
     assert_type(runtime.fillet(solid, 0.1), typed.Shape)
     assert_type(runtime.chamfer(solid, 0.1), typed.Shape)
     assert_type(runtime.fillet2d(face, 0.1), typed.Face)

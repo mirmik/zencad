@@ -1,4 +1,10 @@
+import json
 import math
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
@@ -59,6 +65,13 @@ class TypedBasicSweepsTest(unittest.TestCase):
                         solid=False,
                     )
                     swept = runtime.sweep(pipe_profile, pipe_spine, frenet=True)
+                    rolled = runtime.revol2(
+                        profile,
+                        3,
+                        sections=8,
+                        yaw=(0, math.pi),
+                        roll=(0, math.pi / 2),
+                    )
 
                     observed_types.add(
                         (
@@ -72,6 +85,7 @@ class TypedBasicSweepsTest(unittest.TestCase):
                             type(pipe_solid),
                             type(pipe_surface),
                             type(swept),
+                            type(rolled),
                         )
                     )
                     self.assertIs(type(extruded), typed.Shape)
@@ -84,6 +98,7 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     self.assertIs(type(pipe_solid), typed.Solid)
                     self.assertIs(type(pipe_surface), typed.Shell)
                     self.assertIs(type(swept), typed.Solid)
+                    self.assertIs(type(rolled), typed.Solid)
                     if mode is EvaluationMode.DEFERRED:
                         self.assertEqual(events, [])
 
@@ -97,6 +112,7 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     self.assertAlmostEqual(pipe_solid.mass().value(), 5 * math.pi)
                     self.assertGreater(pipe_surface.mass().value(), 0)
                     self.assertAlmostEqual(swept.mass().value(), 5 * math.pi)
+                    self.assertGreater(rolled.mass().value(), 0)
                     bounds = extruded.boundbox().value()
                     self.assertAlmostEqual(bounds.zmin, -2.0000001)
                     self.assertAlmostEqual(bounds.zmax, 2.0000001)
@@ -192,6 +208,14 @@ class TypedBasicSweepsTest(unittest.TestCase):
                 frenet=True,
                 discrete=True,
             )
+        with self.assertRaisesRegex(ValueError, "sections must be at least two"):
+            runtime.revol2(profile, 3, sections=1)
+        with self.assertRaisesRegex(ValueError, "at least two per part"):
+            runtime.revol2(profile, 3, sections=4, parts=3)
+        with self.assertRaisesRegex(ValueError, "radius must be finite and positive"):
+            runtime.revol2(profile, 0).native()
+        with self.assertRaisesRegex(ValueError, "yaw interval must be non-empty"):
+            runtime.revol2(profile, 3, yaw=(1, 1)).native()
         with self.assertRaisesRegex(ValueError, "revol radius must be finite"):
             runtime.revol(profile, math.inf).native()
         with self.assertRaisesRegex(ValueError, "revol yaw must be finite"):
@@ -221,6 +245,68 @@ class TypedBasicSweepsTest(unittest.TestCase):
                 for event in events
             )
         )
+
+    def test_revol2_reuses_a_fresh_process_cache(self):
+        script = """
+import json
+import math
+import sys
+
+from evalcache import DirCache_v2
+from evalcache.v2 import EvaluationEventKind, MappingCacheStore
+from zencad import _typed as typed
+
+events = []
+runtime = typed.Runtime.deferred(
+    cache=True,
+    cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
+    progress_hooks=(events.append,),
+)
+profile = runtime.rectangle(1, 2, center=True)
+runtime.revol2(
+    profile,
+    3,
+    sections=8,
+    yaw=(0, math.pi),
+    roll=(0, math.pi / 2),
+).native()
+print(json.dumps({
+    "stored": sum(event.kind is EvaluationEventKind.CACHE_STORE for event in events),
+    "hits": [
+        event.operation_id
+        for event in events
+        if event.kind is EvaluationEventKind.CACHE_HIT
+    ],
+}))
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            environment = os.environ.copy()
+            roots = [
+                str(Path(__file__).resolve().parents[1]),
+                "/home/mirmik/project/termin-aurora/evalcache",
+            ]
+            environment["PYTHONPATH"] = os.pathsep.join(
+                roots + [environment.get("PYTHONPATH", "")]
+            )
+            first = subprocess.run(
+                [sys.executable, "-c", script, directory],
+                check=True,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            second = subprocess.run(
+                [sys.executable, "-c", script, directory],
+                check=True,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+
+        first_result = json.loads(first.stdout.strip().splitlines()[-1])
+        second_result = json.loads(second.stdout.strip().splitlines()[-1])
+        self.assertGreater(first_result["stored"], 0)
+        self.assertIn("zencad.typed.revol2", second_result["hits"])
 
 
 if __name__ == "__main__":

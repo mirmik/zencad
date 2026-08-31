@@ -1,6 +1,7 @@
 """Smoke the installed wheel from a directory outside the source checkout."""
 
 import importlib.metadata
+import math
 import os
 from pathlib import Path
 import shutil
@@ -77,6 +78,53 @@ def main():
         assert len(mapped_edge.endpoints()) == 2
         assert type(sweep_surface) is typed.Surface
         assert len(sweep_surface.native().Bounds()) == 4
+        sweep_spine = typed_runtime.circle_curve(3)
+        scale_law = typed_runtime.constant_sweep_scale(1, sweep_spine.range())
+        section_law = typed_runtime.evolved_sweep_section(
+            typed_runtime.circle_curve(1),
+            scale_law,
+        )
+        location_law = typed_runtime.sweep_location(sweep_spine)
+        assert type(scale_law) is typed.SweepScaleLaw
+        assert type(section_law) is typed.SweepSectionLaw
+        assert type(location_law) is typed.SweepLocationLaw
+        assert type(
+            typed_runtime.sweep_surface_from_laws(section_law, location_law)
+        ) is typed.Surface
+        sweep_profile = typed_runtime.rectangle(1, 2, center=True)
+        assert type(typed_runtime.extrude(sweep_profile, 4)) is typed.Shape
+        assert type(typed_runtime.revol(sweep_profile, 3)) is typed.Shape
+        loft_start = typed_runtime.rectangle_wire(1, 2, center=True)
+        loft_end = typed_runtime.rectangle_wire(2, 1, center=True).up(3)
+        assert type(typed_runtime.loft((loft_start, loft_end))) is typed.Solid
+        pipe_profile = typed_runtime.circle(1, wire=True)
+        pipe_spine = typed_runtime.segment(
+            typed_runtime.point3(),
+            typed_runtime.point3(0, 0, 5),
+        )
+        assert type(
+            typed_runtime.pipe(
+                pipe_profile,
+                pipe_spine,
+                trihedron=typed.PipeTrihedron.FRENET,
+            )
+        ) is typed.Shape
+        assert type(
+            typed_runtime.pipe_shell(
+                (pipe_profile,),
+                pipe_spine,
+                transition=typed.PipeTransition.ROUND_CORNER,
+            )
+        ) is typed.Solid
+        assert type(
+            typed_runtime.revol2(
+                sweep_profile,
+                3,
+                sections=8,
+                yaw=(0, math.pi),
+                roll=(0, math.pi / 2),
+            )
+        ) is typed.Solid
         bounds = typed_runtime.box(2, 3, 4).boundbox()
         assert type(bounds) is typed.BoundaryBox
         assert type(bounds.value()) is typed.BoundaryBoxRecord

@@ -1167,6 +1167,40 @@ def pipe_shell_shapes(
     )
 
 
+def revolve_sections_shape(
+    profile: ResolvedShape,
+    radius: float,
+    sections: int,
+    yaw: tuple[float, float],
+    roll: tuple[float, float],
+    parts: int | None,
+) -> ResolvedShape:
+    from zencad.geom.sweep import _revol2
+
+    if not math.isfinite(radius) or radius <= 0:
+        raise ValueError("revol2 radius must be finite and positive")
+    if sections < 2:
+        raise ValueError("revol2 sections must be at least two")
+    if parts is not None:
+        if parts <= 0:
+            raise ValueError("revol2 parts must be positive")
+        if sections < parts * 2:
+            raise ValueError("revol2 sections must provide at least two per part")
+    if not all(math.isfinite(value) for value in (*yaw, *roll)):
+        raise ValueError("revol2 yaw and roll bounds must be finite")
+    if yaw[0] == yaw[1]:
+        raise ValueError("revol2 yaw interval must be non-empty")
+    return _revol2(
+        profile,
+        radius,
+        n=sections,
+        yaw=yaw,
+        roll=roll,
+        sects=False,
+        nparts=parts,
+    )
+
+
 def fillet_shape(
     shape: ResolvedShape,
     radius: float,

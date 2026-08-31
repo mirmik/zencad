@@ -23,6 +23,7 @@ ALLOWED_STATUSES = {
     "repair",
     "unchanged",
 }
+STATUS_ORDER = ("implemented", "partial", "missing", "repair", "unchanged")
 
 
 class ContractError(RuntimeError):
@@ -200,10 +201,6 @@ def validate(matrix: dict[str, Any], entries: list[dict[str, str]]) -> None:
         )
     if not entries:
         raise ContractError("parity matrix is empty")
-    if not any(entry["status"] == "missing" for entry in entries):
-        raise ContractError(
-            "matrix no longer contains missing work; reconcile the board"
-        )
     root_exports = matrix.get("root_exports", [])
     if len(root_exports) != len(set(root_exports)):
         raise ContractError("root export contract contains duplicate names")
@@ -258,7 +255,7 @@ def main() -> int:
     counts = Counter(entry["status"] for entry in entries)
     print(
         f"typed API parity: {len(entries)} symbols; "
-        + ", ".join(f"{name}={counts[name]}" for name in sorted(counts))
+        + ", ".join(f"{name}={counts[name]}" for name in STATUS_ORDER)
     )
     if args.render:
         print()

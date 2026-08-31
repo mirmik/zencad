@@ -688,6 +688,48 @@ class Runtime:
         """Compatibility spelling for a single-profile solid pipe shell."""
         return self.pipe_shell((profile,), path, frenet=frenet)
 
+    def revol2(
+        self,
+        profile: Shape,
+        radius: ScalarInput,
+        /,
+        *,
+        sections: int = 30,
+        yaw: Interval | Sequence[ScalarInput] = (0, 2 * math.pi),
+        roll: Interval | Sequence[ScalarInput] = (0, 0),
+        parts: int | None = None,
+    ) -> Solid:
+        """Approximate a rolled revolution through discrete profile sections."""
+        _require_shape(self, profile, "revol2 profile")
+        resolved_sections = _require_positive_int(sections, "revol2 sections")
+        if resolved_sections < 2:
+            raise ValueError("revol2 sections must be at least two")
+        if parts is not None:
+            resolved_parts = _require_positive_int(parts, "revol2 parts")
+            if resolved_sections < resolved_parts * 2:
+                raise ValueError(
+                    "revol2 sections must provide at least two per part"
+                )
+        else:
+            resolved_parts = None
+        yaw_states = _interval_state(self, yaw, "revol2 yaw")
+        roll_states = _interval_state(self, roll, "revol2 roll")
+        assert yaw_states is not None and roll_states is not None
+        expression = self._expression(
+            ops.revolve_sections_shape,
+            result=SOLID_SPEC,
+            args=(
+                profile._state,
+                _scalar_state(self, radius),
+                resolved_sections,
+                yaw_states,
+                roll_states,
+                resolved_parts,
+            ),
+            operation_id="zencad.typed.revol2",
+        )
+        return Solid._from_state(self, expression)
+
     def fillet(
         self,
         shape: Shape,
