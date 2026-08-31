@@ -16,7 +16,7 @@ from .records import (
     ShapeProperties,
 )
 from .runtime import Runtime
-from .solid import box
+from .solid import box, cone, cube, cylinder, halfspace, make_solid, sphere, torus
 from .sweeps import PipeTransition, PipeTrihedron
 from .surfaces import (
     Surface,
@@ -110,11 +110,18 @@ __all__ = [
     "atan",
     "atan2",
     "box",
+    "cone",
     "cos",
+    "cube",
+    "cylinder",
     "exp",
+    "halfspace",
     "log",
+    "make_solid",
     "sin",
+    "sphere",
     "sqrt",
     "tan",
+    "torus",
     "wire_builder",
 ]

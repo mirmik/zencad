@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 
 import numpy
@@ -41,6 +41,33 @@ def _scalar_state(runtime: Runtime, value: ScalarInput) -> State[float]:
         require_same_runtime(runtime, value)
         return value._state
     return _number(value)
+
+
+def _optional_scalar_state(
+    runtime: Runtime,
+    value: ScalarInput | None,
+) -> State[float] | None:
+    if value is None:
+        return None
+    return _scalar_state(runtime, value)
+
+
+def _angle_state(
+    runtime: Runtime,
+    value: ScalarInput | Sequence[ScalarInput] | None,
+    name: str,
+) -> State[float] | tuple[State[float], State[float]] | None:
+    if value is None:
+        return None
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        values = tuple(value)
+        if len(values) != 2:
+            raise TypeError(f"{name} must contain exactly two scalar bounds")
+        return (
+            _scalar_state(runtime, values[0]),
+            _scalar_state(runtime, values[1]),
+        )
+    return _scalar_state(runtime, cast(ScalarInput, value))
 
 
 def _infer_runtime(

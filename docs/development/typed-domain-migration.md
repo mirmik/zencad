@@ -984,11 +984,20 @@ Task #2052 starts dismantling the typed `Runtime` as an operation container.
 The configured decorator lowers nested ZenCad handles to expression state,
 selects their common evaluator context, rejects mixed runtimes, applies an
 explicit literal-folding policy, and wraps the result in a stable domain
-handle. `typed.box` is the first complete module-level declaration in
-`_typed/solid.py`; `Runtime.box` is now only a compatibility forwarding shim.
-Representative scalar addition and Shape union declarations prove value
-folding and method forwarding without keeping their operation construction in
-`Runtime`.
+handle. `typed.box` was the first complete module-level declaration in
+`_typed/solid.py`; representative scalar addition and Shape union declarations
+prove value folding and method forwarding without keeping their operation
+construction in `Runtime`.
+
+Task #2050 then moves the complete solid-primitive family: `box`/`cube`,
+`sphere`, `cylinder`, `cone`, `torus`, `halfspace`, and `make_solid` are
+module-level typed entry points. Their resolved implementations live in
+`_solid_operations.py`, argument normalization lives in `solid.py` and
+`values.py`, and the corresponding `Runtime` methods are compatibility
+forwarders only. This removes both expression construction and resolved CAD
+implementation from `Runtime` for the whole family. `empty_shape` remains in
+the next topology extraction rather than being misplaced with solid
+primitives.
 
 The public root `zencad.box` is intentionally not switched independently:
 doing that before the neighboring transforms, booleans, and queries move would
@@ -1004,7 +1013,7 @@ could reduce adapter plumbing but is not a migration blocker.
 
 Verification on 2026-08-31 after this checkpoint:
 
-- all 373 tests pass;
+- all 374 tests pass;
 - strict mypy with `--disallow-any-expr` passes all 16 representative typed
   contracts;
 - the decorator tests cover module declaration, Runtime forwarding, operation

@@ -5,10 +5,48 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_SOLID
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 
 class TypedSolidConstructorsTest(unittest.TestCase):
+    def test_solid_family_is_declared_at_module_level(self):
+        for name in (
+            "box",
+            "sphere",
+            "cylinder",
+            "cone",
+            "torus",
+            "halfspace",
+            "make_solid",
+        ):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        radius = runtime.scalar(2)
+        sphere = typed.sphere(radius)
+        with using_runtime(runtime):
+            values = (
+                typed.cube(2, 3, 4),
+                sphere,
+                typed.cylinder(2, 3),
+                typed.cone(2, 1, 3),
+                typed.torus(4, 1),
+                typed.halfspace(),
+            )
+            remade = typed.make_solid(typed.box(2).shells()[0])
+
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertIs(remade.runtime, runtime)
+        self.assertEqual(events, [])
+        self.assertAlmostEqual(float(values[0].mass()), 24.0)
+        self.assertAlmostEqual(float(remade.mass()), 8.0)
+
     def test_exact_solid_factories_are_policy_independent(self):
         observed_types = set()
 

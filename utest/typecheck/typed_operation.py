@@ -8,6 +8,15 @@ from zencad import _typed as typed
 def operation_contract(runtime: typed.Runtime) -> None:
     direct = assert_type(typed.box(1, 2, 3), typed.Solid)
     forwarded = assert_type(runtime.box(1, 2, 3), typed.Solid)
+    radius = runtime.scalar(2)
+
+    assert_type(typed.cube(1), typed.Solid)
+    assert_type(typed.sphere(radius), typed.Solid)
+    assert_type(typed.cylinder(radius, 3), typed.Solid)
+    assert_type(typed.cone(radius, 1, 3), typed.Solid)
+    assert_type(typed.torus(radius, 1), typed.Solid)
+    assert_type(typed.halfspace(), typed.Solid)
+    assert_type(typed.make_solid(runtime.box(1).shells()[0]), typed.Solid)
 
     assert_type(direct + forwarded, typed.Shape)
     assert_type(direct.mass() + 1, typed.Scalar)

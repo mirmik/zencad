@@ -29,6 +29,7 @@ from evalcache import (
 )
 
 from zencad.occ_compat import read_brep, vertex_point, write_brep
+from zencad.operation import using_runtime
 
 from . import _operations as ops
 from . import _bound_operations as bound_ops
@@ -87,7 +88,19 @@ from .values import (
     ScalarInput,
     Vector2,
     Vector3,
+    _angle_state,
+    _optional_scalar_state,
     _scalar_state,
+)
+from .solid import (
+    box as solid_box,
+    cone as solid_cone,
+    cube as solid_cube,
+    cylinder as solid_cylinder,
+    halfspace as solid_halfspace,
+    make_solid as solid_make_solid,
+    sphere as solid_sphere,
+    torus as solid_torus,
 )
 
 if TYPE_CHECKING:
@@ -246,12 +259,8 @@ class Runtime:
         center: bool | str | None = None,
         size: ScalarInput | Vector3 | Sequence[ScalarInput] | None = None,
     ) -> Solid:
-        from zencad.operation import using_runtime
-
-        from .solid import box
-
         with using_runtime(self):
-            return box(x, y, z, center, size)
+            return solid_box(x, y, z, center, size)
 
     def cube(
         self,
@@ -262,7 +271,8 @@ class Runtime:
         size: ScalarInput | Vector3 | Sequence[ScalarInput] | None = None,
     ) -> Solid:
         """Compatibility alias for :meth:`box` with the legacy signature."""
-        return self.box(x, y, z, center, size)
+        with using_runtime(self):
+            return solid_cube(x, y, z, center, size)
 
     def sphere(
         self,
@@ -270,17 +280,8 @@ class Runtime:
         yaw: ScalarInput | None = None,
         pitch: ScalarInput | Sequence[ScalarInput] | None = None,
     ) -> Solid:
-        expression = self._expression(
-            ops.sphere,
-            result=SOLID_SPEC,
-            args=(
-                _scalar_state(self, r),
-                _optional_scalar_state(self, yaw),
-                _angle_state(self, pitch, "sphere pitch"),
-            ),
-            operation_id="zencad.typed.sphere",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return solid_sphere(r, yaw, pitch)
 
     def cylinder(
         self,
@@ -289,19 +290,8 @@ class Runtime:
         yaw: ScalarInput | None = None,
         center: bool = False,
     ) -> Solid:
-        _require_bool(center, "cylinder center")
-        expression = self._expression(
-            ops.cylinder,
-            result=SOLID_SPEC,
-            args=(
-                _scalar_state(self, r),
-                _scalar_state(self, h),
-                _optional_scalar_state(self, yaw),
-                center,
-            ),
-            operation_id="zencad.typed.cylinder",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return solid_cylinder(r, h, yaw, center)
 
     def cone(
         self,
@@ -311,20 +301,8 @@ class Runtime:
         yaw: ScalarInput | None = None,
         center: bool = False,
     ) -> Solid:
-        _require_bool(center, "cone center")
-        expression = self._expression(
-            ops.cone,
-            result=SOLID_SPEC,
-            args=(
-                _scalar_state(self, r1),
-                _scalar_state(self, r2),
-                _scalar_state(self, h),
-                _optional_scalar_state(self, yaw),
-                center,
-            ),
-            operation_id="zencad.typed.cone",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return solid_cone(r1, r2, h, yaw, center)
 
     def torus(
         self,
@@ -333,37 +311,16 @@ class Runtime:
         yaw: ScalarInput | None = None,
         pitch: ScalarInput | Sequence[ScalarInput] | None = None,
     ) -> Solid:
-        expression = self._expression(
-            ops.torus,
-            result=SOLID_SPEC,
-            args=(
-                _scalar_state(self, r1),
-                _scalar_state(self, r2),
-                _optional_scalar_state(self, yaw),
-                _angle_state(self, pitch, "torus pitch"),
-            ),
-            operation_id="zencad.typed.torus",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return solid_torus(r1, r2, yaw, pitch)
 
     def halfspace(self) -> Solid:
-        expression = self._expression(
-            ops.halfspace,
-            result=SOLID_SPEC,
-            args=(),
-            operation_id="zencad.typed.halfspace",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return solid_halfspace()
 
     def make_solid(self, shells: Shell | Sequence[Shell], /) -> Solid:
-        values = _require_shells(self, shells, "make_solid")
-        expression = self._expression(
-            ops.make_solid,
-            result=SOLID_SPEC,
-            args=(tuple(shell._state for shell in values),),
-            operation_id="zencad.typed.make_solid",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return solid_make_solid(shells)
 
     def empty_shape(self) -> Shape:
         """Return the algebraic zero of topology without materializing it."""
@@ -3171,54 +3128,6 @@ def _require_font_aspect(value: object, name: str) -> FontAspect:
     if not isinstance(value, FontAspect):
         raise TypeError(f"{name} must be FontAspect")
     return value
-
-
-def _optional_scalar_state(
-    runtime: Runtime,
-    value: ScalarInput | None,
-) -> State[float] | None:
-    if value is None:
-        return None
-    return _scalar_state(runtime, value)
-
-
-def _angle_state(
-    runtime: Runtime,
-    value: ScalarInput | Sequence[ScalarInput] | None,
-    name: str,
-) -> State[float] | tuple[State[float], State[float]] | None:
-    if value is None:
-        return None
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-        values = tuple(value)
-        if len(values) != 2:
-            raise TypeError(f"{name} must contain exactly two scalar bounds")
-        return (
-            _scalar_state(runtime, values[0]),
-            _scalar_state(runtime, values[1]),
-        )
-    return _scalar_state(runtime, cast(ScalarInput, value))
-
-
-def _require_shells(
-    runtime: Runtime,
-    shells: Shell | Sequence[Shell],
-    name: str,
-) -> tuple[Shell, ...]:
-    values: tuple[Shell, ...]
-    if isinstance(shells, Shell):
-        values = (shells,)
-    elif isinstance(shells, Sequence) and not isinstance(shells, (str, bytes)):
-        values = tuple(shells)
-    else:
-        raise TypeError(f"{name} expects Shell or a sequence of Shell")
-    if not values:
-        raise ValueError(f"{name} requires at least one Shell")
-    if not all(isinstance(shell, Shell) for shell in values):
-        raise TypeError(f"{name} expects only Shell values")
-    for shell in values:
-        require_same_runtime(runtime, shell)
-    return values
 
 
 def _require_shapes(
