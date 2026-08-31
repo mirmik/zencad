@@ -65,5 +65,58 @@ def transform_algebra(runtime: typed.Runtime) -> None:
     assert_type(reflection(vector), typed.Vector3)
     assert_type(identity.matrix(), Matrix4x4)
 
+    affine_identity = assert_type(
+        runtime.identity_affine_transform(),
+        typed.AffineTransform,
+    )
+    affine = assert_type(
+        runtime.affine(
+            (
+                (1, scalar, 0, 3),
+                (0, 2, 0, 4),
+                (0, 0, 3, 5),
+            )
+        ),
+        typed.AffineTransform,
+    )
+    assert_type(
+        typed.AffineTransform(
+            ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0)),
+            runtime=runtime,
+        ),
+        typed.AffineTransform,
+    )
+    assert_type(
+        typed.GeneralTransformation.scaleXYZ(2, 3, 4, runtime=runtime),
+        typed.AffineTransform,
+    )
+    assert_type(runtime.scaleX(scalar), typed.AffineTransform)
+    assert_type(runtime.scaleY(scalar, center=point), typed.AffineTransform)
+    assert_type(runtime.scaleZ(scalar), typed.AffineTransform)
+    assert_type(runtime.scaleXYZ(2, 3, scalar), typed.AffineTransform)
+    assert_type(translation.to_affine(), typed.AffineTransform)
+    assert_type(
+        typed.AffineTransform.from_transform(translation),
+        typed.AffineTransform,
+    )
+    assert_type(affine_identity * affine, typed.AffineTransform)
+    assert_type(affine * translation, typed.AffineTransform)
+    assert_type(translation * affine, typed.AffineTransform)
+    assert_type(affine.then(translation), typed.AffineTransform)
+    assert_type(translation.then(affine), typed.AffineTransform)
+    assert_type(affine.inverse(), typed.AffineTransform)
+    assert_type(affine.translation, typed.Vector3)
+    assert_type(affine.determinant, typed.Scalar)
+    assert_type(affine.apply(point), typed.Point3)
+    assert_type(affine.apply(vector), typed.Vector3)
+    assert_type(affine(point), typed.Point3)
+    assert_type(affine(vector), typed.Vector3)
+    assert_type(affine.matrix(), Matrix4x4)
+
     shape = runtime.box(1)
     assert_type(shape.transform(translation), typed.Solid)
+    assert_type(shape.transform(affine), typed.Solid)
+    assert_type(shape.scaleX(scalar), typed.Solid)
+    assert_type(shape.scaleY(scalar), typed.Solid)
+    assert_type(shape.scaleZ(scalar), typed.Solid)
+    assert_type(shape.scaleXYZ(2, 3, scalar), typed.Solid)

@@ -61,8 +61,10 @@ from .topology import (
     Wire,
 )
 from .transforms import (
+    AFFINE_TRANSFORM_SPEC,
     QUATERNION_SPEC,
     TRANSFORM_SPEC,
+    AffineTransform,
     Quaternion,
     Transform,
 )
@@ -2022,6 +2024,23 @@ class Runtime:
     def identity_transform(self) -> Transform:
         return Transform(runtime=self)
 
+    def identity_affine_transform(self) -> AffineTransform:
+        return AffineTransform(runtime=self)
+
+    def affine_transform(
+        self,
+        rows: Sequence[Sequence[ScalarInput]],
+        /,
+    ) -> AffineTransform:
+        return AffineTransform(rows, runtime=self)
+
+    def affine(
+        self,
+        rows: Sequence[Sequence[ScalarInput]],
+        /,
+    ) -> AffineTransform:
+        return self.affine_transform(rows)
+
     def nulltrans(self) -> Transform:
         return self.identity_transform()
 
@@ -2177,6 +2196,60 @@ class Runtime:
             operation_id="zencad.typed.transform.scale",
         )
         return Transform._from_state(self, state)
+
+    def scaleXYZ(
+        self,
+        x: ScalarInput,
+        y: ScalarInput,
+        z: ScalarInput,
+        /,
+        *,
+        center: Point3 | None = None,
+    ) -> AffineTransform:
+        if center is None:
+            center = self.point(0, 0, 0)
+        elif not isinstance(center, Point3):
+            raise TypeError("affine scale center must be Point3")
+        require_same_runtime(self, center)
+        state = self._value_state(
+            transform_ops.affine_scale_transform,
+            result=AFFINE_TRANSFORM_SPEC,
+            args=(
+                _scalar_state(self, x),
+                _scalar_state(self, y),
+                _scalar_state(self, z),
+                center._state,
+            ),
+            operation_id="zencad.typed.affine.scale_xyz",
+        )
+        return AffineTransform._from_state(self, state)
+
+    def scaleX(
+        self,
+        factor: ScalarInput,
+        /,
+        *,
+        center: Point3 | None = None,
+    ) -> AffineTransform:
+        return self.scaleXYZ(factor, 1, 1, center=center)
+
+    def scaleY(
+        self,
+        factor: ScalarInput,
+        /,
+        *,
+        center: Point3 | None = None,
+    ) -> AffineTransform:
+        return self.scaleXYZ(1, factor, 1, center=center)
+
+    def scaleZ(
+        self,
+        factor: ScalarInput,
+        /,
+        *,
+        center: Point3 | None = None,
+    ) -> AffineTransform:
+        return self.scaleXYZ(1, 1, factor, center=center)
 
     def mirror(
         self,

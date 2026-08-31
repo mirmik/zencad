@@ -1,6 +1,6 @@
 import unittest
 import zencad
-import math
+import pickle
 
 
 def early(a, b):
@@ -76,3 +76,23 @@ class GeneralTransformation(unittest.TestCase):
         r = b.transform(scale)
 
         self.assertTrue(vertex_set_issame(r.vertices(), t.vertices()))
+
+    def test_composition_application_and_pickle(self):
+        first = zencad.scaleXYZ(2, 3, 4)
+        second = zencad.scaleXYZ(5, 7, 11)
+        composed = first * second
+        source = zencad.box(1, 1, 1)
+        expected = zencad.box(10, 21, 44)
+
+        self.assertTrue(
+            vertex_set_issame(composed(source).vertices(), expected.vertices())
+        )
+
+        restored = pickle.loads(pickle.dumps(composed))
+        restored_shape = restored(source)
+        self.assertTrue(
+            vertex_set_issame(
+                restored_shape.vertices(),
+                expected.vertices(),
+            )
+        )

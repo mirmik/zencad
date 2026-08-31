@@ -1,6 +1,7 @@
 import unittest
 import zencad
 import math
+import pickle
 
 
 def early(a, b):
@@ -83,7 +84,6 @@ class TransformationProbe(unittest.TestCase):
         x = 10
         y = 20
         z = 30
-        v = 10
 
         box = zencad.box(10, 10, 10, center=True).translate(x, y, z)
 
@@ -99,3 +99,18 @@ class TransformationProbe(unittest.TestCase):
         m = round(m, 4)
 
         self.assertEqual(m, zencad.point3(1, 0, 0))
+
+    def test_pickle_restores_similarity_transform_state(self):
+        transform = (
+            zencad.move(1, 2, 3)
+            * zencad.rotateZ(math.pi / 4)
+            * zencad.scale(-2)
+        )
+        restored = pickle.loads(pickle.dumps(transform))
+        point = zencad.point3(3, -2, 5)
+
+        self.assertPointAlmostEqual(
+            restored.transform_point(point),
+            transform.transform_point(point),
+        )
+        self.assertPointAlmostEqual(restored.translation(), transform.translation())

@@ -12,7 +12,7 @@ import math
 import struct
 import sys
 
-from OCP.gp import gp_Quaternion, gp_Trsf, gp_Vec
+from OCP.gp import gp_GTrsf, gp_Mat, gp_Quaternion, gp_Trsf, gp_Vec, gp_XYZ
 
 from ._value_operations import Point3Value, Vector3Value
 
@@ -88,12 +88,44 @@ class TransformValue:
         )
 
 
+@dataclass(frozen=True)
+class AffineTransformValue:
+    """A general affine map stored as an immutable row-major 3x4 matrix."""
+
+    components: Matrix3x4
+
+    def __post_init__(self) -> None:
+        if len(self.components) != 12:
+            raise ValueError("an affine transform requires 12 matrix components")
+        if not all(math.isfinite(component) for component in self.components):
+            raise ValueError("affine transform components must be finite")
+
+    def __evalcache_key__(self) -> bytes:
+        return b"affine-transform-v1\x00" + struct.pack(">12d", *self.components)
+
+
 _IDENTITY_QUATERNION = QuaternionValue(0.0, 0.0, 0.0, 1.0)
 _ZERO_VECTOR = Vector3Value(0.0, 0.0, 0.0)
 _IDENTITY_TRANSFORM = TransformValue(
     1.0,
     _IDENTITY_QUATERNION,
     _ZERO_VECTOR,
+)
+_IDENTITY_AFFINE_TRANSFORM = AffineTransformValue(
+    (
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+    )
 )
 
 
@@ -464,6 +496,183 @@ def transform_to_ocp(value: TransformValue) -> gp_Trsf:
             value.translation.z,
         )
     )
+    return transform
+
+
+def affine_transform(*components: float) -> AffineTransformValue:
+    if len(components) != 12:
+        raise ValueError("an affine transform requires 12 matrix components")
+    return AffineTransformValue(tuple(_clean_zero(value) for value in components))
+
+
+def identity_affine_transform() -> AffineTransformValue:
+    return _IDENTITY_AFFINE_TRANSFORM
+
+
+def affine_from_transform(value: TransformValue) -> AffineTransformValue:
+    return AffineTransformValue(transform_matrix(value))
+
+
+def affine_scale_transform(
+    x: float,
+    y: float,
+    z: float,
+    center: Point3Value,
+) -> AffineTransformValue:
+    if not all(math.isfinite(value) for value in (x, y, z)):
+        raise ValueError("affine scale factors must be finite")
+    if not all(math.isfinite(value) for value in (center.x, center.y, center.z)):
+        raise ValueError("an affine scale center must be finite")
+    return AffineTransformValue(
+        (
+            _clean_zero(x),
+            0.0,
+            0.0,
+            _clean_zero((1.0 - x) * center.x),
+            0.0,
+            _clean_zero(y),
+            0.0,
+            _clean_zero((1.0 - y) * center.y),
+            0.0,
+            0.0,
+            _clean_zero(z),
+            _clean_zero((1.0 - z) * center.z),
+        )
+    )
+
+
+def affine_compose(
+    outer: AffineTransformValue,
+    inner: AffineTransformValue,
+) -> AffineTransformValue:
+    """Compose affine maps so ``outer * inner`` applies ``inner`` first."""
+    if outer == _IDENTITY_AFFINE_TRANSFORM:
+        return inner
+    if inner == _IDENTITY_AFFINE_TRANSFORM:
+        return outer
+    a = outer.components
+    b = inner.components
+    return AffineTransformValue(
+        (
+            a[0] * b[0] + a[1] * b[4] + a[2] * b[8],
+            a[0] * b[1] + a[1] * b[5] + a[2] * b[9],
+            a[0] * b[2] + a[1] * b[6] + a[2] * b[10],
+            a[0] * b[3] + a[1] * b[7] + a[2] * b[11] + a[3],
+            a[4] * b[0] + a[5] * b[4] + a[6] * b[8],
+            a[4] * b[1] + a[5] * b[5] + a[6] * b[9],
+            a[4] * b[2] + a[5] * b[6] + a[6] * b[10],
+            a[4] * b[3] + a[5] * b[7] + a[6] * b[11] + a[7],
+            a[8] * b[0] + a[9] * b[4] + a[10] * b[8],
+            a[8] * b[1] + a[9] * b[5] + a[10] * b[9],
+            a[8] * b[2] + a[9] * b[6] + a[10] * b[10],
+            a[8] * b[3] + a[9] * b[7] + a[10] * b[11] + a[11],
+        )
+    )
+
+
+def affine_determinant(value: AffineTransformValue) -> float:
+    matrix = value.components
+    return (
+        matrix[0] * (matrix[5] * matrix[10] - matrix[6] * matrix[9])
+        - matrix[1] * (matrix[4] * matrix[10] - matrix[6] * matrix[8])
+        + matrix[2] * (matrix[4] * matrix[9] - matrix[5] * matrix[8])
+    )
+
+
+def affine_inverse(value: AffineTransformValue) -> AffineTransformValue:
+    matrix = value.components
+    determinant = affine_determinant(value)
+    if not math.isfinite(determinant) or determinant == 0.0:
+        raise ValueError("a singular affine transform cannot be inverted")
+    inverse_determinant = 1.0 / determinant
+    linear = (
+        (matrix[5] * matrix[10] - matrix[6] * matrix[9]) * inverse_determinant,
+        (matrix[2] * matrix[9] - matrix[1] * matrix[10]) * inverse_determinant,
+        (matrix[1] * matrix[6] - matrix[2] * matrix[5]) * inverse_determinant,
+        (matrix[6] * matrix[8] - matrix[4] * matrix[10]) * inverse_determinant,
+        (matrix[0] * matrix[10] - matrix[2] * matrix[8]) * inverse_determinant,
+        (matrix[2] * matrix[4] - matrix[0] * matrix[6]) * inverse_determinant,
+        (matrix[4] * matrix[9] - matrix[5] * matrix[8]) * inverse_determinant,
+        (matrix[1] * matrix[8] - matrix[0] * matrix[9]) * inverse_determinant,
+        (matrix[0] * matrix[5] - matrix[1] * matrix[4]) * inverse_determinant,
+    )
+    translation = (matrix[3], matrix[7], matrix[11])
+    return AffineTransformValue(
+        (
+            linear[0],
+            linear[1],
+            linear[2],
+            -(linear[0] * translation[0] + linear[1] * translation[1] + linear[2] * translation[2]),
+            linear[3],
+            linear[4],
+            linear[5],
+            -(linear[3] * translation[0] + linear[4] * translation[1] + linear[5] * translation[2]),
+            linear[6],
+            linear[7],
+            linear[8],
+            -(linear[6] * translation[0] + linear[7] * translation[1] + linear[8] * translation[2]),
+        )
+    )
+
+
+def affine_point(
+    transform: AffineTransformValue,
+    point: Point3Value,
+) -> Point3Value:
+    matrix = transform.components
+    return Point3Value(
+        matrix[0] * point.x + matrix[1] * point.y + matrix[2] * point.z + matrix[3],
+        matrix[4] * point.x + matrix[5] * point.y + matrix[6] * point.z + matrix[7],
+        matrix[8] * point.x + matrix[9] * point.y + matrix[10] * point.z + matrix[11],
+    )
+
+
+def affine_vector(
+    transform: AffineTransformValue,
+    vector: Vector3Value,
+) -> Vector3Value:
+    matrix = transform.components
+    return Vector3Value(
+        matrix[0] * vector.x + matrix[1] * vector.y + matrix[2] * vector.z,
+        matrix[4] * vector.x + matrix[5] * vector.y + matrix[6] * vector.z,
+        matrix[8] * vector.x + matrix[9] * vector.y + matrix[10] * vector.z,
+    )
+
+
+def affine_translation(value: AffineTransformValue) -> Vector3Value:
+    matrix = value.components
+    return Vector3Value(matrix[3], matrix[7], matrix[11])
+
+
+def affine_from_ocp(value: gp_GTrsf) -> AffineTransformValue:
+    if not isinstance(value, gp_GTrsf):
+        raise TypeError("affine_from_ocp expects gp_GTrsf")
+    return AffineTransformValue(
+        tuple(
+            _clean_zero(float(value.Value(row, column)))
+            for row in range(1, 4)
+            for column in range(1, 5)
+        )
+    )
+
+
+def affine_to_ocp(value: AffineTransformValue) -> gp_GTrsf:
+    matrix = value.components
+    transform = gp_GTrsf()
+    transform.SetVectorialPart(
+        gp_Mat(
+            matrix[0],
+            matrix[1],
+            matrix[2],
+            matrix[4],
+            matrix[5],
+            matrix[6],
+            matrix[8],
+            matrix[9],
+            matrix[10],
+        )
+    )
+    transform.SetTranslationPart(gp_XYZ(matrix[3], matrix[7], matrix[11]))
     return transform
 
 

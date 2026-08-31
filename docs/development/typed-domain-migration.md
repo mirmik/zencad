@@ -839,6 +839,24 @@ reviewed; unit, subprocess, example, GUI/headless smoke, cache, performance,
 type, and installed-wheel checks pass without requiring `.unlazy()` in
 ordinary models.
 
+### Affine transform repair checkpoint
+
+The private typed layer now separates similarity and general affine maps.
+`Transform` remains the compact quaternion/uniform-scale domain value backed
+by `gp_Trsf`; `AffineTransform` owns a finite immutable row-major 3x4 matrix
+and materializes a fresh `gp_GTrsf` only at the OCP boundary. Composition of
+either transform family promotes to `AffineTransform` whenever a general map
+is involved, while point and vector application retain distinct translation
+semantics.
+
+`Runtime.scaleX/Y/Z/XYZ`, the matching `Shape` methods, and the typed
+`GeneralTransformation` compatibility alias cover the legacy non-uniform
+surface. The cache stores affine matrices as a versioned twelve-double
+payload rather than pickling mutable OCP state. Characterization also repairs
+the legacy similarity/general-transformation pickle and composition defects,
+so existing root users do not retain half-initialized native transforms while
+the root cutover is pending.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

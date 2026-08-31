@@ -30,7 +30,7 @@ from .topology import (
     Vertex,
     Wire,
 )
-from .transforms import Quaternion, Transform
+from .transforms import AffineTransform, GeneralTransformation, Quaternion, Transform
 from .values import (
     Point2,
     Point3,
@@ -53,6 +53,7 @@ from .wire_builder import WireBuilder, wire_builder
 __all__ = [
     "Compound",
     "CompSolid",
+    "AffineTransform",
     "BoundaryBox",
     "BoundaryBoxRecord",
     "Curve",
@@ -62,6 +63,7 @@ __all__ = [
     "Edge",
     "Face",
     "FontAspect",
+    "GeneralTransformation",
     "Interval",
     "LineParameters",
     "CircleParameters",

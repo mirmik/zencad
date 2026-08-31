@@ -12,6 +12,7 @@ from typing import Callable
 
 from OCP.BRep import BRep_Builder, BRep_Tool
 from OCP.BRepBuilderAPI import (
+    BRepBuilderAPI_GTransform,
     BRepBuilderAPI_MakeEdge,
     BRepBuilderAPI_MakeFace,
     BRepBuilderAPI_MakePolygon,
@@ -73,7 +74,12 @@ from zencad.occ_compat import (
 )
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
-from ._transform_operations import TransformValue, transform_to_ocp
+from ._transform_operations import (
+    AffineTransformValue,
+    TransformValue,
+    affine_to_ocp,
+    transform_to_ocp,
+)
 from ._curve_operations import (
     Curve2Value,
     CurveValue,
@@ -508,6 +514,18 @@ def transform(shape: ResolvedShape, value: TransformValue) -> ResolvedShape:
     transformed = BRepBuilderAPI_Transform(
         shape.Shape(), transform_to_ocp(value), True
     ).Shape()
+    return ResolvedShape(transformed)
+
+
+def affine_transform(
+    shape: ResolvedShape,
+    value: AffineTransformValue,
+) -> ResolvedShape:
+    transformed = BRepBuilderAPI_GTransform(
+        shape.Shape(), affine_to_ocp(value), True
+    ).Shape()
+    if transformed.IsNull():
+        raise ValueError("affine transformation produced a null shape")
     return ResolvedShape(transformed)
 
 

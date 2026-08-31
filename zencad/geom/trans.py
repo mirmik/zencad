@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import pickle
 import base64 as b64
@@ -6,7 +5,7 @@ import base64 as b64
 from OCP.gp import gp_Trsf, gp_Vec, gp_Ax1, gp_Ax2, gp_Pnt, gp_Dir, gp_XYZ, gp_Quaternion
 
 import zencad.util
-from zencad.util import point3, vector3
+from zencad.util import point3
 
 
 class Transformation:
@@ -82,10 +81,11 @@ class Transformation:
         rot = dct["rotate"]
         tra = dct["transl"]
 
-        _trsf = gp_Trsf()
-        _trsf.SetRotation(*rot)
-        _trsf.SetTranslation(*tra)
-        _trsf.SetScale(scl)
+        trsf = gp_Trsf()
+        trsf.SetRotation(gp_Quaternion(*rot))
+        trsf.SetScaleFactor(scl)
+        trsf.SetTranslationPart(gp_Vec(*tra))
+        self._trsf = trsf
 
     def __repr__(self):
         return b64.b64encode(pickle.dumps(self)).decode("utf-8")

@@ -579,9 +579,9 @@
             "GeneralTransformation": "classified with its public methods below"
           },
           "default": {
-            "status": "repair",
-            "typed": "affine transform contract for {name} tracked by #2024",
-            "materialization": "native affine boundary"
+            "status": "implemented",
+            "typed": "Runtime.{name}() -> AffineTransform",
+            "materialization": "none"
           },
           "overrides": {}
         },
@@ -590,9 +590,9 @@
           "include_type": true,
           "dunder": ["__call__", "__mul__", "__repr__", "__str__"],
           "default": {
-            "status": "repair",
-            "typed": "affine Transform successor for {name}, tracked by #2024",
-            "materialization": "native affine boundary"
+            "status": "implemented",
+            "typed": "AffineTransform.{name}",
+            "materialization": "explicit gp_GTrsf boundary where requested"
           },
           "overrides": {}
         },
@@ -809,10 +809,10 @@
             "mirrorXY": {"status": "implemented", "typed": "Shape.mirrorXY()"},
             "mirrorXZ": {"status": "implemented", "typed": "Shape.mirrorXZ()"},
             "mirrorYZ": {"status": "implemented", "typed": "Shape.mirrorYZ()"},
-            "scaleX": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleX()), tracked by #2024"},
-            "scaleY": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleY()), tracked by #2024"},
-            "scaleZ": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleZ()), tracked by #2024"},
-            "scaleXYZ": {"status": "repair", "typed": "Shape.transform(AffineTransform.scaleXYZ()), tracked by #2024"}
+            "scaleX": {"status": "implemented", "typed": "Shape.scaleX() -> same topology handle"},
+            "scaleY": {"status": "implemented", "typed": "Shape.scaleY() -> same topology handle"},
+            "scaleZ": {"status": "implemented", "typed": "Shape.scaleZ() -> same topology handle"},
+            "scaleXYZ": {"status": "implemented", "typed": "Shape.scaleXYZ() -> same topology handle"}
           }
         },
         {

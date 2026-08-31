@@ -69,7 +69,7 @@ from .records import (
     ShapeProperties,
 )
 from .surfaces import SURFACE_SPEC, Surface
-from .transforms import Transform
+from .transforms import AffineTransform, Transform
 from .values import (
     POINT3_SPEC,
     SCALAR_SPEC,
@@ -309,16 +309,29 @@ class Shape(Handle[ResolvedShape]):
         self._resolved()
         return self
 
-    def transform(self: ShapeT, transformation: Transform, /) -> ShapeT:
-        """Apply a typed similarity transform without changing topology kind."""
-        if not isinstance(transformation, Transform):
-            raise TypeError("Shape.transform expects Transform")
+    def transform(
+        self: ShapeT,
+        transformation: Transform | AffineTransform,
+        /,
+    ) -> ShapeT:
+        """Apply a typed similarity or general affine transformation."""
+        if not isinstance(transformation, (Transform, AffineTransform)):
+            raise TypeError("Shape.transform expects Transform or AffineTransform")
         require_same_runtime(self.runtime, transformation)
+        operation = (
+            ops.affine_transform
+            if isinstance(transformation, AffineTransform)
+            else ops.transform
+        )
         expression = self.runtime._expression(
-            ops.transform,
+            operation,
             result=self._result_spec,
             args=(self._state, transformation._state),
-            operation_id="zencad.typed.shape.transform",
+            operation_id=(
+                "zencad.typed.shape.affine_transform"
+                if isinstance(transformation, AffineTransform)
+                else "zencad.typed.shape.transform"
+            ),
         )
         return type(self)._from_state(self.runtime, expression)
 
@@ -437,6 +450,46 @@ class Shape(Handle[ResolvedShape]):
     ) -> ShapeT:
         resolved_center = None if center is None else self.runtime.point3(center)
         return self.transform(self.runtime.scale(factor, center=resolved_center))
+
+    def scaleXYZ(
+        self: ShapeT,
+        x: ScalarInput,
+        y: ScalarInput,
+        z: ScalarInput,
+        center: Point3 | Sequence[ScalarInput] | None = None,
+        /,
+    ) -> ShapeT:
+        resolved_center = None if center is None else self.runtime.point3(center)
+        return self.transform(
+            self.runtime.scaleXYZ(x, y, z, center=resolved_center)
+        )
+
+    def scaleX(
+        self: ShapeT,
+        factor: ScalarInput,
+        center: Point3 | Sequence[ScalarInput] | None = None,
+        /,
+    ) -> ShapeT:
+        resolved_center = None if center is None else self.runtime.point3(center)
+        return self.transform(self.runtime.scaleX(factor, center=resolved_center))
+
+    def scaleY(
+        self: ShapeT,
+        factor: ScalarInput,
+        center: Point3 | Sequence[ScalarInput] | None = None,
+        /,
+    ) -> ShapeT:
+        resolved_center = None if center is None else self.runtime.point3(center)
+        return self.transform(self.runtime.scaleY(factor, center=resolved_center))
+
+    def scaleZ(
+        self: ShapeT,
+        factor: ScalarInput,
+        center: Point3 | Sequence[ScalarInput] | None = None,
+        /,
+    ) -> ShapeT:
+        resolved_center = None if center is None else self.runtime.point3(center)
+        return self.transform(self.runtime.scaleZ(factor, center=resolved_center))
 
     def mirror(
         self: ShapeT,

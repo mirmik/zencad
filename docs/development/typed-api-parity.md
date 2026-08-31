@@ -68,14 +68,17 @@ design.
 aliases, `MultiTransform`, transform arrays, and inherited `Shape` methods now
 keep their graphs behind stable typed handles. The two value repairs are the
 split of ambiguous `xyz` into `Point3`/`Vector3` and rejection of historical
-point division. The nine remaining transform repairs are exclusively the
-non-uniform affine contract owned by #2024.
+point division. The affine repair #2024 now provides an immutable
+`AffineTransform` domain handle, deterministic matrix serialization, general
+composition, and explicit `gp_GTrsf` materialization. `GeneralTransformation`
+remains a compatibility alias in the typed surface.
 
 #2040 closes topology predicates, CurveAlgo queries, modeling convenience
 methods, native adaptor boundaries, structured shape properties, and immutable
 BoundaryBox compatibility. Its four BoundaryBox repairs replace mutation with
-constructors or returned values. The other four repairs in this family are
-the non-uniform `scaleX/Y/Z/XYZ` methods owned by affine card #2024.
+constructors or returned values. The former non-uniform `scaleX/Y/Z/XYZ`
+repairs now route through the typed affine boundary and preserve the concrete
+topology handle.
 
 The first #2041 constructor tranche completes all legacy solid factories:
 `cube`, `sphere`, `cylinder`, `cone`, `torus`, `halfspace`, and `make_solid`.

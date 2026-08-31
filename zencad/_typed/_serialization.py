@@ -13,6 +13,7 @@ from ._curve_operations import Curve2Value, CurveValue
 from ._bound_operations import BoundaryBoxValue
 from ._mesh_operations import MeshValue, decode_mesh_value, encode_mesh_value
 from ._surface_operations import SurfaceValue
+from ._transform_operations import AffineTransformValue
 
 
 _SHAPE_PAYLOAD = b"zencad.typed.shape\x00v1"
@@ -21,6 +22,7 @@ _CURVE2_PAYLOAD = b"zencad.typed.curve2\x00v2"
 _SURFACE_PAYLOAD = b"zencad.typed.surface\x00v1"
 _BOUNDARY_BOX_PAYLOAD = b"zencad.typed.boundary-box\x00v1"
 _MESH_PAYLOAD = b"zencad.typed.mesh\x00v1"
+_AFFINE_TRANSFORM_PAYLOAD = b"zencad.typed.affine-transform\x00v1"
 
 
 class ShapeBrepSerializer:
@@ -196,3 +198,29 @@ class MeshSerializer:
         if len(value.artifacts) != 1 or value.artifacts[0].name != "mesh.bin":
             raise ValueError("typed MeshData cache record must have mesh.bin")
         return decode_mesh_value(value.artifacts[0].data)
+
+
+class AffineTransformSerializer:
+    """Store a general affine map as twelve deterministic IEEE-754 values."""
+
+    serializer_id = "zencad.affine-transform.struct.v1"
+
+    def dumps(self, value: AffineTransformValue) -> SerializedValue:
+        if not isinstance(value, AffineTransformValue):
+            raise TypeError("affine-transform serializer requires AffineTransformValue")
+        return SerializedValue(
+            payload=_AFFINE_TRANSFORM_PAYLOAD
+            + b"\x00"
+            + struct.pack(">12d", *value.components)
+        )
+
+    def loads(self, value: SerializedValue) -> AffineTransformValue:
+        if value.artifacts:
+            raise ValueError("typed AffineTransform cache record cannot have artifacts")
+        prefix = _AFFINE_TRANSFORM_PAYLOAD + b"\x00"
+        if not value.payload.startswith(prefix):
+            raise ValueError("unsupported typed AffineTransform cache payload")
+        data = value.payload[len(prefix) :]
+        if len(data) != 96:
+            raise ValueError("invalid typed AffineTransform cache payload")
+        return AffineTransformValue(struct.unpack(">12d", data))
