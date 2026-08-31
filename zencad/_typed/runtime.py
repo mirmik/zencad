@@ -42,7 +42,14 @@ from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .exttrans import MultiTransform
 from .meshes import MeshData
 from .records import CurveProjection, Interval
-from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
+from .surfaces import (
+    SURFACE_SPEC,
+    Surface,
+    SweepLocationLaw,
+    SweepScaleLaw,
+    SweepSectionLaw,
+    SweepTrihedron,
+)
 from .text import FontAspect
 from .topology import (
     COMPOUND_SPEC,
@@ -104,6 +111,9 @@ __all__ = [
     "Shell",
     "Solid",
     "Surface",
+    "SweepLocationLaw",
+    "SweepScaleLaw",
+    "SweepSectionLaw",
     "SweepTrihedron",
     "Vertex",
     "Wire",
@@ -1166,38 +1176,118 @@ class Runtime:
         require_same_runtime(self, spine)
         if not isinstance(trihedron, SweepTrihedron):
             raise TypeError("sweep_surface trihedron must be SweepTrihedron")
+        scale_law = self.constant_sweep_scale(scale, spine.range())
+        section_law = self.evolved_sweep_section(section, scale_law)
+        location_law = self.sweep_location(spine, trihedron)
+        return self.sweep_surface_from_laws(
+            section_law,
+            location_law,
+            tolerance=tolerance,
+            continuity=continuity,
+            max_degree=max_degree,
+            max_segments=max_segments,
+        )
+
+    def constant_sweep_scale(
+        self,
+        scale: ScalarInput,
+        domain: Interval,
+        /,
+    ) -> SweepScaleLaw:
+        """Describe a constant sweep scale over an explicit domain."""
+        if not isinstance(domain, Interval):
+            raise TypeError("constant_sweep_scale domain must be Interval")
+        require_same_runtime(self, domain.lower)
+        require_same_runtime(self, domain.upper)
+        return SweepScaleLaw(
+            Scalar._from_state(self, _scalar_state(self, scale)),
+            domain,
+        )
+
+    def evolved_sweep_section(
+        self,
+        section: Curve,
+        scale: SweepScaleLaw,
+        /,
+    ) -> SweepSectionLaw:
+        """Describe a curve section evolved by a scale law."""
+        if not isinstance(section, Curve):
+            raise TypeError("evolved_sweep_section section must be Curve")
+        if not isinstance(scale, SweepScaleLaw):
+            raise TypeError("evolved_sweep_section scale must be SweepScaleLaw")
+        require_same_runtime(self, section)
+        if scale.runtime is not self:
+            raise ValueError("cannot mix handles from different typed runtimes")
+        return SweepSectionLaw(section, scale)
+
+    def sweep_location(
+        self,
+        spine: Curve,
+        trihedron: SweepTrihedron = SweepTrihedron.CORRECTED_FRENET,
+        /,
+    ) -> SweepLocationLaw:
+        """Describe a spine location using an explicit trihedron law."""
+        if not isinstance(spine, Curve):
+            raise TypeError("sweep_location spine must be Curve")
+        if not isinstance(trihedron, SweepTrihedron):
+            raise TypeError("sweep_location trihedron must be SweepTrihedron")
+        require_same_runtime(self, spine)
+        return SweepLocationLaw(spine, trihedron)
+
+    def sweep_surface_from_laws(
+        self,
+        section: SweepSectionLaw,
+        location: SweepLocationLaw,
+        /,
+        *,
+        tolerance: Number = 1e-6,
+        continuity: int = 2,
+        max_degree: int = 5,
+        max_segments: int = 20,
+    ) -> Surface:
+        """Build a surface from immutable section and location laws."""
+        if not isinstance(section, SweepSectionLaw):
+            raise TypeError("sweep_surface_from_laws section must be SweepSectionLaw")
+        if not isinstance(location, SweepLocationLaw):
+            raise TypeError(
+                "sweep_surface_from_laws location must be SweepLocationLaw"
+            )
+        if section.runtime is not self or location.runtime is not self:
+            raise ValueError("cannot mix handles from different typed runtimes")
         resolved_tolerance = _require_positive_number(
             tolerance,
-            "sweep_surface tolerance",
+            "sweep_surface_from_laws tolerance",
         )
         resolved_continuity = _require_int_between(
             continuity,
-            "sweep_surface continuity",
+            "sweep_surface_from_laws continuity",
             minimum=0,
             maximum=3,
         )
         resolved_max_degree = _require_positive_int(
             max_degree,
-            "sweep_surface max_degree",
+            "sweep_surface_from_laws max_degree",
         )
         resolved_max_segments = _require_positive_int(
             max_segments,
-            "sweep_surface max_segments",
+            "sweep_surface_from_laws max_segments",
         )
         expression = self._expression(
             surface_ops.sweep_surface,
             result=SURFACE_SPEC,
             args=(
-                section._state,
-                spine._state,
-                _scalar_state(self, scale),
-                trihedron.value,
+                section.section._state,
+                section.scale.scale._state,
+                section.scale.domain.lower._state,
+                section.scale.domain.upper._state,
+                location.spine._state,
+                location.trihedron.value,
                 resolved_tolerance,
                 resolved_continuity,
                 resolved_max_degree,
                 resolved_max_segments,
             ),
-            operation_id="zencad.typed.sweep_surface",
+            operation_id="zencad.typed.sweep_surface_from_laws",
         )
         return Surface._from_state(self, expression)
 

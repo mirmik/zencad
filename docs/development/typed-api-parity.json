@@ -1054,7 +1054,8 @@
         "utest/ops3d_test.py",
         "utest/boolean_test.py",
         "utest/make_test.py",
-        "utest/typed_integration_test.py"
+        "utest/typed_integration_test.py",
+        "utest/typed_surfaces_test.py"
       ],
       "surfaces": [
         {
@@ -1066,6 +1067,13 @@
           "source": "zencad.geom.sweep_law",
           "default": {"status": "missing", "typed": "typed sweep-law contract for {name}, tracked by #2036", "materialization": "native law only inside sweep evaluation"},
           "overrides": {
+            "LawFunction": {"status": "implemented", "typed": "SweepScaleLaw", "materialization": "none; immutable construction description"},
+            "LawSection": {"status": "implemented", "typed": "SweepSectionLaw", "materialization": "none; immutable construction description"},
+            "LawLocation": {"status": "implemented", "typed": "SweepLocationLaw", "materialization": "none; immutable construction description"},
+            "LawTrihedron": {"status": "implemented", "typed": "SweepTrihedron", "materialization": "none; immutable enum"},
+            "law_constant_function": {"status": "implemented", "typed": "Runtime.constant_sweep_scale(ScalarInput, Interval) -> SweepScaleLaw", "materialization": "none; composed into terminal sweep"},
+            "law_evolved_section": {"status": "implemented", "typed": "Runtime.evolved_sweep_section(Curve, SweepScaleLaw) -> SweepSectionLaw", "materialization": "none; composed into terminal sweep"},
+            "law_spine_and_trihedron": {"status": "implemented", "typed": "Runtime.sweep_location(Curve, SweepTrihedron) -> SweepLocationLaw", "materialization": "none; composed into terminal sweep"},
             "law_corrected_frenet_trihedron": {"status": "implemented", "typed": "SweepTrihedron.CORRECTED_FRENET"},
             "law_frenet_trihedron": {"status": "implemented", "typed": "SweepTrihedron.FRENET"}
           }

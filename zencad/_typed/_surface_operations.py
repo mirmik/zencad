@@ -101,16 +101,22 @@ _CONTINUITY = {
 
 def sweep_surface(
     section: CurveValue,
-    spine: CurveValue,
     scale: float,
+    scale_first: float,
+    scale_last: float,
+    spine: CurveValue,
     trihedron: str,
     tolerance: float,
     continuity: int,
     max_degree: int,
     max_segments: int,
 ) -> SurfaceValue:
-    """Materialize the representative constant-scale sweep-law chain."""
+    """Materialize an immutable typed sweep-law composition."""
     scale = _positive(scale, "sweep surface scale")
+    if not math.isfinite(scale_first) or not math.isfinite(scale_last):
+        raise ValueError("sweep scale-law domain must be finite")
+    if scale_first >= scale_last:
+        raise ValueError("sweep scale-law domain must be increasing")
     tolerance = _positive(tolerance, "sweep surface tolerance")
     if continuity not in _CONTINUITY:
         raise ValueError("sweep surface continuity must be between 0 and 3")
@@ -124,8 +130,8 @@ def sweep_surface(
     scaling = Law_Constant()
     scaling.Set(
         scale,
-        spine_curve.FirstParameter(),
-        spine_curve.LastParameter(),
+        scale_first,
+        scale_last,
     )
     section_law = GeomFill_EvolvedSection(section_curve, scaling)
 

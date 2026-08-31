@@ -629,23 +629,33 @@ factory. `point(u, v)` returns `Point3`, `normal(u, v)` returns a unit
 `Interval` records, and `u_iso(parameter)` / `v_iso(parameter)` return `Curve`.
 No query exposes a generic evalcache proxy.
 
-`Runtime.sweep_surface(section, spine, ...)` covers the currently live legacy
-law chain without publishing its mutable OCP wrappers. Both section and spine
-are explicit `Curve` handles, the constant scale is a `ScalarInput`, and the
-trihedron law is the `SweepTrihedron.CORRECTED_FRENET` or
-`SweepTrihedron.FRENET` enum. Tolerance, requested continuity, maximum degree,
-and maximum segment count are validated construction options. The resolved
-operation alone creates `Law_Constant`, `GeomFill_EvolvedSection`, the
-trihedron/location laws, and `GeomFill_Sweep`. The constant law domain follows
-the spine parameter range rather than the section curve range; a trimmed-spine
-regression test makes that distinction observable.
+The sweep-law contract is an immutable composition rather than a public OCP
+object graph. `Runtime.constant_sweep_scale(scale, domain)` returns a frozen
+`SweepScaleLaw` containing a graph-preserving `Scalar` and explicit `Interval`.
+`Runtime.evolved_sweep_section(curve, scale_law)` combines it with a `Curve` as
+`SweepSectionLaw`; `Runtime.sweep_location(spine, trihedron)` combines a spine
+with `SweepTrihedron` as `SweepLocationLaw`. These three records replace the
+legacy `LawFunction`, `LawSection`, and `LawLocation` wrappers, while the enum
+replaces `LawTrihedron` and its two public factories.
 
-This representative adapter intentionally does not declare the four legacy
-`LawFunction`, `LawSection`, `LawLocation`, and `LawTrihedron` wrappers as new
-domain types. They only encapsulate mutable OCP implementation objects and do
-not form a useful stable user contract. Richer variable section, scale, or
-location laws require a separate typed design and a separate closable task;
-they are not silently accepted as untyped objects by this checkpoint.
+Laws are construction descriptions, not independently materializable results:
+they expose no `native()` boundary and create no cache records or codecs of
+their own. `Runtime.sweep_surface_from_laws(section, location, ...)` unpacks
+their constituent expression states into the terminal `Surface` operation.
+Evalcache therefore hashes the exact curve, scalar, domain, and enum inputs;
+only the resulting immutable `Surface` snapshot is serialized. A future law
+family must add another closed declarative variant and a resolved OCCT
+materializer. Arbitrary mutable OCP laws and opaque Python callbacks are not a
+supported fallback because neither has truthful ownership, hashing, or
+cross-process cache semantics.
+
+`Runtime.sweep_surface(section, spine, ...)` remains the concise spelling. It
+composes the same law values internally, using the spine parameter range for
+the scale-law domain. Tolerance, requested continuity, maximum degree, and
+maximum segment count are validated construction options. The resolved
+operation alone creates `Law_Constant`, `GeomFill_EvolvedSection`, the
+trihedron/location laws, and `GeomFill_Sweep`; a trimmed-spine regression test
+makes the default domain choice observable.
 
 Resolved surfaces are full-precision `GeomTools_SurfaceSet` bytes with a
 deterministic value key. `Surface.from_ocp()` captures an owned snapshot and

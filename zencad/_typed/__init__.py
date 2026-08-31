@@ -16,7 +16,13 @@ from .records import (
     ShapeProperties,
 )
 from .runtime import Runtime
-from .surfaces import Surface, SweepTrihedron
+from .surfaces import (
+    Surface,
+    SweepLocationLaw,
+    SweepScaleLaw,
+    SweepSectionLaw,
+    SweepTrihedron,
+)
 from .text import FontAspect
 from .topology import (
     Compound,
@@ -85,6 +91,9 @@ __all__ = [
     "Shell",
     "Solid",
     "Surface",
+    "SweepLocationLaw",
+    "SweepScaleLaw",
+    "SweepSectionLaw",
     "SweepTrihedron",
     "Transform",
     "Vector2",

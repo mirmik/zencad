@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
@@ -33,10 +34,81 @@ SurfaceHandleT = TypeVar("SurfaceHandleT", bound="Surface")
 
 
 class SweepTrihedron(Enum):
-    """Supported explicit trihedron laws for the representative sweep."""
+    """Supported immutable trihedron laws for a sweep location."""
 
     CORRECTED_FRENET = "corrected_frenet"
     FRENET = "frenet"
+
+
+@dataclass(frozen=True, slots=True)
+class SweepScaleLaw:
+    """Constant scale over an explicit parametric domain."""
+
+    scale: Scalar
+    domain: Interval
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.scale, Scalar):
+            raise TypeError("SweepScaleLaw scale must be Scalar")
+        if not isinstance(self.domain, Interval):
+            raise TypeError("SweepScaleLaw domain must be Interval")
+        require_same_runtime(self.scale.runtime, self.domain.lower)
+        require_same_runtime(self.scale.runtime, self.domain.upper)
+
+    @property
+    def runtime(self) -> Runtime:
+        return self.scale.runtime
+
+    def unlazy(self) -> SweepScaleLaw:
+        self.scale.unlazy()
+        self.domain.unlazy()
+        return self
+
+
+@dataclass(frozen=True, slots=True)
+class SweepSectionLaw:
+    """A section curve evolved by a typed scale law."""
+
+    section: Curve
+    scale: SweepScaleLaw
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.section, Curve):
+            raise TypeError("SweepSectionLaw section must be Curve")
+        if not isinstance(self.scale, SweepScaleLaw):
+            raise TypeError("SweepSectionLaw scale must be SweepScaleLaw")
+        require_same_runtime(self.section.runtime, self.scale.scale)
+
+    @property
+    def runtime(self) -> Runtime:
+        return self.section.runtime
+
+    def unlazy(self) -> SweepSectionLaw:
+        self.section.unlazy()
+        self.scale.unlazy()
+        return self
+
+
+@dataclass(frozen=True, slots=True)
+class SweepLocationLaw:
+    """A spine curve paired with an explicit trihedron law."""
+
+    spine: Curve
+    trihedron: SweepTrihedron = SweepTrihedron.CORRECTED_FRENET
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.spine, Curve):
+            raise TypeError("SweepLocationLaw spine must be Curve")
+        if not isinstance(self.trihedron, SweepTrihedron):
+            raise TypeError("SweepLocationLaw trihedron must be SweepTrihedron")
+
+    @property
+    def runtime(self) -> Runtime:
+        return self.spine.runtime
+
+    def unlazy(self) -> SweepLocationLaw:
+        self.spine.unlazy()
+        return self
 
 
 _SURFACE_SERIALIZER = SurfaceSerializer()

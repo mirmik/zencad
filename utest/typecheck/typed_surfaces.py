@@ -18,6 +18,28 @@ def surface_contract(runtime: typed.Runtime) -> None:
         ),
         typed.Surface,
     )
+    spine = runtime.circle_curve(radius + 1)
+    scale_law = assert_type(
+        runtime.constant_sweep_scale(radius, spine.range()),
+        typed.SweepScaleLaw,
+    )
+    section_law = assert_type(
+        runtime.evolved_sweep_section(runtime.circle_curve(radius / 2), scale_law),
+        typed.SweepSectionLaw,
+    )
+    location_law = assert_type(
+        runtime.sweep_location(spine, typed.SweepTrihedron.FRENET),
+        typed.SweepLocationLaw,
+    )
+    assert_type(
+        runtime.sweep_surface_from_laws(section_law, location_law),
+        typed.Surface,
+    )
+    assert_type(scale_law.scale, typed.Scalar)
+    assert_type(scale_law.domain, typed.Interval)
+    assert_type(section_law.section, typed.Curve)
+    assert_type(location_law.spine, typed.Curve)
+    assert_type(location_law.trihedron, typed.SweepTrihedron)
 
     assert_type(cylinder.point(0, radius), typed.Point3)
     assert_type(cylinder.normal(0, radius), typed.Vector3)

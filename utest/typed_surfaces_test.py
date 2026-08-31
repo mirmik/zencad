@@ -1,6 +1,7 @@
 import json
 import math
 import os
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 import subprocess
 import sys
@@ -62,9 +63,15 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                         progress_hooks=(events.append,),
                     )
                     cylinder = runtime.cylinder_surface(2)
-                    sweep = runtime.sweep_surface(
-                        runtime.circle_curve(1),
-                        runtime.circle_curve(3),
+                    section = runtime.circle_curve(1)
+                    spine = runtime.circle_curve(3)
+                    sweep = runtime.sweep_surface(section, spine)
+                    scale_law = runtime.constant_sweep_scale(1, spine.range())
+                    section_law = runtime.evolved_sweep_section(section, scale_law)
+                    location_law = runtime.sweep_location(spine)
+                    law_sweep = runtime.sweep_surface_from_laws(
+                        section_law,
+                        location_law,
                     )
                     mapped = cylinder.map(
                         runtime.segment2(
@@ -76,6 +83,10 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                     observed_types.add((type(cylinder), type(sweep), type(mapped)))
                     self.assertIs(type(cylinder), typed.Surface)
                     self.assertIs(type(sweep), typed.Surface)
+                    self.assertIs(type(scale_law), typed.SweepScaleLaw)
+                    self.assertIs(type(section_law), typed.SweepSectionLaw)
+                    self.assertIs(type(location_law), typed.SweepLocationLaw)
+                    self.assertIs(type(law_sweep), typed.Surface)
                     self.assertIs(type(mapped), typed.Edge)
                     if mode is EvaluationMode.DEFERRED:
                         self.assertEqual(events, [])
@@ -112,6 +123,7 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                     )
                     self.assertIs(type(cylinder.native()), Geom_CylindricalSurface)
                     self.assertIs(type(sweep.native()), Geom_BSplineSurface)
+                    self.assertIs(type(law_sweep.native()), Geom_BSplineSurface)
                     mapped_endpoints = mapped.endpoints()
                     _assert_coordinates(self, mapped_endpoints[0].value(), (2, 0, 0))
                     _assert_coordinates(self, mapped_endpoints[1].value(), (0, 2, 3))
@@ -127,6 +139,32 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                     self.assertIs(sweep.unlazy(), sweep)
 
         self.assertEqual(len(observed_types), 1)
+
+    def test_sweep_laws_are_immutable_graph_compositions(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        section = runtime.circle_curve(1)
+        spine = runtime.circle_curve(3)
+        scale = runtime.constant_sweep_scale(2, spine.range())
+        section_law = runtime.evolved_sweep_section(section, scale)
+        location = runtime.sweep_location(spine, typed.SweepTrihedron.FRENET)
+
+        self.assertIs(scale.runtime, runtime)
+        self.assertIs(section_law.runtime, runtime)
+        self.assertIs(location.runtime, runtime)
+        self.assertEqual(scale.scale.value(), 2)
+        self.assertEqual(scale.domain.value(), (0, 2 * math.pi))
+        self.assertIs(section_law.section, section)
+        self.assertIs(section_law.scale, scale)
+        self.assertIs(location.spine, spine)
+        self.assertIs(location.trihedron, typed.SweepTrihedron.FRENET)
+        self.assertIs(scale.unlazy(), scale)
+        self.assertIs(section_law.unlazy(), section_law)
+        self.assertIs(location.unlazy(), location)
+
+        with self.assertRaises(FrozenInstanceError):
+            scale.scale = runtime.scalar(3)  # type: ignore[misc]
+        with self.assertRaises(FrozenInstanceError):
+            location.trihedron = typed.SweepTrihedron.CORRECTED_FRENET  # type: ignore[misc]
 
     def test_scalar_and_curve_inputs_remain_in_the_graph(self):
         events = []
@@ -249,6 +287,31 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             runtime.sweep_surface(runtime.ellipse2(2, 1), runtime.circle_curve(3))  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
             runtime.sweep_surface(runtime.circle_curve(1), other.circle_curve(3))
+        with self.assertRaisesRegex(TypeError, "domain must be Interval"):
+            runtime.constant_sweep_scale(1, (0, 1))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.constant_sweep_scale(1, other.circle_curve(3).range())
+        with self.assertRaisesRegex(TypeError, "scale must be SweepScaleLaw"):
+            runtime.evolved_sweep_section(
+                runtime.circle_curve(1),
+                1,  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(TypeError, "trihedron must be SweepTrihedron"):
+            runtime.sweep_location(
+                runtime.circle_curve(3),
+                "frenet",  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.sweep_surface_from_laws(
+                runtime.evolved_sweep_section(
+                    runtime.circle_curve(1),
+                    runtime.constant_sweep_scale(
+                        1,
+                        runtime.circle_curve(3).range(),
+                    ),
+                ),
+                other.sweep_location(other.circle_curve(3)),
+            )
         with self.assertRaisesRegex(TypeError, "expects Curve2"):
             runtime.cylinder_surface(2).map(runtime.circle_curve(1))  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different typed runtimes"):
@@ -287,6 +350,17 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                 runtime.circle_curve(1),
                 runtime.circle_curve(3),
                 scale=0,
+            ).native()
+        with self.assertRaisesRegex(ValueError, "domain must be increasing"):
+            runtime.sweep_surface_from_laws(
+                runtime.evolved_sweep_section(
+                    runtime.circle_curve(1),
+                    runtime.constant_sweep_scale(
+                        1,
+                        typed.Interval(runtime.scalar(1), runtime.scalar(0)),
+                    ),
+                ),
+                runtime.sweep_location(runtime.circle_curve(3)),
             ).native()
 
         immediate = typed.Runtime.immediate(cache=False)
