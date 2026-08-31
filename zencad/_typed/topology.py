@@ -910,6 +910,61 @@ class Shape(Handle[ResolvedShape]):
         )
         return type(self)._from_state(self.runtime, expression)
 
+    def _near(
+        self,
+        point: Point3,
+        operation: Callable[[ResolvedShape, ops.Point3Value], ResolvedShape],
+        result_spec: ResultSpec[ResolvedShape],
+        handle_type: type[ShapeHandleT],
+        name: str,
+    ) -> ShapeHandleT:
+        if not isinstance(point, Point3):
+            raise TypeError(f"near_{name} expects Point3")
+        require_same_runtime(self.runtime, point)
+        expression = self.runtime._expression(
+            operation,
+            result=result_spec,
+            args=(self._state, point._state),
+            operation_id=f"zencad.typed.shape.near_{name}",
+        )
+        return handle_type._from_state(self.runtime, expression)
+
+    def near_vertex(self, point: Point3, /) -> Vertex:
+        return self._near(point, ops.near_vertex, VERTEX_SPEC, Vertex, "vertex")
+
+    def near_edge(self, point: Point3, /) -> Edge:
+        return self._near(point, ops.near_edge, EDGE_SPEC, Edge, "edge")
+
+    def near_wire(self, point: Point3, /) -> Wire:
+        return self._near(point, ops.near_wire, WIRE_SPEC, Wire, "wire")
+
+    def near_face(self, point: Point3, /) -> Face:
+        return self._near(point, ops.near_face, FACE_SPEC, Face, "face")
+
+    def near_shell(self, point: Point3, /) -> Shell:
+        return self._near(point, ops.near_shell, SHELL_SPEC, Shell, "shell")
+
+    def near_solid(self, point: Point3, /) -> Solid:
+        return self._near(point, ops.near_solid, SOLID_SPEC, Solid, "solid")
+
+    def near_compsolid(self, point: Point3, /) -> CompSolid:
+        return self._near(
+            point,
+            ops.near_compsolid,
+            COMPSOLID_SPEC,
+            CompSolid,
+            "compsolid",
+        )
+
+    def near_compound(self, point: Point3, /) -> Compound:
+        return self._near(
+            point,
+            ops.near_compound,
+            COMPOUND_SPEC,
+            Compound,
+            "compound",
+        )
+
     def edges(self) -> DeferredSequence[Edge]:
         return self._topology_query(
             ops.edges,

@@ -191,5 +191,73 @@ class TypedOffsetSewUnifyTest(unittest.TestCase):
             runtime.thicksolid(runtime.rectangle(1, 1), 0.1, ())  # type: ignore[arg-type]
 
 
+class TypedGeometryQueriesTest(unittest.TestCase):
+    def test_nearest_topology_queries_have_precise_handles_across_policies(self):
+        for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
+            for cache in (False, True):
+                with self.subTest(mode=mode, cache=cache):
+                    runtime = typed.Runtime(
+                        mode=mode,
+                        cache=cache,
+                        cache_store=MemoryCacheStore(),
+                    )
+                    shape = runtime.box(1)
+                    point = runtime.point3(0.1, 0.1, 2)
+                    results = (
+                        runtime.near_vertex(shape, point),
+                        runtime.near_edge(shape, point),
+                        runtime.near_wire(shape, point),
+                        runtime.near_face(shape, point),
+                        runtime.near_shell(shape, point),
+                        runtime.near_solid(shape, point),
+                    )
+
+                    self.assertEqual(
+                        tuple(type(result) for result in results),
+                        (
+                            typed.Vertex,
+                            typed.Edge,
+                            typed.Wire,
+                            typed.Face,
+                            typed.Shell,
+                            typed.Solid,
+                        ),
+                    )
+                    self.assertEqual(results[0].point().value(), (0.0, 0.0, 1.0))
+                    self.assertTrue(all(not result.native().IsNull() for result in results))
+
+    def test_missing_nearest_topology_has_an_actionable_error(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        with self.assertRaisesRegex(ValueError, "no compound topology"):
+            runtime.near_compound(runtime.box(1), runtime.point3()).native()
+
+    def test_curve_projection_is_a_structured_typed_result(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        edge = runtime.segment(
+            runtime.point3(0, 0, 0),
+            runtime.point3(10, 0, 0),
+        )
+        projection = runtime.project(runtime.point3(3, 4, 0), edge)
+
+        self.assertIs(type(projection), typed.CurveProjection)
+        self.assertEqual(projection.point.value(), (3.0, 0.0, 0.0))
+        self.assertAlmostEqual(float(projection.parameter), 3.0)
+        self.assertAlmostEqual(float(projection.distance), 4.0)
+        self.assertEqual(projection.value(), ((3.0, 0.0, 0.0), 3.0, 4.0))
+        self.assertIs(projection.unlazy(), projection)
+
+    def test_geometry_queries_reject_wrong_domain_or_runtime(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        other = typed.Runtime.deferred(cache=False)
+        shape = runtime.box(1)
+
+        with self.assertRaisesRegex(TypeError, "expects Point3"):
+            shape.near_vertex((0, 0, 0))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
+            runtime.near_face(shape, other.point3())
+        with self.assertRaisesRegex(TypeError, "Curve or Edge"):
+            runtime.project(runtime.point3(), shape)  # type: ignore[arg-type]
+
+
 if __name__ == "__main__":
     unittest.main()

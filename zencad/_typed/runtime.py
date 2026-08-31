@@ -40,7 +40,7 @@ from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .exttrans import MultiTransform
 from .meshes import MeshData
-from .records import Interval
+from .records import CurveProjection, Interval
 from .surfaces import SURFACE_SPEC, Surface, SweepTrihedron
 from .text import FontAspect
 from .topology import (
@@ -616,6 +616,62 @@ class Runtime:
     def unify(self, shape: ShapeValueT, /) -> ShapeValueT:
         _require_shape(self, shape, "unify")
         return shape.unify()
+
+    def near_vertex(self, shape: Shape, point: Point3, /) -> Vertex:
+        _require_shape(self, shape, "near_vertex")
+        return shape.near_vertex(point)
+
+    def near_edge(self, shape: Shape, point: Point3, /) -> Edge:
+        _require_shape(self, shape, "near_edge")
+        return shape.near_edge(point)
+
+    def near_wire(self, shape: Shape, point: Point3, /) -> Wire:
+        _require_shape(self, shape, "near_wire")
+        return shape.near_wire(point)
+
+    def near_face(self, shape: Shape, point: Point3, /) -> Face:
+        _require_shape(self, shape, "near_face")
+        return shape.near_face(point)
+
+    def near_shell(self, shape: Shape, point: Point3, /) -> Shell:
+        _require_shape(self, shape, "near_shell")
+        return shape.near_shell(point)
+
+    def near_solid(self, shape: Shape, point: Point3, /) -> Solid:
+        _require_shape(self, shape, "near_solid")
+        return shape.near_solid(point)
+
+    def near_compsolid(self, shape: Shape, point: Point3, /) -> CompSolid:
+        _require_shape(self, shape, "near_compsolid")
+        return shape.near_compsolid(point)
+
+    def near_compound(self, shape: Shape, point: Point3, /) -> Compound:
+        _require_shape(self, shape, "near_compound")
+        return shape.near_compound(point)
+
+    def project_point_on_curve(
+        self,
+        point: Point3,
+        target: Curve | Edge,
+        /,
+    ) -> CurveProjection:
+        if not isinstance(point, Point3):
+            raise TypeError("project_point_on_curve point must be Point3")
+        if not isinstance(target, (Curve, Edge)):
+            raise TypeError("project_point_on_curve target must be Curve or Edge")
+        require_same_runtime(self, point)
+        require_same_runtime(self, target)
+        curve = target.curve() if isinstance(target, Edge) else target
+        parameter = curve.lower_distance_parameter(point)
+        projected = curve.point(parameter)
+        return CurveProjection(
+            projected,
+            parameter,
+            (projected - point).length(),
+        )
+
+    def project(self, point: Point3, target: Curve | Edge, /) -> CurveProjection:
+        return self.project_point_on_curve(point, target)
 
     def empty_boundary_box(self) -> BoundaryBox:
         """Return the identity value for boundary-box union."""

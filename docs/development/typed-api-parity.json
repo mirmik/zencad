@@ -1120,12 +1120,24 @@
         {
           "source": "zencad.geom.near",
           "default": {"status": "missing", "typed": "typed nearest-topology query {name}", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "near_compound": {"status": "implemented", "typed": "Runtime.near_compound() / Shape.near_compound() -> Compound"},
+            "near_compsolid": {"status": "implemented", "typed": "Runtime.near_compsolid() / Shape.near_compsolid() -> CompSolid"},
+            "near_edge": {"status": "implemented", "typed": "Runtime.near_edge() / Shape.near_edge() -> Edge"},
+            "near_face": {"status": "implemented", "typed": "Runtime.near_face() / Shape.near_face() -> Face"},
+            "near_shell": {"status": "implemented", "typed": "Runtime.near_shell() / Shape.near_shell() -> Shell"},
+            "near_solid": {"status": "implemented", "typed": "Runtime.near_solid() / Shape.near_solid() -> Solid"},
+            "near_vertex": {"status": "implemented", "typed": "Runtime.near_vertex() / Shape.near_vertex() -> Vertex"},
+            "near_wire": {"status": "implemented", "typed": "Runtime.near_wire() / Shape.near_wire() -> Wire"}
+          }
         },
         {
           "source": "zencad.geom.project",
           "default": {"status": "missing", "typed": "typed projection query {name}", "materialization": "none"},
-          "overrides": {}
+          "overrides": {
+            "project": {"status": "implemented", "typed": "Runtime.project(Point3, Curve | Edge) -> CurveProjection"},
+            "project_point_on_curve": {"status": "implemented", "typed": "Runtime.project_point_on_curve(Point3, Curve | Edge) -> CurveProjection"}
+          }
         }
       ]
     },

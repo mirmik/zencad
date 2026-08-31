@@ -11,6 +11,7 @@ import math
 from typing import Callable
 
 from OCP.BRep import BRep_Builder, BRep_Tool
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepAlgoAPI import (
     BRepAlgoAPI_Common,
     BRepAlgoAPI_Cut,
@@ -22,6 +23,7 @@ from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_MakeEdge,
     BRepBuilderAPI_MakeFace,
     BRepBuilderAPI_MakePolygon,
+    BRepBuilderAPI_MakeVertex,
     BRepBuilderAPI_MakeWire,
     BRepBuilderAPI_Transform,
 )
@@ -1235,6 +1237,61 @@ def sew_shell(shapes: tuple[ResolvedShape, ...]) -> ResolvedShape:
         raise ValueError(
             f"sew could not connect {len(shapes)} Face/Shell operands"
         ) from error
+
+
+def _near_part(
+    shape: ResolvedShape,
+    point: Point3Value,
+    kind: TopAbs_ShapeEnum,
+    convert: Callable[[TopoDS_Shape], TopoDS_Shape],
+    name: str,
+) -> ResolvedShape:
+    query_vertex = BRepBuilderAPI_MakeVertex(_point(point)).Vertex()
+    explorer = TopExp_Explorer(shape.Shape(), kind)
+    nearest: TopoDS_Shape | None = None
+    minimum = math.inf
+    while explorer.More():
+        candidate = convert(explorer.Current())
+        extrema = BRepExtrema_DistShapeShape(candidate, query_vertex)
+        if extrema.IsDone() and extrema.Value() < minimum:
+            nearest = candidate
+            minimum = float(extrema.Value())
+        explorer.Next()
+    if nearest is None:
+        raise ValueError(f"near_{name} found no {name} topology in Shape")
+    return ResolvedShape(nearest)
+
+
+def near_vertex(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_VERTEX, as_vertex, "vertex")
+
+
+def near_edge(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_EDGE, as_edge, "edge")
+
+
+def near_wire(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_WIRE, as_wire, "wire")
+
+
+def near_face(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_FACE, as_face, "face")
+
+
+def near_shell(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_SHELL, as_shell, "shell")
+
+
+def near_solid(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_SOLID, as_solid, "solid")
+
+
+def near_compsolid(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_COMPSOLID, as_compsolid, "compsolid")
+
+
+def near_compound(shape: ResolvedShape, point: Point3Value) -> ResolvedShape:
+    return _near_part(shape, point, TopAbs_COMPOUND, as_compound, "compound")
 
 
 def sequence_item(sequence: tuple[ResolvedShape, ...], index: int) -> ResolvedShape:

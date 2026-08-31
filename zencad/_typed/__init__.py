@@ -9,6 +9,7 @@ from .exttrans import MultiTransform
 from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
 from .records import (
     CircleParameters,
+    CurveProjection,
     EllipseParameters,
     Interval,
     LineParameters,
@@ -59,6 +60,7 @@ __all__ = [
     "Curve",
     "Curve2",
     "CurveKind",
+    "CurveProjection",
     "DeferredSequence",
     "Edge",
     "Face",

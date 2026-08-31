@@ -65,6 +65,24 @@ def topology_contract(
     assert_type(solid.shapefix_solid(), typed.Solid)
     assert_type(runtime.unify(solid), typed.Solid)
     assert_type(solid.unify(), typed.Solid)
+    query_point = runtime.point3()
+    assert_type(runtime.near_vertex(shape, query_point), typed.Vertex)
+    assert_type(runtime.near_edge(shape, query_point), typed.Edge)
+    assert_type(runtime.near_wire(shape, query_point), typed.Wire)
+    assert_type(runtime.near_face(shape, query_point), typed.Face)
+    assert_type(runtime.near_shell(shape, query_point), typed.Shell)
+    assert_type(runtime.near_solid(shape, query_point), typed.Solid)
+    assert_type(runtime.near_compsolid(shape, query_point), typed.CompSolid)
+    assert_type(runtime.near_compound(shape, query_point), typed.Compound)
+    assert_type(shape.near_vertex(query_point), typed.Vertex)
+    projection = assert_type(
+        runtime.project(query_point, edge),
+        typed.CurveProjection,
+    )
+    assert_type(runtime.project_point_on_curve(query_point, edge), typed.CurveProjection)
+    assert_type(projection.point, typed.Point3)
+    assert_type(projection.parameter, typed.Scalar)
+    assert_type(projection.distance, typed.Scalar)
     points = (
         runtime.point3(0, 0, 0),
         runtime.point3(1, 0, 0),

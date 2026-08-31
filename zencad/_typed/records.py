@@ -131,3 +131,29 @@ class ShapeProperties:
 
     def __iter__(self) -> Iterator[Point3 | Scalar]:
         return iter((self.center, self.mass))
+
+
+class CurveProjection:
+    """Nearest curve projection expressed entirely as typed graph handles."""
+
+    __slots__ = ("point", "parameter", "distance")
+
+    def __init__(
+        self,
+        point: Point3,
+        parameter: Scalar,
+        distance: Scalar,
+        /,
+    ) -> None:
+        require_same_runtime(point.runtime, parameter)
+        require_same_runtime(point.runtime, distance)
+        self.point = point
+        self.parameter = parameter
+        self.distance = distance
+
+    def value(self) -> tuple[tuple[float, float, float], float, float]:
+        return (self.point.value(), self.parameter.value(), self.distance.value())
+
+    def unlazy(self) -> CurveProjection:
+        self.value()
+        return self
