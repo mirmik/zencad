@@ -3,9 +3,48 @@ import unittest
 from evalcache.v2 import EvaluationMode, MemoryCacheStore
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 class TypedBooleanOperationsTest(unittest.TestCase):
+    def test_boolean_family_is_declared_at_module_level(self):
+        for name in ("empty_shape", "union", "intersect", "difference", "section"):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        left = runtime.box(2)
+        right = runtime.box(2).translate(1, 0, 0)
+        results = (
+            typed.union(left, right),
+            typed.intersect((left, right)),
+            typed.intersection(left, right),
+            typed.difference(left, right),
+            typed.section(left, 1),
+        )
+        with using_runtime(runtime):
+            zero = typed.empty_shape()
+            legacy_zero = typed.nullshape()
+
+        self.assertTrue(all(result.runtime is runtime for result in results))
+        self.assertIs(zero.runtime, runtime)
+        self.assertIs(legacy_zero.runtime, runtime)
+        self.assertEqual(events, [])
+        self.assertEqual(
+            tuple(result._state.operation_id for result in results),
+            (
+                "zencad.typed.union",
+                "zencad.typed.intersect",
+                "zencad.typed.intersect",
+                "zencad.typed.difference",
+                "zencad.typed.section",
+            ),
+        )
+
     def test_sequence_and_variadic_booleans_across_policy_matrix(self):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):

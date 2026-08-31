@@ -4,6 +4,15 @@ Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
 from .bounds import BoundaryBox, BoundaryBoxRecord
+from .booleans import (
+    difference,
+    empty_shape,
+    intersect,
+    intersection,
+    nullshape,
+    section,
+    union,
+)
 from .curves import Curve, Curve2, CurveKind
 from .exttrans import MultiTransform
 from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
@@ -114,14 +123,21 @@ __all__ = [
     "cos",
     "cube",
     "cylinder",
+    "difference",
+    "empty_shape",
     "exp",
     "halfspace",
+    "intersect",
+    "intersection",
     "log",
     "make_solid",
+    "nullshape",
+    "section",
     "sin",
     "sphere",
     "sqrt",
     "tan",
     "torus",
+    "union",
     "wire_builder",
 ]

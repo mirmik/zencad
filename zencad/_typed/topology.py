@@ -262,44 +262,20 @@ class Shape(Handle[ResolvedShape]):
             expression,
         )
 
-    def _boolean(
-        self,
-        other: Shape,
-        operation: Callable[[ResolvedShape, ResolvedShape], ResolvedShape],
-        operation_id: str,
-        name: str,
-    ) -> Shape:
-        if not isinstance(other, Shape):
-            raise TypeError(f"Shape {name} expects Shape")
-        require_same_runtime(self.runtime, other)
-        expression = self.runtime._expression(
-            operation,
-            result=SHAPE_SPEC,
-            args=(self._state, other._state),
-            operation_id=operation_id,
-        )
-        return Shape._from_state(self.runtime, expression)
-
     def __add__(self, other: Shape) -> Shape:
-        if not isinstance(other, Shape):
-            raise TypeError("Shape union expects Shape")
-        return _shape_union_operation(self, other)
+        from .booleans import _shape_union
+
+        return _shape_union(self, other)
 
     def __sub__(self, other: Shape) -> Shape:
-        return self._boolean(
-            other,
-            ops.difference,
-            "zencad.typed.shape.difference",
-            "difference",
-        )
+        from .booleans import _shape_difference
+
+        return _shape_difference(self, other)
 
     def __xor__(self, other: Shape) -> Shape:
-        return self._boolean(
-            other,
-            ops.intersection,
-            "zencad.typed.shape.intersection",
-            "intersection",
-        )
+        from .booleans import _shape_intersection
+
+        return _shape_intersection(self, other)
 
     def unlazy(self: ShapeT) -> ShapeT:
         """Compatibility boundary that materializes and preserves the handle."""
@@ -1309,18 +1285,3 @@ class DeferredSequence(Generic[ShapeHandleT]):
     def __iter__(self) -> Iterator[ShapeHandleT]:
         for index in range(len(self)):
             yield self[index]
-
-
-from zencad.operation import arguments as _operation_arguments
-from zencad.operation import operation as _domain_operation
-
-
-@_domain_operation(
-    backend=ops.union,
-    result=SHAPE_SPEC,
-    returns=Shape,
-    operation_id="zencad.typed.shape.union",
-    operation_version="1",
-)
-def _shape_union_operation(left: Shape, right: Shape):
-    return _operation_arguments(left, right)

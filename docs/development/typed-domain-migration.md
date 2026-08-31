@@ -999,6 +999,16 @@ implementation from `Runtime` for the whole family. `empty_shape` remains in
 the next topology extraction rather than being misplaced with solid
 primitives.
 
+The next #2050 child extracts the topology algebra. Module-level
+`empty_shape`/`nullshape`, `union`, `intersect`/`intersection`, `difference`,
+and `section` declarations live in `_typed/booleans.py`, with resolved OCCT
+implementations in `_boolean_operations.py`. Binary `Shape` operators delegate
+to private declarations in the same module and retain the established
+`zencad.typed.shape.union`, `.difference`, and `.intersection` identities.
+`section` owns its plane-operand normalization but temporarily composes the
+still-unmigrated transform entry points through the selected Runtime context.
+All corresponding Runtime methods are forwarding shims.
+
 The public root `zencad.box` is intentionally not switched independently:
 doing that before the neighboring transforms, booleans, and queries move would
 create a mixed legacy/typed object graph. Public replacement proceeds by a
@@ -1013,7 +1023,7 @@ could reduce adapter plumbing but is not a migration blocker.
 
 Verification on 2026-08-31 after this checkpoint:
 
-- all 374 tests pass;
+- all 375 tests pass;
 - strict mypy with `--disallow-any-expr` passes all 16 representative typed
   contracts;
 - the decorator tests cover module declaration, Runtime forwarding, operation
