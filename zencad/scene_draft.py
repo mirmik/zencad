@@ -280,7 +280,11 @@ class SceneDraft:
                     "display_mode is only supported for mesh objects"
                 )
             kind = "point"
-            source = obj
+            source = (
+                obj
+                if isinstance(obj, TypedPoint3)
+                else tuple(float(component) for component in obj)
+            )
             object_color = _color(color, default_point_color)
             location = nulltrans()
             visible = True

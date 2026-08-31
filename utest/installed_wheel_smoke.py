@@ -11,6 +11,7 @@ from tempfile import TemporaryDirectory
 from evalcache.dircache_v2 import DirCache_v2
 from zencad.runtime import RunnerMessage, RunnerSupervisor
 from zencad.runtime.scene_protocol import decode_mesh
+from zencad.scene_draft import SceneDraft
 import zencad
 from zencad import _typed as typed
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
@@ -111,6 +112,16 @@ def main():
         assert projection.value() == ((1.0, 0.0, 0.0), 1.0, 2.0)
         assert type(typed_runtime.unify(boolean_left)) is typed.Solid
         assert type(typed_runtime.offset(boolean_left, 0.1)) is typed.Shape
+        draft = SceneDraft(generation=1)
+        draft.add(boolean_left)
+        draft.add(mesh, display_mode="shaded")
+        draft.add(typed_runtime.point3(1, 2, 3))
+        typed_snapshot = draft.snapshot()
+        assert tuple(item.kind for item in typed_snapshot.objects) == (
+            "brep",
+            "mesh",
+            "point",
+        )
         edge_curve = typed_runtime.box(2).edges()[0].curve()
         face_surface = typed_runtime.box(2).faces()[0].surface()
         assert type(edge_curve) is typed.Curve
