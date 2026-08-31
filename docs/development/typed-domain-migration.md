@@ -887,6 +887,33 @@ Verification on 2026-08-31 after this checkpoint:
   geometry/I/O smoke outside the source tree, including the new boolean,
   section, offset, unification, nearest-topology, and projection APIs.
 
+### Mesh, conversion, and display checkpoint
+
+Task #2044 completes the mesh-convert-display parity family. Typed Runtime
+adapters cover BREP, STL, and SVG file/string boundaries; BREP and SVG imports
+return stable `Shape` snapshots, and exports isolate mutable native data from
+the source handle. `MeshData` provides a compatibility spelling for fresh
+native triangulation conversion.
+
+Managed and direct scenes accept typed `Shape`, `MeshData`, and `Point3`.
+Managed drafts retain typed sources until snapshot encoding, while direct
+scenes materialize only when constructing an interactive renderer object. The
+headless path does not import Qt. Legacy point, shape, mesh, assembly, and
+display behavior remains covered alongside the typed adapters.
+
+Verification on 2026-08-31 after this checkpoint:
+
+- the headless runner passes its isolated 3-test and 13-test groups plus 344
+  discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 15 representative typed
+  contracts;
+- the parity inventory reports 355 implemented, 16 missing, 0 partial, 6
+  repair, and 3 unchanged rows; mesh-convert-display has no open rows;
+- BREP round-trips pass all four immediate/deferred × cache on/off policies,
+  and STL/SVG/mesh compatibility and managed/direct scene tests pass;
+- a clean wheel using the local evalcache checkout passes the installed smoke
+  outside the source tree, including typed scene snapshot transport.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative
