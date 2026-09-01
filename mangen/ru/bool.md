@@ -136,6 +136,43 @@ m1 = section(box(10, center=True), sphere(7))
 ![](../images/generic/section0.png)
 ![](../images/generic/section1.png)   
 
+---
+:ru
+## Разбиение и сечение плоскостью.
+
+`split(body, tools)` делит тело одним или несколькими Shape-инструментами и
+возвращает `SplitResult` — ленивую детерминированно упорядоченную
+последовательность получившихся solid-частей. Пустой набор инструментов и
+инструмент, который не делит тело (включая касание), приводят к `ValueError`.
+
+`slice(body, z=..., axis=...)` — удобный частный случай для плоскости. Результат
+`SliceResult` можно распаковать как `(lower, upper)`; порядок идёт от
+отрицательной к положительной стороне нормали. Произвольная плоскость задаётся
+плоской гранью или парой `(origin, normal)`. Если получилось не ровно два
+solid-тела, операция неоднозначна и поднимает `ValueError`.
+:en
+## Splitting and slicing by a plane.
+
+`split(body, tools)` partitions a body with one or more Shape tools and returns
+a `SplitResult`: a lazy, deterministically ordered sequence of resulting
+solids. Empty tools and a tool that does not divide the body (including a
+tangent tool) raise `ValueError`.
+
+`slice(body, z=..., axis=...)` is the convenient plane form. Its `SliceResult`
+unpacks as `(lower, upper)`, ordered from the negative to the positive side of
+the plane normal. An arbitrary plane may be a planar face or an
+`(origin, normal)` pair. A result other than exactly two solids is ambiguous
+and raises `ValueError`.
+::
+
+```python
+parts = split(box(10), (infplane().up(3), infplane().up(7)))
+
+lower, upper = slice(box(10), z=4)
+left, right = slice(box(10), z=2, axis="x")
+negative, positive = slice(box(10), plane=((0, 5, 0), (0, 1, 0)))
+```
+
 ---------------------------------------------
 :ru
 ## Булевы операции над двумерными телами.

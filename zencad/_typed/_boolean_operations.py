@@ -12,6 +12,7 @@ from OCP.BRepAlgoAPI import (
 from OCP.TopoDS import TopoDS_Compound
 
 from zencad.geom.shape import Shape as ResolvedShape
+from zencad.geom.boolops import _slice_resolved, _split_resolved
 
 
 def empty_shape() -> ResolvedShape:
@@ -96,3 +97,19 @@ def section(
     if not algorithm.IsDone():
         raise ValueError("section failed for Shape operands")
     return ResolvedShape(algorithm.Shape())
+
+
+def split_shapes(
+    body: ResolvedShape,
+    tools: tuple[ResolvedShape, ...],
+) -> tuple[ResolvedShape, ...]:
+    return _split_resolved(body, tools)
+
+
+def slice_shape(
+    body: ResolvedShape,
+    plane: object,
+    coordinate: float,
+    axis: object,
+) -> tuple[ResolvedShape, ...]:
+    return _slice_resolved(body, plane, coordinate, axis)

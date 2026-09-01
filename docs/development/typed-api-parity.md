@@ -45,7 +45,7 @@ their existing modules but are outside the typed-domain replacement surface.
   immutable typed model and needs a deliberate repaired spelling.
 - `unchanged`: the entry remains outside the lazy/domain migration.
 
-The expanded inventory contains 380 types, functions, methods, and
+The expanded inventory contains 384 types, functions, methods, and
 operators:
 
 | Family | Total | Implemented | Partial | Missing | Repair | Unchanged |
@@ -54,9 +54,9 @@ operators:
 | Transforms | 64 | 64 | 0 | 0 | 0 | 0 |
 | Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
-| Sweeps and operations | 45 | 45 | 0 | 0 | 0 | 0 |
+| Sweeps and operations | 49 | 49 | 0 | 0 | 0 | 0 |
 | Mesh, convert, display | 18 | 16 | 0 | 0 | 0 | 2 |
-| **Total** | **380** | **371** | **0** | **0** | **6** | **3** |
+| **Total** | **384** | **375** | **0** | **0** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 rows are aliases, so a single typed operation can close several of them.
@@ -90,6 +90,13 @@ fail explicitly when that topology is absent. Curve projection returns a
 `CurveProjection` record containing graph-preserving point, parameter, and
 distance handles. With this tranche, every non-sweep operation owned by #2043
 is implemented; the remaining rows in this family belong to the sweep tasks.
+
+#1993 adds deterministic solid partitioning to the same boolean backend.
+`split()` returns a deferred `SplitResult`, while `slice()` returns an ordered
+`SliceResult` whose `lower` and `upper` solids follow the plane normal. Both
+legacy lazy nodes and typed handles share non-dividing and ambiguous-result
+errors, coordinate-axis planes, arbitrary planar faces, and `(origin, normal)`
+plane descriptions.
 
 #2036 and #2042 complete the sweep family. Sweep laws are frozen compositions
 of typed curves, scalars, intervals, and enums; only the terminal Surface

@@ -99,6 +99,20 @@ def main():
         assert isinstance(typed.fill3d, DomainOperation)
         assert isinstance(typed.polyhedron_shell, DomainOperation)
         assert isinstance(typed.convex_hull_shape, DomainOperation)
+        assert isinstance(typed.split, DomainOperation)
+        assert isinstance(typed.slice, DomainOperation)
+        legacy_parts = zencad.split(
+            zencad.box(2),
+            zencad.infplane().up(1),
+        )
+        assert len(legacy_parts) == 2
+        assert [round(part.mass(), 6) for part in legacy_parts] == [4.0, 4.0]
+        with typed.using_context(typed_context):
+            typed_body = typed.box(2)
+            typed_parts = typed.slice(typed_body, z=1)
+        assert isinstance(typed_parts, typed.SliceResult)
+        assert round(float(typed_parts.lower.mass()), 6) == 4.0
+        assert round(float(typed_parts.upper.mass()), 6) == 4.0
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(

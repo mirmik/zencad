@@ -9,12 +9,16 @@ from zencad.operation import resolve_context, using_context
 
 from .bounds import BoundaryBox, BoundaryBoxRecord, boundary_box, empty_boundary_box
 from .booleans import (
+    SliceResult,
+    SplitResult,
     difference,
     empty_shape,
     intersect,
     intersection,
     nullshape,
     section,
+    slice,
+    split,
     union,
 )
 from .curves import Curve, Curve2, CurveKind
@@ -283,11 +287,13 @@ __all__ = [
     "RuntimeCompatibility",
     "resolve_context",
     "Scalar",
+    "SliceResult",
     "Shape",
     "ShapeKind",
     "ShapeProperties",
     "Shell",
     "Solid",
+    "SplitResult",
     "Surface",
     "SweepLocationLaw",
     "SweepScaleLaw",
@@ -390,6 +396,8 @@ __all__ = [
     "segment2",
     "short_rotate",
     "sin",
+    "slice",
+    "split",
     "sphere",
     "sqrt",
     "tan",

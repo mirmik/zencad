@@ -79,12 +79,16 @@ from .solid import (
     torus as solid_torus,
 )
 from .booleans import (
+    SliceResult,
+    SplitResult,
     difference as topology_difference,
     empty_shape as topology_empty_shape,
     intersect as topology_intersect,
     intersection as topology_intersection,
     nullshape as topology_nullshape,
     section as topology_section,
+    slice as topology_slice,
+    split as topology_split,
     union as topology_union,
 )
 
@@ -252,6 +256,26 @@ class RuntimeCompatibility(Context):
         """Intersect shape boundaries, accepting legacy plane operands."""
         with using_runtime(self):
             return topology_section(left, right, pretty=pretty)
+
+    def split(
+        self,
+        body: Shape,
+        tools: Shape | Sequence[Shape],
+        /,
+    ) -> SplitResult:
+        with using_runtime(self):
+            return topology_split(body, tools)
+
+    def slice(
+        self,
+        body: Shape,
+        z: ScalarInput = 0,
+        *,
+        axis: object = "z",
+        plane: object | None = None,
+    ) -> SliceResult:
+        with using_runtime(self):
+            return topology_slice(body, z, axis=axis, plane=plane)
 
     def extrude(
         self,

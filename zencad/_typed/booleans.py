@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
+from evalcache import Expression
+
 from zencad.operation import (
     OperationArguments,
     arguments,
@@ -15,11 +17,21 @@ from zencad.operation import (
 
 from . import _boolean_operations as ops
 from .solid import halfspace
-from .topology import SHAPE_SPEC, Shape
+from ._core import State
+from .topology import (
+    SHAPE_SPEC,
+    SOLID_SPEC,
+    DeferredSequence,
+    Shape,
+    Solid,
+    _SOLID_SEQUENCE_SPEC,
+)
 from .transforms import moveZ, short_rotate, translation
 from .values import Point3, ScalarInput, Vector3, vector3
 
 if TYPE_CHECKING:
+    from zencad.geom.shape import Shape as ResolvedShape
+
     from .runtime import Runtime
 
 
@@ -95,6 +107,78 @@ def difference(
     *others: Shape,
 ) -> OperationArguments:
     return arguments(_require_shapes(shapes, others, "difference"))
+
+
+class SplitResult(DeferredSequence[Solid]):
+    """Deferred, deterministic sequence of split solids."""
+
+    @classmethod
+    def _from_state(
+        cls,
+        runtime: Runtime,
+        state: State[tuple[ResolvedShape, ...]],
+    ) -> SplitResult:
+        if not isinstance(state, Expression):
+            raise TypeError("typed split results require an expression state")
+        return cls(
+            runtime,
+            state,
+            item_type=Solid,
+            item_spec=SOLID_SPEC,
+            operation_id="zencad.typed.split.item",
+        )
+
+
+class SliceResult(SplitResult):
+    """Two split solids ordered from negative to positive plane side."""
+
+    @property
+    def lower(self) -> Solid:
+        return self[0]
+
+    @property
+    def upper(self) -> Solid:
+        return self[1]
+
+
+@operation(
+    backend=ops.split_shapes,
+    result=_SOLID_SEQUENCE_SPEC,
+    returns=SplitResult,
+    operation_id="zencad.typed.split",
+    operation_version="1",
+)
+def split(
+    body: Shape,
+    tools: Shape | Sequence[Shape],
+    /,
+) -> OperationArguments:
+    if not isinstance(body, Shape):
+        raise TypeError("split body must be a Shape")
+    return arguments(body, _require_shapes(tools, (), "split"))
+
+
+@operation(
+    backend=ops.slice_shape,
+    result=_SOLID_SEQUENCE_SPEC,
+    returns=SliceResult,
+    operation_id="zencad.typed.slice",
+    operation_version="1",
+)
+def slice(
+    body: Shape,
+    z: ScalarInput = 0,
+    *,
+    axis: object = "z",
+    plane: object | None = None,
+) -> OperationArguments:
+    if not isinstance(body, Shape):
+        raise TypeError("slice body must be a Shape")
+    if plane is not None and not (
+        isinstance(z, (int, float)) and not isinstance(z, bool) and z == 0
+    ):
+        raise TypeError("slice accepts either z/axis or plane, not both")
+    return arguments(body, plane, z, axis)
 
 
 @operation(
@@ -214,11 +298,15 @@ def _section_operand(
 
 
 __all__ = [
+    "SliceResult",
+    "SplitResult",
     "difference",
     "empty_shape",
     "intersect",
     "intersection",
     "nullshape",
     "section",
+    "slice",
+    "split",
     "union",
 ]

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline": "ZenCad legacy geometry API on feature/migration, 2026-08-30",
-  "legacy_signature_sha256": "f2b2a9d6be13aae440d5890619ddba7e675e7f2b9608a08f7d75114c8917b058",
+  "legacy_signature_sha256": "b0e7ecbce0ae6c2d8c5d8998149f2cb120e72e17b18d45f3e0fe434415eaca26",
   "status_meaning": {
     "implemented": "The private typed layer already provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
@@ -20,6 +20,8 @@
     "MESH_DISPLAY_MODES",
     "MeshData",
     "Shape",
+    "SliceResult",
+    "SplitResult",
     "Transformation",
     "back",
     "bezier",
@@ -140,12 +142,14 @@
     "scaleY",
     "scaleZ",
     "section",
+    "slice",
     "segment",
     "sew",
     "shapefix_solid",
     "short_rotate",
     "show",
     "sphere",
+    "split",
     "sqrmirror",
     "sqrtrans",
     "square",
@@ -1096,7 +1100,11 @@
             "union": {"status": "implemented", "typed": "Runtime.union(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__add__() pairwise"},
             "intersect": {"status": "implemented", "typed": "Runtime.intersect(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__xor__() pairwise"},
             "difference": {"status": "implemented", "typed": "Runtime.difference(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__sub__() pairwise"},
-            "section": {"status": "implemented", "typed": "Runtime.section(Shape | plane, Shape | plane) -> Shape"}
+            "section": {"status": "implemented", "typed": "Runtime.section(Shape | plane, Shape | plane) -> Shape"},
+            "split": {"status": "implemented", "typed": "split(Shape, Shape | Sequence[Shape]) -> SplitResult[Solid]"},
+            "slice": {"status": "implemented", "typed": "slice(Shape, z/axis | plane) -> SliceResult[Solid]"},
+            "SplitResult": {"status": "implemented", "typed": "typed.SplitResult deferred solid sequence"},
+            "SliceResult": {"status": "implemented", "typed": "typed.SliceResult ordered lower/upper solid pair"}
           }
         },
         {
