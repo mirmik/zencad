@@ -18,7 +18,7 @@ def shape_factory_contract(context: typed.Context) -> None:
     box = assert_type(
         context.call(typed.box, context.call(typed.vector, 2, 3, 4)), typed.Solid
     )
-    sphere = assert_type(context.call(typed.sphere, box.mass()), typed.Solid)
+    sphere = assert_type(context.call(typed.sphere, 2.0), typed.Solid)
 
     union = assert_type(box + sphere, typed.Shape)
     assert_type(box - sphere, typed.Shape)

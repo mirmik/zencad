@@ -1,4 +1,5 @@
 import inspect
+from typing import get_type_hints
 import unittest
 
 import evalcache
@@ -46,7 +47,7 @@ class TypedOperationTest(unittest.TestCase):
             size = typed.scalar(2)
             origin = typed.point3()
             direction = typed.vector3(0, 0, size)
-            shape = typed.box(size).translate(direction)
+            shape = typed.box(2).translate(direction)
             face = typed.rectangle(size, size, center=True)
             extruded = typed.extrude(face, size, center=True)
             wire = typed.WireBuilder(context=context).l(1, 0).l(0, 1).build()
@@ -88,6 +89,22 @@ class TypedOperationTest(unittest.TestCase):
             typed.Solid,
         )
         self.assertIn("size", inspect.signature(declaration).parameters)
+
+    def test_solid_primitive_is_an_ordinary_executable_implementation(self):
+        declaration = typed.cone
+
+        self.assertIsNone(declaration.prepare)
+        self.assertEqual(
+            tuple(inspect.signature(declaration).parameters),
+            ("r1", "r2", "h", "yaw", "center"),
+        )
+        self.assertIs(get_type_hints(declaration.function)["r1"], float)
+
+        resolved = declaration.function(3.0, 1.0, 5.0)
+
+        self.assertIs(type(resolved), typed.Solid)
+        self.assertNotIsInstance(resolved._state, evalcache.Expression)
+        self.assertGreater(float(resolved.mass()), 0)
 
     def test_decorated_scalar_operation_keeps_immediate_constant_folding(self):
         events = []

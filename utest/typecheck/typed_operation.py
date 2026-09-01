@@ -10,13 +10,11 @@ def operation_contract(context: Context) -> None:
     assert_type(context, Context)
     direct = assert_type(typed.box(1, 2, 3), typed.Solid)
     forwarded = assert_type(context.call(typed.box, 1, 2, 3), typed.Solid)
-    radius = context.call(typed.scalar, 2)
-
     assert_type(typed.cube(1), typed.Solid)
-    assert_type(typed.sphere(radius), typed.Solid)
-    assert_type(typed.cylinder(radius, 3), typed.Solid)
-    assert_type(typed.cone(radius, 1, 3), typed.Solid)
-    assert_type(typed.torus(radius, 1), typed.Solid)
+    assert_type(typed.sphere(2.0), typed.Solid)
+    assert_type(typed.cylinder(2.0, 3.0), typed.Solid)
+    assert_type(typed.cone(2.0, 1.0, 3.0), typed.Solid)
+    assert_type(typed.torus(2.0, 1.0), typed.Solid)
     assert_type(typed.halfspace(), typed.Solid)
     assert_type(
         typed.make_solid(context.call(typed.box, 1).shells()[0]),

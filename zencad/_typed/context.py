@@ -141,7 +141,10 @@ class Context:
         return expression
 
     def _resolve(self, expression: Expression[ResolvedT]) -> ResolvedT:
-        return self._evaluator.evaluate(expression)
+        from zencad.operation import _using_execution_context
+
+        with _using_execution_context(self):
+            return self._evaluator.evaluate(expression)
 
     def _value_state(
         self,

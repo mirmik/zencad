@@ -199,6 +199,23 @@ class Shape(Handle[ResolvedShape]):
     __slots__ = ()
     _result_spec: ClassVar[ResultSpec[ResolvedShape]] = SHAPE_SPEC
 
+    def __init__(
+        self,
+        value: TopoDS_Shape | ResolvedShape,
+        *,
+        context: Context | None = None,
+    ) -> None:
+        """Create a resolved domain shape from an implementation result."""
+
+        from zencad.operation import execution_context
+
+        resolved = value if isinstance(value, ResolvedShape) else ResolvedShape(value)
+        selected_context = execution_context() if context is None else context
+        self._bind(
+            selected_context,
+            self._result_spec.validate(resolved, "zencad.typed.shape.construct"),
+        )
+
     @classmethod
     def _from_state(
         cls: type[ShapeT],

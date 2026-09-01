@@ -89,11 +89,11 @@ class TypedSolidConstructorsTest(unittest.TestCase):
 
         self.assertEqual(len(observed_types), 1)
 
-    def test_legacy_size_center_and_angular_variants(self):
+    def test_size_center_and_angular_variants(self):
         context = typed.Context.deferred(cache=False)
 
         box = context.call(typed.box, size=(2, 4, 6), center="xz")
-        cube = context.call(typed.cube, size=context.call(typed.vector, 2, 4, 6), center=True)
+        cube = context.call(typed.cube, size=(2, 4, 6), center=True)
         sphere = context.call(typed.sphere, 2, yaw=math.pi, pitch=(-1, 1))
         scalar_pitch_sphere = context.call(typed.sphere, 2, pitch=1)
         cylinder = context.call(typed.cylinder, 2, 3, yaw=math.pi, center=True)
@@ -199,13 +199,13 @@ class TypedSolidConstructorsTest(unittest.TestCase):
         other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "exactly two scalar bounds"):
-            context.call(typed.sphere, 1, pitch=(0, 1, 2))
+            context.call(typed.sphere, 1, pitch=(0, 1, 2)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "center must be bool"):
-            context.call(typed.cylinder, 1, 2, center="z")  # type: ignore[arg-type]
+            context.call(typed.cylinder, 1, 2, center="z").native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "at least one Shell"):
-            context.call(typed.make_solid, ())
+            context.call(typed.make_solid, ()).native()
         with self.assertRaisesRegex(TypeError, "only Shell"):
-            context.call(typed.make_solid, (context.call(typed.box, 1),))  # type: ignore[arg-type]
+            context.call(typed.make_solid, (context.call(typed.box, 1),)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.make_solid, other.call(typed.box, 1).shells()[0])
 

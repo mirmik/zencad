@@ -158,11 +158,11 @@ class TypedShapeFactoriesTest(unittest.TestCase):
         point = context.call(typed.point, 0, 0, 0)
 
         with self.assertRaisesRegex(TypeError, "all three dimensions"):
-            context.call(typed.box, 1, 2)
+            context.call(typed.box, 1, 2).native()
         with self.assertRaisesRegex(TypeError, "cannot be combined"):
-            context.call(typed.box, context.call(typed.vector, 1, 2, 3), 2, 3)
+            context.call(typed.box, context.call(typed.vector, 1, 2, 3), 2, 3).native()
         with self.assertRaisesRegex(TypeError, "center must be bool, str, or None"):
-            context.call(typed.box, 1, center=object())  # type: ignore[arg-type]
+            context.call(typed.box, 1, center=1.5).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "expects only Point3"):
             context.call(typed.polysegment, (point, (1, 0, 0)))  # type: ignore[list-item]
         with self.assertRaisesRegex(ValueError, "at least 3 points"):
