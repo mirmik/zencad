@@ -38,6 +38,26 @@ def _selected_shape(shape, *, exact=False):
 
 
 class TypedOperationTest(unittest.TestCase):
+    def test_context_owns_policy_without_becoming_a_cad_facade(self):
+        context = typed.Context.deferred(cache=False)
+
+        self.assertFalse(hasattr(type(context), "box"))
+        with typed.using_context(context):
+            size = typed.scalar(2)
+            origin = typed.point3()
+            direction = typed.vector3(0, 0, size)
+            shape = typed.box(size).translate(direction)
+            face = typed.rectangle(size, size, center=True)
+            extruded = typed.extrude(face, size, center=True)
+            wire = typed.WireBuilder(runtime=context).l(1, 0).l(0, 1).build()
+
+        self.assertIs(type(shape), typed.Solid)
+        self.assertIs(shape.runtime, context)
+        self.assertIs(origin.runtime, context)
+        self.assertIs(extruded.runtime, context)
+        self.assertIs(wire.runtime, context)
+        self.assertAlmostEqual(shape.mass().value(), 8)
+
     def test_module_operation_and_runtime_shim_share_the_same_graph_contract(self):
         events = []
         runtime = typed.Runtime.deferred(

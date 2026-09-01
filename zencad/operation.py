@@ -14,7 +14,7 @@ import evalcache
 
 if TYPE_CHECKING:
     from zencad._typed._core import Handle
-    from zencad._typed.runtime import Runtime
+    from zencad._typed.context import Context
 
 
 P = ParamSpec("P")
@@ -36,11 +36,11 @@ def arguments(*args: object, **kwargs: object) -> OperationArguments:
     return OperationArguments(args=args, kwargs=kwargs)
 
 
-_CURRENT_RUNTIME: ContextVar[Runtime | None] = ContextVar(
+_CURRENT_RUNTIME: ContextVar[Context | None] = ContextVar(
     "zencad_current_typed_runtime",
     default=None,
 )
-_DEFAULT_RUNTIME: Runtime | None = None
+_DEFAULT_RUNTIME: Context | None = None
 
 
 def _is_handle(value: object) -> bool:
@@ -61,7 +61,7 @@ def _walk_handles(value: object) -> Iterator[Handle[Any]]:
             yield from _walk_handles(item)
 
 
-def resolve_runtime(*values: object) -> Runtime:
+def resolve_context(*values: object) -> Context:
     """Select the sole handle runtime, the active runtime, or the default."""
 
     runtimes = {handle.runtime for value in values for handle in _walk_handles(value)}
@@ -75,24 +75,28 @@ def resolve_runtime(*values: object) -> Runtime:
 
     global _DEFAULT_RUNTIME
     if _DEFAULT_RUNTIME is None:
-        from zencad._typed.runtime import Runtime
+        from zencad._typed.context import Context
 
-        _DEFAULT_RUNTIME = Runtime.deferred()
+        _DEFAULT_RUNTIME = Context.deferred()
     return _DEFAULT_RUNTIME
 
 
 @contextmanager
-def using_runtime(runtime: Runtime) -> Iterator[Runtime]:
+def using_context(context: Context) -> Iterator[Context]:
     """Temporarily select the evaluator context used by domain operations."""
 
-    token = _CURRENT_RUNTIME.set(runtime)
+    token = _CURRENT_RUNTIME.set(context)
     try:
-        yield runtime
+        yield context
     finally:
         _CURRENT_RUNTIME.reset(token)
 
 
-def _lower(runtime: Runtime, value: object) -> object:
+resolve_runtime = resolve_context
+using_runtime = using_context
+
+
+def _lower(runtime: Context, value: object) -> object:
     if _is_handle(value):
         handle = cast("Handle[Any]", value)
         if handle.runtime is not runtime:
@@ -174,7 +178,7 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
         prepared = self.prepare(*args, **kwargs)
         if not isinstance(prepared, OperationArguments):
             raise TypeError("a ZenCad operation preparer must return arguments(...)")
-        runtime = resolve_runtime(args, kwargs, prepared.args, prepared.kwargs)
+        runtime = resolve_context(args, kwargs, prepared.args, prepared.kwargs)
         lowered_args = tuple(_lower(runtime, value) for value in prepared.args)
         lowered_kwargs = {
             name: _lower(runtime, value) for name, value in prepared.kwargs.items()
@@ -316,6 +320,8 @@ __all__ = [
     "OperationArguments",
     "arguments",
     "operation",
+    "resolve_context",
     "resolve_runtime",
+    "using_context",
     "using_runtime",
 ]

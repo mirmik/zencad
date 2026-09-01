@@ -3,6 +3,10 @@
 Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
+from typing import TYPE_CHECKING
+
+from zencad.operation import resolve_context, using_context
+
 from .bounds import BoundaryBox, BoundaryBoxRecord, boundary_box, empty_boundary_box
 from .booleans import (
     difference,
@@ -103,7 +107,8 @@ from .records import (
     LineParameters,
     ShapeProperties,
 )
-from .runtime import Runtime
+from .context import Context
+from .runtime import RuntimeCompatibility
 from .shell_constructors import (
     convex_hull,
     convex_hull_shape,
@@ -224,11 +229,27 @@ from .values import (
     cos,
     exp,
     log,
+    point,
+    point2,
+    point3,
+    scalar,
     sin,
     sqrt,
     tan,
+    vector,
+    vector2,
+    vector3,
 )
 from .wire_builder import WireBuilder, wire_builder
+
+if TYPE_CHECKING:
+    Runtime = RuntimeCompatibility
+
+
+def __getattr__(name: str) -> object:
+    if name == "Runtime":
+        return RuntimeCompatibility
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
     "Compound",
@@ -258,7 +279,9 @@ __all__ = [
     "PipeTransition",
     "PipeTrihedron",
     "Quaternion",
-    "Runtime",
+    "Context",
+    "RuntimeCompatibility",
+    "resolve_context",
     "Scalar",
     "Shape",
     "ShapeKind",
@@ -341,6 +364,9 @@ __all__ = [
     "polysegment",
     "pipe",
     "pipe_shell",
+    "point",
+    "point2",
+    "point3",
     "quaternion",
     "quaternion_axis_angle",
     "right",
@@ -358,6 +384,7 @@ __all__ = [
     "scaleXYZ",
     "scaleY",
     "scaleZ",
+    "scalar",
     "section",
     "segment",
     "segment2",
@@ -375,6 +402,10 @@ __all__ = [
     "trim_curve2",
     "union",
     "up",
+    "using_context",
+    "vector",
+    "vector2",
+    "vector3",
     "wire_builder",
     "constant_sweep_scale",
     "evolved_sweep_section",

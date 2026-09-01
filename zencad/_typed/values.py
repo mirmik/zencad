@@ -8,8 +8,13 @@ from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 import numpy
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCP.TopoDS import TopoDS_Vertex
-from OCP.gp import gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d
+from OCP.gp import gp_Dir, gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d, gp_XYZ
 from evalcache import ResultSpec
+
+from zencad.occ_compat import vertex_point
+from zencad.operation import arguments as _operation_arguments
+from zencad.operation import operation as _domain_operation
+from zencad.operation import resolve_runtime
 
 from . import _value_operations as ops
 from ._core import Handle, State, require_same_runtime
@@ -1035,6 +1040,71 @@ def _components3(
     return (x, y, z)
 
 
+def scalar(value: Number) -> Scalar:
+    return Scalar(value, runtime=resolve_runtime(value))
+
+
+def point(x: ScalarInput, y: ScalarInput, z: ScalarInput) -> Point3:
+    return Point3(x, y, z, runtime=resolve_runtime(x, y, z))
+
+
+def vector(x: ScalarInput, y: ScalarInput, z: ScalarInput) -> Vector3:
+    return Vector3(x, y, z, runtime=resolve_runtime(x, y, z))
+
+
+def point2(x: ScalarInput, y: ScalarInput) -> Point2:
+    return Point2(x, y, runtime=resolve_runtime(x, y))
+
+
+def vector2(x: ScalarInput, y: ScalarInput) -> Vector2:
+    return Vector2(x, y, runtime=resolve_runtime(x, y))
+
+
+def _compat_components3(
+    runtime: Runtime,
+    args: tuple[object, ...],
+    name: str,
+) -> tuple[ScalarInput, ScalarInput, ScalarInput]:
+    if not args:
+        values: tuple[object, ...] = ()
+    elif len(args) == 1:
+        value = args[0]
+        if isinstance(value, (Point3, Vector3)):
+            require_same_runtime(runtime, value)
+            values = (value.x, value.y, value.z)
+        elif isinstance(value, TopoDS_Vertex):
+            native = vertex_point(value)
+            values = (native.X(), native.Y(), native.Z())
+        elif isinstance(value, (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
+            values = (value.X(), value.Y(), value.Z())
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            values = tuple(value)
+        else:
+            values = (value,)
+    else:
+        values = args
+    if len(values) > 3:
+        raise TypeError(f"{name} expects at most three coordinates")
+    padded = values + (0,) * (3 - len(values))
+    return cast(tuple[ScalarInput, ScalarInput, ScalarInput], padded)
+
+
+def point3(*args: object) -> Point3:
+    runtime = resolve_runtime(args)
+    if len(args) == 1 and isinstance(args[0], Point3):
+        require_same_runtime(runtime, args[0])
+        return args[0]
+    return Point3(*_compat_components3(runtime, args, "point3"), runtime=runtime)
+
+
+def vector3(*args: object) -> Vector3:
+    runtime = resolve_runtime(args)
+    if len(args) == 1 and isinstance(args[0], Vector3):
+        require_same_runtime(runtime, args[0])
+        return args[0]
+    return Vector3(*_compat_components3(runtime, args, "vector3"), runtime=runtime)
+
+
 def _unary_math(
     value: Scalar, operation: Callable[[float], float], operation_id: str
 ) -> Scalar:
@@ -1094,10 +1164,6 @@ def atan2(y: ScalarInput, x: ScalarInput) -> Scalar:
         operation_id="zencad.typed.math.atan2",
     )
     return Scalar._from_state(runtime, state)
-
-
-from zencad.operation import arguments as _operation_arguments
-from zencad.operation import operation as _domain_operation
 
 
 @_domain_operation(

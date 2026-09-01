@@ -10,7 +10,13 @@ from typing import TYPE_CHECKING, Literal, overload
 from evalcache import ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _operations as ops
 from ._core import State
@@ -25,7 +31,14 @@ from .topology import (
     Solid,
     Wire,
 )
-from .values import Scalar, ScalarInput, Vector3, _optional_scalar_state, _scalar_state
+from .values import (
+    Scalar,
+    ScalarInput,
+    Vector3,
+    _optional_scalar_state,
+    _scalar_state,
+    vector3,
+)
 
 if TYPE_CHECKING:
     from .runtime import Runtime
@@ -69,11 +82,12 @@ def extrude(
     _require_shape(shape, "extrude")
     _require_bool(center, "extrude center")
     runtime = resolve_runtime(shape, vec)
-    resolved_vector = (
-        runtime.vector3(0, 0, vec)
-        if isinstance(vec, (Scalar, int, float)) and not isinstance(vec, bool)
-        else runtime.vector3(vec)
-    )
+    with using_runtime(runtime):
+        resolved_vector = (
+            vector3(0, 0, vec)
+            if isinstance(vec, (Scalar, int, float)) and not isinstance(vec, bool)
+            else vector3(vec)
+        )
     return arguments(shape, resolved_vector, center)
 
 

@@ -10,23 +10,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 import math
 from os import PathLike
-from typing import TYPE_CHECKING, Callable, Literal, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Literal, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
-from evalcache import (
-    CachePolicy,
-    CacheStore,
-    EvaluationMode,
-    Evaluator,
-    Expression,
-    MappingCacheStore,
-    ProgressHook,
-    ResultSpec,
-)
-
 from zencad.occ_compat import vertex_point
 from zencad.operation import using_runtime
 
@@ -41,7 +30,8 @@ from . import surfaces as surface_api
 from . import sweeps as sweep_api
 from . import text as text_api
 from . import transforms as transform_api
-from ._core import State, require_same_runtime
+from ._core import require_same_runtime
+from .context import Context
 from .bounds import BoundaryBox
 from .curves import Curve, Curve2
 from .exttrans import MultiTransform
@@ -102,7 +92,6 @@ if TYPE_CHECKING:
     from .wire_builder import WireBuilder
 
 
-ResolvedT = TypeVar("ResolvedT")
 ShapeValueT = TypeVar("ShapeValueT", bound=Shape)
 
 __all__ = [
@@ -117,7 +106,7 @@ __all__ = [
     "FontAspect",
     "PipeTransition",
     "PipeTrihedron",
-    "Runtime",
+    "RuntimeCompatibility",
     "Shape",
     "Shell",
     "Solid",
@@ -131,120 +120,8 @@ __all__ = [
 ]
 
 
-class Runtime:
-    """Own one expression evaluator and its independent cache policy."""
-
-    CACHE_NAMESPACE = "zencad-typed-v1"
-
-    def __init__(
-        self,
-        *,
-        mode: EvaluationMode | str = EvaluationMode.DEFERRED,
-        cache: bool = True,
-        cache_store: CacheStore | None = None,
-        progress_hooks: tuple[ProgressHook, ...] = (),
-    ) -> None:
-        resolved_mode = EvaluationMode(mode)
-        if cache:
-            policy = CachePolicy(namespace=self.CACHE_NAMESPACE)
-            if cache_store is None:
-                from zencad.lazifier import lazy
-
-                cache_store = MappingCacheStore(lazy.cache)
-        else:
-            policy = CachePolicy.disabled(namespace=self.CACHE_NAMESPACE)
-            cache_store = None
-        self._evaluator = Evaluator(
-            mode=resolved_mode,
-            cache_policy=policy,
-            cache_store=cache_store,
-            progress_hooks=progress_hooks,
-        )
-
-    @classmethod
-    def deferred(
-        cls,
-        *,
-        cache: bool = True,
-        cache_store: CacheStore | None = None,
-        progress_hooks: tuple[ProgressHook, ...] = (),
-    ) -> Runtime:
-        return cls(
-            mode=EvaluationMode.DEFERRED,
-            cache=cache,
-            cache_store=cache_store,
-            progress_hooks=progress_hooks,
-        )
-
-    @classmethod
-    def immediate(
-        cls,
-        *,
-        cache: bool = True,
-        cache_store: CacheStore | None = None,
-        progress_hooks: tuple[ProgressHook, ...] = (),
-    ) -> Runtime:
-        return cls(
-            mode=EvaluationMode.IMMEDIATE,
-            cache=cache,
-            cache_store=cache_store,
-            progress_hooks=progress_hooks,
-        )
-
-    @property
-    def mode(self) -> EvaluationMode:
-        return self._evaluator.mode
-
-    @property
-    def cache_enabled(self) -> bool:
-        return self._evaluator.cache_policy.enabled
-
-    def _expression(
-        self,
-        operation: Callable[..., ResolvedT],
-        *,
-        result: ResultSpec[ResolvedT],
-        args: tuple[object, ...],
-        operation_id: str,
-        cacheable: bool = True,
-    ) -> Expression[ResolvedT]:
-        expression = self._evaluator.expression(
-            operation,
-            result=result,
-            args=args,
-            operation_id=operation_id,
-            operation_version="1",
-            cacheable=cacheable,
-        )
-        if self.mode is EvaluationMode.IMMEDIATE:
-            self._evaluator.evaluate(expression)
-        return expression
-
-    def _resolve(self, expression: Expression[ResolvedT]) -> ResolvedT:
-        return self._evaluator.evaluate(expression)
-
-    def _value_state(
-        self,
-        operation: Callable[..., ResolvedT],
-        *,
-        result: ResultSpec[ResolvedT],
-        args: tuple[object, ...],
-        operation_id: str,
-    ) -> State[ResolvedT]:
-        """Fold resolved value operands; otherwise retain a typed expression."""
-        if all(not isinstance(argument, Expression) for argument in args):
-            value = operation(*args)
-            return result.validate(value, operation_id)
-        expression = self._evaluator.expression(
-            operation,
-            result=result,
-            args=args,
-            operation_id=operation_id,
-            operation_version="1",
-        )
-        if self.mode is EvaluationMode.IMMEDIATE:
-            return self._evaluator.evaluate(expression)
-        return expression
+class RuntimeCompatibility(Context):
+    """Deprecated private CAD facade retained only until public cutover."""
 
     def box(
         self,
@@ -2348,3 +2225,8 @@ def _require_int_between(
     if not minimum <= value <= maximum:
         raise ValueError(f"{name} must be between {minimum} and {maximum}")
     return value
+
+
+# Internal type-compatibility alias for modules migrated before Context existed.
+# It is deliberately not exported from zencad._typed.
+Runtime = Context

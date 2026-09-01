@@ -17,7 +17,7 @@ from . import _boolean_operations as ops
 from .solid import halfspace
 from .topology import SHAPE_SPEC, Shape
 from .transforms import moveZ, short_rotate, translation
-from .values import Point3, ScalarInput, Vector3
+from .values import Point3, ScalarInput, Vector3, vector3
 
 if TYPE_CHECKING:
     from .runtime import Runtime
@@ -197,19 +197,18 @@ def _section_operand(
 ) -> Shape:
     if isinstance(value, Shape):
         return value
-    if isinstance(value, (Point3, Vector3)):
-        direction = runtime.vector3(value)
-    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-        coordinates = tuple(value)
-        if len(coordinates) != 3:
-            raise TypeError(f"{name} plane vector must contain three coordinates")
-        direction = runtime.vector3(coordinates)
-    else:
-        with using_runtime(runtime):
-            return halfspace().transform(moveZ(cast(ScalarInput, value)))
     with using_runtime(runtime):
+        if isinstance(value, (Point3, Vector3)):
+            direction = vector3(value)
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            coordinates = tuple(value)
+            if len(coordinates) != 3:
+                raise TypeError(f"{name} plane vector must contain three coordinates")
+            direction = vector3(coordinates)
+        else:
+            return halfspace().transform(moveZ(cast(ScalarInput, value)))
         transform = translation(direction) * short_rotate(
-            runtime.vector3(0, 0, 1), direction
+            vector3(0, 0, 1), direction
         )
         return halfspace().transform(transform)
 

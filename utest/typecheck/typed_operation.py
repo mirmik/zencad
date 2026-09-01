@@ -3,9 +3,11 @@
 from typing_extensions import assert_type
 
 from zencad import _typed as typed
+from zencad._typed.context import Context
 
 
-def operation_contract(runtime: typed.Runtime) -> None:
+def operation_contract(runtime: typed.Runtime, context: Context) -> None:
+    assert_type(context, Context)
     direct = assert_type(typed.box(1, 2, 3), typed.Solid)
     forwarded = assert_type(runtime.box(1, 2, 3), typed.Solid)
     radius = runtime.scalar(2)

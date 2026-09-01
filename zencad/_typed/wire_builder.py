@@ -5,10 +5,14 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import cast, overload
 
+from zencad.operation import using_runtime
+
+from . import curve_constructors as curve_api
+from . import transforms as transform_api
 from ._core import require_same_runtime
-from .runtime import Runtime
+from .context import Context
 from .topology import Edge, Wire
-from .values import Point3, ScalarInput, Vector3
+from .values import Point3, ScalarInput, Vector3, point3, vector3
 
 
 PointInput = Point3 | Vector3 | Sequence[ScalarInput]
@@ -23,14 +27,14 @@ class WireBuilder:
         start: PointInput = (0, 0, 0),
         defrel: bool = False,
         *,
-        runtime: Runtime | None = None,
+        runtime: Context | None = None,
     ) -> None:
         if runtime is None:
             if not isinstance(start, (Point3, Vector3)):
                 raise TypeError("literal WireBuilder start requires runtime=")
             runtime = start.runtime
-        if not isinstance(runtime, Runtime):
-            raise TypeError("WireBuilder runtime must be Runtime")
+        if not isinstance(runtime, Context):
+            raise TypeError("WireBuilder runtime must be Context")
         if not isinstance(defrel, bool):
             raise TypeError("WireBuilder defrel must be bool")
         self.runtime = runtime
@@ -45,14 +49,16 @@ class WireBuilder:
             require_same_runtime(self.runtime, value)
         elif isinstance(value, Vector3):
             require_same_runtime(self.runtime, value)
-        return self.runtime.point3(value)
+        with using_runtime(self.runtime):
+            return point3(value)
 
     def _vector(self, value: VectorInput) -> Vector3:
         if isinstance(value, Point3):
             require_same_runtime(self.runtime, value)
         elif isinstance(value, Vector3):
             require_same_runtime(self.runtime, value)
-        return self.runtime.vector3(value)
+        with using_runtime(self.runtime):
+            return vector3(value)
 
     @staticmethod
     def collect_point(
@@ -130,7 +136,7 @@ class WireBuilder:
     ) -> WireBuilder:
         value = self.collect_point(pnt, y, z)
         target = self.prepare((cast(PointInput, value),), rel)[0]
-        self.edges.append(self.runtime.segment(self.current, target))
+        self.edges.append(curve_api.segment(self.current, target))
         self.current = target
         self._at_start = target is self.start
         return self
@@ -145,7 +151,7 @@ class WireBuilder:
         rel: bool | None = None,
     ) -> WireBuilder:
         middle, target = self.prepare((a, b), rel)
-        self.edges.append(self.runtime.circle_arc(self.current, middle, target))
+        self.edges.append(curve_api.circle_arc(self.current, middle, target))
         self.current = target
         self._at_start = target is self.start
         return self
@@ -158,9 +164,10 @@ class WireBuilder:
         rel: bool | None = None,
     ) -> WireBuilder:
         resolved_center = self.prepare((center,), rel)[0]
-        curve = self.runtime.circle_curve(radius).transform(
-            self.runtime.translation(resolved_center.to_vector3())
-        )
+        with using_runtime(self.runtime):
+            curve = curve_api.circle_curve(radius).transform(
+                transform_api.translation(resolved_center.to_vector3())
+            )
         first = curve.lower_distance_parameter(self.current)
         last = first + angle
         self.edges.append(curve.edge((first, last)))
@@ -178,11 +185,12 @@ class WireBuilder:
         rel: bool | None = None,
     ) -> WireBuilder:
         resolved_center = self.prepare((center,), rel)[0]
-        curve = (
-            self.runtime.ellipse_curve(radius1, radius2)
-            .transform(self.runtime.rotateZ(rotate))
-            .transform(self.runtime.translation(resolved_center.to_vector3()))
-        )
+        with using_runtime(self.runtime):
+            curve = (
+                curve_api.ellipse_curve(radius1, radius2)
+                .transform(transform_api.rotateZ(rotate))
+                .transform(transform_api.translation(resolved_center.to_vector3()))
+            )
         first = curve.lower_distance_parameter(self.current)
         last = first + angle
         self.edges.append(curve.edge((first, last)))
@@ -205,7 +213,7 @@ class WireBuilder:
             raise ValueError("WireBuilder interpolate requires at least one point")
         if tangs is None:
             resolved_tangents: list[Vector3 | None] = [
-                self.runtime.vector3() for _ in points
+                self._vector(()) for _ in points
             ]
         else:
             if len(tangs) != len(points):
@@ -220,7 +228,7 @@ class WireBuilder:
         else:
             current_tangent = self._vector(curtang)
         self.edges.append(
-            self.runtime.interpolate(
+            curve_api.interpolate(
                 (self.current, *points),
                 (current_tangent, *resolved_tangents),
             )
@@ -237,20 +245,20 @@ class WireBuilder:
         if not self.edges:
             raise ValueError("WireBuilder cannot close without edges")
         if not approx_a and not approx_b:
-            self.edges.append(self.runtime.segment(self.current, self.start))
+            self.edges.append(curve_api.segment(self.current, self.start))
         else:
             tangent_a = (
                 self.edges[-1].d1(self.edges[-1].range().upper)
                 if approx_a
-                else self.runtime.vector3()
+                else self._vector(())
             )
             tangent_b = (
                 self.edges[0].d1(self.edges[0].range().lower)
                 if approx_b
-                else self.runtime.vector3()
+                else self._vector(())
             )
             self.edges.append(
-                self.runtime.interpolate(
+                curve_api.interpolate(
                     (self.current, self.start),
                     (tangent_a, tangent_b),
                 )
@@ -269,9 +277,10 @@ class WireBuilder:
         x: ScalarInput,
         y: ScalarInput,
     ) -> WireBuilder:
-        target = self.runtime.point3(x, y, 0)
+        with using_runtime(self.runtime):
+            target = point3(x, y, 0)
         self.edges.append(
-            self.runtime._svg_elliptic_arc(
+            curve_api._svg_elliptic_arc(
                 self.current,
                 target,
                 radius_x,
@@ -319,7 +328,7 @@ class WireBuilder:
     def build(self) -> Wire:
         if not self.edges:
             raise ValueError("WireBuilder has no edges")
-        return self.runtime.make_wire(self.edges)
+        return curve_api.make_wire(self.edges)
 
     def doit(self) -> Wire:
         return self.build()

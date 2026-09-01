@@ -1246,6 +1246,35 @@ Verification on 2026-09-01 after the conversion/display checkpoint:
   the wheel with published evalcache 2.0.0a1 and passes direct module,
   Runtime, conversion/display, and headless I/O smoke outside the checkout.
 
+Task #2078 separates execution ownership from the former private CAD facade.
+`_typed/context.py` now contains the minimal `Context`: evaluator/cache policy
+and the graph state evaluation helpers used by handles. Canonical context
+selection is exposed as `using_context` and `resolve_context`; default
+module-level calls create a `Context`, not a CAD namespace.
+
+Literal `scalar`/`point*`/`vector*` factories now live in `_typed/values.py`.
+Operation preparers, topology methods, and `WireBuilder` use module-level
+declarations under the selected context and no longer require constructor
+methods on the evaluator owner. `Context` deliberately has no `box`, geometry,
+conversion, or display methods.
+
+The former forwarding class is explicitly named `RuntimeCompatibility` and
+is excluded from `_typed.__all__`. A private dynamic `typed.Runtime` lookup is
+retained only as a pre-cutover test/adapter bridge; it resolves to
+`RuntimeCompatibility` and is not the canonical architecture or export.
+Public legacy `zencad` exports remain unchanged until the atomic #2013 cutover.
+
+Verification on 2026-09-01 after the Context checkpoint:
+
+- pytest passes 387 tests and 409 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 371 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes the expanded Context,
+  compatibility, geometry, and headless I/O smoke outside the checkout.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

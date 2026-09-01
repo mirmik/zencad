@@ -9,7 +9,13 @@ from typing import Literal, overload
 from evalcache import ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _operations as ops
 from .topology import (
@@ -19,7 +25,7 @@ from .topology import (
     Shell,
     Solid,
 )
-from .values import Point3, Scalar, ScalarInput
+from .values import Point3, Scalar, ScalarInput, point3, scalar
 
 
 def _require_bool(value: object, name: str) -> None:
@@ -94,10 +100,9 @@ def _require_qhull_options(value: str | None, name: str) -> str | None:
 
 
 def _as_scalar(value: ScalarInput) -> Scalar:
-    runtime = resolve_runtime(value)
     if isinstance(value, Scalar):
         return value
-    return runtime.scalar(value)
+    return scalar(value)
 
 
 @operation(
@@ -263,8 +268,9 @@ def _platonic_polyhedron(
     shell: bool,
 ) -> Solid | Shell:
     runtime = resolve_runtime(coordinates)
-    points = tuple(runtime.point3(*coordinate) for coordinate in coordinates)
-    return polyhedron(points, faces, shell)
+    with using_runtime(runtime):
+        points = tuple(point3(*coordinate) for coordinate in coordinates)
+        return polyhedron(points, faces, shell)
 
 
 @overload

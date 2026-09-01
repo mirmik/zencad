@@ -9,7 +9,13 @@ from typing import Literal, overload
 from evalcache import ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _operations as ops
 from .curve_constructors import polysegment
@@ -22,7 +28,15 @@ from .topology import (
     Shape,
     Wire,
 )
-from .values import Point3, Scalar, ScalarInput, _angle_state, _scalar_state
+from .values import (
+    Point3,
+    Scalar,
+    ScalarInput,
+    _angle_state,
+    _scalar_state,
+    point3,
+    scalar,
+)
 
 
 def _require_bool(value: object, name: str) -> None:
@@ -64,10 +78,9 @@ def _require_wire_parts(
 
 
 def _as_scalar(value: ScalarInput) -> Scalar:
-    runtime = resolve_runtime(value)
     if isinstance(value, Scalar):
         return value
-    return runtime.scalar(value)
+    return scalar(value)
 
 
 @operation(
@@ -133,19 +146,20 @@ def rectangle_wire(
 ) -> Wire:
     _require_bool(center, "rectangle_wire center")
     runtime = resolve_runtime(a, b)
-    width = _as_scalar(a)
-    height = _as_scalar(b)
-    x0 = -width / 2 if center else runtime.scalar(0)
-    y0 = -height / 2 if center else runtime.scalar(0)
-    return polysegment(
-        (
-            runtime.point3(x0, y0, 0),
-            runtime.point3(x0 + width, y0, 0),
-            runtime.point3(x0 + width, y0 + height, 0),
-            runtime.point3(x0, y0 + height, 0),
-        ),
-        closed=True,
-    )
+    with using_runtime(runtime):
+        width = _as_scalar(a)
+        height = _as_scalar(b)
+        x0 = -width / 2 if center else scalar(0)
+        y0 = -height / 2 if center else scalar(0)
+        return polysegment(
+            (
+                point3(x0, y0, 0),
+                point3(x0 + width, y0, 0),
+                point3(x0 + width, y0 + height, 0),
+                point3(x0, y0 + height, 0),
+            ),
+            closed=True,
+        )
 
 
 @overload
@@ -268,16 +282,17 @@ def ngon(
         raise ValueError("ngon n must be at least 3")
     _require_bool(wire, "ngon wire")
     runtime = resolve_runtime(r)
-    radius = _as_scalar(r)
-    points = tuple(
-        runtime.point3(
-            radius * math.cos(2 * math.pi * index / n),
-            radius * math.sin(2 * math.pi * index / n),
-            0,
+    with using_runtime(runtime):
+        radius = _as_scalar(r)
+        points = tuple(
+            point3(
+                radius * math.cos(2 * math.pi * index / n),
+                radius * math.sin(2 * math.pi * index / n),
+                0,
+            )
+            for index in range(n)
         )
-        for index in range(n)
-    )
-    return polygon(points, wire)
+        return polygon(points, wire)
 
 
 def _wire_argument(

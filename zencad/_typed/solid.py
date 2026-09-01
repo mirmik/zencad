@@ -16,6 +16,7 @@ from .values import (
     _angle_state,
     _optional_scalar_state,
     _scalar_state,
+    vector,
 )
 
 if TYPE_CHECKING:
@@ -222,12 +223,12 @@ def _box_size(
         values = tuple(source)
         if len(values) != 3:
             raise TypeError("box size must contain exactly three dimensions")
-        return runtime.vector(values[0], values[1], values[2])
+        return vector(values[0], values[1], values[2])
     scalar = cast(ScalarInput, source)
     if y is None and z is None:
-        return runtime.vector(scalar, scalar, scalar)
+        return vector(scalar, scalar, scalar)
     if y is not None and z is not None:
-        return runtime.vector(scalar, y, z)
+        return vector(scalar, y, z)
     raise TypeError("box expects one size or all three dimensions")
 
 

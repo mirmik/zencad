@@ -55,6 +55,18 @@ def main():
         assert stl_path.stat().st_size > 0
 
         typed_runtime = typed.Runtime.deferred(cache=False)
+        assert "Runtime" not in typed.__all__
+        assert not hasattr(typed.Context, "box")
+        assert issubclass(typed.RuntimeCompatibility, typed.Context)
+        typed_context = typed.Context.deferred(cache=False)
+        with typed.using_context(typed_context):
+            context_shape = typed.box(2).translate(1, 2, 3)
+            context_wire = (
+                typed.WireBuilder(runtime=typed_context).l(1, 0).l(0, 1).build()
+            )
+        assert type(context_shape) is typed.Solid
+        assert context_shape.runtime is typed_context
+        assert context_wire.runtime is typed_context
         assert isinstance(typed.circle_curve, DomainOperation)
         assert isinstance(typed.make_wire, DomainOperation)
         assert isinstance(typed.cylinder_surface, DomainOperation)

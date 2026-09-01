@@ -78,6 +78,8 @@ from .values import (
     Scalar,
     ScalarInput,
     Vector3,
+    point3,
+    vector3,
 )
 
 if TYPE_CHECKING:
@@ -292,8 +294,9 @@ class Shape(Handle[ResolvedShape]):
     def translate(self: ShapeT, *args: object) -> ShapeT:
         from .shape_transforms import _shape_translate
 
-        vector = self.runtime.vector3(*args)
-        return cast(ShapeT, _shape_translate(self, vector))
+        with using_runtime(self.runtime):
+            vector = vector3(*args)
+            return cast(ShapeT, _shape_translate(self, vector))
 
     def move(self: ShapeT, *args: object) -> ShapeT:
         with using_runtime(self.runtime):
@@ -400,8 +403,8 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        resolved_center = None if center is None else self.runtime.point3(center)
         with using_runtime(self.runtime):
+            resolved_center = None if center is None else point3(center)
             return self.transform(transform_api.scale(factor, center=resolved_center))
 
     def scaleXYZ(
@@ -412,8 +415,8 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        resolved_center = None if center is None else self.runtime.point3(center)
         with using_runtime(self.runtime):
+            resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleXYZ(x, y, z, center=resolved_center)
             )
@@ -424,8 +427,8 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        resolved_center = None if center is None else self.runtime.point3(center)
         with using_runtime(self.runtime):
+            resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleX(factor, center=resolved_center)
             )
@@ -436,8 +439,8 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        resolved_center = None if center is None else self.runtime.point3(center)
         with using_runtime(self.runtime):
+            resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleY(factor, center=resolved_center)
             )
@@ -448,8 +451,8 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        resolved_center = None if center is None else self.runtime.point3(center)
         with using_runtime(self.runtime):
+            resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleZ(factor, center=resolved_center)
             )
@@ -460,7 +463,7 @@ class Shape(Handle[ResolvedShape]):
         /,
     ) -> ShapeT:
         with using_runtime(self.runtime):
-            return self.transform(transform_api.mirror(self.runtime.vector3(normal)))
+            return self.transform(transform_api.mirror(vector3(normal)))
 
     def mirrorX(self: ShapeT) -> ShapeT:
         with using_runtime(self.runtime):
