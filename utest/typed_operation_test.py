@@ -6,7 +6,7 @@ import evalcache
 import zencad
 from zencad import _typed as typed
 from zencad._typed.topology import SHAPE_SPEC
-from zencad.operation import DomainOperation, arguments, operation, using_runtime
+from zencad.operation import DomainOperation, arguments, operation, using_context
 
 
 def _identity_shape(value):
@@ -49,30 +49,30 @@ class TypedOperationTest(unittest.TestCase):
             shape = typed.box(size).translate(direction)
             face = typed.rectangle(size, size, center=True)
             extruded = typed.extrude(face, size, center=True)
-            wire = typed.WireBuilder(runtime=context).l(1, 0).l(0, 1).build()
+            wire = typed.WireBuilder(context=context).l(1, 0).l(0, 1).build()
 
         self.assertIs(type(shape), typed.Solid)
-        self.assertIs(shape.runtime, context)
-        self.assertIs(origin.runtime, context)
-        self.assertIs(extruded.runtime, context)
-        self.assertIs(wire.runtime, context)
+        self.assertIs(shape.context, context)
+        self.assertIs(origin.context, context)
+        self.assertIs(extruded.context, context)
+        self.assertIs(wire.context, context)
         self.assertAlmostEqual(shape.mass().value(), 8)
 
-    def test_module_operation_and_runtime_shim_share_the_same_graph_contract(self):
+    def test_module_operation_and_context_shim_share_the_same_graph_contract(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
 
-        with using_runtime(runtime):
+        with using_context(context):
             direct = typed.box(2, 3, 4)
-        forwarded = runtime.box(2, 3, 4)
+        forwarded = context.call(typed.box, 2, 3, 4)
 
         self.assertIs(type(direct), typed.Solid)
         self.assertIs(type(forwarded), typed.Solid)
-        self.assertIs(direct.runtime, runtime)
-        self.assertIs(forwarded.runtime, runtime)
+        self.assertIs(direct.context, context)
+        self.assertIs(forwarded.context, context)
         self.assertIsInstance(direct._state, evalcache.Expression)
         self.assertEqual(direct._state.operation_id, "zencad.typed.box")
         self.assertEqual(events, [])
@@ -91,11 +91,11 @@ class TypedOperationTest(unittest.TestCase):
 
     def test_decorated_scalar_operation_keeps_immediate_constant_folding(self):
         events = []
-        runtime = typed.Runtime.immediate(
+        context = typed.Context.immediate(
             cache=False,
             progress_hooks=(events.append,),
         )
-        left = runtime.scalar(2)
+        left = context.call(typed.scalar, 2)
 
         result = left + 3
 
@@ -104,16 +104,16 @@ class TypedOperationTest(unittest.TestCase):
         self.assertEqual(float(result), 5.0)
         self.assertEqual(events, [])
 
-    def test_operation_rejects_handles_from_different_runtimes(self):
-        first = typed.Runtime.deferred(cache=False)
-        second = typed.Runtime.deferred(cache=False)
+    def test_operation_rejects_handles_from_different_contexts(self):
+        first = typed.Context.deferred(cache=False)
+        second = typed.Context.deferred(cache=False)
 
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            _ = first.box(1) + second.box(1)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            _ = first.call(typed.box, 1) + second.call(typed.box, 1)
 
     def test_result_adapter_can_preserve_or_select_a_domain_subtype(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        shape = runtime.box(1)
+        context = typed.Context.deferred(cache=False)
+        shape = context.call(typed.box, 1)
 
         preserved = _selected_shape(shape)
         selected = _selected_shape(shape, exact=True)
@@ -125,22 +125,9 @@ class TypedOperationTest(unittest.TestCase):
         self.assertEqual(selected._state.result.type_id, "zencad.typed.Solid.v1")
         self.assertFalse(selected.native().IsNull())
 
-    def test_bare_operation_preserves_legacy_lazy_contract(self):
-        @zencad.operation
-        def doubled(value):
-            return value * 2
-
-        @zencad.lazy
-        def incremented(value):
-            return value + 1
-
-        doubled_value = doubled(21)
-        incremented_value = incremented(41)
-
-        self.assertIsInstance(doubled_value, evalcache.LazyObject)
-        self.assertIsInstance(incremented_value, evalcache.LazyObject)
-        self.assertEqual(evalcache.unlazy(doubled_value), 42)
-        self.assertEqual(evalcache.unlazy(incremented_value), 42)
+    def test_public_geometry_does_not_expose_the_legacy_lazy_contract(self):
+        self.assertFalse(hasattr(zencad, "lazy"))
+        self.assertNotIsInstance(zencad.box(1), evalcache.LazyObject)
 
 
 if __name__ == "__main__":

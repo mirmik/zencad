@@ -5,9 +5,9 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def representative_chain(runtime: typed.Runtime) -> typed.Shape:
-    outer = assert_type(runtime.box(10), typed.Solid)
-    inner = assert_type(runtime.box(4).translate(3, 3, 3), typed.Solid)
+def representative_chain(context: typed.Context) -> typed.Shape:
+    outer = assert_type(context.call(typed.box, 10), typed.Solid)
+    inner = assert_type(context.call(typed.box, 4).translate(3, 3, 3), typed.Solid)
     result = assert_type(outer - inner, typed.Shape)
     faces = assert_type(result.faces(), typed.DeferredSequence[typed.Face])
     face = assert_type(faces[0], typed.Face)

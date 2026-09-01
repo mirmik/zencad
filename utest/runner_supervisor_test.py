@@ -36,10 +36,7 @@ class RunnerSupervisorTest(unittest.TestCase):
             message
             for message in self.supervisor.messages
             if message.generation == generation
-            and (
-                message_type is None
-                or message.message_type == message_type
-            )
+            and (message_type is None or message.message_type == message_type)
         ]
 
     def wait_for_message(self, generation, message_type, timeout=10):
@@ -49,9 +46,7 @@ class RunnerSupervisorTest(unittest.TestCase):
             if messages:
                 return messages[-1]
             time.sleep(0.01)
-        self.fail(
-            f"Runner generation {generation} did not emit {message_type!r}"
-        )
+        self.fail(f"Runner generation {generation} did not emit {message_type!r}")
 
     def test_default_cache_configuration_is_shared(self):
         expected = resolve_cache_configuration()
@@ -70,13 +65,15 @@ class RunnerSupervisorTest(unittest.TestCase):
             cache_enabled=False,
         )
         try:
-            path = self.script("cache-disabled.py", f"""
+            path = self.script(
+                "cache-disabled.py",
+                f"""
 from pathlib import Path
 import zencad
-assert zencad.lazy.cache.keys() == []
 assert not Path({str(cache_directory)!r}).exists()
-zencad.box(1).unlazy()
-""")
+zencad.box(1).native()
+""",
+            )
             generation = supervisor.start(path)
             status = supervisor.wait(generation, timeout=10)
             self.assertEqual(
@@ -112,7 +109,9 @@ zencad.box(1).unlazy()
 
     def test_scene_output_progress_and_isolation(self):
         self.script("helper.py", "VALUE = 'local-import'\n")
-        path = self.script("success.py", """
+        path = self.script(
+            "success.py",
+            """
 import os
 import sys
 from helper import VALUE
@@ -124,7 +123,8 @@ print(os.getcwd())
 print("diagnostic", file=sys.stderr)
 display(box(2), color=(0.1, 0.2, 0.3, 0.4)).right(5)
 show()
-""")
+""",
+        )
         generation = self.supervisor.start(path, cwd=self.root)
         self.assertEqual(self.supervisor.wait(generation, timeout=10), "success")
 
@@ -151,45 +151,47 @@ show()
         self.assertIn("diagnostic", stderr)
         progress = self.messages(generation, "progress")
         self.assertTrue(progress)
-        self.assertTrue(any(
-            item.payload.get("subcmd") in {"newtree", "progress"}
-            for item in progress
-        ))
-        self.assertTrue(any(
-            item.payload.get("operation") in {"load", "evaluate", "memory"}
-            and item.payload.get("object")
-            for item in progress
-        ))
+        self.assertTrue(
+            any(
+                item.payload.get("subcmd") in {"newtree", "progress"}
+                for item in progress
+            )
+        )
+        self.assertTrue(
+            any(
+                item.payload.get("operation") in {"load", "evaluate", "memory"}
+                and item.payload.get("object")
+                for item in progress
+            )
+        )
         self.assertEqual(
             self.messages(generation, "finished")[-1].payload["status"],
             "success",
         )
 
     def test_cache_is_reused_by_sequential_runner_generations(self):
-        counter = self.root / "evaluation-count.txt"
-        path = self.script("cached.py", f"""
-from pathlib import Path
+        path = self.script(
+            "cached.py",
+            """
 from zencad import box, display, show
-from zencad.lazifier import lazy
-
-counter = Path({str(counter)!r})
-
-@lazy
-def cached_box(size):
-    count = int(counter.read_text()) if counter.exists() else 0
-    counter.write_text(str(count + 1))
-    return box(size).unlazy()
-
-display(cached_box(2))
+display(box(2))
 show()
-""")
+""",
+        )
 
         first = self.supervisor.start(path)
         self.assertEqual(self.supervisor.wait(first, timeout=10), "success")
         second = self.supervisor.start(path)
         self.assertEqual(self.supervisor.wait(second, timeout=10), "success")
 
-        self.assertEqual(counter.read_text(), "1")
+        second_progress = self.messages(second, "progress")
+        self.assertTrue(
+            any(
+                message.payload.get("operation") == "load"
+                and message.payload.get("object") == "zencad.typed.box"
+                for message in second_progress
+            )
+        )
 
     def test_exception_contains_traceback_and_next_run_succeeds(self):
         failing = self.script("failing.py", "raise ValueError('broken script')\n")
@@ -212,7 +214,9 @@ show()
         self.assertEqual(len(self.messages(next_generation, "scene")), 1)
 
     def test_animation_emits_ready_and_patches_before_structured_failure(self):
-        path = self.script("animated_failure.py", """
+        path = self.script(
+            "animated_failure.py",
+            """
 import sys
 from zencad import box, display, show, translate
 assert "PyQt5" not in sys.modules
@@ -231,24 +235,25 @@ def animate(state):
 def close_handle():
     print("animation closed")
 show(animate=animate, animate_step=0.001, close_handle=close_handle)
-""")
+""",
+        )
         generation = self.supervisor.start(path)
         self.assertEqual(self.supervisor.wait(generation, timeout=10), "error")
 
-        message_types = [
-            message.message_type
-            for message in self.messages(generation)
-        ]
+        message_types = [message.message_type for message in self.messages(generation)]
         scene_index = message_types.index("scene")
         ready_index = message_types.index("ready")
         patch_index = message_types.index("scene_patch")
         self.assertLess(scene_index, ready_index)
         self.assertLess(ready_index, patch_index)
         ready = self.messages(generation, "ready")[-1]
-        self.assertEqual(dict(ready.payload), {
-            "animated": True,
-            "scene_revision": 0,
-        })
+        self.assertEqual(
+            dict(ready.payload),
+            {
+                "animated": True,
+                "scene_revision": 0,
+            },
+        )
         patches = self.messages(generation, "scene_patch")
         self.assertEqual(len(patches), 2)
         self.assertEqual(
@@ -273,7 +278,9 @@ show(animate=animate, animate_step=0.001, close_handle=close_handle)
         self.assertIn("animation closed", stdout)
 
     def test_live_animation_is_cooperatively_cancelled(self):
-        path = self.script("animated_cancel.py", """
+        path = self.script(
+            "animated_cancel.py",
+            """
 import sys
 from zencad import box, display, show, translate
 assert "PyQt5" not in sys.modules
@@ -285,7 +292,8 @@ def animate(state):
     ticks += 1
     controller.relocate(translate(ticks, 0, 0))
 show(animate=animate, animate_step=0.001)
-""")
+""",
+        )
         generation = self.supervisor.start(path)
         self.wait_for_message(generation, "scene_patch")
         self.assertTrue(self.supervisor.cancel_current(grace_period=0.5))
@@ -298,7 +306,9 @@ show(animate=animate, animate_step=0.001)
         self.assertFalse(finished.payload.get("hard", False))
 
     def test_input_edges_reach_only_the_current_runner(self):
-        path = self.script("animated_input.py", """
+        path = self.script(
+            "animated_input.py",
+            """
 import sys
 from zencad import box, display, show, translate
 assert "PyQt5" not in sys.modules
@@ -312,33 +322,52 @@ def animate(state):
         controller.relocate(translate(9, 0, 0))
         raise RuntimeError("input edges observed")
 show(animate=animate, animate_step=0.01)
-""")
+""",
+        )
         generation = self.supervisor.start(path)
         self.wait_for_message(generation, "ready")
-        self.assertTrue(self.supervisor.send_input("key_down", {
-            "key": "right", "text": "", "modifiers": [], "repeat": False,
-        }))
+        self.assertTrue(
+            self.supervisor.send_input(
+                "key_down",
+                {
+                    "key": "right",
+                    "text": "",
+                    "modifiers": [],
+                    "repeat": False,
+                },
+            )
+        )
         time.sleep(0.03)
-        self.assertTrue(self.supervisor.send_input("key_up", {
-            "key": "right", "text": "", "modifiers": [], "repeat": False,
-        }))
+        self.assertTrue(
+            self.supervisor.send_input(
+                "key_up",
+                {
+                    "key": "right",
+                    "text": "",
+                    "modifiers": [],
+                    "repeat": False,
+                },
+            )
+        )
         self.assertEqual(self.supervisor.wait(generation, timeout=10), "error")
         error = self.messages(generation, "error")[-1]
         self.assertIn("input edges observed", error.payload["message"])
 
         replacement = self.script("input_replacement.py", "print('replacement')\n")
         next_generation = self.supervisor.start(replacement)
-        self.assertFalse(self.supervisor.send_input(
-            "key_down",
-            {"key": "left", "text": "", "modifiers": [], "repeat": False},
-            generation=generation,
-        ))
-        self.assertEqual(
-            self.supervisor.wait(next_generation, timeout=10), "success"
+        self.assertFalse(
+            self.supervisor.send_input(
+                "key_down",
+                {"key": "left", "text": "", "modifiers": [], "repeat": False},
+                generation=generation,
+            )
         )
+        self.assertEqual(self.supervisor.wait(next_generation, timeout=10), "success")
 
     def test_superseded_live_generation_cannot_dispatch_late_patches(self):
-        live = self.script("superseded_animation.py", """
+        live = self.script(
+            "superseded_animation.py",
+            """
 from zencad import box, display, show, translate
 controller = display(box(1))
 ticks = 0
@@ -347,11 +376,11 @@ def animate(state):
     ticks += 1
     controller.relocate(translate(ticks, 0, 0))
 show(animate=animate, animate_step=0.001)
-""")
+""",
+        )
         replacement = self.script(
             "animation_replacement.py",
-            "from zencad import show, sphere, display\n"
-            "display(sphere(2))\nshow()\n",
+            "from zencad import show, sphere, display\ndisplay(sphere(2))\nshow()\n",
         )
         first = self.supervisor.start(live)
         self.wait_for_message(first, "scene_patch")
@@ -369,14 +398,17 @@ show(animate=animate, animate_step=0.001)
         self.assertEqual(len(self.messages(second, "scene")), 1)
 
     def test_superseded_generation_cannot_publish_scene(self):
-        slow = self.script("slow.py", """
+        slow = self.script(
+            "slow.py",
+            """
 import time
 from zencad import box, display, show
 for _ in range(500):
     time.sleep(0.01)
 display(box(10))
 show()
-""")
+""",
+        )
         fast = self.script(
             "fast.py",
             "from zencad import sphere, display, show\ndisplay(sphere(2))\nshow()\n",

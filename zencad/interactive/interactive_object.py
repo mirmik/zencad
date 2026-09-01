@@ -78,6 +78,10 @@ class InteractiveObject(Transformable, Displayable):
             self.ais_object.Attributes().SetWireAspect(aspect)
 
     def relocate(self, trsf):
+        from zencad._typed.transforms import Transform
+
+        if isinstance(trsf, Transform):
+            trsf = Transformation(trsf.to_ocp())
         self._location = trsf
         if self._context:
             loc = TopLoc_Location(trsf._trsf)

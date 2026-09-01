@@ -3,10 +3,10 @@
 from zencad import *
 
 m = interpolate([
-    (0, 0),
-    (10, 0),
-    (20, 10),
-    (0, 5, 10),
+    point3(0, 0),
+    point3(10, 0),
+    point3(20, 10),
+    point3(0, 5, 10),
 ],
     tangs=[
         None,

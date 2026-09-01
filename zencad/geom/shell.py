@@ -6,7 +6,7 @@ from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeShell
 
 import zencad.util
 from zencad.geom.face import _polygon
-from zencad.lazifier import *
+from zencad._eager import eager
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 
 
@@ -24,7 +24,7 @@ def _polyhedron_shell(pnts, faces_no):
     return _make_shell(faces)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def polyhedron_shell(pnts, faces_no):
     return _polyhedron_shell(pnts, faces_no)
 
@@ -34,7 +34,7 @@ def _fill3d(shp):
     return Shape(algo.SolidFromShell(shp.Shell()))
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def fill3d(shp):
     return _fill3d(shp)
 
@@ -48,14 +48,14 @@ def _polyhedron(pnts, faces, shell=False):
         return _fill3d(shl)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def polyhedron(pnts, faces, shell=False):
     return _polyhedron(pnts, faces, shell)
 
 
 def _make_shell(vec):
     #builder = BRep_Builder()
-    #shell = TopoDS_Shell()    
+    #shell = TopoDS_Shell()
     #make_shell = builder.MakeShell(shell)
     #for a in vec:
     #    builder.Add(shell, a.Shape())
@@ -75,12 +75,12 @@ def _make_shell(vec):
         return Shape(algo.SewedShape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def make_shell(vec):
     return _make_shell(vec)
 
 
-@lazy
+@eager
 def convex_hull(pnts, incremental=False, qhull_options=None):
     from scipy.spatial import ConvexHull
 
@@ -98,6 +98,6 @@ def _convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None)
     return m
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def convex_hull_shape(*args, **kwargs):
     return _convex_hull_shape(*args, **kwargs)

@@ -68,7 +68,7 @@ class ExportFormatsTest(unittest.TestCase):
             binary_path = root / "inch-binary.stl"
             ascii_path = root / "mm-ascii.stl"
             shape = zencad.box(25.4)
-            source = shape.unlazy()
+            source = shape.native()
             before = encode_brep(source)
 
             zencad.export_stl(shape, binary_path, unit="in", binary=True)
@@ -149,25 +149,27 @@ class ExportFormatsTest(unittest.TestCase):
             zencad.export_3mf(shape, io.BytesIO(), binary=False)
         with self.assertRaisesRegex(ValueError, "ASCII"):
             zencad.export_step(shape, io.BytesIO(), binary=True)
+        context = typed.Context.deferred(cache=False)
+        invalid = typed.Solid.from_ocp(_open_solid(), context=context)
         with self.assertRaises(ShapeValidationError):
-            zencad.export_step(ResolvedShape(_open_solid()), io.BytesIO())
+            zencad.export_step(invalid, io.BytesIO())
 
     def test_typed_exports_work_in_every_evaluation_mode(self):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             with self.subTest(mode=mode):
-                runtime = typed.Runtime(
+                context = typed.Context(
                     mode=mode,
                     cache=True,
                     cache_store=MemoryCacheStore(),
                 )
-                shape = runtime.box(2)
+                shape = context.call(typed.box, 2)
                 stl = io.BytesIO()
                 step = io.BytesIO()
                 three_mf = io.BytesIO()
 
-                runtime.export_stl(shape, stl)
-                runtime.export_step(shape, step)
-                runtime.export_3mf(shape, three_mf)
+                context.call(typed.export_stl, shape, stl)
+                context.call(typed.export_step, shape, step)
+                context.call(typed.export_3mf, shape, three_mf)
 
                 self.assertGreater(len(stl.getvalue()), 84)
                 self.assertTrue(step.getvalue().startswith(b"ISO-10303-21"))

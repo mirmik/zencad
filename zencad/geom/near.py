@@ -6,7 +6,7 @@ from zencad.geom.reflect_helpers import shape_types
 from zencad.util import *
 
 from zencad.geom.shape import Shape, shape_generator
-from zencad.lazifier import *
+from zencad._eager import eager
 
 
 def _near_part(shp, pnt, topabs):
@@ -52,33 +52,33 @@ def _near_compsolid(shp, pnt): return _near_part(shp, pnt, TopAbs_COMPSOLID)
 def _near_compound(shp, pnt): return _near_part(shp, pnt, TopAbs_COMPOUND)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_vertex(shp, pnt): return _near_vertex(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_edge(shp, pnt): return _near_edge(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_wire(shp, pnt): return _near_wire(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_face(shp, pnt): return _near_face(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_shell(shp, pnt): return _near_shell(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_solid(shp, pnt): return _near_solid(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_compsolid(shp, pnt): return _near_compsolid(shp, pnt)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def near_compound(shp, pnt): return _near_compound(shp, pnt)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-import evalcache
 import zencad
 from zencad import *
 
@@ -12,7 +11,6 @@ NUT_RENDER = True
 DISPLAY_BOLT = False
 
 
-@zencad.operation
 def instrument_metric_nut(drad, step, h):
     H = step * math.tan(deg(60))
 
@@ -33,7 +31,6 @@ def instrument_metric_nut(drad, step, h):
     return base
 
 
-@zencad.operation
 def metric_nut(d, step, h, render=False):
     H = step * math.tan(deg(60))
     drad = d / 2 - 3 / 8 * H

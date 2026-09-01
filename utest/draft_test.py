@@ -2,7 +2,6 @@ import unittest
 
 import zencad
 from zencad import _typed as typed
-from zencad.geom.shape import LazyObjectShape
 
 
 ANGLE = zencad.deg(5)
@@ -10,12 +9,7 @@ ANGLE = zencad.deg(5)
 
 class DraftTest(unittest.TestCase):
     def setUp(self):
-        self.cache_flags = (zencad.lazy.encache, zencad.lazy.decache)
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-
-    def tearDown(self):
-        zencad.lazy.encache, zencad.lazy.decache = self.cache_flags
+        zencad.configure(cache_enabled=False)
 
     def test_positive_and_negative_angles_taper_multiple_faces(self):
         body = zencad.box(10)
@@ -24,7 +18,7 @@ class DraftTest(unittest.TestCase):
         positive = zencad.draft(body, side_faces, ANGLE)
         negative = zencad.draft(body, side_faces, -ANGLE)
 
-        self.assertIsInstance(positive, LazyObjectShape)
+        self.assertIs(type(positive), zencad.Solid)
         self.assertAlmostEqual(float(positive.mass()), 835.2283612755552)
         self.assertAlmostEqual(float(negative.mass()), 1185.1830153792514)
         self.assertLess(float(positive.mass()), 1000)
@@ -49,23 +43,29 @@ class DraftTest(unittest.TestCase):
         self.assertAlmostEqual(float(from_tuple.mass()), 1000)
         self.assertAlmostEqual(float(from_face.mass()), 1000)
         self.assertEqual(
-            sorted(tuple(round(value, 6) for value in point) for point in from_tuple.unlazy().vertices()),
-            sorted(tuple(round(value, 6) for value in point) for point in from_face.unlazy().vertices()),
+            sorted(
+                tuple(round(value, 6) for value in vertex.point().value())
+                for vertex in from_tuple.vertices()
+            ),
+            sorted(
+                tuple(round(value, 6) for value in vertex.point().value())
+                for vertex in from_face.vertices()
+            ),
         )
 
-    def test_draft_is_lazy_and_rejects_invalid_inputs_diagnostically(self):
+    def test_draft_graph_is_stable_and_rejects_invalid_inputs_diagnostically(self):
         body = zencad.box(10)
         side = body.faces()[0]
         first = zencad.draft(body, side, ANGLE)
         repeated = zencad.draft(body, side, ANGLE)
-        self.assertEqual(first.__lazyhexhash__, repeated.__lazyhexhash__)
+        self.assertEqual(first._state.digest, repeated._state.digest)
 
-        with self.assertRaisesRegex(ValueError, "at least one face"):
-            zencad.draft(body, (), ANGLE).unlazy()
+        with self.assertRaisesRegex(ValueError, "at least one Face"):
+            zencad.draft(body, (), ANGLE).native()
         with self.assertRaisesRegex(ValueError, "non-zero"):
-            zencad.draft(body, side, 0).unlazy()
+            zencad.draft(body, side, 0).native()
         with self.assertRaisesRegex(ValueError, "rejected face 1"):
-            zencad.draft(body, zencad.box(1).faces()[0], ANGLE).unlazy()
+            zencad.draft(body, zencad.box(1).faces()[0], ANGLE).native()
 
     def test_typed_draft_preserves_solid_and_context(self):
         context = typed.Context.deferred(cache=False)
@@ -76,7 +76,7 @@ class DraftTest(unittest.TestCase):
             negative = typed.draft(body, side_faces, -ANGLE)
 
         self.assertIs(type(positive), typed.Solid)
-        self.assertIs(positive.runtime, context)
+        self.assertIs(positive.context, context)
         self.assertAlmostEqual(float(positive.mass()), 835.2283612755552)
         self.assertAlmostEqual(float(negative.mass()), 1185.1830153792514)
 

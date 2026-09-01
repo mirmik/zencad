@@ -7,7 +7,6 @@ import sys
 import time
 from typing import Callable
 
-import evalcache
 from OCP.TopoDS import TopoDS_Shape
 
 from zencad.color import (
@@ -24,6 +23,7 @@ from zencad.geom.trans import Transformation
 from zencad.geom.transformable import Transformable
 from zencad._typed.meshes import MeshData as TypedMeshData
 from zencad._typed.topology import Shape as TypedShape
+from zencad._typed.transforms import Transform as TypedTransform
 from zencad._typed.values import Point3 as TypedPoint3
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
@@ -88,6 +88,14 @@ def _transformation_state(value: Transformation) -> dict:
     }
 
 
+def _scene_transformation(value: object) -> Transformation:
+    if isinstance(value, TypedTransform):
+        return Transformation(value.to_ocp())
+    if isinstance(value, Transformation):
+        return value
+    raise SceneDraftError("Scene relocation requires a Transform")
+
+
 @dataclass
 class _DraftObject:
     object_id: str
@@ -112,8 +120,7 @@ class SceneObjectRef(Transformable):
         return self._draft._get(self.object_id)
 
     def relocate(self, transformation):
-        if not isinstance(transformation, Transformation):
-            raise SceneDraftError("Scene relocation requires a Transformation")
+        transformation = _scene_transformation(transformation)
         obj = self._object()
         obj.location = transformation
         self._draft._mark_dirty(
@@ -241,7 +248,6 @@ class SceneDraft:
             raise SceneDraftError(
                 "Managed scenes cannot add objects after initial publication"
             )
-        obj = evalcache.unlazy_if_need(obj)
         from zencad.interactive.assemble import unit
         from zencad.interactive.line import LineInteractiveObject
         from zencad.interactive.point import PointInteractiveObject

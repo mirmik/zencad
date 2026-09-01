@@ -10,9 +10,7 @@ from OCP.TopoDS import TopoDS_Compound
 
 class CompactMeshTest(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_box_preserves_sharp_normals(self):
         mesh = zencad.to_mesh(zencad.box(10))
@@ -25,8 +23,7 @@ class CompactMeshTest(unittest.TestCase):
     def test_shape_method_and_direct_display_factory(self):
         from zencad.interactive import create_interactive_object
 
-        lazy_mesh = zencad.box(3).to_mesh()
-        mesh = lazy_mesh.unlazy()
+        mesh = zencad.box(3).to_mesh()
         interactive = create_interactive_object(mesh, zencad.color.red)
 
         self.assertIsInstance(mesh, zencad.MeshData)
@@ -117,14 +114,16 @@ class CompactMeshTest(unittest.TestCase):
         compound = TopoDS_Compound()
         builder = BRep_Builder()
         builder.MakeCompound(compound)
-        builder.Add(compound, zencad.box(1).unlazy().Shape())
+        first = zencad.box(1)
+        builder.Add(compound, first.native())
         builder.Add(
             compound,
-            zencad.box(1).translate(1.0009, 0, 0).unlazy().Shape(),
+            zencad.box(1).translate(1.0009, 0, 0).native(),
         )
 
-        separate = zencad.to_mesh(zencad.Shape(compound), weld_tolerance=0.0005)
-        welded = zencad.to_mesh(zencad.Shape(compound), weld_tolerance=0.001)
+        shape = zencad.Shape.from_ocp(compound, context=first.context)
+        separate = zencad.to_mesh(shape, weld_tolerance=0.0005)
+        welded = zencad.to_mesh(shape, weld_tolerance=0.001)
 
         self.assertEqual(separate.vertex_count, 48)
         self.assertEqual(welded.vertex_count, 40)

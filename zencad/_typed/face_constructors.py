@@ -13,8 +13,8 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _operations as ops
@@ -131,10 +131,10 @@ def _rectangle_face(
     /,
 ) -> OperationArguments:
     _require_bool(center, "rectangle center")
-    runtime = resolve_runtime(width, height)
+    context = resolve_context(width, height)
     return arguments(
-        _scalar_state(runtime, width),
-        _scalar_state(runtime, height),
+        _scalar_state(context, width),
+        _scalar_state(context, height),
         center,
     )
 
@@ -145,8 +145,8 @@ def rectangle_wire(
     center: bool = False,
 ) -> Wire:
     _require_bool(center, "rectangle_wire center")
-    runtime = resolve_runtime(a, b)
-    with using_runtime(runtime):
+    context = resolve_context(a, b)
+    with using_context(context):
         width = _as_scalar(a)
         height = _as_scalar(b)
         x0 = -width / 2 if center else scalar(0)
@@ -281,8 +281,8 @@ def ngon(
     if n < 3:
         raise ValueError("ngon n must be at least 3")
     _require_bool(wire, "ngon wire")
-    runtime = resolve_runtime(r)
-    with using_runtime(runtime):
+    context = resolve_context(r)
+    with using_context(context):
         radius = _as_scalar(r)
         points = tuple(
             point3(
@@ -365,10 +365,10 @@ def circle(
     wire: bool = False,
 ) -> OperationArguments:
     _require_bool(wire, "circle wire")
-    runtime = resolve_runtime(r, angle)
+    context = resolve_context(r, angle)
     return arguments(
-        _scalar_state(runtime, r),
-        _angle_state(runtime, angle, "circle angle"),
+        _scalar_state(context, r),
+        _angle_state(context, angle, "circle angle"),
         wire,
     )
 
@@ -439,11 +439,11 @@ def ellipse(
     wire: bool = False,
 ) -> OperationArguments:
     _require_bool(wire, "ellipse wire")
-    runtime = resolve_runtime(r1, r2, angle)
+    context = resolve_context(r1, r2, angle)
     return arguments(
-        _scalar_state(runtime, r1),
-        _scalar_state(runtime, r2),
-        _angle_state(runtime, angle, "ellipse angle"),
+        _scalar_state(context, r1),
+        _scalar_state(context, r2),
+        _angle_state(context, angle, "ellipse angle"),
         wire,
     )
 
@@ -541,10 +541,10 @@ def widewire(
         raise TypeError("widewire spine must be Edge or Wire")
     _require_bool(circled_joints, "widewire circled_joints")
     _require_bool(circled_ends, "widewire circled_ends")
-    runtime = resolve_runtime(spine, r)
+    context = resolve_context(spine, r)
     return arguments(
         spine,
-        _scalar_state(runtime, r),
+        _scalar_state(context, r),
         circled_joints,
         circled_ends,
     )

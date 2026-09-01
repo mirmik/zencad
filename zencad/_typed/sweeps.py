@@ -14,8 +14,8 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _operations as ops
@@ -41,7 +41,7 @@ from .values import (
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
 
 
 class PipeTrihedron(Enum):
@@ -81,8 +81,8 @@ def extrude(
 ) -> OperationArguments:
     _require_shape(shape, "extrude")
     _require_bool(center, "extrude center")
-    runtime = resolve_runtime(shape, vec)
-    with using_runtime(runtime):
+    context = resolve_context(shape, vec)
+    with using_context(context):
         resolved_vector = (
             vector3(0, 0, vec)
             if isinstance(vec, (Scalar, int, float)) and not isinstance(vec, bool)
@@ -114,11 +114,11 @@ def revol(
     yaw: ScalarInput = 0,
 ) -> OperationArguments:
     _require_shape(shape, "revol")
-    runtime = resolve_runtime(shape, r, yaw)
+    context = resolve_context(shape, r, yaw)
     return arguments(
         shape,
-        _optional_scalar_state(runtime, r),
-        _scalar_state(runtime, yaw),
+        _optional_scalar_state(context, r),
+        _scalar_state(context, yaw),
     )
 
 
@@ -325,7 +325,7 @@ def pipe_shell(
     selected_modes = sum((frenet, binormal is not None, parallel is not None, discrete))
     if selected_modes > 1:
         raise ValueError("pipe_shell orientation modes are mutually exclusive")
-    resolve_runtime(values, spine, binormal, parallel)
+    resolve_context(values, spine, binormal, parallel)
     return arguments(
         values,
         spine,
@@ -377,13 +377,13 @@ def revol2(
         resolved_parts = _require_positive_int(parts, "revol2 parts")
         if resolved_sections < resolved_parts * 2:
             raise ValueError("revol2 sections must provide at least two per part")
-    runtime = resolve_runtime(profile, radius, yaw, roll)
+    context = resolve_context(profile, radius, yaw, roll)
     return arguments(
         profile,
-        _scalar_state(runtime, radius),
+        _scalar_state(context, radius),
         resolved_sections,
-        _interval_state(runtime, yaw, "revol2 yaw"),
-        _interval_state(runtime, roll, "revol2 roll"),
+        _interval_state(context, yaw, "revol2 yaw"),
+        _interval_state(context, roll, "revol2 roll"),
         resolved_parts,
     )
 
@@ -409,12 +409,12 @@ def _require_wire_parts(
         raise ValueError(f"{name} requires at least one Edge or Wire")
     if not all(isinstance(shape, (Edge, Wire)) for shape in values):
         raise TypeError(f"{name} accepts only Edge or Wire handles")
-    resolve_runtime(values)
+    resolve_context(values)
     return values
 
 
 def _interval_state(
-    runtime: Runtime,
+    context: Context,
     interval: Interval | Sequence[ScalarInput],
     name: str,
 ) -> tuple[State[float], State[float]]:
@@ -425,7 +425,7 @@ def _interval_state(
     values = tuple(interval)
     if len(values) != 2:
         raise TypeError(f"{name} must contain two scalar bounds")
-    return (_scalar_state(runtime, values[0]), _scalar_state(runtime, values[1]))
+    return (_scalar_state(context, values[0]), _scalar_state(context, values[1]))
 
 
 def _require_bool(value: object, name: str) -> None:

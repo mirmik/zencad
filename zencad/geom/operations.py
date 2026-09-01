@@ -1,4 +1,4 @@
-from zencad.lazifier import *
+from zencad._eager import eager
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
@@ -38,7 +38,7 @@ def _restore_shapetype(shp):
     return shp
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def restore_shapetype(shp):
     return _restore_shapetype(shp)
 
@@ -135,12 +135,12 @@ def _operation_edge_references(shp, refs, name):
     return selected
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def chamfer(shp, r, refs=None):
     return _chamfer(shp, r, refs)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def fillet(shp, r, refs=None):
     return _fillet(shp, r, refs)
 
@@ -157,7 +157,7 @@ def _fillet2d(shp, r, refs=None):
     return Shape(mk.Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def fillet2d(shp, r, refs=None):
     return _fillet2d(shp, r, refs)
 
@@ -254,7 +254,7 @@ def _draft(shp, faces, angle, direction=(0, 0, 1), neutral=None):
     return result
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def draft(shp, faces, angle, direction=(0, 0, 1), neutral=None):
     """Taper selected faces around a neutral plane.
 
@@ -311,7 +311,7 @@ def _triangulate_face(shp, deflection):
     return nodes, triangles
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def triangulate_face(shp, deflection):
     return _triangulate_face(shp, deflection)
 
@@ -334,6 +334,6 @@ def _triangulate(shp, deflection):
     return nodes, triangles
 
 
-@lazy
+@eager
 def triangulate(shp, deflection):
     return _triangulate(shp, deflection)

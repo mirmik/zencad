@@ -1,8 +1,6 @@
 import builtins as _builtins
 from collections.abc import Sequence as _Sequence
-import operator as _operator
 
-import evalcache as _evalcache
 from OCP.BOPAlgo import BOPAlgo_Splitter
 from OCP.BRepAdaptor import BRepAdaptor_Surface
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Section
@@ -13,8 +11,8 @@ from OCP.TopExp import TopExp_Explorer
 from OCP.TopoDS import TopoDS, TopoDS_Shape
 from OCP.gp import gp_Dir, gp_Pln, gp_Pnt
 
-from zencad.geom.shape import LazyObjectShape, shape_generator, Shape
-from zencad.lazifier import lazy
+from zencad.geom.shape import shape_generator, Shape
+from zencad._eager import eager
 from zencad.geom.boolops_base import occ_pair_union, occ_pair_difference, occ_pair_intersect
 
 
@@ -65,17 +63,17 @@ def _intersect(lst):
     return Shape(ret)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def union(lst):
     return _union(lst)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def intersect(lst):
     return _intersect(lst)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def difference(lst):
     return _difference(lst)
 
@@ -213,25 +211,17 @@ def _slice_resolved(body, plane, coordinate, axis):
     return tuple(sorted(parts, key=signed_center))
 
 
-@lazy.lazy()
+@eager.decorator()
 def _split_lazy(body, tools):
     return _split_resolved(body, tools)
 
 
-@lazy.lazy()
+@eager.decorator()
 def _slice_lazy(body, plane, coordinate, axis):
     return _slice_resolved(body, plane, coordinate, axis)
 
 
 def _lazy_shape_item(source, index):
-    if isinstance(source, _evalcache.LazyObject):
-        return source.lazyinvoke(
-            _operator.getitem,
-            (source, index),
-            encache=False,
-            decache=False,
-            cls=LazyObjectShape,
-        )
     return source[index]
 
 
@@ -258,7 +248,7 @@ class SplitResult(_Sequence):
             yield self[index]
 
     def __repr__(self):
-        return "SplitResult(<lazy solids>)"
+        return f"SplitResult({tuple(self)!r})"
 
 
 class SliceResult(_Sequence):
@@ -284,7 +274,7 @@ def split(body, tools):
     ``ValueError`` when the tools do not actually divide the body.
     """
 
-    if isinstance(tools, (Shape, LazyObjectShape)):
+    if isinstance(tools, Shape):
         tools = (tools,)
     else:
         try:
@@ -327,11 +317,11 @@ def _section(a, b, pretty):
     return Shape(algo.Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def section(a, b=0):
     """
         Make section between 'a' and 'b'.
-        Oposite the intersect, which finds the intersection of bodies, 
+        Oposite the intersect, which finds the intersection of bodies,
         the section finds the intersection of the shells of bodies.
 
         Arguments:

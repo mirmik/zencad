@@ -5,7 +5,7 @@ ZenCad API example: pipe_shell_frenet
 
 from zencad import *
 
-ps = [(20, 0, 0), (20, 0, 10), (30, 0, 5)]
+ps = [point3(20, 0, 0), point3(20, 0, 10), point3(30, 0, 5)]
 
 profile = polysegment(ps, closed=True)
 spine = helix(h=100, r=20, step=30)

@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import OperationArguments, arguments, operation, resolve_context
 
 from . import _solid_operations as ops
-from ._core import require_same_runtime
+from ._core import require_same_context
 from .topology import SOLID_SPEC, Shell, Solid
 from .values import (
     ScalarInput,
@@ -20,7 +20,7 @@ from .values import (
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
 
 
 @operation(
@@ -39,9 +39,9 @@ def box(
 ) -> OperationArguments:
     """Build a typed box through the current or operand-owned evaluator."""
 
-    runtime = resolve_runtime(x, y, z, size)
+    context = resolve_context(x, y, z, size)
     resolved_center = _require_center(center, "box center")
-    resolved_size = _box_size(runtime, x, y, z, size)
+    resolved_size = _box_size(context, x, y, z, size)
     return arguments(resolved_size, resolved_center)
 
 
@@ -69,11 +69,11 @@ def sphere(
     yaw: ScalarInput | None = None,
     pitch: ScalarInput | Sequence[ScalarInput] | None = None,
 ) -> OperationArguments:
-    runtime = resolve_runtime(r, yaw, pitch)
+    context = resolve_context(r, yaw, pitch)
     return arguments(
-        _scalar_state(runtime, r),
-        _optional_scalar_state(runtime, yaw),
-        _angle_state(runtime, pitch, "sphere pitch"),
+        _scalar_state(context, r),
+        _optional_scalar_state(context, yaw),
+        _angle_state(context, pitch, "sphere pitch"),
     )
 
 
@@ -91,11 +91,11 @@ def cylinder(
     center: bool = False,
 ) -> OperationArguments:
     _require_bool(center, "cylinder center")
-    runtime = resolve_runtime(r, h, yaw)
+    context = resolve_context(r, h, yaw)
     return arguments(
-        _scalar_state(runtime, r),
-        _scalar_state(runtime, h),
-        _optional_scalar_state(runtime, yaw),
+        _scalar_state(context, r),
+        _scalar_state(context, h),
+        _optional_scalar_state(context, yaw),
         center,
     )
 
@@ -115,12 +115,12 @@ def cone(
     center: bool = False,
 ) -> OperationArguments:
     _require_bool(center, "cone center")
-    runtime = resolve_runtime(r1, r2, h, yaw)
+    context = resolve_context(r1, r2, h, yaw)
     return arguments(
-        _scalar_state(runtime, r1),
-        _scalar_state(runtime, r2),
-        _scalar_state(runtime, h),
-        _optional_scalar_state(runtime, yaw),
+        _scalar_state(context, r1),
+        _scalar_state(context, r2),
+        _scalar_state(context, h),
+        _optional_scalar_state(context, yaw),
         center,
     )
 
@@ -138,12 +138,12 @@ def torus(
     yaw: ScalarInput | None = None,
     pitch: ScalarInput | Sequence[ScalarInput] | None = None,
 ) -> OperationArguments:
-    runtime = resolve_runtime(r1, r2, yaw, pitch)
+    context = resolve_context(r1, r2, yaw, pitch)
     return arguments(
-        _scalar_state(runtime, r1),
-        _scalar_state(runtime, r2),
-        _optional_scalar_state(runtime, yaw),
-        _angle_state(runtime, pitch, "torus pitch"),
+        _scalar_state(context, r1),
+        _scalar_state(context, r2),
+        _optional_scalar_state(context, yaw),
+        _angle_state(context, pitch, "torus pitch"),
     )
 
 
@@ -202,7 +202,7 @@ def _require_shells(
 
 
 def _box_size(
-    runtime: Runtime,
+    context: Context,
     x: ScalarInput | Vector3 | Sequence[ScalarInput],
     y: ScalarInput | None,
     z: ScalarInput | None,
@@ -215,7 +215,7 @@ def _box_size(
     if isinstance(source, Vector3):
         if y is not None or z is not None:
             raise TypeError("box Vector3 size cannot be combined with y or z")
-        require_same_runtime(runtime, source)
+        require_same_context(context, source)
         return source
     if isinstance(source, Sequence) and not isinstance(source, (str, bytes)):
         if y is not None or z is not None:

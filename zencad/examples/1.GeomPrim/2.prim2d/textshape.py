@@ -5,6 +5,7 @@ date: 04.10.2019
 """
 
 import os
+import zencad
 from zencad import *
 
 zencad_example_directory = zencad.moduledir + "/examples"

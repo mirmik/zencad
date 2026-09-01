@@ -16,8 +16,8 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _bound_operations as bound_ops
@@ -70,10 +70,10 @@ def _rounded_arguments(
     selected = _require_references(references, name)
     if isinstance(shape, Face) and selected and isinstance(selected[0], Edge):
         raise TypeError(f"{name} on a Face accepts Point3 references, not Edges")
-    runtime = resolve_runtime(shape, radius, selected)
+    context = resolve_context(shape, radius, selected)
     return arguments(
         shape,
-        _scalar_state(runtime, radius),
+        _scalar_state(context, radius),
         selected,
     )
 
@@ -162,8 +162,8 @@ def draft(
 
     _require_solid(body, "draft")
     selected = _require_draft_faces(faces)
-    runtime = resolve_runtime(body, selected, angle, direction, neutral)
-    with using_runtime(runtime):
+    context = resolve_context(body, selected, angle, direction, neutral)
+    with using_context(context):
         pull_direction = vector3(direction)
     if neutral is not None:
         if isinstance(neutral, Face):
@@ -176,7 +176,7 @@ def draft(
     return arguments(
         body,
         selected,
-        _scalar_state(runtime, angle),
+        _scalar_state(context, angle),
         pull_direction,
         neutral,
     )
@@ -296,8 +296,8 @@ def sew(
 )
 def offset(shape: Shape, distance: ScalarInput, /) -> OperationArguments:
     _require_shape(shape, "offset")
-    runtime = resolve_runtime(shape, distance)
-    return arguments(shape, _scalar_state(runtime, distance))
+    context = resolve_context(shape, distance)
+    return arguments(shape, _scalar_state(context, distance))
 
 
 @operation(
@@ -314,12 +314,12 @@ def thicksolid(
     /,
 ) -> OperationArguments:
     _require_solid(shape, "thicksolid")
-    runtime = resolve_runtime(shape, thickness, references)
+    context = resolve_context(shape, thickness, references)
     resolved_references = _require_references(references, "thicksolid")
     assert resolved_references is not None
     return arguments(
         shape,
-        _scalar_state(runtime, thickness),
+        _scalar_state(context, thickness),
         resolved_references,
     )
 
@@ -412,14 +412,14 @@ def validate(
     _require_shape(shape, "validate")
     _require_bool(exact, "validate exact")
     _require_bool(parallel, "validate parallel")
-    state = shape.runtime._value_state(
+    state = shape.context._value_state(
         ops.validate_shape,
         result=VALIDATION_REPORT_SPEC,
         args=(shape._state, exact, parallel),
         operation_id="zencad.typed.shape.validate",
     )
     if isinstance(state, Expression):
-        return shape.runtime._resolve(state)
+        return shape.context._resolve(state)
     return state
 
 
@@ -661,7 +661,7 @@ def project_point_on_curve(
         raise TypeError("project_point_on_curve point must be Point3")
     if not isinstance(target, (Curve, Edge)):
         raise TypeError("project_point_on_curve target must be Curve or Edge")
-    resolve_runtime(point, target)
+    resolve_context(point, target)
     curve = target.curve() if isinstance(target, Edge) else target
     parameter = curve.lower_distance_parameter(point)
     projected = curve.point(parameter)
@@ -688,7 +688,7 @@ def _near_arguments(shape: Shape, point: Point3, name: str) -> OperationArgument
     _require_shape(shape, f"near_{name}")
     if not isinstance(point, Point3):
         raise TypeError(f"near_{name} expects Point3")
-    resolve_runtime(shape, point)
+    resolve_context(shape, point)
     return arguments(shape, point)
 
 
@@ -713,7 +713,7 @@ def _require_references(
         or all(isinstance(value, Edge) for value in values)
     ):
         raise TypeError(f"{name} references must be all Point3 values or all Edges")
-    resolve_runtime(values)
+    resolve_context(values)
     return values
 
 
@@ -733,7 +733,7 @@ def _require_draft_faces(faces: Face | Iterable[Face]) -> tuple[Face, ...]:
         raise ValueError("draft requires at least one Face")
     if not all(isinstance(face, Face) for face in values):
         raise TypeError("draft faces must contain only Face handles")
-    resolve_runtime(values)
+    resolve_context(values)
     return values
 
 
@@ -746,7 +746,7 @@ def _require_wire_parts(
         raise ValueError(f"{name} requires at least one topology handle")
     if not all(isinstance(shape, (Edge, Wire)) for shape in values):
         raise TypeError(f"{name} accepts only Edge or Wire handles")
-    resolve_runtime(values)
+    resolve_context(values)
     return values
 
 
@@ -759,7 +759,7 @@ def _require_shell_parts(
         raise ValueError(f"{name} requires at least one topology handle")
     if not all(isinstance(shape, (Face, Shell)) for shape in values):
         raise TypeError(f"{name} accepts only Face or Shell handles")
-    resolve_runtime(values)
+    resolve_context(values)
     return values
 
 

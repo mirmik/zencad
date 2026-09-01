@@ -1,5 +1,5 @@
 from zencad.geom.shape import Shape, shape_generator
-from zencad.lazifier import lazy
+from zencad._eager import eager
 from zencad.util import vector3
 from zencad.geom.trans import translate
 import zencad.geom.exttrans
@@ -37,7 +37,7 @@ def _extrude(shp, vec, center=False):
     return Shape(BRepPrimAPI_MakePrism(obj, vec.Vec()).Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def extrude(*args, **kwargs): return _extrude(*args, **kwargs)
 
 
@@ -57,7 +57,7 @@ def _revol(shp, r=None, yaw=0.0):
         return Shape(BRepPrimAPI_MakeRevol(shp.Shape(), ax, yaw).Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def revol(*args, **kwargs): return _revol(*args, **kwargs)
 
 
@@ -113,7 +113,7 @@ def _revol2(profile, r, n=30, yaw=(0, deg(360)), roll=(0, 0), sects=False, npart
     return zencad.geom.boolops._union(rets)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def revol2(*args, **kwargs):
     return _revol2(*args, **kwargs)
 
@@ -132,7 +132,7 @@ def _loft(arr, smooth=False, shell=False, maxdegree=4):
     return Shape(builder.Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def loft(*args, **kwargs):
     return _loft(*args, **kwargs)
 
@@ -170,7 +170,7 @@ def _pipe(shp, spine, mode="corrected_frenet", force_approx_c1=False):
     return Shape(BRepOffsetAPI_MakePipe(spine.Wire_orEdgeToWire(), shp.Shape(), tri, force_approx_c1).Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def pipe(*args, **kwargs):
     return _pipe(*args, **kwargs)
 
@@ -227,7 +227,7 @@ def _pipe_shell(
     return Shape(mkPipeShell.Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def pipe_shell(*args, **kwargs):
     return _pipe_shell(*args, **kwargs)
 
@@ -268,12 +268,12 @@ def pipe_shell(*args, **kwargs):
 #         return _make_shell(faces)
 
 
-# @lazy.lazy(cls=shape_generator)
+# @eager.decorator(cls=shape_generator)
 # def tube(*args, **kwargs):
 #     return _tube(*args, **kwargs)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def sweep(proto, path, frenet=False):
     """sweep operation is deprecated. use pipe_shell instead"""
     return _pipe_shell([proto], path, frenet)

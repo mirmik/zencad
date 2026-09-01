@@ -16,7 +16,6 @@ from OCP.GCPnts import GCPnts_UniformAbscissa
 
 from zencad.bbox import BoundaryBox
 from zencad.geom.boolops_base import *
-from zencad.lazifier import *
 import zencad.geom.trans
 from zencad.geom.trans import Transformation
 from zencad.geom.general_transformation import GeneralTransformation
@@ -340,156 +339,9 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         return BoundaryBox(xl, xh, yl, yh, zl, zh)
 
 
-# Support lazy methods
+class shape_generator:
+    """Deprecated decorator marker retained for eager backend imports."""
 
 
-class LazyObjectShape(evalcache.LazyObject):
-    """ Lazy object wrapper for Shape class.
-            It control methods lazyfying. And add some checks.
-            All Shapes wrappers must use LazyShapeObject. 
-    """
-
-    def __init__(self, *args, **kwargs):
-        evalcache.LazyObject.__init__(self, *args, **kwargs)
-
-    def unlazy(self):
-        """Test wrapped object type equality."""
-        obj = super().unlazy()
-        if not isinstance(obj, Shape):
-            raise Exception(
-                f"LazyObjectShape wraped type is not Shape: class:{obj.__class__}")
-        return obj
-
-    def _generic(name, cached, cls, prevent=None):
-        def foo(self, *args, **kwargs):
-            return self.lazyinvoke(
-                getattr(Shape, name),
-                (self, *args),
-                kwargs,
-                cached=cached,
-                cls=cls,
-                prevent=prevent
-            )
-
-        return foo
-
-    def _generic_unlazy(name):
-        def foo(self, *args, **kwargs):
-            return getattr(Shape, name)(self.unlazy(), *args, **kwargs)
-        return foo
-
-    nolazy_methods = [
-        "Shape", "Vertex", "Wire", "Edge", "Solid", "Face",
-        "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
-        "reflection_elements", "AdaptorSurface", "AdaptorCurve", "HCurveAdaptor",
-        "_SLProps", "VolumeProperties", "Curve", "SurfaceProperties",
-        "assert_valid", "is_valid", "validate"
-    ]
-
-    transparent_methods = [
-    ]
-
-    cached_methods = [
-        "__add__", "__sub__", "__xor__",
-        "scaleX", "scaleY", "scaleZ", "scaleXYZ",
-        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill",
-        "trimmed_edge", "clean", "heal"
-    ]
-
-    nocached_methods = [
-        "up", "down", "left", "right", "forw", "back",
-        "move", "moveX", "moveY", "moveZ",
-        "mov", "movX", "movY", "movZ",
-        "translate", "translateX", "translateY", "translateZ",
-        "rotate", "rotateX", "rotateY", "rotateZ",
-        "rot", "rotX", "rotY", "rotZ",
-        "mirror", "mirrorX", "mirrorY", "mirrorZ",
-        "mirrorYZ", "mirrorXY", "mirrorXZ",
-        "scale", "transform",
-        "shapetype"
-
-        #"props1", "props2", "props3"
-    ]
-
-    # Методы, которые возвращают не shape
-    standart_methods = [
-        "is_wire", "is_compsolid", "is_edge", "is_compound", "is_vertex",
-        "is_face", "is_shell", "is_wire_or_edge", "is_solid", "is_volumed",
-        "is_closed",
-        "edges", "wires", "faces", "vertices", "native_vertices",
-        "shells", "solids", "compounds", "bbox", "boundbox",
-        "to_mesh",
-        "value", "d0", "d1", "normal", "range", "endpoints", "center", "uniform", "uniform_points",
-        "mass", "curvetype", 'ellipse_parameters', 'line_parameters', 'circle_parameters', 'lower_distance_parameter'
-    ]
-
-
-for item in LazyObjectShape.nocached_methods:
-    setattr(LazyObjectShape, item, LazyObjectShape._generic(
-        item, False, cls=LazyObjectShape))
-
-for item in LazyObjectShape.nolazy_methods:
-    setattr(LazyObjectShape, item, LazyObjectShape._generic_unlazy(item))
-
-for item in LazyObjectShape.standart_methods:
-    setattr(LazyObjectShape, item, LazyObjectShape._generic(
-        item, False, cls=evalcache.LazyObject))
-
-for item in LazyObjectShape.cached_methods:
-    setattr(LazyObjectShape, item, LazyObjectShape._generic(
-        item, True, cls=LazyObjectShape))
-
-for item in LazyObjectShape.transparent_methods:
-    setattr(LazyObjectShape, item, LazyObjectShape._generic(
-            item, False, cls=LazyObjectShape, prevent=["self"]))
-
-
-class nocached_shape_generator(evalcache.LazyObject):
-    """ Decorator for heavy functions.
-            It use caching for lazy data restoring."""
-
-    def __init__(self, *args, **kwargs):
-        evalcache.LazyObject.__init__(self, *args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        return self.lazyinvoke(
-            self, args, kwargs, encache=False, decache=False, cls=LazyObjectShape
-        )
-
-
-class shape_generator(evalcache.LazyObject):
-    """ Decorator for lightweight functions.
-            It prevent caching."""
-
-    def __init__(self, *args, **kwargs):
-        evalcache.LazyObject.__init__(self, *args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        return self.lazyinvoke(self, args, kwargs, cls=LazyObjectShape)
-
-
-A = (
-    set(Shape.__dict__.keys()).union(
-        set(zencad.geom.transformable.Transformable.__dict__.keys()),
-        set(CurveAlgo.__dict__.keys())
-    )
-)
-
-B = set(LazyObjectShape.__dict__.keys())
-
-C = B.difference(A).difference({
-    "transparent_methods", "cached_methods", "standart_methods", "nocached_methods", "unlazy", "_generic", "_generic_unlazy", "nolazy_methods"
-})
-
-D = A.difference(B).difference({
-    "__dict__", "__weakref__", "__getstate__", "__setstate__"
-})
-
-if len(D) != 0:
-    print("Warning: LazyShapeObject has not wrappers for methods:")
-    print(D)
-
-if len(C) != 0:
-    print(
-        "Warning: LazyShapeObject has wrappers for unexisted methods:")
-    print(C)
+class nocached_shape_generator(shape_generator):
+    """Deprecated decorator marker retained for eager backend imports."""

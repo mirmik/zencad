@@ -2,19 +2,13 @@ import unittest
 
 import zencad
 from zencad import _typed as typed
-from zencad.geom.shape import LazyObjectShape
 
 
 class SplitSliceTest(unittest.TestCase):
     def setUp(self):
-        self.cache_flags = (zencad.lazy.encache, zencad.lazy.decache)
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
+        zencad.configure(cache_enabled=False)
 
-    def tearDown(self):
-        zencad.lazy.encache, zencad.lazy.decache = self.cache_flags
-
-    def test_split_orders_multiple_parts_and_preserves_lazy_nodes(self):
+    def test_split_orders_multiple_parts_and_preserves_graph_nodes(self):
         body = zencad.box(10)
         tools = (zencad.infplane().up(3), zencad.infplane().up(7))
 
@@ -23,11 +17,11 @@ class SplitSliceTest(unittest.TestCase):
 
         self.assertIsInstance(parts, zencad.SplitResult)
         self.assertEqual(len(parts), 3)
-        self.assertTrue(all(isinstance(part, LazyObjectShape) for part in parts))
-        self.assertEqual(parts[0].__lazyhexhash__, repeated[0].__lazyhexhash__)
-        self.assertEqual([round(part.mass(), 5) for part in parts], [300, 400, 300])
+        self.assertTrue(all(isinstance(part, zencad.Shape) for part in parts))
+        self.assertEqual(parts[0]._state.digest, repeated[0]._state.digest)
+        self.assertEqual([round(float(part.mass()), 5) for part in parts], [300, 400, 300])
         self.assertEqual(
-            [round(part.center().z, 5) for part in parts],
+            [round(float(part.center().z), 5) for part in parts],
             [1.5, 5.0, 8.5],
         )
 
@@ -41,12 +35,15 @@ class SplitSliceTest(unittest.TestCase):
 
     def test_slice_supports_coordinate_axis_and_arbitrary_plane(self):
         lower, upper = zencad.slice(zencad.box(10), z=4)
-        self.assertIsInstance(lower, LazyObjectShape)
-        self.assertEqual([round(lower.mass(), 5), round(upper.mass(), 5)], [400, 600])
+        self.assertIsInstance(lower, zencad.Shape)
+        self.assertEqual([round(float(lower.mass()), 5), round(float(upper.mass()), 5)], [400, 600])
         self.assertLess(lower.center().z, upper.center().z)
 
         left, right = zencad.slice(zencad.box(10), z=2, axis="x")
-        self.assertEqual([round(left.mass(), 5), round(right.mass(), 5)], [200, 800])
+        self.assertEqual(
+            [round(float(left.mass()), 5), round(float(right.mass()), 5)],
+            [200, 800],
+        )
         self.assertLess(left.center().x, right.center().x)
 
         negative, positive = zencad.slice(
@@ -54,7 +51,7 @@ class SplitSliceTest(unittest.TestCase):
             plane=((0, 5, 0), (0, 1, 0)),
         )
         self.assertEqual(
-            [round(negative.mass(), 5), round(positive.mass(), 5)],
+            [round(float(negative.mass()), 5), round(float(positive.mass()), 5)],
             [500, 500],
         )
         self.assertLess(negative.center().y, positive.center().y)
@@ -69,10 +66,10 @@ class SplitSliceTest(unittest.TestCase):
 
         self.assertIsInstance(parts, typed.SplitResult)
         self.assertEqual(len(parts), 2)
-        self.assertTrue(all(part.runtime is context for part in parts))
+        self.assertTrue(all(part.context is context for part in parts))
         self.assertEqual([round(float(part.mass()), 5) for part in parts], [500, 500])
         self.assertIsInstance(sliced, typed.SliceResult)
-        self.assertIs(sliced.lower.runtime, context)
+        self.assertIs(sliced.lower.context, context)
         self.assertEqual(
             [round(float(sliced.lower.mass()), 5), round(float(sliced.upper.mass()), 5)],
             [400, 600],

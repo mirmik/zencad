@@ -5,11 +5,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import cast, overload
 
-from zencad.operation import using_runtime
+from zencad.operation import resolve_context, using_context
 
 from . import curve_constructors as curve_api
 from . import transforms as transform_api
-from ._core import require_same_runtime
+from ._core import require_same_context
 from .context import Context
 from .topology import Edge, Wire
 from .values import Point3, ScalarInput, Vector3, point3, vector3
@@ -27,17 +27,15 @@ class WireBuilder:
         start: PointInput = (0, 0, 0),
         defrel: bool = False,
         *,
-        runtime: Context | None = None,
+        context: Context | None = None,
     ) -> None:
-        if runtime is None:
-            if not isinstance(start, (Point3, Vector3)):
-                raise TypeError("literal WireBuilder start requires runtime=")
-            runtime = start.runtime
-        if not isinstance(runtime, Context):
-            raise TypeError("WireBuilder runtime must be Context")
+        if context is None:
+            context = resolve_context(start)
+        if not isinstance(context, Context):
+            raise TypeError("WireBuilder context must be Context")
         if not isinstance(defrel, bool):
             raise TypeError("WireBuilder defrel must be bool")
-        self.runtime = runtime
+        self.context = context
         self.edges: list[Edge] = []
         self.current = self._point(start)
         self.start = self.current
@@ -46,18 +44,18 @@ class WireBuilder:
 
     def _point(self, value: PointInput) -> Point3:
         if isinstance(value, Point3):
-            require_same_runtime(self.runtime, value)
+            require_same_context(self.context, value)
         elif isinstance(value, Vector3):
-            require_same_runtime(self.runtime, value)
-        with using_runtime(self.runtime):
+            require_same_context(self.context, value)
+        with using_context(self.context):
             return point3(value)
 
     def _vector(self, value: VectorInput) -> Vector3:
         if isinstance(value, Point3):
-            require_same_runtime(self.runtime, value)
+            require_same_context(self.context, value)
         elif isinstance(value, Vector3):
-            require_same_runtime(self.runtime, value)
-        with using_runtime(self.runtime):
+            require_same_context(self.context, value)
+        with using_context(self.context):
             return vector3(value)
 
     @staticmethod
@@ -164,7 +162,7 @@ class WireBuilder:
         rel: bool | None = None,
     ) -> WireBuilder:
         resolved_center = self.prepare((center,), rel)[0]
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             curve = curve_api.circle_curve(radius).transform(
                 transform_api.translation(resolved_center.to_vector3())
             )
@@ -185,7 +183,7 @@ class WireBuilder:
         rel: bool | None = None,
     ) -> WireBuilder:
         resolved_center = self.prepare((center,), rel)[0]
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             curve = (
                 curve_api.ellipse_curve(radius1, radius2)
                 .transform(transform_api.rotateZ(rotate))
@@ -277,7 +275,7 @@ class WireBuilder:
         x: ScalarInput,
         y: ScalarInput,
     ) -> WireBuilder:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             target = point3(x, y, 0)
         self.edges.append(
             curve_api._svg_elliptic_arc(

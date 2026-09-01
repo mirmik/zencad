@@ -17,14 +17,18 @@ proto_wires = [
 ]
 
 spine = interpolate(
-    [(0, 0, 0), (40, 0, 50), (80, 0, 100)],
-    tangs=[(0, 0, 1), None, (0, 0, 1)])
+    [point3(0, 0, 0), point3(40, 0, 50), point3(80, 0, 100)],
+    tangs=[vector3(0, 0, 1), None, vector3(0, 0, 1)])
 
 uniform = spine.uniform(len(proto_wires))
 
 wires = [
-    (move(*spine.d0(uniform[i])) * short_rotate((0, 0, 1), spine.d1(uniform[i])))(
-        p) for i, p in enumerate(proto_wires)]
+    p.transform(
+        move(*spine.d0(uniform[i]).value())
+        * short_rotate(vector3(0, 0, 1), spine.d1(uniform[i]))
+    )
+    for i, p in enumerate(proto_wires)
+]
 
 m0 = pipe_shell(wires, spine, solid=True)
 m1 = pipe_shell(wires, spine, solid=False)

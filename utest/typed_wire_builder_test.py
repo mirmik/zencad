@@ -15,14 +15,14 @@ class TypedWireBuilderTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
                     builder = (
-                        runtime.wire_builder(defrel=True)
+                        context.call(typed.wire_builder, defrel=True)
                         .l(4, 0)
                         .line(0, 3)
                         .segment(-4, 0)
@@ -43,8 +43,8 @@ class TypedWireBuilderTest(unittest.TestCase):
         self.assertEqual(observed_types, {(typed.WireBuilder, typed.Wire)})
 
     def test_restart_prepare_and_legacy_coordinate_forms(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        builder = typed.WireBuilder(runtime=runtime, defrel=True)
+        context = typed.Context.deferred(cache=False)
+        builder = typed.WireBuilder(context=context, defrel=True)
 
         self.assertEqual(
             typed.WireBuilder.collect_point(1, 2, 3),
@@ -60,30 +60,30 @@ class TypedWireBuilderTest(unittest.TestCase):
 
     def test_curve_operations_remain_inside_the_graph(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        unit = runtime.box(2).mass() / 8
-        arc = runtime.wire_builder(start=(unit * 10, 0, 0)).arc(
+        unit = context.call(typed.box, 2).mass() / 8
+        arc = context.call(typed.wire_builder, start=(unit * 10, 0, 0)).arc(
             (0, 0, 0),
             unit * 10,
             -math.pi / 2,
         )
-        ellipse = runtime.wire_builder(start=(unit * 10, 0, 0)).elliptic_arc(
+        ellipse = context.call(typed.wire_builder, start=(unit * 10, 0, 0)).elliptic_arc(
             (0, 0, 0),
             unit * 10,
             unit * 5,
             math.pi / 2,
             0,
         )
-        points = runtime.wire_builder().arc_by_points((1, 1), (2, 0))
+        points = context.call(typed.wire_builder, ).arc_by_points((1, 1), (2, 0))
         interpolated = (
-            runtime.wire_builder()
+            context.call(typed.wire_builder, )
             .segment((1, 0))
             .interpolate(((2, 1), (3, 0)), approx=True)
         )
-        closed = runtime.wire_builder().segment((2, 0)).close(True, True)
+        closed = context.call(typed.wire_builder, ).segment((2, 0)).close(True, True)
 
         self.assertEqual(events, [])
         for builder in (arc, ellipse, points, interpolated, closed):
@@ -95,20 +95,20 @@ class TypedWireBuilderTest(unittest.TestCase):
         self.assertAlmostEqual(ellipse.current.y.value(), 5)
 
     def test_svg_endpoint_arcs_cover_flags_and_radii_order(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        short = runtime.wire_builder().svg_elliptic_arc(
+        context = typed.Context.deferred(cache=False)
+        short = context.call(typed.wire_builder, ).svg_elliptic_arc(
             10, 5, 0.3, False, True, 10, 5
         )
-        tall = runtime.wire_builder().svg_elliptic_arc(
+        tall = context.call(typed.wire_builder, ).svg_elliptic_arc(
             5, 10, 0.3, False, True, 10, 5
         )
-        large = runtime.wire_builder().svg_elliptic_arc(
+        large = context.call(typed.wire_builder, ).svg_elliptic_arc(
             10, 5, 0.3, True, True, 10, 5
         )
-        circle = runtime.wire_builder().svg_circle_arc(
+        circle = context.call(typed.wire_builder, ).svg_circle_arc(
             8, 0, False, False, 10, 5
         )
-        plane = runtime.wire_builder().plane_circle_arc(
+        plane = context.call(typed.wire_builder, ).plane_circle_arc(
             8, math.pi, False, True, 10, 5
         )
 
@@ -133,9 +133,9 @@ class TypedWireBuilderTest(unittest.TestCase):
     def test_builder_wire_restores_from_shared_cache(self):
         store = MemoryCacheStore()
 
-        def build(runtime: typed.Runtime) -> tuple[typed.WireBuilder, typed.Wire]:
+        def build(context: typed.Context) -> tuple[typed.WireBuilder, typed.Wire]:
             builder = (
-                runtime.wire_builder()
+                context.call(typed.wire_builder, )
                 .segment((2, 0))
                 .svg_circle_arc(2, 0, False, True, 2, 4)
                 .segment((0, 4))
@@ -144,7 +144,7 @@ class TypedWireBuilderTest(unittest.TestCase):
             return builder, builder.build()
 
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
@@ -157,7 +157,7 @@ class TypedWireBuilderTest(unittest.TestCase):
         )
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
@@ -174,21 +174,20 @@ class TypedWireBuilderTest(unittest.TestCase):
         self.assertIn("zencad.typed.svg_elliptic_arc", hits)
 
     def test_invalid_builder_inputs_are_explicit(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
-        with self.assertRaisesRegex(TypeError, "requires runtime"):
-            typed.WireBuilder()
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.wire_builder(other.point3(0, 0, 0))
+        self.assertIsInstance(typed.WireBuilder(), typed.WireBuilder)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.wire_builder, other.call(typed.point3, 0, 0, 0))
         with self.assertRaisesRegex(ValueError, "has no edges"):
-            runtime.wire_builder().build()
+            context.call(typed.wire_builder, ).build()
         with self.assertRaisesRegex(ValueError, "at least one point"):
-            runtime.wire_builder().interpolate(())
+            context.call(typed.wire_builder, ).interpolate(())
         with self.assertRaisesRegex(ValueError, "needs an edge"):
-            runtime.wire_builder().interpolate(((1, 0),), approx=True)
+            context.call(typed.wire_builder, ).interpolate(((1, 0),), approx=True)
         with self.assertRaisesRegex(ValueError, "non-zero"):
-            runtime.wire_builder().svg_circle_arc(
+            context.call(typed.wire_builder, ).svg_circle_arc(
                 0, 0, False, True, 1, 1
             ).build().native()
 

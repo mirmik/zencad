@@ -13,8 +13,8 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _operations as ops
@@ -191,7 +191,7 @@ def convex_hull(
     points = _require_points(pnts, minimum=4, name="convex_hull")
     _require_bool(incremental, "convex_hull incremental")
     options = _require_qhull_options(qhull_options, "convex_hull")
-    resolve_runtime(points)
+    resolve_context(points)
     return ops.convex_hull_faces(
         tuple(point._resolved() for point in points),
         incremental,
@@ -267,8 +267,8 @@ def _platonic_polyhedron(
     faces: Sequence[Sequence[int]],
     shell: bool,
 ) -> Solid | Shell:
-    runtime = resolve_runtime(coordinates)
-    with using_runtime(runtime):
+    context = resolve_context(coordinates)
+    with using_context(context):
         points = tuple(point3(*coordinate) for coordinate in coordinates)
         return polyhedron(points, faces, shell)
 

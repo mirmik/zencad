@@ -1,5 +1,5 @@
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
-from zencad.lazifier import *
+from zencad._eager import eager
 from zencad.geom.boolops import _union
 
 from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_FACE, TopAbs_SOLID, TopAbs_SHELL, TopAbs_COMPOUND, TopAbs_COMPSOLID
@@ -135,6 +135,6 @@ def _unify(proto):
     raise Exception("TODO")
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def unify(proto):
     return _unify(proto)

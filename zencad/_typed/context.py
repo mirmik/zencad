@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TypeVar
+from pathlib import Path
+from typing import ParamSpec, TypeVar
 
 from evalcache import (
     CachePolicy,
     CacheStore,
+    DirectoryCacheStore,
     EvaluationMode,
     Evaluator,
     Expression,
-    MappingCacheStore,
     ProgressHook,
     ResultSpec,
 )
@@ -21,6 +22,7 @@ from ._core import State
 
 ResolvedT = TypeVar("ResolvedT")
 ContextT = TypeVar("ContextT", bound="Context")
+P = ParamSpec("P")
 
 
 class Context:
@@ -40,9 +42,13 @@ class Context:
         if cache:
             policy = CachePolicy(namespace=self.CACHE_NAMESPACE)
             if cache_store is None:
-                from zencad.lazifier import lazy
+                from zencad.cache_config import current_cache_configuration
 
-                cache_store = MappingCacheStore(lazy.cache)
+                configuration = current_cache_configuration()
+                if configuration.enabled:
+                    cache_store = DirectoryCacheStore(configuration.directory)
+                else:
+                    policy = CachePolicy.disabled(namespace=self.CACHE_NAMESPACE)
         else:
             policy = CachePolicy.disabled(namespace=self.CACHE_NAMESPACE)
             cache_store = None
@@ -90,6 +96,28 @@ class Context:
     @property
     def cache_enabled(self) -> bool:
         return self._evaluator.cache_policy.enabled
+
+    @property
+    def cache_directory(self) -> Path | None:
+        """Return the directory used by the built-in disk store, if any."""
+
+        path = getattr(self._evaluator.cache_store, "path", None)
+        return None if path is None else Path(path)
+
+    def call(
+        self,
+        function: Callable[P, ResolvedT],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> ResolvedT:
+        """Call a module-level domain operation in this context."""
+
+        from zencad.operation import resolve_context, using_context
+
+        with using_context(self):
+            resolve_context(args, kwargs)
+            return function(*args, **kwargs)
 
     def _expression(
         self,

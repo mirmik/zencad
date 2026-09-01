@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 from evalcache import Expression, ResultSpec
 from OCP.Geom import Geom_Surface
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import OperationArguments, arguments, operation, resolve_context
 
 from . import _surface_operations as ops
-from ._core import Handle, State, require_same_runtime
+from ._core import Handle, State, require_same_context
 from ._serialization import SurfaceSerializer
 from .curves import CURVE_SPEC, Curve, Curve2
 from .records import Interval
@@ -30,7 +30,7 @@ from .values import (
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
     from .topology import Edge
 
 
@@ -56,18 +56,12 @@ class SweepScaleLaw:
             raise TypeError("SweepScaleLaw scale must be Scalar")
         if not isinstance(self.domain, Interval):
             raise TypeError("SweepScaleLaw domain must be Interval")
-        require_same_runtime(self.scale.runtime, self.domain.lower)
-        require_same_runtime(self.scale.runtime, self.domain.upper)
+        require_same_context(self.scale.context, self.domain.lower)
+        require_same_context(self.scale.context, self.domain.upper)
 
     @property
-    def runtime(self) -> Runtime:
-        return self.scale.runtime
-
-    def unlazy(self) -> SweepScaleLaw:
-        self.scale.unlazy()
-        self.domain.unlazy()
-        return self
-
+    def context(self) -> Context:
+        return self.scale.context
 
 @dataclass(frozen=True, slots=True)
 class SweepSectionLaw:
@@ -81,17 +75,11 @@ class SweepSectionLaw:
             raise TypeError("SweepSectionLaw section must be Curve")
         if not isinstance(self.scale, SweepScaleLaw):
             raise TypeError("SweepSectionLaw scale must be SweepScaleLaw")
-        require_same_runtime(self.section.runtime, self.scale.scale)
+        require_same_context(self.section.context, self.scale.scale)
 
     @property
-    def runtime(self) -> Runtime:
-        return self.section.runtime
-
-    def unlazy(self) -> SweepSectionLaw:
-        self.section.unlazy()
-        self.scale.unlazy()
-        return self
-
+    def context(self) -> Context:
+        return self.section.context
 
 @dataclass(frozen=True, slots=True)
 class SweepLocationLaw:
@@ -107,13 +95,8 @@ class SweepLocationLaw:
             raise TypeError("SweepLocationLaw trihedron must be SweepTrihedron")
 
     @property
-    def runtime(self) -> Runtime:
-        return self.spine.runtime
-
-    def unlazy(self) -> SweepLocationLaw:
-        self.spine.unlazy()
-        return self
-
+    def context(self) -> Context:
+        return self.spine.context
 
 _SURFACE_SERIALIZER = SurfaceSerializer()
 SURFACE_SPEC = ResultSpec.for_type(
@@ -133,13 +116,13 @@ class Surface(Handle[ops.SurfaceValue]):
     @classmethod
     def _from_state(
         cls: type[SurfaceHandleT],
-        runtime: Runtime,
+        context: Context,
         state: State[ops.SurfaceValue],
     ) -> SurfaceHandleT:
         if not isinstance(state, Expression):
             state = cls._result_spec.validate(state, "zencad.typed.surface.bind")
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
@@ -147,10 +130,10 @@ class Surface(Handle[ops.SurfaceValue]):
         cls: type[SurfaceHandleT],
         value: Geom_Surface,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> SurfaceHandleT:
         """Copy a mutable OCP surface into an immutable typed snapshot."""
-        return cls._from_state(runtime, ops.surface_from_ocp(value))
+        return cls._from_state(context, ops.surface_from_ocp(value))
 
     def point(self, u: ScalarInput, v: ScalarInput, /) -> Point3:
         return _surface_point(self, u, v)
@@ -180,11 +163,6 @@ class Surface(Handle[ops.SurfaceValue]):
         """Materialize an independent mutable OCP surface snapshot."""
         return ops.surface_to_ocp(self._resolved())
 
-    def unlazy(self) -> Surface:
-        super().unlazy()
-        return self
-
-
 @operation(
     backend=ops.cylinder_surface,
     result=SURFACE_SPEC,
@@ -193,8 +171,8 @@ class Surface(Handle[ops.SurfaceValue]):
     operation_version="1",
 )
 def cylinder_surface(radius: ScalarInput, /) -> OperationArguments:
-    runtime = resolve_runtime(radius)
-    return arguments(_scalar_state(runtime, radius))
+    context = resolve_context(radius)
+    return arguments(_scalar_state(context, radius))
 
 
 @operation(
@@ -213,11 +191,11 @@ def _surface_point(
 ) -> OperationArguments:
     if not isinstance(surface, Surface):
         raise TypeError("surface point expects Surface")
-    runtime = resolve_runtime(surface, u, v)
+    context = resolve_context(surface, u, v)
     return arguments(
         surface,
-        _scalar_state(runtime, u),
-        _scalar_state(runtime, v),
+        _scalar_state(context, u),
+        _scalar_state(context, v),
     )
 
 
@@ -237,11 +215,11 @@ def _surface_normal(
 ) -> OperationArguments:
     if not isinstance(surface, Surface):
         raise TypeError("surface normal expects Surface")
-    runtime = resolve_runtime(surface, u, v)
+    context = resolve_context(surface, u, v)
     return arguments(
         surface,
-        _scalar_state(runtime, u),
-        _scalar_state(runtime, v),
+        _scalar_state(context, u),
+        _scalar_state(context, v),
     )
 
 
@@ -291,8 +269,8 @@ def _surface_u_iso(
 ) -> OperationArguments:
     if not isinstance(surface, Surface):
         raise TypeError("surface u_iso expects Surface")
-    runtime = resolve_runtime(surface, parameter)
-    return arguments(surface, _scalar_state(runtime, parameter))
+    context = resolve_context(surface, parameter)
+    return arguments(surface, _scalar_state(context, parameter))
 
 
 @operation(
@@ -310,8 +288,8 @@ def _surface_v_iso(
 ) -> OperationArguments:
     if not isinstance(surface, Surface):
         raise TypeError("surface v_iso expects Surface")
-    runtime = resolve_runtime(surface, parameter)
-    return arguments(surface, _scalar_state(runtime, parameter))
+    context = resolve_context(surface, parameter)
+    return arguments(surface, _scalar_state(context, parameter))
 
 
 def constant_sweep_scale(
@@ -323,9 +301,9 @@ def constant_sweep_scale(
 
     if not isinstance(domain, Interval):
         raise TypeError("constant_sweep_scale domain must be Interval")
-    runtime = resolve_runtime(scale, domain.lower, domain.upper)
+    context = resolve_context(scale, domain.lower, domain.upper)
     return SweepScaleLaw(
-        Scalar._from_state(runtime, _scalar_state(runtime, scale)),
+        Scalar._from_state(context, _scalar_state(context, scale)),
         domain,
     )
 
@@ -341,7 +319,7 @@ def evolved_sweep_section(
         raise TypeError("evolved_sweep_section section must be Curve")
     if not isinstance(scale, SweepScaleLaw):
         raise TypeError("evolved_sweep_section scale must be SweepScaleLaw")
-    require_same_runtime(scale.runtime, section)
+    require_same_context(scale.context, section)
     return SweepSectionLaw(section, scale)
 
 
@@ -382,8 +360,8 @@ def sweep_surface_from_laws(
         raise TypeError("sweep_surface_from_laws section must be SweepSectionLaw")
     if not isinstance(location, SweepLocationLaw):
         raise TypeError("sweep_surface_from_laws location must be SweepLocationLaw")
-    if section.runtime is not location.runtime:
-        raise ValueError("cannot mix handles from different typed runtimes")
+    if section.context is not location.context:
+        raise ValueError("cannot mix handles from different contexts")
     return arguments(
         section.section,
         section.scale.scale,
@@ -419,7 +397,7 @@ def sweep_surface(
         raise TypeError("sweep_surface section must be Curve")
     if not isinstance(spine, Curve):
         raise TypeError("sweep_surface spine must be Curve")
-    require_same_runtime(section.runtime, spine)
+    require_same_context(section.context, spine)
     scale_law = constant_sweep_scale(scale, spine.range())
     section_law = evolved_sweep_section(section, scale_law)
     location_law = sweep_location(spine, trihedron)

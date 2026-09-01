@@ -11,6 +11,7 @@ from zencad.cache_config import (
     CACHE_DIRECTORY_ENV,
     CACHE_DISABLE_ENV,
     CacheConfiguration,
+    current_cache_configuration,
     default_cache_directory,
     resolve_cache_configuration,
 )
@@ -73,9 +74,7 @@ class CacheConfigurationTest(unittest.TestCase):
             self.assertTrue(enabled.enabled)
 
     def test_python_api_switches_directory_and_disables_disk_cache(self):
-        from zencad.lazifier import get_cache_configuration
-
-        previous = get_cache_configuration()
+        previous = current_cache_configuration()
         self.addCleanup(
             zencad.configure,
             cache_dir=previous.directory,
@@ -83,10 +82,13 @@ class CacheConfigurationTest(unittest.TestCase):
         )
         with TemporaryDirectory() as directory:
             cache_directory = Path(directory) / "cache"
-            configured = zencad.configure(cache_dir=cache_directory)
+            configured = zencad.configure(
+                cache_dir=cache_directory,
+                cache_enabled=True,
+            )
             self.assertEqual(configured.directory, cache_directory)
-            self.assertIsNotNone(zencad.lazy.cache)
             self.assertTrue(cache_directory.is_dir())
+            self.assertEqual(zencad.box(1).context.cache_directory, cache_directory)
 
             disabled_directory = Path(directory) / "disabled"
             configured = zencad.configure(
@@ -94,16 +96,33 @@ class CacheConfigurationTest(unittest.TestCase):
                 cache_enabled=False,
             )
             self.assertFalse(configured.enabled)
-            self.assertEqual(zencad.lazy.cache.keys(), [])
             self.assertFalse(disabled_directory.exists())
 
             shape = zencad.box(1)
-            shape.unlazy()
+            self.assertFalse(shape.context.cache_enabled)
+            shape.native()
             self.assertFalse(disabled_directory.exists())
 
             brep_path = Path(directory) / "shape.brep"
             zencad.to_brep(shape, brep_path)
             self.assertGreater(brep_path.stat().st_size, 0)
+
+    def test_public_clear_cache_removes_v2_records(self):
+        previous = current_cache_configuration()
+        self.addCleanup(
+            zencad.configure,
+            cache_dir=previous.directory,
+            cache_enabled=previous.enabled,
+        )
+        with TemporaryDirectory() as directory:
+            cache_directory = Path(directory) / "cache"
+            zencad.configure(cache_dir=cache_directory, cache_enabled=True)
+            zencad.box(2).native()
+
+            removed = zencad.clear_cache()
+
+            self.assertGreater(removed, 0)
+            self.assertEqual(zencad.clear_cache(), 0)
 
     def test_fresh_process_honors_environment_without_settings_or_pyqt(self):
         with TemporaryDirectory() as directory:
@@ -120,8 +139,9 @@ class CacheConfigurationTest(unittest.TestCase):
                     "-c",
                     (
                         "import zencad; "
-                        "assert zencad.lazy.cache.keys() == []; "
-                        "zencad.box(1).unlazy()"
+                        "shape = zencad.box(1); "
+                        "assert not shape.context.cache_enabled; "
+                        "shape.native()"
                     ),
                 ],
                 cwd=Path(__file__).resolve().parents[1],
@@ -138,9 +158,7 @@ class CacheConfigurationTest(unittest.TestCase):
             root = Path(directory)
             cache_directory = root / "settings-cache"
             config_directory = root / "config"
-            settings = ZencadSettings(
-                config_directory / "ZenCad" / "settings.conf"
-            )
+            settings = ZencadSettings(config_directory / "ZenCad" / "settings.conf")
             settings.set(["cache", "directory"], str(cache_directory))
             settings.store()
 
@@ -154,8 +172,8 @@ class CacheConfigurationTest(unittest.TestCase):
                     "-c",
                     (
                         "import zencad; "
-                        "zencad.box(1).unlazy(); "
-                        "assert str(zencad.lazy.cache.dirpath) == "
+                        "shape = zencad.box(1); shape.native(); "
+                        "assert str(shape.context.cache_directory) == "
                         f"{str(cache_directory)!r}"
                     ),
                 ],
@@ -185,7 +203,7 @@ class CacheConfigurationTest(unittest.TestCase):
                     [
                         sys.executable,
                         "-c",
-                        "import zencad; zencad.box(1).unlazy()",
+                        "import zencad; zencad.box(1).native()",
                     ],
                     cwd=Path(__file__).resolve().parents[1],
                     env=environment,

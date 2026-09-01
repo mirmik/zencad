@@ -201,15 +201,23 @@ def validate(matrix: dict[str, Any], entries: list[dict[str, str]]) -> None:
         )
     if not entries:
         raise ContractError("parity matrix is empty")
-    root_exports = matrix.get("root_exports", [])
-    if len(root_exports) != len(set(root_exports)):
-        raise ContractError("root export contract contains duplicate names")
     zencad = importlib.import_module("zencad")
-    missing_exports = [name for name in root_exports if not hasattr(zencad, name)]
+    typed = importlib.import_module("zencad._typed")
+    root_exports = getattr(zencad, "__all__", ())
+    if len(root_exports) != len(set(root_exports)):
+        raise ContractError("public root export contract contains duplicate names")
+    missing_exports = [name for name in typed.__all__ if name not in root_exports]
     if missing_exports:
         raise ContractError(
-            f"intentional zencad root exports disappeared: {missing_exports}"
+            f"typed domain exports missing from zencad root: {missing_exports}"
         )
+    forbidden = [
+        name
+        for name in ("Runtime", "RuntimeCompatibility", "lazy")
+        if hasattr(zencad, name)
+    ]
+    if forbidden:
+        raise ContractError(f"removed lazy API leaked from zencad root: {forbidden}")
 
 
 def _render(entries: list[dict[str, str]]) -> str:

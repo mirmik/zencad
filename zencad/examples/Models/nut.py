@@ -3,21 +3,20 @@
 
 import zencad
 from zencad import *
+import math
+import sys
 
 
-@zencad.operation
 def instrument_metric_nut(drad, step, h):
     H = step * math.tan(deg(60))
 
     pseg = polysegment(
-        points(
-            [
-                (drad + H / 2, 0, 0),
-                (drad - H / 4, 0, -(3 / 8 * step)),
-                (drad - H / 4, 0, -(5 / 8 * step)),
-                (drad + H / 2, 0, -step),
-            ]
-        ),
+        [
+            point3(drad + H / 2, 0, 0),
+            point3(drad - H / 4, 0, -(3 / 8 * step)),
+            point3(drad - H / 4, 0, -(5 / 8 * step)),
+            point3(drad + H / 2, 0, -step),
+        ],
         closed=True,
     )
 
@@ -26,7 +25,6 @@ def instrument_metric_nut(drad, step, h):
     return base
 
 
-@zencad.operation
 def metric_nut(d, step, h):
     H = step * math.tan(deg(60))
     drad = d / 2 - 3 / 8 * H

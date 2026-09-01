@@ -60,6 +60,7 @@ namespaces = true
 
 [tool.setuptools.package-data]
 zencad = [
+  "py.typed",
   "**/*.jpg",
   "**/*.png",
   "**/*.svg",

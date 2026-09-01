@@ -2,12 +2,7 @@
 # coding: utf-8
 
 from zencad import *
-import zencad.geom.surface as surface
-import zencad.geom.curve2 as curve2
-
-lazy.fastdo = True
-lazy.encache = False
-lazy.decache = False
+import math
 
 height = 70
 width = 50
@@ -34,7 +29,7 @@ hl(body.forw(140))
 neck_radius = thickness / 4.0
 neck_height = height / 10
 neck = cylinder(r=neck_radius, h=neck_height).up(height)
-body = body + neck
+body = (body + neck).solids()[0]
 hl(body.forw(100))
 
 # THICK
@@ -42,25 +37,25 @@ body = thicksolid(body, -thickness / 50, [point3(0, 0, height + height / 10)])
 hl(body.forw(60))
 
 # THREAD
-cylsurf1 = surface.cylinder(neck_radius * 0.99)
-cylsurf2 = surface.cylinder(neck_radius * 1.05)
+cylsurf1 = cylinder_surface(neck_radius * 0.99)
+cylsurf2 = cylinder_surface(neck_radius * 1.05)
 
 major = 2 * math.pi
 minor = neck_height / 10
 angle = math.atan2(neck_height / 4, 2 * math.pi)
 
-ellipse1 = curve2.ellipse(major, minor).rotate(angle)
-arc1 = cylsurf1.map(curve2.trimmed_curve2(ellipse1, 0, math.pi))
-segment1 = cylsurf1.map(curve2.segment(
-    ellipse1.value(0), ellipse1.value(math.pi)))
+ellipse1 = ellipse2(major, minor).rotate(angle)
+arc1 = cylsurf1.map(ellipse1.trim(0, math.pi))
+segment1 = cylsurf1.map(segment2(ellipse1.point(0), ellipse1.point(math.pi)))
 
-ellipse2 = curve2.ellipse(major, minor / 4).rotate(angle)
-arc2 = cylsurf2.map(curve2.trimmed_curve2(ellipse2, 0, math.pi))
-segment2 = cylsurf2.map(curve2.segment(
-    ellipse2.value(0), ellipse2.value(math.pi)))
+ellipse2_curve = ellipse2(major, minor / 4).rotate(angle)
+arc2 = cylsurf2.map(ellipse2_curve.trim(0, math.pi))
+segment2_edge = cylsurf2.map(
+    segment2(ellipse2_curve.point(0), ellipse2_curve.point(math.pi))
+)
 
 m1 = sew([arc1, segment1])
-m2 = sew([arc2, segment2])
+m2 = sew([arc2, segment2_edge])
 thread = loft([m1, m2]).up(height + neck_height / 2)
 
 hl(m1.up(height + neck_height / 2).right(80))

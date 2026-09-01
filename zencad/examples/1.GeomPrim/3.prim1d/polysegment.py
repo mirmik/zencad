@@ -6,13 +6,13 @@ ZenCad API example: polysegment.py
 
 from zencad import *
 
-pnts = points([(0, 0, 0), (0, 10, 10), (0, 10, 20), (0, -10, 20), (0, -10, 10)])
+pnts = [point3(*coordinates) for coordinates in [(0, 0, 0), (0, 10, 10), (0, 10, 20), (0, -10, 20), (0, -10, 10)]]
 
 m0 = polysegment(pnts)
 m1 = polysegment(pnts, closed=True)
 m2 = polysegment(pnts, closed=True).fill()
-m3 = polysegment(pnts + [(0, 0, 0)])
-m4 = polysegment(pnts + [(0, 0, 0)]).fill()
+m3 = polysegment(pnts + [point3(0, 0, 0)])
+m4 = polysegment(pnts + [point3(0, 0, 0)]).fill()
 
 disp(m0)
 disp(m1.left(20))

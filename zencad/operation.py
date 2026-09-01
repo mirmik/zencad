@@ -36,11 +36,11 @@ def arguments(*args: object, **kwargs: object) -> OperationArguments:
     return OperationArguments(args=args, kwargs=kwargs)
 
 
-_CURRENT_RUNTIME: ContextVar[Context | None] = ContextVar(
-    "zencad_current_typed_runtime",
+_CURRENT_CONTEXT: ContextVar[Context | None] = ContextVar(
+    "zencad_current_typed_context",
     default=None,
 )
-_DEFAULT_RUNTIME: Context | None = None
+_DEFAULT_CONTEXT: Context | None = None
 
 
 def _is_handle(value: object) -> bool:
@@ -62,58 +62,61 @@ def _walk_handles(value: object) -> Iterator[Handle[Any]]:
 
 
 def resolve_context(*values: object) -> Context:
-    """Select the sole handle runtime, the active runtime, or the default."""
+    """Select the sole handle context, the active context, or the default."""
 
-    runtimes = {handle.runtime for value in values for handle in _walk_handles(value)}
-    active = _CURRENT_RUNTIME.get()
+    contexts = {handle.context for value in values for handle in _walk_handles(value)}
+    active = _CURRENT_CONTEXT.get()
     if active is not None:
-        runtimes.add(active)
-    if len(runtimes) > 1:
-        raise ValueError("cannot mix handles from different typed runtimes")
-    if runtimes:
-        return next(iter(runtimes))
+        contexts.add(active)
+    if len(contexts) > 1:
+        raise ValueError("cannot mix handles from different contexts")
+    if contexts:
+        return next(iter(contexts))
 
-    global _DEFAULT_RUNTIME
-    if _DEFAULT_RUNTIME is None:
+    global _DEFAULT_CONTEXT
+    if _DEFAULT_CONTEXT is None:
         from zencad._typed.context import Context
 
-        _DEFAULT_RUNTIME = Context.deferred()
-    return _DEFAULT_RUNTIME
+        _DEFAULT_CONTEXT = Context.deferred()
+    return _DEFAULT_CONTEXT
+
+
+def _reset_default_context() -> None:
+    """Drop the process default after its cache configuration changes."""
+
+    global _DEFAULT_CONTEXT
+    _DEFAULT_CONTEXT = None
 
 
 @contextmanager
 def using_context(context: Context) -> Iterator[Context]:
     """Temporarily select the evaluator context used by domain operations."""
 
-    token = _CURRENT_RUNTIME.set(context)
+    token = _CURRENT_CONTEXT.set(context)
     try:
         yield context
     finally:
-        _CURRENT_RUNTIME.reset(token)
+        _CURRENT_CONTEXT.reset(token)
 
 
-resolve_runtime = resolve_context
-using_runtime = using_context
-
-
-def _lower(runtime: Context, value: object) -> object:
+def _lower(context: Context, value: object) -> object:
     if _is_handle(value):
         handle = cast("Handle[Any]", value)
-        if handle.runtime is not runtime:
-            raise ValueError("cannot mix handles from different typed runtimes")
+        if handle.context is not context:
+            raise ValueError("cannot mix handles from different contexts")
         return handle._state
     if isinstance(value, list):
-        return [_lower(runtime, item) for item in value]
+        return [_lower(context, item) for item in value]
     if isinstance(value, tuple):
-        return tuple(_lower(runtime, item) for item in value)
+        return tuple(_lower(context, item) for item in value)
     if isinstance(value, dict):
         return {
-            _lower(runtime, key): _lower(runtime, item) for key, item in value.items()
+            _lower(context, key): _lower(context, item) for key, item in value.items()
         }
     if isinstance(value, set):
-        return {_lower(runtime, item) for item in value}
+        return {_lower(context, item) for item in value}
     if isinstance(value, frozenset):
-        return frozenset(_lower(runtime, item) for item in value)
+        return frozenset(_lower(context, item) for item in value)
     return value
 
 
@@ -178,10 +181,10 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
         prepared = self.prepare(*args, **kwargs)
         if not isinstance(prepared, OperationArguments):
             raise TypeError("a ZenCad operation preparer must return arguments(...)")
-        runtime = resolve_context(args, kwargs, prepared.args, prepared.kwargs)
-        lowered_args = tuple(_lower(runtime, value) for value in prepared.args)
+        context = resolve_context(args, kwargs, prepared.args, prepared.kwargs)
+        lowered_args = tuple(_lower(context, value) for value in prepared.args)
         lowered_kwargs = {
-            name: _lower(runtime, value) for name, value in prepared.kwargs.items()
+            name: _lower(context, value) for name, value in prepared.kwargs.items()
         }
         result = (
             self.select_result(args, kwargs)
@@ -196,7 +199,7 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
                 self.backend.operation_id or self.backend.__name__,
             )
         else:
-            expression = runtime._evaluator.expression(
+            expression = context._evaluator.expression(
                 self.backend.function,
                 result=result,
                 args=lowered_args,
@@ -208,12 +211,12 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
             )
             if (
                 self.fold_literals
-                and runtime.mode is evalcache.EvaluationMode.IMMEDIATE
+                and context.mode is evalcache.EvaluationMode.IMMEDIATE
             ):
-                state = runtime._evaluator.evaluate(expression)
+                state = context._evaluator.evaluate(expression)
             else:
-                if runtime.mode is evalcache.EvaluationMode.IMMEDIATE:
-                    runtime._evaluator.evaluate(expression)
+                if context.mode is evalcache.EvaluationMode.IMMEDIATE:
+                    context._evaluator.evaluate(expression)
                 state = expression
         handle_type = (
             self.returns(args, kwargs)
@@ -223,11 +226,7 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
         factory = getattr(handle_type, "_from_state", None)
         if factory is None:
             raise TypeError("ZenCad operation result must provide _from_state")
-        return cast(PublicT, factory(runtime, state))
-
-
-@overload
-def operation(function: Callable[P, Any], /) -> Any: ...
+        return cast(PublicT, factory(context, state))
 
 
 @overload
@@ -249,8 +248,6 @@ def operation(
 
 
 def operation(
-    function: Callable[P, Any] | None = None,
-    /,
     *,
     backend: Callable[..., Any] | None = None,
     result: evalcache.ResultSpec[Any] | None = None,
@@ -266,31 +263,8 @@ def operation(
     cacheable: bool = True,
     fold_literals: bool = False,
 ) -> Any:
-    """Declare a typed domain operation or use the legacy bare compatibility form.
+    """Adapt a configured EvalCache operation to a ZenCad domain handle."""
 
-    ``@operation`` without configuration deliberately preserves the historical
-    dynamic ``@lazy`` contract. Configured declarations adapt an EvalCache
-    operation to a stable ZenCad domain handle.
-    """
-
-    legacy_form = (
-        backend is None
-        and result is None
-        and returns is None
-        and select_result is None
-        and operation_id is None
-        and operation_version == "1"
-        and cacheable
-        and not fold_literals
-    )
-    if legacy_form:
-        from zencad.lazifier import lazy
-
-        if function is None:
-            return lambda candidate: lazy(candidate)
-        return lazy(function)
-    if function is not None:
-        raise TypeError("configured zencad.operation must be called with parentheses")
     if backend is None or result is None or returns is None:
         raise TypeError(
             "configured zencad.operation requires backend, result, and returns"
@@ -321,7 +295,5 @@ __all__ = [
     "arguments",
     "operation",
     "resolve_context",
-    "resolve_runtime",
     "using_context",
-    "using_runtime",
 ]

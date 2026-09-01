@@ -37,10 +37,9 @@ def main():
         )
 
     import zencad
-    from evalcache.dircache_v2 import DirCache_v2
 
     with TemporaryDirectory() as cache_directory:
-        zencad.lazy.cache = DirCache_v2(cache_directory)
+        zencad.configure(cache_dir=cache_directory, cache_enabled=True)
         discovered = unittest.defaultTestLoader.discover(
             str(ROOT / "utest"), pattern="*_test.py"
         )

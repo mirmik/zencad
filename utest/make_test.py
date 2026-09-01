@@ -4,26 +4,24 @@ import zencad
 
 class MakeProbber(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_make_wire(self):
-        s0 = zencad.wire.segment((0,0,0), (1,0,0))
-        s1 = zencad.wire.segment((1,0,0), (1,1,0))
-        s2 = zencad.wire.segment((1,1,0), (0,1,0))
-        w = zencad.wire.make_wire([s0, s1, s2])
+        points = tuple(zencad.point3(*value) for value in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)))
+        edges = tuple(zencad.segment(a, b) for a, b in zip(points, points[1:]))
+        self.assertIsInstance(zencad.make_wire(edges), zencad.Wire)
 
     def test_make_face(self):
-        s0 = zencad.wire.segment((0,0,0), (1,0,0))
-        s1 = zencad.wire.segment((1,0,0), (1,1,0))
-        s2 = zencad.wire.segment((1,1,0), (0,1,0))
-        s3 = zencad.wire.segment((0,1,0), (0,0,0))
-        w = zencad.wire.make_wire([s0, s1, s2, s3])
-        f = zencad.face.fill(w)
+        points = tuple(zencad.point3(*value) for value in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)))
+        edges = tuple(
+            zencad.segment(a, b)
+            for a, b in zip(points, (*points[1:], points[0]))
+        )
+        wire = zencad.make_wire(edges)
+        self.assertIsInstance(zencad.fill(wire), zencad.Face)
 
     def test_make_shell(self):
         sphere = zencad.sphere(10)
-        face = sphere.faces()[0]   
+        face = sphere.faces()[0]
         self.assertTrue(face.shapetype() == "face")
-        shell = zencad.geom.shell.make_shell([face])
+        self.assertIsInstance(zencad.make_shell([face]), zencad.Shell)

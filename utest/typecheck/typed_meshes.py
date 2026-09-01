@@ -6,7 +6,7 @@ from zencad import _typed as typed
 
 
 def mesh_contract(
-    runtime: typed.Runtime,
+    context: typed.Context,
     shape: typed.Shape,
     face: typed.Face,
     mesh: typed.MeshData,
@@ -30,8 +30,6 @@ def mesh_contract(
     assert_type(typed.get_triangles(mesh), tuple[tuple[int, int, int], ...])
     assert_type(mesh.display_payload(), bytes)
     assert_type(typed.mesh_display_payload(mesh), bytes)
-    assert_type(mesh.unlazy(), typed.MeshData)
-
     record = mesh.value()
     assert_type(record.vertex_count, int)
     assert_type(record.triangle_count, int)
@@ -42,7 +40,7 @@ def mesh_contract(
             ((0.0, 0.0, 1.0),) * 3,
             ((0, 1, 2),),
             (0,),
-            runtime=runtime,
+            context=context,
         ),
         typed.MeshData,
     )

@@ -1,8 +1,5 @@
 import unittest
 import zencad
-from functools import cmp_to_key
-import evalcache
-import zencad.util
 
 
 def rounded_list(a):
@@ -10,21 +7,15 @@ def rounded_list(a):
 
 
 def lexsort(a):
-    a = evalcache.unlazy_if_need(a)
-
-    def comparator(a, b):
-        return 1 if a > b else -1
-
-    a = [zencad.util.point3(round(f.x, 4), round(
-        f.y, 4), round(f.z, 4)) for f in a]
-    return sorted(a, key=cmp_to_key(comparator))
+    return sorted(
+        tuple(round(value, 4) for value in vertex.point().value())
+        for vertex in a
+    )
 
 
 class BooleanProbe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_union_probe(self):
         a = zencad.box(10)

@@ -1,4 +1,3 @@
-import evalcache
 from zencad.geom.transformable import Transformable
 from zencad.geom.trans import rotate, translate
 from zencad.geom.exttrans import nulltrans
@@ -12,11 +11,22 @@ from zencad.interactive import create_interactive_object
 from zencad.interactive.displayable import Displayable
 from zencad.libs.screw import screw
 
+
+def _display_transform(value):
+    """Materialize a typed transform at the legacy viewer boundary."""
+
+    from zencad._typed.transforms import Transform
+    from zencad.geom.trans import Transformation
+
+    if isinstance(value, Transform):
+        return Transformation(value.to_ocp())
+    return value
+
 class unit(Transformable, Displayable):
     """Базовый класс для использования в кинематических цепях и сборках
 
     Вычисляет свою текущую позицию исходя из дерева построения.
-    Держит список наследников, позиция которых считается относительно него.    
+    Держит список наследников, позиция которых считается относительно него.
     """
 
     def __init__(self,
@@ -29,7 +39,7 @@ class unit(Transformable, Displayable):
         if parts is None:
             parts = []
         self.parent = parent
-        self.location = evalcache.unlazy_if_need(location)
+        self.location = _display_transform(location)
         self.global_location = self.location
         self.name = name
         self.color = None
@@ -41,7 +51,7 @@ class unit(Transformable, Displayable):
 
         if parent is not None:
             parent.add_child(self)
-            
+
         for obj in parts:
             self.add(obj)
 
@@ -81,7 +91,7 @@ class unit(Transformable, Displayable):
                 c.update_location_from_transform(deep=True)
 
     def relocate(self, location, deep=False, view=True):
-        self.location = evalcache.unlazy_if_need(location)
+        self.location = _display_transform(location)
         self.location_update(deep=deep, view=False)
 
         if view:
@@ -98,8 +108,7 @@ class unit(Transformable, Displayable):
             self.views.add(d)
 
     def add(self, obj, color=None):
-        uo = evalcache.unlazy_if_need(obj)
-        interobj = create_interactive_object(uo, color=color)
+        interobj = create_interactive_object(obj, color=color)
         self.add_object(interobj)
         return interobj
 
@@ -140,7 +149,7 @@ class unit(Transformable, Displayable):
             return repr(self)
 
     def _apply_view_location(self, deep):
-        """Перерисовать положения объектов юнита во всех зарегестрированных 
+        """Перерисовать положения объектов юнита во всех зарегестрированных
         view. Если deep, применить рекурсивно."""
 
         for v in self.views:
@@ -225,7 +234,7 @@ class kinematic_unit(unit):
         raise NotImplementedError
 
     def set_coords(self, coords, **kwargs):
-        """Устанавливает модельное положение звена согласно 
+        """Устанавливает модельное положение звена согласно
         переданным координатам"""
 
         raise NotImplementedError
@@ -234,7 +243,7 @@ class kinematic_unit(unit):
         """Присоединить объект arg к выходной СК.
 
         Для kinematic_unit метод link переопределяется,
-        с тем, чтобы линковка происходила не ко входной, 
+        с тем, чтобы линковка происходила не ко входной,
         а к выходной СК"""
 
         self.output.link(arg)

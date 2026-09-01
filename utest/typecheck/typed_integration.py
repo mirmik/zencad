@@ -5,8 +5,8 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def complete_domain_chain(runtime: typed.Runtime) -> None:
-    seed = assert_type(runtime.box(2), typed.Solid)
+def complete_domain_chain(context: typed.Context) -> None:
+    seed = assert_type(context.call(typed.box, 2), typed.Solid)
     shape = assert_type(seed.translate(seed.mass() / 8, 2, 3), typed.Solid)
     edge = assert_type(shape.edges()[0], typed.Edge)
     face = assert_type(shape.faces()[0], typed.Face)

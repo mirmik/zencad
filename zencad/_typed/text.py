@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from os import PathLike
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import OperationArguments, arguments, operation, resolve_context
 
 from . import _text_operations as text_ops
 from .topology import COMPOUND_SPEC, Compound
@@ -62,11 +62,11 @@ def text_to_brep(
     resolved_aspect = _require_font_aspect(aspect, "text_to_brep aspect")
     if not isinstance(composite_curve, bool):
         raise TypeError("text_to_brep composite_curve must be bool")
-    runtime = resolve_runtime(size)
+    context = resolve_context(size)
     return arguments(
         text,
         font_name,
-        _scalar_state(runtime, size),
+        _scalar_state(context, size),
         resolved_aspect.value,
         composite_curve,
     )

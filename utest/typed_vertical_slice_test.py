@@ -43,9 +43,9 @@ class SpyCacheStore:
         return self.get_count + self.put_count + self.delete_count
 
 
-def representative_chain(runtime: typed.Runtime):
-    outer: typed.Solid = runtime.box(10)
-    inner: typed.Solid = runtime.box(4).translate(3, 3, 3)
+def representative_chain(context: typed.Context):
+    outer: typed.Solid = context.call(typed.box, 10)
+    inner: typed.Solid = context.call(typed.box, 4).translate(3, 3, 3)
     result: typed.Shape = outer - inner
     faces: typed.DeferredSequence[typed.Face] = result.faces()
     face: typed.Face = faces[0]
@@ -65,14 +65,14 @@ class TypedVerticalSliceTest(unittest.TestCase):
                 with self.subTest(mode=mode, cache=cache):
                     store = SpyCacheStore()
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=store,
                         progress_hooks=(events.append,),
                     )
                     moved, face, faces, mass, center, offset = representative_chain(
-                        runtime
+                        context
                     )
 
                     observed_types.add(
@@ -107,7 +107,6 @@ class TypedVerticalSliceTest(unittest.TestCase):
                     exported = encode_brep(native)
                     self.assertFalse(decode_brep(exported).IsNull())
                     self.assertEqual(face.native().ShapeType(), TopAbs_FACE)
-                    self.assertIs(moved.unlazy(), moved)
 
                     if cache:
                         self.assertGreater(store.get_count, 0)
@@ -119,8 +118,8 @@ class TypedVerticalSliceTest(unittest.TestCase):
 
     def test_sequence_indexing_stays_deferred_but_len_materializes(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        faces = runtime.box(2).faces()
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        faces = context.call(typed.box, 2).faces()
 
         face = faces[0]
         self.assertIsInstance(face, typed.Face)
@@ -132,12 +131,12 @@ class TypedVerticalSliceTest(unittest.TestCase):
     def test_shape_cache_record_contains_brep_artifact(self):
         store = MemoryCacheStore()
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
         )
-        first.box(2).native()
+        first.call(typed.box, 2).native()
 
         self.assertEqual(len(store.records), 1)
         record = next(iter(store.records.values()))
@@ -149,12 +148,12 @@ class TypedVerticalSliceTest(unittest.TestCase):
         self.assertGreater(len(record.value.artifacts[0].data), 100)
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
         )
-        restored = second.box(2).native()
+        restored = second.call(typed.box, 2).native()
         self.assertFalse(restored.IsNull())
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,
@@ -172,12 +171,12 @@ from evalcache.v2 import MappingCacheStore
 from zencad import _typed as typed
 
 events = []
-runtime = typed.Runtime.deferred(
+context = typed.Context.deferred(
     cache=True,
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-runtime.box(2).translate(1, 2, 3).native()
+context.call(typed.box, 2).translate(1, 2, 3).native()
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:
@@ -211,15 +210,15 @@ print(json.dumps(Counter(event.kind.value for event in events)))
         self.assertGreater(second_counts.get("cache_hit", 0), 0)
         self.assertEqual(second_counts.get("cache_store", 0), 0)
 
-    def test_handles_from_different_runtimes_cannot_be_mixed(self):
-        first = typed.Runtime.deferred(cache=False)
-        second = typed.Runtime.deferred(cache=False)
+    def test_handles_from_different_contexts_cannot_be_mixed(self):
+        first = typed.Context.deferred(cache=False)
+        second = typed.Context.deferred(cache=False)
 
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            _ = first.box(1) - second.box(1)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            _ = first.call(typed.box, 1) - second.call(typed.box, 1)
 
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            typed.Vector3(first.box(1).mass(), second.box(1).mass(), 0)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            typed.Vector3(first.call(typed.box, 1).mass(), second.call(typed.box, 1).mass(), 0)
 
 
 if __name__ == "__main__":

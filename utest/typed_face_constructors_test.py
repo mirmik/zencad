@@ -5,25 +5,25 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_WIRE
 
 from zencad import _typed as typed
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 
 
-def _rectangle_points(runtime: typed.Runtime) -> tuple[typed.Point3, ...]:
+def _rectangle_points(context: typed.Context) -> tuple[typed.Point3, ...]:
     return (
-        runtime.point3(0, 0, 0),
-        runtime.point3(4, 0, 0),
-        runtime.point3(4, 3, 0),
-        runtime.point3(0, 3, 0),
+        context.call(typed.point3, 0, 0, 0),
+        context.call(typed.point3, 4, 0, 0),
+        context.call(typed.point3, 4, 3, 0),
+        context.call(typed.point3, 0, 3, 0),
     )
 
 
 def _surface_grid(
-    runtime: typed.Runtime,
+    context: typed.Context,
 ) -> tuple[tuple[typed.Point3, ...], ...]:
     return (
-        (runtime.point3(0, 0, 0), runtime.point3(0, 2, 0)),
-        (runtime.point3(2, 0, 0), runtime.point3(2, 2, 1)),
-        (runtime.point3(4, 0, 0), runtime.point3(4, 2, 0)),
+        (context.call(typed.point3, 0, 0, 0), context.call(typed.point3, 0, 2, 0)),
+        (context.call(typed.point3, 2, 0, 0), context.call(typed.point3, 2, 2, 1)),
+        (context.call(typed.point3, 4, 0, 0), context.call(typed.point3, 4, 2, 0)),
     )
 
 
@@ -43,13 +43,13 @@ class TypedFaceConstructorsTest(unittest.TestCase):
                 self.assertIsInstance(getattr(typed, name), DomainOperation)
 
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        points = _rectangle_points(runtime)
-        grid = _surface_grid(runtime)
-        with using_runtime(runtime):
+        points = _rectangle_points(context)
+        grid = _surface_grid(context)
+        with using_context(context):
             polygon = typed.polygon(points)
             polygon_wire = typed.polygon(points, wire=True)
             rectangle = typed.rectangle(4, 3)
@@ -63,8 +63,8 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             fixed = typed.fix_face(rectangle)
             plane = typed.infplane()
             ruled = typed.ruled(
-                runtime.segment(points[0], points[1]),
-                runtime.segment(points[3], points[2]),
+                context.call(typed.segment, points[0], points[1]),
+                context.call(typed.segment, points[3], points[2]),
             )
             wide = typed.widewire(polygon_wire, 0.2)
 
@@ -84,7 +84,7 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             ruled,
             wide,
         )
-        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertTrue(all(value.context is context for value in values))
         self.assertEqual(events, [])
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
@@ -113,35 +113,35 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    points = _rectangle_points(runtime)
-                    polygon = runtime.polygon(points)
-                    polygon_wire = runtime.polygon(points, wire=True)
-                    rectangle = runtime.rectangle(4, 3, center=True)
-                    rectangle_wire = runtime.rectangle(4, 3, True, True)
-                    square = runtime.square(3)
-                    square_wire = runtime.square(3, wire=True)
-                    ngon = runtime.ngon(3, 6)
-                    ngon_wire = runtime.ngon(3, 6, True)
-                    circle = runtime.circle(3)
-                    circle_edge = runtime.circle(3, (-math.pi / 2, math.pi / 2), True)
-                    circle_sector = runtime.circle(3, math.pi / 2)
-                    ellipse = runtime.ellipse(2, 4)
-                    ellipse_edge = runtime.ellipse(4, 2, wire=True)
-                    ellipse_sector = runtime.ellipse(4, 2, (-1, 1))
-                    filled = runtime.fill(polygon_wire)
-                    fixed = runtime.fix_face(rectangle)
-                    plane = runtime.infplane()
-                    ruled = runtime.ruled(
-                        runtime.segment(points[0], points[1]),
-                        runtime.segment(points[3], points[2]),
+                    points = _rectangle_points(context)
+                    polygon = context.call(typed.polygon, points)
+                    polygon_wire = context.call(typed.polygon, points, wire=True)
+                    rectangle = context.call(typed.rectangle, 4, 3, center=True)
+                    rectangle_wire = context.call(typed.rectangle, 4, 3, True, True)
+                    square = context.call(typed.square, 3)
+                    square_wire = context.call(typed.square, 3, wire=True)
+                    ngon = context.call(typed.ngon, 3, 6)
+                    ngon_wire = context.call(typed.ngon, 3, 6, True)
+                    circle = context.call(typed.circle, 3)
+                    circle_edge = context.call(typed.circle, 3, (-math.pi / 2, math.pi / 2), True)
+                    circle_sector = context.call(typed.circle, 3, math.pi / 2)
+                    ellipse = context.call(typed.ellipse, 2, 4)
+                    ellipse_edge = context.call(typed.ellipse, 4, 2, wire=True)
+                    ellipse_sector = context.call(typed.ellipse, 4, 2, (-1, 1))
+                    filled = context.call(typed.fill, polygon_wire)
+                    fixed = context.call(typed.fix_face, rectangle)
+                    plane = context.call(typed.infplane, )
+                    ruled = context.call(typed.ruled,
+                        context.call(typed.segment, points[0], points[1]),
+                        context.call(typed.segment, points[3], points[2]),
                     )
-                    interpolated = runtime.interpolate2(_surface_grid(runtime))
+                    interpolated = context.call(typed.interpolate2, _surface_grid(context))
 
                     values = (
                         polygon,
@@ -208,15 +208,15 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         self.assertEqual(len(observed_types), 1)
 
     def test_conic_and_hole_geometry_is_truthful(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        circle = runtime.circle(3)
-        ellipse = runtime.ellipse(2, 4)
-        circle_sector = runtime.circle(3, math.pi / 2)
-        ellipse_sector = runtime.ellipse(2, 4, (-math.pi / 2, math.pi / 2))
-        descending_edge = runtime.circle(3, (math.pi / 2, -math.pi / 2), True)
-        outer = runtime.rectangle(10, 8, center=True, wire=True)
-        inner = runtime.rectangle(4, 2, center=True, wire=True)
-        holed = runtime.fill((outer, inner))
+        context = typed.Context.deferred(cache=False)
+        circle = context.call(typed.circle, 3)
+        ellipse = context.call(typed.ellipse, 2, 4)
+        circle_sector = context.call(typed.circle, 3, math.pi / 2)
+        ellipse_sector = context.call(typed.ellipse, 2, 4, (-math.pi / 2, math.pi / 2))
+        descending_edge = context.call(typed.circle, 3, (math.pi / 2, -math.pi / 2), True)
+        outer = context.call(typed.rectangle, 10, 8, center=True, wire=True)
+        inner = context.call(typed.rectangle, 4, 2, center=True, wire=True)
+        holed = context.call(typed.fill, (outer, inner))
 
         self.assertAlmostEqual(circle.SurfaceProperties().mass.value(), math.pi * 9)
         self.assertAlmostEqual(ellipse.SurfaceProperties().mass.value(), math.pi * 8)
@@ -238,22 +238,22 @@ class TypedFaceConstructorsTest(unittest.TestCase):
 
     def test_graph_scalars_and_points_remain_deferred(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        unit = runtime.box(2).mass() / 8
+        unit = context.call(typed.box, 2).mass() / 8
         points = (
-            runtime.point3(0, 0, 0),
-            runtime.point3(unit * 4, 0, 0),
-            runtime.point3(unit * 4, unit * 3, 0),
-            runtime.point3(0, unit * 3, 0),
+            context.call(typed.point3, 0, 0, 0),
+            context.call(typed.point3, unit * 4, 0, 0),
+            context.call(typed.point3, unit * 4, unit * 3, 0),
+            context.call(typed.point3, 0, unit * 3, 0),
         )
-        polygon = runtime.polygon(points)
-        rectangle = runtime.rectangle(unit * 4, unit * 3)
-        circle = runtime.circle(unit * 3)
-        ellipse = runtime.ellipse(unit * 2, unit * 4)
-        ngon = runtime.ngon(unit * 3, 5)
+        polygon = context.call(typed.polygon, points)
+        rectangle = context.call(typed.rectangle, unit * 4, unit * 3)
+        circle = context.call(typed.circle, unit * 3)
+        ellipse = context.call(typed.ellipse, unit * 2, unit * 4)
+        ngon = context.call(typed.ngon, unit * 3, 5)
 
         self.assertEqual(events, [])
         for face in (polygon, rectangle, circle, ellipse, ngon):
@@ -267,28 +267,28 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    unit = runtime.box(2).mass() / 8
-                    spine = runtime.make_wire(
-                        runtime.segment(
-                            runtime.point3(0, 0, 0),
-                            runtime.point3(unit * 10, 0, 0),
+                    unit = context.call(typed.box, 2).mass() / 8
+                    spine = context.call(typed.make_wire,
+                        context.call(typed.segment,
+                            context.call(typed.point3, 0, 0, 0),
+                            context.call(typed.point3, unit * 10, 0, 0),
                         ),
-                        runtime.segment(
-                            runtime.point3(unit * 10, 0, 0),
-                            runtime.point3(unit * 10, unit * 10, 0),
+                        context.call(typed.segment,
+                            context.call(typed.point3, unit * 10, 0, 0),
+                            context.call(typed.point3, unit * 10, unit * 10, 0),
                         ),
                     )
-                    wide = runtime.widewire(spine, unit)
-                    square_ends = runtime.widewire(
-                        runtime.segment(
-                            runtime.point3(0, 0, 0),
-                            runtime.point3(unit * 10, 0, 0),
+                    wide = context.call(typed.widewire, spine, unit)
+                    square_ends = context.call(typed.widewire,
+                        context.call(typed.segment,
+                            context.call(typed.point3, 0, 0, 0),
+                            context.call(typed.point3, unit * 10, 0, 0),
                         ),
                         unit,
                         circled_joints=False,
@@ -316,21 +316,21 @@ class TypedFaceConstructorsTest(unittest.TestCase):
     def test_face_artifacts_restore_from_shared_cache(self):
         store = MemoryCacheStore()
 
-        def values(runtime: typed.Runtime) -> tuple[typed.Face, ...]:
-            points = _rectangle_points(runtime)
+        def values(context: typed.Context) -> tuple[typed.Face, ...]:
+            points = _rectangle_points(context)
             return (
-                runtime.circle(3, math.pi / 2),
-                runtime.ellipse(2, 4),
-                runtime.fill(runtime.rectangle(4, 3, wire=True)),
-                runtime.interpolate2(_surface_grid(runtime)),
-                runtime.ruled(
-                    runtime.segment(points[0], points[1]),
-                    runtime.segment(points[3], points[2]),
+                context.call(typed.circle, 3, math.pi / 2),
+                context.call(typed.ellipse, 2, 4),
+                context.call(typed.fill, context.call(typed.rectangle, 4, 3, wire=True)),
+                context.call(typed.interpolate2, _surface_grid(context)),
+                context.call(typed.ruled,
+                    context.call(typed.segment, points[0], points[1]),
+                    context.call(typed.segment, points[3], points[2]),
                 ),
             )
 
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
@@ -342,7 +342,7 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         )
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
@@ -367,17 +367,17 @@ class TypedFaceConstructorsTest(unittest.TestCase):
     def test_widewire_artifact_restores_from_shared_cache(self):
         store = MemoryCacheStore()
 
-        def value(runtime: typed.Runtime) -> typed.Shape:
-            return runtime.widewire(
-                runtime.segment(
-                    runtime.point3(0, 0, 0),
-                    runtime.point3(10, 0, 0),
+        def value(context: typed.Context) -> typed.Shape:
+            return context.call(typed.widewire,
+                context.call(typed.segment,
+                    context.call(typed.point3, 0, 0, 0),
+                    context.call(typed.point3, 10, 0, 0),
                 ),
                 1,
             )
 
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
@@ -392,7 +392,7 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         )
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
@@ -412,42 +412,42 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         )
 
     def test_invalid_inputs_fail_at_the_typed_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
-        points = _rectangle_points(runtime)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
+        points = _rectangle_points(context)
 
         with self.assertRaisesRegex(ValueError, "at least 3"):
-            runtime.ngon(1, 2)
+            context.call(typed.ngon, 1, 2)
         with self.assertRaisesRegex(ValueError, "distinct"):
-            runtime.circle(2, (1, 1)).native()
+            context.call(typed.circle, 2, (1, 1)).native()
         with self.assertRaisesRegex(ValueError, "positive"):
-            runtime.ellipse(0, 2).native()
+            context.call(typed.ellipse, 0, 2).native()
         with self.assertRaisesRegex(TypeError, "only Edge or Wire"):
-            runtime.fill(runtime.box(1))  # type: ignore[arg-type]
+            context.call(typed.fill, context.call(typed.box, 1))  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "at least two rows"):
-            runtime.interpolate2((_surface_grid(runtime)[0],))
+            context.call(typed.interpolate2, (_surface_grid(context)[0],))
         with self.assertRaisesRegex(ValueError, "rectangular"):
-            runtime.interpolate2((_surface_grid(runtime)[0], points[:3]))
+            context.call(typed.interpolate2, (_surface_grid(context)[0], points[:3]))
         with self.assertRaisesRegex(ValueError, "must not exceed"):
-            runtime.interpolate2(_surface_grid(runtime), 5, 3)
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.ruled(
-                runtime.segment(points[0], points[1]),
-                other.segment(other.point3(0, 1), other.point3(1, 1)),
+            context.call(typed.interpolate2, _surface_grid(context), 5, 3)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.ruled,
+                context.call(typed.segment, points[0], points[1]),
+                other.call(typed.segment, other.call(typed.point3, 0, 1), other.call(typed.point3, 1, 1)),
             )
         with self.assertRaisesRegex(TypeError, "Edge or Wire"):
-            runtime.widewire(runtime.box(1), 1)  # type: ignore[arg-type]
+            context.call(typed.widewire, context.call(typed.box, 1), 1)  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "must be bool"):
-            runtime.widewire(
-                runtime.segment(points[0], points[1]),
+            context.call(typed.widewire,
+                context.call(typed.segment, points[0], points[1]),
                 1,
                 circled_joints=1,  # type: ignore[arg-type]
             )
         with self.assertRaisesRegex(ValueError, "positive"):
-            runtime.widewire(runtime.segment(points[0], points[1]), 0).native()
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.widewire(
-                other.segment(other.point3(0, 0), other.point3(1, 0)),
+            context.call(typed.widewire, context.call(typed.segment, points[0], points[1]), 0).native()
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.widewire,
+                other.call(typed.segment, other.call(typed.point3, 0, 0), other.call(typed.point3, 1, 0)),
                 1,
             )
 

@@ -85,17 +85,15 @@ def _direct_child_count(shape):
 
 class TypedTopologyHandlesTest(unittest.TestCase):
     def test_all_topology_handles_have_exact_native_boundaries(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
 
         for handle_type, native_type, source in _topology_samples():
             with self.subTest(handle=handle_type.__name__):
                 self.assertEqual(handle_type.__bases__, (typed.Shape,))
                 self.assertIs(get_type_hints(handle_type.native)["return"], native_type)
 
-                handle = handle_type.from_ocp(source, runtime=runtime)
+                handle = handle_type.from_ocp(source, context=context)
                 self.assertIs(type(handle), handle_type)
-                self.assertIs(handle.unlazy(), handle)
-
                 first = handle.native()
                 second = handle.native()
                 self.assertIs(type(first), native_type)
@@ -110,12 +108,12 @@ class TypedTopologyHandlesTest(unittest.TestCase):
                 self.assertFalse(second.IsNull())
 
     def test_transform_and_translate_preserve_each_topology_handle(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        transform = runtime.translation(-2, 5, 7) * runtime.scale(-1.5)
+        context = typed.Context.deferred(cache=False)
+        transform = context.call(typed.translation, -2, 5, 7) * context.call(typed.scale, -1.5)
 
         for handle_type, native_type, source in _topology_samples():
             with self.subTest(handle=handle_type.__name__):
-                handle = handle_type.from_ocp(source, runtime=runtime)
+                handle = handle_type.from_ocp(source, context=context)
                 translated = handle.translate(1, 2, 3)
                 transformed = handle.transform(transform)
 
@@ -138,20 +136,20 @@ class TypedTopologyHandlesTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    solid = runtime.box(1, 2, 3)
+                    solid = context.call(typed.box, 1, 2, 3)
                     moved = solid.translate(4, 5, 6)
                     vertex = typed.Vertex.from_ocp(
                         BRepBuilderAPI_MakeVertex(gp_Pnt(1.25, -2.5, 4.75)).Vertex(),
-                        runtime=runtime,
+                        context=context,
                     )
                     point = vertex.point()
                     topology_handles = tuple(
-                        handle_type.from_ocp(source, runtime=runtime)
+                        handle_type.from_ocp(source, context=context)
                         for handle_type, _, source in _topology_samples()
                     )
                     translated_handles = tuple(
@@ -183,27 +181,27 @@ class TypedTopologyHandlesTest(unittest.TestCase):
         self.assertEqual(len(observed_types), 1)
 
     def test_from_ocp_validates_topology_kind_and_null_shapes(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         samples = _topology_samples()
 
         for index, (handle_type, _, _) in enumerate(samples):
             wrong_source = samples[(index + 1) % len(samples)][2]
             with self.subTest(handle=handle_type.__name__):
                 with self.assertRaises(TypeError):
-                    handle_type.from_ocp(wrong_source, runtime=runtime)
+                    handle_type.from_ocp(wrong_source, context=context)
 
         with self.assertRaises(ValueError):
-            typed.Shape.from_ocp(TopoDS_Shape(), runtime=runtime)
+            typed.Shape.from_ocp(TopoDS_Shape(), context=context)
         with self.assertRaises(ValueError):
-            typed.Vertex.from_ocp(TopoDS_Vertex(), runtime=runtime)
+            typed.Vertex.from_ocp(TopoDS_Vertex(), context=context)
         with self.assertRaises(TypeError):
-            typed.Vertex.from_ocp(gp_Pnt(), runtime=runtime)
+            typed.Vertex.from_ocp(gp_Pnt(), context=context)
 
     def test_from_ocp_and_native_are_deep_snapshots(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         source = _topology_samples()[-2][2]
         self.assertIs(type(source), TopoDS_Compound)
-        handle = typed.Compound.from_ocp(source, runtime=runtime)
+        handle = typed.Compound.from_ocp(source, context=context)
         self.assertEqual(_direct_child_count(source), 1)
 
         builder = BRep_Builder()
@@ -219,8 +217,8 @@ class TypedTopologyHandlesTest(unittest.TestCase):
 
     def test_wrong_cached_topology_kind_is_rejected_and_recomputed(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.box(2).native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.box, 2).native()
 
         key, record = next(iter(store.records.items()))
         native_face = _topology_samples()[3][2]
@@ -233,12 +231,12 @@ class TypedTopologyHandlesTest(unittest.TestCase):
         )
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.box(2)
+        restored = second.call(typed.box, 2)
 
         self.assertIs(type(restored), typed.Solid)
         self.assertIs(type(restored.native()), TopoDS_Solid)
@@ -248,9 +246,9 @@ class TypedTopologyHandlesTest(unittest.TestCase):
         )
 
     def test_booleans_return_general_shape(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        outer = runtime.box(3)
-        inner = runtime.box(2).translate(0.5, 0.5, 0.5)
+        context = typed.Context.deferred(cache=False)
+        outer = context.call(typed.box, 3)
+        inner = context.call(typed.box, 2).translate(0.5, 0.5, 0.5)
 
         result = outer - inner
 

@@ -12,7 +12,7 @@ from zencad.occ_compat import make_fill_face
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakePolygon
 
 
-from zencad.lazifier import lazy
+from zencad._eager import eager
 from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from zencad.util import as_indexed
 import zencad.util
@@ -191,56 +191,56 @@ def _ellipse(r1, r2, angle=None, wire=False):
         return ret
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def ellipse(r1, r2, angle=None, wire=False):
     return _ellipse(r1, r2, angle, wire)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def fill(shp):
     return _fill(shp)
 
-# @lazy.lazy(cls=nocached_shape_generator)
+# @eager.decorator(cls=nocached_shape_generator)
 # def make_face(wires):
 #    return _make_face(wires)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def ngon(r, n, wire=False):
     return _ngon(r, n, wire)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def textshape(text, fontname, size, composite_curve=False):
     return _textshape(text, fontname, size, composite_curve)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def circle(r, angle=None, wire=False):
     return _circle(r, angle, wire)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def polygon(pnts, wire=False):
     return _polygon(pnts, wire=wire)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def rectangle(a, b=None, center=False, wire=False):
     return _rectangle(a, b, center=center, wire=wire)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def square(*args, **kwargs):
     return _square(*args, **kwargs)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def interpolate2(*args, **kwargs):
     return _interpolate2(*args, **kwargs)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def rectangle_wire(a, b, center):
     return _rectangle_wire(a, b, center)
 
@@ -300,7 +300,7 @@ def _widewire(spine, r, circled_joints=True, circled_ends=True):
     return unify._unify(boolops._union(arr))
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def widewire(spine, r, circled_joints=True, circled_ends=True):
     return _widewire(spine, r, circled_joints, circled_ends)
 
@@ -312,7 +312,7 @@ def _fix_face(shp):
     return Shape(fixer.Face())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def fix_face(shp):
     return _fix_face(shp)
 
@@ -323,7 +323,7 @@ def _infplane():
     return Shape(aFace)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def infplane():
     return _infplane()
 
@@ -341,6 +341,6 @@ def _ruled(a, b):
     return Shape(make_fill_face(a.Edge(), b.Edge()))
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def ruled(a, b):
     return _ruled(a, b)

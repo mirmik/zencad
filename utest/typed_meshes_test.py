@@ -22,14 +22,14 @@ from zencad.runtime.scene_protocol import decode_mesh
 
 
 class TypedMeshDataTest(unittest.TestCase):
-    def test_module_declarations_match_domain_and_runtime_entry_points(self):
+    def test_module_declarations_match_domain_and_context_entry_points(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        shape = runtime.box(2)
-        face = runtime.rectangle(2, 3)
+        shape = context.call(typed.box, 2)
+        face = context.call(typed.rectangle, 2, 3)
 
         direct_mesh = typed.to_mesh(shape)
         direct_face_mesh = typed.triangulate(face)
@@ -65,14 +65,14 @@ class TypedMeshDataTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    mesh = runtime.box(2).to_mesh()
-                    face_mesh = runtime.rectangle(2, 3).triangulate()
+                    mesh = context.call(typed.box, 2).to_mesh()
+                    face_mesh = context.call(typed.rectangle, 2, 3).triangulate()
                     observed.add((type(mesh), type(face_mesh)))
                     self.assertIs(type(mesh), typed.MeshData)
                     self.assertIs(type(face_mesh), typed.MeshData)
@@ -95,8 +95,6 @@ class TypedMeshDataTest(unittest.TestCase):
                         mesh.boundbox().value().maximum,
                         (2.0, 2.0, 2.0),
                     )
-                    self.assertIs(mesh.unlazy(), mesh)
-
                     with self.assertRaises(FrozenInstanceError):
                         record.dropped_triangles = 1  # type: ignore[misc]
 
@@ -104,11 +102,11 @@ class TypedMeshDataTest(unittest.TestCase):
 
     def test_shape_graph_is_retained_until_mesh_materialization(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        seed = runtime.box(2)
+        seed = context.call(typed.box, 2)
         offset = seed.mass() / 8
         mesh = seed.translate(offset, 2, 3).to_mesh(
             linear_deflection=0.25,
@@ -125,7 +123,7 @@ class TypedMeshDataTest(unittest.TestCase):
         self.assertTrue(events)
 
     def test_data_numpy_and_native_boundaries_own_their_snapshots(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         positions = [[0.123456789012345, 0, 0], [1, 0, 0], [0, 1, 0]]
         normals = [[0, 0, 1], [0, 0, 1], [0, 0, 1]]
         triangles = [[0, 1, 2]]
@@ -135,7 +133,7 @@ class TypedMeshDataTest(unittest.TestCase):
             normals,
             triangles,
             face_ids,
-            runtime=runtime,
+            context=context,
             dropped_triangles=2,
         )
         positions[0][0] = 9
@@ -162,8 +160,8 @@ class TypedMeshDataTest(unittest.TestCase):
         self.assertEqual(mesh.native().Node(1).X(), 0.123456789012345)
 
     def test_display_payload_is_the_explicit_scene_transport_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        mesh = runtime.box(2).to_mesh()
+        context = typed.Context.deferred(cache=False)
+        mesh = context.call(typed.box, 2).to_mesh()
 
         restored = decode_mesh(mesh.display_payload())
 
@@ -173,7 +171,7 @@ class TypedMeshDataTest(unittest.TestCase):
         self.assertEqual(restored.triangle_face_ids, [])
 
     def test_invalid_data_and_meshing_options_are_rejected(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         valid_positions = ((0, 0, 0), (1, 0, 0), (0, 1, 0))
         valid_normals = ((0, 0, 1),) * 3
         valid_triangles = ((0, 1, 2),)
@@ -193,7 +191,7 @@ class TypedMeshDataTest(unittest.TestCase):
                         normals,
                         triangles,
                         face_ids,
-                        runtime=runtime,
+                        context=context,
                     )
 
         with self.assertRaises(ValueError):
@@ -202,24 +200,24 @@ class TypedMeshDataTest(unittest.TestCase):
                 valid_normals,
                 valid_triangles,
                 (0,),
-                runtime=runtime,
+                context=context,
                 dropped_triangles=-1,
             )
         with self.assertRaisesRegex(ValueError, "linear_deflection"):
-            runtime.box(1).to_mesh(0)
+            context.call(typed.box, 1).to_mesh(0)
         with self.assertRaisesRegex(ValueError, "angular_deflection"):
-            runtime.box(1).to_mesh(0.1, float("inf"))
+            context.call(typed.box, 1).to_mesh(0.1, float("inf"))
         with self.assertRaisesRegex(ValueError, "crease_angle"):
-            runtime.box(1).to_mesh(crease_angle=-1)
+            context.call(typed.box, 1).to_mesh(crease_angle=-1)
         with self.assertRaisesRegex(TypeError, "must be bool"):
-            runtime.box(1).to_mesh(relative=1)  # type: ignore[arg-type]
+            context.call(typed.box, 1).to_mesh(relative=1)  # type: ignore[arg-type]
 
 
 class TypedMeshCacheTest(unittest.TestCase):
     def test_cache_uses_full_fidelity_binary_artifact_and_rejects_corruption(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        source = first.box(2).to_mesh()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        source = first.call(typed.box, 2).to_mesh()
         source.value()
 
         key, record = next(
@@ -239,30 +237,30 @@ class TypedMeshCacheTest(unittest.TestCase):
             value=SerializedValue(payload=b"zencad.typed.surface\x00v1"),
         )
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.box(2).to_mesh()
+        restored = second.call(typed.box, 2).to_mesh()
         self.assertEqual(restored.triangle_face_ids, source.triangle_face_ids)
         self.assertIn(
             EvaluationEventKind.CACHE_REJECTED,
             [event.kind for event in events],
         )
 
-    def test_fresh_runtime_and_process_reuse_mesh_cache(self):
+    def test_fresh_context_and_process_reuse_mesh_cache(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.rectangle(2, 3).triangulate().value()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.rectangle, 2, 3).triangulate().value()
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.rectangle(2, 3).triangulate().value()
+        restored = second.call(typed.rectangle, 2, 3).triangulate().value()
         self.assertEqual(restored.triangle_face_ids, (0, 0))
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,
@@ -279,12 +277,12 @@ from evalcache.v2 import MappingCacheStore
 from zencad import _typed as typed
 
 events = []
-runtime = typed.Runtime.deferred(
+context = typed.Context.deferred(
     cache=True,
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-runtime.box(2).to_mesh().value()
+context.call(typed.box, 2).to_mesh().value()
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:

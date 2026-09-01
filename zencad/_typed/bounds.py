@@ -12,8 +12,8 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _bound_operations as ops
@@ -30,7 +30,7 @@ from .values import (
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
     from .topology import Solid
 
 
@@ -75,13 +75,13 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
     @classmethod
     def _from_state(
         cls: type[BoundaryBoxHandleT],
-        runtime: Runtime,
+        context: Context,
         state: State[ops.BoundaryBoxValue],
     ) -> BoundaryBoxHandleT:
         if not isinstance(state, Expression):
             state = cls._result_spec.validate(state, "zencad.typed.boundary-box.bind")
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
@@ -89,10 +89,10 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         cls: type[BoundaryBoxHandleT],
         value: Bnd_Box,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> BoundaryBoxHandleT:
         """Copy a mutable OCP boundary box into an immutable typed value."""
-        return cls._from_state(runtime, ops.boundary_box_from_ocp(value))
+        return cls._from_state(context, ops.boundary_box_from_ocp(value))
 
     def union(self, other: BoundaryBox, /) -> BoundaryBox:
         return _boundary_box_union(self, other)
@@ -179,7 +179,7 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         """Return a graph-preserving Solid occupying these bounds."""
         from .solid import box
 
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return box(self.size).move(self.minimum)
 
     def value(self) -> BoundaryBoxRecord:
@@ -191,11 +191,6 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
     def native(self) -> Bnd_Box:
         """Materialize an independent mutable OCP boundary box."""
         return ops.boundary_box_to_ocp(self._resolved())
-
-    def unlazy(self) -> BoundaryBox:
-        super().unlazy()
-        return self
-
 
 @operation(
     backend=ops.empty_boundary_box,
@@ -220,7 +215,7 @@ def empty_boundary_box() -> OperationArguments:
 def boundary_box(minimum: Point3, maximum: Point3, /) -> OperationArguments:
     if not isinstance(minimum, Point3) or not isinstance(maximum, Point3):
         raise TypeError("boundary_box expects Point3 corners")
-    resolve_runtime(minimum, maximum)
+    resolve_context(minimum, maximum)
     return arguments(minimum, maximum)
 
 

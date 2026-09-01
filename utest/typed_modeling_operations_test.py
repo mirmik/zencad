@@ -3,7 +3,7 @@ import unittest
 from evalcache.v2 import EvaluationMode, MemoryCacheStore
 
 from zencad import _typed as typed
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 
 
 class TypedBooleanOperationsTest(unittest.TestCase):
@@ -13,12 +13,12 @@ class TypedBooleanOperationsTest(unittest.TestCase):
                 self.assertIsInstance(getattr(typed, name), DomainOperation)
 
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        left = runtime.box(2)
-        right = runtime.box(2).translate(1, 0, 0)
+        left = context.call(typed.box, 2)
+        right = context.call(typed.box, 2).translate(1, 0, 0)
         results = (
             typed.union(left, right),
             typed.intersect((left, right)),
@@ -26,13 +26,13 @@ class TypedBooleanOperationsTest(unittest.TestCase):
             typed.difference(left, right),
             typed.section(left, 1),
         )
-        with using_runtime(runtime):
+        with using_context(context):
             zero = typed.empty_shape()
             legacy_zero = typed.nullshape()
 
-        self.assertTrue(all(result.runtime is runtime for result in results))
-        self.assertIs(zero.runtime, runtime)
-        self.assertIs(legacy_zero.runtime, runtime)
+        self.assertTrue(all(result.context is context for result in results))
+        self.assertIs(zero.context, context)
+        self.assertIs(legacy_zero.context, context)
         self.assertEqual(events, [])
         self.assertEqual(
             tuple(result._state.operation_id for result in results),
@@ -49,21 +49,21 @@ class TypedBooleanOperationsTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    left = runtime.box(2)
-                    right = runtime.box(2).translate(1, 0, 0)
+                    left = context.call(typed.box, 2)
+                    right = context.call(typed.box, 2).translate(1, 0, 0)
 
                     results = (
-                        runtime.union((left, right)),
-                        runtime.union(left, right),
-                        runtime.intersect((left, right)),
-                        runtime.intersection(left, right),
-                        runtime.difference((left, right)),
-                        runtime.difference(left, right),
+                        context.call(typed.union, (left, right)),
+                        context.call(typed.union, left, right),
+                        context.call(typed.intersect, (left, right)),
+                        context.call(typed.intersection, left, right),
+                        context.call(typed.difference, (left, right)),
+                        context.call(typed.difference, left, right),
                     )
 
                     self.assertTrue(all(type(result) is typed.Shape for result in results))
@@ -73,54 +73,54 @@ class TypedBooleanOperationsTest(unittest.TestCase):
                     )
 
     def test_boolean_sequences_preserve_order_and_singleton_identity(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        base = runtime.box(3)
-        first = runtime.box(1).translate(0, 0, 1)
-        second = runtime.box(1).translate(2, 2, 1)
+        context = typed.Context.deferred(cache=False)
+        base = context.call(typed.box, 3)
+        first = context.call(typed.box, 1).translate(0, 0, 1)
+        second = context.call(typed.box, 1).translate(2, 2, 1)
 
-        reduced = runtime.difference((base, first, second))
+        reduced = context.call(typed.difference, (base, first, second))
         chained = base - first - second
 
         self.assertAlmostEqual(float(reduced.mass()), float(chained.mass()))
-        self.assertAlmostEqual(float(runtime.union((base,)).mass()), 27.0)
+        self.assertAlmostEqual(float(context.call(typed.union, (base,)).mass()), 27.0)
 
     def test_boolean_operands_are_validated_before_graph_construction(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
-        shape = runtime.box(1)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
+        shape = context.call(typed.box, 1)
 
         with self.assertRaisesRegex(ValueError, "at least one Shape"):
-            runtime.union(())
+            context.call(typed.union, ())
         with self.assertRaisesRegex(TypeError, "only Shape"):
-            runtime.intersect((shape, object()))  # type: ignore[list-item]
+            context.call(typed.intersect, (shape, object()))  # type: ignore[list-item]
         with self.assertRaisesRegex(TypeError, "sequence with extra"):
-            runtime.difference((shape,), shape)
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.union(shape, other.box(1))
+            context.call(typed.difference, (shape,), shape)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.union, shape, other.call(typed.box, 1))
 
 
 class TypedSectionTest(unittest.TestCase):
     def test_shape_and_plane_sections_return_general_shapes(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        solid = runtime.box(2)
+        context = typed.Context.deferred(cache=False)
+        solid = context.call(typed.box, 2)
 
-        by_shape = runtime.section(solid, runtime.sphere(1.5))
-        by_height = runtime.section(solid, 1)
-        by_vector = runtime.section(solid, runtime.vector3(0, 0, 1))
+        by_shape = context.call(typed.section, solid, context.call(typed.sphere, 1.5))
+        by_height = context.call(typed.section, solid, 1)
+        by_vector = context.call(typed.section, solid, context.call(typed.vector3, 0, 0, 1))
 
         for result in (by_shape, by_height, by_vector):
             self.assertIs(type(result), typed.Shape)
             self.assertFalse(result.native().IsNull())
             self.assertGreater(len(result.edges()), 0)
 
-    def test_section_rejects_invalid_plane_and_cross_runtime_shape(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+    def test_section_rejects_invalid_plane_and_cross_context_shape(self):
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "three coordinates"):
-            runtime.section(runtime.box(1), (0, 1))
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.section(runtime.box(1), other.box(1))
+            context.call(typed.section, context.call(typed.box, 1), (0, 1))
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.section, context.call(typed.box, 1), other.call(typed.box, 1))
 
 
 class TypedOperationCompatibilityTest(unittest.TestCase):
@@ -147,19 +147,19 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
             with self.subTest(operation=name):
                 self.assertIsInstance(getattr(typed, name), DomainOperation)
 
-        runtime = typed.Runtime.deferred(cache=False)
-        solid = runtime.box(4)
-        face = runtime.rectangle(4, 4)
-        point = runtime.point3(0.1, 0.1, 5)
-        edge = runtime.segment(runtime.point3(), runtime.point3(1, 0, 0))
-        with using_runtime(runtime):
+        context = typed.Context.deferred(cache=False)
+        solid = context.call(typed.box, 4)
+        face = context.call(typed.rectangle, 4, 4)
+        point = context.call(typed.point3, 0.1, 0.1, 5)
+        edge = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 1, 0, 0))
+        with using_context(context):
             values = (
                 typed.fillet(solid, 0.1),
                 typed.chamfer(solid, 0.1),
                 typed.fillet2d(face, 0.1),
                 typed.chamfer2d(face, 0.1),
                 typed.offset(solid, 0.1),
-                typed.thicksolid(solid, -0.1, (runtime.point3(2, 2, 4),)),
+                typed.thicksolid(solid, -0.1, (context.call(typed.point3, 2, 2, 4),)),
                 typed.shapefix_solid(solid),
                 typed.unify(solid),
                 typed.near_vertex(solid, point),
@@ -172,8 +172,8 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
             )
             projection = typed.project(point, edge)
 
-        self.assertTrue(all(value.runtime is runtime for value in values))
-        self.assertIs(projection.point.runtime, runtime)
+        self.assertTrue(all(value.context is context for value in values))
+        self.assertIs(projection.point.context, context)
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
@@ -196,54 +196,58 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
         )
 
     def test_root_style_fillet_wrappers_preserve_typed_results(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        solid = runtime.box(3)
-        face = runtime.rectangle(3, 3)
+        context = typed.Context.deferred(cache=False)
+        solid = context.call(typed.box, 3)
+        face = context.call(typed.rectangle, 3, 3)
 
-        self.assertIs(type(runtime.fillet(solid, 0.1)), typed.Shape)
-        self.assertIs(type(runtime.chamfer(solid, 0.1)), typed.Shape)
-        self.assertIs(type(runtime.fillet2d(face, 0.1)), typed.Face)
+        self.assertIs(type(context.call(typed.fillet, solid, 0.1)), typed.Shape)
+        self.assertIs(type(context.call(typed.chamfer, solid, 0.1)), typed.Shape)
+        self.assertIs(type(context.call(typed.fillet2d, face, 0.1)), typed.Face)
 
     def test_restore_shapetype_returns_the_precise_handle_when_unique(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        solid_as_shape = runtime.union((runtime.box(1),))
-        face_as_shape = runtime.section(runtime.box(1), 0.5)
+        context = typed.Context.deferred(cache=False)
+        solid_as_shape = context.call(typed.union, (context.call(typed.box, 1),))
+        face_as_shape = context.call(typed.section, context.call(typed.box, 1), 0.5)
 
         self.assertIs(type(solid_as_shape), typed.Shape)
         self.assertIs(type(solid_as_shape.restore_shapetype()), typed.Solid)
         self.assertIs(type(face_as_shape.restore_shapetype()), typed.Shape)
 
-    def test_triangulation_compatibility_returns_immutable_rows(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        mesh = runtime.triangulate(runtime.box(1), 0.1)
-        face_mesh = runtime.triangulate_face(runtime.rectangle(1, 1), 0.1)
+    def test_mesh_operations_return_immutable_rows(self):
+        context = typed.Context.deferred(cache=False)
+        mesh = context.call(typed.to_mesh, context.call(typed.box, 1), 0.1)
+        face_mesh = context.call(
+            typed.triangulate,
+            context.call(typed.rectangle, 1, 1),
+            0.1,
+        )
 
         self.assertIs(type(mesh), typed.MeshData)
         self.assertIs(type(face_mesh), typed.MeshData)
-        self.assertEqual(runtime.get_nodes(mesh), mesh.positions)
-        self.assertEqual(runtime.get_triangles(mesh), mesh.triangles)
+        self.assertEqual(context.call(typed.get_nodes, mesh), mesh.positions)
+        self.assertEqual(context.call(typed.get_triangles, mesh), mesh.triangles)
         self.assertEqual(mesh.get_nodes(), mesh.positions)
         self.assertEqual(mesh.get_triangles(), mesh.triangles)
 
         native = mesh.native()
-        self.assertEqual(runtime.get_nodes(native), mesh.positions)
-        self.assertEqual(runtime.get_triangles(native), mesh.triangles)
+        self.assertEqual(context.call(typed.get_nodes, native), mesh.positions)
+        self.assertEqual(context.call(typed.get_triangles, native), mesh.triangles)
 
 
 class TypedOffsetSewUnifyTest(unittest.TestCase):
     def test_sew_returns_precise_wire_and_shell_handles(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         points = (
-            runtime.point3(0, 0, 0),
-            runtime.point3(1, 0, 0),
-            runtime.point3(1, 1, 0),
+            context.call(typed.point3, 0, 0, 0),
+            context.call(typed.point3, 1, 0, 0),
+            context.call(typed.point3, 1, 1, 0),
         )
         edges = (
-            runtime.segment(points[1], points[2]),
-            runtime.segment(points[0], points[1]),
+            context.call(typed.segment, points[1], points[2]),
+            context.call(typed.segment, points[0], points[1]),
         )
-        wire = runtime.sew(edges)
-        shell = runtime.sew((runtime.box(1).faces()[0],))
+        wire = context.call(typed.sew, edges)
+        shell = context.call(typed.sew, (context.call(typed.box, 1).faces()[0],))
 
         self.assertIs(type(wire), typed.Wire)
         self.assertEqual(len(wire.edges()), 2)
@@ -254,21 +258,21 @@ class TypedOffsetSewUnifyTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    solid = runtime.box(4)
+                    solid = context.call(typed.box, 4)
 
-                    offset = runtime.offset(solid, 0.25)
-                    thick = runtime.thicksolid(
+                    offset = context.call(typed.offset, solid, 0.25)
+                    thick = context.call(typed.thicksolid,
                         solid,
                         -0.25,
-                        (runtime.point3(2, 2, 4),),
+                        (context.call(typed.point3, 2, 2, 4),),
                     )
-                    fixed = runtime.shapefix_solid(solid)
-                    unified = runtime.unify(solid)
+                    fixed = context.call(typed.shapefix_solid, solid)
+                    unified = context.call(typed.unify, solid)
 
                     self.assertIs(type(offset), typed.Shape)
                     self.assertGreater(float(offset.mass()), float(solid.mass()))
@@ -282,23 +286,23 @@ class TypedOffsetSewUnifyTest(unittest.TestCase):
                         float(solid.mass()),
                     )
 
-    def test_modeling_boundaries_reject_mixed_or_wrong_runtime_inputs(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+    def test_modeling_boundaries_reject_mixed_or_wrong_context_inputs(self):
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(ValueError, "at least one"):
-            runtime.sew(())
+            context.call(typed.sew, ())
         with self.assertRaisesRegex(TypeError, "all be"):
-            runtime.sew(  # type: ignore[arg-type]
+            context.call(typed.sew,   # type: ignore[arg-type]
                 (
-                    runtime.segment(runtime.point3(), runtime.point3(1, 0, 0)),
-                    runtime.rectangle(1, 1),
+                    context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 1, 0, 0)),
+                    context.call(typed.rectangle, 1, 1),
                 )
             )
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.sew((other.rectangle(1, 1),))
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.sew, (other.call(typed.rectangle, 1, 1),))
         with self.assertRaisesRegex(TypeError, "expects Solid"):
-            runtime.thicksolid(runtime.rectangle(1, 1), 0.1, ())  # type: ignore[arg-type]
+            context.call(typed.thicksolid, context.call(typed.rectangle, 1, 1), 0.1, ())  # type: ignore[arg-type]
 
 
 class TypedGeometryQueriesTest(unittest.TestCase):
@@ -306,20 +310,20 @@ class TypedGeometryQueriesTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    shape = runtime.box(1)
-                    point = runtime.point3(0.1, 0.1, 2)
+                    shape = context.call(typed.box, 1)
+                    point = context.call(typed.point3, 0.1, 0.1, 2)
                     results = (
-                        runtime.near_vertex(shape, point),
-                        runtime.near_edge(shape, point),
-                        runtime.near_wire(shape, point),
-                        runtime.near_face(shape, point),
-                        runtime.near_shell(shape, point),
-                        runtime.near_solid(shape, point),
+                        context.call(typed.near_vertex, shape, point),
+                        context.call(typed.near_edge, shape, point),
+                        context.call(typed.near_wire, shape, point),
+                        context.call(typed.near_face, shape, point),
+                        context.call(typed.near_shell, shape, point),
+                        context.call(typed.near_solid, shape, point),
                     )
 
                     self.assertEqual(
@@ -337,36 +341,34 @@ class TypedGeometryQueriesTest(unittest.TestCase):
                     self.assertTrue(all(not result.native().IsNull() for result in results))
 
     def test_missing_nearest_topology_has_an_actionable_error(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         with self.assertRaisesRegex(ValueError, "no compound topology"):
-            runtime.near_compound(runtime.box(1), runtime.point3()).native()
+            context.call(typed.near_compound, context.call(typed.box, 1), context.call(typed.point3, )).native()
 
     def test_curve_projection_is_a_structured_typed_result(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        edge = runtime.segment(
-            runtime.point3(0, 0, 0),
-            runtime.point3(10, 0, 0),
+        context = typed.Context.deferred(cache=False)
+        edge = context.call(typed.segment,
+            context.call(typed.point3, 0, 0, 0),
+            context.call(typed.point3, 10, 0, 0),
         )
-        projection = runtime.project(runtime.point3(3, 4, 0), edge)
+        projection = context.call(typed.project, context.call(typed.point3, 3, 4, 0), edge)
 
         self.assertIs(type(projection), typed.CurveProjection)
         self.assertEqual(projection.point.value(), (3.0, 0.0, 0.0))
         self.assertAlmostEqual(float(projection.parameter), 3.0)
         self.assertAlmostEqual(float(projection.distance), 4.0)
         self.assertEqual(projection.value(), ((3.0, 0.0, 0.0), 3.0, 4.0))
-        self.assertIs(projection.unlazy(), projection)
-
-    def test_geometry_queries_reject_wrong_domain_or_runtime(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
-        shape = runtime.box(1)
+    def test_geometry_queries_reject_wrong_domain_or_context(self):
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
+        shape = context.call(typed.box, 1)
 
         with self.assertRaisesRegex(TypeError, "expects Point3"):
             shape.near_vertex((0, 0, 0))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.near_face(shape, other.point3())
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.near_face, shape, other.call(typed.point3, ))
         with self.assertRaisesRegex(TypeError, "Curve or Edge"):
-            runtime.project(runtime.point3(), shape)  # type: ignore[arg-type]
+            context.call(typed.project, context.call(typed.point3, ), shape)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

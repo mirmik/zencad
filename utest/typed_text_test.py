@@ -5,7 +5,7 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 
 import zencad
 from zencad import _typed as typed
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 
 
 FONT_PATH = (
@@ -18,19 +18,19 @@ class TypedTextTest(unittest.TestCase):
         self.assertIsInstance(typed.text_to_brep, DomainOperation)
 
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
         typed.register_font(FONT_PATH)
-        with using_runtime(runtime):
+        with using_context(context):
             text = typed.text_to_brep("Text", "MandarinC", 10)
             alias = typed.textshape("Alias", "MandarinC", 10)
 
         self.assertIs(type(text), typed.Compound)
         self.assertIs(type(alias), typed.Compound)
-        self.assertIs(text.runtime, runtime)
-        self.assertIs(alias.runtime, runtime)
+        self.assertIs(text.context, context)
+        self.assertIs(alias.context, context)
         self.assertEqual(text._state.operation_id, "zencad.typed.text_to_brep")
         self.assertEqual(alias._state.operation_id, "zencad.typed.text_to_brep")
         self.assertEqual(events, [])
@@ -42,19 +42,19 @@ class TypedTextTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    runtime.register_font(FONT_PATH)
-                    text = runtime.text_to_brep(
+                    context.call(typed.register_font, FONT_PATH)
+                    text = context.call(typed.text_to_brep,
                         "Hello, Мир",
                         "MandarinC",
                         20,
                     )
-                    legacy_text = runtime.textshape(
+                    legacy_text = context.call(typed.textshape,
                         "A",
                         "MandarinC",
                         10,
@@ -79,12 +79,12 @@ class TypedTextTest(unittest.TestCase):
 
     def test_font_registration_is_immediate_but_text_size_preserves_the_graph(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        runtime.register_font(FONT_PATH, typed.FontAspect.UNDEFINED)
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        context.call(typed.register_font, FONT_PATH, typed.FontAspect.UNDEFINED)
         self.assertEqual(events, [])
 
-        size = runtime.box(2).mass() * 2.5
-        text = runtime.text_to_brep(
+        size = context.call(typed.box, 2).mass() * 2.5
+        text = context.call(typed.text_to_brep,
             "Graph",
             "MandarinC",
             size,
@@ -99,13 +99,13 @@ class TypedTextTest(unittest.TestCase):
         store = MemoryCacheStore()
 
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
         )
-        first.register_font(FONT_PATH)
-        self.assertGreater(len(first.textshape("A", "MandarinC", 10).edges()), 0)
+        first.call(typed.register_font, FONT_PATH)
+        self.assertGreater(len(first.call(typed.textshape, "A", "MandarinC", 10).edges()), 0)
         self.assertFalse(
             any(
                 event.kind is EvaluationEventKind.CACHE_STORE
@@ -115,13 +115,13 @@ class TypedTextTest(unittest.TestCase):
         )
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
         )
-        second.register_font(FONT_PATH)
-        self.assertGreater(len(second.textshape("A", "MandarinC", 10).edges()), 0)
+        second.call(typed.register_font, FONT_PATH)
+        self.assertGreater(len(second.call(typed.textshape, "A", "MandarinC", 10).edges()), 0)
         self.assertFalse(
             any(
                 event.kind is EvaluationEventKind.CACHE_HIT
@@ -131,28 +131,28 @@ class TypedTextTest(unittest.TestCase):
         )
 
     def test_invalid_inputs_fail_at_the_correct_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
 
         with self.assertRaises(FileNotFoundError):
-            runtime.register_font(FONT_PATH.with_name("missing.ttf"))
+            context.call(typed.register_font, FONT_PATH.with_name("missing.ttf"))
         with self.assertRaisesRegex(TypeError, "str or PathLike"):
-            runtime.register_font(3)  # type: ignore[arg-type]
+            context.call(typed.register_font, 3)  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "must be FontAspect"):
-            runtime.register_font(FONT_PATH, "regular")  # type: ignore[arg-type]
+            context.call(typed.register_font, FONT_PATH, "regular")  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "text must be str"):
-            runtime.text_to_brep(3, "MandarinC", 10)  # type: ignore[arg-type]
+            context.call(typed.text_to_brep, 3, "MandarinC", 10)  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "font_name must be str"):
-            runtime.text_to_brep("A", 3, 10)  # type: ignore[arg-type]
+            context.call(typed.text_to_brep, "A", 3, 10)  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "composite_curve must be bool"):
-            runtime.text_to_brep("A", "MandarinC", 10, composite_curve=1)  # type: ignore[arg-type]
+            context.call(typed.text_to_brep, "A", "MandarinC", 10, composite_curve=1)  # type: ignore[arg-type]
 
-        runtime.register_font(FONT_PATH)
+        context.call(typed.register_font, FONT_PATH)
         with self.assertRaisesRegex(ValueError, "size must be finite and positive"):
-            runtime.textshape("A", "MandarinC", 0).native()
-        immediate = typed.Runtime.immediate(cache=False)
-        immediate.register_font(FONT_PATH)
+            context.call(typed.textshape, "A", "MandarinC", 0).native()
+        immediate = typed.Context.immediate(cache=False)
+        immediate.call(typed.register_font, FONT_PATH)
         with self.assertRaisesRegex(ValueError, "size must be finite and positive"):
-            immediate.text_to_brep("A", "MandarinC", 0)
+            immediate.call(typed.text_to_brep, "A", "MandarinC", 0)
 
 
 if __name__ == "__main__":

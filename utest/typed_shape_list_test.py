@@ -5,10 +5,10 @@ from zencad import _typed as typed
 
 class TypedShapeListTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.runtime = typed.Context.deferred(cache=False)
+        self.context = typed.Context.deferred(cache=False)
 
     def test_box_selectors_compose_and_preserve_stable_order(self) -> None:
-        with typed.using_context(self.runtime):
+        with typed.using_context(self.context):
             body = typed.box(10, 20, 30)
             edges = body.edges()
             vertical = edges.filter_by(typed.Axis.Z)
@@ -35,7 +35,7 @@ class TypedShapeListTest(unittest.TestCase):
         )
 
     def test_geometry_position_grouping_and_tolerance(self) -> None:
-        with typed.using_context(self.runtime):
+        with typed.using_context(self.context):
             body = typed.cylinder(5, 10)
             faces = body.faces()
             groups = faces.group_by(typed.GeomType)
@@ -56,7 +56,7 @@ class TypedShapeListTest(unittest.TestCase):
         self.assertEqual(len(strict), 0)
 
     def test_sort_largest_and_cardinality_errors_are_explicit(self) -> None:
-        with typed.using_context(self.runtime):
+        with typed.using_context(self.context):
             faces = typed.box(10, 20, 30).faces()
             nearest = faces.sort_by_distance((5, 10, 30))[0]
             largest = faces.largest()
@@ -73,7 +73,7 @@ class TypedShapeListTest(unittest.TestCase):
             faces.only().native()
 
     def test_selectors_feed_modeling_operations_directly(self) -> None:
-        with typed.using_context(self.runtime):
+        with typed.using_context(self.context):
             body = typed.box(10)
             vertical_edges = body.edges().filter_by(typed.Axis.Z)
             x_faces = body.faces().normal_to(typed.Axis.X)
@@ -85,7 +85,7 @@ class TypedShapeListTest(unittest.TestCase):
         self.assertGreater(float(chamfered.mass()), 0)
         self.assertGreater(float(drafted.mass()), 0)
 
-        with typed.using_context(self.runtime):
+        with typed.using_context(self.context):
             foreign = typed.box(1).edges().filter_by(typed.Axis.Z)
             invalid = typed.fillet(body, 1, foreign)
             empty = body.edges().filter_by(typed.GeomType.CIRCLE)
@@ -95,7 +95,7 @@ class TypedShapeListTest(unittest.TestCase):
             typed.fillet(body, 1, empty)
 
     def test_composite_solid_selection_is_deterministic(self) -> None:
-        with typed.using_context(self.runtime):
+        with typed.using_context(self.context):
             composite = typed.union((typed.box(2), typed.box(2).right(4)))
             first = composite.faces().sort_by(typed.Axis.X)
             second = composite.faces().sort_by(typed.Axis.X)

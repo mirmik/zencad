@@ -11,8 +11,8 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _boolean_operations as ops
@@ -32,7 +32,7 @@ from .values import Point3, ScalarInput, Vector3, vector3
 if TYPE_CHECKING:
     from zencad.geom.shape import Shape as ResolvedShape
 
-    from .runtime import Runtime
+    from .context import Context
 
 
 @operation(
@@ -115,13 +115,13 @@ class SplitResult(DeferredSequence[Solid]):
     @classmethod
     def _from_state(
         cls,
-        runtime: Runtime,
+        context: Context,
         state: State[tuple[ResolvedShape, ...]],
     ) -> SplitResult:
         if not isinstance(state, Expression):
             raise TypeError("typed split results require an expression state")
         return cls(
-            runtime,
+            context,
             state,
             sequence_spec=_SOLID_SEQUENCE_SPEC,
             item_type=Solid,
@@ -199,10 +199,10 @@ def section(
     """Intersect shape boundaries, accepting legacy plane operands."""
 
     _require_bool(pretty, "section pretty")
-    runtime = resolve_runtime(left, right)
+    context = resolve_context(left, right)
     return arguments(
-        _section_operand(runtime, left, "section left"),
-        _section_operand(runtime, right, "section right"),
+        _section_operand(context, left, "section left"),
+        _section_operand(context, right, "section right"),
         pretty,
     )
 
@@ -276,13 +276,13 @@ def _require_bool(value: object, name: str) -> None:
 
 
 def _section_operand(
-    runtime: Runtime,
+    context: Context,
     value: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput],
     name: str,
 ) -> Shape:
     if isinstance(value, Shape):
         return value
-    with using_runtime(runtime):
+    with using_context(context):
         if isinstance(value, (Point3, Vector3)):
             direction = vector3(value)
         elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):

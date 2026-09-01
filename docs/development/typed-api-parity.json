@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "baseline": "ZenCad legacy geometry API on feature/migration, 2026-08-30",
-  "legacy_signature_sha256": "256f955a8a449c74664b752aeb9798ec053d7a6e3f233bcabdec9c9669ad3315",
+  "baseline": "ZenCad pre-cutover geometry capability inventory, archived 2026-09-02",
+  "legacy_signature_sha256": "b43da43ede5a34ea713468290a925668bc6eb1a4faa89914c87fe3ad649fb1eb",
   "status_meaning": {
     "implemented": "The private typed layer already provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
@@ -15,7 +15,7 @@
     "Mesh, conversion, and display boundaries that consume or produce domain values.",
     "Imported OCP helpers and lazy proxy implementation classes accidentally leaked by star-import are excluded."
   ],
-  "root_exports": [
+  "legacy_root_exports": [
     "DEFAULT_MESH_DISPLAY_MODE",
     "LengthUnit",
     "MESH_DISPLAY_MODES",
@@ -236,24 +236,24 @@
             },
             "points": {
               "status": "implemented",
-              "typed": "Runtime.points() -> list[Point3]"
+              "typed": "zencad.points() -> list[Point3]"
             },
             "points2": {
               "status": "implemented",
-              "typed": "Runtime.points2() -> list[list[Point3]]"
+              "typed": "zencad.points2() -> list[list[Point3]]"
             },
             "vectors": {
               "status": "implemented",
-              "typed": "Runtime.vectors() -> list[Vector3]"
+              "typed": "zencad.vectors() -> list[Vector3]"
             },
             "to_Vertex": {
               "status": "implemented",
-              "typed": "Runtime.to_Vertex() -> TopoDS_Vertex",
+              "typed": "zencad.to_Vertex() -> TopoDS_Vertex",
               "materialization": "explicit native conversion"
             },
             "to_GeomPoint": {
               "status": "implemented",
-              "typed": "Runtime.to_GeomPoint() -> Geom_CartesianPoint",
+              "typed": "zencad.to_GeomPoint() -> Geom_CartesianPoint",
               "materialization": "explicit native conversion"
             }
           }
@@ -464,59 +464,59 @@
           },
           "default": {
             "status": "missing",
-            "typed": "Runtime/Transform compatibility operation for {name}",
+            "typed": "Context/Transform compatibility operation for {name}",
             "materialization": "none"
           },
           "overrides": {
             "move": {
               "status": "implemented",
-              "typed": "Runtime.translation() -> Transform"
+              "typed": "zencad.translation() -> Transform"
             },
             "translate": {
               "status": "implemented",
-              "typed": "Runtime.translation() -> Transform"
+              "typed": "zencad.translation() -> Transform"
             },
-            "moveX": {"status": "implemented", "typed": "Runtime.moveX() -> Transform"},
-            "moveY": {"status": "implemented", "typed": "Runtime.moveY() -> Transform"},
-            "moveZ": {"status": "implemented", "typed": "Runtime.moveZ() -> Transform"},
-            "movX": {"status": "implemented", "typed": "Runtime.moveX() -> Transform"},
-            "movY": {"status": "implemented", "typed": "Runtime.moveY() -> Transform"},
-            "movZ": {"status": "implemented", "typed": "Runtime.moveZ() -> Transform"},
-            "translateX": {"status": "implemented", "typed": "Runtime.translateX() -> Transform"},
-            "translateY": {"status": "implemented", "typed": "Runtime.translateY() -> Transform"},
-            "translateZ": {"status": "implemented", "typed": "Runtime.translateZ() -> Transform"},
-            "right": {"status": "implemented", "typed": "Runtime.right() -> Transform"},
-            "left": {"status": "implemented", "typed": "Runtime.left() -> Transform"},
-            "forw": {"status": "implemented", "typed": "Runtime.forw() -> Transform"},
-            "back": {"status": "implemented", "typed": "Runtime.back() -> Transform"},
-            "up": {"status": "implemented", "typed": "Runtime.up() -> Transform"},
-            "down": {"status": "implemented", "typed": "Runtime.down() -> Transform"},
+            "moveX": {"status": "implemented", "typed": "zencad.moveX() -> Transform"},
+            "moveY": {"status": "implemented", "typed": "zencad.moveY() -> Transform"},
+            "moveZ": {"status": "implemented", "typed": "zencad.moveZ() -> Transform"},
+            "movX": {"status": "implemented", "typed": "zencad.moveX() -> Transform"},
+            "movY": {"status": "implemented", "typed": "zencad.moveY() -> Transform"},
+            "movZ": {"status": "implemented", "typed": "zencad.moveZ() -> Transform"},
+            "translateX": {"status": "implemented", "typed": "zencad.translateX() -> Transform"},
+            "translateY": {"status": "implemented", "typed": "zencad.translateY() -> Transform"},
+            "translateZ": {"status": "implemented", "typed": "zencad.translateZ() -> Transform"},
+            "right": {"status": "implemented", "typed": "zencad.right() -> Transform"},
+            "left": {"status": "implemented", "typed": "zencad.left() -> Transform"},
+            "forw": {"status": "implemented", "typed": "zencad.forw() -> Transform"},
+            "back": {"status": "implemented", "typed": "zencad.back() -> Transform"},
+            "up": {"status": "implemented", "typed": "zencad.up() -> Transform"},
+            "down": {"status": "implemented", "typed": "zencad.down() -> Transform"},
             "rotate": {
               "status": "implemented",
-              "typed": "Runtime.rotation() -> Transform"
+              "typed": "zencad.rotation() -> Transform"
             },
             "rotate_quat": {
               "status": "implemented",
-              "typed": "Runtime.rotation(Quaternion) -> Transform"
+              "typed": "zencad.rotation(Quaternion) -> Transform"
             },
-            "rotateX": {"status": "implemented", "typed": "Runtime.rotateX() -> Transform"},
-            "rotateY": {"status": "implemented", "typed": "Runtime.rotateY() -> Transform"},
-            "rotateZ": {"status": "implemented", "typed": "Runtime.rotateZ() -> Transform"},
+            "rotateX": {"status": "implemented", "typed": "zencad.rotateX() -> Transform"},
+            "rotateY": {"status": "implemented", "typed": "zencad.rotateY() -> Transform"},
+            "rotateZ": {"status": "implemented", "typed": "zencad.rotateZ() -> Transform"},
             "mirror_plane": {
               "status": "implemented",
-              "typed": "Runtime.mirror(normal) -> Transform"
+              "typed": "zencad.mirror(normal) -> Transform"
             },
-            "mirrorXY": {"status": "implemented", "typed": "Runtime.mirrorXY() -> Transform"},
-            "mirrorYZ": {"status": "implemented", "typed": "Runtime.mirrorYZ() -> Transform"},
-            "mirrorXZ": {"status": "implemented", "typed": "Runtime.mirrorXZ() -> Transform"},
-            "mirror_axis": {"status": "implemented", "typed": "Runtime.mirror_axis() -> Transform"},
-            "mirrorX": {"status": "implemented", "typed": "Runtime.mirrorX() -> Transform"},
-            "mirrorY": {"status": "implemented", "typed": "Runtime.mirrorY() -> Transform"},
-            "mirrorZ": {"status": "implemented", "typed": "Runtime.mirrorZ() -> Transform"},
-            "mirrorO": {"status": "implemented", "typed": "Runtime.mirrorO() -> Transform"},
+            "mirrorXY": {"status": "implemented", "typed": "zencad.mirrorXY() -> Transform"},
+            "mirrorYZ": {"status": "implemented", "typed": "zencad.mirrorYZ() -> Transform"},
+            "mirrorXZ": {"status": "implemented", "typed": "zencad.mirrorXZ() -> Transform"},
+            "mirror_axis": {"status": "implemented", "typed": "zencad.mirror_axis() -> Transform"},
+            "mirrorX": {"status": "implemented", "typed": "zencad.mirrorX() -> Transform"},
+            "mirrorY": {"status": "implemented", "typed": "zencad.mirrorY() -> Transform"},
+            "mirrorZ": {"status": "implemented", "typed": "zencad.mirrorZ() -> Transform"},
+            "mirrorO": {"status": "implemented", "typed": "zencad.mirrorO() -> Transform"},
             "scale": {
               "status": "implemented",
-              "typed": "Runtime.scale() -> Transform"
+              "typed": "zencad.scale() -> Transform"
             }
           }
         },
@@ -597,7 +597,7 @@
           },
           "default": {
             "status": "implemented",
-            "typed": "Runtime.{name}() -> AffineTransform",
+            "typed": "zencad.{name}() -> AffineTransform",
             "materialization": "none"
           },
           "overrides": {}
@@ -628,31 +628,31 @@
           "overrides": {
             "multitrans": {
               "status": "implemented",
-              "typed": "Runtime.multitrans() -> MultiTransform"
+              "typed": "zencad.multitrans() -> MultiTransform"
             },
             "nulltrans": {
               "status": "implemented",
-              "typed": "Runtime.identity_transform()"
+              "typed": "zencad.identity_transform()"
             },
             "rotate_array": {
               "status": "implemented",
-              "typed": "Runtime.rotate_array() -> MultiTransform"
+              "typed": "zencad.rotate_array() -> MultiTransform"
             },
             "rotate_array2": {
               "status": "implemented",
-              "typed": "Runtime.rotate_array2() -> MultiTransform"
+              "typed": "zencad.rotate_array2() -> MultiTransform"
             },
             "short_rotate": {
               "status": "implemented",
-              "typed": "Runtime.short_rotate() -> Transform"
+              "typed": "zencad.short_rotate() -> Transform"
             },
             "sqrmirror": {
               "status": "implemented",
-              "typed": "Runtime.sqrmirror() -> MultiTransform"
+              "typed": "zencad.sqrmirror() -> MultiTransform"
             },
             "sqrtrans": {
               "status": "implemented",
-              "typed": "Runtime.sqrtrans() -> MultiTransform"
+              "typed": "zencad.sqrtrans() -> MultiTransform"
             }
           }
         },
@@ -816,7 +816,7 @@
             "back": {"status": "implemented", "typed": "Shape.back()"},
             "up": {"status": "implemented", "typed": "Shape.up()"},
             "down": {"status": "implemented", "typed": "Shape.down()"},
-            "rotate": {"status": "implemented", "typed": "Shape.transform(Runtime.rotation())"},
+            "rotate": {"status": "implemented", "typed": "Shape.transform(zencad.rotation())"},
             "rot": {"status": "implemented", "typed": "Shape.rotate()"},
             "rotateX": {"status": "implemented", "typed": "Shape.rotateX()"},
             "rotateY": {"status": "implemented", "typed": "Shape.rotateY()"},
@@ -824,8 +824,8 @@
             "rotX": {"status": "implemented", "typed": "Shape.rotX()"},
             "rotY": {"status": "implemented", "typed": "Shape.rotY()"},
             "rotZ": {"status": "implemented", "typed": "Shape.rotZ()"},
-            "scale": {"status": "implemented", "typed": "Shape.transform(Runtime.scale())"},
-            "mirror": {"status": "implemented", "typed": "Shape.transform(Runtime.mirror())"},
+            "scale": {"status": "implemented", "typed": "Shape.transform(zencad.scale())"},
+            "mirror": {"status": "implemented", "typed": "Shape.transform(zencad.mirror())"},
             "mirrorX": {"status": "implemented", "typed": "Shape.mirrorX()"},
             "mirrorY": {"status": "implemented", "typed": "Shape.mirrorY()"},
             "mirrorZ": {"status": "implemented", "typed": "Shape.mirrorZ()"},
@@ -848,7 +848,7 @@
           },
           "overrides": {
             "@type": {"status": "implemented", "typed": "BoundaryBox"},
-            "assign_coords": {"status": "repair", "typed": "immutable Runtime.boundary_box()"},
+            "assign_coords": {"status": "repair", "typed": "immutable zencad.boundary_box()"},
             "assign": {"status": "repair", "typed": "immutable BoundaryBox value"},
             "assign_Bnd_Box": {"status": "repair", "typed": "BoundaryBox.from_ocp()", "materialization": "native input snapshot"},
             "add": {"status": "repair", "typed": "BoundaryBox.add() -> new BoundaryBox; no mutation"},
@@ -885,51 +885,51 @@
           "source": "zencad.text",
           "default": {"status": "missing", "typed": "typed text geometry adapter for {name}", "materialization": "font registration is process state; text_to_brep returns Shape"},
           "overrides": {
-            "register_font": {"status": "implemented", "typed": "Runtime.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
-            "text_to_brep": {"status": "implemented", "typed": "Runtime.text_to_brep() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"}
+            "register_font": {"status": "implemented", "typed": "zencad.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
+            "text_to_brep": {"status": "implemented", "typed": "zencad.text_to_brep() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"}
           }
         },
         {
           "source": "zencad.geom.solid",
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> typed topology handle", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> typed topology handle", "materialization": "none"},
           "overrides": {
-            "box": {"status": "implemented", "typed": "Runtime.box() -> Solid"},
-            "cube": {"status": "implemented", "typed": "Runtime.cube() compatibility alias -> Solid"},
-            "sphere": {"status": "implemented", "typed": "Runtime.sphere() -> Solid, including yaw/pitch variants"},
-            "cylinder": {"status": "implemented", "typed": "Runtime.cylinder() -> Solid"},
-            "cone": {"status": "implemented", "typed": "Runtime.cone() -> Solid"},
-            "torus": {"status": "implemented", "typed": "Runtime.torus() -> Solid, including yaw/pitch variants"},
-            "halfspace": {"status": "implemented", "typed": "Runtime.halfspace() -> Solid"},
-            "make_solid": {"status": "implemented", "typed": "Runtime.make_solid(Shell | Sequence[Shell]) -> Solid"},
-            "nullshape": {"status": "implemented", "typed": "Runtime.nullshape()/empty_shape() -> Shape algebraic zero"}
+            "box": {"status": "implemented", "typed": "zencad.box() -> Solid"},
+            "cube": {"status": "implemented", "typed": "zencad.cube() compatibility alias -> Solid"},
+            "sphere": {"status": "implemented", "typed": "zencad.sphere() -> Solid, including yaw/pitch variants"},
+            "cylinder": {"status": "implemented", "typed": "zencad.cylinder() -> Solid"},
+            "cone": {"status": "implemented", "typed": "zencad.cone() -> Solid"},
+            "torus": {"status": "implemented", "typed": "zencad.torus() -> Solid, including yaw/pitch variants"},
+            "halfspace": {"status": "implemented", "typed": "zencad.halfspace() -> Solid"},
+            "make_solid": {"status": "implemented", "typed": "zencad.make_solid(Shell | Sequence[Shell]) -> Solid"},
+            "nullshape": {"status": "implemented", "typed": "zencad.nullshape()/empty_shape() -> Shape algebraic zero"}
           }
         },
         {
           "source": "zencad.geom.platonic",
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Solid | Shell", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Solid | Shell", "materialization": "none"},
           "overrides": {
-            "dodecahedron": {"status": "implemented", "typed": "Runtime.dodecahedron() -> Solid | Shell"},
-            "hexahedron": {"status": "implemented", "typed": "Runtime.hexahedron() -> Solid | Shell"},
-            "icosahedron": {"status": "implemented", "typed": "Runtime.icosahedron() -> Solid | Shell"},
-            "octahedron": {"status": "implemented", "typed": "Runtime.octahedron() -> Solid | Shell"},
-            "platonic": {"status": "implemented", "typed": "Runtime.platonic() -> Solid | Shell"},
-            "tetrahedron": {"status": "implemented", "typed": "Runtime.tetrahedron() -> Solid | Shell"}
+            "dodecahedron": {"status": "implemented", "typed": "zencad.dodecahedron() -> Solid | Shell"},
+            "hexahedron": {"status": "implemented", "typed": "zencad.hexahedron() -> Solid | Shell"},
+            "icosahedron": {"status": "implemented", "typed": "zencad.icosahedron() -> Solid | Shell"},
+            "octahedron": {"status": "implemented", "typed": "zencad.octahedron() -> Solid | Shell"},
+            "platonic": {"status": "implemented", "typed": "zencad.platonic() -> Solid | Shell"},
+            "tetrahedron": {"status": "implemented", "typed": "zencad.tetrahedron() -> Solid | Shell"}
           }
         },
         {
           "source": "zencad.geom.wire",
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Edge | Wire", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Edge | Wire", "materialization": "none"},
           "overrides": {
-            "segment": {"status": "implemented", "typed": "Runtime.segment() -> Edge"},
-            "polysegment": {"status": "implemented", "typed": "Runtime.polysegment() -> Wire"},
-            "circle_arc": {"status": "implemented", "typed": "Runtime.circle_arc() -> Edge"},
-            "interpolate": {"status": "implemented", "typed": "Runtime.interpolate() -> Edge"},
-            "bezier": {"status": "implemented", "typed": "Runtime.bezier() -> Edge"},
-            "bspline": {"status": "implemented", "typed": "Runtime.bspline() -> Edge"},
-            "make_edge": {"status": "implemented", "typed": "Runtime.make_edge()/Curve.edge() -> Edge"},
-            "make_wire": {"status": "implemented", "typed": "Runtime.make_wire() -> Wire"},
-            "rounded_polysegment": {"status": "implemented", "typed": "Runtime.rounded_polysegment() -> Wire"},
-            "helix": {"status": "implemented", "typed": "Runtime.helix() -> Wire"}
+            "segment": {"status": "implemented", "typed": "zencad.segment() -> Edge"},
+            "polysegment": {"status": "implemented", "typed": "zencad.polysegment() -> Wire"},
+            "circle_arc": {"status": "implemented", "typed": "zencad.circle_arc() -> Edge"},
+            "interpolate": {"status": "implemented", "typed": "zencad.interpolate() -> Edge"},
+            "bezier": {"status": "implemented", "typed": "zencad.bezier() -> Edge"},
+            "bspline": {"status": "implemented", "typed": "zencad.bspline() -> Edge"},
+            "make_edge": {"status": "implemented", "typed": "zencad.make_edge()/Curve.edge() -> Edge"},
+            "make_wire": {"status": "implemented", "typed": "zencad.make_wire() -> Wire"},
+            "rounded_polysegment": {"status": "implemented", "typed": "zencad.rounded_polysegment() -> Wire"},
+            "helix": {"status": "implemented", "typed": "zencad.helix() -> Wire"}
           }
         },
         {
@@ -957,35 +957,35 @@
         },
         {
           "source": "zencad.geom.face",
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Face | Wire", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Face | Wire", "materialization": "none"},
           "overrides": {
-            "circle": {"status": "implemented", "typed": "Runtime.circle() -> Face | Edge"},
-            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse() -> Face | Edge"},
-            "fill": {"status": "implemented", "typed": "Runtime.fill() -> Face"},
-            "fix_face": {"status": "implemented", "typed": "Runtime.fix_face() -> Face"},
-            "infplane": {"status": "implemented", "typed": "Runtime.infplane() -> Face"},
-            "interpolate2": {"status": "implemented", "typed": "Runtime.interpolate2() -> Face"},
-            "ngon": {"status": "implemented", "typed": "Runtime.ngon() -> Face | Wire"},
-            "polygon": {"status": "implemented", "typed": "Runtime.polygon() -> Face | Wire"},
-            "rectangle": {"status": "implemented", "typed": "Runtime.rectangle() -> Face | Wire"},
-            "rectangle_wire": {"status": "implemented", "typed": "Runtime.rectangle_wire() -> Wire"},
-            "register_font": {"status": "implemented", "typed": "Runtime.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
-            "ruled": {"status": "implemented", "typed": "Runtime.ruled() -> Face"},
-            "square": {"status": "implemented", "typed": "Runtime.square() -> Face | Wire"},
-            "textshape": {"status": "implemented", "typed": "Runtime.textshape() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"},
-            "widewire": {"status": "implemented", "typed": "Runtime.widewire(Edge | Wire, ScalarInput, bool, bool) -> Shape", "materialization": "none; legacy result topology varies between Face and Compound"}
+            "circle": {"status": "implemented", "typed": "zencad.circle() -> Face | Edge"},
+            "ellipse": {"status": "implemented", "typed": "zencad.ellipse() -> Face | Edge"},
+            "fill": {"status": "implemented", "typed": "zencad.fill() -> Face"},
+            "fix_face": {"status": "implemented", "typed": "zencad.fix_face() -> Face"},
+            "infplane": {"status": "implemented", "typed": "zencad.infplane() -> Face"},
+            "interpolate2": {"status": "implemented", "typed": "zencad.interpolate2() -> Face"},
+            "ngon": {"status": "implemented", "typed": "zencad.ngon() -> Face | Wire"},
+            "polygon": {"status": "implemented", "typed": "zencad.polygon() -> Face | Wire"},
+            "rectangle": {"status": "implemented", "typed": "zencad.rectangle() -> Face | Wire"},
+            "rectangle_wire": {"status": "implemented", "typed": "zencad.rectangle_wire() -> Wire"},
+            "register_font": {"status": "implemented", "typed": "zencad.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
+            "ruled": {"status": "implemented", "typed": "zencad.ruled() -> Face"},
+            "square": {"status": "implemented", "typed": "zencad.square() -> Face | Wire"},
+            "textshape": {"status": "implemented", "typed": "zencad.textshape() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"},
+            "widewire": {"status": "implemented", "typed": "zencad.widewire(Edge | Wire, ScalarInput, bool, bool) -> Shape", "materialization": "none; legacy result topology varies between Face and Compound"}
           }
         },
         {
           "source": "zencad.geom.shell",
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Shell | Solid | structured points", "materialization": "convex_hull numeric result materializes"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Shell | Solid | structured points", "materialization": "convex_hull numeric result materializes"},
           "overrides": {
-            "convex_hull": {"status": "implemented", "typed": "Runtime.convex_hull() -> tuple[tuple[int, ...], ...]", "materialization": "numeric result materializes"},
-            "convex_hull_shape": {"status": "implemented", "typed": "Runtime.convex_hull_shape() -> Solid | Shell", "materialization": "none"},
-            "fill3d": {"status": "implemented", "typed": "Runtime.fill3d(Shell) -> Solid", "materialization": "none"},
-            "make_shell": {"status": "implemented", "typed": "Runtime.make_shell(Face | Sequence[Face]) -> Shell", "materialization": "none"},
-            "polyhedron": {"status": "implemented", "typed": "Runtime.polyhedron() -> Solid | Shell", "materialization": "none"},
-            "polyhedron_shell": {"status": "implemented", "typed": "Runtime.polyhedron_shell() -> Shell", "materialization": "none"}
+            "convex_hull": {"status": "implemented", "typed": "zencad.convex_hull() -> tuple[tuple[int, ...], ...]", "materialization": "numeric result materializes"},
+            "convex_hull_shape": {"status": "implemented", "typed": "zencad.convex_hull_shape() -> Solid | Shell", "materialization": "none"},
+            "fill3d": {"status": "implemented", "typed": "zencad.fill3d(Shell) -> Solid", "materialization": "none"},
+            "make_shell": {"status": "implemented", "typed": "zencad.make_shell(Face | Sequence[Face]) -> Shell", "materialization": "none"},
+            "polyhedron": {"status": "implemented", "typed": "zencad.polyhedron() -> Solid | Shell", "materialization": "none"},
+            "polyhedron_shell": {"status": "implemented", "typed": "zencad.polyhedron_shell() -> Shell", "materialization": "none"}
           }
         },
         {
@@ -994,14 +994,14 @@
             "nocached_curve_generator": "legacy lazy proxy implementation",
             "Curve": "classified with its public methods below"
           },
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Curve", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Curve", "materialization": "none"},
           "overrides": {
-            "line": {"status": "implemented", "typed": "Runtime.line() -> Curve"},
-            "circle": {"status": "implemented", "typed": "Runtime.circle_curve() -> Curve"},
-            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse_curve() -> Curve"},
-            "interpolate": {"status": "implemented", "typed": "Runtime.interpolate_curve() -> Curve"},
-            "bezier": {"status": "implemented", "typed": "Runtime.bezier_curve() -> Curve"},
-            "bspline": {"status": "implemented", "typed": "Runtime.bspline_curve() -> Curve"}
+            "line": {"status": "implemented", "typed": "zencad.line() -> Curve"},
+            "circle": {"status": "implemented", "typed": "zencad.circle_curve() -> Curve"},
+            "ellipse": {"status": "implemented", "typed": "zencad.ellipse_curve() -> Curve"},
+            "interpolate": {"status": "implemented", "typed": "zencad.interpolate_curve() -> Curve"},
+            "bezier": {"status": "implemented", "typed": "zencad.bezier_curve() -> Curve"},
+            "bspline": {"status": "implemented", "typed": "zencad.bspline_curve() -> Curve"}
           }
         },
         {
@@ -1024,11 +1024,11 @@
             "nocached_curve2_generator": "legacy lazy proxy implementation",
             "Curve2": "classified with its public methods below"
           },
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Curve2", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Curve2", "materialization": "none"},
           "overrides": {
-            "ellipse": {"status": "implemented", "typed": "Runtime.ellipse2() -> Curve2"},
-            "trimmed_curve2": {"status": "implemented", "typed": "Runtime.trim_curve2() -> Curve2"},
-            "segment": {"status": "implemented", "typed": "Runtime.segment2() -> Curve2"}
+            "ellipse": {"status": "implemented", "typed": "zencad.ellipse2() -> Curve2"},
+            "trimmed_curve2": {"status": "implemented", "typed": "zencad.trim_curve2() -> Curve2"},
+            "segment": {"status": "implemented", "typed": "zencad.segment2() -> Curve2"}
           }
         },
         {
@@ -1048,9 +1048,9 @@
             "nocached_surface_generator": "legacy lazy proxy implementation",
             "Surface": "classified with its public methods below"
           },
-          "default": {"status": "missing", "typed": "Runtime.{name}() -> Surface", "materialization": "none"},
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Surface", "materialization": "none"},
           "overrides": {
-            "cylinder": {"status": "implemented", "typed": "Runtime.cylinder_surface() -> Surface"}
+            "cylinder": {"status": "implemented", "typed": "zencad.cylinder_surface() -> Surface"}
           }
         },
         {
@@ -1086,15 +1086,15 @@
           "source": "zencad.geom.sweep",
           "default": {"status": "missing", "typed": "typed sweep operation {name}", "materialization": "none"},
           "overrides": {
-            "extrude": {"status": "implemented", "typed": "Runtime.extrude() / Shape.extrude() -> Shape"},
-            "linear_extrude": {"status": "implemented", "typed": "Runtime.linear_extrude() / Shape.linear_extrude() -> Shape"},
-            "revol": {"status": "implemented", "typed": "Runtime.revol() / Shape.revol() -> Shape"},
-            "loft": {"status": "implemented", "typed": "Runtime.loft(Sequence[Edge | Wire], ...) -> Solid | Shell"},
+            "extrude": {"status": "implemented", "typed": "zencad.extrude() / Shape.extrude() -> Shape"},
+            "linear_extrude": {"status": "implemented", "typed": "zencad.linear_extrude() / Shape.linear_extrude() -> Shape"},
+            "revol": {"status": "implemented", "typed": "zencad.revol() / Shape.revol() -> Shape"},
+            "loft": {"status": "implemented", "typed": "zencad.loft(Sequence[Edge | Wire], ...) -> Solid | Shell"},
             "geomfill_triedron_map": {"status": "implemented", "typed": "PipeTrihedron"},
-            "pipe": {"status": "implemented", "typed": "Runtime.pipe(Shape, Edge | Wire, ...) -> Shape"},
-            "pipe_shell": {"status": "implemented", "typed": "Runtime.pipe_shell(Sequence[Edge | Wire], Edge | Wire, ...) -> Solid | Shell"},
-            "sweep": {"status": "implemented", "typed": "Runtime.sweep(Edge | Wire, Edge | Wire, ...) -> Solid"},
-            "revol2": {"status": "implemented", "typed": "Runtime.revol2(Shape, ScalarInput, ...) -> Solid"}
+            "pipe": {"status": "implemented", "typed": "zencad.pipe(Shape, Edge | Wire, ...) -> Shape"},
+            "pipe_shell": {"status": "implemented", "typed": "zencad.pipe_shell(Sequence[Edge | Wire], Edge | Wire, ...) -> Solid | Shell"},
+            "sweep": {"status": "implemented", "typed": "zencad.sweep(Edge | Wire, Edge | Wire, ...) -> Solid"},
+            "revol2": {"status": "implemented", "typed": "zencad.revol2(Shape, ScalarInput, ...) -> Solid"}
           }
         },
         {
@@ -1105,9 +1105,9 @@
             "LawSection": {"status": "implemented", "typed": "SweepSectionLaw", "materialization": "none; immutable construction description"},
             "LawLocation": {"status": "implemented", "typed": "SweepLocationLaw", "materialization": "none; immutable construction description"},
             "LawTrihedron": {"status": "implemented", "typed": "SweepTrihedron", "materialization": "none; immutable enum"},
-            "law_constant_function": {"status": "implemented", "typed": "Runtime.constant_sweep_scale(ScalarInput, Interval) -> SweepScaleLaw", "materialization": "none; composed into terminal sweep"},
-            "law_evolved_section": {"status": "implemented", "typed": "Runtime.evolved_sweep_section(Curve, SweepScaleLaw) -> SweepSectionLaw", "materialization": "none; composed into terminal sweep"},
-            "law_spine_and_trihedron": {"status": "implemented", "typed": "Runtime.sweep_location(Curve, SweepTrihedron) -> SweepLocationLaw", "materialization": "none; composed into terminal sweep"},
+            "law_constant_function": {"status": "implemented", "typed": "zencad.constant_sweep_scale(ScalarInput, Interval) -> SweepScaleLaw", "materialization": "none; composed into terminal sweep"},
+            "law_evolved_section": {"status": "implemented", "typed": "zencad.evolved_sweep_section(Curve, SweepScaleLaw) -> SweepSectionLaw", "materialization": "none; composed into terminal sweep"},
+            "law_spine_and_trihedron": {"status": "implemented", "typed": "zencad.sweep_location(Curve, SweepTrihedron) -> SweepLocationLaw", "materialization": "none; composed into terminal sweep"},
             "law_corrected_frenet_trihedron": {"status": "implemented", "typed": "SweepTrihedron.CORRECTED_FRENET"},
             "law_frenet_trihedron": {"status": "implemented", "typed": "SweepTrihedron.FRENET"}
           }
@@ -1116,10 +1116,10 @@
           "source": "zencad.geom.boolops",
           "default": {"status": "missing", "typed": "typed boolean operation {name}", "materialization": "none"},
           "overrides": {
-            "union": {"status": "implemented", "typed": "Runtime.union(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__add__() pairwise"},
-            "intersect": {"status": "implemented", "typed": "Runtime.intersect(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__xor__() pairwise"},
-            "difference": {"status": "implemented", "typed": "Runtime.difference(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__sub__() pairwise"},
-            "section": {"status": "implemented", "typed": "Runtime.section(Shape | plane, Shape | plane) -> Shape"},
+            "union": {"status": "implemented", "typed": "zencad.union(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__add__() pairwise"},
+            "intersect": {"status": "implemented", "typed": "zencad.intersect(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__xor__() pairwise"},
+            "difference": {"status": "implemented", "typed": "zencad.difference(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__sub__() pairwise"},
+            "section": {"status": "implemented", "typed": "zencad.section(Shape | plane, Shape | plane) -> Shape"},
             "split": {"status": "implemented", "typed": "split(Shape, Shape | Sequence[Shape]) -> SplitResult[Solid]"},
             "slice": {"status": "implemented", "typed": "slice(Shape, z/axis | plane) -> SliceResult[Solid]"},
             "SplitResult": {"status": "implemented", "typed": "typed.SplitResult deferred solid sequence"},
@@ -1130,38 +1130,38 @@
           "source": "zencad.geom.operations",
           "default": {"status": "missing", "typed": "typed topology operation/result for {name}", "materialization": "structured native data only at explicit boundary"},
           "overrides": {
-            "chamfer": {"status": "implemented", "typed": "Runtime.chamfer() / Shape.chamfer() -> Shape"},
+            "chamfer": {"status": "implemented", "typed": "zencad.chamfer() / Shape.chamfer() -> Shape"},
             "draft": {"status": "implemented", "typed": "draft(Solid, Face | Iterable[Face], angle, direction, neutral) -> Solid"},
-            "fillet": {"status": "implemented", "typed": "Runtime.fillet() / Shape.fillet() -> Shape"},
-            "fillet2d": {"status": "implemented", "typed": "Runtime.fillet2d() / Face.fillet2d() -> Face"},
-            "get_nodes": {"status": "implemented", "typed": "Runtime.get_nodes(MeshData | Poly_Triangulation) -> tuple[VectorRow, ...]"},
-            "get_triangles": {"status": "implemented", "typed": "Runtime.get_triangles(MeshData | Poly_Triangulation) -> tuple[TriangleRow, ...]"},
-            "restore_shapetype": {"status": "implemented", "typed": "Runtime.restore_shapetype() / Shape.restore_shapetype() -> precise Shape subtype"},
-            "triangulate": {"status": "implemented", "typed": "Runtime.triangulate() / Shape.to_mesh() -> MeshData"},
-            "triangulate_face": {"status": "implemented", "typed": "Runtime.triangulate_face() / Face.triangulate() -> MeshData"}
+            "fillet": {"status": "implemented", "typed": "zencad.fillet() / Shape.fillet() -> Shape"},
+            "fillet2d": {"status": "implemented", "typed": "zencad.fillet2d() / Face.fillet2d() -> Face"},
+            "get_nodes": {"status": "implemented", "typed": "zencad.get_nodes(MeshData | Poly_Triangulation) -> tuple[VectorRow, ...]"},
+            "get_triangles": {"status": "implemented", "typed": "zencad.get_triangles(MeshData | Poly_Triangulation) -> tuple[TriangleRow, ...]"},
+            "restore_shapetype": {"status": "implemented", "typed": "zencad.restore_shapetype() / Shape.restore_shapetype() -> precise Shape subtype"},
+            "triangulate": {"status": "implemented", "typed": "zencad.triangulate() / Shape.to_mesh() -> MeshData"},
+            "triangulate_face": {"status": "implemented", "typed": "zencad.triangulate_face() / Face.triangulate() -> MeshData"}
           }
         },
         {
           "source": "zencad.geom.offset",
           "default": {"status": "missing", "typed": "typed topology operation {name}", "materialization": "none"},
           "overrides": {
-            "offset": {"status": "implemented", "typed": "Runtime.offset() / Shape.offset() -> Shape"},
-            "shapefix_solid": {"status": "implemented", "typed": "Runtime.shapefix_solid() / Solid.shapefix_solid() -> Solid"},
-            "thicksolid": {"status": "implemented", "typed": "Runtime.thicksolid() / Solid.thicksolid() -> Solid"}
+            "offset": {"status": "implemented", "typed": "zencad.offset() / Shape.offset() -> Shape"},
+            "shapefix_solid": {"status": "implemented", "typed": "zencad.shapefix_solid() / Solid.shapefix_solid() -> Solid"},
+            "thicksolid": {"status": "implemented", "typed": "zencad.thicksolid() / Solid.thicksolid() -> Solid"}
           }
         },
         {
           "source": "zencad.geom.sew",
           "default": {"status": "missing", "typed": "typed sew() -> Wire | Shell", "materialization": "none"},
           "overrides": {
-            "sew": {"status": "implemented", "typed": "Runtime.sew(Sequence[Edge | Wire]) -> Wire | Runtime.sew(Sequence[Face | Shell]) -> Shell"}
+            "sew": {"status": "implemented", "typed": "zencad.sew(Sequence[Edge | Wire]) -> Wire | zencad.sew(Sequence[Face | Shell]) -> Shell"}
           }
         },
         {
           "source": "zencad.geom.unify",
           "default": {"status": "missing", "typed": "typed unify() -> Shape", "materialization": "none"},
           "overrides": {
-            "unify": {"status": "implemented", "typed": "Runtime.unify() / Shape.unify() preserves the concrete topology handle"}
+            "unify": {"status": "implemented", "typed": "zencad.unify() / Shape.unify() preserves the concrete topology handle"}
           }
         },
         {
@@ -1179,22 +1179,22 @@
           "source": "zencad.geom.near",
           "default": {"status": "missing", "typed": "typed nearest-topology query {name}", "materialization": "none"},
           "overrides": {
-            "near_compound": {"status": "implemented", "typed": "Runtime.near_compound() / Shape.near_compound() -> Compound"},
-            "near_compsolid": {"status": "implemented", "typed": "Runtime.near_compsolid() / Shape.near_compsolid() -> CompSolid"},
-            "near_edge": {"status": "implemented", "typed": "Runtime.near_edge() / Shape.near_edge() -> Edge"},
-            "near_face": {"status": "implemented", "typed": "Runtime.near_face() / Shape.near_face() -> Face"},
-            "near_shell": {"status": "implemented", "typed": "Runtime.near_shell() / Shape.near_shell() -> Shell"},
-            "near_solid": {"status": "implemented", "typed": "Runtime.near_solid() / Shape.near_solid() -> Solid"},
-            "near_vertex": {"status": "implemented", "typed": "Runtime.near_vertex() / Shape.near_vertex() -> Vertex"},
-            "near_wire": {"status": "implemented", "typed": "Runtime.near_wire() / Shape.near_wire() -> Wire"}
+            "near_compound": {"status": "implemented", "typed": "zencad.near_compound() / Shape.near_compound() -> Compound"},
+            "near_compsolid": {"status": "implemented", "typed": "zencad.near_compsolid() / Shape.near_compsolid() -> CompSolid"},
+            "near_edge": {"status": "implemented", "typed": "zencad.near_edge() / Shape.near_edge() -> Edge"},
+            "near_face": {"status": "implemented", "typed": "zencad.near_face() / Shape.near_face() -> Face"},
+            "near_shell": {"status": "implemented", "typed": "zencad.near_shell() / Shape.near_shell() -> Shell"},
+            "near_solid": {"status": "implemented", "typed": "zencad.near_solid() / Shape.near_solid() -> Solid"},
+            "near_vertex": {"status": "implemented", "typed": "zencad.near_vertex() / Shape.near_vertex() -> Vertex"},
+            "near_wire": {"status": "implemented", "typed": "zencad.near_wire() / Shape.near_wire() -> Wire"}
           }
         },
         {
           "source": "zencad.geom.project",
           "default": {"status": "missing", "typed": "typed projection query {name}", "materialization": "none"},
           "overrides": {
-            "project": {"status": "implemented", "typed": "Runtime.project(Point3, Curve | Edge) -> CurveProjection"},
-            "project_point_on_curve": {"status": "implemented", "typed": "Runtime.project_point_on_curve(Point3, Curve | Edge) -> CurveProjection"}
+            "project": {"status": "implemented", "typed": "zencad.project(Point3, Curve | Edge) -> CurveProjection"},
+            "project_point_on_curve": {"status": "implemented", "typed": "zencad.project_point_on_curve(Point3, Curve | Edge) -> CurveProjection"}
           }
         }
       ]
@@ -1223,20 +1223,20 @@
             "DEFAULT_MESH_DISPLAY_MODE": {"status": "unchanged", "typed": "DEFAULT_MESH_DISPLAY_MODE"},
             "MeshData": {"typed": "MeshData"},
             "to_mesh": {"typed": "Shape.to_mesh() -> MeshData"},
-            "mesh_to_poly_triangulation": {"status": "implemented", "typed": "Runtime.mesh_to_poly_triangulation() / MeshData.mesh_to_poly_triangulation() / MeshData.native()", "materialization": "native()"}
+            "mesh_to_poly_triangulation": {"status": "implemented", "typed": "zencad.mesh_to_poly_triangulation() / MeshData.mesh_to_poly_triangulation() / MeshData.native()", "materialization": "native()"}
           }
         },
         {
           "source": "zencad.convert.api",
           "default": {"status": "missing", "typed": "typed Shape import/export adapter {name}", "materialization": "file/string I/O materializes the domain value"},
           "overrides": {
-            "to_brep": {"status": "implemented", "typed": "Runtime.to_brep(Shape, path) -> None"},
-            "from_brep": {"status": "implemented", "typed": "Runtime.from_brep(path) -> Shape"},
-            "to_stl": {"status": "implemented", "typed": "Runtime.to_stl(Shape, path, deflection) -> bool"},
-            "to_svg": {"status": "implemented", "typed": "Runtime.to_svg(Shape, path, color, mapping) -> None"},
-            "to_svg_string": {"status": "implemented", "typed": "Runtime.to_svg_string(Shape, color, mapping) -> str"},
-            "from_svg": {"status": "implemented", "typed": "Runtime.from_svg(path) -> Shape"},
-            "from_svg_string": {"status": "implemented", "typed": "Runtime.from_svg_string(str) -> Shape"}
+            "to_brep": {"status": "implemented", "typed": "zencad.to_brep(Shape, path) -> None"},
+            "from_brep": {"status": "implemented", "typed": "zencad.from_brep(path) -> Shape"},
+            "to_stl": {"status": "implemented", "typed": "zencad.to_stl(Shape, path, deflection) -> bool"},
+            "to_svg": {"status": "implemented", "typed": "zencad.to_svg(Shape, path, color, mapping) -> None"},
+            "to_svg_string": {"status": "implemented", "typed": "zencad.to_svg_string(Shape, color, mapping) -> str"},
+            "from_svg": {"status": "implemented", "typed": "zencad.from_svg(path) -> Shape"},
+            "from_svg_string": {"status": "implemented", "typed": "zencad.from_svg_string(str) -> Shape"}
           }
         },
         {
@@ -1244,9 +1244,9 @@
           "default": {"status": "implemented", "typed": "typed explicit export contract {name}", "materialization": "explicit headless file or stream boundary"},
           "overrides": {
             "LengthUnit": {"typed": "LengthUnit"},
-            "export_stl": {"typed": "Runtime.export_stl(Shape, destination, unit, tolerances, binary) -> None"},
-            "export_step": {"typed": "Runtime.export_step(Shape, destination, unit, binary=False) -> None"},
-            "export_3mf": {"typed": "Runtime.export_3mf(Shape, destination, unit, tolerances, metadata) -> None"}
+            "export_stl": {"typed": "zencad.export_stl(Shape, destination, unit, tolerances, binary) -> None"},
+            "export_step": {"typed": "zencad.export_step(Shape, destination, unit, binary=False) -> None"},
+            "export_3mf": {"typed": "zencad.export_3mf(Shape, destination, unit, tolerances, metadata) -> None"}
           }
         },
         {

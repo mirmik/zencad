@@ -223,7 +223,7 @@ class ScenePresenterTest(unittest.TestCase):
         source = SceneObjectRecord(
             object_id="box",
             kind="brep",
-            payload=encode_brep(zencad.box(1).unlazy()),
+            payload=encode_brep(zencad.box(1)),
             properties={
                 "visible": False,
                 "color": (0.1, 0.2, 0.3, 0.4),

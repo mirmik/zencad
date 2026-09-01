@@ -15,6 +15,7 @@ CACHE_DISABLE_ENV = "ZENCAD_CACHE_DISABLE"
 _UNSET = object()
 _TRUE_VALUES = {"1", "true", "yes", "on"}
 _FALSE_VALUES = {"0", "false", "no", "off", ""}
+_active_configuration = None
 
 
 @dataclass(frozen=True)
@@ -45,9 +46,7 @@ def _as_bool(value, name):
         return True
     if normalized in _FALSE_VALUES:
         return False
-    raise ValueError(
-        f"{name} must be one of: 1/0, true/false, yes/no, on/off"
-    )
+    raise ValueError(f"{name} must be one of: 1/0, true/false, yes/no, on/off")
 
 
 def normalize_cache_directory(value):
@@ -67,9 +66,7 @@ def resolve_cache_configuration(settings=None, environ=None):
         environ = os.environ
 
     settings.restore()
-    directory = normalize_cache_directory(
-        settings.get(["cache", "directory"])
-    )
+    directory = normalize_cache_directory(settings.get(["cache", "directory"]))
     enabled = _as_bool(
         settings.get(["cache", "enabled"]),
         "cache.enabled",
@@ -83,6 +80,14 @@ def resolve_cache_configuration(settings=None, environ=None):
             CACHE_DISABLE_ENV,
         )
     return CacheConfiguration(directory=directory, enabled=enabled)
+
+
+def current_cache_configuration():
+    """Return the process override or the settings/environment configuration."""
+
+    if _active_configuration is not None:
+        return _active_configuration
+    return resolve_cache_configuration()
 
 
 def prepare_cache_directory(directory):
@@ -100,9 +105,7 @@ def prepare_cache_directory(directory):
 
     metadata = directory.lstat()
     if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
-        raise RuntimeError(
-            f"Default cache path is not a directory: {directory}"
-        )
+        raise RuntimeError(f"Default cache path is not a directory: {directory}")
     if hasattr(os, "getuid") and metadata.st_uid != os.getuid():
         raise PermissionError(
             f"Default cache directory belongs to another user: {directory}"
@@ -114,9 +117,9 @@ def prepare_cache_directory(directory):
 
 def configure(*, cache_dir=_UNSET, cache_enabled=_UNSET):
     """Apply an explicit cache override to the current Python process."""
-    from zencad import lazifier
+    global _active_configuration
 
-    current = lazifier.get_cache_configuration()
+    current = current_cache_configuration()
     directory = (
         current.directory
         if cache_dir is _UNSET
@@ -127,15 +130,44 @@ def configure(*, cache_dir=_UNSET, cache_enabled=_UNSET):
         if cache_enabled is _UNSET
         else _as_bool(cache_enabled, "cache_enabled")
     )
-    return lazifier.apply_cache_configuration(
-        CacheConfiguration(directory=directory, enabled=enabled)
-    )
+    if enabled:
+        prepare_cache_directory(directory)
+    _active_configuration = CacheConfiguration(directory=directory, enabled=enabled)
+
+    from zencad.operation import _reset_default_context
+
+    _reset_default_context()
+    return _active_configuration
 
 
 def reload_cache_configuration():
     """Reapply settings and environment after persistent settings changed."""
-    from zencad import lazifier
+    global _active_configuration
 
-    return lazifier.apply_cache_configuration(
-        resolve_cache_configuration()
+    _active_configuration = resolve_cache_configuration()
+
+    from zencad.operation import _reset_default_context
+
+    _reset_default_context()
+    return _active_configuration
+
+
+def clear_cache():
+    """Remove every EvalCache v2 record from the configured store."""
+
+    configuration = current_cache_configuration()
+    if not configuration.enabled or not configuration.directory.exists():
+        return 0
+
+    from evalcache import DirectoryCacheStore
+
+    store = DirectoryCacheStore(configuration.directory)
+    records = sum(
+        1
+        for prefix in configuration.directory.iterdir()
+        if prefix.is_dir() and len(prefix.name) == 2 and prefix.name != "tmp"
+        for record in prefix.iterdir()
+        if record.is_file() and len(record.name) == 62
     )
+    store.clear()
+    return records

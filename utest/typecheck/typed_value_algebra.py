@@ -5,12 +5,12 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def algebra(runtime: typed.Runtime) -> None:
-    scalar = assert_type(runtime.scalar(2), typed.Scalar)
-    point2 = assert_type(runtime.point2(1, 2), typed.Point2)
-    vector2 = assert_type(runtime.vector2(1, 2), typed.Vector2)
-    point3 = assert_type(runtime.point(1, 2, 3), typed.Point3)
-    vector3 = assert_type(runtime.vector(1, 2, 3), typed.Vector3)
+def algebra(context: typed.Context) -> None:
+    scalar = assert_type(context.call(typed.scalar, 2), typed.Scalar)
+    point2 = assert_type(context.call(typed.point2, 1, 2), typed.Point2)
+    vector2 = assert_type(context.call(typed.vector2, 1, 2), typed.Vector2)
+    point3 = assert_type(context.call(typed.point, 1, 2, 3), typed.Point3)
+    vector3 = assert_type(context.call(typed.vector, 1, 2, 3), typed.Vector3)
 
     assert_type(scalar + 1, typed.Scalar)
     assert_type(1 + scalar, typed.Scalar)

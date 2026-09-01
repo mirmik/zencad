@@ -11,8 +11,8 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(mode=mode, cache=cache)
-                    solid = runtime.box(1)
+                    context = typed.Context(mode=mode, cache=cache)
+                    solid = context.call(typed.box, 1)
                     observed.add(
                         (
                             solid.shapetype(),
@@ -26,8 +26,8 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
 
     def test_predicate_call_is_an_explicit_materialization_boundary(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        solid = runtime.box(runtime.scalar(2))
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        solid = context.call(typed.box, context.call(typed.scalar, 2))
 
         self.assertIsInstance(solid._state, Expression)
         self.assertEqual(events, [])
@@ -35,12 +35,12 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         self.assertTrue(events)
 
     def test_edge_wire_queries_and_conversion_preserve_typed_handles(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        start = runtime.point3(0, 0, 0)
-        finish = runtime.point3(1, 0, 0)
-        edge = runtime.segment(start, finish)
-        wire = runtime.polysegment(
-            (start, runtime.point3(1, 0, 0), runtime.point3(0, 1, 0)),
+        context = typed.Context.deferred(cache=False)
+        start = context.call(typed.point3, 0, 0, 0)
+        finish = context.call(typed.point3, 1, 0, 0)
+        edge = context.call(typed.segment, start, finish)
+        wire = context.call(typed.polysegment,
+            (start, context.call(typed.point3, 1, 0, 0), context.call(typed.point3, 0, 1, 0)),
             closed=True,
         )
 
@@ -59,11 +59,11 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         self.assertFalse(identity.native().IsNull())
 
         with self.assertRaisesRegex(TypeError, "only defined for Edge or Wire"):
-            runtime.box(1).is_closed()
+            context.call(typed.box, 1).is_closed()
 
     def test_native_vertices_is_a_typed_topology_sequence(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        vertices = runtime.box(1).native_vertices()
+        context = typed.Context.deferred(cache=False)
+        vertices = context.call(typed.box, 1).native_vertices()
 
         self.assertIs(type(vertices), typed.DeferredSequence)
         self.assertEqual(len(vertices), 8)
@@ -72,10 +72,10 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
 
     def test_curve_parameter_records_are_named_graph_handles(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        line = runtime.line(runtime.point3(1, 2, 3), runtime.vector3(1, 0, 0))
-        circle = runtime.circle_curve(2)
-        ellipse = runtime.ellipse_curve(3, 2)
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        line = context.call(typed.line, context.call(typed.point3, 1, 2, 3), context.call(typed.vector3, 1, 0, 0))
+        circle = context.call(typed.circle_curve, 2)
+        ellipse = context.call(typed.ellipse_curve, 3, 2)
 
         line_parameters = line.line_parameters()
         circle_parameters = circle.circle_parameters()
@@ -97,8 +97,8 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
             circle.line_parameters().origin.value()
 
     def test_curve_projection_trimming_and_uniform_sampling(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        line = runtime.line(runtime.point3(), runtime.vector3(1, 0, 0))
+        context = typed.Context.deferred(cache=False)
+        line = context.call(typed.line, context.call(typed.point3, ), context.call(typed.vector3, 1, 0, 0))
         edge = line.trimmed_edge(0, 2)
 
         self.assertIs(type(edge), typed.Edge)
@@ -106,11 +106,11 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         self.assertEqual(start.value(), (0.0, 0.0, 0.0))
         self.assertEqual(finish.value(), (2.0, 0.0, 0.0))
         self.assertAlmostEqual(
-            float(edge.lower_distance_parameter(runtime.point3(0.75, 2, 0))),
+            float(edge.lower_distance_parameter(context.call(typed.point3, 0.75, 2, 0))),
             0.75,
         )
 
-        circle = runtime.circle_curve(2)
+        circle = context.call(typed.circle_curve, 2)
         parameters = circle.uniform(4)
         points = circle.uniform_points(4)
         self.assertEqual(len(parameters), 4)
@@ -126,8 +126,8 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
             circle.uniform(3, 0)
 
     def test_shape_curve_compatibility_methods_forward_to_typed_curve(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        edge = runtime.segment(runtime.point3(), runtime.point3(2, 0, 0))
+        context = typed.Context.deferred(cache=False)
+        edge = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 2, 0, 0))
 
         self.assertEqual(edge.curvetype(), "line")
         self.assertEqual(edge.d0(0.5).value(), (0.5, 0.0, 0.0))
@@ -139,9 +139,9 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
 
     def test_surface_and_volume_properties_are_named_graph_records(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        face = runtime.rectangle(2, 3)
-        solid = runtime.box(2)
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        face = context.call(typed.rectangle, 2, 3)
+        solid = context.call(typed.box, 2)
         surface = face.SurfaceProperties()
         volume = solid.VolumeProperties()
 
@@ -157,25 +157,25 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         self.assertTrue(events)
 
         self.assertIsNotNone(face.AdaptorSurface())
-        edge = runtime.segment(runtime.point3(), runtime.point3(1, 0, 0))
+        edge = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 1, 0, 0))
         self.assertIsNotNone(edge.AdaptorCurve())
         self.assertIsNotNone(edge.HCurveAdaptor())
         self.assertIsNotNone(edge.Curve())
 
     def test_modeling_compatibility_methods_return_typed_graph_handles(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        wire = runtime.polysegment(
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        wire = context.call(typed.polysegment,
             (
-                runtime.point3(),
-                runtime.point3(2, 0, 0),
-                runtime.point3(2, 2, 0),
-                runtime.point3(0, 2, 0),
+                context.call(typed.point3, ),
+                context.call(typed.point3, 2, 0, 0),
+                context.call(typed.point3, 2, 2, 0),
+                context.call(typed.point3, 0, 2, 0),
             ),
             closed=True,
         )
         face = wire.fill()
-        solid = face.extrude(runtime.scalar(1), center=True)
+        solid = face.extrude(context.call(typed.scalar, 1), center=True)
         fillet = solid.fillet(0.1)
         chamfer = solid.chamfer(0.1)
         fillet2d = face.fillet2d(0.1)

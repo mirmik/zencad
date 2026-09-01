@@ -5,11 +5,9 @@ import runpy
 import subprocess
 import sys
 import threading
-from tempfile import TemporaryDirectory
 import unittest
 from unittest import mock
 
-from evalcache.dircache_v2 import DirCache_v2
 from OCP.Bnd import Bnd_Box
 from OCP.GProp import GProp_GProps
 import zencad
@@ -40,23 +38,9 @@ def shape_signature(shape):
 
 
 class SceneDraftTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.previous_cache = zencad.lazy.cache
-        cls.cache_directory = TemporaryDirectory()
-        zencad.lazy.cache = DirCache_v2(cls.cache_directory.name)
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
-
-    @classmethod
-    def tearDownClass(cls):
-        zencad.lazy.cache = cls.previous_cache
-        cls.cache_directory.cleanup()
-
     def test_mutations_are_frozen_into_snapshot_properties(self):
         draft = SceneDraft(generation=4)
-        reference = draft.add(zencad.box(2).unlazy(), color=(0.1, 0.2, 0.3, 0.4))
+        reference = draft.add(zencad.box(2), color=(0.1, 0.2, 0.3, 0.4))
         reference.relocate(zencad.translate(5, 6, 7))
         reference.set_color(
             0.7,
@@ -213,7 +197,7 @@ class SceneDraftTest(unittest.TestCase):
 
     def test_mesh_is_transportable_without_brep_conversion(self):
         draft = SceneDraft(generation=16)
-        mesh = zencad.box(2).to_mesh().unlazy()
+        mesh = zencad.box(2).to_mesh()
         reference = draft.add(
             mesh,
             color=zencad.color.green,
@@ -226,7 +210,7 @@ class SceneDraftTest(unittest.TestCase):
 
         self.assertEqual(record.kind, "mesh")
         self.assertEqual(record.properties["display_mode"], "wireframe")
-        self.assertEqual(restored.triangles, mesh.triangles)
+        self.assertEqual(tuple(restored.triangles), mesh.triangles)
         self.assertEqual(
             record.properties["transform"]["translation"],
             (4, 0, 0),
@@ -301,7 +285,7 @@ class SceneDraftTest(unittest.TestCase):
         self.assertEqual(len(published), 1)
         self.assertEqual(len(published[0].objects), 1)
         restored = decode_brep(published[0].objects[0].payload)
-        expected = namespace["model"].unlazy().Shape()
+        expected = namespace["model"].native()
         restored_mass, restored_bounds = shape_signature(restored)
         expected_mass, expected_bounds = shape_signature(expected)
         self.assertAlmostEqual(
@@ -324,9 +308,6 @@ builtins.__import__ = guarded_import
 
 import zencad
 import zencad.interactive.shape
-zencad.lazy.encache = False
-zencad.lazy.decache = False
-zencad.lazy.fastdo = True
 def forbidden_ais_shape(*args, **kwargs):
     raise AssertionError("managed runner created AIS_Shape")
 zencad.interactive.shape.AIS_Shape = forbidden_ais_shape

@@ -5,7 +5,7 @@ from OCP.GeomAPI import GeomAPI_Interpolate
 from OCP.GeomAdaptor import GeomAdaptor_Curve
 
 from zencad.opencascade_types import *
-from zencad.lazifier import *
+from zencad._eager import eager
 
 from OCP.TColStd import TColStd_HArray1OfBoolean
 import numpy
@@ -25,7 +25,6 @@ class Curve(CurveAlgo, Transformable):
     def HCurveAdaptor(self):
         return self.AdaptorCurve()
 
-    # TODO: Add unlazy wrapper
     def edge(self, interval=None):
         import zencad.geom.wire
         return zencad.geom.wire.make_edge(self, interval)
@@ -48,27 +47,15 @@ class Curve(CurveAlgo, Transformable):
         return GeomAdaptor_Curve(self._crv)
 
 
-class nocached_curve_generator(evalcache.LazyObject):
-    """ Decorator for heavy functions.
-            It use caching for lazy data restoring."""
-
-    def __init__(self, *args, **kwargs):
-        evalcache.LazyObject.__init__(self, *args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        return self.lazyinvoke(
-            self, args, kwargs,
-            encache=False,
-            decache=False,
-            cls=evalcache.LazyObject
-        )
+class nocached_curve_generator:
+    """Deprecated decorator marker for eager curve backends."""
 
 
 def _line(pnt, dir) -> Curve:
     return Curve(Geom_Line(to_Pnt(pnt), to_Dir(dir)))
 
 
-@lazy.lazy(cls=nocached_curve_generator)
+@eager.decorator(cls=nocached_curve_generator)
 def line(pnt, dir) -> Curve:
     return _line(pnt, dir)
 
@@ -77,7 +64,7 @@ def _circle(radius) -> Curve:
     return Curve(Geom_Circle(plane_xoy(), radius))
 
 
-@lazy.lazy(cls=nocached_curve_generator)
+@eager.decorator(cls=nocached_curve_generator)
 def circle(radius) -> Curve:
     return _circle(radius)
 
@@ -86,7 +73,7 @@ def _ellipse(r1, r2) -> Curve:
     return Curve(Geom_Ellipse(plane_xoy(), r1, r2))
 
 
-@lazy.lazy(cls=nocached_curve_generator)
+@eager.decorator(cls=nocached_curve_generator)
 def ellipse(r1, r2) -> Curve:
     return _ellipse(r1, r2)
 
@@ -113,7 +100,7 @@ def _interpolate(pnts, tangs=None, closed=False):
     return Curve(algo.Curve())
 
 
-@lazy.lazy(cls=nocached_curve_generator)
+@eager.decorator(cls=nocached_curve_generator)
 def interpolate(pnts, tangs=None, closed=False):
     return _interpolate(pnts, tangs=tangs, closed=closed)
 
@@ -131,7 +118,7 @@ def _bezier(poles, weights=None):
     return Curve(curve)
 
 
-@lazy.lazy(cls=nocached_curve_generator)
+@eager.decorator(cls=nocached_curve_generator)
 def bezier(poles, weights=None):
     return _bezier(poles, weights=weights)
 
@@ -163,6 +150,6 @@ def _bspline(
     return Curve(crv)
 
 
-@lazy.lazy(cls=nocached_curve_generator)
+@eager.decorator(cls=nocached_curve_generator)
 def bspline(*args, **kwargs):
     return _bspline(*args, **kwargs)

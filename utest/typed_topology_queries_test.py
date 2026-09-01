@@ -84,15 +84,15 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    box = runtime.box(2, 3, 4)
+                    box = context.call(typed.box, 2, 3, 4)
                     hierarchy = typed.Compound.from_ocp(
                         _compound_with_compound_and_compsolid(),
-                        runtime=runtime,
+                        context=context,
                     )
 
                     # Except for vertices, these deliberately preserve legacy
@@ -137,11 +137,11 @@ class TypedTopologyQueriesTest(unittest.TestCase):
 
     def test_indexing_composes_graph_while_len_and_iteration_materialize(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        vertices = runtime.box(2).vertices()
+        vertices = context.call(typed.box, 2).vertices()
 
         first = vertices[0]
         last = vertices[-1]
@@ -166,21 +166,21 @@ class TypedTopologyQueriesTest(unittest.TestCase):
             out_of_range.native()
 
         length_events = []
-        length_runtime = typed.Runtime.deferred(
+        length_context = typed.Context.deferred(
             cache=False,
             progress_hooks=(length_events.append,),
         )
-        length_vertices = length_runtime.box(2).vertices()
+        length_vertices = length_context.call(typed.box, 2).vertices()
         self.assertEqual(length_events, [])
         self.assertEqual(len(length_vertices), 8)
         self.assertTrue(length_events)
 
         iteration_events = []
-        iteration_runtime = typed.Runtime.deferred(
+        iteration_context = typed.Context.deferred(
             cache=False,
             progress_hooks=(iteration_events.append,),
         )
-        iteration_vertices = iteration_runtime.box(2).vertices()
+        iteration_vertices = iteration_context.call(typed.box, 2).vertices()
         iterator = iter(iteration_vertices)
         self.assertEqual(iteration_events, [])
         self.assertIs(type(next(iterator)), typed.Vertex)
@@ -190,18 +190,18 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         native = BRepPrimAPI_MakeBox(2.0, 3.0, 4.0).Solid()
         self.assertEqual(_explorer_count(native, TopAbs_VERTEX), 48)
 
-        runtime = typed.Runtime.deferred(cache=False)
-        vertices = typed.Solid.from_ocp(native, runtime=runtime).vertices()
+        context = typed.Context.deferred(cache=False)
+        vertices = typed.Solid.from_ocp(native, context=context).vertices()
 
         self.assertEqual(len(vertices), 8)
         points = {vertex.point().value() for vertex in vertices}
         self.assertEqual(len(points), 8)
 
     def test_compound_query_includes_root_and_stops_before_nested_compounds(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         hierarchy = typed.Compound.from_ocp(
             _compound_with_compound_and_compsolid(),
-            runtime=runtime,
+            context=context,
         )
 
         compounds = hierarchy.compounds()
@@ -214,10 +214,10 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         second = BRepBuilderAPI_MakeVertex(gp_Pnt(1, 2, 3)).Vertex()
         self.assertFalse(first.IsPartner(second))
 
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         compound = typed.Compound.from_ocp(
             _compound_of_vertices(first, second),
-            runtime=runtime,
+            context=context,
         )
         vertices = compound.vertices()
 
@@ -235,10 +235,10 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         self.assertTrue(first.IsPartner(second))
         self.assertFalse(first.IsSame(second))
 
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         compound = typed.Compound.from_ocp(
             _compound_of_vertices(first, second),
-            runtime=runtime,
+            context=context,
         )
         vertices = compound.vertices()
 
@@ -254,10 +254,10 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         self.assertTrue(first.IsSame(reversed_vertex))
         self.assertFalse(first.IsEqual(reversed_vertex))
 
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         compound = typed.Compound.from_ocp(
             _compound_of_vertices(first, reversed_vertex),
-            runtime=runtime,
+            context=context,
         )
 
         self.assertEqual(len(compound.vertices()), 1)
@@ -267,10 +267,10 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         first = BRepBuilderAPI_MakeVertex(gp_Pnt(1, 0, 0)).Vertex()
         second = BRepBuilderAPI_MakeVertex(gp_Pnt(2, 0, 0)).Vertex()
         reversed_third = as_vertex(third.Reversed())
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         compound = typed.Compound.from_ocp(
             _compound_of_vertices(third, first, second, reversed_third),
-            runtime=runtime,
+            context=context,
         )
 
         self.assertEqual(
@@ -280,12 +280,12 @@ class TypedTopologyQueriesTest(unittest.TestCase):
 
     def test_vertex_point_composes_with_a_deferred_query(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
 
-        point = runtime.box(2, 3, 4).vertices()[0].point()
+        point = context.call(typed.box, 2, 3, 4).vertices()[0].point()
 
         self.assertIs(type(point), typed.Point3)
         self.assertEqual(events, [])
@@ -297,17 +297,17 @@ class TypedTopologyQueriesTest(unittest.TestCase):
 
     def test_cached_item_hit_does_not_recompute_the_uncached_query(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.box(2).vertices()[0].native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.box, 2).vertices()[0].native()
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
 
-        self.assertIs(type(second.box(2).vertices()[0].native()), TopoDS_Vertex)
+        self.assertIs(type(second.call(typed.box, 2).vertices()[0].native()), TopoDS_Vertex)
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,
             [event.kind for event in events],
@@ -319,8 +319,8 @@ class TypedTopologyQueriesTest(unittest.TestCase):
 
     def test_wrong_cached_query_item_kind_is_rejected_and_recomputed(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.box(2).vertices()[0].native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.box, 2).vertices()[0].native()
 
         vertex_entries = [
             (key, record)
@@ -345,12 +345,12 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         )
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.box(2).vertices()[0]
+        restored = second.call(typed.box, 2).vertices()[0]
 
         self.assertIs(type(restored), typed.Vertex)
         self.assertIs(type(restored.native()), TopoDS_Vertex)

@@ -4,22 +4,26 @@ ZenCad API example: rotate_array
 """
 
 from zencad import *
-import zencad.internal_models
+import math
+
+
+def radial_array(shape, count, sweep=2 * math.pi, endpoint=False):
+    divisor = count - 1 if endpoint else count
+    return [shape.rotateZ(sweep * index / divisor) for index in range(count)]
 
 a = box(15, center=True) 
 b = cylinder(r=15, h=10)
 c = ellipse(10,5)
 d = square(10, center=True, wire=True)
 
-k1 = rotate_array(n=6, unit=True)(a.right(25))
-k2 = rotate_array(n=4, yaw=deg(180), endpoint=True, unit=True)(a.right(25))
-k3 = rotate_array(n=4, yaw=deg(180), endpoint=False, unit=True)(a.right(25))
-k4 = rotate_array2(n=4, r=25, yaw=(0,deg(180)), roll=(0,deg(-60)), endpoint=True, unit=True)(
-	a.rotX(deg(-90)))
+k1 = unify(union(radial_array(a.right(25), 6)))
+k2 = unify(union(radial_array(a.right(25), 4, deg(180), endpoint=True)))
+k3 = unify(union(radial_array(a.right(25), 4, deg(180))))
+k4 = unify(union(radial_array(a.right(25).rotX(deg(-90)), 4, deg(180), endpoint=True)))
 
-m1 = unify(rotate_array(n=6)(b.right(20)))
-m2 = rotate_array2(n=12, r=20)(c.rotZ(deg(90)))
-m3 = rotate_array2(n=60, r=20, yaw=(0,deg(270)), roll=(0,deg(360)), array=True)(d)
+m1 = unify(union(radial_array(b.right(20), 6)))
+m2 = unify(union(radial_array(c.rotZ(deg(90)).right(20), 12)))
+m3 = radial_array(d.right(20), 60, deg(270), endpoint=True)
 
 S = 70
 

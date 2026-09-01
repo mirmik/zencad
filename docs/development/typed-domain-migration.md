@@ -1,13 +1,17 @@
 # Typed domain migration
 
-> Status: private typed kernel complete; full public API parity is in progress.
-> The characterization baseline, evalcache v2 substrate, value/transform
-> algebra, Shape/topology, Curve/Curve2/Surface, BoundaryBox, MeshData, and
-> connected integration gates are implemented. The legacy public API remains
-> active while the complete parity contract is migrated; no public typed-domain
-> cutover described here is implemented yet. The accepted
-> direction and rationale are recorded in
+> Status: public cutover complete on 2026-09-02. `zencad` now exports the
+> domain API directly; `Runtime`, `RuntimeCompatibility`, `zencad.lazy`,
+> `LazyObjectShape`, `.unlazy()`, and `zencad/lazifier.py` are removed.
+> `Context` owns evaluation and EvalCache v2 policy but deliberately has no CAD
+> facade. Module functions and domain methods are the canonical API. The
+> remaining `zencad.geom` classes are eager, private OCP backend adapters and do
+> not construct lazy proxies. The accepted direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
+
+The detailed stage notes below are a chronological migration record. References
+to private `Runtime` bridges and temporary `.unlazy()` adapters describe
+superseded checkpoints, not the current API.
 
 ## Objective
 
@@ -57,13 +61,13 @@ internal typed vertical slice
           +--> Curve/Surface/Mesh and runtime boundaries
                          |
                          v
-                 public API cutover
+                 public API cutover (complete)
                          |
                          v
                   PEP 561 publication
                          |
                          v
-                  legacy API removal
+                  legacy API removal (complete)
 ```
 
 ## Stage 1: characterization baseline
@@ -101,8 +105,8 @@ runtime and are not promises of the target API.
 | Point/vector algebra | `vector + vector` and `vector * scalar` currently return `point3`; `point - point` returns `vector3` | Treat the first two as historical defects and enforce the accepted algebra |
 | Triangulation | `triangulate_face` advertises `LazyObjectShape`, resolves to structured data, fails its own `.unlazy()` validator, and generic expansion converts tuples to lists | Replace with a truthful structured mesh/result type and type-preserving container resolution |
 | Cache identity | Equal operation graphs have equal hashes; shape values round-trip through the directory cache | Preserve deterministic identity and round-trip semantics, not the old hash bytes or namespace |
-| Native materialization | `.unlazy()` changes the runtime type; native OCP accessors force evaluation | Keep only explicit, documented boundaries; compatibility `.unlazy()` returns the same public domain type |
-| User `@lazy` | Custom functions return generic `LazyObject`; evaluation recursively expands containers and converts tuples to lists | Keep a bounded legacy adapter and provide a typed extension surface with type-preserving containers |
+| Native materialization | `.unlazy()` changes the runtime type; native OCP accessors force evaluation | Keep only explicit `native()` and `value()` boundaries; remove `.unlazy()` |
+| User `@lazy` | Custom functions return generic `LazyObject`; evaluation recursively expands containers and converts tuples to lists | Remove the old public decorator; internal operations use configured typed domain declarations |
 
 Expected historical defects are named explicitly in characterization tests so
 that later fixes are reviewed as intentional baseline updates rather than
@@ -1297,13 +1301,11 @@ Verification on 2026-09-01 after the Context checkpoint:
 
 ## Stage 8: typing and cleanup
 
-Publish `py.typed`, overload flexible constructors, type-check representative
-models, document extension APIs, and then remove compatibility surfaces on the
-chosen release schedule.
-
-The distribution decision—new incompatible ZenCad major or a separate
-`zencad2` repository—is made after the vertical slice and compatibility audit,
-not before.
+Status: complete for the public cutover. ZenCad 2.0 is the incompatible major;
+there is no parallel `zencad2` package. `py.typed`, overload contracts,
+representative type checks, examples, runtime tests, parity checks, and wheel
+smoke cover the canonical `Context`/module/domain API. Compatibility Runtime
+and the old external lazy geometry surface were removed atomically.
 
 ## Cross-cutting rules
 

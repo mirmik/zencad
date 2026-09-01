@@ -7,7 +7,6 @@ import math
 import re
 from collections.abc import Iterable, Iterator
 
-import evalcache
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Copy
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.ShapeFix import ShapeFix_Shape
@@ -25,8 +24,7 @@ from OCP.TopAbs import (
 )
 from OCP.TopoDS import TopoDS_Iterator, TopoDS_Shape
 
-from zencad.geom.shape import Shape, shape_generator
-from zencad.lazifier import lazy
+from zencad.geom.shape import Shape
 
 
 _KIND_NAMES = {
@@ -250,8 +248,9 @@ def validate(
 ) -> ValidationReport:
     """Materialize ``shape`` and return diagnostics without modifying it."""
 
-    resolved = evalcache.unlazy_if_need(shape)
-    return _validate(resolved, exact=exact, parallel=parallel)
+    if not isinstance(shape, Shape):
+        raise TypeError("validate expects a resolved Shape")
+    return _validate(shape, exact=exact, parallel=parallel)
 
 
 def is_valid(
@@ -295,7 +294,6 @@ def _clean(shape: Shape) -> Shape:
     return Shape(result)
 
 
-@lazy.lazy(cls=shape_generator)
 def clean(shape: Shape) -> Shape:
     return _clean(shape)
 
@@ -328,7 +326,6 @@ def _heal(
     return Shape(result)
 
 
-@lazy.lazy(cls=shape_generator)
 def heal(
     shape: Shape,
     tolerance: float = 1e-7,

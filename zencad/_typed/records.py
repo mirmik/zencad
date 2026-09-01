@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from ._core import require_same_runtime
+from ._core import require_same_context
 from .values import Point3, Scalar, Vector3
 
 
@@ -17,7 +17,7 @@ class Interval:
     def __init__(self, lower: Scalar, upper: Scalar, /) -> None:
         if not isinstance(lower, Scalar) or not isinstance(upper, Scalar):
             raise TypeError("Interval bounds must be Scalar")
-        require_same_runtime(lower.runtime, upper)
+        require_same_context(lower.context, upper)
         self._lower = lower
         self._upper = upper
 
@@ -42,16 +42,11 @@ class Interval:
     def __len__(self) -> int:
         return 2
 
-    def unlazy(self) -> Interval:
-        self.value()
-        return self
-
-
 class LineParameters:
     __slots__ = ("origin", "direction")
 
     def __init__(self, origin: Point3, direction: Vector3, /) -> None:
-        require_same_runtime(origin.runtime, direction)
+        require_same_context(origin.context, direction)
         self.origin = origin
         self.direction = direction
 
@@ -71,7 +66,7 @@ class CircleParameters:
         /,
     ) -> None:
         for value in (radius, x_direction, y_direction):
-            require_same_runtime(center.runtime, value)
+            require_same_context(center.context, value)
         self.center = center
         self.radius = radius
         self.x_direction = x_direction
@@ -100,7 +95,7 @@ class EllipseParameters:
         /,
     ) -> None:
         for value in (major_radius, minor_radius, x_direction, y_direction):
-            require_same_runtime(center.runtime, value)
+            require_same_context(center.context, value)
         self.center = center
         self.major_radius = major_radius
         self.minor_radius = minor_radius
@@ -125,7 +120,7 @@ class ShapeProperties:
     __slots__ = ("center", "mass")
 
     def __init__(self, center: Point3, mass: Scalar, /) -> None:
-        require_same_runtime(center.runtime, mass)
+        require_same_context(center.context, mass)
         self.center = center
         self.mass = mass
 
@@ -145,15 +140,11 @@ class CurveProjection:
         distance: Scalar,
         /,
     ) -> None:
-        require_same_runtime(point.runtime, parameter)
-        require_same_runtime(point.runtime, distance)
+        require_same_context(point.context, parameter)
+        require_same_context(point.context, distance)
         self.point = point
         self.parameter = parameter
         self.distance = distance
 
     def value(self) -> tuple[tuple[float, float, float], float, float]:
         return (self.point.value(), self.parameter.value(), self.distance.value())
-
-    def unlazy(self) -> CurveProjection:
-        self.value()
-        return self

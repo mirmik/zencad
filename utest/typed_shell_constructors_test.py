@@ -4,18 +4,18 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_SHELL, TopAbs_SOLID
 
 from zencad import _typed as typed
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 
 
 def _tetrahedron_data(
-    runtime: typed.Runtime,
+    context: typed.Context,
 ) -> tuple[tuple[typed.Point3, ...], tuple[tuple[int, ...], ...]]:
     return (
         (
-            runtime.point3(0, 0, 0),
-            runtime.point3(1, 0, 0),
-            runtime.point3(0, 1, 0),
-            runtime.point3(0, 0, 1),
+            context.call(typed.point3, 0, 0, 0),
+            context.call(typed.point3, 1, 0, 0),
+            context.call(typed.point3, 0, 1, 0),
+            context.call(typed.point3, 0, 0, 1),
         ),
         ((0, 2, 1), (0, 1, 3), (1, 2, 3), (2, 0, 3)),
     )
@@ -33,12 +33,12 @@ class TypedShellConstructorsTest(unittest.TestCase):
                 self.assertIsInstance(getattr(typed, name), DomainOperation)
 
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        points, faces = _tetrahedron_data(runtime)
-        with using_runtime(runtime):
+        points, faces = _tetrahedron_data(context)
+        with using_context(context):
             shell = typed.make_shell(typed.polygon(points[:3]))
             solid = typed.fill3d(typed.polyhedron_shell(points, faces))
             polyhedron = typed.polyhedron(points, faces)
@@ -62,7 +62,7 @@ class TypedShellConstructorsTest(unittest.TestCase):
             icosahedron,
             platonic,
         )
-        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertTrue(all(value.context is context for value in values))
         self.assertEqual(events, [])
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
@@ -87,27 +87,27 @@ class TypedShellConstructorsTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    points, faces = _tetrahedron_data(runtime)
+                    points, faces = _tetrahedron_data(context)
                     values = (
-                        runtime.make_shell(runtime.polygon(points[:3])),
-                        runtime.polyhedron_shell(points, faces),
-                        runtime.polyhedron(points, faces),
-                        runtime.polyhedron(points, faces, shell=True),
-                        runtime.convex_hull_shape(points),
-                        runtime.convex_hull_shape(points, shell=True),
-                        runtime.tetrahedron(),
-                        runtime.hexahedron(shell=True),
-                        runtime.octahedron(),
-                        runtime.dodecahedron(shell=True),
-                        runtime.icosahedron(),
-                        runtime.platonic(6),
-                        runtime.platonic(20, shell=True),
+                        context.call(typed.make_shell, context.call(typed.polygon, points[:3])),
+                        context.call(typed.polyhedron_shell, points, faces),
+                        context.call(typed.polyhedron, points, faces),
+                        context.call(typed.polyhedron, points, faces, shell=True),
+                        context.call(typed.convex_hull_shape, points),
+                        context.call(typed.convex_hull_shape, points, shell=True),
+                        context.call(typed.tetrahedron, ),
+                        context.call(typed.hexahedron, shell=True),
+                        context.call(typed.octahedron, ),
+                        context.call(typed.dodecahedron, shell=True),
+                        context.call(typed.icosahedron, ),
+                        context.call(typed.platonic, 6),
+                        context.call(typed.platonic, 20, shell=True),
                     )
                     policy_types = tuple(type(value) for value in values)
                     observed_types.add(policy_types)
@@ -148,17 +148,17 @@ class TypedShellConstructorsTest(unittest.TestCase):
         self.assertEqual(len(observed_types), 1)
 
     def test_polyhedra_and_platonic_geometry_is_truthful(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        points, faces = _tetrahedron_data(runtime)
-        shell = runtime.polyhedron_shell(points, faces)
-        solid = runtime.fill3d(shell)
-        cube = runtime.hexahedron(a=2)
+        context = typed.Context.deferred(cache=False)
+        points, faces = _tetrahedron_data(context)
+        shell = context.call(typed.polyhedron_shell, points, faces)
+        solid = context.call(typed.fill3d, shell)
+        cube = context.call(typed.hexahedron, a=2)
         platonic = (
-            runtime.tetrahedron(),
-            runtime.hexahedron(),
-            runtime.octahedron(),
-            runtime.dodecahedron(),
-            runtime.icosahedron(),
+            context.call(typed.tetrahedron, ),
+            context.call(typed.hexahedron, ),
+            context.call(typed.octahedron, ),
+            context.call(typed.dodecahedron, ),
+            context.call(typed.icosahedron, ),
         )
 
         self.assertEqual(len(shell.faces()), 4)
@@ -172,17 +172,17 @@ class TypedShellConstructorsTest(unittest.TestCase):
 
     def test_convex_hull_faces_are_an_explicit_materialization_boundary(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        unit = runtime.box(1).mass()
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        unit = context.call(typed.box, 1).mass()
         points = (
-            runtime.point3(0, 0, 0),
-            runtime.point3(unit, 0, 0),
-            runtime.point3(0, unit, 0),
-            runtime.point3(0, 0, unit),
+            context.call(typed.point3, 0, 0, 0),
+            context.call(typed.point3, unit, 0, 0),
+            context.call(typed.point3, 0, unit, 0),
+            context.call(typed.point3, 0, 0, unit),
         )
 
         self.assertEqual(events, [])
-        faces = runtime.convex_hull(points, qhull_options="Qt")
+        faces = context.call(typed.convex_hull, points, qhull_options="Qt")
         self.assertTrue(events)
         self.assertIs(type(faces), tuple)
         self.assertEqual(len(faces), 4)
@@ -197,18 +197,18 @@ class TypedShellConstructorsTest(unittest.TestCase):
 
     def test_graph_points_and_scalars_remain_deferred_for_shapes(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        unit = runtime.box(2).mass() / 8
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        unit = context.call(typed.box, 2).mass() / 8
         points = (
-            runtime.point3(0, 0, 0),
-            runtime.point3(unit, 0, 0),
-            runtime.point3(0, unit, 0),
-            runtime.point3(0, 0, unit),
+            context.call(typed.point3, 0, 0, 0),
+            context.call(typed.point3, unit, 0, 0),
+            context.call(typed.point3, 0, unit, 0),
+            context.call(typed.point3, 0, 0, unit),
         )
         faces = ((0, 2, 1), (0, 1, 3), (1, 2, 3), (2, 0, 3))
-        polyhedron = runtime.polyhedron(points, faces)
-        platonic = runtime.tetrahedron(r=unit)
-        hull = runtime.convex_hull_shape(points)
+        polyhedron = context.call(typed.polyhedron, points, faces)
+        platonic = context.call(typed.tetrahedron, r=unit)
+        hull = context.call(typed.convex_hull_shape, points)
 
         self.assertEqual(events, [])
         self.assertTrue(
@@ -219,17 +219,17 @@ class TypedShellConstructorsTest(unittest.TestCase):
     def test_shell_artifacts_restore_from_shared_cache(self):
         store = MemoryCacheStore()
 
-        def values(runtime: typed.Runtime) -> tuple[typed.Shape, ...]:
-            points, faces = _tetrahedron_data(runtime)
+        def values(context: typed.Context) -> tuple[typed.Shape, ...]:
+            points, faces = _tetrahedron_data(context)
             return (
-                runtime.polyhedron_shell(points, faces),
-                runtime.polyhedron(points, faces),
-                runtime.convex_hull_shape(points, shell=True),
-                runtime.tetrahedron(),
+                context.call(typed.polyhedron_shell, points, faces),
+                context.call(typed.polyhedron, points, faces),
+                context.call(typed.convex_hull_shape, points, shell=True),
+                context.call(typed.tetrahedron, ),
             )
 
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
@@ -241,7 +241,7 @@ class TypedShellConstructorsTest(unittest.TestCase):
         )
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
@@ -262,31 +262,31 @@ class TypedShellConstructorsTest(unittest.TestCase):
         )
 
     def test_invalid_inputs_fail_at_the_typed_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
-        points, faces = _tetrahedron_data(runtime)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
+        points, faces = _tetrahedron_data(context)
 
         with self.assertRaisesRegex(ValueError, "at least one Face"):
-            runtime.make_shell(())
+            context.call(typed.make_shell, ())
         with self.assertRaisesRegex(TypeError, "only Face"):
-            runtime.make_shell((runtime.box(1),))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.make_shell(other.box(1).faces()[0])
+            context.call(typed.make_shell, (context.call(typed.box, 1),))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.make_shell, other.call(typed.box, 1).faces()[0])
         with self.assertRaisesRegex(TypeError, "fill3d expects Shell"):
-            runtime.fill3d(runtime.box(1))  # type: ignore[arg-type]
+            context.call(typed.fill3d, context.call(typed.box, 1))  # type: ignore[arg-type]
         with self.assertRaisesRegex(IndexError, "outside"):
-            runtime.polyhedron(points, ((0, 1, 9),))
+            context.call(typed.polyhedron, points, ((0, 1, 9),))
         with self.assertRaisesRegex(ValueError, "at least three"):
-            runtime.polyhedron(points, ((0, 1),))
+            context.call(typed.polyhedron, points, ((0, 1),))
         with self.assertRaisesRegex(TypeError, "qhull_options"):
-            runtime.convex_hull(points, qhull_options=3)  # type: ignore[arg-type]
+            context.call(typed.convex_hull, points, qhull_options=3)  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "one of"):
-            runtime.platonic(5)
+            context.call(typed.platonic, 5)
         with self.assertRaisesRegex(TypeError, "nfaces must be int"):
-            runtime.platonic(True)  # type: ignore[arg-type]
+            context.call(typed.platonic, True)  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "shell must be bool"):
-            runtime.tetrahedron(shell="yes")  # type: ignore[arg-type]
-        self.assertIs(type(runtime.polyhedron(points, faces)), typed.Solid)
+            context.call(typed.tetrahedron, shell="yes")  # type: ignore[arg-type]
+        self.assertIs(type(context.call(typed.polyhedron, points, faces)), typed.Solid)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,6 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest import mock
 
-from evalcache.dircache_v2 import DirCache_v2
 from OCP.BRep import BRep_Builder
 from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCP.Bnd import Bnd_Box
@@ -50,9 +49,12 @@ def compound_of_boxes(count):
     compound = TopoDS_Compound()
     builder = BRep_Builder()
     builder.MakeCompound(compound)
+    context = zencad.Context.immediate(cache=False)
     for index in range(count):
         box = BRepPrimAPI_MakeBox(1.0, 2.0, 3.0).Shape()
-        moved = zencad.Shape(box).translate(index * 2.0, 0, 0).Shape()
+        moved = zencad.Shape.from_ocp(box, context=context).translate(
+            index * 2.0, 0, 0
+        ).native()
         builder.Add(compound, moved)
     return compound
 
@@ -69,26 +71,12 @@ def organizer_model():
     spec = importlib.util.spec_from_file_location("zencad_test_organizer", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.organizer(3, 5, 27, 20, 64, 1.5, 5, 5).unlazy().Shape()
+    return module.organizer(3, 5, 27, 20, 64, 1.5, 5, 5).native()
 
 
 class SceneProtocolTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.previous_cache = zencad.lazy.cache
-        cls.cache_directory = TemporaryDirectory()
-        zencad.lazy.cache = DirCache_v2(cls.cache_directory.name)
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
-
-    @classmethod
-    def tearDownClass(cls):
-        zencad.lazy.cache = cls.previous_cache
-        cls.cache_directory.cleanup()
-
     def make_snapshot(self):
-        box_payload = encode_brep(zencad.box(10).unlazy())
+        box_payload = encode_brep(zencad.box(10))
         return SceneSnapshot(
             generation=7,
             objects=(
@@ -109,10 +97,10 @@ class SceneProtocolTest(unittest.TestCase):
 
     def test_brep_round_trip_representative_shapes(self):
         shapes = {
-            "box": zencad.box(10).unlazy().Shape(),
+            "box": zencad.box(10).native(),
             "boolean": (
                 zencad.box(20, center=True) - zencad.sphere(5)
-            ).unlazy().Shape(),
+            ).native(),
             "compound": compound_of_boxes(50),
             "organizer": organizer_model(),
         }
@@ -145,9 +133,9 @@ class SceneProtocolTest(unittest.TestCase):
         source = zencad.to_mesh(zencad.box(2))
         restored = decode_mesh(encode_mesh(source))
 
-        self.assertEqual(restored.positions, source.positions)
-        self.assertEqual(restored.normals, source.normals)
-        self.assertEqual(restored.triangles, source.triangles)
+        self.assertEqual(tuple(restored.positions), source.positions)
+        self.assertEqual(tuple(restored.normals), source.normals)
+        self.assertEqual(tuple(restored.triangles), source.triangles)
         self.assertEqual(restored.triangle_face_ids, [])
 
         corrupt = bytearray(encode_mesh(source))

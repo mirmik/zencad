@@ -5,38 +5,71 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def shell_constructor_contract(runtime: typed.Runtime, dynamic: bool) -> None:
+def shell_constructor_contract(context: typed.Context, dynamic: bool) -> None:
     points = (
-        runtime.point3(0, 0, 0),
-        runtime.point3(1, 0, 0),
-        runtime.point3(0, 1, 0),
-        runtime.point3(0, 0, 1),
+        context.call(typed.point3, 0, 0, 0),
+        context.call(typed.point3, 1, 0, 0),
+        context.call(typed.point3, 0, 1, 0),
+        context.call(typed.point3, 0, 0, 1),
     )
     faces = ((0, 2, 1), (0, 1, 3), (1, 2, 3), (2, 0, 3))
-    face = runtime.polygon((points[0], points[1], points[2]))
-    shell = assert_type(runtime.make_shell(face), typed.Shell)
-    assert_type(runtime.fill3d(shell), typed.Solid)
-    assert_type(runtime.polyhedron_shell(points, faces), typed.Shell)
-    assert_type(runtime.polyhedron(points, faces), typed.Solid)
-    assert_type(runtime.polyhedron(points, faces, True), typed.Shell)
-    assert_type(runtime.polyhedron(points, faces, dynamic), typed.Solid | typed.Shell)
-    assert_type(runtime.convex_hull(points), tuple[tuple[int, ...], ...])
-    assert_type(runtime.convex_hull_shape(points), typed.Solid)
-    assert_type(runtime.convex_hull_shape(points, shell=True), typed.Shell)
-    assert_type(runtime.convex_hull_shape(points, dynamic), typed.Solid | typed.Shell)
-    assert_type(runtime.tetrahedron(), typed.Solid)
-    assert_type(runtime.tetrahedron(shell=True), typed.Shell)
-    assert_type(runtime.hexahedron(), typed.Solid)
-    assert_type(runtime.hexahedron(1, None, True), typed.Shell)
-    assert_type(runtime.octahedron(), typed.Solid)
-    assert_type(runtime.octahedron(shell=True), typed.Shell)
-    assert_type(runtime.dodecahedron(), typed.Solid)
-    assert_type(runtime.dodecahedron(shell=True), typed.Shell)
-    assert_type(runtime.icosahedron(), typed.Solid)
-    assert_type(runtime.icosahedron(shell=True), typed.Shell)
-    assert_type(runtime.platonic(4), typed.Solid)
-    assert_type(runtime.platonic(20, shell=True), typed.Shell)
-    assert_type(runtime.platonic(6, 1, None, dynamic), typed.Solid | typed.Shell)
+    face = context.call(typed.polygon, (points[0], points[1], points[2]))
+    shell = assert_type(context.call(typed.make_shell, face), typed.Shell)
+    assert_type(context.call(typed.fill3d, shell), typed.Solid)
+    assert_type(context.call(typed.polyhedron_shell, points, faces), typed.Shell)
+    assert_type(context.call(typed.polyhedron, points, faces), typed.Solid)
+    assert_type(context.call(typed.polyhedron, points, faces, True), typed.Shell)
+    assert_type(
+        context.call(typed.polyhedron, points, faces, dynamic),
+        typed.Solid | typed.Shell,
+    )
+    assert_type(context.call(typed.convex_hull, points), tuple[tuple[int, ...], ...])
+    assert_type(context.call(typed.convex_hull_shape, points), typed.Solid)
+    assert_type(context.call(typed.convex_hull_shape, points, shell=True), typed.Shell)
+    assert_type(
+        context.call(typed.convex_hull_shape, points, dynamic),
+        typed.Solid | typed.Shell,
+    )
+    assert_type(
+        context.call(
+            typed.tetrahedron,
+        ),
+        typed.Solid,
+    )
+    assert_type(context.call(typed.tetrahedron, shell=True), typed.Shell)
+    assert_type(
+        context.call(
+            typed.hexahedron,
+        ),
+        typed.Solid,
+    )
+    assert_type(context.call(typed.hexahedron, 1, None, True), typed.Shell)
+    assert_type(
+        context.call(
+            typed.octahedron,
+        ),
+        typed.Solid,
+    )
+    assert_type(context.call(typed.octahedron, shell=True), typed.Shell)
+    assert_type(
+        context.call(
+            typed.dodecahedron,
+        ),
+        typed.Solid,
+    )
+    assert_type(context.call(typed.dodecahedron, shell=True), typed.Shell)
+    assert_type(
+        context.call(
+            typed.icosahedron,
+        ),
+        typed.Solid,
+    )
+    assert_type(context.call(typed.icosahedron, shell=True), typed.Shell)
+    assert_type(context.call(typed.platonic, 4), typed.Solid)
+    assert_type(context.call(typed.platonic, 20, shell=True), typed.Shell)
+    assert_type(
+        context.call(typed.platonic, 6, 1, None, dynamic), typed.Solid | typed.Shell
+    )
     module_shell = assert_type(typed.make_shell(face), typed.Shell)
     assert_type(typed.fill3d(module_shell), typed.Solid)
     assert_type(typed.polyhedron_shell(points, faces), typed.Shell)

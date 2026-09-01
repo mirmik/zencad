@@ -62,16 +62,16 @@ class TypedAffineTransformTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     store = SpyStore()
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=store,
                     )
-                    shape = runtime.box(2)
+                    shape = context.call(typed.box, 2)
                     factor = shape.mass() / 4
-                    affine = runtime.scaleXYZ(factor, 2, 3)
+                    affine = context.call(typed.scaleXYZ, factor, 2, 3)
                     point = affine(shape.center())
-                    vector = affine(runtime.vector(1, 2, 3))
+                    vector = affine(context.call(typed.vector, 1, 2, 3))
                     moved = shape.transform(affine)
                     observed_types.add(
                         tuple(
@@ -95,8 +95,8 @@ class TypedAffineTransformTest(unittest.TestCase):
         self.assertEqual(len(observed_types), 1)
 
     def test_general_matrix_applies_shear_and_translation(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        affine = runtime.affine(
+        context = typed.Context.deferred(cache=False)
+        affine = context.call(typed.affine,
             (
                 (1, 0.5, 0, 10),
                 (0, 2, 0.25, -3),
@@ -105,11 +105,11 @@ class TypedAffineTransformTest(unittest.TestCase):
         )
 
         self.assertCoordinatesAlmostEqual(
-            affine(runtime.point(2, 4, 6)).value(),
+            affine(context.call(typed.point, 2, 4, 6)).value(),
             (14.0, 6.5, 25.0),
         )
         self.assertCoordinatesAlmostEqual(
-            affine(runtime.vector(2, 4, 6)).value(),
+            affine(context.call(typed.vector, 2, 4, 6)).value(),
             (4.0, 9.5, 18.0),
         )
         self.assertCoordinatesAlmostEqual(affine.translation.value(), (10, -3, 7))
@@ -125,17 +125,17 @@ class TypedAffineTransformTest(unittest.TestCase):
         )
 
     def test_composition_inverse_and_similarity_promotion(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        affine = runtime.affine(
+        context = typed.Context.deferred(cache=False)
+        affine = context.call(typed.affine,
             (
                 (2, 0.25, 0, 1),
                 (0, 3, 0.5, -2),
                 (0, 0, 4, 5),
             )
         )
-        similarity = runtime.translation(7, 8, 9) * runtime.rotateZ(math.pi / 3)
-        point = runtime.point(2, -1, 0.5)
-        vector = runtime.vector(-3, 2, 4)
+        similarity = context.call(typed.translation, 7, 8, 9) * context.call(typed.rotateZ, math.pi / 3)
+        point = context.call(typed.point, 2, -1, 0.5)
+        vector = context.call(typed.vector, -3, 2, 4)
 
         outer_similarity = similarity * affine
         outer_affine = affine * similarity
@@ -167,23 +167,23 @@ class TypedAffineTransformTest(unittest.TestCase):
         )
 
     def test_non_uniform_scale_compatibility_and_shape_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        center = runtime.point(1, 2, 3)
+        context = typed.Context.deferred(cache=False)
+        center = context.call(typed.point, 1, 2, 3)
         affine = typed.AffineTransform.scaleXYZ(
             2,
             3,
             4,
-            runtime=runtime,
+            context=context,
             center=center,
         )
         self.assertIs(typed.GeneralTransformation, typed.AffineTransform)
         self.assertCoordinatesAlmostEqual(affine(center).value(), center.value())
         self.assertCoordinatesAlmostEqual(
-            affine(runtime.point(2, 4, 6)).value(),
+            affine(context.call(typed.point, 2, 4, 6)).value(),
             (3, 8, 15),
         )
 
-        shape = runtime.box(1, 2, 3)
+        shape = context.call(typed.box, 1, 2, 3)
         scaled = shape.scaleXYZ(2, 3, 4)
         self.assertIs(type(scaled), typed.Solid)
         self.assertAlmostEqual(float(scaled.mass()), 144.0, delta=1e-8)
@@ -205,11 +205,11 @@ class TypedAffineTransformTest(unittest.TestCase):
         )
 
     def test_ocp_round_trip_returns_fresh_mutable_values(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         native = gp_GTrsf()
         native.SetVectorialPart(gp_Mat(2, 0.5, 0, 0, 3, 0.25, 0, 0, 4))
         native.SetTranslationPart(gp_XYZ(5, -6, 7))
-        affine = typed.AffineTransform.from_ocp(native, runtime=runtime)
+        affine = typed.AffineTransform.from_ocp(native, context=context)
 
         first = affine.to_ocp()
         second = affine.to_ocp()
@@ -225,20 +225,20 @@ class TypedAffineTransformTest(unittest.TestCase):
             (5, -6, 7),
         )
         self.assertMatricesAlmostEqual(
-            typed.AffineTransform.from_ocp(second, runtime=runtime).matrix(),
+            typed.AffineTransform.from_ocp(second, context=context).matrix(),
             affine.matrix(),
         )
 
     def test_cache_uses_explicit_affine_serializer_and_fresh_process(self):
         store = SpyStore()
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        factor = runtime.box(2).mass() / 4
-        affine = runtime.scaleXYZ(factor, 2, 3)
+        factor = context.call(typed.box, 2).mass() / 4
+        affine = context.call(typed.scaleXYZ, factor, 2, 3)
         self.assertAlmostEqual(float(affine.determinant), 12.0, delta=TOLERANCE)
 
         records = [
@@ -261,13 +261,13 @@ from evalcache.v2 import MappingCacheStore
 from zencad import _typed as typed
 
 events = []
-runtime = typed.Runtime.deferred(
+context = typed.Context.deferred(
     cache=True,
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-factor = runtime.box(2).mass() / 4
-print(float(runtime.scaleXYZ(factor, 2, 3).determinant))
+factor = context.call(typed.box, 2).mass() / 4
+print(float(context.call(typed.scaleXYZ, factor, 2, 3).determinant))
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:
@@ -297,28 +297,28 @@ print(json.dumps(Counter(event.kind.value for event in events)))
         self.assertGreater(first_counts.get("cache_store", 0), 0)
         self.assertGreater(second_counts.get("cache_hit", 0), 0)
 
-    def test_invalid_inputs_and_runtime_mixing_fail_explicitly(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
-        singular = runtime.affine(((0, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0)))
+    def test_invalid_inputs_and_context_mixing_fail_explicitly(self):
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
+        singular = context.call(typed.affine, ((0, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0)))
 
         with self.assertRaisesRegex(ValueError, "3x4"):
-            runtime.affine(((1, 0), (0, 1)))
+            context.call(typed.affine, ((1, 0), (0, 1)))
         with self.assertRaisesRegex(ValueError, "finite"):
-            runtime.affine(((math.nan, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0)))
+            context.call(typed.affine, ((math.nan, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0)))
         with self.assertRaisesRegex(ValueError, "singular"):
             singular.inverse()
         with self.assertRaisesRegex(TypeError, "Point3 or Vector3"):
-            runtime.scaleX(2).apply(runtime.point2(1, 2))
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            _ = runtime.scaleX(2) * other.scaleY(3)
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.box(1).transform(other.scaleZ(4))
+            context.call(typed.scaleX, 2).apply(context.call(typed.point2, 1, 2))
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            _ = context.call(typed.scaleX, 2) * other.call(typed.scaleY, 3)
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.box, 1).transform(other.call(typed.scaleZ, 4))
         with self.assertRaisesRegex(TypeError, "gp_GTrsf"):
-            typed.AffineTransform.from_ocp(object(), runtime=runtime)
+            typed.AffineTransform.from_ocp(object(), context=context)
 
-        deferred_factor = runtime.box(1).mass() - runtime.box(1).mass()
-        deferred_singular = runtime.scaleX(deferred_factor)
+        deferred_factor = context.call(typed.box, 1).mass() - context.call(typed.box, 1).mass()
+        deferred_singular = context.call(typed.scaleX, deferred_factor)
         self.assertIsInstance(deferred_singular._state, Expression)
         with self.assertRaisesRegex(ValueError, "singular"):
             deferred_singular.inverse().matrix()

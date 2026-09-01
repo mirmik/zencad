@@ -20,7 +20,7 @@ def main():
     from zencad.scene import Scene
 
     scene = Scene()
-    interactive = scene.add(zencad.box(10).unlazy())
+    interactive = scene.add(zencad.box(10))
 
     widget = DisplayWidget(axis_triedron=False)
     widget.resize(640, 480)
@@ -76,7 +76,7 @@ def main():
     context = reopened.Context
 
     first_draft = SceneDraft(1)
-    first_draft.add(zencad.box(5).unlazy())
+    first_draft.add(zencad.box(5))
     reopened.apply_snapshot(first_draft.snapshot())
     first_object = reopened.scene_presenter.objects[0].ais_object
     assert context.IsDisplayed(first_object)
@@ -85,7 +85,7 @@ def main():
     context.SetSelected(first_object, True)
 
     second_draft = SceneDraft(2)
-    second_draft.add(zencad.sphere(3).unlazy())
+    second_draft.add(zencad.sphere(3))
     reopened.apply_snapshot(second_draft.snapshot())
     second_object = reopened.scene_presenter.objects[0].ais_object
     assert not context.IsDisplayed(first_object)

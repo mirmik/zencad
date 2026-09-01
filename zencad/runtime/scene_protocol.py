@@ -116,6 +116,8 @@ class SceneSnapshot:
 
 def encode_brep(shape) -> bytes:
     """Serialize a ZenCad Shape or raw TopoDS_Shape to BREP bytes."""
+    if hasattr(shape, "native"):
+        shape = shape.native()
     if hasattr(shape, "Shape"):
         shape = shape.Shape()
     if not isinstance(shape, TopoDS_Shape):

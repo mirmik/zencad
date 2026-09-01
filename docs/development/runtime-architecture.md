@@ -59,69 +59,35 @@ does not disable lazy evaluation. The accepted rationale and security boundary
 are recorded in
 [Shared user cache and Qt-independent configuration](../architecture-council/2026-08-30-shared-user-cache.md).
 
-## Computation-type migration
+## Computation model
 
-The current runner still evaluates public `evalcache.LazyObject` values and
-materializes them at scene and export boundaries. A private `zencad._typed`
-vertical slice now proves the replacement model with stable Shape, Face,
-Scalar, Point2/Point3, Vector2/Vector3, Quaternion, Transform, and
-typed-sequence handles. Its topology core adds the direct Shape subtypes
-Vertex, Edge, Wire, Face, Shell, Solid, Compound, and CompSolid. `box()` now
-accepts scalar or graph-aware `Vector3` dimensions and returns `Solid`;
-`sphere()` also returns `Solid`, `segment()` returns `Edge`, `polysegment()`
-returns `Wire`, and `polygon()`/`rectangle()` return `Face`. Typed transform
-and translation preserve the precise topology subtype, while binary union,
-difference, and intersection conservatively return `Shape`.
-`Vertex.point()` is the explicit transition from topology to a geometric
-`Point3`. The private value layer now has policy-independent algebra, constant
-folding for resolved operands, and explicit Python/NumPy/OCP materialization
-boundaries. `Transform` is the immutable
-similarity model `p' = s R(p) + t`; signed uniform scale includes mirrors while
-shear and non-uniform scale remain reserved for a separate future affine type.
-Quaternion and Transform composition, inverse, and point/vector application
-preserve typed expression dependencies. A private `Shape.transform(Transform)`
-adapter converts to mutable `gp_Trsf` only inside its resolved operation. The
-immediate/deferred and cache on/off policies do not change domain classes, and
-resolved Shapes cross the cache boundary as BREP artifacts rather than pickled
-OCP objects. Topology handles likewise hide their expression state.
-`from_ocp()` and `native()` form deep-copy snapshot boundaries; only the
-private `_legacy()` adapter borrows a resolved Shape value for compatibility.
-The complete typed topology-query surface now consists of `vertices()`,
-`edges()`, `wires()`, `faces()`, `shells()`, `solids()`, `compounds()`, and
-`compsolids()`. Each returns `ShapeList` parameterized by the exact
-topology-handle type; `DeferredSequence` remains its compatibility alias.
-Indexing, slicing, filtering, and sorting compose typed expressions without
-evaluating the sequence in deferred mode. `len()`, iteration, and grouping
-materialize the query tuple. In immediate mode, query and item expressions are
-evaluated when constructed, as required by the runtime policy. Query tuples
-are deliberately not cacheable, while indexed items are independently
-cacheable through their precise validated BREP serializers. The selector
-contract and tolerance semantics are detailed in
-[`topology-selectors.md`](topology-selectors.md).
+The runner evaluates the same public domain handles exported by `zencad`. A
+minimal `Context` owns one EvalCache v2 evaluator, cache policy, store, and
+progress hooks. It does not expose CAD methods: scripts use module operations,
+domain methods, or `context.call(zencad.box, ...)` when they need an explicit
+owner. Deferred/immediate and cache on/off policies never change public classes.
 
-`vertices()` deduplicates by OCCT `IsSame` identity (TShape plus Location,
-ignoring Orientation), not by coordinate distance. Distinct TShapes at one
-coordinate are retained, as are occurrences of one TShape at different
-Locations. Results follow first topology-traversal occurrence order; this is
-not a stable topological-naming facility. The other seven queries preserve
-the legacy `TopExp_Explorer` occurrence semantics, including repeated shared
-subshapes (a box has 24 edge occurrences). A root of the requested kind is
-included, and nested shapes of that same kind are not traversed.
+`Shape`, its exact topology subtypes, values, curves, surfaces, transforms,
+bounds, meshes, and structured results retain expressions internally. The
+runner reports v2 evaluation events directly; it does not install the former
+LazyObject notification bridge. The old `Runtime` facade,
+`RuntimeCompatibility`, `zencad.lazy`, `LazyObjectShape`,
+`.unlazy()`, and `zencad/lazifier.py` are removed.
 
-Factory arguments can retain deferred `Scalar`, `Point3`, and `Vector3`
-dependencies. All shape-producing operations cross persistent cache through
-validated BREP records; a cached boolean result can bypass both input graphs.
-The bounded private `.unlazy()` compatibility method materializes and returns
-the same handle, while `native()` returns an owned OCP snapshot and `_legacy()`
-remains the only borrowed internal adapter. The Shape/topology stage is now
-complete; remaining geometry and runtime boundaries are the next computation-
-type migration gate.
+Materialization is explicit and directional:
 
-The private slice is not wired into the runner or public root API yet. Its
-accepted constraints, measurements, and remaining staged gates are recorded in
-[Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md)
-and the
-[typed domain migration plan](typed-domain-migration.md).
+- `value()` returns an immutable Python record or scalar snapshot;
+- `native()` returns an owned mutable OCP snapshot;
+- scene/export boundaries encode BREP or mesh data and do not leak native OCP
+  ownership across processes;
+- private eager `zencad.geom` adapters operate only behind the domain backend
+  and do not construct evaluation proxies.
+
+Topology queries return `ShapeList[T]` with precise element types. Indexing,
+filtering, sorting, and domain composition retain graph ownership; iteration,
+length, `value()`, `native()`, and transport encoding are deliberate
+evaluation boundaries. Selector identity and tolerance semantics are detailed
+in [`topology-selectors.md`](topology-selectors.md).
 
 ## Snapshot lifecycle
 

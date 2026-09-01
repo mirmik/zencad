@@ -1,9 +1,8 @@
-"""Private proving ground for ZenCad's future typed domain API.
+"""Typed ZenCad domain API.
 
-Nothing in this package is re-exported from :mod:`zencad` yet.
+The package remains importable for migration tooling, while its public names
+are re-exported from :mod:`zencad`.
 """
-
-from typing import TYPE_CHECKING
 
 from zencad.geom.validation import (
     ShapeValidationError,
@@ -128,7 +127,6 @@ from .records import (
 )
 from .selectors import Axis, GeomType, Plane
 from .context import Context
-from .runtime import RuntimeCompatibility
 from .shell_constructors import (
     convex_hull,
     convex_hull_shape,
@@ -263,15 +261,6 @@ from .values import (
 )
 from .wire_builder import WireBuilder, wire_builder
 
-if TYPE_CHECKING:
-    Runtime = RuntimeCompatibility
-
-
-def __getattr__(name: str) -> object:
-    if name == "Runtime":
-        return RuntimeCompatibility
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 __all__ = [
     "Axis",
     "Compound",
@@ -305,7 +294,6 @@ __all__ = [
     "Plane",
     "Quaternion",
     "Context",
-    "RuntimeCompatibility",
     "resolve_context",
     "Scalar",
     "SliceResult",

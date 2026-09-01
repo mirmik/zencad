@@ -7,6 +7,8 @@ import sys
 import traceback
 from uuid import uuid4
 
+from evalcache import EvaluationEventKind
+
 from zencad.runtime.input_protocol import (
     InputEventBuffer,
     decode_input_frame,
@@ -83,7 +85,7 @@ class _OutputStream:
                 self.reporter.control(
                     "output",
                     stream=self.stream,
-                    text=text[offset:offset + 64 * 1024],
+                    text=text[offset : offset + 64 * 1024],
                 )
         return len(text)
 
@@ -94,15 +96,26 @@ class _OutputStream:
         return False
 
 
-class _EvalCacheCommunicator:
-    def __init__(self, reporter):
-        self.reporter = reporter
+def _progress_hook(reporter):
+    operation_by_kind = {
+        EvaluationEventKind.START: "evaluate",
+        EvaluationEventKind.CACHE_HIT: "load",
+        EvaluationEventKind.MEMORY_HIT: "memory",
+    }
 
-    def send(self, data):
-        if data.get("cmd") != "evalcache":
+    def report(event):
+        operation = operation_by_kind.get(event.kind)
+        if operation is None:
             return
-        payload = {key: value for key, value in data.items() if key != "cmd"}
-        self.reporter.control("progress", **payload)
+        reporter.control(
+            "progress",
+            subcmd="progress",
+            operation=operation,
+            object=event.operation_id,
+            digest=event.expression_digest,
+        )
+
+    return report
 
 
 def _cancel_trace(cancel_event):
@@ -170,7 +183,8 @@ def run_generation(
             raise NotADirectoryError(cwd)
 
         import zencad
-        from zencad.lazifier import install_evalcahe_notication
+        from zencad import Context
+        from zencad.operation import using_context
         from zencad.showapi import managed_scene
 
         cache_directory = request.get("cache_directory")
@@ -183,7 +197,10 @@ def run_generation(
                 cache_enabled=cache_enabled,
             )
 
-        install_evalcahe_notication(_EvalCacheCommunicator(reporter))
+        context = Context.deferred(
+            cache=cache_enabled,
+            progress_hooks=(_progress_hook(reporter),),
+        )
         reporter.control("started", pid=os.getpid(), cwd=str(cwd))
         reporter.control("progress", subcmd="runner", phase="evaluating")
 
@@ -197,19 +214,20 @@ def run_generation(
             sys.stdout = _OutputStream(reporter, "stdout")
             sys.stderr = _OutputStream(reporter, "stderr")
             sys.settrace(_cancel_trace(cancel_event))
-            with managed_scene(
-                generation,
-                lambda snapshot: reporter.scene(snapshot, bundle_root),
-                patch_publisher=reporter.scene_patch,
-                ready_publisher=lambda revision, animated: reporter.control(
-                    "ready",
-                    scene_revision=revision,
-                    animated=animated,
-                ),
-                cancel_event=cancel_event,
-                input_drain=input_receiver.drain,
-            ):
-                runpy.run_path(str(script_path), run_name="__main__")
+            with using_context(context):
+                with managed_scene(
+                    generation,
+                    lambda snapshot: reporter.scene(snapshot, bundle_root),
+                    patch_publisher=reporter.scene_patch,
+                    ready_publisher=lambda revision, animated: reporter.control(
+                        "ready",
+                        scene_revision=revision,
+                        animated=animated,
+                    ),
+                    cancel_event=cancel_event,
+                    input_drain=input_receiver.drain,
+                ):
+                    runpy.run_path(str(script_path), run_name="__main__")
             terminal_status = "success"
         finally:
             sys.settrace(None)

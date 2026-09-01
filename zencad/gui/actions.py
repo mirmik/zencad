@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import os
+from pathlib import Path
 import tempfile
 import subprocess
 
@@ -296,17 +297,11 @@ class MainWindowActionsMixin:
         self._send_viewer_command({"cmd": "orient2"})
 
     def invalidateCacheAction(self):
-        if not zencad.lazifier.get_cache_configuration().enabled:
+        if not zencad.cache_config.current_cache_configuration().enabled:
             print("Invalidate cache: cache is disabled")
             return
-        files = zencad.lazy.cache.keys()
-        for f in zencad.lazy.cache.keys():
-            del zencad.lazy.cache[f]
-
-        if hasattr(zencad.lazy.cache, "clean_tmp"):
-            zencad.lazy.cache.clean_tmp()
-
-        print("Invalidate cache: %d files removed" % len(files))
+        removed = zencad.clear_cache()
+        print("Invalidate cache: %d files removed" % removed)
 
     def cacheInfoAction(self):
         def get_size(start_path="."):
@@ -327,16 +322,24 @@ class MainWindowActionsMixin:
         msgBox = QMessageBox(self)
         msgBox.setWindowTitle("Cache Info")
         msgBox.setWindowModality(Qt.WindowModal)
-        configuration = zencad.lazifier.get_cache_configuration()
-        cache = zencad.lazifier.lazy.cache
-        file_count = 0 if not configuration.enabled else len(cache.keys())
+        configuration = zencad.cache_config.current_cache_configuration()
+        cache_path = configuration.directory
+        file_count = (
+            0
+            if not configuration.enabled or not cache_path.is_dir()
+            else sum(
+                len(filenames)
+                for dirpath, _dirnames, filenames in os.walk(cache_path)
+                if Path(dirpath).name != "tmp"
+            )
+        )
         cache_size = (
             0
             if (
                 not configuration.enabled
-                or not os.path.isdir(zencad.lazifier.cachepath)
+                or not cache_path.is_dir()
             )
-            else get_size(zencad.lazifier.cachepath)
+            else get_size(cache_path)
         )
         msgBox.setInformativeText(
             "Enabled: {}"
@@ -345,8 +348,8 @@ class MainWindowActionsMixin:
             "<p>Files: {}"
             "<p>Size: {}".format(
                 "yes" if configuration.enabled else "no",
-                zencad.lazifier.cachepath,
-                zencad.lazifier.algo().name,
+                cache_path,
+                "sha256",
                 file_count,
                 sizeof_fmt(cache_size),
             )

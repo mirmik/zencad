@@ -5,18 +5,23 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def bounds_contract(runtime: typed.Runtime, shape: typed.Shape) -> None:
-    minimum = runtime.point(0, 0, 0)
-    maximum = runtime.point(1, 2, 3)
+def bounds_contract(context: typed.Context, shape: typed.Shape) -> None:
+    minimum = context.call(typed.point, 0, 0, 0)
+    maximum = context.call(typed.point, 1, 2, 3)
     bounds = assert_type(
-        runtime.boundary_box(minimum, maximum),
+        context.call(typed.boundary_box, minimum, maximum),
         typed.BoundaryBox,
     )
     assert_type(typed.boundary_box(minimum, maximum), typed.BoundaryBox)
     assert_type(typed.empty_boundary_box(), typed.BoundaryBox)
     assert_type(typed.boundbox(shape), typed.BoundaryBox)
 
-    assert_type(runtime.empty_boundary_box(), typed.BoundaryBox)
+    assert_type(
+        context.call(
+            typed.empty_boundary_box,
+        ),
+        typed.BoundaryBox,
+    )
     assert_type(shape.boundbox(), typed.BoundaryBox)
     assert_type(shape.bbox(), typed.BoundaryBox)
     assert_type(bounds.union(shape.boundbox()), typed.BoundaryBox)
@@ -43,4 +48,3 @@ def bounds_contract(runtime: typed.Runtime, shape: typed.Shape) -> None:
     assert_type(interval.length(), typed.Scalar)
     assert_type(interval.value(), tuple[float, float])
     assert_type(bounds.value(), typed.BoundaryBoxRecord)
-    assert_type(bounds.unlazy(), typed.BoundaryBox)

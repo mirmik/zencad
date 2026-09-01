@@ -53,6 +53,22 @@ x86-64/aarch64 with glibc 2.31 or newer. The `gui` extra is available on
 Windows x86-64, macOS x86-64/arm64, and Linux x86-64; PyQt5 does not currently
 publish Linux aarch64 wheels.
 
+ZenCad 2 uses stable domain handles at the public root. Geometry operations are
+module functions and domain methods; `Context` selects deferred/immediate and
+cache policy without duplicating the CAD API:
+
+```python
+import zencad
+
+context = zencad.Context.deferred(cache=True)
+shape = context.call(zencad.box, 10).fillet(1)
+print(shape.mass().value())
+native_shape = shape.native()
+```
+
+The former `Runtime`, `zencad.lazy`, and `.unlazy()` API is not part of ZenCad
+2.
+
 To run ZenCad from a Linux or macOS source checkout:
 
 ```sh

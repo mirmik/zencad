@@ -277,7 +277,7 @@ class wire_builder:
         shp = zencad.circle(r, angle=angle, wire=True).rotZ(
             vangle).mov(vector3(c))
         self.edges.append(shp)
-        ep = shp.endpoints().unlazy()
+        ep = shp.endpoints()
         self.current = ep[1] if angle >= 0 else ep[0]
         return self
 
@@ -293,7 +293,7 @@ class wire_builder:
                .rotZ(vangle).mov(vector3(c)))
 
         self.edges.append(shp)
-        ep = shp.endpoints().unlazy()
+        ep = shp.endpoints()
         self.current = ep[1] if angle >= 0 else ep[0]
         return self
 

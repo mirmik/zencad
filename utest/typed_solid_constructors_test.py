@@ -5,7 +5,7 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_SOLID
 
 from zencad import _typed as typed
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 
@@ -24,13 +24,13 @@ class TypedSolidConstructorsTest(unittest.TestCase):
                 self.assertIsInstance(getattr(typed, name), DomainOperation)
 
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        radius = runtime.scalar(2)
+        radius = context.call(typed.scalar, 2)
         sphere = typed.sphere(radius)
-        with using_runtime(runtime):
+        with using_context(context):
             values = (
                 typed.cube(2, 3, 4),
                 sphere,
@@ -41,8 +41,8 @@ class TypedSolidConstructorsTest(unittest.TestCase):
             )
             remade = typed.make_solid(typed.box(2).shells()[0])
 
-        self.assertTrue(all(value.runtime is runtime for value in values))
-        self.assertIs(remade.runtime, runtime)
+        self.assertTrue(all(value.context is context for value in values))
+        self.assertIs(remade.context, context)
         self.assertEqual(events, [])
         self.assertAlmostEqual(float(values[0].mass()), 24.0)
         self.assertAlmostEqual(float(remade.mass()), 8.0)
@@ -54,19 +54,19 @@ class TypedSolidConstructorsTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
                     values = (
-                        runtime.cube(2, 3, 4, True),
-                        runtime.sphere(2),
-                        runtime.cylinder(2, 3, center=True),
-                        runtime.cone(2, 1, 3, center=True),
-                        runtime.torus(4, 1),
-                        runtime.halfspace(),
+                        context.call(typed.cube, 2, 3, 4, True),
+                        context.call(typed.sphere, 2),
+                        context.call(typed.cylinder, 2, 3, center=True),
+                        context.call(typed.cone, 2, 1, 3, center=True),
+                        context.call(typed.torus, 4, 1),
+                        context.call(typed.halfspace, ),
                     )
 
                     policy_types = tuple(type(value) for value in values)
@@ -90,16 +90,16 @@ class TypedSolidConstructorsTest(unittest.TestCase):
         self.assertEqual(len(observed_types), 1)
 
     def test_legacy_size_center_and_angular_variants(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
 
-        box = runtime.box(size=(2, 4, 6), center="xz")
-        cube = runtime.cube(size=runtime.vector(2, 4, 6), center=True)
-        sphere = runtime.sphere(2, yaw=math.pi, pitch=(-1, 1))
-        scalar_pitch_sphere = runtime.sphere(2, pitch=1)
-        cylinder = runtime.cylinder(2, 3, yaw=math.pi, center=True)
-        cone = runtime.cone(2, 1, 3, yaw=math.pi, center=True)
-        torus = runtime.torus(4, 1, yaw=math.pi, pitch=(-0.5, 0.5))
-        scalar_pitch_torus = runtime.torus(4, 1, pitch=0.5)
+        box = context.call(typed.box, size=(2, 4, 6), center="xz")
+        cube = context.call(typed.cube, size=context.call(typed.vector, 2, 4, 6), center=True)
+        sphere = context.call(typed.sphere, 2, yaw=math.pi, pitch=(-1, 1))
+        scalar_pitch_sphere = context.call(typed.sphere, 2, pitch=1)
+        cylinder = context.call(typed.cylinder, 2, 3, yaw=math.pi, center=True)
+        cone = context.call(typed.cone, 2, 1, 3, yaw=math.pi, center=True)
+        torus = context.call(typed.torus, 4, 1, yaw=math.pi, pitch=(-0.5, 0.5))
+        scalar_pitch_torus = context.call(typed.torus, 4, 1, pitch=0.5)
 
         self.assertEqual(box.boundbox().center.value(), (0.0, 2.0, 0.0))
         self.assertEqual(cube.boundbox().center.value(), (0.0, 0.0, 0.0))
@@ -115,17 +115,17 @@ class TypedSolidConstructorsTest(unittest.TestCase):
 
     def test_scalar_constructor_arguments_preserve_the_graph(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        unit = runtime.box(2).mass() / 8
+        unit = context.call(typed.box, 2).mass() / 8
         values = (
-            runtime.cube(unit * 2),
-            runtime.sphere(unit * 2, yaw=unit * math.pi, pitch=(-unit, unit)),
-            runtime.cylinder(unit * 2, unit * 3, yaw=unit * math.pi),
-            runtime.cone(unit * 2, unit, unit * 3),
-            runtime.torus(unit * 4, unit),
+            context.call(typed.cube, unit * 2),
+            context.call(typed.sphere, unit * 2, yaw=unit * math.pi, pitch=(-unit, unit)),
+            context.call(typed.cylinder, unit * 2, unit * 3, yaw=unit * math.pi),
+            context.call(typed.cone, unit * 2, unit, unit * 3),
+            context.call(typed.torus, unit * 4, unit),
         )
 
         self.assertEqual(events, [])
@@ -136,14 +136,14 @@ class TypedSolidConstructorsTest(unittest.TestCase):
     def test_empty_shape_is_the_topology_zero_and_is_cacheable(self):
         store = MemoryCacheStore()
         first_events = []
-        first = typed.Runtime.deferred(
+        first = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(first_events.append,),
         )
-        empty = first.empty_shape()
-        legacy_empty = first.nullshape()
-        solid = first.box(1)
+        empty = first.call(typed.empty_shape, )
+        legacy_empty = first.call(typed.nullshape, )
+        solid = first.call(typed.box, 1)
 
         self.assertIs(type(empty), typed.Shape)
         self.assertIs(type(legacy_empty), typed.Shape)
@@ -162,12 +162,12 @@ class TypedSolidConstructorsTest(unittest.TestCase):
         )
 
         second_events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(second_events.append,),
         )
-        restored = second.empty_shape()
+        restored = second.call(typed.empty_shape, )
         self.assertFalse(restored.native().IsNull())
         self.assertAlmostEqual(float(restored.mass()), 0.0)
         self.assertTrue(
@@ -180,13 +180,13 @@ class TypedSolidConstructorsTest(unittest.TestCase):
 
     def test_make_solid_composes_shell_handles(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        shell = runtime.box(2).shells()[0]
-        solid = runtime.make_solid(shell)
-        solid_from_sequence = runtime.make_solid((shell,))
+        shell = context.call(typed.box, 2).shells()[0]
+        solid = context.call(typed.make_solid, shell)
+        solid_from_sequence = context.call(typed.make_solid, (shell,))
 
         self.assertIs(type(solid), typed.Solid)
         self.assertIs(type(solid_from_sequence), typed.Solid)
@@ -195,19 +195,19 @@ class TypedSolidConstructorsTest(unittest.TestCase):
         self.assertAlmostEqual(float(solid_from_sequence.mass()), 8.0)
 
     def test_invalid_solid_constructor_inputs_fail_at_the_typed_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "exactly two scalar bounds"):
-            runtime.sphere(1, pitch=(0, 1, 2))
+            context.call(typed.sphere, 1, pitch=(0, 1, 2))
         with self.assertRaisesRegex(TypeError, "center must be bool"):
-            runtime.cylinder(1, 2, center="z")  # type: ignore[arg-type]
+            context.call(typed.cylinder, 1, 2, center="z")  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "at least one Shell"):
-            runtime.make_solid(())
+            context.call(typed.make_solid, ())
         with self.assertRaisesRegex(TypeError, "only Shell"):
-            runtime.make_solid((runtime.box(1),))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.make_solid(other.box(1).shells()[0])
+            context.call(typed.make_solid, (context.call(typed.box, 1),))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.make_solid, other.call(typed.box, 1).shells()[0])
 
 
 if __name__ == "__main__":

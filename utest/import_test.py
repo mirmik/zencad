@@ -51,7 +51,7 @@ class BlockLegacyAndQt(importlib.abc.MetaPathFinder):
 
 sys.meta_path.insert(0, BlockLegacyAndQt())
 import zencad
-assert abs(zencad.box(1).unlazy().mass() - 1.0) < 1e-8
+assert abs(zencad.box(1).mass().value() - 1.0) < 1e-8
 """
         result = subprocess.run(
             [sys.executable, "-c", code],

@@ -36,7 +36,7 @@ from OCP.gp import (
 from zencad import _typed as typed
 from zencad._typed import _curve_operations as curve_ops
 from zencad._typed._serialization import CurveSerializer
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 
 
 def _assert_coordinates(
@@ -55,11 +55,11 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             with self.subTest(operation=name):
                 self.assertIsInstance(getattr(typed, name), DomainOperation)
 
-        runtime = typed.Runtime.deferred(cache=False)
-        seed = runtime.box(2)
-        section = runtime.circle_curve(1)
-        spine = runtime.circle_curve(3)
-        with using_runtime(runtime):
+        context = typed.Context.deferred(cache=False)
+        seed = context.call(typed.box, 2)
+        section = context.call(typed.circle_curve, 1)
+        spine = context.call(typed.circle_curve, 3)
+        with using_context(context):
             cylinder = typed.cylinder_surface(seed.mass() / 4)
             scale = typed.constant_sweep_scale(1, spine.range())
             section_law = typed.evolved_sweep_section(section, scale)
@@ -71,9 +71,9 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             u_iso = cylinder.u_iso(seed.center().x)
             v_iso = cylinder.v_iso(seed.center().x)
             mapped = cylinder.map(
-                typed.segment2(runtime.point2(0, 0), runtime.point2(1, 1))
+                typed.segment2(context.call(typed.point2, 0, 0), context.call(typed.point2, 1, 1))
             )
-            face_surface = runtime.rectangle(1, 2).surface()
+            face_surface = context.call(typed.rectangle, 1, 2).surface()
 
         values = (
             cylinder,
@@ -86,7 +86,7 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             mapped,
             face_surface,
         )
-        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertTrue(all(value.context is context for value in values))
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
@@ -109,27 +109,27 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    cylinder = runtime.cylinder_surface(2)
-                    section = runtime.circle_curve(1)
-                    spine = runtime.circle_curve(3)
-                    sweep = runtime.sweep_surface(section, spine)
-                    scale_law = runtime.constant_sweep_scale(1, spine.range())
-                    section_law = runtime.evolved_sweep_section(section, scale_law)
-                    location_law = runtime.sweep_location(spine)
-                    law_sweep = runtime.sweep_surface_from_laws(
+                    cylinder = context.call(typed.cylinder_surface, 2)
+                    section = context.call(typed.circle_curve, 1)
+                    spine = context.call(typed.circle_curve, 3)
+                    sweep = context.call(typed.sweep_surface, section, spine)
+                    scale_law = context.call(typed.constant_sweep_scale, 1, spine.range())
+                    section_law = context.call(typed.evolved_sweep_section, section, scale_law)
+                    location_law = context.call(typed.sweep_location, spine)
+                    law_sweep = context.call(typed.sweep_surface_from_laws,
                         section_law,
                         location_law,
                     )
                     mapped = cylinder.map(
-                        runtime.segment2(
-                            runtime.point2(0, 0),
-                            runtime.point2(math.pi / 2, 3),
+                        context.call(typed.segment2,
+                            context.call(typed.point2, 0, 0),
+                            context.call(typed.point2, math.pi / 2, 3),
                         )
                     )
 
@@ -188,50 +188,43 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                         tuple(float(value) for value in sweep.v_range()),
                         (0.0, 2 * math.pi),
                     )
-                    self.assertIs(cylinder.unlazy(), cylinder)
-                    self.assertIs(sweep.unlazy(), sweep)
-
         self.assertEqual(len(observed_types), 1)
 
     def test_sweep_laws_are_immutable_graph_compositions(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        section = runtime.circle_curve(1)
-        spine = runtime.circle_curve(3)
-        scale = runtime.constant_sweep_scale(2, spine.range())
-        section_law = runtime.evolved_sweep_section(section, scale)
-        location = runtime.sweep_location(spine, typed.SweepTrihedron.FRENET)
+        context = typed.Context.deferred(cache=False)
+        section = context.call(typed.circle_curve, 1)
+        spine = context.call(typed.circle_curve, 3)
+        scale = context.call(typed.constant_sweep_scale, 2, spine.range())
+        section_law = context.call(typed.evolved_sweep_section, section, scale)
+        location = context.call(typed.sweep_location, spine, typed.SweepTrihedron.FRENET)
 
-        self.assertIs(scale.runtime, runtime)
-        self.assertIs(section_law.runtime, runtime)
-        self.assertIs(location.runtime, runtime)
+        self.assertIs(scale.context, context)
+        self.assertIs(section_law.context, context)
+        self.assertIs(location.context, context)
         self.assertEqual(scale.scale.value(), 2)
         self.assertEqual(scale.domain.value(), (0, 2 * math.pi))
         self.assertIs(section_law.section, section)
         self.assertIs(section_law.scale, scale)
         self.assertIs(location.spine, spine)
         self.assertIs(location.trihedron, typed.SweepTrihedron.FRENET)
-        self.assertIs(scale.unlazy(), scale)
-        self.assertIs(section_law.unlazy(), section_law)
-        self.assertIs(location.unlazy(), location)
-
         with self.assertRaises(FrozenInstanceError):
-            scale.scale = runtime.scalar(3)  # type: ignore[misc]
+            scale.scale = context.call(typed.scalar, 3)  # type: ignore[misc]
         with self.assertRaises(FrozenInstanceError):
             location.trihedron = typed.SweepTrihedron.CORRECTED_FRENET  # type: ignore[misc]
 
     def test_scalar_and_curve_inputs_remain_in_the_graph(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        seed = runtime.box(2)
+        seed = context.call(typed.box, 2)
         radius = seed.mass() / 4
         scale = seed.mass() / 8
-        cylinder = runtime.cylinder_surface(radius)
-        sweep = runtime.sweep_surface(
-            runtime.circle_curve(radius / 2),
-            runtime.circle_curve(radius + 1),
+        cylinder = context.call(typed.cylinder_surface, radius)
+        sweep = context.call(typed.sweep_surface,
+            context.call(typed.circle_curve, radius / 2),
+            context.call(typed.circle_curve, radius + 1),
             scale=scale,
             trihedron=typed.SweepTrihedron.FRENET,
         )
@@ -239,9 +232,9 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         normal = cylinder.normal(seed.center().x, seed.center().z)
         iso = cylinder.v_iso(seed.center().z)
         mapped = cylinder.map(
-            runtime.segment2(
-                runtime.point2(0, 0),
-                runtime.point2(seed.center().x, seed.center().z),
+            context.call(typed.segment2,
+                context.call(typed.point2, 0, 0),
+                context.call(typed.point2, seed.center().x, seed.center().z),
             )
         )
 
@@ -270,14 +263,14 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         self.assertTrue(events)
 
     def test_native_boundaries_preserve_full_precision_and_ownership(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         coordinate = 0.123456789012345
         radius = 2.123456789012345
         source = Geom_CylindricalSurface(
             gp_Ax3(gp_Pnt(coordinate, 0, 0), gp_Dir(0, 0, 1)),
             radius,
         )
-        surface = typed.Surface.from_ocp(source, runtime=runtime)
+        surface = typed.Surface.from_ocp(source, context=context)
         self.assertIs(get_type_hints(typed.Surface.native)["return"], Geom_Surface)
         source.SetRadius(9)
         first = surface.native()
@@ -291,7 +284,7 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                 gp_Ax2(gp_Pnt(coordinate, 0, 0), gp_Dir(0, 0, 1)),
                 radius,
             ),
-            runtime=runtime,
+            context=context,
         ).native()
         self.assertEqual(curve.Location().X(), coordinate)
         self.assertEqual(curve.Radius(), radius)
@@ -302,16 +295,16 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                 radius,
                 1.1,
             ),
-            runtime=runtime,
+            context=context,
         ).native()
         self.assertEqual(curve2.Location().X(), coordinate)
         self.assertEqual(curve2.MajorRadius(), radius)
 
         with self.assertRaisesRegex(TypeError, "Geom_Surface"):
-            typed.Surface.from_ocp(curve, runtime=runtime)  # type: ignore[arg-type]
+            typed.Surface.from_ocp(curve, context=context)  # type: ignore[arg-type]
 
     def test_sweep_scale_law_uses_the_spine_parameter_domain(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         spine = typed.Curve.from_ocp(
             Geom_TrimmedCurve(
                 Geom_Circle(
@@ -321,10 +314,10 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
                 0,
                 math.pi,
             ),
-            runtime=runtime,
+            context=context,
         )
 
-        surface = runtime.sweep_surface(runtime.circle_curve(1), spine)
+        surface = context.call(typed.sweep_surface, context.call(typed.circle_curve, 1), spine)
 
         _assert_coordinates(
             self,
@@ -333,111 +326,111 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         )
 
     def test_invalid_inputs_fail_at_the_typed_or_resolved_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "section must be Curve"):
-            runtime.sweep_surface(runtime.ellipse2(2, 1), runtime.circle_curve(3))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.sweep_surface(runtime.circle_curve(1), other.circle_curve(3))
+            context.call(typed.sweep_surface, context.call(typed.ellipse2, 2, 1), context.call(typed.circle_curve, 3))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.sweep_surface, context.call(typed.circle_curve, 1), other.call(typed.circle_curve, 3))
         with self.assertRaisesRegex(TypeError, "domain must be Interval"):
-            runtime.constant_sweep_scale(1, (0, 1))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.constant_sweep_scale(1, other.circle_curve(3).range())
+            context.call(typed.constant_sweep_scale, 1, (0, 1))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.constant_sweep_scale, 1, other.call(typed.circle_curve, 3).range())
         with self.assertRaisesRegex(TypeError, "scale must be SweepScaleLaw"):
-            runtime.evolved_sweep_section(
-                runtime.circle_curve(1),
+            context.call(typed.evolved_sweep_section,
+                context.call(typed.circle_curve, 1),
                 1,  # type: ignore[arg-type]
             )
         with self.assertRaisesRegex(TypeError, "trihedron must be SweepTrihedron"):
-            runtime.sweep_location(
-                runtime.circle_curve(3),
+            context.call(typed.sweep_location,
+                context.call(typed.circle_curve, 3),
                 "frenet",  # type: ignore[arg-type]
             )
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.sweep_surface_from_laws(
-                runtime.evolved_sweep_section(
-                    runtime.circle_curve(1),
-                    runtime.constant_sweep_scale(
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.sweep_surface_from_laws,
+                context.call(typed.evolved_sweep_section,
+                    context.call(typed.circle_curve, 1),
+                    context.call(typed.constant_sweep_scale,
                         1,
-                        runtime.circle_curve(3).range(),
+                        context.call(typed.circle_curve, 3).range(),
                     ),
                 ),
-                other.sweep_location(other.circle_curve(3)),
+                other.call(typed.sweep_location, other.call(typed.circle_curve, 3)),
             )
         with self.assertRaisesRegex(TypeError, "expects Curve2"):
-            runtime.cylinder_surface(2).map(runtime.circle_curve(1))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.cylinder_surface(2).map(
-                other.segment2(other.point2(0, 0), other.point2(1, 1))
+            context.call(typed.cylinder_surface, 2).map(context.call(typed.circle_curve, 1))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.cylinder_surface, 2).map(
+                other.call(typed.segment2, other.call(typed.point2, 0, 0), other.call(typed.point2, 1, 1))
             )
         with self.assertRaisesRegex(TypeError, "must be SweepTrihedron"):
-            runtime.sweep_surface(
-                runtime.circle_curve(1),
-                runtime.circle_curve(3),
+            context.call(typed.sweep_surface,
+                context.call(typed.circle_curve, 1),
+                context.call(typed.circle_curve, 3),
                 trihedron="frenet",  # type: ignore[arg-type]
             )
         with self.assertRaisesRegex(TypeError, "tolerance must be int or float"):
-            runtime.sweep_surface(
-                runtime.circle_curve(1),
-                runtime.circle_curve(3),
+            context.call(typed.sweep_surface,
+                context.call(typed.circle_curve, 1),
+                context.call(typed.circle_curve, 3),
                 tolerance=True,
             )
         with self.assertRaisesRegex(ValueError, "between 0 and 3"):
-            runtime.sweep_surface(
-                runtime.circle_curve(1),
-                runtime.circle_curve(3),
+            context.call(typed.sweep_surface,
+                context.call(typed.circle_curve, 1),
+                context.call(typed.circle_curve, 3),
                 continuity=4,
             )
         with self.assertRaisesRegex(ValueError, "max_degree must be positive"):
-            runtime.sweep_surface(
-                runtime.circle_curve(1),
-                runtime.circle_curve(3),
+            context.call(typed.sweep_surface,
+                context.call(typed.circle_curve, 1),
+                context.call(typed.circle_curve, 3),
                 max_degree=0,
             )
 
         with self.assertRaisesRegex(ValueError, "positive scalar"):
-            runtime.cylinder_surface(0).native()
+            context.call(typed.cylinder_surface, 0).native()
         with self.assertRaisesRegex(ValueError, "positive scalar"):
-            runtime.sweep_surface(
-                runtime.circle_curve(1),
-                runtime.circle_curve(3),
+            context.call(typed.sweep_surface,
+                context.call(typed.circle_curve, 1),
+                context.call(typed.circle_curve, 3),
                 scale=0,
             ).native()
         with self.assertRaisesRegex(ValueError, "domain must be increasing"):
-            runtime.sweep_surface_from_laws(
-                runtime.evolved_sweep_section(
-                    runtime.circle_curve(1),
-                    runtime.constant_sweep_scale(
+            context.call(typed.sweep_surface_from_laws,
+                context.call(typed.evolved_sweep_section,
+                    context.call(typed.circle_curve, 1),
+                    context.call(typed.constant_sweep_scale,
                         1,
-                        typed.Interval(runtime.scalar(1), runtime.scalar(0)),
+                        typed.Interval(context.call(typed.scalar, 1), context.call(typed.scalar, 0)),
                     ),
                 ),
-                runtime.sweep_location(runtime.circle_curve(3)),
+                context.call(typed.sweep_location, context.call(typed.circle_curve, 3)),
             ).native()
 
-        immediate = typed.Runtime.immediate(cache=False)
+        immediate = typed.Context.immediate(cache=False)
         with self.assertRaisesRegex(ValueError, "positive scalar"):
-            immediate.cylinder_surface(0)
+            immediate.call(typed.cylinder_surface, 0)
 
 
 class TypedSurfaceCacheTest(unittest.TestCase):
     def test_mapped_edge_restores_from_shared_cache(self):
         store = MemoryCacheStore()
 
-        def mapped(runtime: typed.Runtime) -> typed.Edge:
-            return runtime.cylinder_surface(2).map(
-                runtime.segment2(
-                    runtime.point2(0, 0),
-                    runtime.point2(math.pi / 2, 3),
+        def mapped(context: typed.Context) -> typed.Edge:
+            return context.call(typed.cylinder_surface, 2).map(
+                context.call(typed.segment2,
+                    context.call(typed.point2, 0, 0),
+                    context.call(typed.point2, math.pi / 2, 3),
                 )
             )
 
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
+        first = typed.Context.deferred(cache=True, cache_store=store)
         self.assertFalse(mapped(first).native().IsNull())
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
@@ -453,8 +446,8 @@ class TypedSurfaceCacheTest(unittest.TestCase):
 
     def test_surface_cache_uses_non_pickle_artifact_and_rejects_curve(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.cylinder_surface(2).native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.cylinder_surface, 2).native()
 
         self.assertEqual(len(store.records), 1)
         key, record = next(iter(store.records.items()))
@@ -467,7 +460,7 @@ class TypedSurfaceCacheTest(unittest.TestCase):
         self.assertEqual(record.value.artifacts[0].name, "surface.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 20)
 
-        wrong_native = typed.Runtime.deferred(cache=False).circle_curve(2).native()
+        wrong_native = typed.Context.deferred(cache=False).call(typed.circle_curve, 2).native()
         wrong_value = CurveSerializer().dumps(curve_ops.curve_from_ocp(wrong_native))
         store.records[key] = CacheRecord(
             schema=record.schema,
@@ -477,31 +470,31 @@ class TypedSurfaceCacheTest(unittest.TestCase):
         )
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.cylinder_surface(2)
+        restored = second.call(typed.cylinder_surface, 2)
         self.assertIs(type(restored.native()), Geom_CylindricalSurface)
         self.assertIn(
             EvaluationEventKind.CACHE_REJECTED,
             [event.kind for event in events],
         )
 
-    def test_fresh_runtime_and_fresh_process_reuse_surface_cache(self):
+    def test_fresh_context_and_fresh_process_reuse_surface_cache(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.sweep_surface(first.circle_curve(1), first.circle_curve(3)).native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.sweep_surface, first.call(typed.circle_curve, 1), first.call(typed.circle_curve, 3)).native()
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.sweep_surface(
-            second.circle_curve(1), second.circle_curve(3)
+        restored = second.call(typed.sweep_surface,
+            second.call(typed.circle_curve, 1), second.call(typed.circle_curve, 3)
         ).native()
         self.assertIs(type(restored), Geom_BSplineSurface)
         self.assertIn(
@@ -519,12 +512,12 @@ from evalcache.v2 import MappingCacheStore
 from zencad import _typed as typed
 
 events = []
-runtime = typed.Runtime.deferred(
+context = typed.Context.deferred(
     cache=True,
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-runtime.cylinder_surface(2).point(0, 3).value()
+context.call(typed.cylinder_surface, 2).point(0, 3).value()
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:

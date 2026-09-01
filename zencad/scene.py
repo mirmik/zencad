@@ -1,27 +1,20 @@
 #!/usr/bin/env python3
 
-import evalcache
-
 from zencad.interactive import *
 
-from zencad.axis import Axis
-from zencad.geom.shape import Shape, LazyObjectShape
-from zencad.util import to_Vertex, to_GeomPoint
 from zencad.color import default_color
 from zencad.interactive import create_interactive_object
 from zencad.bbox import BoundaryBox
 
-import numpy
-
 
 class Scene:
     """Коллекция интерактивных объектов для выведения на дисплей.
-    TODO: Возможно, необходимо расширить функции объекта и 
-    сделать его интерфейсным для работы с дисплеем вместо 
-    самого дисплея. Это позволит снизить сложность кастомизации 
-    визуального пространства для пользователя. 
-    NOTE: нельзя создать DisplayWidget заранее, потому что это 
-    повлечет необходимость создания qapplication при инициализации 
+    TODO: Возможно, необходимо расширить функции объекта и
+    сделать его интерфейсным для работы с дисплеем вместо
+    самого дисплея. Это позволит снизить сложность кастомизации
+    визуального пространства для пользователя.
+    NOTE: нельзя создать DisplayWidget заранее, потому что это
+    повлечет необходимость создания qapplication при инициализации
     библиотек."""
 
     def __init__(self):
@@ -31,7 +24,6 @@ class Scene:
     def add(self, obj, color=None, display_mode=None):
         from zencad.interactive.displayable import Displayable
 
-        obj = evalcache.unlazy_if_need(obj)
         if color is None:
             color = default_color()
 

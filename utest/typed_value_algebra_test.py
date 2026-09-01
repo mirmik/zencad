@@ -38,12 +38,12 @@ class TypedValueAlgebraTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(mode=mode, cache=cache)
-                    scalar = runtime.scalar(2)
-                    point2 = runtime.point2(1, 2)
-                    vector2 = runtime.vector2(3, 4)
-                    point3 = runtime.point(1, 2, 3)
-                    vector3 = runtime.vector(4, 5, 6)
+                    context = typed.Context(mode=mode, cache=cache)
+                    scalar = context.call(typed.scalar, 2)
+                    point2 = context.call(typed.point2, 1, 2)
+                    vector2 = context.call(typed.vector2, 3, 4)
+                    point3 = context.call(typed.point, 1, 2, 3)
+                    vector3 = context.call(typed.vector, 4, 5, 6)
                     results = (
                         scalar + 1,
                         point2 + vector2,
@@ -52,14 +52,14 @@ class TypedValueAlgebraTest(unittest.TestCase):
                         point3 + vector3,
                         point3 - point3,
                         vector3 + vector3,
-                        vector3.cross(runtime.vector(0, 1, 0)),
+                        vector3.cross(context.call(typed.vector, 0, 1, 0)),
                     )
                     observed.add(tuple(type(value) for value in results))
         self.assertEqual(len(observed), 1)
 
     def test_scalar_algebra_and_python_boundaries(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        scalar = runtime.scalar(5)
+        context = typed.Context.deferred(cache=False)
+        scalar = context.call(typed.scalar, 5)
 
         table = (
             (scalar + 2, 7.0),
@@ -73,7 +73,7 @@ class TypedValueAlgebraTest(unittest.TestCase):
             (scalar // 2, 2.0),
             (12 % scalar, 2.0),
             (scalar**2, 25.0),
-            (2 ** runtime.scalar(3), 8.0),
+            (2 ** context.call(typed.scalar, 3), 8.0),
             (-scalar, -5.0),
             (abs(-scalar), 5.0),
         )
@@ -82,9 +82,9 @@ class TypedValueAlgebraTest(unittest.TestCase):
                 self.assertIs(type(result), typed.Scalar)
                 self.assertEqual(float(result), expected)
 
-        self.assertEqual(int(runtime.scalar(3.9)), 3)
-        self.assertTrue(runtime.scalar(1))
-        self.assertFalse(runtime.scalar(0))
+        self.assertEqual(int(context.call(typed.scalar, 3.9)), 3)
+        self.assertTrue(context.call(typed.scalar, 1))
+        self.assertFalse(context.call(typed.scalar, 0))
         self.assertTrue(scalar > 4)
         self.assertTrue(scalar >= 5)
         self.assertTrue(scalar < 6)
@@ -92,11 +92,11 @@ class TypedValueAlgebraTest(unittest.TestCase):
         self.assertTrue(scalar == 5)
 
     def test_3d_algebra_has_geometrically_correct_result_types(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        point = runtime.point(10, 20, 30)
-        other_point = typed.Point3((4, 5, 6), runtime=runtime)
-        vector = runtime.vector(1, 2, 3)
-        other_vector = typed.Vector3((4, 5, 6), runtime=runtime)
+        context = typed.Context.deferred(cache=False)
+        point = context.call(typed.point, 10, 20, 30)
+        other_point = typed.Point3((4, 5, 6), context=context)
+        vector = context.call(typed.vector, 1, 2, 3)
+        other_vector = typed.Vector3((4, 5, 6), context=context)
 
         cases = (
             (vector + other_vector, typed.Vector3, (5.0, 7.0, 9.0)),
@@ -106,7 +106,7 @@ class TypedValueAlgebraTest(unittest.TestCase):
             (point - vector, typed.Point3, (9.0, 18.0, 27.0)),
             (point - other_point, typed.Vector3, (6.0, 15.0, 24.0)),
             (vector * 2, typed.Vector3, (2.0, 4.0, 6.0)),
-            (runtime.scalar(2) * vector, typed.Vector3, (2.0, 4.0, 6.0)),
+            (context.call(typed.scalar, 2) * vector, typed.Vector3, (2.0, 4.0, 6.0)),
             (vector / 2, typed.Vector3, (0.5, 1.0, 1.5)),
             (-vector, typed.Vector3, (-1.0, -2.0, -3.0)),
             (vector.cross(other_vector), typed.Vector3, (-3.0, 6.0, -3.0)),
@@ -123,11 +123,11 @@ class TypedValueAlgebraTest(unittest.TestCase):
         self.assertAlmostEqual(sum(value * value for value in normalized), 1.0)
 
     def test_2d_algebra_has_geometrically_correct_result_types(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        point = typed.Point2((10, 20), runtime=runtime)
-        other_point = runtime.point2(4, 5)
-        vector = typed.Vector2((1, 2), runtime=runtime)
-        other_vector = runtime.vector2(4, 5)
+        context = typed.Context.deferred(cache=False)
+        point = typed.Point2((10, 20), context=context)
+        other_point = context.call(typed.point2, 4, 5)
+        vector = typed.Vector2((1, 2), context=context)
+        other_vector = context.call(typed.vector2, 4, 5)
 
         cases = (
             (vector + other_vector, typed.Vector2, (5.0, 7.0)),
@@ -146,11 +146,11 @@ class TypedValueAlgebraTest(unittest.TestCase):
         self.assertEqual(point.distance_to(other_point).value(), math.sqrt(261))
 
     def test_vector_and_point_algebra_laws(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        vector = runtime.vector(1, -2, 3)
-        other_vector = runtime.vector(4, 5, -6)
-        point = runtime.point(7, 8, 9)
-        other_point = runtime.point(-1, 2, 4)
+        context = typed.Context.deferred(cache=False)
+        vector = context.call(typed.vector, 1, -2, 3)
+        other_vector = context.call(typed.vector, 4, 5, -6)
+        point = context.call(typed.point, 7, 8, 9)
+        other_point = context.call(typed.point, -1, 2, 4)
 
         self.assertEqual((vector + other_vector) - other_vector, vector)
         self.assertEqual(point + (other_point - point), other_point)
@@ -161,16 +161,16 @@ class TypedValueAlgebraTest(unittest.TestCase):
     def test_literal_value_graphs_constant_fold_without_evaluator_or_cache(self):
         events = []
         store = CountingStore()
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
 
         result = (
-            runtime.point(1, 2, 3)
-            + (runtime.vector(2, 4, 6) / runtime.scalar(2)).normalized()
-        ).distance_to(runtime.point(0, 0, 0))
+            context.call(typed.point, 1, 2, 3)
+            + (context.call(typed.vector, 2, 4, 6) / context.call(typed.scalar, 2)).normalized()
+        ).distance_to(context.call(typed.point, 0, 0, 0))
         result = typed.sqrt(result**2)
 
         self.assertIs(type(result), typed.Scalar)
@@ -183,11 +183,11 @@ class TypedValueAlgebraTest(unittest.TestCase):
 
     def test_deferred_geometry_dependencies_are_not_folded_or_materialized(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        mass = runtime.box(2).mass()
+        mass = context.call(typed.box, 2).mass()
         result = typed.sqrt((mass + 1) * 2)
 
         self.assertIs(type(result), typed.Scalar)
@@ -202,11 +202,11 @@ class TypedValueAlgebraTest(unittest.TestCase):
 
     def test_immediate_geometry_value_then_uses_constant_folding(self):
         events = []
-        runtime = typed.Runtime.immediate(
+        context = typed.Context.immediate(
             cache=False,
             progress_hooks=(events.append,),
         )
-        mass = runtime.box(2).mass()
+        mass = context.call(typed.box, 2).mass()
         before = len(events)
         result = typed.sqrt(mass + 1)
 
@@ -226,22 +226,22 @@ class TypedValueAlgebraTest(unittest.TestCase):
         ):
             with self.subTest(boundary=getattr(boundary, "__name__", "comparison")):
                 events = []
-                runtime = typed.Runtime.deferred(
+                context = typed.Context.deferred(
                     cache=False,
                     progress_hooks=(events.append,),
                 )
-                value = runtime.box(2).mass()
+                value = context.call(typed.box, 2).mass()
                 self.assertEqual(events, [])
                 boundary(value)
                 self.assertTrue(events)
 
     def test_numpy_iteration_and_ocp_are_explicit_boundaries(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        center = runtime.box(2).center()
+        center = context.call(typed.box, 2).center()
         self.assertEqual(events, [])
 
         array = center.to_numpy()
@@ -251,13 +251,13 @@ class TypedValueAlgebraTest(unittest.TestCase):
         self.assertIsInstance(center.to_ocp(), gp_Pnt)
         self.assertEqual(tuple(center), (1.0, 1.0, 1.0))
 
-        self.assertIsInstance(runtime.vector(1, 2, 3).to_ocp(), gp_Vec)
-        self.assertIsInstance(runtime.point2(1, 2).to_ocp(), gp_Pnt2d)
-        self.assertIsInstance(runtime.vector2(1, 2).to_ocp(), gp_Vec2d)
+        self.assertIsInstance(context.call(typed.vector, 1, 2, 3).to_ocp(), gp_Vec)
+        self.assertIsInstance(context.call(typed.point2, 1, 2).to_ocp(), gp_Pnt2d)
+        self.assertIsInstance(context.call(typed.vector2, 1, 2).to_ocp(), gp_Vec2d)
 
     def test_expression_aware_math_helpers_preserve_scalar(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        value = runtime.scalar(0.5)
+        context = typed.Context.deferred(cache=False)
+        value = context.call(typed.scalar, 0.5)
         helpers = (
             typed.sin,
             typed.cos,
@@ -269,7 +269,7 @@ class TypedValueAlgebraTest(unittest.TestCase):
             typed.exp,
             typed.log,
         )
-        positive = runtime.scalar(0.5)
+        positive = context.call(typed.scalar, 0.5)
         for helper in helpers:
             argument = positive
             result = helper(argument)
@@ -278,22 +278,22 @@ class TypedValueAlgebraTest(unittest.TestCase):
         self.assertIs(type(typed.atan2(2, value)), typed.Scalar)
 
     def test_invalid_algebra_and_mutability_escape_hatches_are_rejected(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        point = runtime.point(1, 2, 3)
-        vector = runtime.vector(1, 2, 3)
+        context = typed.Context.deferred(cache=False)
+        point = context.call(typed.point, 1, 2, 3)
+        vector = context.call(typed.vector, 1, 2, 3)
 
         with self.assertRaises(TypeError):
             _ = point + point
         with self.assertRaises(TypeError):
-            _ = point + runtime.vector2(1, 2)
+            _ = point + context.call(typed.vector2, 1, 2)
         with self.assertRaises(ValueError):
-            runtime.vector(0, 0, 0).normalized()
+            context.call(typed.vector, 0, 0, 0).normalized()
         with self.assertRaises(TypeError):
             hash(vector)
         with self.assertRaises(TypeError):
             typed.Point3(1, 2, 3)
         with self.assertRaises(TypeError):
-            runtime.scalar(True)
+            context.call(typed.scalar, True)
 
         self.assertNotIsInstance(vector, float)
         self.assertNotIsInstance(vector, numpy.ndarray)

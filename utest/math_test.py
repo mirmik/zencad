@@ -1,4 +1,6 @@
 import unittest
+import math
+import zencad
 from zencad import *
 
 from OCP.gp import gp_Dir, gp_Vec, gp_Pnt

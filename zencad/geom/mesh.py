@@ -74,8 +74,8 @@ def normalize_mesh_display_mode(mode):
 
 def validated_mesh_data(mesh):
     """Validate display mesh data and return normalized immutable values."""
-    if not isinstance(mesh, MeshData):
-        raise TypeError("mesh must be a MeshData object")
+    if not all(hasattr(mesh, name) for name in ("positions", "normals", "triangles")):
+        raise TypeError("mesh must expose positions, normals, and triangles")
 
     try:
         positions = tuple(tuple(position) for position in mesh.positions)
@@ -187,7 +187,7 @@ def to_mesh(
     if not math.isfinite(weld_tolerance) or weld_tolerance <= 0:
         raise ValueError("weld_tolerance must be finite and positive")
 
-    source = shape.unlazy() if hasattr(shape, "unlazy") else shape
+    source = shape
 
     # Work on a copy so a coarse request stays deterministic when the source
     # was previously triangulated more finely for display or STL export.

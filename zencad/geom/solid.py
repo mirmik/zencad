@@ -8,7 +8,7 @@ from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
 from OCP.ShapeFix import ShapeFix_Solid
 
 from zencad.geombase import point3
-from zencad.lazifier import *
+from zencad._eager import eager
 
 
 def _box(x, y=None, z=None, center=False, size=None):
@@ -136,37 +136,37 @@ def _halfspace():
     return Shape(MHS.Solid())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def box(x=0, y=None, z=None, center=None, size=None):
     return _box(x, y, z, center, size)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def cube(x=0, y=None, z=None, center=None, size=None):
     return _cube(x, y, z, center, size)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def sphere(r, yaw=None, pitch=None):
     return _sphere(r, yaw, pitch)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def cylinder(r, h, yaw=None, center=False):
     return _cylinder(r, h, yaw, center)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def cone(r1, r2, h, yaw=None, center=False):
     return _cone(r1, r2, h, yaw, center)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def torus(r1, r2, yaw=None, pitch=None):
     return _torus(r1, r2, yaw=yaw, pitch=pitch)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def halfspace():
     return _halfspace()
 
@@ -185,7 +185,7 @@ def _make_solid(shells):
     return Shape(fixer.Solid())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def make_solid(shells):
     return _make_solid(shells)
 
@@ -194,6 +194,6 @@ def _nullshape():
     return _box(1, 1, 1) - _box(1, 1, 1)
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def nullshape():
     return _nullshape()

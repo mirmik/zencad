@@ -1,13 +1,13 @@
 # Typed API parity contract
 
-This document defines the compatibility gate between the legacy ZenCad
-geometry API and the private typed domain layer. The machine-readable source
+This document records the completed compatibility gate between the pre-cutover
+ZenCad geometry API and the public domain layer. The machine-readable source
 of truth is [`typed-api-parity.json`](typed-api-parity.json); it is checked by
 `tools/check_typed_api_parity.py` and `utest/typed_api_parity_test.py`.
 
 ## Compatibility promise
 
-The public cutover does not reduce ZenCad's intentionally supported geometry
+The public cutover, completed on 2026-09-02, does not reduce ZenCad's intentionally supported geometry
 surface. Existing factories, operations, domain methods, transformations, and
 mesh/conversion/display boundaries must have a truthful typed equivalent before
 `zencad` starts returning typed handles by default.
@@ -30,7 +30,7 @@ The contract covers definitions from the following user-facing families:
   and nearest-topology queries;
 - mesh, BREP/STL/SVG conversion, and display materialization boundaries.
 
-Low-level OCP compatibility helpers, lazy proxy implementation classes, GUI
+Low-level OCP compatibility helpers, eager OCP backend adapters, GUI
 widgets, cache settings, colors, and unrelated utilities remain supported by
 their existing modules but are outside the typed-domain replacement surface.
 
@@ -134,13 +134,13 @@ and return stable `Shape`, `Shell`, or `Solid` handles. `PipeTrihedron` and
 `sweep` spelling is a characterized compatibility alias.
 
 The first #2044 tranche makes BREP file round-trips and native mesh conversion
-explicit typed boundaries. `Runtime.from_brep()` snapshots imported topology
-into a stable `Shape`; `Runtime.to_brep()` materializes only for the write.
-`MeshData.mesh_to_poly_triangulation()` and its Runtime adapter return fresh
+explicit typed boundaries. `zencad.from_brep()` snapshots imported topology
+into a stable `Shape`; `zencad.to_brep()` materializes only for the write.
+`MeshData.mesh_to_poly_triangulation()` and its Context adapter return fresh
 native triangulations without exposing mutable mesh state.
 STL and SVG file/string adapters now share the same explicit boundary model.
 Exports operate on isolated native snapshots, while SVG imports snapshot the
-legacy parser result into the receiving Runtime. Paths, meshing controls, and
+legacy parser result into the receiving zencad. Paths, meshing controls, and
 mapping policy are validated before file or native work begins.
 Managed and direct display scenes now accept typed `Shape`, `MeshData`, and
 `Point3` handles. Managed drafts retain the handles until snapshot encoding;
@@ -209,7 +209,7 @@ Both operations remain deferred and cacheable.
 
 The seventh #2041 tranche isolates OCCT text state from typed topology. The
 domain-level `FontAspect` enum replaces public native font enums, while
-`Runtime.register_font()` is deliberately immediate because OCCT registration
+`zencad.register_font()` is deliberately immediate because OCCT registration
 mutates a process-wide manager. `text_to_brep()` and its `textshape()` legacy
 spelling return the exact `Compound` produced by the BREP text builder and keep
 graph scalar sizes deferred. Text expressions deliberately bypass cache

@@ -5,7 +5,7 @@ from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 
 from OCP.gp import gp_Pnt
 
-from zencad.lazifier import lazy
+from zencad._eager import eager
 import evalcache
 import numpy
 
@@ -108,6 +108,6 @@ def _sew(lst, sort=True):
         return _sew_wire(lst, sort)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def sew(lst, sort=True):
     return _sew(lst, sort)

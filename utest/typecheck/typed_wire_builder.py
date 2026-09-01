@@ -5,8 +5,10 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def wire_builder_contract(runtime: typed.Runtime) -> None:
-    builder = assert_type(runtime.wire_builder(defrel=True), typed.WireBuilder)
+def wire_builder_contract(context: typed.Context) -> None:
+    builder = assert_type(
+        context.call(typed.wire_builder, defrel=True), typed.WireBuilder
+    )
     assert_type(builder.restart(0, 0), typed.WireBuilder)
     assert_type(builder.segment((1, 0)), typed.WireBuilder)
     assert_type(builder.line(0, 1), typed.WireBuilder)
@@ -24,5 +26,7 @@ def wire_builder_contract(runtime: typed.Runtime) -> None:
     assert_type(builder.plane_circle_arc(2, 1, False, True, 2, 2), typed.WireBuilder)
     assert_type(builder.build(), typed.Wire)
     assert_type(builder.doit(), typed.Wire)
-    assert_type(typed.WireBuilder(runtime.point3(0, 0, 0)), typed.WireBuilder)
-    assert_type(typed.wire_builder(runtime=runtime), typed.WireBuilder)
+    assert_type(
+        typed.WireBuilder(context.call(typed.point3, 0, 0, 0)), typed.WireBuilder
+    )
+    assert_type(typed.wire_builder(context=context), typed.WireBuilder)

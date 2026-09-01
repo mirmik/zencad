@@ -63,7 +63,8 @@ class Transformation:
         return obj.transform(self)
 
     def __mul__(self, oth):
-        return Transformation(self._trsf.Multiplied(oth._trsf))
+        other_transform = oth.to_ocp() if hasattr(oth, "to_ocp") else oth._trsf
+        return Transformation(self._trsf.Multiplied(other_transform))
 
     def __getstate__(self):
         scl = self._trsf.ScaleFactor()

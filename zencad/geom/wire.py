@@ -14,7 +14,7 @@ from OCP.TopoDS import TopoDS_Edge, TopoDS_Wire
 from zencad.occ_compat import build_curves_3d, confusion, direction_z
 from OCP.TopAbs import TopAbs_WIRE, TopAbs_EDGE
 
-from zencad.lazifier import *
+from zencad._eager import eager
 from zencad.geom.sew import sew
 from zencad.util import points, to_Pnt, to_Vec
 from zencad.geom.project import project
@@ -34,7 +34,7 @@ def _make_edge(crv, interval=None) -> Shape:
         return Shape(BRepBuilderAPI_MakeEdge(aCurve, interval[0], interval[1]).Edge())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def make_edge(crv, interval=None) -> Shape:
     return _make_edge(crv, interval)
 
@@ -44,7 +44,7 @@ def _circle_arc(p1, p2, p3):
     return Shape(BRepBuilderAPI_MakeEdge(aArcOfCircle.Value()).Edge())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def circle_arc(p1, p2, p3):
     return _circle_arc(p1, p2, p3)
 
@@ -70,7 +70,7 @@ def _polysegment(pnts, closed=False) -> Shape:
     return Shape(mkWire.Wire())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def polysegment(pnts, closed=False):
     return _polysegment(pnts, closed)
 
@@ -80,7 +80,7 @@ def _segment(a, b) -> Shape:
     return Shape(BRepBuilderAPI_MakeEdge(to_Pnt(a), to_Pnt(b)).Edge())
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def segment(a, b) -> Shape:
     return _segment(a, b)
 
@@ -90,7 +90,7 @@ def _interpolate(pnts, tangs=None, closed=False):
         curve._interpolate(pnts=pnts, tangs=tangs, closed=closed))
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def interpolate(pnts, tangs=None, closed=False):
     return _interpolate(pnts, tangs, closed)
 
@@ -99,7 +99,7 @@ def _bezier(pnts, weights=None):
     return _make_edge(curve._bezier(pnts, weights))
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def bezier(pnts, weights=None):
     return _bezier(pnts, weights)
 
@@ -123,7 +123,7 @@ def _bspline(
         check_rational=check_rational))
 
 
-@lazy.lazy(cls=nocached_shape_generator)
+@eager.decorator(cls=nocached_shape_generator)
 def bspline(*args, **kwargs):
     return _bspline(*args, **kwargs)
 
@@ -143,8 +143,8 @@ def _rounded_polysegment(pnts, r, closed=False):
     pairs.append((None, pnts[0]))
 
     for i in range(len(cpnts)):
-        a = segment(pnts[i], pnts[i+1]).unlazy()
-        b = segment(pnts[i+1], pnts[i+2]).unlazy()
+        a = segment(pnts[i], pnts[i+1])
+        b = segment(pnts[i+1], pnts[i+2])
 
         ad1 = a.d1(a.range()[1])
         bd1 = b.d1(b.range()[0])
@@ -197,7 +197,7 @@ def _rounded_polysegment(pnts, r, closed=False):
     return result
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def rounded_polysegment(*args, **kwargs):
     return _rounded_polysegment(*args, **kwargs)
 
@@ -289,7 +289,7 @@ def _helix(r, h, step=None, pitch=None, angle=0, left=False):
     return Shape(shape)
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def helix(*args, **kwargs):
     return _helix(*args, **kwargs)
 
@@ -305,6 +305,6 @@ def _make_wire(arr):
 
     return Shape(mk.Wire())
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def make_wire(*args):
     return _make_wire(*args)

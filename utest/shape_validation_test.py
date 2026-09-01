@@ -52,7 +52,7 @@ def _curve_less_edge() -> TopoDS_Edge:
     return edge
 
 
-class LegacyShapeValidationTest(unittest.TestCase):
+class ShapeValidationTest(unittest.TestCase):
     def test_reports_are_structured_json_ready_and_context_aware(self):
         self.assertTrue(zencad.box(2).validate().valid)
         self.assertTrue(ResolvedShape(_open_shell()).validate().valid)
@@ -73,7 +73,7 @@ class LegacyShapeValidationTest(unittest.TestCase):
         with self.assertRaises(ShapeValidationError) as raised:
             invalid.assert_valid()
         self.assertIs(raised.exception.report.__class__, report.__class__)
-        valid = zencad.box(1).unlazy()
+        valid = zencad.box(1)
         self.assertIs(valid.assert_valid(), valid)
 
     def test_degenerate_topology_and_compound_paths_are_reported(self):
@@ -95,18 +95,18 @@ class LegacyShapeValidationTest(unittest.TestCase):
 
     def test_clean_and_heal_preserve_the_source_and_return_owned_shapes(self):
         source = zencad.box(1) + zencad.box(1).translate(1, 0, 0)
-        source_value = source.unlazy()
+        source_value = source.native()
         before = encode_brep(source_value)
 
-        cleaned = source.clean().unlazy()
-        healed = source.heal().unlazy()
+        cleaned = source.clean()
+        healed = source.heal()
 
         self.assertEqual(encode_brep(source_value), before)
-        self.assertFalse(cleaned.Shape().IsSame(source_value.Shape()))
-        self.assertFalse(healed.Shape().IsSame(source_value.Shape()))
+        self.assertFalse(cleaned.native().IsSame(source_value))
+        self.assertFalse(healed.native().IsSame(source_value))
         self.assertEqual(len(source.faces()), 10)
         self.assertEqual(len(cleaned.faces()), 6)
-        self.assertAlmostEqual(cleaned.mass(), source.mass())
+        self.assertAlmostEqual(float(cleaned.mass()), float(source.mass()))
 
 
 class TypedShapeValidationTest(unittest.TestCase):
@@ -114,23 +114,23 @@ class TypedShapeValidationTest(unittest.TestCase):
         for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    solid = runtime.box(2)
+                    solid = context.call(typed.box, 2)
 
-                    report = runtime.validate(solid)
+                    report = context.call(typed.validate, solid)
                     self.assertTrue(report.valid)
                     self.assertTrue(solid.is_valid())
-                    self.assertIs(runtime.assert_valid(solid), solid)
-                    self.assertIs(type(runtime.clean(solid)), typed.Solid)
+                    self.assertIs(context.call(typed.assert_valid, solid), solid)
+                    self.assertIs(type(context.call(typed.clean, solid)), typed.Solid)
                     self.assertIs(type(solid.heal()), typed.Solid)
 
     def test_typed_invalid_shape_raises_with_the_same_report_contract(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        invalid = typed.Solid.from_ocp(_open_solid(), runtime=runtime)
+        context = typed.Context.deferred(cache=False)
+        invalid = typed.Solid.from_ocp(_open_solid(), context=context)
 
         report = typed.validate(invalid)
         self.assertFalse(report.valid)

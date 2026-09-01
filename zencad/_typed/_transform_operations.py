@@ -2,7 +2,7 @@
 
 The value objects in this module are deliberately independent from mutable OCP
 objects. OCP conversion is an explicit boundary implemented at the bottom of
-the module; expression construction remains the responsibility of ``Runtime``.
+the module; expression construction remains the responsibility of ``Context``.
 """
 
 from __future__ import annotations

@@ -4,7 +4,7 @@ from OCP.ShapeFix import ShapeFix_Solid
 
 from zencad.geom.near import _near_face
 from zencad.geom.shape import Shape, shape_generator
-from zencad.lazifier import *
+from zencad._eager import eager
 
 
 def _thicksolid(proto, t, refs):
@@ -19,7 +19,7 @@ def _thicksolid(proto, t, refs):
     return Shape(algo.Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def thicksolid(proto, t, refs):
     return _thicksolid(proto, t, refs)
 
@@ -31,7 +31,7 @@ def _offset(shp, off):
     return Shape(algo.Shape())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def offset(*args, **kwargs):
     return _offset(*args, **kwargs)
 
@@ -42,6 +42,6 @@ def _shapefix_solid(shp):
     return Shape(algo2.Solid())
 
 
-@lazy.lazy(cls=shape_generator)
+@eager.decorator(cls=shape_generator)
 def shapefix_solid(shp):
     return _shapefix_solid(shp)

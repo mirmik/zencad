@@ -15,12 +15,12 @@ from zencad.operation import (
     OperationArguments,
     arguments,
     operation,
-    resolve_runtime,
-    using_runtime,
+    resolve_context,
+    using_context,
 )
 
 from . import _transform_operations as ops
-from ._core import Handle, State, require_same_runtime
+from ._core import Handle, State, require_same_context
 from ._serialization import AffineTransformSerializer
 from .values import (
     POINT3_SPEC,
@@ -30,12 +30,12 @@ from .values import (
     Scalar,
     ScalarInput,
     Vector3,
-    _infer_runtime,
+    _infer_context,
     _scalar_state,
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
 
 
 QUATERNION_SPEC = ResultSpec.for_type(
@@ -65,7 +65,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
         z: ScalarInput,
         w: ScalarInput,
         *,
-        runtime: Runtime | None = None,
+        context: Context | None = None,
     ) -> None: ...
 
     @overload
@@ -73,7 +73,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
         self,
         values: tuple[ScalarInput, ScalarInput, ScalarInput, ScalarInput],
         *,
-        runtime: Runtime | None = None,
+        context: Context | None = None,
     ) -> None: ...
 
     def __init__(
@@ -83,38 +83,38 @@ class Quaternion(Handle[ops.QuaternionValue]):
         z: ScalarInput | None = None,
         w: ScalarInput | None = None,
         *,
-        runtime: Runtime | None = None,
+        context: Context | None = None,
     ) -> None:
         components = _components4(x, y, z, w)
-        resolved_runtime = _infer_runtime(runtime, components)
-        with using_runtime(resolved_runtime):
+        resolved_context = _infer_context(context, components)
+        with using_context(resolved_context):
             value = quaternion(*components)
-        self._bind(value.runtime, value._state)
+        self._bind(value.context, value._state)
 
     @classmethod
     def _from_state(
         cls,
-        runtime: Runtime,
+        context: Context,
         state: State[ops.QuaternionValue],
     ) -> Quaternion:
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
-    def identity(cls, *, runtime: Runtime) -> Quaternion:
-        return cls(0.0, 0.0, 0.0, 1.0, runtime=runtime)
+    def identity(cls, *, context: Context) -> Quaternion:
+        return cls(0.0, 0.0, 0.0, 1.0, context=context)
 
     @classmethod
     def from_ocp(
         cls,
         value: gp_Quaternion,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> Quaternion:
         if not isinstance(value, gp_Quaternion):
             raise TypeError("Quaternion.from_ocp expects gp_Quaternion")
-        return cls._from_state(runtime, ops.quaternion_from_ocp(value))
+        return cls._from_state(context, ops.quaternion_from_ocp(value))
 
     def _coordinate(self, axis: int) -> Scalar:
         return _quaternion_coordinate(self, axis)
@@ -186,26 +186,26 @@ class Quaternion(Handle[ops.QuaternionValue]):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Quaternion):
             return False
-        require_same_runtime(self.runtime, other)
+        require_same_context(self.context, other)
         return self._resolved() == other._resolved()
 
 
 class Transform(Handle[ops.TransformValue]):
     """Immutable similarity transform containing a resolved value or graph."""
 
-    def __init__(self, *, runtime: Runtime) -> None:
-        with using_runtime(runtime):
+    def __init__(self, *, context: Context) -> None:
+        with using_context(context):
             value = identity_transform()
-        self._bind(value.runtime, value._state)
+        self._bind(value.context, value._state)
 
     @classmethod
     def _from_state(
         cls,
-        runtime: Runtime,
+        context: Context,
         state: State[ops.TransformValue],
     ) -> Transform:
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
@@ -213,11 +213,11 @@ class Transform(Handle[ops.TransformValue]):
         cls,
         value: gp_Trsf,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> Transform:
         if not isinstance(value, gp_Trsf):
             raise TypeError("Transform.from_ocp expects gp_Trsf")
-        return cls._from_state(runtime, ops.transform_from_ocp(value))
+        return cls._from_state(context, ops.transform_from_ocp(value))
 
     @property
     def scale(self) -> Scalar:
@@ -242,7 +242,7 @@ class Transform(Handle[ops.TransformValue]):
         other: Transform | AffineTransform,
     ) -> Transform | AffineTransform:
         if isinstance(other, AffineTransform):
-            require_same_runtime(self.runtime, other)
+            require_same_context(self.context, other)
             return self.to_affine() * other
         if not isinstance(other, Transform):
             raise TypeError(
@@ -351,7 +351,7 @@ class Transform(Handle[ops.TransformValue]):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Transform):
             return False
-        require_same_runtime(self.runtime, other)
+        require_same_context(self.context, other)
         return self._resolved() == other._resolved()
 
 
@@ -362,41 +362,41 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         self,
         rows: Sequence[Sequence[ScalarInput]] | None = None,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> None:
         if rows is None:
-            with using_runtime(runtime):
+            with using_context(context):
                 value = identity_affine_transform()
-            self._bind(value.runtime, value._state)
+            self._bind(value.context, value._state)
             return
-        with using_runtime(runtime):
+        with using_context(context):
             value = affine_transform(rows)
-        self._bind(value.runtime, value._state)
+        self._bind(value.context, value._state)
 
     @classmethod
     def _from_state(
         cls,
-        runtime: Runtime,
+        context: Context,
         state: State[ops.AffineTransformValue],
     ) -> AffineTransform:
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
-    def identity(cls, *, runtime: Runtime) -> AffineTransform:
-        return cls(runtime=runtime)
+    def identity(cls, *, context: Context) -> AffineTransform:
+        return cls(context=context)
 
     @classmethod
     def from_ocp(
         cls,
         value: gp_GTrsf,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> AffineTransform:
         if not isinstance(value, gp_GTrsf):
             raise TypeError("AffineTransform.from_ocp expects gp_GTrsf")
-        return cls._from_state(runtime, ops.affine_from_ocp(value))
+        return cls._from_state(context, ops.affine_from_ocp(value))
 
     @classmethod
     def from_transform(cls, value: Transform, /) -> AffineTransform:
@@ -412,10 +412,10 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         z: ScalarInput,
         /,
         *,
-        runtime: Runtime,
+        context: Context,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        with using_runtime(runtime):
+        with using_context(context):
             return scaleXYZ(x, y, z, center=center)
 
     @classmethod
@@ -424,10 +424,10 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         factor: ScalarInput,
         /,
         *,
-        runtime: Runtime,
+        context: Context,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        with using_runtime(runtime):
+        with using_context(context):
             return scaleX(factor, center=center)
 
     @classmethod
@@ -436,10 +436,10 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         factor: ScalarInput,
         /,
         *,
-        runtime: Runtime,
+        context: Context,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        with using_runtime(runtime):
+        with using_context(context):
             return scaleY(factor, center=center)
 
     @classmethod
@@ -448,10 +448,10 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         factor: ScalarInput,
         /,
         *,
-        runtime: Runtime,
+        context: Context,
         center: Point3 | None = None,
     ) -> AffineTransform:
-        with using_runtime(runtime):
+        with using_context(context):
             return scaleZ(factor, center=center)
 
     @overload
@@ -552,7 +552,7 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AffineTransform):
             return False
-        require_same_runtime(self.runtime, other)
+        require_same_context(self.context, other)
         return self._resolved() == other._resolved()
 
 
@@ -623,12 +623,12 @@ def quaternion(
     w: ScalarInput,
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(x, y, z, w)
+    context = resolve_context(x, y, z, w)
     return arguments(
-        _scalar_state(runtime, x),
-        _scalar_state(runtime, y),
-        _scalar_state(runtime, z),
-        _scalar_state(runtime, w),
+        _scalar_state(context, x),
+        _scalar_state(context, y),
+        _scalar_state(context, z),
+        _scalar_state(context, w),
     )
 
 
@@ -667,8 +667,8 @@ def quaternion_axis_angle(
 ) -> OperationArguments:
     if not isinstance(axis, Vector3):
         raise TypeError("quaternion_axis_angle expects Vector3")
-    runtime = resolve_runtime(axis, angle)
-    return arguments(axis, _scalar_state(runtime, angle))
+    context = resolve_context(axis, angle)
+    return arguments(axis, _scalar_state(context, angle))
 
 
 @operation(
@@ -758,13 +758,13 @@ def translation(
     z: ScalarInput | None = None,
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(vector, y, z)
+    context = resolve_context(vector, y, z)
     if isinstance(vector, Vector3):
         if y is not None or z is not None:
             raise TypeError("translation Vector3 cannot be combined with coordinates")
         resolved_vector = vector
     elif y is not None and z is not None:
-        resolved_vector = Vector3(vector, y, z, runtime=runtime)
+        resolved_vector = Vector3(vector, y, z, context=context)
     else:
         raise TypeError("translation expects Vector3 or three scalar coordinates")
     return arguments(resolved_vector)
@@ -808,9 +808,9 @@ def scale(
     *,
     center: Point3 | None = None,
 ) -> OperationArguments:
-    runtime = resolve_runtime(factor, center)
-    resolved_center = _scale_center(runtime, center, "scale")
-    return arguments(_scalar_state(runtime, factor), resolved_center)
+    context = resolve_context(factor, center)
+    resolved_center = _scale_center(context, center, "scale")
+    return arguments(_scalar_state(context, factor), resolved_center)
 
 
 @operation(
@@ -828,8 +828,8 @@ def mirror(
     origin: Point3 | None = None,
 ) -> OperationArguments:
     _require_type(normal, Vector3, "mirror normal")
-    runtime = resolve_runtime(normal, origin)
-    resolved_origin = _scale_center(runtime, origin, "mirror")
+    context = resolve_context(normal, origin)
+    resolved_origin = _scale_center(context, origin, "mirror")
     return arguments(normal, resolved_origin)
 
 
@@ -846,9 +846,9 @@ def short_rotate(
     target: Vector3 | Sequence[ScalarInput],
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(source, target)
-    resolved_source = _compat_vector3(runtime, (source,), "short_rotate source")
-    resolved_target = _compat_vector3(runtime, (target,), "short_rotate target")
+    context = resolve_context(source, target)
+    resolved_source = _compat_vector3(context, (source,), "short_rotate source")
+    resolved_target = _compat_vector3(context, (target,), "short_rotate target")
     return arguments(resolved_source, resolved_target)
 
 
@@ -1021,8 +1021,8 @@ def affine_transform(
     /,
 ) -> OperationArguments:
     components = _matrix3x4_components(rows)
-    runtime = resolve_runtime(components)
-    return arguments(*(_scalar_state(runtime, value) for value in components))
+    context = resolve_context(components)
+    return arguments(*(_scalar_state(context, value) for value in components))
 
 
 def affine(rows: Sequence[Sequence[ScalarInput]], /) -> AffineTransform:
@@ -1058,12 +1058,12 @@ def scaleXYZ(
     *,
     center: Point3 | None = None,
 ) -> OperationArguments:
-    runtime = resolve_runtime(x, y, z, center)
-    resolved_center = _scale_center(runtime, center, "affine scale")
+    context = resolve_context(x, y, z, center)
+    resolved_center = _scale_center(context, center, "affine scale")
     return arguments(
-        _scalar_state(runtime, x),
-        _scalar_state(runtime, y),
-        _scalar_state(runtime, z),
+        _scalar_state(context, x),
+        _scalar_state(context, y),
+        _scalar_state(context, z),
         resolved_center,
     )
 
@@ -1188,8 +1188,8 @@ def _affine_determinant(value: AffineTransform, /) -> OperationArguments:
 
 
 def move(*args: object) -> Transform:
-    runtime = resolve_runtime(args)
-    return translation(_compat_vector3(runtime, args, "move"))
+    context = resolve_context(args)
+    return translation(_compat_vector3(context, args, "move"))
 
 
 def translate(*args: object) -> Transform:
@@ -1220,18 +1220,18 @@ up = moveZ
 
 
 def left(value: ScalarInput, /) -> Transform:
-    runtime = resolve_runtime(value)
-    return moveX(-_as_scalar(runtime, value))
+    context = resolve_context(value)
+    return moveX(-_as_scalar(context, value))
 
 
 def back(value: ScalarInput, /) -> Transform:
-    runtime = resolve_runtime(value)
-    return moveY(-_as_scalar(runtime, value))
+    context = resolve_context(value)
+    return moveY(-_as_scalar(context, value))
 
 
 def down(value: ScalarInput, /) -> Transform:
-    runtime = resolve_runtime(value)
-    return moveZ(-_as_scalar(runtime, value))
+    context = resolve_context(value)
+    return moveZ(-_as_scalar(context, value))
 
 
 def rotate(
@@ -1239,8 +1239,8 @@ def rotate(
     angle: ScalarInput | None = None,
     /,
 ) -> Transform:
-    runtime = resolve_runtime(axis, angle)
-    resolved_axis = _compat_vector3(runtime, (axis,), "rotate")
+    context = resolve_context(axis, angle)
+    resolved_axis = _compat_vector3(context, (axis,), "rotate")
     if angle is None:
         angle = resolved_axis.length()
         resolved_axis = resolved_axis.normalized()
@@ -1251,28 +1251,28 @@ def rotate_quat(
     value: Quaternion | gp_Quaternion | Sequence[ScalarInput],
     /,
 ) -> Transform:
-    runtime = resolve_runtime(value)
-    return rotation(_compat_quaternion(runtime, value))
+    context = resolve_context(value)
+    return rotation(_compat_quaternion(context, value))
 
 
 def rotateX(angle: ScalarInput, /) -> Transform:
-    runtime = resolve_runtime(angle)
-    return rotate(Vector3(1, 0, 0, runtime=runtime), angle)
+    context = resolve_context(angle)
+    return rotate(Vector3(1, 0, 0, context=context), angle)
 
 
 def rotateY(angle: ScalarInput, /) -> Transform:
-    runtime = resolve_runtime(angle)
-    return rotate(Vector3(0, 1, 0, runtime=runtime), angle)
+    context = resolve_context(angle)
+    return rotate(Vector3(0, 1, 0, context=context), angle)
 
 
 def rotateZ(angle: ScalarInput, /) -> Transform:
-    runtime = resolve_runtime(angle)
-    return rotate(Vector3(0, 0, 1, runtime=runtime), angle)
+    context = resolve_context(angle)
+    return rotate(Vector3(0, 0, 1, context=context), angle)
 
 
 def mirror_plane(*normal: object) -> Transform:
-    runtime = resolve_runtime(normal)
-    return mirror(_compat_vector3(runtime, normal, "mirror_plane"))
+    context = resolve_context(normal)
+    return mirror(_compat_vector3(context, normal, "mirror_plane"))
 
 
 def mirrorXY() -> Transform:
@@ -1288,8 +1288,8 @@ def mirrorXZ() -> Transform:
 
 
 def mirror_axis(*axis: object) -> Transform:
-    runtime = resolve_runtime(axis)
-    return rotate(_compat_vector3(runtime, axis, "mirror_axis"), 3.141592653589793)
+    context = resolve_context(axis)
+    return rotate(_compat_vector3(context, axis, "mirror_axis"), 3.141592653589793)
 
 
 def mirrorX() -> Transform:
@@ -1305,8 +1305,8 @@ def mirrorZ() -> Transform:
 
 
 def mirrorO(*origin: object) -> Transform:
-    runtime = resolve_runtime(origin)
-    return scale(-1, center=_compat_point3(runtime, origin, "mirrorO"))
+    context = resolve_context(origin)
+    return scale(-1, center=_compat_point3(context, origin, "mirrorO"))
 
 
 def nulltrans() -> Transform:
@@ -1314,15 +1314,15 @@ def nulltrans() -> Transform:
 
 
 def _scale_center(
-    runtime: Runtime,
+    context: Context,
     center: Point3 | None,
     name: str,
 ) -> Point3:
     if center is None:
-        return Point3(0, 0, 0, runtime=runtime)
+        return Point3(0, 0, 0, context=context)
     if not isinstance(center, Point3):
         raise TypeError(f"{name} center must be Point3")
-    require_same_runtime(runtime, center)
+    require_same_context(context, center)
     return center
 
 
@@ -1341,39 +1341,39 @@ def _require_pair(
     _require_type(right, expected, name)
 
 
-def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:
+def _as_scalar(context: Context, value: ScalarInput) -> Scalar:
     if isinstance(value, Scalar):
-        require_same_runtime(runtime, value)
+        require_same_context(context, value)
         return value
-    return Scalar(value, runtime=runtime)
+    return Scalar(value, context=context)
 
 
 def _compat_vector3(
-    runtime: Runtime,
+    context: Context,
     args: tuple[object, ...],
     name: str,
 ) -> Vector3:
     if len(args) == 1 and isinstance(args[0], Vector3):
-        require_same_runtime(runtime, args[0])
+        require_same_context(context, args[0])
         return args[0]
-    components = _compat_components3(runtime, args, name)
-    return Vector3(*components, runtime=runtime)
+    components = _compat_components3(context, args, name)
+    return Vector3(*components, context=context)
 
 
 def _compat_point3(
-    runtime: Runtime,
+    context: Context,
     args: tuple[object, ...],
     name: str,
 ) -> Point3:
     if len(args) == 1 and isinstance(args[0], Point3):
-        require_same_runtime(runtime, args[0])
+        require_same_context(context, args[0])
         return args[0]
-    components = _compat_components3(runtime, args, name)
-    return Point3(*components, runtime=runtime)
+    components = _compat_components3(context, args, name)
+    return Point3(*components, context=context)
 
 
 def _compat_components3(
-    runtime: Runtime,
+    context: Context,
     args: tuple[object, ...],
     name: str,
 ) -> tuple[ScalarInput, ScalarInput, ScalarInput]:
@@ -1382,7 +1382,7 @@ def _compat_components3(
     elif len(args) == 1:
         value = args[0]
         if isinstance(value, (Point3, Vector3)):
-            require_same_runtime(runtime, value)
+            require_same_context(context, value)
             values = (value.x, value.y, value.z)
         elif isinstance(value, TopoDS_Vertex):
             point = vertex_point(value)
@@ -1406,14 +1406,14 @@ def _compat_components3(
 
 
 def _compat_quaternion(
-    runtime: Runtime,
+    context: Context,
     value: Quaternion | gp_Quaternion | Sequence[ScalarInput],
 ) -> Quaternion:
     if isinstance(value, Quaternion):
-        require_same_runtime(runtime, value)
+        require_same_context(context, value)
         return value
     if isinstance(value, gp_Quaternion):
-        return Quaternion.from_ocp(value, runtime=runtime)
+        return Quaternion.from_ocp(value, context=context)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         components = tuple(value)
         if len(components) == 4:

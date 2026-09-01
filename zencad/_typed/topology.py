@@ -42,7 +42,7 @@ from evalcache import Expression, ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.geom.validation import ValidationReport
-from zencad.operation import using_runtime
+from zencad.operation import using_context
 from zencad.occ_compat import (
     as_compound,
     as_compsolid,
@@ -87,7 +87,7 @@ from .values import (
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
 
 
 ShapeT = TypeVar("ShapeT", bound="Shape")
@@ -202,30 +202,30 @@ class Shape(Handle[ResolvedShape]):
     @classmethod
     def _from_state(
         cls: type[ShapeT],
-        runtime: Runtime,
+        context: Context,
         state: State[ResolvedShape],
     ) -> ShapeT:
         if not isinstance(state, Expression):
             state = cls._result_spec.validate(state, "zencad.typed.shape.bind")
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
     def _from_expression(
         cls: type[ShapeT],
-        runtime: Runtime,
+        context: Context,
         expression: Expression[ResolvedShape],
     ) -> ShapeT:
         """Compatibility spelling for callers predating generic state binding."""
-        return cls._from_state(runtime, expression)
+        return cls._from_state(context, expression)
 
     @classmethod
     def from_ocp(
         cls: type[ShapeT],
         value: TopoDS_Shape,
         *,
-        runtime: Runtime,
+        context: Context,
     ) -> ShapeT:
         """Snapshot a native OCP shape into an immutable typed handle."""
         if not isinstance(value, TopoDS_Shape):
@@ -237,7 +237,7 @@ class Shape(Handle[ResolvedShape]):
             ResolvedShape(value),
             operation_id,
         )
-        expression = runtime._expression(
+        expression = context._expression(
             ops.shape_from_brep,
             result=cls._result_spec,
             args=(encode_brep(value),),
@@ -245,7 +245,7 @@ class Shape(Handle[ResolvedShape]):
             cacheable=False,
         )
         return cls._from_state(
-            runtime,
+            context,
             expression,
         )
 
@@ -263,11 +263,6 @@ class Shape(Handle[ResolvedShape]):
         from .booleans import _shape_intersection
 
         return _shape_intersection(self, other)
-
-    def unlazy(self: ShapeT) -> ShapeT:
-        """Compatibility boundary that materializes and preserves the handle."""
-        self._resolved()
-        return self
 
     def transform(
         self: ShapeT,
@@ -298,27 +293,27 @@ class Shape(Handle[ResolvedShape]):
     def translate(self: ShapeT, *args: object) -> ShapeT:
         from .shape_transforms import _shape_translate
 
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             vector = vector3(*args)
             return cast(ShapeT, _shape_translate(self, vector))
 
     def move(self: ShapeT, *args: object) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.move(*args))
 
     def mov(self: ShapeT, *args: object) -> ShapeT:
         return self.move(*args)
 
     def moveX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.moveX(value))
 
     def moveY(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.moveY(value))
 
     def moveZ(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.moveZ(value))
 
     def movX(self: ShapeT, value: ScalarInput, /) -> ShapeT:
@@ -340,27 +335,27 @@ class Shape(Handle[ResolvedShape]):
         return self.moveZ(value)
 
     def right(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.right(value))
 
     def left(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.left(value))
 
     def forw(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.forw(value))
 
     def back(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.back(value))
 
     def up(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.up(value))
 
     def down(self: ShapeT, value: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.down(value))
 
     def rotate(
@@ -369,7 +364,7 @@ class Shape(Handle[ResolvedShape]):
         angle: ScalarInput | None = None,
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.rotate(axis, angle))
 
     def rot(
@@ -381,15 +376,15 @@ class Shape(Handle[ResolvedShape]):
         return self.rotate(axis, angle)
 
     def rotateX(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.rotateX(angle))
 
     def rotateY(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.rotateY(angle))
 
     def rotateZ(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.rotateZ(angle))
 
     def rotX(self: ShapeT, angle: ScalarInput, /) -> ShapeT:
@@ -407,7 +402,7 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             resolved_center = None if center is None else point3(center)
             return self.transform(transform_api.scale(factor, center=resolved_center))
 
@@ -419,7 +414,7 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleXYZ(x, y, z, center=resolved_center)
@@ -431,7 +426,7 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleX(factor, center=resolved_center)
@@ -443,7 +438,7 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleY(factor, center=resolved_center)
@@ -455,7 +450,7 @@ class Shape(Handle[ResolvedShape]):
         center: Point3 | Sequence[ScalarInput] | None = None,
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             resolved_center = None if center is None else point3(center)
             return self.transform(
                 transform_api.scaleZ(factor, center=resolved_center)
@@ -466,31 +461,31 @@ class Shape(Handle[ResolvedShape]):
         normal: Vector3 | Sequence[ScalarInput],
         /,
     ) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirror(vector3(normal)))
 
     def mirrorX(self: ShapeT) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirrorX())
 
     def mirrorY(self: ShapeT) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirrorY())
 
     def mirrorZ(self: ShapeT) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirrorZ())
 
     def mirrorXY(self: ShapeT) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirrorXY())
 
     def mirrorXZ(self: ShapeT) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirrorXZ())
 
     def mirrorYZ(self: ShapeT) -> ShapeT:
-        with using_runtime(self.runtime):
+        with using_context(self.context):
             return self.transform(transform_api.mirrorYZ())
 
     def _materialized_bool(
@@ -499,25 +494,25 @@ class Shape(Handle[ResolvedShape]):
         *args: object,
         operation_id: str,
     ) -> bool:
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             operation,
             result=BOOL_SPEC,
             args=(self._state, *args),
             operation_id=operation_id,
         )
         if isinstance(state, Expression):
-            return self.runtime._resolve(state)
+            return self.context._resolve(state)
         return state
 
     def shapetype(self) -> ShapeKind:
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             ops.shape_kind,
             result=SHAPE_KIND_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.kind",
         )
         if isinstance(state, Expression):
-            state = self.runtime._resolve(state)
+            state = self.context._resolve(state)
         return cast(ShapeKind, state)
 
     def _is_kind(self, kind: TopAbs_ShapeEnum, name: str) -> bool:
@@ -570,13 +565,13 @@ class Shape(Handle[ResolvedShape]):
         )
 
     def Wire_orEdgeToWire(self) -> Wire:
-        expression = self.runtime._expression(
+        expression = self.context._expression(
             ops.wire_from_wire_or_edge,
             result=WIRE_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.to_wire",
         )
-        return Wire._from_state(self.runtime, expression)
+        return Wire._from_state(self.context, expression)
 
     def to_wire(self) -> Wire:
         return self.Wire_orEdgeToWire()
@@ -590,7 +585,7 @@ class Shape(Handle[ResolvedShape]):
         item_spec: ResultSpec[ResolvedShape],
         operation_id: str,
     ) -> ShapeList[ShapeHandleT]:
-        expression = self.runtime._expression(
+        expression = self.context._expression(
             operation,
             result=sequence_spec,
             args=(self._state,),
@@ -598,7 +593,7 @@ class Shape(Handle[ResolvedShape]):
             cacheable=False,
         )
         return ShapeList(
-            self.runtime,
+            self.context,
             expression,
             sequence_spec=sequence_spec,
             item_type=item_type,
@@ -619,13 +614,13 @@ class Shape(Handle[ResolvedShape]):
         return self.vertices()
 
     def curve(self) -> Curve:
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             ops.edge_curve,
             result=CURVE_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.curve",
         )
-        return Curve._from_state(self.runtime, state)
+        return Curve._from_state(self.context, state)
 
     def Curve(self) -> Geom_Curve:
         return self.curve().native()
@@ -649,21 +644,21 @@ class Shape(Handle[ResolvedShape]):
         return self.curve().range()
 
     def endpoints(self) -> tuple[Point3, Point3]:
-        start = self.runtime._value_state(
+        start = self.context._value_state(
             ops.shape_endpoint,
             result=POINT3_SPEC,
             args=(self._state, False),
             operation_id="zencad.typed.shape.endpoint.start",
         )
-        end = self.runtime._value_state(
+        end = self.context._value_state(
             ops.shape_endpoint,
             result=POINT3_SPEC,
             args=(self._state, True),
             operation_id="zencad.typed.shape.endpoint.end",
         )
         return (
-            Point3._from_state(self.runtime, start),
-            Point3._from_state(self.runtime, end),
+            Point3._from_state(self.context, start),
+            Point3._from_state(self.context, end),
         )
 
     def curvetype(self) -> CurveKind:
@@ -701,13 +696,13 @@ class Shape(Handle[ResolvedShape]):
         return self.curve().uniform_points(npoints, strt, fini)
 
     def surface(self) -> Surface:
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             ops.face_surface,
             result=SURFACE_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.surface",
         )
-        return Surface._from_state(self.runtime, state)
+        return Surface._from_state(self.context, state)
 
     def AdaptorSurface(self) -> Geom_Surface:
         return self.surface().native()
@@ -720,39 +715,39 @@ class Shape(Handle[ResolvedShape]):
         return self.surface().normal(u, v)
 
     def SurfaceProperties(self) -> ShapeProperties:
-        center = self.runtime._value_state(
+        center = self.context._value_state(
             ops.surface_center,
             result=POINT3_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.surface_properties.center",
         )
-        mass = self.runtime._value_state(
+        mass = self.context._value_state(
             ops.surface_mass,
             result=SCALAR_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.surface_properties.mass",
         )
         return ShapeProperties(
-            Point3._from_state(self.runtime, center),
-            Scalar._from_state(self.runtime, mass),
+            Point3._from_state(self.context, center),
+            Scalar._from_state(self.context, mass),
         )
 
     def VolumeProperties(self) -> ShapeProperties:
-        center = self.runtime._value_state(
+        center = self.context._value_state(
             ops.volume_center,
             result=POINT3_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.volume_properties.center",
         )
-        mass = self.runtime._value_state(
+        mass = self.context._value_state(
             ops.volume_mass,
             result=SCALAR_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.volume_properties.mass",
         )
         return ShapeProperties(
-            Point3._from_state(self.runtime, center),
-            Scalar._from_state(self.runtime, mass),
+            Point3._from_state(self.context, center),
+            Scalar._from_state(self.context, mass),
         )
 
     def fill(self) -> Face:
@@ -990,22 +985,22 @@ class Shape(Handle[ResolvedShape]):
         )
 
     def mass(self) -> Scalar:
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             ops.mass,
             result=SCALAR_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.mass",
         )
-        return Scalar._from_state(self.runtime, state)
+        return Scalar._from_state(self.context, state)
 
     def center(self) -> Point3:
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             ops.center,
             result=POINT3_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.shape.center",
         )
-        return Point3._from_state(self.runtime, state)
+        return Point3._from_state(self.context, state)
 
     def boundbox(self) -> BoundaryBox:
         """Return graph-preserving axis-aligned bounds for this shape."""
@@ -1055,13 +1050,13 @@ class Vertex(Shape):
 
     def point(self) -> Point3:
         """Return this topological vertex's geometric position."""
-        state = self.runtime._value_state(
+        state = self.context._value_state(
             ops.vertex_point,
             result=POINT3_SPEC,
             args=(self._state,),
             operation_id="zencad.typed.vertex.point",
         )
-        return Point3._from_state(self.runtime, state)
+        return Point3._from_state(self.context, state)
 
     def native(self) -> TopoDS_Vertex:
         return as_vertex(super().native())
@@ -1192,13 +1187,13 @@ class ShapeList(Generic[ShapeHandleT]):
         "_item_spec",
         "_item_type",
         "_operation_id",
-        "_runtime",
+        "_context",
         "_sequence_spec",
     )
 
     def __init__(
         self,
-        runtime: Runtime,
+        context: Context,
         expression: Expression[tuple[ResolvedShape, ...]],
         *,
         sequence_spec: ResultSpec[tuple[ResolvedShape, ...]],
@@ -1206,7 +1201,7 @@ class ShapeList(Generic[ShapeHandleT]):
         item_spec: ResultSpec[ResolvedShape],
         operation_id: str,
     ) -> None:
-        self._runtime = runtime
+        self._context = context
         self._expression = expression
         self._sequence_spec = sequence_spec
         self._item_type = item_type
@@ -1214,8 +1209,8 @@ class ShapeList(Generic[ShapeHandleT]):
         self._operation_id = operation_id
 
     @property
-    def runtime(self) -> Runtime:
-        return self._runtime
+    def context(self) -> Context:
+        return self._context
 
     def _sequence(
         self,
@@ -1223,7 +1218,7 @@ class ShapeList(Generic[ShapeHandleT]):
         *args: object,
         operation_id: str,
     ) -> ShapeList[ShapeHandleT]:
-        expression = self._runtime._expression(
+        expression = self._context._expression(
             operation,
             result=self._sequence_spec,
             args=(self._expression, *args),
@@ -1231,7 +1226,7 @@ class ShapeList(Generic[ShapeHandleT]):
             cacheable=False,
         )
         return ShapeList(
-            self._runtime,
+            self._context,
             expression,
             sequence_spec=self._sequence_spec,
             item_type=self._item_type,
@@ -1245,13 +1240,13 @@ class ShapeList(Generic[ShapeHandleT]):
         *args: object,
         operation_id: str,
     ) -> ShapeHandleT:
-        expression = self._runtime._expression(
+        expression = self._context._expression(
             operation,
             result=self._item_spec,
             args=(self._expression, *args),
             operation_id=operation_id,
         )
-        return self._item_type._from_state(self._runtime, expression)
+        return self._item_type._from_state(self._context, expression)
 
     @overload
     def __getitem__(self, index: int) -> ShapeHandleT: ...
@@ -1282,7 +1277,7 @@ class ShapeList(Generic[ShapeHandleT]):
         )
 
     def __len__(self) -> int:
-        return len(self._runtime._resolve(self._expression))
+        return len(self._context._resolve(self._expression))
 
     def __iter__(self) -> Iterator[ShapeHandleT]:
         for index in range(len(self)):
@@ -1355,7 +1350,7 @@ class ShapeList(Generic[ShapeHandleT]):
     ) -> ShapeList[ShapeHandleT]:
         """Keep shapes whose center lies on an axis coordinate or plane."""
 
-        with using_runtime(self._runtime):
+        with using_context(self._context):
             if isinstance(criterion, Axis):
                 direction = criterion.direction
                 origin = point3(*(component * position for component in direction))
@@ -1404,7 +1399,7 @@ class ShapeList(Generic[ShapeHandleT]):
     ) -> ShapeList[ShapeHandleT]:
         """Stable-sort by the exact minimum OCCT distance to ``point``."""
 
-        with using_runtime(self._runtime):
+        with using_context(self._context):
             query = point3(point)
         return self._sequence(
             selector_ops.sort_distance,
@@ -1420,7 +1415,7 @@ class ShapeList(Generic[ShapeHandleT]):
             raise TypeError("longer_than is only defined for Edge and Wire ShapeLists")
         return self._sequence(
             selector_ops.filter_measure,
-            _scalar_state(self._runtime, threshold),
+            _scalar_state(self._context, threshold),
             operation_id="zencad.typed.shapelist.filter.longer_than",
         )
 
@@ -1441,13 +1436,13 @@ class ShapeList(Generic[ShapeHandleT]):
         )
 
     def geometry_types(self) -> tuple[GeomType, ...]:
-        state = self._runtime._value_state(
+        state = self._context._value_state(
             selector_ops.sequence_geometry_types,
             result=_GEOMETRY_TYPE_SEQUENCE_SPEC,
             args=(self._expression,),
             operation_id="zencad.typed.shapelist.geometry_types",
         )
-        values = self._runtime._resolve(state) if isinstance(state, Expression) else state
+        values = self._context._resolve(state) if isinstance(state, Expression) else state
         return tuple(GeomType(value) for value in values)
 
     def group_by(

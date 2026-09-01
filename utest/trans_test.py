@@ -16,9 +16,7 @@ def early(a, b):
 
 class TransformationProbe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def assertPointAlmostEqual(self, actual, expected):
         self.assertAlmostEqual(actual.x, expected.x, places=12)
@@ -87,8 +85,10 @@ class TransformationProbe(unittest.TestCase):
 
         box = zencad.box(10, 10, 10, center=True).translate(x, y, z)
 
-        self.assertEqual((zencad.translate(z, y, x)(
-            box)).center().unlazy(), zencad.point3(40, 40, 40))
+        self.assertEqual(
+            box.transform(zencad.translate(z, y, x)).center().value(),
+            (40.0, 40.0, 40.0),
+        )
 
     def test_short_rotate(self):
         t = zencad.short_rotate((0, 0, 1), (1, 0, 0))
@@ -96,9 +96,10 @@ class TransformationProbe(unittest.TestCase):
         m = zencad.point3(0, 0, 1)
         m = t(m)
 
-        m = round(m, 4)
-
-        self.assertEqual(m, zencad.point3(1, 0, 0))
+        self.assertEqual(
+            tuple(round(component, 4) for component in m.value()),
+            (1.0, 0.0, 0.0),
+        )
 
     def test_pickle_restores_similarity_transform_state(self):
         transform = (
@@ -107,10 +108,11 @@ class TransformationProbe(unittest.TestCase):
             * zencad.scale(-2)
         )
         restored = pickle.loads(pickle.dumps(transform))
-        point = zencad.point3(3, -2, 5)
-
-        self.assertPointAlmostEqual(
-            restored.transform_point(point),
-            transform.transform_point(point),
-        )
-        self.assertPointAlmostEqual(restored.translation(), transform.translation())
+        with zencad.using_context(restored.context):
+            restored_point = zencad.point3(3, -2, 5)
+            restored_value = restored.transform_point(restored_point).value()
+        with zencad.using_context(transform.context):
+            original_point = zencad.point3(3, -2, 5)
+            original_value = transform.transform_point(original_point).value()
+        self.assertEqual(restored_value, original_value)
+        self.assertEqual(restored.translation.value(), transform.translation.value())

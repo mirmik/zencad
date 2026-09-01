@@ -5,8 +5,8 @@ from zencad import *
 
 
 spine = interpolate(
-    [(0, 0, 0), (0, 0, 35), (20, 0, 55), (45, 15, 65)],
-    tangs=[(0, 0, 1), None, None, (1, 1, 0)],
+    [point3(0, 0, 0), point3(0, 0, 35), point3(20, 0, 55), point3(45, 15, 65)],
+    tangs=[vector3(0, 0, 1), None, None, vector3(1, 1, 0)],
 )
 
 outer = pipe_shell([circle(6, wire=True)], spine, frenet=True, solid=True)

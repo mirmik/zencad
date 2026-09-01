@@ -20,6 +20,6 @@ wr.interpolate([
 
 w = widewire(wr.doit(), 5)
 
-disp(wr.doit(), zencad.color.red)
+disp(wr.doit(), color.red)
 disp(w)
 show()

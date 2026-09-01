@@ -5,23 +5,24 @@ from typing_extensions import assert_type
 from zencad import _typed as typed
 
 
-def surface_contract(runtime: typed.Runtime) -> None:
-    shape = runtime.box(2)
+def surface_contract(context: typed.Context) -> None:
+    shape = context.call(typed.box, 2)
     radius = shape.mass() / 4
-    cylinder = assert_type(runtime.cylinder_surface(radius), typed.Surface)
+    cylinder = assert_type(context.call(typed.cylinder_surface, radius), typed.Surface)
     assert_type(typed.cylinder_surface(radius), typed.Surface)
     sweep = assert_type(
-        runtime.sweep_surface(
-            runtime.circle_curve(radius / 2),
-            runtime.circle_curve(radius + 1),
+        context.call(
+            typed.sweep_surface,
+            context.call(typed.circle_curve, radius / 2),
+            context.call(typed.circle_curve, radius + 1),
             scale=radius,
             trihedron=typed.SweepTrihedron.CORRECTED_FRENET,
         ),
         typed.Surface,
     )
-    spine = runtime.circle_curve(radius + 1)
+    spine = context.call(typed.circle_curve, radius + 1)
     scale_law = assert_type(
-        runtime.constant_sweep_scale(radius, spine.range()),
+        context.call(typed.constant_sweep_scale, radius, spine.range()),
         typed.SweepScaleLaw,
     )
     assert_type(
@@ -29,18 +30,25 @@ def surface_contract(runtime: typed.Runtime) -> None:
         typed.SweepScaleLaw,
     )
     section_law = assert_type(
-        runtime.evolved_sweep_section(runtime.circle_curve(radius / 2), scale_law),
+        context.call(
+            typed.evolved_sweep_section,
+            context.call(typed.circle_curve, radius / 2),
+            scale_law,
+        ),
         typed.SweepSectionLaw,
     )
     location_law = assert_type(
-        runtime.sweep_location(spine, typed.SweepTrihedron.FRENET),
+        context.call(typed.sweep_location, spine, typed.SweepTrihedron.FRENET),
         typed.SweepLocationLaw,
     )
     assert_type(
-        runtime.sweep_surface_from_laws(section_law, location_law),
+        context.call(typed.sweep_surface_from_laws, section_law, location_law),
         typed.Surface,
     )
-    assert_type(typed.evolved_sweep_section(section_law.section, scale_law), typed.SweepSectionLaw)
+    assert_type(
+        typed.evolved_sweep_section(section_law.section, scale_law),
+        typed.SweepSectionLaw,
+    )
     assert_type(typed.sweep_location(spine), typed.SweepLocationLaw)
     assert_type(typed.sweep_surface_from_laws(section_law, location_law), typed.Surface)
     assert_type(typed.sweep_surface(section_law.section, spine), typed.Surface)
@@ -58,9 +66,12 @@ def surface_contract(runtime: typed.Runtime) -> None:
     assert_type(cylinder.v_iso(radius), typed.Curve)
     assert_type(
         cylinder.map(
-            runtime.segment2(runtime.point2(0, 0), runtime.point2(radius, radius))
+            context.call(
+                typed.segment2,
+                context.call(typed.point2, 0, 0),
+                context.call(typed.point2, radius, radius),
+            )
         ),
         typed.Edge,
     )
-    assert_type(cylinder.unlazy(), typed.Surface)
     assert_type(sweep, typed.Surface)

@@ -6,7 +6,7 @@ ZenCad API example: bezier.py
 
 from zencad import *
 
-pnts = points([(0, 0, 0), (0, 10, 0), (10, 10)])
+pnts = [point3(0, 0, 0), point3(0, 10, 0), point3(10, 10)]
 
 m0 = bezier(pnts)
 m1 = bezier(pnts, weights=[1,2,1])

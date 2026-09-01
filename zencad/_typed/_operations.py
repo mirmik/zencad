@@ -2,7 +2,7 @@
 
 The functions in this module are the narrow adapter between domain handles and
 the current eager ZenCad/OCP implementation.  They deliberately accept and
-return resolved values only; expression construction lives in ``runtime``.
+return resolved values only; expression construction lives in ``context``.
 """
 
 from __future__ import annotations
@@ -1028,7 +1028,7 @@ def revolve_sections_shape(
         raise ValueError("revol2 yaw and roll bounds must be finite")
     if yaw[0] == yaw[1]:
         raise ValueError("revol2 yaw interval must be non-empty")
-    return _revol2(
+    result = _revol2(
         profile,
         radius,
         n=sections,
@@ -1037,6 +1037,10 @@ def revolve_sections_shape(
         sects=False,
         nparts=parts,
     )
+    solids = result.solids()
+    if len(solids) == 1:
+        return solids[0]
+    return result
 
 
 def fillet_shape(

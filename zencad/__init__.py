@@ -15,82 +15,93 @@ except ImportError as exception:
 from zencad.version import __ocp_version__
 
 
-try:
-    # Geometry API
-    from zencad.geom.solid import *
-    from zencad.geom.platonic import *
-    from zencad.geom.wire import *
-    from zencad.geom.face import *
-    from zencad.geom.shell import *
-    from zencad.geom.sweep import *
-    from zencad.geom.sweep_law import (
-        law_constant_function as law_constant_function,
-        law_corrected_frenet_trihedron as law_corrected_frenet_trihedron,
-        law_evolved_section as law_evolved_section,
-        law_spine_and_trihedron as law_spine_and_trihedron,
-    )
-    from zencad.geom.boolops import *
-    from zencad.geom.exttrans import *
-    from zencad.geom.unify import *
-    from zencad.geom.validation import *
-    from zencad.geom.offset import *
-    from zencad.geom.operations import *
-    from zencad.geom.mesh import *
-    from zencad.geom.wire_builder import wire_builder
-    from zencad.geom.near import *
+from zencad import _typed as _domain
+from zencad._typed import *
+from zencad.cache_config import clear_cache, configure
+from zencad.color import (
+    Color,
+    black,
+    blue,
+    cian,
+    default_border_color,
+    default_color,
+    default_point_color,
+    default_wire_color,
+    green,
+    magenta,
+    mech,
+    orange,
+    red,
+    set_default_border_color,
+    set_default_point_color,
+    set_default_wire_color,
+    transmech,
+    white,
+    yellow,
+)
+from zencad.scene import Scene
+from zencad.scene_draft import SceneDraft, SceneObjectRef
+from zencad.showapi import display, disp, highlight, hl, managed_scene, show
+from zencad.util import (
+    closest_points_between_capsules,
+    closest_points_between_segments,
+    deg,
+    deg2rad,
+    examples_dict,
+    examples_paths,
+    rad2deg,
+)
+from zencad.version import __version__
 
-    # Display API
-    from zencad.showapi import display, disp, show, hl, highlight, managed_scene
-    from zencad.scene import Scene
-    from zencad.scene_draft import SceneDraft, SceneObjectRef
-
-    # Utility
-    from zencad.util import *
-    from zencad.color import Color
-    from zencad.color import default_color, set_default_point_color, default_point_color
-    from zencad.color import set_default_wire_color, default_wire_color
-    from zencad.color import set_default_border_color, default_border_color
-    import zencad.color as color
-    from zencad.lazifier import lazy
-    from zencad.operation import operation
-    from zencad.cache_config import configure
-
-    from zencad.color import (white,
-black,
-red,
-green,
-blue,
-yellow,
-magenta,
-cian,
-mech,
-transmech,
-orange)
-
-    # Transes
-    from zencad.geom.trans import move, moveX, moveY, moveZ, \
-        translate, translateX, translateY, translateZ, \
-        rotate, rotateX, rotateY, rotateZ, \
-        mirror_axis, mirrorX, mirrorY, mirrorZ, \
-        mirror_plane, mirrorXY, mirrorYZ, mirrorXZ, \
-        mirrorO, \
-        scale, \
-        up, down, left, right, forw, back
-
-    from zencad.geom.general_transformation import scaleXYZ, scaleX, scaleY, scaleZ
-
-    from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
-        rotate_array, rotate_array2, short_rotate, nulltrans
-
-    from zencad.version import __version__
-
-    from zencad.convert.api import *
-
-except ImportError:
-    raise
+from zencad import color as color
 
 moduledir = os.path.dirname(__file__)
 exampledir = os.path.join(os.path.dirname(__file__), "examples")
+
+_SUPPORT_API = [
+    "Color",
+    "Scene",
+    "SceneDraft",
+    "SceneObjectRef",
+    "black",
+    "blue",
+    "cian",
+    "clear_cache",
+    "closest_points_between_capsules",
+    "closest_points_between_segments",
+    "color",
+    "configure",
+    "default_border_color",
+    "default_color",
+    "default_point_color",
+    "default_wire_color",
+    "deg",
+    "deg2rad",
+    "disp",
+    "display",
+    "exampledir",
+    "examples_dict",
+    "examples_paths",
+    "green",
+    "highlight",
+    "hl",
+    "magenta",
+    "managed_scene",
+    "mech",
+    "moduledir",
+    "orange",
+    "rad2deg",
+    "red",
+    "set_default_border_color",
+    "set_default_point_color",
+    "set_default_wire_color",
+    "show",
+    "transmech",
+    "white",
+    "yellow",
+]
+
+__all__ = [*_domain.__all__, *_SUPPORT_API]
 
 
 def __getattr__(name):

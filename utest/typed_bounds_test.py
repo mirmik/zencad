@@ -17,7 +17,7 @@ from evalcache.v2 import (
 from OCP.Bnd import Bnd_Box
 
 from zencad import _typed as typed
-from zencad.operation import DomainOperation, using_runtime
+from zencad.operation import DomainOperation, using_context
 
 
 def _assert_coordinates(
@@ -36,18 +36,18 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         self.assertIsInstance(typed.empty_boundary_box, DomainOperation)
         self.assertIsInstance(typed.boundbox, DomainOperation)
 
-        runtime = typed.Runtime.deferred(cache=False)
-        seed = runtime.box(2)
+        context = typed.Context.deferred(cache=False)
+        seed = context.call(typed.box, 2)
         minimum = seed.center()
-        maximum = minimum + runtime.vector3(1, 2, 3)
-        with using_runtime(runtime):
+        maximum = minimum + context.call(typed.vector3, 1, 2, 3)
+        with using_context(context):
             bounds = typed.boundary_box(minimum, maximum)
             empty = typed.empty_boundary_box()
             shape_bounds = typed.boundbox(seed)
 
-        self.assertIs(bounds.runtime, runtime)
-        self.assertIs(empty.runtime, runtime)
-        self.assertIs(shape_bounds.runtime, runtime)
+        self.assertIs(bounds.context, context)
+        self.assertIs(empty.context, context)
+        self.assertIs(shape_bounds.context, context)
         self.assertEqual(
             bounds._state.operation_id,
             "zencad.typed.boundary-box.from-points",
@@ -66,13 +66,13 @@ class TypedBoundaryBoxTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    bounds = runtime.box(2, 3, 4).translate(-1, 2, 5).boundbox()
+                    bounds = context.call(typed.box, 2, 3, 4).translate(-1, 2, 5).boundbox()
                     observed_types.add(type(bounds))
                     self.assertIs(type(bounds), typed.BoundaryBox)
                     if mode is EvaluationMode.DEFERRED:
@@ -92,24 +92,23 @@ class TypedBoundaryBoxTest(unittest.TestCase):
                     self.assertAlmostEqual(bounds.z_range().length().value(), 4.0, 6)
                     self.assertFalse(bounds.is_empty())
                     self.assertFalse(bounds.native().IsVoid())
-                    self.assertIs(bounds.unlazy(), bounds)
 
                     with self.assertRaises(FrozenInstanceError):
                         record.xmin = 10  # type: ignore[misc]
 
         self.assertEqual(observed_types, {typed.BoundaryBox})
 
-    def test_bbox_alias_and_runtime_factory_preserve_the_graph(self):
+    def test_bbox_alias_and_context_factory_preserve_the_graph(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        seed = runtime.box(2)
+        seed = context.call(typed.box, 2)
         minimum = seed.center()
         extent = seed.mass() / 4
-        maximum = minimum + runtime.vector(extent, extent + 1, extent + 2)
-        explicit = runtime.boundary_box(minimum, maximum)
+        maximum = minimum + context.call(typed.vector, extent, extent + 1, extent + 2)
+        explicit = context.call(typed.boundary_box, minimum, maximum)
         shape_bounds = seed.translate(extent, 0, 0).bbox()
         combined = explicit.union(shape_bounds)
 
@@ -123,9 +122,9 @@ class TypedBoundaryBoxTest(unittest.TestCase):
 
     def test_legacy_accessors_and_shape_keep_immutable_typed_contract(self):
         events = []
-        runtime = typed.Runtime.deferred(cache=False, progress_hooks=(events.append,))
-        first = runtime.boundary_box(runtime.point3(1, 2, 3), runtime.point3(4, 6, 8))
-        second = runtime.box(1).boundbox()
+        context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
+        first = context.call(typed.boundary_box, context.call(typed.point3, 1, 2, 3), context.call(typed.point3, 4, 6, 8))
+        second = context.call(typed.box, 1).boundbox()
         combined = first.add(second)
         shape = first.shape()
 
@@ -146,13 +145,13 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         self.assertTrue(events)
 
     def test_empty_bounds_are_explicit_and_union_identity(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        empty = (runtime.box(1) - runtime.box(1)).boundbox()
-        nonempty = runtime.box(2).boundbox()
+        context = typed.Context.deferred(cache=False)
+        empty = (context.call(typed.box, 1) - context.call(typed.box, 1)).boundbox()
+        nonempty = context.call(typed.box, 2).boundbox()
 
         self.assertTrue(empty.is_empty())
         self.assertTrue(empty.native().IsVoid())
-        self.assertTrue(runtime.empty_boundary_box().is_empty())
+        self.assertTrue(context.call(typed.empty_boundary_box, ).is_empty())
         self.assertEqual(empty.union(nonempty).value(), nonempty.value())
         self.assertEqual(nonempty.union(empty).value(), nonempty.value())
 
@@ -166,10 +165,10 @@ class TypedBoundaryBoxTest(unittest.TestCase):
             empty.xmin.value()
 
     def test_native_boundary_is_an_owned_snapshot(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
         source = Bnd_Box()
         source.Update(0.123456789012345, 2, 3, 4.123456789012345, 5, 6)
-        bounds = typed.BoundaryBox.from_ocp(source, runtime=runtime)
+        bounds = typed.BoundaryBox.from_ocp(source, context=context)
         source.Update(-10, -10, -10, 10, 10, 10)
 
         first = bounds.native()
@@ -182,33 +181,33 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         )
 
         void = Bnd_Box()
-        self.assertTrue(typed.BoundaryBox.from_ocp(void, runtime=runtime).is_empty())
+        self.assertTrue(typed.BoundaryBox.from_ocp(void, context=context).is_empty())
         with self.assertRaisesRegex(TypeError, "Bnd_Box"):
-            typed.BoundaryBox.from_ocp(object(), runtime=runtime)  # type: ignore[arg-type]
+            typed.BoundaryBox.from_ocp(object(), context=context)  # type: ignore[arg-type]
 
     def test_invalid_factory_inputs_are_rejected(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "Point3 corners"):
-            runtime.boundary_box(runtime.point2(0, 0), runtime.point(1, 1, 1))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.boundary_box(runtime.point(0, 0, 0), other.point(1, 1, 1))
+            context.call(typed.boundary_box, context.call(typed.point2, 0, 0), context.call(typed.point, 1, 1, 1))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.boundary_box, context.call(typed.point, 0, 0, 0), other.call(typed.point, 1, 1, 1))
         with self.assertRaisesRegex(ValueError, "minimum exceeds maximum"):
-            runtime.boundary_box(runtime.point(2, 0, 0), runtime.point(1, 1, 1))
+            context.call(typed.boundary_box, context.call(typed.point, 2, 0, 0), context.call(typed.point, 1, 1, 1))
         with self.assertRaisesRegex(TypeError, "expects BoundaryBox"):
-            runtime.empty_boundary_box().union(runtime.box(1))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.empty_boundary_box().union(other.empty_boundary_box())
+            context.call(typed.empty_boundary_box, ).union(context.call(typed.box, 1))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.empty_boundary_box, ).union(other.call(typed.empty_boundary_box, ))
 
     def test_curve_and_surface_ranges_are_named_graph_records(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        curve_range = runtime.circle_curve(runtime.box(2).mass() / 4).range()
-        surface_range = runtime.cylinder_surface(2).u_range()
+        curve_range = context.call(typed.circle_curve, context.call(typed.box, 2).mass() / 4).range()
+        surface_range = context.call(typed.cylinder_surface, 2).u_range()
 
         self.assertIs(type(curve_range), typed.Interval)
         self.assertIs(type(curve_range.lower), typed.Scalar)
@@ -218,15 +217,14 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         self.assertAlmostEqual(curve_range.lower.value(), 0.0)
         self.assertAlmostEqual(curve_range.length().value(), 2 * 3.141592653589793)
         self.assertEqual(tuple(curve_range), (curve_range.lower, curve_range.upper))
-        self.assertIs(curve_range.unlazy(), curve_range)
         self.assertTrue(events)
 
 
 class TypedBoundaryBoxCacheTest(unittest.TestCase):
     def test_cache_is_binary_non_pickle_and_rejects_invalid_payload(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.box(2).boundbox().value()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.box, 2).boundbox().value()
 
         key, record = next(
             (key, record)
@@ -246,29 +244,29 @@ class TypedBoundaryBoxCacheTest(unittest.TestCase):
             value=SerializedValue(payload=b"zencad.typed.surface\x00v1"),
         )
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        self.assertFalse(second.box(2).boundbox().is_empty())
+        self.assertFalse(second.call(typed.box, 2).boundbox().is_empty())
         self.assertIn(
             EvaluationEventKind.CACHE_REJECTED,
             [event.kind for event in events],
         )
 
-    def test_fresh_runtime_and_process_reuse_boundary_box_cache(self):
+    def test_fresh_context_and_process_reuse_boundary_box_cache(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.box(2).boundbox().value()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.box, 2).boundbox().value()
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        second.box(2).boundbox().value()
+        second.call(typed.box, 2).boundbox().value()
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,
             [event.kind for event in events],
@@ -284,12 +282,12 @@ from evalcache.v2 import MappingCacheStore
 from zencad import _typed as typed
 
 events = []
-runtime = typed.Runtime.deferred(
+context = typed.Context.deferred(
     cache=True,
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-runtime.box(2).boundbox().value()
+context.call(typed.box, 2).boundbox().value()
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:

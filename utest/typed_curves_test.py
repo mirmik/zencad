@@ -41,23 +41,23 @@ class TypedCurveHandlesTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    line = runtime.line(
-                        runtime.point(1, 2, 3),
-                        runtime.vector(1, 0, 0),
+                    line = context.call(typed.line,
+                        context.call(typed.point, 1, 2, 3),
+                        context.call(typed.vector, 1, 0, 0),
                     )
-                    circle = runtime.circle_curve(2)
-                    ellipse = runtime.ellipse_curve(3, 2)
-                    segment = runtime.segment2(
-                        runtime.point2(0, 0),
-                        runtime.point2(4, 0),
+                    circle = context.call(typed.circle_curve, 2)
+                    ellipse = context.call(typed.ellipse_curve, 3, 2)
+                    segment = context.call(typed.segment2,
+                        context.call(typed.point2, 0, 0),
+                        context.call(typed.point2, 4, 0),
                     )
-                    ellipse2 = runtime.ellipse2(3, 2)
+                    ellipse2 = context.call(typed.ellipse2, 3, 2)
                     trimmed = segment.trim(0.5, 2.5)
                     rotated = segment.rotate(math.pi / 2)
 
@@ -110,30 +110,27 @@ class TypedCurveHandlesTest(unittest.TestCase):
                     )
                     self.assertIs(type(circle.native()), Geom_Circle)
                     self.assertIsInstance(segment.native(), Geom2d_Curve)
-                    self.assertIs(circle.unlazy(), circle)
-                    self.assertIs(trimmed.unlazy(), trimmed)
-
         self.assertEqual(len(observed_types), 1)
 
     def test_scalar_point_and_vector_inputs_remain_in_the_graph(self):
         events = []
-        runtime = typed.Runtime.deferred(
+        context = typed.Context.deferred(
             cache=False,
             progress_hooks=(events.append,),
         )
-        seed = runtime.box(2)
+        seed = context.call(typed.box, 2)
         radius = seed.mass() / 4
         origin = seed.center()
 
-        circle = runtime.circle_curve(radius)
-        ellipse = runtime.ellipse_curve(radius + 1, radius)
-        line = runtime.line(origin, runtime.vector(radius, 0, 0))
-        segment = runtime.segment2(
-            runtime.point2(0, 0),
-            runtime.point2(radius * 2, 0),
+        circle = context.call(typed.circle_curve, radius)
+        ellipse = context.call(typed.ellipse_curve, radius + 1, radius)
+        line = context.call(typed.line, origin, context.call(typed.vector, radius, 0, 0))
+        segment = context.call(typed.segment2,
+            context.call(typed.point2, 0, 0),
+            context.call(typed.point2, radius * 2, 0),
         )
-        ellipse2 = runtime.ellipse2(radius + 1, radius)
-        trimmed = runtime.trim_curve2(segment, radius / 4, radius + 0.5)
+        ellipse2 = context.call(typed.ellipse2, radius + 1, radius)
+        trimmed = context.call(typed.trim_curve2, segment, radius / 4, radius + 0.5)
         rotated = segment.rotate(radius * math.pi / 4)
 
         self.assertEqual(events, [])
@@ -151,13 +148,13 @@ class TypedCurveHandlesTest(unittest.TestCase):
         self.assertTrue(events)
 
     def test_native_boundaries_are_owned_snapshots(self):
-        runtime = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
 
         source = Geom_Circle(
             gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)),
             2,
         )
-        curve = typed.Curve.from_ocp(source, runtime=runtime)
+        curve = typed.Curve.from_ocp(source, context=context)
         self.assertIs(get_type_hints(typed.Curve.native)["return"], Geom_Curve)
         source.SetRadius(9)
         first = curve.native()
@@ -169,7 +166,7 @@ class TypedCurveHandlesTest(unittest.TestCase):
             3,
             2,
         )
-        curve2 = typed.Curve2.from_ocp(source2, runtime=runtime)
+        curve2 = typed.Curve2.from_ocp(source2, context=context)
         self.assertIs(get_type_hints(typed.Curve2.native)["return"], Geom2d_Curve)
         source2.SetMajorRadius(8)
         first2 = curve2.native()
@@ -177,46 +174,46 @@ class TypedCurveHandlesTest(unittest.TestCase):
         self.assertEqual(curve2.native().MajorRadius(), 3.0)
 
         with self.assertRaisesRegex(TypeError, "Geom_Curve"):
-            typed.Curve.from_ocp(source2, runtime=runtime)  # type: ignore[arg-type]
+            typed.Curve.from_ocp(source2, context=context)  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "Geom2d_Curve"):
-            typed.Curve2.from_ocp(source, runtime=runtime)  # type: ignore[arg-type]
+            typed.Curve2.from_ocp(source, context=context)  # type: ignore[arg-type]
 
     def test_invalid_inputs_fail_at_the_typed_or_resolved_boundary(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        other = typed.Runtime.deferred(cache=False)
+        context = typed.Context.deferred(cache=False)
+        other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "origin must be Point3"):
-            runtime.line(runtime.point2(0, 0), runtime.vector(1, 0, 0))  # type: ignore[arg-type]
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.line(runtime.point(0, 0, 0), other.vector(1, 0, 0))
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.segment2(runtime.point2(0, 0), other.point2(1, 0))
-        with self.assertRaisesRegex(ValueError, "different typed runtimes"):
-            runtime.trim_curve2(other.ellipse2(2, 1), 0, 1)
+            context.call(typed.line, context.call(typed.point2, 0, 0), context.call(typed.vector, 1, 0, 0))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.line, context.call(typed.point, 0, 0, 0), other.call(typed.vector, 1, 0, 0))
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.segment2, context.call(typed.point2, 0, 0), other.call(typed.point2, 1, 0))
+        with self.assertRaisesRegex(ValueError, "different contexts"):
+            context.call(typed.trim_curve2, other.call(typed.ellipse2, 2, 1), 0, 1)
 
-        invalid = runtime.circle_curve(0)
+        invalid = context.call(typed.circle_curve, 0)
         with self.assertRaisesRegex(ValueError, "positive scalar"):
             invalid.native()
         with self.assertRaisesRegex(ValueError, "non-zero Vector3"):
-            runtime.line(runtime.point(0, 0, 0), runtime.vector(0, 0, 0)).native()
+            context.call(typed.line, context.call(typed.point, 0, 0, 0), context.call(typed.vector, 0, 0, 0)).native()
         with self.assertRaisesRegex(ValueError, "must not be less"):
-            runtime.ellipse_curve(1, 2).native()
+            context.call(typed.ellipse_curve, 1, 2).native()
         with self.assertRaisesRegex(ValueError, "endpoints must be distinct"):
-            point = runtime.point2(0, 0)
-            runtime.segment2(point, point).native()
+            point = context.call(typed.point2, 0, 0)
+            context.call(typed.segment2, point, point).native()
         with self.assertRaisesRegex(ValueError, "angle must be finite"):
-            runtime.ellipse2(2, 1).rotate(math.inf).native()
+            context.call(typed.ellipse2, 2, 1).rotate(math.inf).native()
 
-        immediate = typed.Runtime.immediate(cache=False)
+        immediate = typed.Context.immediate(cache=False)
         with self.assertRaisesRegex(ValueError, "positive scalar"):
-            immediate.circle_curve(0)
+            immediate.call(typed.circle_curve, 0)
 
 
 class TypedCurveCacheTest(unittest.TestCase):
     def test_curve_cache_uses_family_specific_non_pickle_artifacts(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.circle_curve(2).native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.circle_curve, 2).native()
 
         self.assertEqual(len(store.records), 1)
         key, record = next(iter(store.records.items()))
@@ -229,7 +226,7 @@ class TypedCurveCacheTest(unittest.TestCase):
         self.assertEqual(record.value.artifacts[0].name, "curve.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 10)
 
-        wrong_native = typed.Runtime.deferred(cache=False).ellipse2(3, 2).native()
+        wrong_native = typed.Context.deferred(cache=False).call(typed.ellipse2, 3, 2).native()
         wrong_value = Curve2Serializer().dumps(curve_ops.curve2_from_ocp(wrong_native))
         store.records[key] = CacheRecord(
             schema=record.schema,
@@ -239,31 +236,31 @@ class TypedCurveCacheTest(unittest.TestCase):
         )
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.circle_curve(2)
+        restored = second.call(typed.circle_curve, 2)
         self.assertIs(type(restored.native()), Geom_Circle)
         self.assertIn(
             EvaluationEventKind.CACHE_REJECTED,
             [event.kind for event in events],
         )
 
-    def test_fresh_runtime_and_fresh_process_reuse_curve_cache(self):
+    def test_fresh_context_and_fresh_process_reuse_curve_cache(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
-        first.ellipse2(3, 2).rotate(0.5).native()
+        first = typed.Context.deferred(cache=True, cache_store=store)
+        first.call(typed.ellipse2, 3, 2).rotate(0.5).native()
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),
         )
         self.assertIsInstance(
-            second.ellipse2(3, 2).rotate(0.5).native(), Geom2d_Ellipse
+            second.call(typed.ellipse2, 3, 2).rotate(0.5).native(), Geom2d_Ellipse
         )
         self.assertIn(
             EvaluationEventKind.CACHE_HIT,
@@ -280,12 +277,12 @@ from evalcache.v2 import MappingCacheStore
 from zencad import _typed as typed
 
 events = []
-runtime = typed.Runtime.deferred(
+context = typed.Context.deferred(
     cache=True,
     cache_store=MappingCacheStore(DirCache_v2(sys.argv[1])),
     progress_hooks=(events.append,),
 )
-runtime.circle_curve(2).point(0).value()
+context.call(typed.circle_curve, 2).point(0).value()
 print(json.dumps(Counter(event.kind.value for event in events)))
 """
         with tempfile.TemporaryDirectory() as directory:

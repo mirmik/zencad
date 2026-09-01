@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 from OCP.BRep import BRep_Builder
+from OCP.BOPAlgo import BOPAlgo_Splitter
+from OCP.BRepAdaptor import BRepAdaptor_Surface
 from OCP.BRepAlgoAPI import (
     BRepAlgoAPI_Common,
     BRepAlgoAPI_Cut,
     BRepAlgoAPI_Fuse,
     BRepAlgoAPI_Section,
 )
-from OCP.TopoDS import TopoDS_Compound
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace
+from OCP.GeomAbs import GeomAbs_Plane
+from OCP.TopAbs import TopAbs_SOLID
+from OCP.TopExp import TopExp_Explorer
+from OCP.TopoDS import TopoDS, TopoDS_Compound
+from OCP.gp import gp_Dir, gp_Pln, gp_Pnt
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.geom.boolops import _slice_resolved, _split_resolved
 
 
 def empty_shape() -> ResolvedShape:
@@ -97,6 +103,163 @@ def section(
     if not algorithm.IsDone():
         raise ValueError("section failed for Shape operands")
     return ResolvedShape(algorithm.Shape())
+
+
+def _solid_sort_key(shape: ResolvedShape) -> tuple[float, ...]:
+    center = shape.center()
+    bounds = shape.boundbox()
+    return tuple(
+        round(value, 12)
+        for value in (
+            center.x,
+            center.y,
+            center.z,
+            bounds.xmin,
+            bounds.ymin,
+            bounds.zmin,
+            bounds.xmax,
+            bounds.ymax,
+            bounds.zmax,
+            shape.mass(),
+        )
+    )
+
+
+def _solid_parts(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
+    explorer = TopExp_Explorer(shape.Shape(), TopAbs_SOLID)
+    parts = []
+    while explorer.More():
+        parts.append(ResolvedShape(TopoDS.Solid_s(explorer.Current())))
+        explorer.Next()
+    return tuple(sorted(parts, key=_solid_sort_key))
+
+
+def _split_resolved(
+    body: ResolvedShape,
+    tools: tuple[ResolvedShape, ...],
+) -> tuple[ResolvedShape, ...]:
+    if not isinstance(body, ResolvedShape):
+        raise TypeError("split body must be a Shape")
+    if not tools:
+        raise ValueError("split requires at least one tool Shape")
+    if not all(isinstance(tool, ResolvedShape) for tool in tools):
+        raise TypeError("split tools must contain only Shape values")
+
+    original_count = len(_solid_parts(body))
+    if original_count == 0:
+        raise TypeError("split body must contain at least one solid")
+
+    algorithm = BOPAlgo_Splitter()
+    algorithm.SetNonDestructive(True)
+    algorithm.AddArgument(body.Shape())
+    for tool in tools:
+        algorithm.AddTool(tool.Shape())
+    algorithm.Perform()
+    if algorithm.HasErrors():
+        raise ValueError("OCCT splitter failed for the supplied body and tools")
+
+    parts = _solid_parts(ResolvedShape(algorithm.Shape()))
+    if len(parts) <= original_count:
+        raise ValueError("split tools do not divide the body")
+    return parts
+
+
+def _coordinates(value: object, name: str) -> tuple[float, float, float]:
+    try:
+        coordinates = (float(value.x), float(value.y), float(value.z))
+    except AttributeError:
+        try:
+            coordinates = tuple(float(item) for item in value)
+        except (TypeError, ValueError) as error:
+            raise TypeError(f"{name} must contain three numeric coordinates") from error
+    if len(coordinates) != 3:
+        raise TypeError(f"{name} must contain three numeric coordinates")
+    return coordinates
+
+
+def _coordinate_plane(coordinate: float, axis: object) -> gp_Pln:
+    if isinstance(axis, str):
+        normals = {
+            "x": (1.0, 0.0, 0.0),
+            "y": (0.0, 1.0, 0.0),
+            "z": (0.0, 0.0, 1.0),
+        }
+        try:
+            normal = normals[axis.lower()]
+        except KeyError as error:
+            raise ValueError("slice axis must be 'x', 'y', 'z', or a vector") from error
+    else:
+        normal = _coordinates(axis, "slice axis")
+    try:
+        direction = gp_Dir(*normal)
+    except Exception as error:
+        raise ValueError("slice plane normal must be non-zero") from error
+    distance = float(coordinate)
+    return gp_Pln(
+        gp_Pnt(
+            direction.X() * distance,
+            direction.Y() * distance,
+            direction.Z() * distance,
+        ),
+        direction,
+    )
+
+
+def _resolved_plane(
+    plane: object,
+    coordinate: float,
+    axis: object,
+) -> gp_Pln:
+    if plane is None:
+        return _coordinate_plane(coordinate, axis)
+    if isinstance(plane, ResolvedShape):
+        if not plane.is_face():
+            raise TypeError("slice plane Shape must be a planar face")
+        adaptor = BRepAdaptor_Surface(plane.Face())
+        if adaptor.GetType() != GeomAbs_Plane:
+            raise TypeError("slice plane Shape must be a planar face")
+        return adaptor.Plane()
+    try:
+        origin, normal = plane
+    except (TypeError, ValueError) as error:
+        raise TypeError(
+            "slice plane must be a planar face or (origin, normal)"
+        ) from error
+    try:
+        return gp_Pln(
+            gp_Pnt(*_coordinates(origin, "slice plane origin")),
+            gp_Dir(*_coordinates(normal, "slice plane normal")),
+        )
+    except Exception as error:
+        raise ValueError("slice plane normal must be non-zero") from error
+
+
+def _slice_resolved(
+    body: ResolvedShape,
+    plane: object,
+    coordinate: float,
+    axis: object,
+) -> tuple[ResolvedShape, ...]:
+    resolved_plane = _resolved_plane(plane, coordinate, axis)
+    tool = ResolvedShape(BRepBuilderAPI_MakeFace(resolved_plane).Face())
+    parts = _split_resolved(body, (tool,))
+    if len(parts) != 2:
+        raise ValueError(
+            f"slice requires exactly two resulting solids; got {len(parts)}"
+        )
+
+    location = resolved_plane.Location()
+    direction = resolved_plane.Axis().Direction()
+
+    def signed_center(shape: ResolvedShape) -> float:
+        center = shape.center()
+        return (
+            (center.x - location.X()) * direction.X()
+            + (center.y - location.Y()) * direction.Y()
+            + (center.z - location.Z()) * direction.Z()
+        )
+
+    return tuple(sorted(parts, key=signed_center))
 
 
 def split_shapes(

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import OperationArguments, arguments, operation, resolve_context
 
 from . import _curve_operations as curve_ops
 from . import _operations as topology_ops
@@ -23,7 +23,7 @@ from .values import (
 )
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
 
 
 @operation(
@@ -49,8 +49,8 @@ def line(origin: Point3, direction: Vector3, /) -> OperationArguments:
     operation_version="1",
 )
 def circle_curve(radius: ScalarInput, /) -> OperationArguments:
-    runtime = resolve_runtime(radius)
-    return arguments(_scalar_state(runtime, radius))
+    context = resolve_context(radius)
+    return arguments(_scalar_state(context, radius))
 
 
 @operation(
@@ -65,10 +65,10 @@ def ellipse_curve(
     minor_radius: ScalarInput,
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(major_radius, minor_radius)
+    context = resolve_context(major_radius, minor_radius)
     return arguments(
-        _scalar_state(runtime, major_radius),
-        _scalar_state(runtime, minor_radius),
+        _scalar_state(context, major_radius),
+        _scalar_state(context, minor_radius),
     )
 
 
@@ -112,9 +112,9 @@ def bezier_curve(
     weights: Sequence[ScalarInput] | None = None,
 ) -> OperationArguments:
     points = _require_points(poles, minimum=2, name="bezier_curve")
-    runtime = resolve_runtime(points, weights)
+    context = resolve_context(points, weights)
     resolved_weights = _optional_scalar_sequence_state(
-        runtime,
+        context,
         weights,
         "bezier_curve weights",
     )
@@ -152,13 +152,13 @@ def bspline_curve(
     _require_bool(periodic, "bspline_curve periodic")
     if check_rational is not None:
         _require_bool(check_rational, "bspline_curve check_rational")
-    runtime = resolve_runtime(points, knots, weights)
-    knot_states = _scalar_sequence_state(runtime, knots, "bspline_curve knots")
+    context = resolve_context(points, knots, weights)
+    knot_states = _scalar_sequence_state(context, knots, "bspline_curve knots")
     multiplicities = _int_sequence(muls, "bspline_curve multiplicities")
     if len(knot_states) != len(multiplicities):
         raise ValueError("bspline_curve knots and multiplicities must have equal length")
     resolved_weights = _optional_scalar_sequence_state(
-        runtime,
+        context,
         weights,
         "bspline_curve weights",
     )
@@ -209,8 +209,8 @@ def make_edge(
 ) -> OperationArguments:
     if not isinstance(curve, Curve):
         raise TypeError("make_edge expects Curve")
-    runtime = resolve_runtime(curve)
-    return arguments(curve, _interval_state(runtime, interval, "make_edge interval"))
+    context = resolve_context(curve)
+    return arguments(curve, _interval_state(context, interval, "make_edge interval"))
 
 
 @operation(
@@ -244,13 +244,13 @@ def _svg_elliptic_arc(
     points = _require_points((start, end), minimum=2, name="SVG arc")
     _require_bool(large, "SVG arc large")
     _require_bool(sweep, "SVG arc sweep")
-    runtime = resolve_runtime(points, radius_x, radius_y, x_axis_angle)
+    context = resolve_context(points, radius_x, radius_y, x_axis_angle)
     return arguments(
         points[0],
         points[1],
-        _scalar_state(runtime, radius_x),
-        _scalar_state(runtime, radius_y),
-        _scalar_state(runtime, x_axis_angle),
+        _scalar_state(context, radius_x),
+        _scalar_state(context, radius_y),
+        _scalar_state(context, x_axis_angle),
         large,
         sweep,
     )
@@ -281,8 +281,8 @@ def rounded_polysegment(
 ) -> OperationArguments:
     _require_bool(closed, "rounded_polysegment closed")
     points = _require_points(pnts, minimum=2, name="rounded_polysegment")
-    runtime = resolve_runtime(points, r)
-    return arguments(points, _scalar_state(runtime, r), closed)
+    context = resolve_context(points, r)
+    return arguments(points, _scalar_state(context, r), closed)
 
 
 @operation(
@@ -303,13 +303,13 @@ def helix(
     if step is None and pitch is None:
         raise TypeError("helix requires step or pitch")
     _require_bool(left, "helix left")
-    runtime = resolve_runtime(r, h, step, pitch, angle)
+    context = resolve_context(r, h, step, pitch, angle)
     return arguments(
-        _scalar_state(runtime, r),
-        _scalar_state(runtime, h),
-        _optional_scalar_state(runtime, step),
-        _optional_scalar_state(runtime, pitch),
-        _scalar_state(runtime, angle),
+        _scalar_state(context, r),
+        _scalar_state(context, h),
+        _optional_scalar_state(context, step),
+        _optional_scalar_state(context, pitch),
+        _scalar_state(context, angle),
         left,
     )
 
@@ -339,10 +339,10 @@ def ellipse2(
     minor_radius: ScalarInput,
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(major_radius, minor_radius)
+    context = resolve_context(major_radius, minor_radius)
     return arguments(
-        _scalar_state(runtime, major_radius),
-        _scalar_state(runtime, minor_radius),
+        _scalar_state(context, major_radius),
+        _scalar_state(context, minor_radius),
     )
 
 
@@ -361,11 +361,11 @@ def trim_curve2(
 ) -> OperationArguments:
     if not isinstance(curve, Curve2):
         raise TypeError("trim_curve2 expects Curve2")
-    runtime = resolve_runtime(curve, start, end)
+    context = resolve_context(curve, start, end)
     return arguments(
         curve,
-        _scalar_state(runtime, start),
-        _scalar_state(runtime, end),
+        _scalar_state(context, start),
+        _scalar_state(context, end),
     )
 
 
@@ -412,11 +412,11 @@ def _curve_trimmed_edge(
     end: ScalarInput,
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(curve, start, end)
+    context = resolve_context(curve, start, end)
     return arguments(
         curve,
-        _scalar_state(runtime, start),
-        _scalar_state(runtime, end),
+        _scalar_state(context, start),
+        _scalar_state(context, end),
     )
 
 
@@ -445,8 +445,8 @@ def _curve2_rotate(
     angle: ScalarInput,
     /,
 ) -> OperationArguments:
-    runtime = resolve_runtime(curve, angle)
-    return arguments(curve, _scalar_state(runtime, angle))
+    context = resolve_context(curve, angle)
+    return arguments(curve, _scalar_state(context, angle))
 
 
 @operation(
@@ -500,26 +500,26 @@ def _require_tangents(
 
 
 def _scalar_sequence_state(
-    runtime: Runtime,
+    context: Context,
     values: Sequence[ScalarInput],
     name: str,
 ) -> tuple[object, ...]:
     if isinstance(values, (str, bytes)) or not isinstance(values, Sequence):
         raise TypeError(f"{name} must be a scalar sequence")
-    result = tuple(_scalar_state(runtime, value) for value in values)
+    result = tuple(_scalar_state(context, value) for value in values)
     if not result:
         raise ValueError(f"{name} must not be empty")
     return result
 
 
 def _optional_scalar_sequence_state(
-    runtime: Runtime,
+    context: Context,
     values: Sequence[ScalarInput] | None,
     name: str,
 ) -> tuple[object, ...] | None:
     if values is None:
         return None
-    return _scalar_sequence_state(runtime, values, name)
+    return _scalar_sequence_state(context, values, name)
 
 
 def _int_sequence(values: Sequence[int], name: str) -> tuple[int, ...]:
@@ -536,7 +536,7 @@ def _int_sequence(values: Sequence[int], name: str) -> tuple[int, ...]:
 
 
 def _interval_state(
-    runtime: Runtime,
+    context: Context,
     interval: Interval | Sequence[ScalarInput] | None,
     name: str,
 ) -> tuple[object, object] | None:
@@ -549,7 +549,7 @@ def _interval_state(
     values = tuple(interval)
     if len(values) != 2:
         raise TypeError(f"{name} must contain two scalar bounds")
-    return (_scalar_state(runtime, values[0]), _scalar_state(runtime, values[1]))
+    return (_scalar_state(context, values[0]), _scalar_state(context, values[1]))
 
 
 def _require_wire_parts(

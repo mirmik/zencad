@@ -10,9 +10,7 @@ import tempfile
 
 class ConvertProbe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_stl_probe(self):
         zencad.to_stl(zencad.box(10), os.path.join(
@@ -24,4 +22,4 @@ class ConvertProbe(unittest.TestCase):
         m = zencad.from_brep(os.path.join(
             tempfile.gettempdir(), "tempbrep.brep"))
 
-        self.assertEqual(len(m.unlazy().vertices()), 8)
+        self.assertEqual(len(m.vertices()), 8)

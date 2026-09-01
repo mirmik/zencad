@@ -7,8 +7,8 @@ from zencad import _typed as typed
 
 
 class TypedDomainIntegrationTest(unittest.TestCase):
-    def _chain(self, runtime: typed.Runtime):
-        seed = runtime.box(2)
+    def _chain(self, context: typed.Context):
+        seed = context.call(typed.box, 2)
         offset = seed.mass() / 8
         shape = seed.translate(offset, 2, 3)
         edge = shape.edges()[0]
@@ -30,14 +30,14 @@ class TypedDomainIntegrationTest(unittest.TestCase):
             for cache in (False, True):
                 with self.subTest(mode=mode, cache=cache):
                     events = []
-                    runtime = typed.Runtime(
+                    context = typed.Context(
                         mode=mode,
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
                     shape, edge, face, curve, surface, bounds, mesh = self._chain(
-                        runtime
+                        context
                     )
                     result_types = tuple(
                         type(value)
@@ -101,8 +101,8 @@ class TypedDomainIntegrationTest(unittest.TestCase):
         self.assertEqual(len(observed), 1)
 
     def test_no_domain_result_is_a_legacy_lazy_proxy(self):
-        runtime = typed.Runtime.deferred(cache=False)
-        shape, edge, face, curve, surface, bounds, mesh = self._chain(runtime)
+        context = typed.Context.deferred(cache=False)
+        shape, edge, face, curve, surface, bounds, mesh = self._chain(context)
         scalar = shape.mass()
         point = shape.center()
         vector = mesh.boundbox().size
@@ -151,7 +151,6 @@ class TypedDomainIntegrationTest(unittest.TestCase):
             "Point2",
             "Point3",
             "Context",
-            "RuntimeCompatibility",
             "Scalar",
             "Shape",
             "Solid",
@@ -166,9 +165,9 @@ class TypedDomainIntegrationTest(unittest.TestCase):
         for name in typed.__all__:
             self.assertTrue(hasattr(typed, name), name)
 
-    def test_fresh_runtime_reuses_every_cacheable_domain_family(self):
+    def test_fresh_context_reuses_every_cacheable_domain_family(self):
         store = MemoryCacheStore()
-        first = typed.Runtime.deferred(cache=True, cache_store=store)
+        first = typed.Context.deferred(cache=True, cache_store=store)
         _, _, _, curve, surface, bounds, mesh = self._chain(first)
         curve.native()
         surface.native()
@@ -176,7 +175,7 @@ class TypedDomainIntegrationTest(unittest.TestCase):
         mesh.value()
 
         events = []
-        second = typed.Runtime.deferred(
+        second = typed.Context.deferred(
             cache=True,
             cache_store=store,
             progress_hooks=(events.append,),

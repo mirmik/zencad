@@ -5,12 +5,12 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 from typing import TYPE_CHECKING, TypeVar
 
-from ._core import require_same_runtime
+from ._core import require_same_context
 from .topology import Shape
 from .transforms import Transform
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
 
 
 ShapeT = TypeVar("ShapeT", bound=Shape)
@@ -19,13 +19,13 @@ ShapeT = TypeVar("ShapeT", bound=Shape)
 class MultiTransform:
     """An immutable transform sequence whose members retain their lazy graphs."""
 
-    __slots__ = ("_runtime", "_transforms", "array", "unit")
+    __slots__ = ("_context", "_transforms", "array", "unit")
 
     def __init__(
         self,
         transforms: Sequence[Transform],
         *,
-        runtime: Runtime,
+        context: Context,
         array: bool = False,
         unit: bool = False,
     ) -> None:
@@ -35,15 +35,15 @@ class MultiTransform:
         for transform in resolved:
             if not isinstance(transform, Transform):
                 raise TypeError("MultiTransform expects Transform items")
-            require_same_runtime(runtime, transform)
-        self._runtime = runtime
+            require_same_context(context, transform)
+        self._context = context
         self._transforms = resolved
         self.array = array
         self.unit = unit
 
     @property
-    def runtime(self) -> Runtime:
-        return self._runtime
+    def context(self) -> Context:
+        return self._context
 
     @property
     def transforms(self) -> tuple[Transform, ...]:
@@ -58,7 +58,7 @@ class MultiTransform:
     def items(self, shape: ShapeT, /) -> list[ShapeT]:
         if not isinstance(shape, Shape):
             raise TypeError("MultiTransform.items expects Shape")
-        require_same_runtime(self.runtime, shape)
+        require_same_context(self.context, shape)
         return [shape.transform(transform) for transform in self._transforms]
 
     def fused(self, shape: Shape, /) -> Shape:

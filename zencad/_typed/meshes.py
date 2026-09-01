@@ -20,7 +20,7 @@ from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
 from .values import Number
 
 if TYPE_CHECKING:
-    from .runtime import Runtime
+    from .context import Context
     from .topology import Face, Shape
 
 
@@ -74,13 +74,13 @@ class MeshData(Handle[ops.MeshValue]):
     @classmethod
     def _from_state(
         cls: type[MeshHandleT],
-        runtime: Runtime,
+        context: Context,
         state: State[ops.MeshValue],
     ) -> MeshHandleT:
         if not isinstance(state, Expression):
             state = cls._result_spec.validate(state, "zencad.typed.mesh.bind")
         value = cls.__new__(cls)
-        value._bind(runtime, state)
+        value._bind(context, state)
         return value
 
     @classmethod
@@ -91,11 +91,11 @@ class MeshData(Handle[ops.MeshValue]):
         triangles: Sequence[Sequence[int]],
         triangle_face_ids: Sequence[int],
         *,
-        runtime: Runtime,
+        context: Context,
         dropped_triangles: int = 0,
     ) -> MeshHandleT:
         return cls._from_state(
-            runtime,
+            context,
             ops.mesh_from_data(
                 positions,
                 normals,
@@ -173,11 +173,6 @@ class MeshData(Handle[ops.MeshValue]):
     def display_payload(self) -> bytes:
         """Encode the current provenance-free scene mesh transport."""
         return mesh_display_payload(self)
-
-    def unlazy(self) -> MeshData:
-        super().unlazy()
-        return self
-
 
 def _positive_number(value: Number, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):

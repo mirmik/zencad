@@ -11,7 +11,6 @@ from typing import BinaryIO
 import evalcache
 from OCP.TopoDS import TopoDS_Shape
 
-from zencad.convert.api import _to_stl
 from zencad.convert.export import (
     LengthUnit,
     export_3mf as _export_3mf,
@@ -21,7 +20,7 @@ from zencad.convert.export import (
 from zencad.convert.svg import SvgReader, shape_to_svg_string
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.occ_compat import read_brep, write_brep
-from zencad.operation import resolve_runtime
+from zencad.operation import resolve_context
 
 from .topology import Shape
 from .values import Number
@@ -43,13 +42,13 @@ def to_brep(shape: Shape, path: str | PathLike[str], /) -> None:
 
 
 def from_brep(path: str | PathLike[str], /) -> Shape:
-    """Read a BREP snapshot into the selected typed runtime."""
+    """Read a BREP snapshot into the selected typed context."""
 
     resolved_path = str(Path(path).expanduser())
     native = TopoDS_Shape()
     if not read_brep(native, resolved_path):
         raise OSError(f"Failed to read BREP file: {resolved_path}")
-    return Shape.from_ocp(native, runtime=resolve_runtime())
+    return Shape.from_ocp(native, context=resolve_context())
 
 
 def to_stl(
@@ -68,13 +67,13 @@ def to_stl(
         or deflection <= 0
     ):
         raise ValueError("to_stl deflection must be finite and positive")
-    return bool(
-        _to_stl(
-            ResolvedShape(shape.native()),
-            str(Path(path).expanduser()),
-            float(deflection),
-        )
+    _export_stl(
+        ResolvedShape(shape.native()),
+        str(Path(path).expanduser()),
+        linear_tolerance=float(deflection),
+        binary=False,
     )
+    return True
 
 
 def export_stl(
@@ -172,7 +171,7 @@ def from_svg_string(value: str, /) -> Shape:
     legacy = evalcache.unlazy_if_need(SvgReader().read_string(value))
     if not isinstance(legacy, ResolvedShape):
         raise ValueError("SVG import did not produce a Shape")
-    return Shape.from_ocp(legacy.Shape(), runtime=resolve_runtime())
+    return Shape.from_ocp(legacy.Shape(), context=resolve_context())
 
 
 def from_svg(path: str | PathLike[str], /) -> Shape:

@@ -1,24 +1,12 @@
 import unittest
 import zencad
-import evalcache
-
-from functools import cmp_to_key
-
-
 def lexsort(a):
-    a = evalcache.unlazy_if_need(a)
-
-    def comparator(a, b):
-        return 1 if a > b else -1
-
-    return sorted(a, key=cmp_to_key(comparator))
+    return sorted(vertex.point().value() for vertex in a)
 
 
 class Prim3dprobe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_box_probe(self):
         a = zencad.box(x=10, y=10, z=10)

@@ -26,7 +26,6 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 
 import zencad
-from evalcache.dircache_v2 import DirCache_v2
 from zencad.runtime.scene_protocol import (
     FileSnapshotBundle,
     SceneObjectRecord,
@@ -42,9 +41,14 @@ def compound_of_boxes(count):
     compound = TopoDS_Compound()
     builder = BRep_Builder()
     builder.MakeCompound(compound)
+    context = zencad.Context.immediate(cache=False)
     for index in range(count):
         box = BRepPrimAPI_MakeBox(1.0, 2.0, 3.0).Shape()
-        moved = zencad.Shape(box).translate(index * 2.0, 0, 0).Shape()
+        moved = (
+            zencad.Shape.from_ocp(box, context=context)
+            .translate(index * 2.0, 0, 0)
+            .native()
+        )
         builder.Add(compound, moved)
     return compound
 
@@ -54,7 +58,7 @@ def organizer_model():
     spec = importlib.util.spec_from_file_location("zencad_benchmark_organizer", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.organizer(3, 5, 27, 20, 64, 1.5, 5, 5).unlazy().Shape()
+    return module.organizer(3, 5, 27, 20, 64, 1.5, 5, 5).native()
 
 
 def measure(operation, repeat):
@@ -97,9 +101,7 @@ def measure_pipe(frame, repeat):
         process.join()
         raise RuntimeError("Pipe benchmark receiver did not finish")
     if process.exitcode != 0:
-        raise RuntimeError(
-            f"Pipe benchmark receiver exited with {process.exitcode}"
-        )
+        raise RuntimeError(f"Pipe benchmark receiver exited with {process.exitcode}")
     return result
 
 
@@ -128,15 +130,11 @@ def benchmark_case(name, shape, repeat, directory):
         "frame_bytes": len(frame),
         "brep_encode": measure(lambda: encode_brep(shape), repeat),
         "brep_decode": measure(lambda: decode_brep(payload), repeat),
-        "frame_encode": measure(
-            lambda: encode_snapshot_frame(snapshot), repeat
-        ),
+        "frame_encode": measure(lambda: encode_snapshot_frame(snapshot), repeat),
         "frame_decode": measure(lambda: decode_snapshot_frame(frame), repeat),
         "pipe_send": measure_pipe(frame, repeat),
         "bundle_write": measure(write_bundle, repeat),
-        "bundle_read": measure(
-            lambda: FileSnapshotBundle.read(read_path), repeat
-        ),
+        "bundle_read": measure(lambda: FileSnapshotBundle.read(read_path), repeat),
     }
     shutil.rmtree(read_path)
     return result
@@ -150,17 +148,15 @@ def main():
     if arguments.repeat < 1 or arguments.compound_count < 1:
         parser.error("repeat and compound-count must be positive")
 
-    with TemporaryDirectory() as cache_directory, TemporaryDirectory() as data_directory:
-        zencad.lazy.cache = DirCache_v2(cache_directory)
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+    with (
+        TemporaryDirectory() as cache_directory,
+        TemporaryDirectory() as data_directory,
+    ):
+        zencad.configure(cache_dir=cache_directory, cache_enabled=False)
 
         shapes = {
-            "box": zencad.box(20).unlazy().Shape(),
-            "boolean": (
-                zencad.box(20, center=True) - zencad.sphere(5)
-            ).unlazy().Shape(),
+            "box": zencad.box(20).native(),
+            "boolean": (zencad.box(20, center=True) - zencad.sphere(5)).native(),
             "organizer_model": organizer_model(),
             "compound": compound_of_boxes(arguments.compound_count),
         }

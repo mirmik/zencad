@@ -12,9 +12,9 @@ arr = [
 ]
 
 m0 = loft(arr)
-m1 = loft(arr, smooth=True, maxdegree=10, shell=True)
-m2 = loft(arr, smooth=True, maxdegree=10)
-m3 = thicksolid(loft(arr, smooth=True, maxdegree=10), refs=[(0,0,60)], t=-2)
+m1 = loft(arr, smooth=True, max_degree=10, shell=True)
+m2 = loft(arr, smooth=True, max_degree=10)
+m3 = thicksolid(loft(arr, smooth=True, max_degree=10), -2, [point3(0, 0, 60)])
 
 disp(m0)
 disp(m1).right(80)
