@@ -151,10 +151,12 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         self.assertIs(type(out_of_range), typed.Vertex)
         self.assertEqual(events, [])
 
-        for invalid in (True, 0.0, "0", slice(0, 1)):
+        for invalid in (True, 0.0, "0"):
             with self.subTest(index=invalid):
                 with self.assertRaisesRegex(TypeError, "indices must be integers"):
                     _ = vertices[invalid]  # type: ignore[index]
+        sliced = vertices[:2]
+        self.assertIs(type(sliced), typed.ShapeList)
         self.assertEqual(events, [])
 
         self.assertIs(type(first.native()), TopoDS_Vertex)

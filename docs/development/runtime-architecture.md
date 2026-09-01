@@ -88,13 +88,16 @@ OCP objects. Topology handles likewise hide their expression state.
 private `_legacy()` adapter borrows a resolved Shape value for compatibility.
 The complete typed topology-query surface now consists of `vertices()`,
 `edges()`, `wires()`, `faces()`, `shells()`, `solids()`, `compounds()`, and
-`compsolids()`. Each returns `DeferredSequence` parameterized by the exact
-topology-handle type. Indexing composes a typed expression without evaluating
-the sequence in deferred mode; `len()` and consumption through iteration then
+`compsolids()`. Each returns `ShapeList` parameterized by the exact
+topology-handle type; `DeferredSequence` remains its compatibility alias.
+Indexing, slicing, filtering, and sorting compose typed expressions without
+evaluating the sequence in deferred mode. `len()`, iteration, and grouping
 materialize the query tuple. In immediate mode, query and item expressions are
 evaluated when constructed, as required by the runtime policy. Query tuples
 are deliberately not cacheable, while indexed items are independently
-cacheable through their precise validated BREP serializers.
+cacheable through their precise validated BREP serializers. The selector
+contract and tolerance semantics are detailed in
+[`topology-selectors.md`](topology-selectors.md).
 
 `vertices()` deduplicates by OCCT `IsSame` identity (TShape plus Location,
 ignoring Orientation), not by coordinate distance. Distinct TShapes at one

@@ -47,13 +47,17 @@ def _fillet(shp, r, refs=None):
     if (shp.shapetype() == "face"):
         return _fillet2d(shp, r, refs)
 
-    if refs:
+    edge_refs = _operation_edge_references(shp, refs, "fillet")
+    if refs and edge_refs is None:
         refs = points(refs)
 
     if shp.is_solid() or shp.is_compound() or shp.is_compsolid():
         mk = BRepFilletAPI_MakeFillet(shp.Shape())
 
-        if refs:
+        if edge_refs is not None:
+            for edge in edge_refs:
+                mk.Add(r, edge.Edge())
+        elif refs:
             for p in refs:
                 minimum = float("inf")
                 vtx = p.Vtx()
@@ -76,13 +80,17 @@ def _fillet(shp, r, refs=None):
 
 
 def _chamfer(shp, r, refs=None):
-    if refs:
+    edge_refs = _operation_edge_references(shp, refs, "chamfer")
+    if refs and edge_refs is None:
         refs = points(refs)
 
     if shp.is_solid() or shp.is_compound() or shp.is_compsolid():
         mk = BRepFilletAPI_MakeChamfer(shp.Shape())
 
-        if refs:
+        if edge_refs is not None:
+            for edge in edge_refs:
+                mk.Add(r, edge.Edge())
+        elif refs:
             for p in refs:
                 minimum = float("inf")
                 vtx = p.Vtx()
@@ -102,6 +110,29 @@ def _chamfer(shp, r, refs=None):
         return Shape(mk.Shape())
     else:
         raise Exception("Fillet argument has unsuported type.")
+
+
+def _operation_edge_references(shp, refs, name):
+    if not refs:
+        return None
+    refs = tuple(refs)
+    shape_refs = tuple(isinstance(ref, Shape) for ref in refs)
+    if not any(shape_refs):
+        return None
+    if not all(shape_refs) or not all(ref.is_edge() for ref in refs):
+        raise TypeError(f"{name} references must be all points or all Edges")
+    body_edges = shp.edges()
+    selected = []
+    for index, reference in enumerate(refs, 1):
+        match = next(
+            (edge for edge in body_edges if edge.Edge().IsSame(reference.Edge())),
+            None,
+        )
+        if match is None:
+            raise ValueError(f"{name} Edge reference {index} does not belong to body")
+        if not any(edge.Edge().IsSame(match.Edge()) for edge in selected):
+            selected.append(match)
+    return selected
 
 
 @lazy.lazy(cls=shape_generator)

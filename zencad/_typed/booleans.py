@@ -123,6 +123,7 @@ class SplitResult(DeferredSequence[Solid]):
         return cls(
             runtime,
             state,
+            sequence_spec=_SOLID_SEQUENCE_SPEC,
             item_type=Solid,
             item_spec=SOLID_SPEC,
             operation_id="zencad.typed.split.item",

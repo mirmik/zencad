@@ -104,6 +104,13 @@ selected Face operands, pull direction, angle-sign convention, and planar
 neutral descriptions. Positive angles remove material along the pull direction;
 negative angles add it, while the neutral plane remains fixed.
 
+#1995 promotes typed topology queries from the compatibility-named
+`DeferredSequence[T]` to composable `ShapeList[T]` values. Geometry,
+direction, position, measure, grouping, and stable sorting selectors remain in
+the evaluation graph and feed selected Edges/Faces directly to fillet,
+chamfer, and draft. `DeferredSequence` remains an alias, so existing private
+typed clients keep their runtime and annotation compatibility.
+
 #2036 and #2042 complete the sweep family. Sweep laws are frozen compositions
 of typed curves, scalars, intervals, and enums; only the terminal Surface
 operation materializes mutable OCCT laws. Topology extrusion, revolution,

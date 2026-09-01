@@ -48,20 +48,24 @@ DraftPlaneInput = Face | tuple[
     Point3 | Sequence[ScalarInput],
     Vector3 | Sequence[ScalarInput],
 ]
+RoundedReference = Point3 | Edge
 
 
 def _rounded_arguments(
     shape: Shape,
     radius: ScalarInput,
-    references: Sequence[Point3] | None,
+    references: Iterable[RoundedReference] | None,
     name: str,
 ) -> OperationArguments:
     _require_shape(shape, name)
-    runtime = resolve_runtime(shape, radius, references)
+    selected = _require_references(references, name)
+    if isinstance(shape, Face) and selected and isinstance(selected[0], Edge):
+        raise TypeError(f"{name} on a Face accepts Point3 references, not Edges")
+    runtime = resolve_runtime(shape, radius, selected)
     return arguments(
         shape,
         _scalar_state(runtime, radius),
-        _require_references(references, name),
+        selected,
     )
 
 
@@ -75,7 +79,7 @@ def _rounded_arguments(
 def fillet(
     shape: Shape,
     radius: ScalarInput,
-    references: Sequence[Point3] | None = None,
+    references: Iterable[RoundedReference] | None = None,
     /,
 ) -> OperationArguments:
     return _rounded_arguments(shape, radius, references, "fillet")
@@ -91,7 +95,7 @@ def fillet(
 def chamfer(
     shape: Shape,
     radius: ScalarInput,
-    references: Sequence[Point3] | None = None,
+    references: Iterable[RoundedReference] | None = None,
     /,
 ) -> OperationArguments:
     return _rounded_arguments(shape, radius, references, "chamfer")
@@ -517,16 +521,26 @@ def _near_arguments(shape: Shape, point: Point3, name: str) -> OperationArgument
 
 
 def _require_references(
-    references: Sequence[Point3] | None,
+    references: Iterable[RoundedReference] | None,
     name: str,
-) -> tuple[Point3, ...] | None:
+) -> tuple[RoundedReference, ...] | None:
     if references is None:
         return None
-    if isinstance(references, (str, bytes)) or not isinstance(references, Sequence):
-        raise TypeError(f"{name} references must be Point3 values")
-    values = tuple(references)
-    if not all(isinstance(value, Point3) for value in values):
-        raise TypeError(f"{name} references must be Point3 values")
+    if isinstance(references, (str, bytes)):
+        raise TypeError(f"{name} references must be Point3 values or Edges")
+    try:
+        values = tuple(references)
+    except TypeError as error:
+        raise TypeError(
+            f"{name} references must be Point3 values or Edges"
+        ) from error
+    if not values:
+        raise ValueError(f"{name} references must not be empty")
+    if not (
+        all(isinstance(value, Point3) for value in values)
+        or all(isinstance(value, Edge) for value in values)
+    ):
+        raise TypeError(f"{name} references must be all Point3 values or all Edges")
     resolve_runtime(values)
     return values
 

@@ -112,6 +112,7 @@ from .records import (
     LineParameters,
     ShapeProperties,
 )
+from .selectors import Axis, GeomType, Plane
 from .context import Context
 from .runtime import RuntimeCompatibility
 from .shell_constructors import (
@@ -162,6 +163,7 @@ from .topology import (
     Edge,
     Face,
     Shape,
+    ShapeList,
     ShapeKind,
     Shell,
     Solid,
@@ -257,6 +259,7 @@ def __getattr__(name: str) -> object:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
+    "Axis",
     "Compound",
     "CompSolid",
     "AffineTransform",
@@ -271,6 +274,7 @@ __all__ = [
     "Face",
     "FontAspect",
     "GeneralTransformation",
+    "GeomType",
     "Interval",
     "LineParameters",
     "CircleParameters",
@@ -283,6 +287,7 @@ __all__ = [
     "Point3",
     "PipeTransition",
     "PipeTrihedron",
+    "Plane",
     "Quaternion",
     "Context",
     "RuntimeCompatibility",
@@ -290,6 +295,7 @@ __all__ = [
     "Scalar",
     "SliceResult",
     "Shape",
+    "ShapeList",
     "ShapeKind",
     "ShapeProperties",
     "Shell",

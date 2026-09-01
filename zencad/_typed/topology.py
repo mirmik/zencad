@@ -55,6 +55,7 @@ from zencad.occ_compat import (
 from zencad.runtime.scene_protocol import encode_brep
 
 from . import _operations as ops
+from . import _selector_operations as selector_ops
 from . import transforms as transform_api
 from ._core import Handle, State
 from ._serialization import ShapeBrepSerializer
@@ -68,6 +69,7 @@ from .records import (
     LineParameters,
     ShapeProperties,
 )
+from .selectors import Axis, GeomType, Plane
 from .surfaces import SURFACE_SPEC, Surface
 from .transforms import AffineTransform, Transform
 from .values import (
@@ -78,6 +80,7 @@ from .values import (
     Scalar,
     ScalarInput,
     Vector3,
+    _scalar_state,
     point3,
     vector3,
 )
@@ -585,7 +588,7 @@ class Shape(Handle[ResolvedShape]):
         item_type: type[ShapeHandleT],
         item_spec: ResultSpec[ResolvedShape],
         operation_id: str,
-    ) -> DeferredSequence[ShapeHandleT]:
+    ) -> ShapeList[ShapeHandleT]:
         expression = self.runtime._expression(
             operation,
             result=sequence_spec,
@@ -593,15 +596,16 @@ class Shape(Handle[ResolvedShape]):
             operation_id=operation_id,
             cacheable=False,
         )
-        return DeferredSequence(
+        return ShapeList(
             self.runtime,
             expression,
+            sequence_spec=sequence_spec,
             item_type=item_type,
             item_spec=item_spec,
             operation_id=f"{operation_id}.item",
         )
 
-    def vertices(self) -> DeferredSequence[Vertex]:
+    def vertices(self) -> ShapeList[Vertex]:
         return self._topology_query(
             ops.vertices,
             sequence_spec=_VERTEX_SEQUENCE_SPEC,
@@ -610,7 +614,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.vertices",
         )
 
-    def native_vertices(self) -> DeferredSequence[Vertex]:
+    def native_vertices(self) -> ShapeList[Vertex]:
         return self.vertices()
 
     def curve(self) -> Curve:
@@ -784,7 +788,7 @@ class Shape(Handle[ResolvedShape]):
     def fillet(
         self,
         r: ScalarInput,
-        refs: Sequence[Point3] | None = None,
+        refs: Sequence[Point3] | ShapeList[Edge] | Sequence[Edge] | None = None,
     ) -> Shape:
         from .modeling import fillet
 
@@ -793,7 +797,7 @@ class Shape(Handle[ResolvedShape]):
     def chamfer(
         self,
         r: ScalarInput,
-        refs: Sequence[Point3] | None = None,
+        refs: Sequence[Point3] | ShapeList[Edge] | Sequence[Edge] | None = None,
     ) -> Shape:
         from .modeling import chamfer
 
@@ -877,7 +881,7 @@ class Shape(Handle[ResolvedShape]):
 
         return near_compound(self, point)
 
-    def edges(self) -> DeferredSequence[Edge]:
+    def edges(self) -> ShapeList[Edge]:
         return self._topology_query(
             ops.edges,
             sequence_spec=_EDGE_SEQUENCE_SPEC,
@@ -886,7 +890,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.edges",
         )
 
-    def wires(self) -> DeferredSequence[Wire]:
+    def wires(self) -> ShapeList[Wire]:
         return self._topology_query(
             ops.wires,
             sequence_spec=_WIRE_SEQUENCE_SPEC,
@@ -895,7 +899,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.wires",
         )
 
-    def faces(self) -> DeferredSequence[Face]:
+    def faces(self) -> ShapeList[Face]:
         return self._topology_query(
             ops.faces,
             sequence_spec=_FACE_SEQUENCE_SPEC,
@@ -904,7 +908,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.faces",
         )
 
-    def shells(self) -> DeferredSequence[Shell]:
+    def shells(self) -> ShapeList[Shell]:
         return self._topology_query(
             ops.shells,
             sequence_spec=_SHELL_SEQUENCE_SPEC,
@@ -913,7 +917,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.shells",
         )
 
-    def solids(self) -> DeferredSequence[Solid]:
+    def solids(self) -> ShapeList[Solid]:
         return self._topology_query(
             ops.solids,
             sequence_spec=_SOLID_SEQUENCE_SPEC,
@@ -922,7 +926,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.solids",
         )
 
-    def compounds(self) -> DeferredSequence[Compound]:
+    def compounds(self) -> ShapeList[Compound]:
         return self._topology_query(
             ops.compounds,
             sequence_spec=_COMPOUND_SEQUENCE_SPEC,
@@ -931,7 +935,7 @@ class Shape(Handle[ResolvedShape]):
             operation_id="zencad.typed.shape.compounds",
         )
 
-    def compsolids(self) -> DeferredSequence[CompSolid]:
+    def compsolids(self) -> ShapeList[CompSolid]:
         return self._topology_query(
             ops.compsolids,
             sequence_spec=_COMPSOLID_SEQUENCE_SPEC,
@@ -1122,8 +1126,21 @@ class CompSolid(Shape):
         return as_compsolid(super().native())
 
 
-class DeferredSequence(Generic[ShapeHandleT]):
-    """Typed topology sequence whose indexing composes an expression node."""
+_GEOMETRY_TYPE_SEQUENCE_SPEC = cast(
+    ResultSpec[tuple[str, ...]],
+    ResultSpec.for_type(
+        tuple,
+        type_id="zencad.typed.Sequence[GeomType].v1",
+        validator=lambda values: all(
+            isinstance(value, str) and value in {kind.value for kind in GeomType}
+            for value in values
+        ),
+    ),
+)
+
+
+class ShapeList(Generic[ShapeHandleT]):
+    """Composable typed topology collection backed by an expression node."""
 
     __slots__ = (
         "_expression",
@@ -1131,6 +1148,7 @@ class DeferredSequence(Generic[ShapeHandleT]):
         "_item_type",
         "_operation_id",
         "_runtime",
+        "_sequence_spec",
     )
 
     def __init__(
@@ -1138,26 +1156,85 @@ class DeferredSequence(Generic[ShapeHandleT]):
         runtime: Runtime,
         expression: Expression[tuple[ResolvedShape, ...]],
         *,
+        sequence_spec: ResultSpec[tuple[ResolvedShape, ...]],
         item_type: type[ShapeHandleT],
         item_spec: ResultSpec[ResolvedShape],
         operation_id: str,
     ) -> None:
         self._runtime = runtime
         self._expression = expression
+        self._sequence_spec = sequence_spec
         self._item_type = item_type
         self._item_spec = item_spec
         self._operation_id = operation_id
 
-    def __getitem__(self, index: int) -> ShapeHandleT:
-        if not isinstance(index, int) or isinstance(index, bool):
-            raise TypeError("typed sequence indices must be integers")
+    @property
+    def runtime(self) -> Runtime:
+        return self._runtime
+
+    def _sequence(
+        self,
+        operation: Callable[..., tuple[ResolvedShape, ...]],
+        *args: object,
+        operation_id: str,
+    ) -> ShapeList[ShapeHandleT]:
         expression = self._runtime._expression(
-            ops.sequence_item,
+            operation,
+            result=self._sequence_spec,
+            args=(self._expression, *args),
+            operation_id=operation_id,
+            cacheable=False,
+        )
+        return ShapeList(
+            self._runtime,
+            expression,
+            sequence_spec=self._sequence_spec,
+            item_type=self._item_type,
+            item_spec=self._item_spec,
+            operation_id=f"{operation_id}.item",
+        )
+
+    def _item(
+        self,
+        operation: Callable[..., ResolvedShape],
+        *args: object,
+        operation_id: str,
+    ) -> ShapeHandleT:
+        expression = self._runtime._expression(
+            operation,
             result=self._item_spec,
-            args=(self._expression, index),
-            operation_id=self._operation_id,
+            args=(self._expression, *args),
+            operation_id=operation_id,
         )
         return self._item_type._from_state(self._runtime, expression)
+
+    @overload
+    def __getitem__(self, index: int) -> ShapeHandleT: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> ShapeList[ShapeHandleT]: ...
+
+    def __getitem__(self, index: int | slice) -> ShapeHandleT | ShapeList[ShapeHandleT]:
+        if isinstance(index, slice):
+            for value in (index.start, index.stop, index.step):
+                if value is not None and (
+                    not isinstance(value, int) or isinstance(value, bool)
+                ):
+                    raise TypeError("ShapeList slice bounds must be integers")
+            return self._sequence(
+                selector_ops.sequence_slice,
+                index.start,
+                index.stop,
+                index.step,
+                operation_id="zencad.typed.shapelist.slice",
+            )
+        if not isinstance(index, int) or isinstance(index, bool):
+            raise TypeError("ShapeList indices must be integers or slices")
+        return self._item(
+            ops.sequence_item,
+            index,
+            operation_id=self._operation_id,
+        )
 
     def __len__(self) -> int:
         return len(self._runtime._resolve(self._expression))
@@ -1165,3 +1242,207 @@ class DeferredSequence(Generic[ShapeHandleT]):
     def __iter__(self) -> Iterator[ShapeHandleT]:
         for index in range(len(self)):
             yield self[index]
+
+    def filter_by(
+        self,
+        criterion: Axis | GeomType | Plane,
+        *,
+        tolerance: float = 1e-7,
+    ) -> ShapeList[ShapeHandleT]:
+        """Filter by geometry kind, principal direction, or center plane."""
+
+        if isinstance(criterion, GeomType):
+            return self._sequence(
+                selector_ops.filter_geometry_type,
+                criterion.value,
+                operation_id="zencad.typed.shapelist.filter.geometry_type",
+            )
+        if isinstance(criterion, Axis):
+            return self._filter_direction(
+                criterion.direction,
+                tolerance=tolerance,
+                planar_only=False,
+            )
+        if isinstance(criterion, Plane):
+            return self.filter_by_position(criterion, tolerance=tolerance)
+        raise TypeError("filter_by expects Axis, GeomType, or Plane")
+
+    def _filter_direction(
+        self,
+        direction: Sequence[float],
+        *,
+        tolerance: float,
+        planar_only: bool,
+    ) -> ShapeList[ShapeHandleT]:
+        values = _selector_direction(direction)
+        return self._sequence(
+            selector_ops.filter_direction,
+            values,
+            _selector_tolerance(tolerance, "direction tolerance"),
+            planar_only,
+            operation_id="zencad.typed.shapelist.filter.direction",
+        )
+
+    def normal_to(
+        self,
+        direction: Axis | Sequence[float],
+        *,
+        tolerance: float = 1e-7,
+    ) -> ShapeList[ShapeHandleT]:
+        """Keep planar faces whose normal is parallel to ``direction``."""
+
+        values = direction.direction if isinstance(direction, Axis) else direction
+        return self._filter_direction(
+            values,
+            tolerance=tolerance,
+            planar_only=True,
+        )
+
+    def planar(self) -> ShapeList[ShapeHandleT]:
+        return self.filter_by(GeomType.PLANE)
+
+    def filter_by_position(
+        self,
+        criterion: Axis | Plane,
+        position: ScalarInput = 0,
+        *,
+        tolerance: float = 1e-7,
+    ) -> ShapeList[ShapeHandleT]:
+        """Keep shapes whose center lies on an axis coordinate or plane."""
+
+        with using_runtime(self._runtime):
+            if isinstance(criterion, Axis):
+                direction = criterion.direction
+                origin = point3(*(component * position for component in direction))
+                normal = direction
+            elif isinstance(criterion, Plane):
+                if isinstance(position, Scalar) or position != 0:
+                    raise TypeError("position is only valid with an Axis criterion")
+                origin = point3(criterion.origin)
+                normal = criterion.normal
+            else:
+                raise TypeError("filter_by_position expects Axis or Plane")
+        return self._sequence(
+            selector_ops.filter_position,
+            origin._state,
+            _selector_direction(normal),
+            _selector_tolerance(tolerance, "position tolerance"),
+            operation_id="zencad.typed.shapelist.filter.position",
+        )
+
+    def sort_by(
+        self,
+        criterion: Axis | Plane,
+        *,
+        reverse: bool = False,
+    ) -> ShapeList[ShapeHandleT]:
+        """Stable-sort shapes by center projection on an axis or plane normal."""
+
+        if isinstance(criterion, Axis):
+            direction = criterion.direction
+        elif isinstance(criterion, Plane):
+            direction = criterion.normal
+        else:
+            raise TypeError("sort_by expects Axis or Plane")
+        return self._sequence(
+            selector_ops.sort_axis,
+            _selector_direction(direction),
+            _selector_reverse(reverse),
+            operation_id="zencad.typed.shapelist.sort.axis",
+        )
+
+    def sort_by_distance(
+        self,
+        point: Point3 | Sequence[ScalarInput],
+        *,
+        reverse: bool = False,
+    ) -> ShapeList[ShapeHandleT]:
+        """Stable-sort by the exact minimum OCCT distance to ``point``."""
+
+        with using_runtime(self._runtime):
+            query = point3(point)
+        return self._sequence(
+            selector_ops.sort_distance,
+            query._state,
+            _selector_reverse(reverse),
+            operation_id="zencad.typed.shapelist.sort.distance",
+        )
+
+    def longer_than(self, threshold: ScalarInput) -> ShapeList[ShapeHandleT]:
+        """Keep edges or wires whose linear measure exceeds ``threshold``."""
+
+        if not issubclass(self._item_type, (Edge, Wire)):
+            raise TypeError("longer_than is only defined for Edge and Wire ShapeLists")
+        return self._sequence(
+            selector_ops.filter_measure,
+            _scalar_state(self._runtime, threshold),
+            operation_id="zencad.typed.shapelist.filter.longer_than",
+        )
+
+    def largest(self) -> ShapeHandleT:
+        """Return the first largest shape; an empty list fails on evaluation."""
+
+        return self._item(
+            selector_ops.largest,
+            operation_id="zencad.typed.shapelist.largest",
+        )
+
+    def only(self) -> ShapeHandleT:
+        """Return the sole item; any other cardinality fails on evaluation."""
+
+        return self._item(
+            selector_ops.only,
+            operation_id="zencad.typed.shapelist.only",
+        )
+
+    def geometry_types(self) -> tuple[GeomType, ...]:
+        state = self._runtime._value_state(
+            selector_ops.sequence_geometry_types,
+            result=_GEOMETRY_TYPE_SEQUENCE_SPEC,
+            args=(self._expression,),
+            operation_id="zencad.typed.shapelist.geometry_types",
+        )
+        values = self._runtime._resolve(state) if isinstance(state, Expression) else state
+        return tuple(GeomType(value) for value in values)
+
+    def group_by(
+        self,
+        criterion: type[GeomType],
+    ) -> dict[GeomType, ShapeList[ShapeHandleT]]:
+        """Group by geometry kind in stable first-occurrence order."""
+
+        if criterion is not GeomType:
+            raise TypeError("group_by currently accepts the GeomType criterion")
+        return {
+            kind: self.filter_by(kind)
+            for kind in dict.fromkeys(self.geometry_types())
+        }
+
+
+DeferredSequence = ShapeList
+
+
+def _selector_direction(value: Sequence[float]) -> tuple[float, float, float]:
+    if isinstance(value, (str, bytes)):
+        raise TypeError("selector direction must contain three numeric coordinates")
+    try:
+        values = tuple(float(item) for item in value)
+    except (TypeError, ValueError) as error:
+        raise TypeError(
+            "selector direction must contain three numeric coordinates"
+        ) from error
+    if len(values) != 3:
+        raise TypeError("selector direction must contain three numeric coordinates")
+    return values
+
+
+def _selector_tolerance(value: float, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be numeric")
+    return float(value)
+
+
+def _selector_reverse(value: bool) -> bool:
+    if not isinstance(value, bool):
+        raise TypeError("reverse must be bool")
+    return value

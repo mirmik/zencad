@@ -239,16 +239,16 @@ def topology_contract(
 
     assert_type(vertex.point(), typed.Point3)
 
-    vertices = assert_type(shape.vertices(), typed.DeferredSequence[typed.Vertex])
+    vertices = assert_type(shape.vertices(), typed.ShapeList[typed.Vertex])
     assert_type(shape.native_vertices(), typed.DeferredSequence[typed.Vertex])
-    edges = assert_type(shape.edges(), typed.DeferredSequence[typed.Edge])
-    wires = assert_type(shape.wires(), typed.DeferredSequence[typed.Wire])
-    faces = assert_type(shape.faces(), typed.DeferredSequence[typed.Face])
-    shells = assert_type(shape.shells(), typed.DeferredSequence[typed.Shell])
-    solids = assert_type(shape.solids(), typed.DeferredSequence[typed.Solid])
-    compounds = assert_type(shape.compounds(), typed.DeferredSequence[typed.Compound])
+    edges = assert_type(shape.edges(), typed.ShapeList[typed.Edge])
+    wires = assert_type(shape.wires(), typed.ShapeList[typed.Wire])
+    faces = assert_type(shape.faces(), typed.ShapeList[typed.Face])
+    shells = assert_type(shape.shells(), typed.ShapeList[typed.Shell])
+    solids = assert_type(shape.solids(), typed.ShapeList[typed.Solid])
+    compounds = assert_type(shape.compounds(), typed.ShapeList[typed.Compound])
     compsolids = assert_type(
-        shape.compsolids(), typed.DeferredSequence[typed.CompSolid]
+        shape.compsolids(), typed.ShapeList[typed.CompSolid]
     )
 
     assert_type(vertices[0], typed.Vertex)
@@ -263,6 +263,27 @@ def topology_contract(
 
     assert_type(iter(vertices), Iterator[typed.Vertex])
     assert_type(len(vertices), int)
+    assert_type(edges[:2], typed.ShapeList[typed.Edge])
+    assert_type(edges.filter_by(typed.Axis.Z), typed.ShapeList[typed.Edge])
+    assert_type(edges.longer_than(1), typed.ShapeList[typed.Edge])
+    assert_type(faces.planar(), typed.ShapeList[typed.Face])
+    assert_type(faces.normal_to(typed.Axis.Z), typed.ShapeList[typed.Face])
+    assert_type(
+        faces.filter_by_position(typed.Axis.Z, 1),
+        typed.ShapeList[typed.Face],
+    )
+    assert_type(faces.filter_by(typed.Plane.XY), typed.ShapeList[typed.Face])
+    assert_type(faces.sort_by(typed.Axis.Z), typed.ShapeList[typed.Face])
+    assert_type(faces.sort_by_distance((0, 0, 0)), typed.ShapeList[typed.Face])
+    assert_type(faces.largest(), typed.Face)
+    assert_type(faces.only(), typed.Face)
+    assert_type(faces.geometry_types(), tuple[typed.GeomType, ...])
+    assert_type(
+        faces.group_by(typed.GeomType),
+        dict[typed.GeomType, typed.ShapeList[typed.Face]],
+    )
+    assert_type(typed.fillet(solid, 0.1, edges), typed.Shape)
+    assert_type(typed.chamfer(solid, 0.1, edges), typed.Shape)
 
     # Boolean topology is not stable, even when both inputs are solids.
     assert_type(solid - solid, typed.Shape)

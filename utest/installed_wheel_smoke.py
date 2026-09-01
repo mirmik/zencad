@@ -102,6 +102,9 @@ def main():
         assert isinstance(typed.split, DomainOperation)
         assert isinstance(typed.slice, DomainOperation)
         assert isinstance(typed.draft, DomainOperation)
+        assert typed.ShapeList is typed.DeferredSequence
+        assert typed.Axis.Z.direction == (0.0, 0.0, 1.0)
+        assert typed.Plane.XY.normal == (0.0, 0.0, 1.0)
         legacy_parts = zencad.split(
             zencad.box(2),
             zencad.infplane().up(1),
@@ -120,6 +123,15 @@ def main():
         assert type(drafted) is typed.Solid
         assert drafted.runtime is typed_context
         assert float(drafted.mass()) > 0
+        selected_edges = draft_body.edges().filter_by(typed.Axis.Z)
+        selected_faces = draft_body.faces().normal_to(typed.Axis.X)
+        assert type(selected_edges) is typed.ShapeList
+        assert len(selected_edges) > 0
+        assert len(selected_faces) == 2
+        selected_fillet = typed.fillet(draft_body, 0.1, selected_edges)
+        selected_draft = typed.draft(draft_body, selected_faces, 0.05)
+        assert float(selected_fillet.mass()) > 0
+        assert float(selected_draft.mass()) > 0
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(

@@ -888,6 +888,24 @@ def _legacy_points(values: tuple[Point3Value, ...] | None):
     return [(value.x, value.y, value.z) for value in values]
 
 
+def _legacy_rounded_references(
+    values: tuple[Point3Value | ResolvedShape, ...] | None,
+):
+    if values is None:
+        return None
+    if all(isinstance(value, ResolvedShape) for value in values):
+        return list(values)
+    if any(isinstance(value, ResolvedShape) for value in values):
+        raise TypeError("rounding references must be all Point3 values or all Edges")
+    if not all(isinstance(value, Point3Value) for value in values):
+        raise TypeError("rounding references must be all Point3 values or all Edges")
+    return [
+        (value.x, value.y, value.z)
+        for value in values
+        if isinstance(value, Point3Value)
+    ]
+
+
 def fill_shape(shape: ResolvedShape) -> ResolvedShape:
     from zencad.geom.face import _fill
 
@@ -1023,21 +1041,21 @@ def revolve_sections_shape(
 def fillet_shape(
     shape: ResolvedShape,
     radius: float,
-    references: tuple[Point3Value, ...] | None,
+    references: tuple[Point3Value | ResolvedShape, ...] | None,
 ) -> ResolvedShape:
     from zencad.geom.operations import _fillet
 
-    return _fillet(shape, radius, refs=_legacy_points(references))
+    return _fillet(shape, radius, refs=_legacy_rounded_references(references))
 
 
 def chamfer_shape(
     shape: ResolvedShape,
     radius: float,
-    references: tuple[Point3Value, ...] | None,
+    references: tuple[Point3Value | ResolvedShape, ...] | None,
 ) -> ResolvedShape:
     from zencad.geom.operations import _chamfer
 
-    return _chamfer(shape, radius, refs=_legacy_points(references))
+    return _chamfer(shape, radius, refs=_legacy_rounded_references(references))
 
 
 def fillet2d_shape(

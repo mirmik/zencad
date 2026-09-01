@@ -467,17 +467,17 @@ materializes and returns the same precise handle; `native()` remains the
 explicit owned OCP snapshot boundary. No public `.Shape()` alias is introduced
 inside the private layer.
 
-All eight topology queries now return a `DeferredSequence` whose element type
-matches the requested topology kind:
+All eight topology queries now return a `ShapeList` whose element type matches
+the requested topology kind. `DeferredSequence` remains a compatibility alias:
 
-- `vertices() -> DeferredSequence[Vertex]`;
-- `edges() -> DeferredSequence[Edge]`;
-- `wires() -> DeferredSequence[Wire]`;
-- `faces() -> DeferredSequence[Face]`;
-- `shells() -> DeferredSequence[Shell]`;
-- `solids() -> DeferredSequence[Solid]`;
-- `compounds() -> DeferredSequence[Compound]`;
-- `compsolids() -> DeferredSequence[CompSolid]`.
+- `vertices() -> ShapeList[Vertex]`;
+- `edges() -> ShapeList[Edge]`;
+- `wires() -> ShapeList[Wire]`;
+- `faces() -> ShapeList[Face]`;
+- `shells() -> ShapeList[Shell]`;
+- `solids() -> ShapeList[Solid]`;
+- `compounds() -> ShapeList[Compound]`;
+- `compsolids() -> ShapeList[CompSolid]`.
 
 In deferred mode, indexing, including a negative index, adds a typed item
 expression without evaluating the sequence. `len(sequence)` and consumption
@@ -490,6 +490,13 @@ path. Each indexed item expression is independently cacheable and uses the
 precise topology handle's validated BREP serializer. A cache hit for an item
 can therefore restore that item without recomputing or persisting the query
 tuple.
+
+#1995 extends that collection with graph-preserving geometry, direction, and
+position filters; stable axis and distance sorting; geometry grouping; and
+named `planar`, `normal_to`, `longer_than`, `largest`, and `only` selectors.
+The resulting typed collections feed `fillet`, `chamfer`, and `draft`
+directly. Full semantics are recorded in
+[`topology-selectors.md`](topology-selectors.md).
 
 `vertices()` is the one intentional departure from the legacy query
 semantics. It returns values unique by OCCT `IsSame` identity: the underlying

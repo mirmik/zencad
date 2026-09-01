@@ -53,6 +53,7 @@ from .topology import (
     Edge,
     Face,
     Shape,
+    ShapeList,
     Shell,
     Solid,
     Vertex,
@@ -112,6 +113,7 @@ __all__ = [
     "PipeTrihedron",
     "RuntimeCompatibility",
     "Shape",
+    "ShapeList",
     "Shell",
     "Solid",
     "Surface",
@@ -482,7 +484,7 @@ class RuntimeCompatibility(Context):
         self,
         shape: Shape,
         radius: ScalarInput,
-        references: Sequence[Point3] | None = None,
+        references: Iterable[Point3 | Edge] | None = None,
         /,
     ) -> Shape:
         with using_runtime(self):
@@ -492,7 +494,7 @@ class RuntimeCompatibility(Context):
         self,
         shape: Shape,
         radius: ScalarInput,
-        references: Sequence[Point3] | None = None,
+        references: Iterable[Point3 | Edge] | None = None,
         /,
     ) -> Shape:
         with using_runtime(self):
