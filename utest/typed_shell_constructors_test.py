@@ -4,6 +4,7 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_SHELL, TopAbs_SOLID
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 def _tetrahedron_data(
@@ -21,6 +22,64 @@ def _tetrahedron_data(
 
 
 class TypedShellConstructorsTest(unittest.TestCase):
+    def test_shell_family_is_declared_at_module_level(self):
+        for name in (
+            "make_shell",
+            "fill3d",
+            "polyhedron_shell",
+            "convex_hull_shape",
+        ):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        points, faces = _tetrahedron_data(runtime)
+        with using_runtime(runtime):
+            shell = typed.make_shell(typed.polygon(points[:3]))
+            solid = typed.fill3d(typed.polyhedron_shell(points, faces))
+            polyhedron = typed.polyhedron(points, faces)
+            hull = typed.convex_hull_shape(points, shell=True)
+            tetrahedron = typed.tetrahedron()
+            cube = typed.hexahedron(shell=True)
+            octahedron = typed.octahedron()
+            dodecahedron = typed.dodecahedron(shell=True)
+            icosahedron = typed.icosahedron()
+            platonic = typed.platonic(6)
+
+        values = (
+            shell,
+            solid,
+            polyhedron,
+            hull,
+            tetrahedron,
+            cube,
+            octahedron,
+            dodecahedron,
+            icosahedron,
+            platonic,
+        )
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertEqual(events, [])
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.make_shell",
+                "zencad.typed.fill3d",
+                "zencad.typed.fill3d",
+                "zencad.typed.convex_hull_shape",
+                "zencad.typed.fill3d",
+                "zencad.typed.polyhedron_shell",
+                "zencad.typed.fill3d",
+                "zencad.typed.polyhedron_shell",
+                "zencad.typed.fill3d",
+                "zencad.typed.fill3d",
+            ),
+        )
+
     def test_shell_and_platonic_factories_are_policy_independent(self):
         observed_types = set()
 

@@ -84,6 +84,20 @@ from .records import (
     ShapeProperties,
 )
 from .runtime import Runtime
+from .shell_constructors import (
+    convex_hull,
+    convex_hull_shape,
+    dodecahedron,
+    fill3d,
+    hexahedron,
+    icosahedron,
+    make_shell,
+    octahedron,
+    platonic,
+    polyhedron,
+    polyhedron_shell,
+    tetrahedron,
+)
 from .solid import box, cone, cube, cylinder, halfspace, make_solid, sphere, torus
 from .sweeps import (
     PipeTransition,
@@ -387,4 +401,16 @@ __all__ = [
     "register_font",
     "text_to_brep",
     "textshape",
+    "convex_hull",
+    "convex_hull_shape",
+    "dodecahedron",
+    "fill3d",
+    "hexahedron",
+    "icosahedron",
+    "make_shell",
+    "octahedron",
+    "platonic",
+    "polyhedron",
+    "polyhedron_shell",
+    "tetrahedron",
 ]

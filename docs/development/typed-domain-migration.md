@@ -1176,6 +1176,29 @@ Verification on 2026-09-01 after the text checkpoint:
   the wheel with published evalcache 2.0.0a1 and passes direct module and
   Runtime text smoke outside the checkout.
 
+Task #2074 extracts shell, polyhedron, hull, and platonic construction.
+Declarations and graph-preserving compositions in
+`_typed/shell_constructors.py` now own shell sewing and filling, indexed
+polyhedra, explicit Qhull materialization, deferred convex-hull shapes, and all
+five Platonic solids. Dynamic constructors preserve exact `Solid`/`Shell`
+result specs and overloads.
+
+`Runtime` retains only evaluator-selecting forwarding signatures for this
+family. Its last dependency on the monolithic `_typed/_operations.py` is
+removed, and the file is reduced from 2723 to 2410 lines. Point/index/qhull
+validation, operation IDs, and deferred scalar geometry remain unchanged.
+
+Verification on 2026-09-01 after the shell/polyhedron checkpoint:
+
+- pytest passes 384 tests and 409 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 368 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes direct module and
+  Runtime shell/platonic smoke outside the checkout.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

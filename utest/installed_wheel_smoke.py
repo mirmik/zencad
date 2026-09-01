@@ -81,6 +81,10 @@ def main():
         assert isinstance(typed.ruled, DomainOperation)
         assert isinstance(typed.widewire, DomainOperation)
         assert isinstance(typed.text_to_brep, DomainOperation)
+        assert isinstance(typed.make_shell, DomainOperation)
+        assert isinstance(typed.fill3d, DomainOperation)
+        assert isinstance(typed.polyhedron_shell, DomainOperation)
+        assert isinstance(typed.convex_hull_shape, DomainOperation)
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(
@@ -306,9 +310,14 @@ def main():
         shell = typed_runtime.make_shell(circle_face)
         tetrahedron = typed_runtime.tetrahedron()
         hexahedron_shell = typed_runtime.hexahedron(shell=True)
+        with using_runtime(typed_runtime):
+            module_shell = typed.make_shell(circle_face)
+            module_tetrahedron = typed.tetrahedron()
         assert type(shell) is typed.Shell
         assert type(tetrahedron) is typed.Solid
         assert type(hexahedron_shell) is typed.Shell
+        assert type(module_shell) is typed.Shell
+        assert type(module_tetrahedron) is typed.Solid
         assert len(tetrahedron.faces()) == 4
         assert len(hexahedron_shell.faces()) == 6
         font_path = (
