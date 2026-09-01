@@ -23,6 +23,14 @@ def operation_contract(runtime: typed.Runtime, context: Context) -> None:
     assert_type(typed.slice(direct, z=1), typed.SliceResult)
     assert_type(runtime.split(direct, runtime.infplane()), typed.SplitResult)
     assert_type(runtime.slice(direct, z=1), typed.SliceResult)
+    assert_type(
+        typed.draft(direct, direct.faces()[0], 0.05),
+        typed.Solid,
+    )
+    assert_type(
+        runtime.draft(direct, direct.faces()[0], 0.05),
+        typed.Solid,
+    )
 
     assert_type(direct + forwarded, typed.Shape)
     assert_type(direct.mass() + 1, typed.Scalar)

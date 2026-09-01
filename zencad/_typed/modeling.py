@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from typing import overload
 
 from evalcache import ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
-from zencad.operation import OperationArguments, arguments, operation, resolve_runtime
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _bound_operations as bound_ops
 from . import _operations as ops
@@ -35,7 +41,13 @@ from .topology import (
     Vertex,
     Wire,
 )
-from .values import Point3, ScalarInput, _scalar_state
+from .values import Point3, ScalarInput, Vector3, _scalar_state, vector3
+
+
+DraftPlaneInput = Face | tuple[
+    Point3 | Sequence[ScalarInput],
+    Vector3 | Sequence[ScalarInput],
+]
 
 
 def _rounded_arguments(
@@ -117,6 +129,44 @@ def chamfer2d(
 ) -> OperationArguments:
     _require_face(shape, "chamfer2d")
     return _rounded_arguments(shape, radius, references, "chamfer2d")
+
+
+@operation(
+    backend=ops.draft_shape,
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.solid.draft",
+    operation_version="1",
+)
+def draft(
+    body: Solid,
+    faces: Face | Iterable[Face],
+    angle: ScalarInput,
+    direction: Vector3 | Sequence[ScalarInput] = (0, 0, 1),
+    neutral: DraftPlaneInput | None = None,
+) -> OperationArguments:
+    """Taper faces; positive angle removes material along pull direction."""
+
+    _require_solid(body, "draft")
+    selected = _require_draft_faces(faces)
+    runtime = resolve_runtime(body, selected, angle, direction, neutral)
+    with using_runtime(runtime):
+        pull_direction = vector3(direction)
+    if neutral is not None:
+        if isinstance(neutral, Face):
+            pass
+        elif isinstance(neutral, Sequence) and not isinstance(neutral, (str, bytes)):
+            if len(neutral) != 2:
+                raise TypeError("draft neutral must be (origin, normal)")
+        else:
+            raise TypeError("draft neutral must be a planar Face or (origin, normal)")
+    return arguments(
+        body,
+        selected,
+        _scalar_state(runtime, angle),
+        pull_direction,
+        neutral,
+    )
 
 
 @overload
@@ -481,6 +531,26 @@ def _require_references(
     return values
 
 
+def _require_draft_faces(faces: Face | Iterable[Face]) -> tuple[Face, ...]:
+    if isinstance(faces, Face):
+        values = (faces,)
+    elif isinstance(faces, (str, bytes)):
+        raise TypeError("draft faces must be a Face or an iterable of Faces")
+    else:
+        try:
+            values = tuple(faces)
+        except TypeError as error:
+            raise TypeError(
+                "draft faces must be a Face or an iterable of Faces"
+            ) from error
+    if not values:
+        raise ValueError("draft requires at least one Face")
+    if not all(isinstance(face, Face) for face in values):
+        raise TypeError("draft faces must contain only Face handles")
+    resolve_runtime(values)
+    return values
+
+
 def _require_wire_parts(
     shapes: Sequence[Edge | Wire],
     name: str,
@@ -531,6 +601,7 @@ __all__ = [
     "boundbox",
     "chamfer",
     "chamfer2d",
+    "draft",
     "fillet",
     "fillet2d",
     "near_compound",

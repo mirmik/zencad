@@ -4,6 +4,10 @@ from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepFilletAPI import BRepFilletAPI_MakeChamfer, BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeFillet2d
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
+from OCP.BRepAdaptor import BRepAdaptor_Surface as _BRepAdaptor_Surface
+from OCP.BRepOffsetAPI import BRepOffsetAPI_DraftAngle as _BRepOffsetAPI_DraftAngle
+from OCP.GeomAbs import GeomAbs_Plane as _GeomAbs_Plane
+from OCP.gp import gp_Dir as _gp_Dir, gp_Pln as _gp_Pln, gp_Pnt as _gp_Pnt
 
 from OCP.TopAbs import TopAbs_REVERSED
 from OCP.TopLoc import TopLoc_Location
@@ -12,6 +16,7 @@ from zencad.geom.near import _near_vertex
 from zencad.util import *
 
 import itertools
+import math as _math
 import sys
 
 def _restore_shapetype(shp):
@@ -124,6 +129,110 @@ def _fillet2d(shp, r, refs=None):
 @lazy.lazy(cls=shape_generator)
 def fillet2d(shp, r, refs=None):
     return _fillet2d(shp, r, refs)
+
+
+def _draft_coordinates(value, name):
+    try:
+        coordinates = (float(value.x), float(value.y), float(value.z))
+    except AttributeError:
+        try:
+            coordinates = tuple(float(item) for item in value)
+        except (TypeError, ValueError) as error:
+            raise TypeError(f"{name} must contain three numeric coordinates") from error
+    if len(coordinates) != 3:
+        raise TypeError(f"{name} must contain three numeric coordinates")
+    return coordinates
+
+
+def _draft_direction(value):
+    try:
+        return _gp_Dir(*_draft_coordinates(value, "draft direction"))
+    except Exception as error:
+        raise ValueError("draft direction must be non-zero") from error
+
+
+def _draft_neutral_plane(value, direction):
+    if value is None:
+        return _gp_Pln(_gp_Pnt(0, 0, 0), direction)
+    if isinstance(value, Shape):
+        if not value.is_face():
+            raise TypeError("draft neutral Shape must be a planar face")
+        adaptor = _BRepAdaptor_Surface(value.Face())
+        if adaptor.GetType() != _GeomAbs_Plane:
+            raise TypeError("draft neutral Shape must be a planar face")
+        return adaptor.Plane()
+    try:
+        origin, normal = value
+    except (TypeError, ValueError) as error:
+        raise TypeError(
+            "draft neutral must be a planar face or (origin, normal)"
+        ) from error
+    origin = _draft_coordinates(origin, "draft neutral origin")
+    normal = _draft_coordinates(normal, "draft neutral normal")
+    try:
+        return _gp_Pln(_gp_Pnt(*origin), _gp_Dir(*normal))
+    except Exception as error:
+        raise ValueError("draft neutral normal must be non-zero") from error
+
+
+def _draft(shp, faces, angle, direction=(0, 0, 1), neutral=None):
+    if not isinstance(shp, Shape) or not shp.is_solid():
+        raise TypeError("draft body must be a solid Shape")
+    if isinstance(faces, Shape):
+        faces = (faces,)
+    else:
+        try:
+            faces = tuple(faces)
+        except TypeError as error:
+            raise TypeError("draft faces must be a Face or an iterable of Faces") from error
+    if not faces:
+        raise ValueError("draft requires at least one face")
+    if not all(isinstance(face, Shape) and face.is_face() for face in faces):
+        raise TypeError("draft faces must contain only Face shapes")
+
+    angle = float(angle)
+    if not _math.isfinite(angle) or angle == 0:
+        raise ValueError("draft angle must be finite and non-zero")
+    if abs(angle) >= _math.pi / 2:
+        raise ValueError("draft angle magnitude must be less than pi/2")
+
+    direction = _draft_direction(direction)
+    neutral_plane = _draft_neutral_plane(neutral, direction)
+    algorithm = _BRepOffsetAPI_DraftAngle(shp.Shape())
+    for index, face in enumerate(faces, 1):
+        try:
+            algorithm.Add(
+                face.Face(),
+                direction,
+                angle,
+                neutral_plane,
+            )
+        except Exception as error:
+            raise ValueError(f"draft rejected face {index}: {error}") from error
+        if not algorithm.AddDone():
+            raise ValueError(
+                f"draft rejected face {index}: OCCT status {algorithm.Status()}"
+            )
+
+    algorithm.Build()
+    if not algorithm.IsDone():
+        raise ValueError(f"draft construction failed: OCCT status {algorithm.Status()}")
+    result = Shape(algorithm.Shape())
+    if not result.is_solid():
+        raise ValueError("draft construction did not produce a solid")
+    return result
+
+
+@lazy.lazy(cls=shape_generator)
+def draft(shp, faces, angle, direction=(0, 0, 1), neutral=None):
+    """Taper selected faces around a neutral plane.
+
+    Along ``direction``, a positive ``angle`` removes material and a negative
+    angle adds it. ``neutral`` defaults to the origin plane normal to the pull
+    direction and also accepts a planar Face or ``(origin, normal)``.
+    """
+
+    return _draft(shp, faces, angle, direction, neutral)
 
 def get_nodes(triangulation):
     if hasattr(triangulation, "Nodes"):

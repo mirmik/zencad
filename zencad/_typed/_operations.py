@@ -1090,6 +1090,18 @@ def chamfer2d_shape(
     return ResolvedShape(result)
 
 
+def draft_shape(
+    shape: ResolvedShape,
+    faces: tuple[ResolvedShape, ...],
+    angle: float,
+    direction: Vector3Value,
+    neutral: object,
+) -> ResolvedShape:
+    from zencad.geom.operations import _draft
+
+    return _draft(shape, faces, angle, direction, neutral)
+
+
 def offset_shape(shape: ResolvedShape, distance: float) -> ResolvedShape:
     algorithm = BRepOffsetAPI_MakeOffsetShape()
     algorithm.PerformByJoin(shape.Shape(), distance, 1e-6)

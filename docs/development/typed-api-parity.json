@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline": "ZenCad legacy geometry API on feature/migration, 2026-08-30",
-  "legacy_signature_sha256": "b0e7ecbce0ae6c2d8c5d8998149f2cb120e72e17b18d45f3e0fe434415eaca26",
+  "legacy_signature_sha256": "5183b079ecbceca567cbc069dd8856bb3592b8cee64c457d0b53979b9767cec1",
   "status_meaning": {
     "implemented": "The private typed layer already provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
@@ -41,6 +41,7 @@
     "display",
     "dodecahedron",
     "down",
+    "draft",
     "ellipse",
     "extrude",
     "fill",
@@ -1112,6 +1113,7 @@
           "default": {"status": "missing", "typed": "typed topology operation/result for {name}", "materialization": "structured native data only at explicit boundary"},
           "overrides": {
             "chamfer": {"status": "implemented", "typed": "Runtime.chamfer() / Shape.chamfer() -> Shape"},
+            "draft": {"status": "implemented", "typed": "draft(Solid, Face | Iterable[Face], angle, direction, neutral) -> Solid"},
             "fillet": {"status": "implemented", "typed": "Runtime.fillet() / Shape.fillet() -> Shape"},
             "fillet2d": {"status": "implemented", "typed": "Runtime.fillet2d() / Face.fillet2d() -> Face"},
             "get_nodes": {"status": "implemented", "typed": "Runtime.get_nodes(MeshData | Poly_Triangulation) -> tuple[VectorRow, ...]"},

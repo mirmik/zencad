@@ -101,6 +101,7 @@ def main():
         assert isinstance(typed.convex_hull_shape, DomainOperation)
         assert isinstance(typed.split, DomainOperation)
         assert isinstance(typed.slice, DomainOperation)
+        assert isinstance(typed.draft, DomainOperation)
         legacy_parts = zencad.split(
             zencad.box(2),
             zencad.infplane().up(1),
@@ -113,6 +114,12 @@ def main():
         assert isinstance(typed_parts, typed.SliceResult)
         assert round(float(typed_parts.lower.mass()), 6) == 4.0
         assert round(float(typed_parts.upper.mass()), 6) == 4.0
+        with typed.using_context(typed_context):
+            draft_body = typed.box(2)
+            drafted = typed.draft(draft_body, draft_body.faces()[0], 0.05)
+        assert type(drafted) is typed.Solid
+        assert drafted.runtime is typed_context
+        assert float(drafted.mass()) > 0
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(

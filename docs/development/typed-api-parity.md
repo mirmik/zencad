@@ -45,7 +45,7 @@ their existing modules but are outside the typed-domain replacement surface.
   immutable typed model and needs a deliberate repaired spelling.
 - `unchanged`: the entry remains outside the lazy/domain migration.
 
-The expanded inventory contains 384 types, functions, methods, and
+The expanded inventory contains 385 types, functions, methods, and
 operators:
 
 | Family | Total | Implemented | Partial | Missing | Repair | Unchanged |
@@ -54,9 +54,9 @@ operators:
 | Transforms | 64 | 64 | 0 | 0 | 0 | 0 |
 | Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
-| Sweeps and operations | 49 | 49 | 0 | 0 | 0 | 0 |
+| Sweeps and operations | 50 | 50 | 0 | 0 | 0 | 0 |
 | Mesh, convert, display | 18 | 16 | 0 | 0 | 0 | 2 |
-| **Total** | **384** | **375** | **0** | **0** | **6** | **3** |
+| **Total** | **385** | **376** | **0** | **0** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 rows are aliases, so a single typed operation can close several of them.
@@ -97,6 +97,12 @@ is implemented; the remaining rows in this family belong to the sweep tasks.
 legacy lazy nodes and typed handles share non-dividing and ambiguous-result
 errors, coordinate-axis planes, arbitrary planar faces, and `(origin, normal)`
 plane descriptions.
+
+#1994 adds face draft as another graph-preserving modeling operation. Legacy
+lazy shapes and typed `Solid` handles share the OCCT draft-angle backend,
+selected Face operands, pull direction, angle-sign convention, and planar
+neutral descriptions. Positive angles remove material along the pull direction;
+negative angles add it, while the neutral plane remains fixed.
 
 #2036 and #2042 complete the sweep family. Sweep laws are frozen compositions
 of typed curves, scalars, intervals, and enums; only the terminal Surface

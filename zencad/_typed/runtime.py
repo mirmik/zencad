@@ -7,7 +7,7 @@ exposing lazy proxy types to callers.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 import math
 from os import PathLike
 from typing import TYPE_CHECKING, Literal, TypeVar, cast, overload
@@ -497,6 +497,23 @@ class RuntimeCompatibility(Context):
     ) -> Shape:
         with using_runtime(self):
             return modeling_api.chamfer(shape, radius, references)
+
+    def draft(
+        self,
+        body: Solid,
+        faces: Face | Iterable[Face],
+        angle: ScalarInput,
+        direction: Vector3 | Sequence[ScalarInput] = (0, 0, 1),
+        neutral: modeling_api.DraftPlaneInput | None = None,
+    ) -> Solid:
+        with using_runtime(self):
+            return modeling_api.draft(
+                body,
+                faces,
+                angle,
+                direction,
+                neutral,
+            )
 
     def fillet2d(
         self,
