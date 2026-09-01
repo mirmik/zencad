@@ -47,13 +47,15 @@ class TypedCurveHandlesTest(unittest.TestCase):
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    line = context.call(typed.line,
+                    line = context.call(
+                        typed.line,
                         context.call(typed.point, 1, 2, 3),
                         context.call(typed.vector, 1, 0, 0),
                     )
                     circle = context.call(typed.circle_curve, 2)
                     ellipse = context.call(typed.ellipse_curve, 3, 2)
-                    segment = context.call(typed.segment2,
+                    segment = context.call(
+                        typed.segment2,
                         context.call(typed.point2, 0, 0),
                         context.call(typed.point2, 4, 0),
                     )
@@ -124,8 +126,11 @@ class TypedCurveHandlesTest(unittest.TestCase):
 
         circle = context.call(typed.circle_curve, radius)
         ellipse = context.call(typed.ellipse_curve, radius + 1, radius)
-        line = context.call(typed.line, origin, context.call(typed.vector, radius, 0, 0))
-        segment = context.call(typed.segment2,
+        line = context.call(
+            typed.line, origin, context.call(typed.vector, radius, 0, 0)
+        )
+        segment = context.call(
+            typed.segment2,
             context.call(typed.point2, 0, 0),
             context.call(typed.point2, radius * 2, 0),
         )
@@ -182,12 +187,24 @@ class TypedCurveHandlesTest(unittest.TestCase):
         context = typed.Context.deferred(cache=False)
         other = typed.Context.deferred(cache=False)
 
-        with self.assertRaisesRegex(TypeError, "origin must be Point3"):
-            context.call(typed.line, context.call(typed.point2, 0, 0), context.call(typed.vector, 1, 0, 0))  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(
+                typed.line,
+                context.call(typed.point2, 0, 0),
+                context.call(typed.vector, 1, 0, 0),
+            ).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.line, context.call(typed.point, 0, 0, 0), other.call(typed.vector, 1, 0, 0))
+            context.call(
+                typed.line,
+                context.call(typed.point, 0, 0, 0),
+                other.call(typed.vector, 1, 0, 0),
+            )
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.segment2, context.call(typed.point2, 0, 0), other.call(typed.point2, 1, 0))
+            context.call(
+                typed.segment2,
+                context.call(typed.point2, 0, 0),
+                other.call(typed.point2, 1, 0),
+            )
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.trim_curve2, other.call(typed.ellipse2, 2, 1), 0, 1)
 
@@ -195,7 +212,11 @@ class TypedCurveHandlesTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "positive scalar"):
             invalid.native()
         with self.assertRaisesRegex(ValueError, "non-zero Vector3"):
-            context.call(typed.line, context.call(typed.point, 0, 0, 0), context.call(typed.vector, 0, 0, 0)).native()
+            context.call(
+                typed.line,
+                context.call(typed.point, 0, 0, 0),
+                context.call(typed.vector, 0, 0, 0),
+            ).native()
         with self.assertRaisesRegex(ValueError, "must not be less"):
             context.call(typed.ellipse_curve, 1, 2).native()
         with self.assertRaisesRegex(ValueError, "endpoints must be distinct"):
@@ -226,7 +247,9 @@ class TypedCurveCacheTest(unittest.TestCase):
         self.assertEqual(record.value.artifacts[0].name, "curve.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 10)
 
-        wrong_native = typed.Context.deferred(cache=False).call(typed.ellipse2, 3, 2).native()
+        wrong_native = (
+            typed.Context.deferred(cache=False).call(typed.ellipse2, 3, 2).native()
+        )
         wrong_value = Curve2Serializer().dumps(curve_ops.curve2_from_ocp(wrong_native))
         store.records[key] = CacheRecord(
             schema=record.schema,

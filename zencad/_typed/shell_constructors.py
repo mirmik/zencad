@@ -10,8 +10,6 @@ from evalcache import ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.operation import (
-    OperationArguments,
-    arguments,
     operation,
     resolve_context,
     using_context,
@@ -106,31 +104,29 @@ def _as_scalar(value: ScalarInput) -> Scalar:
 
 
 @operation(
-    backend=ops.make_shell,
     result=SHELL_SPEC,
     returns=Shell,
     operation_id="zencad.typed.make_shell",
     operation_version="1",
 )
-def make_shell(faces: Face | Sequence[Face], /) -> OperationArguments:
-    return arguments(_require_faces(faces, "make_shell"))
+def make_shell(faces: Face | Sequence[Face], /) -> Shell:
+    values = _require_faces(faces, "make_shell")
+    return Shell(ops.make_shell(tuple(face._legacy() for face in values)))
 
 
 @operation(
-    backend=ops.fill_shell,
     result=SOLID_SPEC,
     returns=Solid,
     operation_id="zencad.typed.fill3d",
     operation_version="1",
 )
-def fill3d(shell: Shell, /) -> OperationArguments:
+def fill3d(shell: Shell, /) -> Solid:
     if not isinstance(shell, Shell):
         raise TypeError("fill3d expects Shell")
-    return arguments(shell)
+    return Solid(ops.fill_shell(shell._legacy()))
 
 
 @operation(
-    backend=ops.polyhedron_shell,
     result=SHELL_SPEC,
     returns=Shell,
     operation_id="zencad.typed.polyhedron_shell",
@@ -139,10 +135,12 @@ def fill3d(shell: Shell, /) -> OperationArguments:
 def polyhedron_shell(
     pnts: Sequence[Point3],
     faces_no: Sequence[Sequence[int]],
-) -> OperationArguments:
+) -> Shell:
     points = _require_points(pnts, minimum=3, name="polyhedron_shell")
     faces = _require_polyhedron_faces(faces_no, len(points), "polyhedron_shell")
-    return arguments(points, faces)
+    return Shell(
+        ops.polyhedron_shell(tuple(point._resolved() for point in points), faces)
+    )
 
 
 @overload
@@ -242,7 +240,6 @@ def convex_hull_shape(
 
 
 @operation(
-    backend=ops.convex_hull_shape,
     result=SOLID_SPEC,
     returns=_shell_result_type,
     select_result=_shell_result_spec,
@@ -254,12 +251,15 @@ def convex_hull_shape(
     shell: bool = False,
     incremental: bool = False,
     qhull_options: str | None = None,
-) -> OperationArguments:
+) -> Solid | Shell:
     points = _require_points(pnts, minimum=4, name="convex_hull_shape")
     _require_bool(shell, "convex_hull_shape shell")
     _require_bool(incremental, "convex_hull_shape incremental")
     options = _require_qhull_options(qhull_options, "convex_hull_shape")
-    return arguments(points, incremental, options, shell)
+    resolved = ops.convex_hull_shape(
+        tuple(point._resolved() for point in points), incremental, options, shell
+    )
+    return Shell(resolved) if shell else Solid(resolved)
 
 
 def _platonic_polyhedron(

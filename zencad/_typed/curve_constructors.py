@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_context
+from zencad.operation import operation
 
 from . import _curve_operations as curve_ops
 from . import _operations as topology_ops
@@ -13,67 +13,48 @@ from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .records import Interval
 from .topology import EDGE_SPEC, WIRE_SPEC, Edge, Wire
 from .transforms import Transform
-from .values import (
-    Point2,
-    Point3,
-    ScalarInput,
-    Vector3,
-    _optional_scalar_state,
-    _scalar_state,
-)
-
-if TYPE_CHECKING:
-    from .context import Context
+from .values import Point2, Point3, Vector3
 
 
 @operation(
-    backend=curve_ops.line,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.line",
     operation_version="1",
 )
-def line(origin: Point3, direction: Vector3, /) -> OperationArguments:
+def line(origin: Point3, direction: Vector3, /) -> Curve:
     if not isinstance(origin, Point3):
         raise TypeError("line origin must be Point3")
     if not isinstance(direction, Vector3):
         raise TypeError("line direction must be Vector3")
-    return arguments(origin, direction)
+    return Curve(curve_ops.line(origin._resolved(), direction._resolved()))
 
 
 @operation(
-    backend=curve_ops.circle,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.circle_curve",
     operation_version="1",
 )
-def circle_curve(radius: ScalarInput, /) -> OperationArguments:
-    context = resolve_context(radius)
-    return arguments(_scalar_state(context, radius))
+def circle_curve(radius: float, /) -> Curve:
+    return Curve(curve_ops.circle(radius))
 
 
 @operation(
-    backend=curve_ops.ellipse,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.ellipse_curve",
     operation_version="1",
 )
 def ellipse_curve(
-    major_radius: ScalarInput,
-    minor_radius: ScalarInput,
+    major_radius: float,
+    minor_radius: float,
     /,
-) -> OperationArguments:
-    context = resolve_context(major_radius, minor_radius)
-    return arguments(
-        _scalar_state(context, major_radius),
-        _scalar_state(context, minor_radius),
-    )
+) -> Curve:
+    return Curve(curve_ops.ellipse(major_radius, minor_radius))
 
 
 @operation(
-    backend=curve_ops.interpolate,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.interpolate_curve",
@@ -83,11 +64,21 @@ def interpolate_curve(
     pnts: Sequence[Point3],
     tangs: Sequence[Vector3 | None] | None = None,
     closed: bool = False,
-) -> OperationArguments:
+) -> Curve:
     _require_bool(closed, "interpolate_curve closed")
     points = _require_points(pnts, minimum=2, name="interpolate_curve")
     tangents = _require_tangents(tangs, len(points), "interpolate_curve")
-    return arguments(points, tangents, closed)
+    return Curve(
+        curve_ops.interpolate(
+            tuple(point._resolved() for point in points),
+            None
+            if tangents is None
+            else tuple(
+                None if tangent is None else tangent._resolved() for tangent in tangents
+            ),
+            closed,
+        )
+    )
 
 
 def interpolate(
@@ -101,7 +92,6 @@ def interpolate(
 
 
 @operation(
-    backend=curve_ops.bezier,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.bezier_curve",
@@ -109,21 +99,21 @@ def interpolate(
 )
 def bezier_curve(
     poles: Sequence[Point3],
-    weights: Sequence[ScalarInput] | None = None,
-) -> OperationArguments:
+    weights: Sequence[float] | None = None,
+) -> Curve:
     points = _require_points(poles, minimum=2, name="bezier_curve")
-    context = resolve_context(points, weights)
-    resolved_weights = _optional_scalar_sequence_state(
-        context,
-        weights,
-        "bezier_curve weights",
+    resolved_weights = _optional_scalar_sequence(weights, "bezier_curve weights")
+    return Curve(
+        curve_ops.bezier(
+            tuple(point._resolved() for point in points),
+            resolved_weights,
+        )
     )
-    return arguments(points, resolved_weights)
 
 
 def bezier(
     pnts: Sequence[Point3],
-    weights: Sequence[ScalarInput] | None = None,
+    weights: Sequence[float] | None = None,
 ) -> Edge:
     """Compatibility edge alias for :func:`bezier_curve`."""
 
@@ -131,7 +121,6 @@ def bezier(
 
 
 @operation(
-    backend=curve_ops.bspline,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.bspline_curve",
@@ -139,47 +128,46 @@ def bezier(
 )
 def bspline_curve(
     poles: Sequence[Point3],
-    knots: Sequence[ScalarInput],
+    knots: Sequence[float],
     muls: Sequence[int],
     degree: int,
     periodic: bool = False,
-    weights: Sequence[ScalarInput] | None = None,
+    weights: Sequence[float] | None = None,
     check_rational: bool | None = None,
-) -> OperationArguments:
+) -> Curve:
     points = _require_points(poles, minimum=2, name="bspline_curve")
     if isinstance(degree, bool) or not isinstance(degree, int) or degree < 1:
         raise ValueError("bspline_curve degree must be a positive int")
     _require_bool(periodic, "bspline_curve periodic")
     if check_rational is not None:
         _require_bool(check_rational, "bspline_curve check_rational")
-    context = resolve_context(points, knots, weights)
-    knot_states = _scalar_sequence_state(context, knots, "bspline_curve knots")
+    knot_values = _scalar_sequence(knots, "bspline_curve knots")
     multiplicities = _int_sequence(muls, "bspline_curve multiplicities")
-    if len(knot_states) != len(multiplicities):
-        raise ValueError("bspline_curve knots and multiplicities must have equal length")
-    resolved_weights = _optional_scalar_sequence_state(
-        context,
-        weights,
-        "bspline_curve weights",
-    )
-    return arguments(
-        points,
-        knot_states,
-        multiplicities,
-        degree,
-        periodic,
-        resolved_weights,
-        check_rational,
+    if len(knot_values) != len(multiplicities):
+        raise ValueError(
+            "bspline_curve knots and multiplicities must have equal length"
+        )
+    resolved_weights = _optional_scalar_sequence(weights, "bspline_curve weights")
+    return Curve(
+        curve_ops.bspline(
+            tuple(point._resolved() for point in points),
+            knot_values,
+            multiplicities,
+            degree,
+            periodic,
+            resolved_weights,
+            check_rational,
+        )
     )
 
 
 def bspline(
     poles: Sequence[Point3],
-    knots: Sequence[ScalarInput],
+    knots: Sequence[float],
     muls: Sequence[int],
     degree: int,
     periodic: bool = False,
-    weights: Sequence[ScalarInput] | None = None,
+    weights: Sequence[float] | None = None,
     check_rational: bool | None = None,
 ) -> Edge:
     """Compatibility edge alias for :func:`bspline_curve`."""
@@ -196,7 +184,6 @@ def bspline(
 
 
 @operation(
-    backend=topology_ops.curve_edge,
     result=EDGE_SPEC,
     returns=Edge,
     operation_id="zencad.typed.make_edge",
@@ -204,29 +191,31 @@ def bspline(
 )
 def make_edge(
     curve: Curve,
-    interval: Interval | Sequence[ScalarInput] | None = None,
+    interval: Interval | Sequence[float] | None = None,
     /,
-) -> OperationArguments:
+) -> Edge:
     if not isinstance(curve, Curve):
         raise TypeError("make_edge expects Curve")
-    context = resolve_context(curve)
-    return arguments(curve, _interval_state(context, interval, "make_edge interval"))
+    return Edge(
+        topology_ops.curve_edge(
+            curve._resolved(),
+            _interval_values(interval, "make_edge interval"),
+        )
+    )
 
 
 @operation(
-    backend=topology_ops.circle_arc,
     result=EDGE_SPEC,
     returns=Edge,
     operation_id="zencad.typed.circle_arc",
     operation_version="1",
 )
-def circle_arc(p1: Point3, p2: Point3, p3: Point3, /) -> OperationArguments:
+def circle_arc(p1: Point3, p2: Point3, p3: Point3, /) -> Edge:
     points = _require_points((p1, p2, p3), minimum=3, name="circle_arc")
-    return arguments(*points)
+    return Edge(topology_ops.circle_arc(*(point._resolved() for point in points)))
 
 
 @operation(
-    backend=topology_ops.svg_elliptic_arc,
     result=EDGE_SPEC,
     returns=Edge,
     operation_id="zencad.typed.svg_elliptic_arc",
@@ -235,40 +224,40 @@ def circle_arc(p1: Point3, p2: Point3, p3: Point3, /) -> OperationArguments:
 def _svg_elliptic_arc(
     start: Point3,
     end: Point3,
-    radius_x: ScalarInput,
-    radius_y: ScalarInput,
-    x_axis_angle: ScalarInput,
+    radius_x: float,
+    radius_y: float,
+    x_axis_angle: float,
     large: bool,
     sweep: bool,
-) -> OperationArguments:
+) -> Edge:
     points = _require_points((start, end), minimum=2, name="SVG arc")
     _require_bool(large, "SVG arc large")
     _require_bool(sweep, "SVG arc sweep")
-    context = resolve_context(points, radius_x, radius_y, x_axis_angle)
-    return arguments(
-        points[0],
-        points[1],
-        _scalar_state(context, radius_x),
-        _scalar_state(context, radius_y),
-        _scalar_state(context, x_axis_angle),
-        large,
-        sweep,
+    return Edge(
+        topology_ops.svg_elliptic_arc(
+            points[0]._resolved(),
+            points[1]._resolved(),
+            radius_x,
+            radius_y,
+            x_axis_angle,
+            large,
+            sweep,
+        )
     )
 
 
 @operation(
-    backend=topology_ops.make_wire,
     result=WIRE_SPEC,
     returns=Wire,
     operation_id="zencad.typed.make_wire",
     operation_version="1",
 )
-def make_wire(*shapes: Edge | Wire | Sequence[Edge | Wire]) -> OperationArguments:
-    return arguments(_require_wire_parts(shapes, "make_wire"))
+def make_wire(*shapes: Edge | Wire | Sequence[Edge | Wire]) -> Wire:
+    parts = _require_wire_parts(shapes, "make_wire")
+    return Wire(topology_ops.make_wire(tuple(part._legacy() for part in parts)))
 
 
 @operation(
-    backend=topology_ops.rounded_polysegment,
     result=WIRE_SPEC,
     returns=Wire,
     operation_id="zencad.typed.rounded_polysegment",
@@ -276,78 +265,65 @@ def make_wire(*shapes: Edge | Wire | Sequence[Edge | Wire]) -> OperationArgument
 )
 def rounded_polysegment(
     pnts: Sequence[Point3],
-    r: ScalarInput,
+    r: float,
     closed: bool = False,
-) -> OperationArguments:
+) -> Wire:
     _require_bool(closed, "rounded_polysegment closed")
     points = _require_points(pnts, minimum=2, name="rounded_polysegment")
-    context = resolve_context(points, r)
-    return arguments(points, _scalar_state(context, r), closed)
+    return Wire(
+        topology_ops.rounded_polysegment(
+            tuple(point._resolved() for point in points), r, closed
+        )
+    )
 
 
 @operation(
-    backend=topology_ops.helix,
     result=WIRE_SPEC,
     returns=Wire,
     operation_id="zencad.typed.helix",
     operation_version="1",
 )
 def helix(
-    r: ScalarInput,
-    h: ScalarInput,
-    step: ScalarInput | None = None,
-    pitch: ScalarInput | None = None,
-    angle: ScalarInput = 0,
+    r: float,
+    h: float,
+    step: float | None = None,
+    pitch: float | None = None,
+    angle: float = 0,
     left: bool = False,
-) -> OperationArguments:
+) -> Wire:
     if step is None and pitch is None:
         raise TypeError("helix requires step or pitch")
     _require_bool(left, "helix left")
-    context = resolve_context(r, h, step, pitch, angle)
-    return arguments(
-        _scalar_state(context, r),
-        _scalar_state(context, h),
-        _optional_scalar_state(context, step),
-        _optional_scalar_state(context, pitch),
-        _scalar_state(context, angle),
-        left,
-    )
+    return Wire(topology_ops.helix(r, h, step, pitch, angle, left))
 
 
 @operation(
-    backend=curve_ops.segment2,
     result=CURVE2_SPEC,
     returns=Curve2,
     operation_id="zencad.typed.segment2",
     operation_version="1",
 )
-def segment2(start: Point2, end: Point2, /) -> OperationArguments:
+def segment2(start: Point2, end: Point2, /) -> Curve2:
     if not isinstance(start, Point2) or not isinstance(end, Point2):
         raise TypeError("segment2 expects Point2 endpoints")
-    return arguments(start, end)
+    return Curve2(curve_ops.segment2(start._resolved(), end._resolved()))
 
 
 @operation(
-    backend=curve_ops.ellipse2,
     result=CURVE2_SPEC,
     returns=Curve2,
     operation_id="zencad.typed.ellipse2",
     operation_version="1",
 )
 def ellipse2(
-    major_radius: ScalarInput,
-    minor_radius: ScalarInput,
+    major_radius: float,
+    minor_radius: float,
     /,
-) -> OperationArguments:
-    context = resolve_context(major_radius, minor_radius)
-    return arguments(
-        _scalar_state(context, major_radius),
-        _scalar_state(context, minor_radius),
-    )
+) -> Curve2:
+    return Curve2(curve_ops.ellipse2(major_radius, minor_radius))
 
 
 @operation(
-    backend=curve_ops.trim_curve2,
     result=CURVE2_SPEC,
     returns=Curve2,
     operation_id="zencad.typed.trim_curve2",
@@ -355,34 +331,27 @@ def ellipse2(
 )
 def trim_curve2(
     curve: Curve2,
-    start: ScalarInput,
-    end: ScalarInput,
+    start: float,
+    end: float,
     /,
-) -> OperationArguments:
+) -> Curve2:
     if not isinstance(curve, Curve2):
         raise TypeError("trim_curve2 expects Curve2")
-    context = resolve_context(curve, start, end)
-    return arguments(
-        curve,
-        _scalar_state(context, start),
-        _scalar_state(context, end),
-    )
+    return Curve2(curve_ops.trim_curve2(curve._resolved(), start, end))
 
 
 @operation(
-    backend=topology_ops.segment,
     result=EDGE_SPEC,
     returns=Edge,
     operation_id="zencad.typed.segment",
     operation_version="1",
 )
-def segment(start: Point3, end: Point3, /) -> OperationArguments:
+def segment(start: Point3, end: Point3, /) -> Edge:
     points = _require_points((start, end), minimum=2, name="segment")
-    return arguments(*points)
+    return Edge(topology_ops.segment(*(point._resolved() for point in points)))
 
 
 @operation(
-    backend=topology_ops.polysegment,
     result=WIRE_SPEC,
     returns=Wire,
     operation_id="zencad.typed.polysegment",
@@ -393,14 +362,15 @@ def polysegment(
     /,
     *,
     closed: bool = False,
-) -> OperationArguments:
+) -> Wire:
     _require_bool(closed, "polysegment closed")
     values = _require_points(points, minimum=2, name="polysegment")
-    return arguments(values, closed)
+    return Wire(
+        topology_ops.polysegment(tuple(point._resolved() for point in values), closed)
+    )
 
 
 @operation(
-    backend=topology_ops.curve_trimmed_edge,
     result=EDGE_SPEC,
     returns=Edge,
     operation_id="zencad.typed.curve.trimmed_edge",
@@ -408,33 +378,28 @@ def polysegment(
 )
 def _curve_trimmed_edge(
     curve: Curve,
-    start: ScalarInput,
-    end: ScalarInput,
+    start: float,
+    end: float,
     /,
-) -> OperationArguments:
-    context = resolve_context(curve, start, end)
-    return arguments(
-        curve,
-        _scalar_state(context, start),
-        _scalar_state(context, end),
-    )
+) -> Edge:
+    return Edge(topology_ops.curve_trimmed_edge(curve._resolved(), start, end))
 
 
 @operation(
-    backend=curve_ops.curve_transform,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.curve.transform",
     operation_version="1",
 )
-def _curve_transform(curve: Curve, transformation: Transform, /) -> OperationArguments:
+def _curve_transform(curve: Curve, transformation: Transform, /) -> Curve:
     if not isinstance(transformation, Transform):
         raise TypeError("Curve.transform expects Transform")
-    return arguments(curve, transformation)
+    return Curve(
+        curve_ops.curve_transform(curve._resolved(), transformation._resolved())
+    )
 
 
 @operation(
-    backend=curve_ops.curve2_rotate,
     result=CURVE2_SPEC,
     returns=Curve2,
     operation_id="zencad.typed.curve2.rotate",
@@ -442,23 +407,21 @@ def _curve_transform(curve: Curve, transformation: Transform, /) -> OperationArg
 )
 def _curve2_rotate(
     curve: Curve2,
-    angle: ScalarInput,
+    angle: float,
     /,
-) -> OperationArguments:
-    context = resolve_context(curve, angle)
-    return arguments(curve, _scalar_state(context, angle))
+) -> Curve2:
+    return Curve2(curve_ops.curve2_rotate(curve._resolved(), angle))
 
 
 @operation(
-    backend=topology_ops.edge_curve,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.edge.curve",
     operation_version="1",
     fold_literals=True,
 )
-def _edge_curve(edge: Edge, /) -> OperationArguments:
-    return arguments(edge)
+def _edge_curve(edge: Edge, /) -> Curve:
+    return Curve(topology_ops.edge_curve(edge._legacy()))
 
 
 def _require_bool(value: object, name: str) -> None:
@@ -499,27 +462,25 @@ def _require_tangents(
     return values
 
 
-def _scalar_sequence_state(
-    context: Context,
-    values: Sequence[ScalarInput],
+def _scalar_sequence(
+    values: Sequence[float],
     name: str,
-) -> tuple[object, ...]:
+) -> tuple[float, ...]:
     if isinstance(values, (str, bytes)) or not isinstance(values, Sequence):
         raise TypeError(f"{name} must be a scalar sequence")
-    result = tuple(_scalar_state(context, value) for value in values)
+    result = tuple(values)
     if not result:
         raise ValueError(f"{name} must not be empty")
     return result
 
 
-def _optional_scalar_sequence_state(
-    context: Context,
-    values: Sequence[ScalarInput] | None,
+def _optional_scalar_sequence(
+    values: Sequence[float] | None,
     name: str,
-) -> tuple[object, ...] | None:
+) -> tuple[float, ...] | None:
     if values is None:
         return None
-    return _scalar_sequence_state(context, values, name)
+    return _scalar_sequence(values, name)
 
 
 def _int_sequence(values: Sequence[int], name: str) -> tuple[int, ...]:
@@ -535,21 +496,20 @@ def _int_sequence(values: Sequence[int], name: str) -> tuple[int, ...]:
     return result
 
 
-def _interval_state(
-    context: Context,
-    interval: Interval | Sequence[ScalarInput] | None,
+def _interval_values(
+    interval: Interval | Sequence[float] | None,
     name: str,
-) -> tuple[object, object] | None:
+) -> tuple[float, float] | None:
     if interval is None:
         return None
     if isinstance(interval, Interval):
-        return (interval.lower, interval.upper)
+        return (interval.lower.value(), interval.upper.value())
     if isinstance(interval, (str, bytes)) or not isinstance(interval, Sequence):
         raise TypeError(f"{name} must contain two scalar bounds")
     values = tuple(interval)
     if len(values) != 2:
         raise TypeError(f"{name} must contain two scalar bounds")
-    return (_scalar_state(context, values[0]), _scalar_state(context, values[1]))
+    return (values[0], values[1])
 
 
 def _require_wire_parts(

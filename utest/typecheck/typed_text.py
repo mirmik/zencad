@@ -16,7 +16,7 @@ def text_contract(context: typed.Context) -> None:
             typed.text_to_brep,
             "Hello",
             "Font",
-            context.call(typed.box, 2).mass(),
+            10.0,
             typed.FontAspect.BOLD,
             composite_curve=True,
         ),
@@ -28,7 +28,7 @@ def text_contract(context: typed.Context) -> None:
         typed.text_to_brep(
             "Hello",
             "Font",
-            context.call(typed.box, 2).mass(),
+            10.0,
             typed.FontAspect.BOLD,
             composite_curve=True,
         ),

@@ -169,7 +169,9 @@ class TypedValueAlgebraTest(unittest.TestCase):
 
         result = (
             context.call(typed.point, 1, 2, 3)
-            + (context.call(typed.vector, 2, 4, 6) / context.call(typed.scalar, 2)).normalized()
+            + (
+                context.call(typed.vector, 2, 4, 6) / context.call(typed.scalar, 2)
+            ).normalized()
         ).distance_to(context.call(typed.point, 0, 0, 0))
         result = typed.sqrt(result**2)
 
@@ -290,8 +292,8 @@ class TypedValueAlgebraTest(unittest.TestCase):
             context.call(typed.vector, 0, 0, 0).normalized()
         with self.assertRaises(TypeError):
             hash(vector)
-        with self.assertRaises(TypeError):
-            typed.Point3(1, 2, 3)
+        direct_point = typed.Point3(1, 2, 3)
+        self.assertEqual(direct_point.value(), (1.0, 2.0, 3.0))
         with self.assertRaises(TypeError):
             context.call(typed.scalar, True)
 

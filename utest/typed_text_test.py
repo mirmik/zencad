@@ -49,12 +49,14 @@ class TypedTextTest(unittest.TestCase):
                         progress_hooks=(events.append,),
                     )
                     context.call(typed.register_font, FONT_PATH)
-                    text = context.call(typed.text_to_brep,
+                    text = context.call(
+                        typed.text_to_brep,
                         "Hello, Мир",
                         "MandarinC",
                         20,
                     )
-                    legacy_text = context.call(typed.textshape,
+                    legacy_text = context.call(
+                        typed.textshape,
                         "A",
                         "MandarinC",
                         10,
@@ -84,7 +86,8 @@ class TypedTextTest(unittest.TestCase):
         self.assertEqual(events, [])
 
         size = context.call(typed.box, 2).mass() * 2.5
-        text = context.call(typed.text_to_brep,
+        text = context.call(
+            typed.text_to_brep,
             "Graph",
             "MandarinC",
             size,
@@ -105,7 +108,9 @@ class TypedTextTest(unittest.TestCase):
             progress_hooks=(first_events.append,),
         )
         first.call(typed.register_font, FONT_PATH)
-        self.assertGreater(len(first.call(typed.textshape, "A", "MandarinC", 10).edges()), 0)
+        self.assertGreater(
+            len(first.call(typed.textshape, "A", "MandarinC", 10).edges()), 0
+        )
         self.assertFalse(
             any(
                 event.kind is EvaluationEventKind.CACHE_STORE
@@ -121,7 +126,9 @@ class TypedTextTest(unittest.TestCase):
             progress_hooks=(second_events.append,),
         )
         second.call(typed.register_font, FONT_PATH)
-        self.assertGreater(len(second.call(typed.textshape, "A", "MandarinC", 10).edges()), 0)
+        self.assertGreater(
+            len(second.call(typed.textshape, "A", "MandarinC", 10).edges()), 0
+        )
         self.assertFalse(
             any(
                 event.kind is EvaluationEventKind.CACHE_HIT
@@ -140,11 +147,13 @@ class TypedTextTest(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "must be FontAspect"):
             context.call(typed.register_font, FONT_PATH, "regular")  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "text must be str"):
-            context.call(typed.text_to_brep, 3, "MandarinC", 10)  # type: ignore[arg-type]
+            context.call(typed.text_to_brep, 3, "MandarinC", 10).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "font_name must be str"):
-            context.call(typed.text_to_brep, "A", 3, 10)  # type: ignore[arg-type]
+            context.call(typed.text_to_brep, "A", 3, 10).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "composite_curve must be bool"):
-            context.call(typed.text_to_brep, "A", "MandarinC", 10, composite_curve=1)  # type: ignore[arg-type]
+            context.call(
+                typed.text_to_brep, "A", "MandarinC", 10, composite_curve=1
+            ).native()  # type: ignore[arg-type]
 
         context.call(typed.register_font, FONT_PATH)
         with self.assertRaisesRegex(ValueError, "size must be finite and positive"):

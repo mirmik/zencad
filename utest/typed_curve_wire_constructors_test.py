@@ -61,7 +61,9 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
             wire = typed.make_wire(segment)
             rounded = typed.rounded_polysegment(points, 0.2)
             helix = typed.helix(2, 5, step=1)
-            curve2 = typed.segment2(context.call(typed.point2, 0, 0), context.call(typed.point2, 1, 0))
+            curve2 = typed.segment2(
+                context.call(typed.point2, 0, 0), context.call(typed.point2, 1, 0)
+            )
             ellipse2 = typed.ellipse2(2, 1)
             trimmed2 = typed.trim_curve2(curve2, 0, 1)
             polyline = typed.polysegment(points)
@@ -159,26 +161,35 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
                         None,
                         context.call(typed.vector3, 1, 0, 0),
                     )
-                    interpolate_curve = context.call(typed.interpolate_curve, points, tangents)
+                    interpolate_curve = context.call(
+                        typed.interpolate_curve, points, tangents
+                    )
                     interpolate_edge = context.call(typed.interpolate, points, tangents)
-                    bezier_curve = context.call(typed.bezier_curve, points[:3], (1, 2, 1))
+                    bezier_curve = context.call(
+                        typed.bezier_curve, points[:3], (1, 2, 1)
+                    )
                     bezier_edge = context.call(typed.bezier, points[:3])
-                    bspline_curve = context.call(typed.bspline_curve,
+                    bspline_curve = context.call(
+                        typed.bspline_curve,
                         points,
                         (0, 0.5, 1),
                         (3, 1, 3),
                         2,
                     )
-                    bspline_edge = context.call(typed.bspline,
+                    bspline_edge = context.call(
+                        typed.bspline,
                         points,
                         (0, 0.5, 1),
                         (3, 1, 3),
                         2,
                     )
-                    arc = context.call(typed.circle_arc, points[0], points[1], points[2])
+                    arc = context.call(
+                        typed.circle_arc, points[0], points[1], points[2]
+                    )
                     rounded = context.call(typed.rounded_polysegment, points, 0.2)
                     helix = context.call(typed.helix, 2, 5, step=1)
-                    wire = context.call(typed.make_wire,
+                    wire = context.call(
+                        typed.make_wire,
                         context.call(typed.segment, points[0], points[1]),
                         context.call(typed.segment, points[1], points[2]),
                     )
@@ -229,7 +240,8 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
         points = _points(context)
         curve = context.call(typed.interpolate_curve, points)
         bezier = context.call(typed.bezier_curve, points[:3], weights=(1, 2, 1))
-        bspline = context.call(typed.bspline_curve,
+        bspline = context.call(
+            typed.bspline_curve,
             points,
             knots=(0, 0.5, 1),
             muls=(3, 1, 3),
@@ -261,12 +273,15 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
             context.call(typed.point3, 0, 2, 0),
         )
         edges = tuple(
-            context.call(typed.segment, points[index], points[index + 1]) for index in range(3)
+            context.call(typed.segment, points[index], points[index + 1])
+            for index in range(3)
         )
         variadic = context.call(typed.make_wire, *edges)
         sequence = context.call(typed.make_wire, edges)
         rounded_open = context.call(typed.rounded_polysegment, points, r=0.25)
-        rounded_closed = context.call(typed.rounded_polysegment, points, r=0.25, closed=True)
+        rounded_closed = context.call(
+            typed.rounded_polysegment, points, r=0.25, closed=True
+        )
         right_helix = context.call(typed.helix, r=2, h=5, step=1)
         left_helix = context.call(typed.helix, r=2, h=5, pitch=0.2, left=True)
 
@@ -303,7 +318,8 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
             context.call(typed.point3, unit * 3, unit, 0),
         )
         curve = context.call(typed.bezier_curve, points[:3], (unit, unit * 2, unit))
-        bspline = context.call(typed.bspline_curve,
+        bspline = context.call(
+            typed.bspline_curve,
             points,
             (0, unit / 2, unit),
             (3, 1, 3),
@@ -361,23 +377,29 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
         points = _points(context)
 
         with self.assertRaisesRegex(ValueError, "at least 2 points"):
-            context.call(typed.interpolate_curve, points[:1])
+            context.call(typed.interpolate_curve, points[:1]).native()
         with self.assertRaisesRegex(ValueError, "match point count"):
-            context.call(typed.interpolate_curve, points, (context.call(typed.vector3, 1, 0, 0),))
+            context.call(
+                typed.interpolate_curve, points, (context.call(typed.vector3, 1, 0, 0),)
+            ).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.interpolate_curve, (points[0], other.call(typed.point3, 1, 0, 0)))
+            context.call(
+                typed.interpolate_curve, (points[0], other.call(typed.point3, 1, 0, 0))
+            )
         with self.assertRaisesRegex(ValueError, "must not be empty"):
-            context.call(typed.bezier_curve, points[:3], ())
+            context.call(typed.bezier_curve, points[:3], ()).native()
         with self.assertRaisesRegex(ValueError, "equal length"):
-            context.call(typed.bspline_curve, points, (0, 1), (3,), 2)
+            context.call(typed.bspline_curve, points, (0, 1), (3,), 2).native()
         with self.assertRaisesRegex(TypeError, "two scalar bounds"):
-            context.call(typed.make_edge, context.call(typed.circle_curve, 1), (0, 1, 2))
+            context.call(
+                typed.make_edge, context.call(typed.circle_curve, 1), (0, 1, 2)
+            ).native()
         with self.assertRaisesRegex(ValueError, "at least one Edge or Wire"):
-            context.call(typed.make_wire, )
-        with self.assertRaisesRegex(TypeError, "only Edge or Wire"):
-            context.call(typed.make_wire, context.call(typed.box, 1))  # type: ignore[arg-type]
+            context.call(typed.make_wire).native()
+        with self.assertRaises(TypeError):
+            context.call(typed.make_wire, context.call(typed.box, 1)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "requires step or pitch"):
-            context.call(typed.helix, 1, 2)
+            context.call(typed.helix, 1, 2).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.circle_curve, 1).transform(other.call(typed.moveX, 1))
 

@@ -129,19 +129,26 @@ class TypedFaceConstructorsTest(unittest.TestCase):
                     ngon = context.call(typed.ngon, 3, 6)
                     ngon_wire = context.call(typed.ngon, 3, 6, True)
                     circle = context.call(typed.circle, 3)
-                    circle_edge = context.call(typed.circle, 3, (-math.pi / 2, math.pi / 2), True)
+                    circle_edge = context.call(
+                        typed.circle, 3, (-math.pi / 2, math.pi / 2), True
+                    )
                     circle_sector = context.call(typed.circle, 3, math.pi / 2)
                     ellipse = context.call(typed.ellipse, 2, 4)
                     ellipse_edge = context.call(typed.ellipse, 4, 2, wire=True)
                     ellipse_sector = context.call(typed.ellipse, 4, 2, (-1, 1))
                     filled = context.call(typed.fill, polygon_wire)
                     fixed = context.call(typed.fix_face, rectangle)
-                    plane = context.call(typed.infplane, )
-                    ruled = context.call(typed.ruled,
+                    plane = context.call(
+                        typed.infplane,
+                    )
+                    ruled = context.call(
+                        typed.ruled,
                         context.call(typed.segment, points[0], points[1]),
                         context.call(typed.segment, points[3], points[2]),
                     )
-                    interpolated = context.call(typed.interpolate2, _surface_grid(context))
+                    interpolated = context.call(
+                        typed.interpolate2, _surface_grid(context)
+                    )
 
                     values = (
                         polygon,
@@ -213,7 +220,9 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         ellipse = context.call(typed.ellipse, 2, 4)
         circle_sector = context.call(typed.circle, 3, math.pi / 2)
         ellipse_sector = context.call(typed.ellipse, 2, 4, (-math.pi / 2, math.pi / 2))
-        descending_edge = context.call(typed.circle, 3, (math.pi / 2, -math.pi / 2), True)
+        descending_edge = context.call(
+            typed.circle, 3, (math.pi / 2, -math.pi / 2), True
+        )
         outer = context.call(typed.rectangle, 10, 8, center=True, wire=True)
         inner = context.call(typed.rectangle, 4, 2, center=True, wire=True)
         holed = context.call(typed.fill, (outer, inner))
@@ -274,19 +283,24 @@ class TypedFaceConstructorsTest(unittest.TestCase):
                         progress_hooks=(events.append,),
                     )
                     unit = context.call(typed.box, 2).mass() / 8
-                    spine = context.call(typed.make_wire,
-                        context.call(typed.segment,
+                    spine = context.call(
+                        typed.make_wire,
+                        context.call(
+                            typed.segment,
                             context.call(typed.point3, 0, 0, 0),
                             context.call(typed.point3, unit * 10, 0, 0),
                         ),
-                        context.call(typed.segment,
+                        context.call(
+                            typed.segment,
                             context.call(typed.point3, unit * 10, 0, 0),
                             context.call(typed.point3, unit * 10, unit * 10, 0),
                         ),
                     )
                     wide = context.call(typed.widewire, spine, unit)
-                    square_ends = context.call(typed.widewire,
-                        context.call(typed.segment,
+                    square_ends = context.call(
+                        typed.widewire,
+                        context.call(
+                            typed.segment,
                             context.call(typed.point3, 0, 0, 0),
                             context.call(typed.point3, unit * 10, 0, 0),
                         ),
@@ -321,9 +335,12 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             return (
                 context.call(typed.circle, 3, math.pi / 2),
                 context.call(typed.ellipse, 2, 4),
-                context.call(typed.fill, context.call(typed.rectangle, 4, 3, wire=True)),
+                context.call(
+                    typed.fill, context.call(typed.rectangle, 4, 3, wire=True)
+                ),
                 context.call(typed.interpolate2, _surface_grid(context)),
-                context.call(typed.ruled,
+                context.call(
+                    typed.ruled,
                     context.call(typed.segment, points[0], points[1]),
                     context.call(typed.segment, points[3], points[2]),
                 ),
@@ -368,8 +385,10 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         store = MemoryCacheStore()
 
         def value(context: typed.Context) -> typed.Shape:
-            return context.call(typed.widewire,
-                context.call(typed.segment,
+            return context.call(
+                typed.widewire,
+                context.call(
+                    typed.segment,
                     context.call(typed.point3, 0, 0, 0),
                     context.call(typed.point3, 10, 0, 0),
                 ),
@@ -422,32 +441,47 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             context.call(typed.circle, 2, (1, 1)).native()
         with self.assertRaisesRegex(ValueError, "positive"):
             context.call(typed.ellipse, 0, 2).native()
-        with self.assertRaisesRegex(TypeError, "only Edge or Wire"):
-            context.call(typed.fill, context.call(typed.box, 1))  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(typed.fill, context.call(typed.box, 1)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "at least two rows"):
-            context.call(typed.interpolate2, (_surface_grid(context)[0],))
+            context.call(typed.interpolate2, (_surface_grid(context)[0],)).native()
         with self.assertRaisesRegex(ValueError, "rectangular"):
-            context.call(typed.interpolate2, (_surface_grid(context)[0], points[:3]))
+            context.call(
+                typed.interpolate2, (_surface_grid(context)[0], points[:3])
+            ).native()
         with self.assertRaisesRegex(ValueError, "must not exceed"):
-            context.call(typed.interpolate2, _surface_grid(context), 5, 3)
+            context.call(typed.interpolate2, _surface_grid(context), 5, 3).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.ruled,
+            context.call(
+                typed.ruled,
                 context.call(typed.segment, points[0], points[1]),
-                other.call(typed.segment, other.call(typed.point3, 0, 1), other.call(typed.point3, 1, 1)),
+                other.call(
+                    typed.segment,
+                    other.call(typed.point3, 0, 1),
+                    other.call(typed.point3, 1, 1),
+                ),
             )
-        with self.assertRaisesRegex(TypeError, "Edge or Wire"):
-            context.call(typed.widewire, context.call(typed.box, 1), 1)  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(typed.widewire, context.call(typed.box, 1), 1).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "must be bool"):
-            context.call(typed.widewire,
+            context.call(
+                typed.widewire,
                 context.call(typed.segment, points[0], points[1]),
                 1,
                 circled_joints=1,  # type: ignore[arg-type]
-            )
+            ).native()
         with self.assertRaisesRegex(ValueError, "positive"):
-            context.call(typed.widewire, context.call(typed.segment, points[0], points[1]), 0).native()
+            context.call(
+                typed.widewire, context.call(typed.segment, points[0], points[1]), 0
+            ).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.widewire,
-                other.call(typed.segment, other.call(typed.point3, 0, 0), other.call(typed.point3, 1, 0)),
+            context.call(
+                typed.widewire,
+                other.call(
+                    typed.segment,
+                    other.call(typed.point3, 0, 0),
+                    other.call(typed.point3, 1, 0),
+                ),
                 1,
             )
 

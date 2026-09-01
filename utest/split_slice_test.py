@@ -19,7 +19,9 @@ class SplitSliceTest(unittest.TestCase):
         self.assertEqual(len(parts), 3)
         self.assertTrue(all(isinstance(part, zencad.Shape) for part in parts))
         self.assertEqual(parts[0]._state.digest, repeated[0]._state.digest)
-        self.assertEqual([round(float(part.mass()), 5) for part in parts], [300, 400, 300])
+        self.assertEqual(
+            [round(float(part.mass()), 5) for part in parts], [300, 400, 300]
+        )
         self.assertEqual(
             [round(float(part.center().z), 5) for part in parts],
             [1.5, 5.0, 8.5],
@@ -27,7 +29,7 @@ class SplitSliceTest(unittest.TestCase):
 
     def test_split_rejects_empty_and_non_dividing_tools(self):
         with self.assertRaisesRegex(ValueError, "at least one"):
-            zencad.split(zencad.box(2), ())
+            len(zencad.split(zencad.box(2), ()))
         with self.assertRaisesRegex(ValueError, "do not divide"):
             len(zencad.split(zencad.box(2), zencad.infplane().up(3)))
         with self.assertRaisesRegex(ValueError, "do not divide"):
@@ -36,7 +38,9 @@ class SplitSliceTest(unittest.TestCase):
     def test_slice_supports_coordinate_axis_and_arbitrary_plane(self):
         lower, upper = zencad.slice(zencad.box(10), z=4)
         self.assertIsInstance(lower, zencad.Shape)
-        self.assertEqual([round(float(lower.mass()), 5), round(float(upper.mass()), 5)], [400, 600])
+        self.assertEqual(
+            [round(float(lower.mass()), 5), round(float(upper.mass()), 5)], [400, 600]
+        )
         self.assertLess(lower.center().z, upper.center().z)
 
         left, right = zencad.slice(zencad.box(10), z=2, axis="x")
@@ -71,7 +75,10 @@ class SplitSliceTest(unittest.TestCase):
         self.assertIsInstance(sliced, typed.SliceResult)
         self.assertIs(sliced.lower.context, context)
         self.assertEqual(
-            [round(float(sliced.lower.mass()), 5), round(float(sliced.upper.mass()), 5)],
+            [
+                round(float(sliced.lower.mass()), 5),
+                round(float(sliced.upper.mass()), 5),
+            ],
             [400, 600],
         )
 

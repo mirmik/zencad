@@ -13,11 +13,8 @@ from zencad.geom.validation import (
     ValidationReport,
 )
 from zencad.operation import (
-    OperationArguments,
-    arguments,
     operation,
     resolve_context,
-    using_context,
 )
 
 from . import _bound_operations as bound_ops
@@ -45,13 +42,16 @@ from .topology import (
     Vertex,
     Wire,
 )
-from .values import Point3, ScalarInput, Vector3, _scalar_state, vector3
+from .values import Point3, Vector3
 
 
-DraftPlaneInput = Face | tuple[
-    Point3 | Sequence[ScalarInput],
-    Vector3 | Sequence[ScalarInput],
-]
+DraftPlaneInput = (
+    Face
+    | tuple[
+        Point3 | Sequence[float],
+        Vector3 | Sequence[float],
+    ]
+)
 RoundedReference = Point3 | Edge
 ShapeModelT = TypeVar("ShapeModelT", bound=Shape)
 VALIDATION_REPORT_SPEC = ResultSpec.for_type(
@@ -60,26 +60,31 @@ VALIDATION_REPORT_SPEC = ResultSpec.for_type(
 )
 
 
-def _rounded_arguments(
+def _rounded_values(
     shape: Shape,
-    radius: ScalarInput,
+    radius: float,
     references: Iterable[RoundedReference] | None,
     name: str,
-) -> OperationArguments:
+) -> tuple[ResolvedShape, float, tuple[object, ...] | None]:
     _require_shape(shape, name)
     selected = _require_references(references, name)
     if isinstance(shape, Face) and selected and isinstance(selected[0], Edge):
         raise TypeError(f"{name} on a Face accepts Point3 references, not Edges")
-    context = resolve_context(shape, radius, selected)
-    return arguments(
-        shape,
-        _scalar_state(context, radius),
-        selected,
+    return (
+        shape._legacy(),
+        radius,
+        None
+        if selected is None
+        else tuple(
+            reference._legacy()
+            if isinstance(reference, Edge)
+            else reference._resolved()
+            for reference in selected
+        ),
     )
 
 
 @operation(
-    backend=ops.fillet_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.fillet",
@@ -87,15 +92,16 @@ def _rounded_arguments(
 )
 def fillet(
     shape: Shape,
-    radius: ScalarInput,
+    radius: float,
     references: Iterable[RoundedReference] | None = None,
     /,
-) -> OperationArguments:
-    return _rounded_arguments(shape, radius, references, "fillet")
+) -> Shape:
+    return Shape(
+        ops.fillet_shape(*_rounded_values(shape, radius, references, "fillet"))
+    )
 
 
 @operation(
-    backend=ops.chamfer_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.chamfer",
@@ -103,15 +109,16 @@ def fillet(
 )
 def chamfer(
     shape: Shape,
-    radius: ScalarInput,
+    radius: float,
     references: Iterable[RoundedReference] | None = None,
     /,
-) -> OperationArguments:
-    return _rounded_arguments(shape, radius, references, "chamfer")
+) -> Shape:
+    return Shape(
+        ops.chamfer_shape(*_rounded_values(shape, radius, references, "chamfer"))
+    )
 
 
 @operation(
-    backend=ops.fillet2d_shape,
     result=FACE_SPEC,
     returns=Face,
     operation_id="zencad.typed.shape.fillet2d",
@@ -119,16 +126,17 @@ def chamfer(
 )
 def fillet2d(
     shape: Face,
-    radius: ScalarInput,
+    radius: float,
     references: Sequence[Point3] | None = None,
     /,
-) -> OperationArguments:
+) -> Face:
     _require_face(shape, "fillet2d")
-    return _rounded_arguments(shape, radius, references, "fillet2d")
+    return Face(
+        ops.fillet2d_shape(*_rounded_values(shape, radius, references, "fillet2d"))
+    )
 
 
 @operation(
-    backend=ops.chamfer2d_shape,
     result=FACE_SPEC,
     returns=Face,
     operation_id="zencad.typed.shape.chamfer2d",
@@ -136,16 +144,17 @@ def fillet2d(
 )
 def chamfer2d(
     shape: Face,
-    radius: ScalarInput,
+    radius: float,
     references: Sequence[Point3] | None = None,
     /,
-) -> OperationArguments:
+) -> Face:
     _require_face(shape, "chamfer2d")
-    return _rounded_arguments(shape, radius, references, "chamfer2d")
+    return Face(
+        ops.chamfer2d_shape(*_rounded_values(shape, radius, references, "chamfer2d"))
+    )
 
 
 @operation(
-    backend=ops.draft_shape,
     result=SOLID_SPEC,
     returns=Solid,
     operation_id="zencad.typed.solid.draft",
@@ -154,17 +163,17 @@ def chamfer2d(
 def draft(
     body: Solid,
     faces: Face | Iterable[Face],
-    angle: ScalarInput,
-    direction: Vector3 | Sequence[ScalarInput] = (0, 0, 1),
+    angle: float,
+    direction: Vector3 | Sequence[float] = (0, 0, 1),
     neutral: DraftPlaneInput | None = None,
-) -> OperationArguments:
+) -> Solid:
     """Taper faces; positive angle removes material along pull direction."""
 
     _require_solid(body, "draft")
     selected = _require_draft_faces(faces)
-    context = resolve_context(body, selected, angle, direction, neutral)
-    with using_context(context):
-        pull_direction = vector3(direction)
+    pull_direction = (
+        direction if isinstance(direction, Vector3) else Vector3(tuple(direction))
+    )
     if neutral is not None:
         if isinstance(neutral, Face):
             pass
@@ -173,12 +182,26 @@ def draft(
                 raise TypeError("draft neutral must be (origin, normal)")
         else:
             raise TypeError("draft neutral must be a planar Face or (origin, normal)")
-    return arguments(
-        body,
-        selected,
-        _scalar_state(context, angle),
-        pull_direction,
-        neutral,
+    return Solid(
+        ops.draft_shape(
+            body._legacy(),
+            tuple(face._legacy() for face in selected),
+            angle,
+            pull_direction._resolved(),
+            _resolved_draft_plane(neutral),
+        )
+    )
+
+
+def _resolved_draft_plane(neutral: DraftPlaneInput | None) -> object:
+    if neutral is None:
+        return None
+    if isinstance(neutral, Face):
+        return neutral._legacy()
+    origin, normal = neutral
+    return (
+        origin._resolved() if isinstance(origin, Point3) else tuple(origin),
+        normal._resolved() if isinstance(normal, Vector3) else tuple(normal),
     )
 
 
@@ -224,7 +247,6 @@ def restore_shapetype(shape: Shape, /) -> Shape:
 
 
 @operation(
-    backend=ops.sew_wire,
     result=WIRE_SPEC,
     returns=Wire,
     operation_id="zencad.typed.sew.wire",
@@ -234,13 +256,13 @@ def _sew_wire(
     shapes: Sequence[Edge | Wire],
     sort: bool,
     /,
-) -> OperationArguments:
+) -> Wire:
     _require_bool(sort, "sew sort")
-    return arguments(_require_wire_parts(shapes, "sew"), sort)
+    values = _require_wire_parts(shapes, "sew")
+    return Wire(ops.sew_wire(tuple(shape._legacy() for shape in values), sort))
 
 
 @operation(
-    backend=ops.sew_shell,
     result=SHELL_SPEC,
     returns=Shell,
     operation_id="zencad.typed.sew.shell",
@@ -249,8 +271,9 @@ def _sew_wire(
 def _sew_shell(
     shapes: Sequence[Face | Shell],
     /,
-) -> OperationArguments:
-    return arguments(_require_shell_parts(shapes, "sew"))
+) -> Shell:
+    values = _require_shell_parts(shapes, "sew")
+    return Shell(ops.sew_shell(tuple(shape._legacy() for shape in values)))
 
 
 @overload
@@ -288,20 +311,17 @@ def sew(
 
 
 @operation(
-    backend=ops.offset_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.offset",
     operation_version="1",
 )
-def offset(shape: Shape, distance: ScalarInput, /) -> OperationArguments:
+def offset(shape: Shape, distance: float, /) -> Shape:
     _require_shape(shape, "offset")
-    context = resolve_context(shape, distance)
-    return arguments(shape, _scalar_state(context, distance))
+    return Shape(ops.offset_shape(shape._legacy(), distance))
 
 
 @operation(
-    backend=ops.thicksolid_shape,
     result=SOLID_SPEC,
     returns=Solid,
     operation_id="zencad.typed.solid.thicksolid",
@@ -309,31 +329,31 @@ def offset(shape: Shape, distance: ScalarInput, /) -> OperationArguments:
 )
 def thicksolid(
     shape: Solid,
-    thickness: ScalarInput,
+    thickness: float,
     references: Sequence[Point3],
     /,
-) -> OperationArguments:
+) -> Solid:
     _require_solid(shape, "thicksolid")
-    context = resolve_context(shape, thickness, references)
     resolved_references = _require_references(references, "thicksolid")
     assert resolved_references is not None
-    return arguments(
-        shape,
-        _scalar_state(context, thickness),
-        resolved_references,
+    return Solid(
+        ops.thicksolid_shape(
+            shape._legacy(),
+            thickness,
+            tuple(reference._resolved() for reference in resolved_references),
+        )
     )
 
 
 @operation(
-    backend=ops.shapefix_solid_shape,
     result=SOLID_SPEC,
     returns=Solid,
     operation_id="zencad.typed.solid.shapefix",
     operation_version="1",
 )
-def shapefix_solid(shape: Solid, /) -> OperationArguments:
+def shapefix_solid(shape: Solid, /) -> Solid:
     _require_solid(shape, "shapefix_solid")
-    return arguments(shape)
+    return Solid(ops.shapefix_solid_shape(shape._legacy()))
 
 
 def _shape_result_type(
@@ -389,16 +409,15 @@ def unify(shape: Shape, /) -> Shape: ...
 
 
 @operation(
-    backend=ops.unify_shape,
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
     operation_id="zencad.typed.shape.unify",
     operation_version="1",
 )
-def unify(shape: Shape, /) -> OperationArguments:
+def unify(shape: Shape, /) -> Shape:
     _require_shape(shape, "unify")
-    return arguments(shape)
+    return type(shape)(ops.unify_shape(shape._legacy()))
 
 
 def validate(
@@ -481,16 +500,15 @@ def clean(shape: Shape, /) -> Shape: ...
 
 
 @operation(
-    backend=ops.clean_shape,
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
     operation_id="zencad.typed.shape.clean",
     operation_version="1",
 )
-def clean(shape: Shape, /) -> OperationArguments:
+def clean(shape: Shape, /) -> Shape:
     _require_shape(shape, "clean")
-    return arguments(shape)
+    return type(shape)(ops.clean_shape(shape._legacy()))
 
 
 @overload
@@ -506,21 +524,15 @@ def heal(
 
 
 @overload
-def heal(
-    shape: Face, tolerance: float = 1e-7, max_tolerance: float = 1e-3
-) -> Face: ...
+def heal(shape: Face, tolerance: float = 1e-7, max_tolerance: float = 1e-3) -> Face: ...
 
 
 @overload
-def heal(
-    shape: Wire, tolerance: float = 1e-7, max_tolerance: float = 1e-3
-) -> Wire: ...
+def heal(shape: Wire, tolerance: float = 1e-7, max_tolerance: float = 1e-3) -> Wire: ...
 
 
 @overload
-def heal(
-    shape: Edge, tolerance: float = 1e-7, max_tolerance: float = 1e-3
-) -> Edge: ...
+def heal(shape: Edge, tolerance: float = 1e-7, max_tolerance: float = 1e-3) -> Edge: ...
 
 
 @overload
@@ -548,7 +560,6 @@ def heal(
 
 
 @operation(
-    backend=ops.heal_shape,
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
@@ -559,97 +570,97 @@ def heal(
     shape: Shape,
     tolerance: float = 1e-7,
     max_tolerance: float = 1e-3,
-) -> OperationArguments:
+) -> Shape:
     _require_shape(shape, "heal")
-    return arguments(shape, tolerance, max_tolerance)
+    return type(shape)(ops.heal_shape(shape._legacy(), tolerance, max_tolerance))
 
 
 @operation(
-    backend=ops.near_vertex,
     result=VERTEX_SPEC,
     returns=Vertex,
     operation_id="zencad.typed.shape.near_vertex",
     operation_version="1",
 )
-def near_vertex(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "vertex")
+def near_vertex(shape: Shape, point: Point3, /) -> Vertex:
+    resolved_shape, resolved_point = _near_values(shape, point, "vertex")
+    return Vertex(ops.near_vertex(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_edge,
     result=EDGE_SPEC,
     returns=Edge,
     operation_id="zencad.typed.shape.near_edge",
     operation_version="1",
 )
-def near_edge(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "edge")
+def near_edge(shape: Shape, point: Point3, /) -> Edge:
+    resolved_shape, resolved_point = _near_values(shape, point, "edge")
+    return Edge(ops.near_edge(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_wire,
     result=WIRE_SPEC,
     returns=Wire,
     operation_id="zencad.typed.shape.near_wire",
     operation_version="1",
 )
-def near_wire(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "wire")
+def near_wire(shape: Shape, point: Point3, /) -> Wire:
+    resolved_shape, resolved_point = _near_values(shape, point, "wire")
+    return Wire(ops.near_wire(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_face,
     result=FACE_SPEC,
     returns=Face,
     operation_id="zencad.typed.shape.near_face",
     operation_version="1",
 )
-def near_face(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "face")
+def near_face(shape: Shape, point: Point3, /) -> Face:
+    resolved_shape, resolved_point = _near_values(shape, point, "face")
+    return Face(ops.near_face(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_shell,
     result=SHELL_SPEC,
     returns=Shell,
     operation_id="zencad.typed.shape.near_shell",
     operation_version="1",
 )
-def near_shell(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "shell")
+def near_shell(shape: Shape, point: Point3, /) -> Shell:
+    resolved_shape, resolved_point = _near_values(shape, point, "shell")
+    return Shell(ops.near_shell(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_solid,
     result=SOLID_SPEC,
     returns=Solid,
     operation_id="zencad.typed.shape.near_solid",
     operation_version="1",
 )
-def near_solid(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "solid")
+def near_solid(shape: Shape, point: Point3, /) -> Solid:
+    resolved_shape, resolved_point = _near_values(shape, point, "solid")
+    return Solid(ops.near_solid(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_compsolid,
     result=COMPSOLID_SPEC,
     returns=CompSolid,
     operation_id="zencad.typed.shape.near_compsolid",
     operation_version="1",
 )
-def near_compsolid(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "compsolid")
+def near_compsolid(shape: Shape, point: Point3, /) -> CompSolid:
+    resolved_shape, resolved_point = _near_values(shape, point, "compsolid")
+    return CompSolid(ops.near_compsolid(resolved_shape, resolved_point))
 
 
 @operation(
-    backend=ops.near_compound,
     result=COMPOUND_SPEC,
     returns=Compound,
     operation_id="zencad.typed.shape.near_compound",
     operation_version="1",
 )
-def near_compound(shape: Shape, point: Point3, /) -> OperationArguments:
-    return _near_arguments(shape, point, "compound")
+def near_compound(shape: Shape, point: Point3, /) -> Compound:
+    resolved_shape, resolved_point = _near_values(shape, point, "compound")
+    return Compound(ops.near_compound(resolved_shape, resolved_point))
 
 
 def project_point_on_curve(
@@ -673,23 +684,21 @@ def project(point: Point3, target: Curve | Edge, /) -> CurveProjection:
 
 
 @operation(
-    backend=bound_ops.shape_boundary_box,
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
     operation_id="zencad.typed.shape.boundbox",
     operation_version="1",
 )
-def boundbox(shape: Shape, /) -> OperationArguments:
+def boundbox(shape: Shape, /) -> BoundaryBox:
     _require_shape(shape, "boundbox")
-    return arguments(shape)
+    return BoundaryBox(bound_ops.shape_boundary_box(shape._legacy()))
 
 
-def _near_arguments(shape: Shape, point: Point3, name: str) -> OperationArguments:
+def _near_values(shape: Shape, point: Point3, name: str):
     _require_shape(shape, f"near_{name}")
     if not isinstance(point, Point3):
         raise TypeError(f"near_{name} expects Point3")
-    resolve_context(shape, point)
-    return arguments(shape, point)
+    return (shape._legacy(), point._resolved())
 
 
 def _require_references(
@@ -703,9 +712,7 @@ def _require_references(
     try:
         values = tuple(references)
     except TypeError as error:
-        raise TypeError(
-            f"{name} references must be Point3 values or Edges"
-        ) from error
+        raise TypeError(f"{name} references must be Point3 values or Edges") from error
     if not values:
         raise ValueError(f"{name} references must not be empty")
     if not (

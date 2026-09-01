@@ -8,19 +8,19 @@ from zencad import _typed as typed
 def surface_contract(context: typed.Context) -> None:
     shape = context.call(typed.box, 2)
     radius = shape.mass() / 4
-    cylinder = assert_type(context.call(typed.cylinder_surface, radius), typed.Surface)
-    assert_type(typed.cylinder_surface(radius), typed.Surface)
+    cylinder = assert_type(context.call(typed.cylinder_surface, 2.0), typed.Surface)
+    assert_type(typed.cylinder_surface(2.0), typed.Surface)
     sweep = assert_type(
         context.call(
             typed.sweep_surface,
-            context.call(typed.circle_curve, radius / 2),
-            context.call(typed.circle_curve, radius + 1),
+            context.call(typed.circle_curve, 1.0),
+            context.call(typed.circle_curve, 3.0),
             scale=radius,
             trihedron=typed.SweepTrihedron.CORRECTED_FRENET,
         ),
         typed.Surface,
     )
-    spine = context.call(typed.circle_curve, radius + 1)
+    spine = context.call(typed.circle_curve, 3.0)
     scale_law = assert_type(
         context.call(typed.constant_sweep_scale, radius, spine.range()),
         typed.SweepScaleLaw,
@@ -32,7 +32,7 @@ def surface_contract(context: typed.Context) -> None:
     section_law = assert_type(
         context.call(
             typed.evolved_sweep_section,
-            context.call(typed.circle_curve, radius / 2),
+            context.call(typed.circle_curve, 1.0),
             scale_law,
         ),
         typed.SweepSectionLaw,

@@ -445,9 +445,7 @@ class Shape(Handle[ResolvedShape]):
     ) -> ShapeT:
         with using_context(self.context):
             resolved_center = None if center is None else point3(center)
-            return self.transform(
-                transform_api.scaleX(factor, center=resolved_center)
-            )
+            return self.transform(transform_api.scaleX(factor, center=resolved_center))
 
     def scaleY(
         self: ShapeT,
@@ -457,9 +455,7 @@ class Shape(Handle[ResolvedShape]):
     ) -> ShapeT:
         with using_context(self.context):
             resolved_center = None if center is None else point3(center)
-            return self.transform(
-                transform_api.scaleY(factor, center=resolved_center)
-            )
+            return self.transform(transform_api.scaleY(factor, center=resolved_center))
 
     def scaleZ(
         self: ShapeT,
@@ -469,9 +465,7 @@ class Shape(Handle[ResolvedShape]):
     ) -> ShapeT:
         with using_context(self.context):
             resolved_center = None if center is None else point3(center)
-            return self.transform(
-                transform_api.scaleZ(factor, center=resolved_center)
-            )
+            return self.transform(transform_api.scaleZ(factor, center=resolved_center))
 
     def mirror(
         self: ShapeT,
@@ -1199,8 +1193,10 @@ _GEOMETRY_TYPE_SEQUENCE_SPEC = cast(
 class ShapeList(Generic[ShapeHandleT]):
     """Composable typed topology collection backed by an expression node."""
 
+    __zencad_handle__ = True
+
     __slots__ = (
-        "_expression",
+        "_state",
         "_item_spec",
         "_item_type",
         "_operation_id",
@@ -1211,7 +1207,7 @@ class ShapeList(Generic[ShapeHandleT]):
     def __init__(
         self,
         context: Context,
-        expression: Expression[tuple[ResolvedShape, ...]],
+        state: State[tuple[ResolvedShape, ...]],
         *,
         sequence_spec: ResultSpec[tuple[ResolvedShape, ...]],
         item_type: type[ShapeHandleT],
@@ -1219,7 +1215,7 @@ class ShapeList(Generic[ShapeHandleT]):
         operation_id: str,
     ) -> None:
         self._context = context
-        self._expression = expression
+        self._state = state
         self._sequence_spec = sequence_spec
         self._item_type = item_type
         self._item_spec = item_spec
@@ -1238,7 +1234,7 @@ class ShapeList(Generic[ShapeHandleT]):
         expression = self._context._expression(
             operation,
             result=self._sequence_spec,
-            args=(self._expression, *args),
+            args=(self._state, *args),
             operation_id=operation_id,
             cacheable=False,
         )
@@ -1260,7 +1256,7 @@ class ShapeList(Generic[ShapeHandleT]):
         expression = self._context._expression(
             operation,
             result=self._item_spec,
-            args=(self._expression, *args),
+            args=(self._state, *args),
             operation_id=operation_id,
         )
         return self._item_type._from_state(self._context, expression)
@@ -1294,7 +1290,12 @@ class ShapeList(Generic[ShapeHandleT]):
         )
 
     def __len__(self) -> int:
-        return len(self._context._resolve(self._expression))
+        values = (
+            self._context._resolve(self._state)
+            if isinstance(self._state, Expression)
+            else self._state
+        )
+        return len(values)
 
     def __iter__(self) -> Iterator[ShapeHandleT]:
         for index in range(len(self)):
@@ -1456,10 +1457,12 @@ class ShapeList(Generic[ShapeHandleT]):
         state = self._context._value_state(
             selector_ops.sequence_geometry_types,
             result=_GEOMETRY_TYPE_SEQUENCE_SPEC,
-            args=(self._expression,),
+            args=(self._state,),
             operation_id="zencad.typed.shapelist.geometry_types",
         )
-        values = self._context._resolve(state) if isinstance(state, Expression) else state
+        values = (
+            self._context._resolve(state) if isinstance(state, Expression) else state
+        )
         return tuple(GeomType(value) for value in values)
 
     def group_by(
@@ -1471,8 +1474,7 @@ class ShapeList(Generic[ShapeHandleT]):
         if criterion is not GeomType:
             raise TypeError("group_by currently accepts the GeomType criterion")
         return {
-            kind: self.filter_by(kind)
-            for kind in dict.fromkeys(self.geometry_types())
+            kind: self.filter_by(kind) for kind in dict.fromkeys(self.geometry_types())
         }
 
 

@@ -13,9 +13,7 @@ class TypedShapeListTest(unittest.TestCase):
             edges = body.edges()
             vertical = edges.filter_by(typed.Axis.Z)
             long_edges = edges.longer_than(25)
-            top_and_bottom = body.faces().normal_to(typed.Axis.Z).sort_by(
-                typed.Axis.Z
-            )
+            top_and_bottom = body.faces().normal_to(typed.Axis.Z).sort_by(typed.Axis.Z)
 
         self.assertIs(type(edges), typed.ShapeList)
         self.assertIs(typed.DeferredSequence, typed.ShapeList)
@@ -92,7 +90,7 @@ class TypedShapeListTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "does not belong to body"):
             invalid.mass().value()
         with self.assertRaisesRegex(ValueError, "must not be empty"):
-            typed.fillet(body, 1, empty)
+            typed.fillet(body, 1, empty).mass().value()
 
     def test_composite_solid_selection_is_deterministic(self) -> None:
         with typed.using_context(self.context):

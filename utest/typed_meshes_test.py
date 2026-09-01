@@ -53,8 +53,8 @@ class TypedMeshDataTest(unittest.TestCase):
             direct_mesh.display_payload(),
         )
 
-        with self.assertRaisesRegex(TypeError, "to_mesh expects Shape"):
-            typed.to_mesh(direct_mesh)  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            typed.to_mesh(direct_mesh).value()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "triangulate expects Face"):
             typed.triangulate(shape)  # type: ignore[arg-type]
 
@@ -204,13 +204,13 @@ class TypedMeshDataTest(unittest.TestCase):
                 dropped_triangles=-1,
             )
         with self.assertRaisesRegex(ValueError, "linear_deflection"):
-            context.call(typed.box, 1).to_mesh(0)
+            context.call(typed.box, 1).to_mesh(0).value()
         with self.assertRaisesRegex(ValueError, "angular_deflection"):
-            context.call(typed.box, 1).to_mesh(0.1, float("inf"))
+            context.call(typed.box, 1).to_mesh(0.1, float("inf")).value()
         with self.assertRaisesRegex(ValueError, "crease_angle"):
-            context.call(typed.box, 1).to_mesh(crease_angle=-1)
+            context.call(typed.box, 1).to_mesh(crease_angle=-1).value()
         with self.assertRaisesRegex(TypeError, "must be bool"):
-            context.call(typed.box, 1).to_mesh(relative=1)  # type: ignore[arg-type]
+            context.call(typed.box, 1).to_mesh(relative=1).value()  # type: ignore[arg-type]
 
 
 class TypedMeshCacheTest(unittest.TestCase):

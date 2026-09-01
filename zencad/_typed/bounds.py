@@ -9,10 +9,7 @@ from evalcache import Expression, ResultSpec
 from OCP.Bnd import Bnd_Box
 
 from zencad.operation import (
-    OperationArguments,
-    arguments,
     operation,
-    resolve_context,
     using_context,
 )
 
@@ -71,6 +68,20 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
 
     __slots__ = ()
     _result_spec: ClassVar[ResultSpec[ops.BoundaryBoxValue]] = BOUNDARY_BOX_SPEC
+
+    def __init__(
+        self,
+        value: ops.BoundaryBoxValue,
+        *,
+        context: Context | None = None,
+    ) -> None:
+        from zencad.operation import execution_context
+
+        selected_context = execution_context() if context is None else context
+        self._bind(
+            selected_context,
+            self._result_spec.validate(value, "zencad.typed.boundary-box.construct"),
+        )
 
     @classmethod
     def _from_state(
@@ -192,35 +203,34 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         """Materialize an independent mutable OCP boundary box."""
         return ops.boundary_box_to_ocp(self._resolved())
 
+
 @operation(
-    backend=ops.empty_boundary_box,
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
     operation_id="zencad.typed.boundary-box.empty",
     operation_version="1",
     fold_literals=True,
 )
-def empty_boundary_box() -> OperationArguments:
-    return arguments()
+def empty_boundary_box() -> BoundaryBox:
+    return BoundaryBox(ops.empty_boundary_box())
 
 
 @operation(
-    backend=ops.boundary_box_from_points,
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
     operation_id="zencad.typed.boundary-box.from-points",
     operation_version="1",
     fold_literals=True,
 )
-def boundary_box(minimum: Point3, maximum: Point3, /) -> OperationArguments:
+def boundary_box(minimum: Point3, maximum: Point3, /) -> BoundaryBox:
     if not isinstance(minimum, Point3) or not isinstance(maximum, Point3):
         raise TypeError("boundary_box expects Point3 corners")
-    resolve_context(minimum, maximum)
-    return arguments(minimum, maximum)
+    return BoundaryBox(
+        ops.boundary_box_from_points(minimum._resolved(), maximum._resolved())
+    )
 
 
 @operation(
-    backend=ops.boundary_box_union,
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
     operation_id="zencad.typed.boundary-box.union",
@@ -231,14 +241,13 @@ def _boundary_box_union(
     left: BoundaryBox,
     right: BoundaryBox,
     /,
-) -> OperationArguments:
+) -> BoundaryBox:
     if not isinstance(left, BoundaryBox) or not isinstance(right, BoundaryBox):
         raise TypeError("BoundaryBox.union expects BoundaryBox")
-    return arguments(left, right)
+    return BoundaryBox(ops.boundary_box_union(left._resolved(), right._resolved()))
 
 
 @operation(
-    backend=ops.boundary_box_coordinate,
     result=SCALAR_SPEC,
     returns=Scalar,
     operation_id="zencad.typed.boundary-box.coordinate",
@@ -249,68 +258,68 @@ def _boundary_box_coordinate(
     value: BoundaryBox,
     index: int,
     /,
-) -> OperationArguments:
+) -> Scalar:
     if not isinstance(value, BoundaryBox):
         raise TypeError("boundary-box coordinate expects BoundaryBox")
     if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < 6:
         raise ValueError("boundary-box coordinate index must be between 0 and 5")
-    return arguments(value, index)
+    return Scalar(ops.boundary_box_coordinate(value._resolved(), index))
 
 
 @operation(
-    backend=ops.boundary_box_point,
     result=POINT3_SPEC,
     returns=Point3,
     operation_id="zencad.typed.boundary-box.minimum",
     operation_version="1",
     fold_literals=True,
 )
-def _boundary_box_minimum(value: BoundaryBox, /) -> OperationArguments:
+def _boundary_box_minimum(value: BoundaryBox, /) -> Point3:
     if not isinstance(value, BoundaryBox):
         raise TypeError("boundary-box minimum expects BoundaryBox")
-    return arguments(value, False)
+    point = ops.boundary_box_point(value._resolved(), False)
+    return Point3(point.x, point.y, point.z)
 
 
 @operation(
-    backend=ops.boundary_box_point,
     result=POINT3_SPEC,
     returns=Point3,
     operation_id="zencad.typed.boundary-box.maximum",
     operation_version="1",
     fold_literals=True,
 )
-def _boundary_box_maximum(value: BoundaryBox, /) -> OperationArguments:
+def _boundary_box_maximum(value: BoundaryBox, /) -> Point3:
     if not isinstance(value, BoundaryBox):
         raise TypeError("boundary-box maximum expects BoundaryBox")
-    return arguments(value, True)
+    point = ops.boundary_box_point(value._resolved(), True)
+    return Point3(point.x, point.y, point.z)
 
 
 @operation(
-    backend=ops.boundary_box_size,
     result=VECTOR3_SPEC,
     returns=Vector3,
     operation_id="zencad.typed.boundary-box.size",
     operation_version="1",
     fold_literals=True,
 )
-def _boundary_box_size(value: BoundaryBox, /) -> OperationArguments:
+def _boundary_box_size(value: BoundaryBox, /) -> Vector3:
     if not isinstance(value, BoundaryBox):
         raise TypeError("boundary-box size expects BoundaryBox")
-    return arguments(value)
+    vector = ops.boundary_box_size(value._resolved())
+    return Vector3(vector.x, vector.y, vector.z)
 
 
 @operation(
-    backend=ops.boundary_box_center,
     result=POINT3_SPEC,
     returns=Point3,
     operation_id="zencad.typed.boundary-box.center",
     operation_version="1",
     fold_literals=True,
 )
-def _boundary_box_center(value: BoundaryBox, /) -> OperationArguments:
+def _boundary_box_center(value: BoundaryBox, /) -> Point3:
     if not isinstance(value, BoundaryBox):
         raise TypeError("boundary-box center expects BoundaryBox")
-    return arguments(value)
+    point = ops.boundary_box_center(value._resolved())
+    return Point3(point.x, point.y, point.z)
 
 
 __all__ = [

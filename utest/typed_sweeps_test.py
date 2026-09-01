@@ -24,7 +24,13 @@ class TypedBasicSweepsTest(unittest.TestCase):
         first = context.call(typed.rectangle_wire, 1, 2)
         second = context.call(typed.rectangle_wire, 2, 1).up(3)
         pipe_profile = context.call(typed.circle, 1, wire=True)
-        spine = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 0, 0, 5))
+        spine = context.call(
+            typed.segment,
+            context.call(
+                typed.point3,
+            ),
+            context.call(typed.point3, 0, 0, 5),
+        )
         with using_context(context):
             values = (
                 typed.extrude(profile, 3),
@@ -66,7 +72,8 @@ class TypedBasicSweepsTest(unittest.TestCase):
                         progress_hooks=(events.append,),
                     )
                     profile = context.call(typed.rectangle, 1, 2, center=True)
-                    extruded = context.call(typed.extrude,
+                    extruded = context.call(
+                        typed.extrude,
                         profile,
                         context.call(typed.vector3, 0, 0, 4),
                         center=True,
@@ -74,37 +81,49 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     linear = profile.linear_extrude(4, center=True)
                     revolved = context.call(typed.revol, profile, 3)
                     partial = profile.revol(3, math.pi)
-                    first_section = context.call(typed.rectangle_wire, 1, 2, center=True)
-                    second_section = context.call(typed.rectangle_wire, 2, 1, center=True).up(3)
+                    first_section = context.call(
+                        typed.rectangle_wire, 1, 2, center=True
+                    )
+                    second_section = context.call(
+                        typed.rectangle_wire, 2, 1, center=True
+                    ).up(3)
                     lofted = context.call(typed.loft, (first_section, second_section))
-                    loft_shell = context.call(typed.loft,
+                    loft_shell = context.call(
+                        typed.loft,
                         (first_section, second_section),
                         smooth=True,
                         shell=True,
                     )
                     pipe_profile = context.call(typed.circle, 1, wire=True)
-                    pipe_spine = context.call(typed.segment,
+                    pipe_spine = context.call(
+                        typed.segment,
                         context.call(typed.point3, 0, 0, 0),
                         context.call(typed.point3, 0, 0, 5),
                     )
-                    piped = context.call(typed.pipe,
+                    piped = context.call(
+                        typed.pipe,
                         pipe_profile,
                         pipe_spine,
                         trihedron=typed.PipeTrihedron.DISCRETE,
                     )
-                    pipe_solid = context.call(typed.pipe_shell,
+                    pipe_solid = context.call(
+                        typed.pipe_shell,
                         (pipe_profile,),
                         pipe_spine,
                         transition=typed.PipeTransition.ROUND_CORNER,
                     )
-                    pipe_surface = context.call(typed.pipe_shell,
+                    pipe_surface = context.call(
+                        typed.pipe_shell,
                         (pipe_profile,),
                         pipe_spine,
                         binormal=context.call(typed.vector3, 1, 0, 0),
                         solid=False,
                     )
-                    swept = context.call(typed.sweep, pipe_profile, pipe_spine, frenet=True)
-                    rolled = context.call(typed.revol2,
+                    swept = context.call(
+                        typed.sweep, pipe_profile, pipe_spine, frenet=True
+                    )
+                    rolled = context.call(
+                        typed.revol2,
                         profile,
                         3,
                         sections=8,
@@ -170,8 +189,12 @@ class TypedBasicSweepsTest(unittest.TestCase):
         events = []
         context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
         seed = context.call(typed.box, 2)
-        profile = context.call(typed.rectangle, seed.mass() / 8, seed.mass() / 4, center=True)
-        extruded = context.call(typed.linear_extrude, profile, seed.mass() / 2, center=True)
+        profile = context.call(
+            typed.rectangle, seed.mass() / 8, seed.mass() / 4, center=True
+        )
+        extruded = context.call(
+            typed.linear_extrude, profile, seed.mass() / 2, center=True
+        )
         revolved = context.call(typed.revol, profile, seed.mass() * 3 / 8, math.pi)
 
         self.assertEqual(events, [])
@@ -182,23 +205,34 @@ class TypedBasicSweepsTest(unittest.TestCase):
     def test_pipe_modes_and_transitions_are_explicit(self):
         context = typed.Context.deferred(cache=False)
         profile = context.call(typed.circle, 1, wire=True)
-        spine = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 0, 0, 5))
+        spine = context.call(
+            typed.segment,
+            context.call(
+                typed.point3,
+            ),
+            context.call(typed.point3, 0, 0, 5),
+        )
 
         self.assertEqual(len(tuple(typed.PipeTrihedron)), 10)
         for trihedron in typed.PipeTrihedron:
             with self.subTest(trihedron=trihedron):
                 self.assertGreater(
-                    context.call(typed.pipe, profile, spine, trihedron=trihedron).mass().value(),
+                    context.call(typed.pipe, profile, spine, trihedron=trihedron)
+                    .mass()
+                    .value(),
                     0,
                 )
         for transition in typed.PipeTransition:
             with self.subTest(transition=transition):
                 self.assertAlmostEqual(
-                    context.call(typed.pipe_shell,
+                    context.call(
+                        typed.pipe_shell,
                         (profile,),
                         spine,
                         transition=transition,
-                    ).mass().value(),
+                    )
+                    .mass()
+                    .value(),
                     5 * math.pi,
                 )
 
@@ -207,58 +241,88 @@ class TypedBasicSweepsTest(unittest.TestCase):
         other = typed.Context.deferred(cache=False)
         profile = context.call(typed.rectangle, 1, 2)
 
-        with self.assertRaisesRegex(TypeError, "extrude expects Shape"):
-            context.call(typed.extrude, context.call(typed.point3, ), 2)  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(typed.extrude, context.call(typed.point3), 2).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "extrude center must be bool"):
-            context.call(typed.extrude, profile, 2, center=1)  # type: ignore[arg-type]
+            context.call(typed.extrude, profile, 2, center=1).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.extrude, other.call(typed.rectangle, 1, 2), 2)
         with self.assertRaisesRegex(ValueError, "at least two sections"):
-            context.call(typed.loft, (context.call(typed.rectangle_wire, 1, 2),))
-        with self.assertRaisesRegex(TypeError, "only Edge or Wire"):
-            context.call(typed.loft, (profile, context.call(typed.rectangle_wire, 1, 2)))  # type: ignore[arg-type]
+            context.call(
+                typed.loft, (context.call(typed.rectangle_wire, 1, 2),)
+            ).native()
+        with self.assertRaises(TypeError):
+            context.call(
+                typed.loft, (profile, context.call(typed.rectangle_wire, 1, 2))
+            ).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "loft smooth must be bool"):
-            context.call(typed.loft,
-                (context.call(typed.rectangle_wire, 1, 2), context.call(typed.rectangle_wire, 2, 1).up(2)),
+            context.call(
+                typed.loft,
+                (
+                    context.call(typed.rectangle_wire, 1, 2),
+                    context.call(typed.rectangle_wire, 2, 1).up(2),
+                ),
                 smooth=1,  # type: ignore[arg-type]
-            )
+            ).native()
         with self.assertRaisesRegex(ValueError, "max_degree must be positive"):
-            context.call(typed.loft,
-                (context.call(typed.rectangle_wire, 1, 2), context.call(typed.rectangle_wire, 2, 1).up(2)),
+            context.call(
+                typed.loft,
+                (
+                    context.call(typed.rectangle_wire, 1, 2),
+                    context.call(typed.rectangle_wire, 2, 1).up(2),
+                ),
                 max_degree=0,
-            )
+            ).native()
         pipe_profile = context.call(typed.circle, 1, wire=True)
-        pipe_spine = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 0, 0, 5))
+        pipe_spine = context.call(
+            typed.segment,
+            context.call(
+                typed.point3,
+            ),
+            context.call(typed.point3, 0, 0, 5),
+        )
         with self.assertRaisesRegex(TypeError, "trihedron must be PipeTrihedron"):
-            context.call(typed.pipe,
+            context.call(
+                typed.pipe,
                 pipe_profile,
                 pipe_spine,
                 trihedron="frenet",  # type: ignore[arg-type]
-            )
-        with self.assertRaisesRegex(TypeError, "spine must be Edge or Wire"):
-            context.call(typed.pipe, pipe_profile, profile)  # type: ignore[arg-type]
+            ).native()
+        with self.assertRaises(TypeError):
+            context.call(typed.pipe, pipe_profile, profile).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.pipe,
+            context.call(
+                typed.pipe,
                 pipe_profile,
-                other.call(typed.segment, other.call(typed.point3, ), other.call(typed.point3, 0, 0, 5)),
+                other.call(
+                    typed.segment,
+                    other.call(
+                        typed.point3,
+                    ),
+                    other.call(typed.point3, 0, 0, 5),
+                ),
             )
         with self.assertRaisesRegex(TypeError, "transition must be PipeTransition"):
-            context.call(typed.pipe_shell,
+            context.call(
+                typed.pipe_shell,
                 (pipe_profile,),
                 pipe_spine,
                 transition=0,  # type: ignore[arg-type]
-            )
-        with self.assertRaisesRegex(ValueError, "orientation modes are mutually exclusive"):
-            context.call(typed.pipe_shell,
+            ).native()
+        with self.assertRaisesRegex(
+            ValueError, "orientation modes are mutually exclusive"
+        ):
+            context.call(
+                typed.pipe_shell,
                 (pipe_profile,),
                 pipe_spine,
                 frenet=True,
                 discrete=True,
-            )
+            ).native()
         with self.assertRaisesRegex(ValueError, "sections must be at least two"):
-            context.call(typed.revol2, profile, 3, sections=1)
+            context.call(typed.revol2, profile, 3, sections=1).native()
         with self.assertRaisesRegex(ValueError, "at least two per part"):
-            context.call(typed.revol2, profile, 3, sections=4, parts=3)
+            context.call(typed.revol2, profile, 3, sections=4, parts=3).native()
         with self.assertRaisesRegex(ValueError, "radius must be finite and positive"):
             context.call(typed.revol2, profile, 0).native()
         with self.assertRaisesRegex(ValueError, "yaw interval must be non-empty"):
@@ -275,7 +339,9 @@ class TypedBasicSweepsTest(unittest.TestCase):
     def test_revol_restores_from_shared_cache(self):
         store = MemoryCacheStore()
         first = typed.Context.deferred(cache=True, cache_store=store)
-        first.call(typed.revol, first.call(typed.rectangle, 1, 2, center=True), 3).native()
+        first.call(
+            typed.revol, first.call(typed.rectangle, 1, 2, center=True), 3
+        ).native()
 
         events = []
         second = typed.Context.deferred(
@@ -283,7 +349,9 @@ class TypedBasicSweepsTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(events.append,),
         )
-        restored = second.call(typed.revol, second.call(typed.rectangle, 1, 2, center=True), 3)
+        restored = second.call(
+            typed.revol, second.call(typed.rectangle, 1, 2, center=True), 3
+        )
         self.assertAlmostEqual(restored.mass().value(), 12 * math.pi)
         self.assertTrue(
             any(

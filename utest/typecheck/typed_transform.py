@@ -22,7 +22,7 @@ def transform_algebra(context: typed.Context) -> None:
         context.call(typed.quaternion, 0, 0, 0, 1), typed.Quaternion
     )
     axis_angle = assert_type(
-        context.call(typed.quaternion_axis_angle, vector, scalar), typed.Quaternion
+        context.call(typed.quaternion_axis_angle, vector, 0.5), typed.Quaternion
     )
     assert_type(
         typed.Quaternion((0, 0, scalar, 1), context=context),
@@ -30,7 +30,7 @@ def transform_algebra(context: typed.Context) -> None:
     )
     assert_type(typed.Quaternion.identity(context=context), typed.Quaternion)
     assert_type(typed.quaternion(0, 0, 0, 1), typed.Quaternion)
-    assert_type(typed.quaternion_axis_angle(vector, scalar), typed.Quaternion)
+    assert_type(typed.quaternion_axis_angle(vector, 0.5), typed.Quaternion)
 
     assert_type(quaternion.x, typed.Scalar)
     assert_type(quaternion.y, typed.Scalar)
@@ -55,17 +55,17 @@ def transform_algebra(context: typed.Context) -> None:
     assert_type(typed.identity_transform(), typed.Transform)
     assert_type(typed.Transform(context=context), typed.Transform)
     translation = assert_type(context.call(typed.translation, vector), typed.Transform)
-    assert_type(context.call(typed.translation, 1, scalar, 3), typed.Transform)
+    assert_type(context.call(typed.translation, 1, 0.5, 3), typed.Transform)
     assert_type(typed.translation(vector), typed.Transform)
-    assert_type(typed.translation(1, scalar, 3), typed.Transform)
+    assert_type(typed.translation(1, 0.5, 3), typed.Transform)
     rotation = assert_type(context.call(typed.rotation, quaternion), typed.Transform)
-    assert_type(context.call(typed.rotation, vector, scalar), typed.Transform)
+    assert_type(context.call(typed.rotation, vector, 0.5), typed.Transform)
     assert_type(typed.rotation(quaternion), typed.Transform)
-    assert_type(typed.rotation(vector, scalar), typed.Transform)
+    assert_type(typed.rotation(vector, 0.5), typed.Transform)
     assert_type(typed.rotate(vector, scalar), typed.Transform)
-    scaling = assert_type(context.call(typed.scale, scalar), typed.Transform)
-    assert_type(context.call(typed.scale, scalar, center=point), typed.Transform)
-    assert_type(typed.scale(scalar, center=point), typed.Transform)
+    scaling = assert_type(context.call(typed.scale, 0.5), typed.Transform)
+    assert_type(context.call(typed.scale, 0.5, center=point), typed.Transform)
+    assert_type(typed.scale(0.5, center=point), typed.Transform)
     reflection = assert_type(context.call(typed.mirror, vector), typed.Transform)
     assert_type(context.call(typed.mirror, vector, origin=point), typed.Transform)
     assert_type(typed.mirror(vector, origin=point), typed.Transform)
@@ -94,7 +94,7 @@ def transform_algebra(context: typed.Context) -> None:
         context.call(
             typed.affine,
             (
-                (1, scalar, 0, 3),
+                (1, 0.5, 0, 3),
                 (0, 2, 0, 4),
                 (0, 0, 3, 5),
             ),
@@ -115,8 +115,8 @@ def transform_algebra(context: typed.Context) -> None:
     assert_type(context.call(typed.scaleX, scalar), typed.AffineTransform)
     assert_type(context.call(typed.scaleY, scalar, center=point), typed.AffineTransform)
     assert_type(context.call(typed.scaleZ, scalar), typed.AffineTransform)
-    assert_type(context.call(typed.scaleXYZ, 2, 3, scalar), typed.AffineTransform)
-    assert_type(typed.scaleXYZ(2, 3, scalar), typed.AffineTransform)
+    assert_type(context.call(typed.scaleXYZ, 2, 3, 0.5), typed.AffineTransform)
+    assert_type(typed.scaleXYZ(2, 3, 0.5), typed.AffineTransform)
     assert_type(translation.to_affine(), typed.AffineTransform)
     assert_type(
         typed.AffineTransform.from_transform(translation),

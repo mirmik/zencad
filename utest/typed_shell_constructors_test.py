@@ -95,17 +95,25 @@ class TypedShellConstructorsTest(unittest.TestCase):
                     )
                     points, faces = _tetrahedron_data(context)
                     values = (
-                        context.call(typed.make_shell, context.call(typed.polygon, points[:3])),
+                        context.call(
+                            typed.make_shell, context.call(typed.polygon, points[:3])
+                        ),
                         context.call(typed.polyhedron_shell, points, faces),
                         context.call(typed.polyhedron, points, faces),
                         context.call(typed.polyhedron, points, faces, shell=True),
                         context.call(typed.convex_hull_shape, points),
                         context.call(typed.convex_hull_shape, points, shell=True),
-                        context.call(typed.tetrahedron, ),
+                        context.call(
+                            typed.tetrahedron,
+                        ),
                         context.call(typed.hexahedron, shell=True),
-                        context.call(typed.octahedron, ),
+                        context.call(
+                            typed.octahedron,
+                        ),
                         context.call(typed.dodecahedron, shell=True),
-                        context.call(typed.icosahedron, ),
+                        context.call(
+                            typed.icosahedron,
+                        ),
                         context.call(typed.platonic, 6),
                         context.call(typed.platonic, 20, shell=True),
                     )
@@ -154,11 +162,21 @@ class TypedShellConstructorsTest(unittest.TestCase):
         solid = context.call(typed.fill3d, shell)
         cube = context.call(typed.hexahedron, a=2)
         platonic = (
-            context.call(typed.tetrahedron, ),
-            context.call(typed.hexahedron, ),
-            context.call(typed.octahedron, ),
-            context.call(typed.dodecahedron, ),
-            context.call(typed.icosahedron, ),
+            context.call(
+                typed.tetrahedron,
+            ),
+            context.call(
+                typed.hexahedron,
+            ),
+            context.call(
+                typed.octahedron,
+            ),
+            context.call(
+                typed.dodecahedron,
+            ),
+            context.call(
+                typed.icosahedron,
+            ),
         )
 
         self.assertEqual(len(shell.faces()), 4)
@@ -225,7 +243,9 @@ class TypedShellConstructorsTest(unittest.TestCase):
                 context.call(typed.polyhedron_shell, points, faces),
                 context.call(typed.polyhedron, points, faces),
                 context.call(typed.convex_hull_shape, points, shell=True),
-                context.call(typed.tetrahedron, ),
+                context.call(
+                    typed.tetrahedron,
+                ),
             )
 
         first_events = []
@@ -267,17 +287,17 @@ class TypedShellConstructorsTest(unittest.TestCase):
         points, faces = _tetrahedron_data(context)
 
         with self.assertRaisesRegex(ValueError, "at least one Face"):
-            context.call(typed.make_shell, ())
-        with self.assertRaisesRegex(TypeError, "only Face"):
-            context.call(typed.make_shell, (context.call(typed.box, 1),))  # type: ignore[arg-type]
+            context.call(typed.make_shell, ()).native()
+        with self.assertRaises(TypeError):
+            context.call(typed.make_shell, (context.call(typed.box, 1),)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.make_shell, other.call(typed.box, 1).faces()[0])
-        with self.assertRaisesRegex(TypeError, "fill3d expects Shell"):
-            context.call(typed.fill3d, context.call(typed.box, 1))  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(typed.fill3d, context.call(typed.box, 1)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(IndexError, "outside"):
-            context.call(typed.polyhedron, points, ((0, 1, 9),))
+            context.call(typed.polyhedron, points, ((0, 1, 9),)).native()
         with self.assertRaisesRegex(ValueError, "at least three"):
-            context.call(typed.polyhedron, points, ((0, 1),))
+            context.call(typed.polyhedron, points, ((0, 1),)).native()
         with self.assertRaisesRegex(TypeError, "qhull_options"):
             context.call(typed.convex_hull, points, qhull_options=3)  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "one of"):

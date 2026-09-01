@@ -30,13 +30,10 @@ class CompactMeshTest(unittest.TestCase):
         self.assertIsInstance(interactive.ais_object, AIS_Triangulation)
         self.assertEqual(interactive.ais_object.DisplayMode(), 0)
         self.assertTrue(
-            interactive.ais_object.Attributes()
-            .ShadingAspect().Aspect().ToDrawEdges()
+            interactive.ais_object.Attributes().ShadingAspect().Aspect().ToDrawEdges()
         )
         self.assertEqual(interactive.triangulation.NbNodes(), mesh.vertex_count)
-        self.assertEqual(
-            interactive.triangulation.NbTriangles(), mesh.triangle_count
-        )
+        self.assertEqual(interactive.triangulation.NbTriangles(), mesh.triangle_count)
         self.assertEqual(interactive.boundbox().xrange(), (0.0, 3.0))
 
     def test_mesh_display_modes(self):
@@ -55,10 +52,7 @@ class CompactMeshTest(unittest.TestCase):
                     zencad.color.orange,
                     display_mode=mode,
                 )
-                aspect = (
-                    interactive.ais_object.Attributes()
-                    .ShadingAspect().Aspect()
-                )
+                aspect = interactive.ais_object.Attributes().ShadingAspect().Aspect()
                 self.assertEqual(aspect.ToDrawEdges(), edges)
                 self.assertEqual(aspect.InteriorStyle(), interior)
 
@@ -98,8 +92,7 @@ class CompactMeshTest(unittest.TestCase):
                 ab[0] * ac[1] - ab[1] * ac[0],
             )
             dot = sum(
-                cross[index] * mesh.normals[triangle[0]][index]
-                for index in range(3)
+                cross[index] * mesh.normals[triangle[0]][index] for index in range(3)
             )
             self.assertGreater(dot, 0)
 
@@ -131,15 +124,15 @@ class CompactMeshTest(unittest.TestCase):
 
     def test_invalid_tolerances_are_rejected(self):
         with self.assertRaises(ValueError):
-            zencad.to_mesh(zencad.box(1), linear_deflection=0)
+            zencad.to_mesh(zencad.box(1), linear_deflection=0).value()
         with self.assertRaises(ValueError):
-            zencad.to_mesh(zencad.box(1), angular_deflection=0)
+            zencad.to_mesh(zencad.box(1), angular_deflection=0).value()
         with self.assertRaises(ValueError):
-            zencad.to_mesh(zencad.box(1), crease_angle=-0.1)
+            zencad.to_mesh(zencad.box(1), crease_angle=-0.1).value()
         with self.assertRaises(ValueError):
-            zencad.to_mesh(zencad.box(1), weld_tolerance=math.inf)
+            zencad.to_mesh(zencad.box(1), weld_tolerance=math.inf).value()
         with self.assertRaises(ValueError):
-            zencad.to_mesh(zencad.box(1), crease_angle=math.nan)
+            zencad.to_mesh(zencad.box(1), crease_angle=math.nan).value()
 
 
 if __name__ == "__main__":

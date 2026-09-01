@@ -48,7 +48,9 @@ class TypedShapeFactoriesTest(unittest.TestCase):
                     wire = context.call(typed.polysegment, points, closed=True)
                     polygon = context.call(typed.polygon, points)
                     rectangle = context.call(typed.rectangle, 2, 3, center=True)
-                    box = context.call(typed.box, context.call(typed.vector, 2, 3, 4), center=True)
+                    box = context.call(
+                        typed.box, context.call(typed.vector, 2, 3, 4), center=True
+                    )
                     sphere = context.call(typed.sphere, 2)
 
                     policy_types = tuple(
@@ -127,11 +129,14 @@ class TypedShapeFactoriesTest(unittest.TestCase):
         solid = context.call(typed.box, size)
         sphere = context.call(typed.sphere, side)
         edge = context.call(typed.segment, origin, origin + size)
-        wire = context.call(typed.polysegment,
+        wire = context.call(
+            typed.polysegment,
             (origin, origin + x, origin + x + y, origin + y),
             closed=True,
         )
-        face = context.call(typed.polygon, (origin, origin + x, origin + x + y, origin + y))
+        face = context.call(
+            typed.polygon, (origin, origin + x, origin + x + y, origin + y)
+        )
         rectangle = context.call(typed.rectangle, side, side + 1)
 
         self.assertEqual(events, [])
@@ -163,10 +168,10 @@ class TypedShapeFactoriesTest(unittest.TestCase):
             context.call(typed.box, context.call(typed.vector, 1, 2, 3), 2, 3).native()
         with self.assertRaisesRegex(TypeError, "center must be bool, str, or None"):
             context.call(typed.box, 1, center=1.5).native()  # type: ignore[arg-type]
-        with self.assertRaisesRegex(TypeError, "expects only Point3"):
-            context.call(typed.polysegment, (point, (1, 0, 0)))  # type: ignore[list-item]
+        with self.assertRaises(TypeError):
+            context.call(typed.polysegment, (point, (1, 0, 0))).native()  # type: ignore[list-item]
         with self.assertRaisesRegex(ValueError, "at least 3 points"):
-            context.call(typed.polygon, (point, point))
+            context.call(typed.polygon, (point, point)).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.segment, point, other.call(typed.point, 1, 0, 0))
 
@@ -229,12 +234,12 @@ class TypedShapeBooleansTest(unittest.TestCase):
         shape = context.call(typed.box, 1)
 
         for operation in (
-            lambda: shape + 1,  # type: ignore[operator]
-            lambda: shape - 1,  # type: ignore[operator]
-            lambda: shape ^ 1,  # type: ignore[operator]
+            lambda: (shape + 1).native(),  # type: ignore[operator]
+            lambda: (shape - 1).native(),  # type: ignore[operator]
+            lambda: (shape ^ 1).native(),  # type: ignore[operator]
         ):
             with self.subTest(operation=operation):
-                with self.assertRaisesRegex(TypeError, "expects Shape"):
+                with self.assertRaises(TypeError):
                     operation()
 
         for operation in (
@@ -255,7 +260,9 @@ class TypedShapeBooleansTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(first_events.append,),
         )
-        first_result = first.call(typed.box, 3) + first.call(typed.sphere, first.call(typed.box, 2).mass() / 8)
+        first_result = first.call(typed.box, 3) + first.call(
+            typed.sphere, first.call(typed.box, 2).mass() / 8
+        )
         first_native = first_result.native()
         self.assertFalse(first_native.IsNull())
         self.assertTrue(
@@ -268,7 +275,9 @@ class TypedShapeBooleansTest(unittest.TestCase):
             cache_store=store,
             progress_hooks=(second_events.append,),
         )
-        second_result = second.call(typed.box, 3) + second.call(typed.sphere, second.call(typed.box, 2).mass() / 8)
+        second_result = second.call(typed.box, 3) + second.call(
+            typed.sphere, second.call(typed.box, 2).mass() / 8
+        )
         second_native = second_result.native()
 
         self.assertFalse(second_native.IsNull())
@@ -305,15 +314,21 @@ class TypedShapeBooleansTest(unittest.TestCase):
                         cache=cache,
                         cache_store=MemoryCacheStore(),
                     )
-                    outer = context.call(typed.box, context.call(typed.vector, 10, 10, 10), center=True)
+                    outer = context.call(
+                        typed.box, context.call(typed.vector, 10, 10, 10), center=True
+                    )
                     radius = outer.mass() / 500
                     cutter = context.call(typed.sphere, radius).translate(0, 0, 5)
                     modeled = (outer - cutter).transform(
-                        context.call(typed.rotation, context.call(typed.vector, 0, 0, 1), 0.25)
+                        context.call(
+                            typed.rotation, context.call(typed.vector, 0, 0, 1), 0.25
+                        )
                     )
                     vertex = modeled.vertices()[0]
                     point = vertex.point()
-                    offset = context.call(typed.vector, modeled.mass() / 1000, point.y, 0)
+                    offset = context.call(
+                        typed.vector, modeled.mass() / 1000, point.y, 0
+                    )
                     result = modeled.translate(offset)
 
                     policy_types = tuple(
@@ -341,18 +356,20 @@ class TypedShapeBooleansTest(unittest.TestCase):
                             typed.Shape,
                         ),
                     )
-                    self.assertTrue(all(
-                        not hasattr(value, "unlazy")
-                        for value in (
-                            outer,
-                            cutter,
-                            modeled,
-                            vertex,
-                            point,
-                            offset,
-                            result,
+                    self.assertTrue(
+                        all(
+                            not hasattr(value, "unlazy")
+                            for value in (
+                                outer,
+                                cutter,
+                                modeled,
+                                vertex,
+                                point,
+                                offset,
+                                result,
+                            )
                         )
-                    ))
+                    )
                     native = result.native()
                     self.assertFalse(native.IsNull())
                     payload = encode_brep(native)

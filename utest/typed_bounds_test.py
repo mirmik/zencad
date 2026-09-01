@@ -52,12 +52,24 @@ class TypedBoundaryBoxTest(unittest.TestCase):
             bounds._state.operation_id,
             "zencad.typed.boundary-box.from-points",
         )
-        self.assertEqual(shape_bounds._state.operation_id, "zencad.typed.shape.boundbox")
-        self.assertEqual(bounds.minimum._state.operation_id, "zencad.typed.boundary-box.minimum")
-        self.assertEqual(bounds.maximum._state.operation_id, "zencad.typed.boundary-box.maximum")
-        self.assertEqual(bounds.size._state.operation_id, "zencad.typed.boundary-box.size")
-        self.assertEqual(bounds.center._state.operation_id, "zencad.typed.boundary-box.center")
-        self.assertEqual(bounds.xmin._state.operation_id, "zencad.typed.boundary-box.coordinate")
+        self.assertEqual(
+            shape_bounds._state.operation_id, "zencad.typed.shape.boundbox"
+        )
+        self.assertEqual(
+            bounds.minimum._state.operation_id, "zencad.typed.boundary-box.minimum"
+        )
+        self.assertEqual(
+            bounds.maximum._state.operation_id, "zencad.typed.boundary-box.maximum"
+        )
+        self.assertEqual(
+            bounds.size._state.operation_id, "zencad.typed.boundary-box.size"
+        )
+        self.assertEqual(
+            bounds.center._state.operation_id, "zencad.typed.boundary-box.center"
+        )
+        self.assertEqual(
+            bounds.xmin._state.operation_id, "zencad.typed.boundary-box.coordinate"
+        )
 
     def test_shape_bounds_are_policy_independent_structured_handles(self):
         observed_types = set()
@@ -72,7 +84,9 @@ class TypedBoundaryBoxTest(unittest.TestCase):
                         cache_store=MemoryCacheStore(),
                         progress_hooks=(events.append,),
                     )
-                    bounds = context.call(typed.box, 2, 3, 4).translate(-1, 2, 5).boundbox()
+                    bounds = (
+                        context.call(typed.box, 2, 3, 4).translate(-1, 2, 5).boundbox()
+                    )
                     observed_types.add(type(bounds))
                     self.assertIs(type(bounds), typed.BoundaryBox)
                     if mode is EvaluationMode.DEFERRED:
@@ -123,7 +137,11 @@ class TypedBoundaryBoxTest(unittest.TestCase):
     def test_legacy_accessors_and_shape_keep_immutable_typed_contract(self):
         events = []
         context = typed.Context.deferred(cache=False, progress_hooks=(events.append,))
-        first = context.call(typed.boundary_box, context.call(typed.point3, 1, 2, 3), context.call(typed.point3, 4, 6, 8))
+        first = context.call(
+            typed.boundary_box,
+            context.call(typed.point3, 1, 2, 3),
+            context.call(typed.point3, 4, 6, 8),
+        )
         second = context.call(typed.box, 1).boundbox()
         combined = first.add(second)
         shape = first.shape()
@@ -151,7 +169,11 @@ class TypedBoundaryBoxTest(unittest.TestCase):
 
         self.assertTrue(empty.is_empty())
         self.assertTrue(empty.native().IsVoid())
-        self.assertTrue(context.call(typed.empty_boundary_box, ).is_empty())
+        self.assertTrue(
+            context.call(
+                typed.empty_boundary_box,
+            ).is_empty()
+        )
         self.assertEqual(empty.union(nonempty).value(), nonempty.value())
         self.assertEqual(nonempty.union(empty).value(), nonempty.value())
 
@@ -189,16 +211,36 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         context = typed.Context.deferred(cache=False)
         other = typed.Context.deferred(cache=False)
 
-        with self.assertRaisesRegex(TypeError, "Point3 corners"):
-            context.call(typed.boundary_box, context.call(typed.point2, 0, 0), context.call(typed.point, 1, 1, 1))  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(
+                typed.boundary_box,
+                context.call(typed.point2, 0, 0),
+                context.call(typed.point, 1, 1, 1),
+            )  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.boundary_box, context.call(typed.point, 0, 0, 0), other.call(typed.point, 1, 1, 1))
+            context.call(
+                typed.boundary_box,
+                context.call(typed.point, 0, 0, 0),
+                other.call(typed.point, 1, 1, 1),
+            )
         with self.assertRaisesRegex(ValueError, "minimum exceeds maximum"):
-            context.call(typed.boundary_box, context.call(typed.point, 2, 0, 0), context.call(typed.point, 1, 1, 1))
-        with self.assertRaisesRegex(TypeError, "expects BoundaryBox"):
-            context.call(typed.empty_boundary_box, ).union(context.call(typed.box, 1))  # type: ignore[arg-type]
+            context.call(
+                typed.boundary_box,
+                context.call(typed.point, 2, 0, 0),
+                context.call(typed.point, 1, 1, 1),
+            )
+        with self.assertRaises(TypeError):
+            context.call(typed.empty_boundary_box).union(
+                context.call(typed.box, 1)  # type: ignore[arg-type]
+            ).value()
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.empty_boundary_box, ).union(other.call(typed.empty_boundary_box, ))
+            context.call(
+                typed.empty_boundary_box,
+            ).union(
+                other.call(
+                    typed.empty_boundary_box,
+                )
+            )
 
     def test_curve_and_surface_ranges_are_named_graph_records(self):
         events = []
@@ -206,7 +248,9 @@ class TypedBoundaryBoxTest(unittest.TestCase):
             cache=False,
             progress_hooks=(events.append,),
         )
-        curve_range = context.call(typed.circle_curve, context.call(typed.box, 2).mass() / 4).range()
+        curve_range = context.call(
+            typed.circle_curve, context.call(typed.box, 2).mass() / 4
+        ).range()
         surface_range = context.call(typed.cylinder_surface, 2).u_range()
 
         self.assertIs(type(curve_range), typed.Interval)

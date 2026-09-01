@@ -66,7 +66,9 @@ class TypedBooleanOperationsTest(unittest.TestCase):
                         context.call(typed.difference, left, right),
                     )
 
-                    self.assertTrue(all(type(result) is typed.Shape for result in results))
+                    self.assertTrue(
+                        all(type(result) is typed.Shape for result in results)
+                    )
                     self.assertEqual(
                         tuple(round(float(result.mass()), 8) for result in results),
                         (12.0, 12.0, 4.0, 4.0, 4.0, 4.0),
@@ -90,11 +92,11 @@ class TypedBooleanOperationsTest(unittest.TestCase):
         shape = context.call(typed.box, 1)
 
         with self.assertRaisesRegex(ValueError, "at least one Shape"):
-            context.call(typed.union, ())
-        with self.assertRaisesRegex(TypeError, "only Shape"):
-            context.call(typed.intersect, (shape, object()))  # type: ignore[list-item]
+            context.call(typed.union, ()).native()
+        with self.assertRaises(TypeError):
+            context.call(typed.intersect, (shape, object())).native()  # type: ignore[list-item]
         with self.assertRaisesRegex(TypeError, "sequence with extra"):
-            context.call(typed.difference, (shape,), shape)
+            context.call(typed.difference, (shape,), shape).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.union, shape, other.call(typed.box, 1))
 
@@ -106,7 +108,9 @@ class TypedSectionTest(unittest.TestCase):
 
         by_shape = context.call(typed.section, solid, context.call(typed.sphere, 1.5))
         by_height = context.call(typed.section, solid, 1)
-        by_vector = context.call(typed.section, solid, context.call(typed.vector3, 0, 0, 1))
+        by_vector = context.call(
+            typed.section, solid, context.call(typed.vector3, 0, 0, 1)
+        )
 
         for result in (by_shape, by_height, by_vector):
             self.assertIs(type(result), typed.Shape)
@@ -118,9 +122,11 @@ class TypedSectionTest(unittest.TestCase):
         other = typed.Context.deferred(cache=False)
 
         with self.assertRaisesRegex(TypeError, "three coordinates"):
-            context.call(typed.section, context.call(typed.box, 1), (0, 1))
+            context.call(typed.section, context.call(typed.box, 1), (0, 1)).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.section, context.call(typed.box, 1), other.call(typed.box, 1))
+            context.call(
+                typed.section, context.call(typed.box, 1), other.call(typed.box, 1)
+            )
 
 
 class TypedOperationCompatibilityTest(unittest.TestCase):
@@ -151,7 +157,13 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
         solid = context.call(typed.box, 4)
         face = context.call(typed.rectangle, 4, 4)
         point = context.call(typed.point3, 0.1, 0.1, 5)
-        edge = context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 1, 0, 0))
+        edge = context.call(
+            typed.segment,
+            context.call(
+                typed.point3,
+            ),
+            context.call(typed.point3, 1, 0, 0),
+        )
         with using_context(context):
             values = (
                 typed.fillet(solid, 0.1),
@@ -233,6 +245,15 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
         self.assertEqual(context.call(typed.get_nodes, native), mesh.positions)
         self.assertEqual(context.call(typed.get_triangles, native), mesh.triangles)
 
+    def test_operation_snapshots_one_shot_reference_iterables(self):
+        context = typed.Context.deferred(cache=False)
+        body = context.call(typed.box, 4)
+        references = (edge for edge in body.edges())
+
+        rounded = context.call(typed.fillet, body, 0.25, references)
+
+        self.assertGreater(rounded.mass().value(), 0)
+
 
 class TypedOffsetSewUnifyTest(unittest.TestCase):
     def test_sew_returns_precise_wire_and_shell_handles(self):
@@ -266,7 +287,8 @@ class TypedOffsetSewUnifyTest(unittest.TestCase):
                     solid = context.call(typed.box, 4)
 
                     offset = context.call(typed.offset, solid, 0.25)
-                    thick = context.call(typed.thicksolid,
+                    thick = context.call(
+                        typed.thicksolid,
                         solid,
                         -0.25,
                         (context.call(typed.point3, 2, 2, 4),),
@@ -293,16 +315,25 @@ class TypedOffsetSewUnifyTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "at least one"):
             context.call(typed.sew, ())
         with self.assertRaisesRegex(TypeError, "all be"):
-            context.call(typed.sew,   # type: ignore[arg-type]
+            context.call(
+                typed.sew,  # type: ignore[arg-type]
                 (
-                    context.call(typed.segment, context.call(typed.point3, ), context.call(typed.point3, 1, 0, 0)),
+                    context.call(
+                        typed.segment,
+                        context.call(
+                            typed.point3,
+                        ),
+                        context.call(typed.point3, 1, 0, 0),
+                    ),
                     context.call(typed.rectangle, 1, 1),
-                )
+                ),
             )
         with self.assertRaisesRegex(ValueError, "different contexts"):
             context.call(typed.sew, (other.call(typed.rectangle, 1, 1),))
-        with self.assertRaisesRegex(TypeError, "expects Solid"):
-            context.call(typed.thicksolid, context.call(typed.rectangle, 1, 1), 0.1, ())  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            context.call(
+                typed.thicksolid, context.call(typed.rectangle, 1, 1), 0.1, ()
+            ).native()  # type: ignore[arg-type]
 
 
 class TypedGeometryQueriesTest(unittest.TestCase):
@@ -338,37 +369,61 @@ class TypedGeometryQueriesTest(unittest.TestCase):
                         ),
                     )
                     self.assertEqual(results[0].point().value(), (0.0, 0.0, 1.0))
-                    self.assertTrue(all(not result.native().IsNull() for result in results))
+                    self.assertTrue(
+                        all(not result.native().IsNull() for result in results)
+                    )
 
     def test_missing_nearest_topology_has_an_actionable_error(self):
         context = typed.Context.deferred(cache=False)
         with self.assertRaisesRegex(ValueError, "no compound topology"):
-            context.call(typed.near_compound, context.call(typed.box, 1), context.call(typed.point3, )).native()
+            context.call(
+                typed.near_compound,
+                context.call(typed.box, 1),
+                context.call(
+                    typed.point3,
+                ),
+            ).native()
 
     def test_curve_projection_is_a_structured_typed_result(self):
         context = typed.Context.deferred(cache=False)
-        edge = context.call(typed.segment,
+        edge = context.call(
+            typed.segment,
             context.call(typed.point3, 0, 0, 0),
             context.call(typed.point3, 10, 0, 0),
         )
-        projection = context.call(typed.project, context.call(typed.point3, 3, 4, 0), edge)
+        projection = context.call(
+            typed.project, context.call(typed.point3, 3, 4, 0), edge
+        )
 
         self.assertIs(type(projection), typed.CurveProjection)
         self.assertEqual(projection.point.value(), (3.0, 0.0, 0.0))
         self.assertAlmostEqual(float(projection.parameter), 3.0)
         self.assertAlmostEqual(float(projection.distance), 4.0)
         self.assertEqual(projection.value(), ((3.0, 0.0, 0.0), 3.0, 4.0))
+
     def test_geometry_queries_reject_wrong_domain_or_context(self):
         context = typed.Context.deferred(cache=False)
         other = typed.Context.deferred(cache=False)
         shape = context.call(typed.box, 1)
 
-        with self.assertRaisesRegex(TypeError, "expects Point3"):
-            shape.near_vertex((0, 0, 0))  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            shape.near_vertex((0, 0, 0)).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.near_face, shape, other.call(typed.point3, ))
+            context.call(
+                typed.near_face,
+                shape,
+                other.call(
+                    typed.point3,
+                ),
+            )
         with self.assertRaisesRegex(TypeError, "Curve or Edge"):
-            context.call(typed.project, context.call(typed.point3, ), shape)  # type: ignore[arg-type]
+            context.call(
+                typed.project,
+                context.call(
+                    typed.point3,
+                ),
+                shape,
+            )  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

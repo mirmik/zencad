@@ -9,10 +9,9 @@ import numpy
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_Dir, gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d, gp_XYZ
-from evalcache import ResultSpec
+from evalcache import Expression, ResultSpec
 
 from zencad.occ_compat import vertex_point
-from zencad.operation import arguments as _operation_arguments
 from zencad.operation import operation as _domain_operation
 from zencad.operation import resolve_context
 
@@ -82,7 +81,9 @@ def _infer_context(
     if explicit is not None:
         runtimes.add(explicit)
     if not runtimes:
-        raise TypeError("literal value construction requires context=")
+        from zencad.operation import execution_context
+
+        return execution_context()
     if len(runtimes) != 1:
         raise ValueError("cannot mix handles from different contexts")
     return next(iter(runtimes))
@@ -98,11 +99,15 @@ def _resolved_scalar(context: Context, value: ScalarInput) -> float:
 class Scalar(Handle[float]):
     """Immutable numeric handle; Python conversions are materialization boundaries."""
 
-    def __init__(self, value: Number, *, context: Context) -> None:
-        self._bind(context, _number(value))
+    def __init__(self, value: Number, *, context: Context | None = None) -> None:
+        from zencad.operation import execution_context
+
+        self._bind(execution_context() if context is None else context, _number(value))
 
     @classmethod
     def _from_state(cls, context: Context, state: State[float]) -> Scalar:
+        if not isinstance(state, Expression):
+            state = SCALAR_SPEC.validate(state, "zencad.typed.scalar.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -368,11 +373,22 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
 
     def __init__(
         self,
-        x: ScalarInput | tuple[ScalarInput, ScalarInput],
+        x: ScalarInput | tuple[ScalarInput, ScalarInput] | ops.Point2Value,
         y: ScalarInput | None = None,
         *,
         context: Context | None = None,
     ) -> None:
+        if isinstance(x, ops.Point2Value):
+            if y is not None:
+                raise TypeError("2D value requires exactly two coordinates")
+            from zencad.operation import execution_context
+
+            selected_context = execution_context() if context is None else context
+            self._bind(
+                selected_context,
+                POINT2_SPEC.validate(x, "zencad.typed.point2.construct"),
+            )
+            return
         components = _components2(x, y)
         resolved_context = _infer_context(context, components)
         state = resolved_context._value_state(
@@ -385,6 +401,8 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Point2Value]) -> Point2:
+        if not isinstance(state, Expression):
+            state = POINT2_SPEC.validate(state, "zencad.typed.point2.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -489,11 +507,22 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
 
     def __init__(
         self,
-        x: ScalarInput | tuple[ScalarInput, ScalarInput],
+        x: ScalarInput | tuple[ScalarInput, ScalarInput] | ops.Vector2Value,
         y: ScalarInput | None = None,
         *,
         context: Context | None = None,
     ) -> None:
+        if isinstance(x, ops.Vector2Value):
+            if y is not None:
+                raise TypeError("2D value requires exactly two coordinates")
+            from zencad.operation import execution_context
+
+            selected_context = execution_context() if context is None else context
+            self._bind(
+                selected_context,
+                VECTOR2_SPEC.validate(x, "zencad.typed.vector2.construct"),
+            )
+            return
         components = _components2(x, y)
         resolved_context = _infer_context(context, components)
         state = resolved_context._value_state(
@@ -506,6 +535,8 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Vector2Value]) -> Vector2:
+        if not isinstance(state, Expression):
+            state = VECTOR2_SPEC.validate(state, "zencad.typed.vector2.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -671,12 +702,23 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
 
     def __init__(
         self,
-        x: ScalarInput | tuple[ScalarInput, ScalarInput, ScalarInput],
+        x: ScalarInput | tuple[ScalarInput, ScalarInput, ScalarInput] | ops.Point3Value,
         y: ScalarInput | None = None,
         z: ScalarInput | None = None,
         *,
         context: Context | None = None,
     ) -> None:
+        if isinstance(x, ops.Point3Value):
+            if y is not None or z is not None:
+                raise TypeError("3D value requires exactly three coordinates")
+            from zencad.operation import execution_context
+
+            selected_context = execution_context() if context is None else context
+            self._bind(
+                selected_context,
+                POINT3_SPEC.validate(x, "zencad.typed.point3.construct"),
+            )
+            return
         components = _components3(x, y, z)
         resolved_context = _infer_context(context, components)
         state = resolved_context._value_state(
@@ -689,6 +731,8 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Point3Value]) -> Point3:
+        if not isinstance(state, Expression):
+            state = POINT3_SPEC.validate(state, "zencad.typed.point3.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -818,12 +862,25 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
 
     def __init__(
         self,
-        x: ScalarInput | tuple[ScalarInput, ScalarInput, ScalarInput],
+        x: ScalarInput
+        | tuple[ScalarInput, ScalarInput, ScalarInput]
+        | ops.Vector3Value,
         y: ScalarInput | None = None,
         z: ScalarInput | None = None,
         *,
         context: Context | None = None,
     ) -> None:
+        if isinstance(x, ops.Vector3Value):
+            if y is not None or z is not None:
+                raise TypeError("3D value requires exactly three coordinates")
+            from zencad.operation import execution_context
+
+            selected_context = execution_context() if context is None else context
+            self._bind(
+                selected_context,
+                VECTOR3_SPEC.validate(x, "zencad.typed.vector3.construct"),
+            )
+            return
         components = _components3(x, y, z)
         resolved_context = _infer_context(context, components)
         state = resolved_context._value_state(
@@ -836,6 +893,8 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Vector3Value]) -> Vector3:
+        if not isinstance(state, Expression):
+            state = VECTOR3_SPEC.validate(state, "zencad.typed.vector3.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -1167,15 +1226,11 @@ def atan2(y: ScalarInput, x: ScalarInput) -> Scalar:
 
 
 @_domain_operation(
-    backend=ops.scalar_add,
     result=SCALAR_SPEC,
     returns=Scalar,
     operation_id="zencad.typed.scalar.add",
     operation_version="1",
     fold_literals=True,
 )
-def _scalar_add_operation(left: Scalar, right: ScalarInput):
-    return _operation_arguments(
-        left,
-        _scalar_state(left.context, right),
-    )
+def _scalar_add_operation(left: Scalar, right: float) -> Scalar:
+    return Scalar(ops.scalar_add(left._resolved(), right))

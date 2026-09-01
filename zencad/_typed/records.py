@@ -36,11 +36,16 @@ class Interval:
         """Materialize both bounds as a fixed Python tuple."""
         return (self._lower.value(), self._upper.value())
 
+    def __zencad_arguments__(self) -> tuple[Scalar, Scalar]:
+        """Expose graph operands when an interval crosses an operation boundary."""
+        return (self._lower, self._upper)
+
     def __iter__(self) -> Iterator[Scalar]:
         return iter((self._lower, self._upper))
 
     def __len__(self) -> int:
         return 2
+
 
 class LineParameters:
     __slots__ = ("origin", "direction")

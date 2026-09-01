@@ -106,6 +106,20 @@ class Curve(Handle[ops.CurveValue]):
     __slots__ = ()
     _result_spec: ClassVar[ResultSpec[ops.CurveValue]] = CURVE_SPEC
 
+    def __init__(
+        self,
+        value: ops.CurveValue,
+        *,
+        context: Context | None = None,
+    ) -> None:
+        from zencad.operation import execution_context
+
+        selected_context = execution_context() if context is None else context
+        self._bind(
+            selected_context,
+            self._result_spec.validate(value, "zencad.typed.curve.construct"),
+        )
+
     @classmethod
     def _from_state(
         cls: type[CurveHandleT],
@@ -389,6 +403,20 @@ class Curve2(Handle[ops.Curve2Value]):
 
     __slots__ = ()
     _result_spec: ClassVar[ResultSpec[ops.Curve2Value]] = CURVE2_SPEC
+
+    def __init__(
+        self,
+        value: ops.Curve2Value,
+        *,
+        context: Context | None = None,
+    ) -> None:
+        from zencad.operation import execution_context
+
+        selected_context = execution_context() if context is None else context
+        self._bind(
+            selected_context,
+            self._result_spec.validate(value, "zencad.typed.curve2.construct"),
+        )
 
     @classmethod
     def _from_state(

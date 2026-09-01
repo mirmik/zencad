@@ -14,8 +14,8 @@ def curve_contract(context: typed.Context) -> None:
         context.call(typed.line, origin, context.call(typed.vector, radius, 0, 0)),
         typed.Curve,
     )
-    circle = assert_type(context.call(typed.circle_curve, radius), typed.Curve)
-    assert_type(context.call(typed.ellipse_curve, radius + 1, radius), typed.Curve)
+    circle = assert_type(context.call(typed.circle_curve, 2.0), typed.Curve)
+    assert_type(context.call(typed.ellipse_curve, 3.0, 2.0), typed.Curve)
     assert_type(line.point(1), typed.Point3)
     assert_type(line.d0(1), typed.Point3)
     assert_type(line.value(1), typed.Point3)
@@ -26,7 +26,7 @@ def curve_contract(context: typed.Context) -> None:
     assert_type(line.endpoints(), tuple[typed.Point3, typed.Point3])
     assert_type(line.line_parameters(), typed.LineParameters)
     assert_type(circle.circle_parameters(), typed.CircleParameters)
-    ellipse = context.call(typed.ellipse_curve, radius + 1, radius)
+    ellipse = context.call(typed.ellipse_curve, 3.0, 2.0)
     assert_type(ellipse.ellipse_parameters(), typed.EllipseParameters)
     assert_type(line.lower_distance_parameter(origin), typed.Scalar)
     assert_type(line.trimmed_edge(0, 1), typed.Edge)
@@ -60,11 +60,9 @@ def curve_contract(context: typed.Context) -> None:
         ),
         typed.Curve2,
     )
-    ellipse2 = assert_type(
-        context.call(typed.ellipse2, radius + 1, radius), typed.Curve2
-    )
+    ellipse2 = assert_type(context.call(typed.ellipse2, 3.0, 2.0), typed.Curve2)
     trimmed = assert_type(
-        context.call(typed.trim_curve2, segment, 0, radius), typed.Curve2
+        context.call(typed.trim_curve2, segment, 0, 2.0), typed.Curve2
     )
     assert_type(segment.trim(0, radius), typed.Curve2)
     assert_type(segment.rotate(radius), typed.Curve2)

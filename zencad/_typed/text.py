@@ -5,11 +5,10 @@ from __future__ import annotations
 from enum import Enum
 from os import PathLike
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_context
+from zencad.operation import operation
 
 from . import _text_operations as text_ops
 from .topology import COMPOUND_SPEC, Compound
-from .values import ScalarInput, _scalar_state
 
 
 class FontAspect(Enum):
@@ -41,7 +40,6 @@ def register_font(
 
 
 @operation(
-    backend=text_ops.text_to_brep,
     result=COMPOUND_SPEC,
     returns=Compound,
     operation_id="zencad.typed.text_to_brep",
@@ -51,10 +49,10 @@ def register_font(
 def text_to_brep(
     text: str,
     font_name: str,
-    size: ScalarInput,
+    size: float,
     aspect: FontAspect = FontAspect.REGULAR,
     composite_curve: bool = False,
-) -> OperationArguments:
+) -> Compound:
     if not isinstance(text, str):
         raise TypeError("text_to_brep text must be str")
     if not isinstance(font_name, str):
@@ -62,20 +60,21 @@ def text_to_brep(
     resolved_aspect = _require_font_aspect(aspect, "text_to_brep aspect")
     if not isinstance(composite_curve, bool):
         raise TypeError("text_to_brep composite_curve must be bool")
-    context = resolve_context(size)
-    return arguments(
-        text,
-        font_name,
-        _scalar_state(context, size),
-        resolved_aspect.value,
-        composite_curve,
+    return Compound(
+        text_ops.text_to_brep(
+            text,
+            font_name,
+            float(size),
+            resolved_aspect.value,
+            composite_curve,
+        )
     )
 
 
 def textshape(
     text: str,
     fontname: str,
-    size: ScalarInput,
+    size: float,
     composite_curve: bool = False,
 ) -> Compound:
     """Legacy spelling for :func:`text_to_brep`."""

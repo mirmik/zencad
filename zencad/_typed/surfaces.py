@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 from evalcache import Expression, ResultSpec
 from OCP.Geom import Geom_Surface
 
-from zencad.operation import OperationArguments, arguments, operation, resolve_context
+from zencad.operation import operation, resolve_context
 
 from . import _surface_operations as ops
 from ._core import Handle, State, require_same_context
@@ -63,6 +63,25 @@ class SweepScaleLaw:
     def context(self) -> Context:
         return self.scale.context
 
+    def __zencad_arguments__(self) -> tuple[Scalar, Scalar, Scalar]:
+        return (self.scale, self.domain.lower, self.domain.upper)
+
+    @classmethod
+    def __zencad_from_arguments__(
+        cls,
+        context: Context,
+        value: object,
+    ) -> SweepScaleLaw:
+        scale, lower, upper = value  # type: ignore[misc]
+        return cls(
+            Scalar._from_state(context, scale),
+            Interval(
+                Scalar._from_state(context, lower),
+                Scalar._from_state(context, upper),
+            ),
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class SweepSectionLaw:
     """A section curve evolved by a typed scale law."""
@@ -81,6 +100,22 @@ class SweepSectionLaw:
     def context(self) -> Context:
         return self.section.context
 
+    def __zencad_arguments__(self) -> tuple[Curve, SweepScaleLaw]:
+        return (self.section, self.scale)
+
+    @classmethod
+    def __zencad_from_arguments__(
+        cls,
+        context: Context,
+        value: object,
+    ) -> SweepSectionLaw:
+        section, scale = value  # type: ignore[misc]
+        return cls(
+            Curve._from_state(context, section),
+            SweepScaleLaw.__zencad_from_arguments__(context, scale),
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class SweepLocationLaw:
     """A spine curve paired with an explicit trihedron law."""
@@ -98,6 +133,22 @@ class SweepLocationLaw:
     def context(self) -> Context:
         return self.spine.context
 
+    def __zencad_arguments__(self) -> tuple[Curve, str]:
+        return (self.spine, self.trihedron.value)
+
+    @classmethod
+    def __zencad_from_arguments__(
+        cls,
+        context: Context,
+        value: object,
+    ) -> SweepLocationLaw:
+        spine, trihedron = value  # type: ignore[misc]
+        return cls(
+            Curve._from_state(context, spine),
+            SweepTrihedron(trihedron),
+        )
+
+
 _SURFACE_SERIALIZER = SurfaceSerializer()
 SURFACE_SPEC = ResultSpec.for_type(
     ops.SurfaceValue,
@@ -112,6 +163,20 @@ class Surface(Handle[ops.SurfaceValue]):
 
     __slots__ = ()
     _result_spec: ClassVar[ResultSpec[ops.SurfaceValue]] = SURFACE_SPEC
+
+    def __init__(
+        self,
+        value: ops.SurfaceValue,
+        *,
+        context: Context | None = None,
+    ) -> None:
+        from zencad.operation import execution_context
+
+        selected_context = execution_context() if context is None else context
+        self._bind(
+            selected_context,
+            self._result_spec.validate(value, "zencad.typed.surface.construct"),
+        )
 
     @classmethod
     def _from_state(
@@ -163,20 +228,18 @@ class Surface(Handle[ops.SurfaceValue]):
         """Materialize an independent mutable OCP surface snapshot."""
         return ops.surface_to_ocp(self._resolved())
 
+
 @operation(
-    backend=ops.cylinder_surface,
     result=SURFACE_SPEC,
     returns=Surface,
     operation_id="zencad.typed.cylinder_surface",
     operation_version="1",
 )
-def cylinder_surface(radius: ScalarInput, /) -> OperationArguments:
-    context = resolve_context(radius)
-    return arguments(_scalar_state(context, radius))
+def cylinder_surface(radius: float, /) -> Surface:
+    return Surface(ops.cylinder_surface(radius))
 
 
 @operation(
-    backend=ops.surface_point,
     result=POINT3_SPEC,
     returns=Point3,
     operation_id="zencad.typed.surface.point",
@@ -185,22 +248,16 @@ def cylinder_surface(radius: ScalarInput, /) -> OperationArguments:
 )
 def _surface_point(
     surface: Surface,
-    u: ScalarInput,
-    v: ScalarInput,
+    u: float,
+    v: float,
     /,
-) -> OperationArguments:
+) -> Point3:
     if not isinstance(surface, Surface):
         raise TypeError("surface point expects Surface")
-    context = resolve_context(surface, u, v)
-    return arguments(
-        surface,
-        _scalar_state(context, u),
-        _scalar_state(context, v),
-    )
+    return Point3(ops.surface_point(surface._resolved(), u, v))
 
 
 @operation(
-    backend=ops.surface_normal,
     result=VECTOR3_SPEC,
     returns=Vector3,
     operation_id="zencad.typed.surface.normal",
@@ -209,53 +266,38 @@ def _surface_point(
 )
 def _surface_normal(
     surface: Surface,
-    u: ScalarInput,
-    v: ScalarInput,
+    u: float,
+    v: float,
     /,
-) -> OperationArguments:
+) -> Vector3:
     if not isinstance(surface, Surface):
         raise TypeError("surface normal expects Surface")
-    context = resolve_context(surface, u, v)
-    return arguments(
-        surface,
-        _scalar_state(context, u),
-        _scalar_state(context, v),
-    )
+    return Vector3(ops.surface_normal(surface._resolved(), u, v))
 
 
 def _surface_bound_operation(operation_id: str, index: int):
     @operation(
-        backend=ops.surface_bound,
         result=SCALAR_SPEC,
         returns=Scalar,
         operation_id=operation_id,
         operation_version="1",
         fold_literals=True,
     )
-    def bound(surface: Surface, /) -> OperationArguments:
+    def bound(surface: Surface, /) -> Scalar:
         if not isinstance(surface, Surface):
             raise TypeError("surface bound expects Surface")
-        return arguments(surface, index)
+        return Scalar(ops.surface_bound(surface._resolved(), index))
 
     return bound
 
 
-_surface_u_first = _surface_bound_operation(
-    "zencad.typed.surface.u_range.first", 0
-)
-_surface_u_last = _surface_bound_operation(
-    "zencad.typed.surface.u_range.last", 1
-)
-_surface_v_first = _surface_bound_operation(
-    "zencad.typed.surface.v_range.first", 2
-)
-_surface_v_last = _surface_bound_operation(
-    "zencad.typed.surface.v_range.last", 3
-)
+_surface_u_first = _surface_bound_operation("zencad.typed.surface.u_range.first", 0)
+_surface_u_last = _surface_bound_operation("zencad.typed.surface.u_range.last", 1)
+_surface_v_first = _surface_bound_operation("zencad.typed.surface.v_range.first", 2)
+_surface_v_last = _surface_bound_operation("zencad.typed.surface.v_range.last", 3)
 
 
 @operation(
-    backend=ops.surface_u_iso,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.surface.u_iso",
@@ -264,17 +306,15 @@ _surface_v_last = _surface_bound_operation(
 )
 def _surface_u_iso(
     surface: Surface,
-    parameter: ScalarInput,
+    parameter: float,
     /,
-) -> OperationArguments:
+) -> Curve:
     if not isinstance(surface, Surface):
         raise TypeError("surface u_iso expects Surface")
-    context = resolve_context(surface, parameter)
-    return arguments(surface, _scalar_state(context, parameter))
+    return Curve(ops.surface_u_iso(surface._resolved(), parameter))
 
 
 @operation(
-    backend=ops.surface_v_iso,
     result=CURVE_SPEC,
     returns=Curve,
     operation_id="zencad.typed.surface.v_iso",
@@ -283,13 +323,12 @@ def _surface_u_iso(
 )
 def _surface_v_iso(
     surface: Surface,
-    parameter: ScalarInput,
+    parameter: float,
     /,
-) -> OperationArguments:
+) -> Curve:
     if not isinstance(surface, Surface):
         raise TypeError("surface v_iso expects Surface")
-    context = resolve_context(surface, parameter)
-    return arguments(surface, _scalar_state(context, parameter))
+    return Curve(ops.surface_v_iso(surface._resolved(), parameter))
 
 
 def constant_sweep_scale(
@@ -338,7 +377,6 @@ def sweep_location(
 
 
 @operation(
-    backend=ops.sweep_surface,
     result=SURFACE_SPEC,
     returns=Surface,
     operation_id="zencad.typed.sweep_surface_from_laws",
@@ -349,11 +387,11 @@ def sweep_surface_from_laws(
     location: SweepLocationLaw,
     /,
     *,
-    tolerance: Number = 1e-6,
+    tolerance: float = 1e-6,
     continuity: int = 2,
     max_degree: int = 5,
     max_segments: int = 20,
-) -> OperationArguments:
+) -> Surface:
     """Build a surface from immutable section and location laws."""
 
     if not isinstance(section, SweepSectionLaw):
@@ -362,22 +400,24 @@ def sweep_surface_from_laws(
         raise TypeError("sweep_surface_from_laws location must be SweepLocationLaw")
     if section.context is not location.context:
         raise ValueError("cannot mix handles from different contexts")
-    return arguments(
-        section.section,
-        section.scale.scale,
-        section.scale.domain.lower,
-        section.scale.domain.upper,
-        location.spine,
-        location.trihedron.value,
-        _require_positive_number(tolerance, "sweep_surface_from_laws tolerance"),
-        _require_int_between(
-            continuity,
-            "sweep_surface_from_laws continuity",
-            minimum=0,
-            maximum=3,
-        ),
-        _require_positive_int(max_degree, "sweep_surface_from_laws max_degree"),
-        _require_positive_int(max_segments, "sweep_surface_from_laws max_segments"),
+    return Surface(
+        ops.sweep_surface(
+            section.section._resolved(),
+            section.scale.scale.value(),
+            section.scale.domain.lower.value(),
+            section.scale.domain.upper.value(),
+            location.spine._resolved(),
+            location.trihedron.value,
+            _require_positive_number(tolerance, "sweep_surface_from_laws tolerance"),
+            _require_int_between(
+                continuity,
+                "sweep_surface_from_laws continuity",
+                minimum=0,
+                maximum=3,
+            ),
+            _require_positive_int(max_degree, "sweep_surface_from_laws max_degree"),
+            _require_positive_int(max_segments, "sweep_surface_from_laws max_segments"),
+        )
     )
 
 

@@ -5,13 +5,10 @@ import unittest
 import evalcache
 
 import zencad
+import zencad.operation as operation_module
 from zencad import _typed as typed
 from zencad._typed.topology import SHAPE_SPEC
-from zencad.operation import DomainOperation, arguments, operation, using_context
-
-
-def _identity_shape(value):
-    return value
+from zencad.operation import DomainOperation, operation, using_context
 
 
 def _selected_shape_type(args, kwargs):
@@ -27,18 +24,24 @@ def _selected_shape_result(args, kwargs):
 
 
 @operation(
-    backend=_identity_shape,
     result=SHAPE_SPEC,
     returns=_selected_shape_type,
     select_result=_selected_shape_result,
     operation_id="zencad.test.selected_shape",
 )
-def _selected_shape(shape, *, exact=False):
+def _selected_shape(shape: typed.Shape, *, exact: bool = False) -> typed.Shape:
     del exact
-    return arguments(shape)
+    return shape
 
 
 class TypedOperationTest(unittest.TestCase):
+    def test_preparer_dsl_is_not_part_of_the_operation_api(self):
+        self.assertFalse(hasattr(operation_module, "OperationArguments"))
+        self.assertFalse(hasattr(operation_module, "arguments"))
+        self.assertNotIn(
+            "backend", inspect.signature(operation_module.operation).parameters
+        )
+
     def test_context_owns_policy_without_becoming_a_cad_facade(self):
         context = typed.Context.deferred(cache=False)
 
@@ -93,7 +96,7 @@ class TypedOperationTest(unittest.TestCase):
     def test_solid_primitive_is_an_ordinary_executable_implementation(self):
         declaration = typed.cone
 
-        self.assertIsNone(declaration.prepare)
+        self.assertFalse(hasattr(declaration, "prepare"))
         self.assertEqual(
             tuple(inspect.signature(declaration).parameters),
             ("r1", "r2", "h", "yaw", "center"),

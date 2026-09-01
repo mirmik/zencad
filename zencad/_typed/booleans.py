@@ -5,15 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
-from evalcache import Expression
-
-from zencad.operation import (
-    OperationArguments,
-    arguments,
-    operation,
-    resolve_context,
-    using_context,
-)
+from zencad.operation import execution_context, operation, using_context
 
 from . import _boolean_operations as ops
 from .solid import halfspace
@@ -27,7 +19,7 @@ from .topology import (
     _SOLID_SEQUENCE_SPEC,
 )
 from .transforms import moveZ, short_rotate, translation
-from .values import Point3, ScalarInput, Vector3, vector3
+from .values import Point3, Vector3, vector3
 
 if TYPE_CHECKING:
     from zencad.geom.shape import Shape as ResolvedShape
@@ -36,16 +28,15 @@ if TYPE_CHECKING:
 
 
 @operation(
-    backend=ops.empty_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.empty_shape",
     operation_version="1",
 )
-def empty_shape() -> OperationArguments:
+def empty_shape() -> Shape:
     """Return the algebraic zero of topology without materializing it."""
 
-    return arguments()
+    return Shape(ops.empty_shape())
 
 
 def nullshape() -> Shape:
@@ -55,7 +46,6 @@ def nullshape() -> Shape:
 
 
 @operation(
-    backend=ops.union_shapes,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.union",
@@ -65,12 +55,12 @@ def union(
     shapes: Shape | Sequence[Shape],
     /,
     *others: Shape,
-) -> OperationArguments:
-    return arguments(_require_shapes(shapes, others, "union"))
+) -> Shape:
+    values = _require_shapes(shapes, others, "union")
+    return Shape(ops.union_shapes(tuple(shape._legacy() for shape in values)))
 
 
 @operation(
-    backend=ops.intersection_shapes,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.intersect",
@@ -80,8 +70,9 @@ def intersect(
     shapes: Shape | Sequence[Shape],
     /,
     *others: Shape,
-) -> OperationArguments:
-    return arguments(_require_shapes(shapes, others, "intersect"))
+) -> Shape:
+    values = _require_shapes(shapes, others, "intersect")
+    return Shape(ops.intersection_shapes(tuple(shape._legacy() for shape in values)))
 
 
 def intersection(
@@ -95,7 +86,6 @@ def intersection(
 
 
 @operation(
-    backend=ops.difference_shapes,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.difference",
@@ -105,8 +95,9 @@ def difference(
     shapes: Shape | Sequence[Shape],
     /,
     *others: Shape,
-) -> OperationArguments:
-    return arguments(_require_shapes(shapes, others, "difference"))
+) -> Shape:
+    values = _require_shapes(shapes, others, "difference")
+    return Shape(ops.difference_shapes(tuple(shape._legacy() for shape in values)))
 
 
 class SplitResult(DeferredSequence[Solid]):
@@ -118,8 +109,6 @@ class SplitResult(DeferredSequence[Solid]):
         context: Context,
         state: State[tuple[ResolvedShape, ...]],
     ) -> SplitResult:
-        if not isinstance(state, Expression):
-            raise TypeError("typed split results require an expression state")
         return cls(
             context,
             state,
@@ -143,7 +132,6 @@ class SliceResult(SplitResult):
 
 
 @operation(
-    backend=ops.split_shapes,
     result=_SOLID_SEQUENCE_SPEC,
     returns=SplitResult,
     operation_id="zencad.typed.split",
@@ -153,14 +141,17 @@ def split(
     body: Shape,
     tools: Shape | Sequence[Shape],
     /,
-) -> OperationArguments:
+) -> SplitResult:
     if not isinstance(body, Shape):
         raise TypeError("split body must be a Shape")
-    return arguments(body, _require_shapes(tools, (), "split"))
+    values = _require_shapes(tools, (), "split")
+    return SplitResult._from_state(
+        execution_context(),
+        ops.split_shapes(body._legacy(), tuple(tool._legacy() for tool in values)),
+    )
 
 
 @operation(
-    backend=ops.slice_shape,
     result=_SOLID_SEQUENCE_SPEC,
     returns=SliceResult,
     operation_id="zencad.typed.slice",
@@ -168,79 +159,77 @@ def split(
 )
 def slice(
     body: Shape,
-    z: ScalarInput = 0,
+    z: float = 0,
     *,
     axis: object = "z",
     plane: object | None = None,
-) -> OperationArguments:
+) -> SliceResult:
     if not isinstance(body, Shape):
         raise TypeError("slice body must be a Shape")
     if plane is not None and not (
         isinstance(z, (int, float)) and not isinstance(z, bool) and z == 0
     ):
         raise TypeError("slice accepts either z/axis or plane, not both")
-    return arguments(body, plane, z, axis)
+    resolved_plane = plane._legacy() if isinstance(plane, Shape) else plane
+    return SliceResult._from_state(
+        execution_context(),
+        ops.slice_shape(body._legacy(), resolved_plane, z, axis),
+    )
 
 
 @operation(
-    backend=ops.section,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.section",
     operation_version="1",
 )
 def section(
-    left: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput],
-    right: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput] = 0,
+    left: Shape | float | Point3 | Vector3 | Sequence[float],
+    right: Shape | float | Point3 | Vector3 | Sequence[float] = 0,
     /,
     *,
     pretty: bool = False,
-) -> OperationArguments:
+) -> Shape:
     """Intersect shape boundaries, accepting legacy plane operands."""
 
     _require_bool(pretty, "section pretty")
-    context = resolve_context(left, right)
-    return arguments(
-        _section_operand(context, left, "section left"),
-        _section_operand(context, right, "section right"),
-        pretty,
-    )
+    context = execution_context()
+    left_shape = _section_operand(context, left, "section left")
+    right_shape = _section_operand(context, right, "section right")
+    return Shape(ops.section(left_shape._legacy(), right_shape._legacy(), pretty))
 
 
 @operation(
-    backend=ops.union,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.union",
     operation_version="1",
 )
-def _shape_union(left: Shape, right: Shape) -> OperationArguments:
+def _shape_union(left: Shape, right: Shape) -> Shape:
     _require_binary_shapes(left, right, "union")
-    return arguments(left, right)
+    return Shape(ops.union(left._legacy(), right._legacy()))
 
 
 @operation(
-    backend=ops.difference,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.difference",
     operation_version="1",
 )
-def _shape_difference(left: Shape, right: Shape) -> OperationArguments:
+def _shape_difference(left: Shape, right: Shape) -> Shape:
     _require_binary_shapes(left, right, "difference")
-    return arguments(left, right)
+    return Shape(ops.difference(left._legacy(), right._legacy()))
 
 
 @operation(
-    backend=ops.intersection,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.intersection",
     operation_version="1",
 )
-def _shape_intersection(left: Shape, right: Shape) -> OperationArguments:
+def _shape_intersection(left: Shape, right: Shape) -> Shape:
     _require_binary_shapes(left, right, "intersection")
-    return arguments(left, right)
+    return Shape(ops.intersection(left._legacy(), right._legacy()))
 
 
 def _require_binary_shapes(left: Shape, right: Shape, name: str) -> None:
@@ -277,7 +266,7 @@ def _require_bool(value: object, name: str) -> None:
 
 def _section_operand(
     context: Context,
-    value: Shape | ScalarInput | Point3 | Vector3 | Sequence[ScalarInput],
+    value: Shape | float | Point3 | Vector3 | Sequence[float],
     name: str,
 ) -> Shape:
     if isinstance(value, Shape):
@@ -291,10 +280,8 @@ def _section_operand(
                 raise TypeError(f"{name} plane vector must contain three coordinates")
             direction = vector3(coordinates)
         else:
-            return halfspace().transform(moveZ(cast(ScalarInput, value)))
-        transform = translation(direction) * short_rotate(
-            vector3(0, 0, 1), direction
-        )
+            return halfspace().transform(moveZ(cast(float, value)))
+        transform = translation(direction) * short_rotate(vector3(0, 0, 1), direction)
         return halfspace().transform(transform)
 
 

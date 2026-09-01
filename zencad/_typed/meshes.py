@@ -11,7 +11,7 @@ import numpy as np
 from OCP.Poly import Poly_Triangulation
 from evalcache import Expression, ResultSpec
 
-from zencad.operation import OperationArguments, arguments, operation
+from zencad.operation import operation
 
 from . import _mesh_operations as ops
 from ._core import Handle, State
@@ -70,6 +70,20 @@ class MeshData(Handle[ops.MeshValue]):
 
     __slots__ = ()
     _result_spec: ClassVar[ResultSpec[ops.MeshValue]] = MESH_SPEC
+
+    def __init__(
+        self,
+        value: ops.MeshValue,
+        *,
+        context: Context | None = None,
+    ) -> None:
+        from zencad.operation import execution_context
+
+        selected_context = execution_context() if context is None else context
+        self._bind(
+            selected_context,
+            self._result_spec.validate(value, "zencad.typed.mesh.construct"),
+        )
 
     @classmethod
     def _from_state(
@@ -174,6 +188,7 @@ class MeshData(Handle[ops.MeshValue]):
         """Encode the current provenance-free scene mesh transport."""
         return mesh_display_payload(self)
 
+
 def _positive_number(value: Number, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise TypeError(f"{name} must be int or float")
@@ -200,7 +215,6 @@ def _require_shape(value: object, name: str) -> None:
 
 
 @operation(
-    backend=ops.mesh_shape,
     result=MESH_SPEC,
     returns=MeshData,
     operation_id="zencad.typed.shape.to-mesh",
@@ -208,14 +222,14 @@ def _require_shape(value: object, name: str) -> None:
 )
 def to_mesh(
     shape: Shape,
-    linear_deflection: Number = 0.5,
-    angular_deflection: Number = 0.6,
+    linear_deflection: float = 0.5,
+    angular_deflection: float = 0.6,
     *,
-    crease_angle: Number = math.radians(32),
+    crease_angle: float = math.radians(32),
     relative: bool = False,
     parallel: bool = True,
-    weld_tolerance: Number | None = None,
-) -> OperationArguments:
+    weld_tolerance: float | None = None,
+) -> MeshData:
     """Create a stable indexed mesh while retaining the shape graph."""
 
     _require_shape(shape, "to_mesh")
@@ -226,14 +240,16 @@ def to_mesh(
         if weld_tolerance is None
         else _positive_number(weld_tolerance, "weld_tolerance")
     )
-    return arguments(
-        shape,
-        _positive_number(linear_deflection, "linear_deflection"),
-        _positive_number(angular_deflection, "angular_deflection"),
-        _crease_angle(crease_angle),
-        relative,
-        parallel,
-        resolved_weld_tolerance,
+    return MeshData(
+        ops.mesh_shape(
+            shape._legacy(),
+            _positive_number(linear_deflection, "linear_deflection"),
+            _positive_number(angular_deflection, "angular_deflection"),
+            _crease_angle(crease_angle),
+            relative,
+            parallel,
+            resolved_weld_tolerance,
+        )
     )
 
 
@@ -265,16 +281,15 @@ def triangulate(
 
 
 @operation(
-    backend=ops.mesh_boundary_box,
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
     operation_id="zencad.typed.mesh.boundbox",
     operation_version="1",
 )
-def mesh_boundbox(mesh: MeshData, /) -> OperationArguments:
+def mesh_boundbox(mesh: MeshData, /) -> BoundaryBox:
     if not isinstance(mesh, MeshData):
         raise TypeError("mesh_boundbox expects MeshData")
-    return arguments(mesh)
+    return BoundaryBox(ops.mesh_boundary_box(mesh._resolved()))
 
 
 def get_nodes(

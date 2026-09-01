@@ -5,21 +5,17 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import TYPE_CHECKING, Literal, overload
+from typing import Literal, overload
 
 from evalcache import ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.operation import (
-    OperationArguments,
-    arguments,
     operation,
     resolve_context,
-    using_context,
 )
 
 from . import _operations as ops
-from ._core import State
 from .records import Interval
 from .topology import (
     SHAPE_SPEC,
@@ -31,17 +27,7 @@ from .topology import (
     Solid,
     Wire,
 )
-from .values import (
-    Scalar,
-    ScalarInput,
-    Vector3,
-    _optional_scalar_state,
-    _scalar_state,
-    vector3,
-)
-
-if TYPE_CHECKING:
-    from .context import Context
+from .values import Vector3
 
 
 class PipeTrihedron(Enum):
@@ -68,7 +54,6 @@ class PipeTransition(Enum):
 
 
 @operation(
-    backend=ops.extrude_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.extrude",
@@ -76,24 +61,26 @@ class PipeTransition(Enum):
 )
 def extrude(
     shape: Shape,
-    vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
+    vec: Vector3 | Sequence[float] | float,
     center: bool = False,
-) -> OperationArguments:
+) -> Shape:
     _require_shape(shape, "extrude")
     _require_bool(center, "extrude center")
-    context = resolve_context(shape, vec)
-    with using_context(context):
-        resolved_vector = (
-            vector3(0, 0, vec)
-            if isinstance(vec, (Scalar, int, float)) and not isinstance(vec, bool)
-            else vector3(vec)
-        )
-    return arguments(shape, resolved_vector, center)
+    resolved_vector = (
+        Vector3(0, 0, vec)
+        if isinstance(vec, (int, float)) and not isinstance(vec, bool)
+        else vec
+        if isinstance(vec, Vector3)
+        else Vector3(tuple(vec))
+    )
+    return Shape(
+        ops.extrude_shape(shape._legacy(), resolved_vector._resolved(), center)
+    )
 
 
 def linear_extrude(
     shape: Shape,
-    vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
+    vec: Vector3 | Sequence[float] | float,
     center: bool = False,
 ) -> Shape:
     """Compatibility spelling for :func:`extrude`."""
@@ -102,7 +89,6 @@ def linear_extrude(
 
 
 @operation(
-    backend=ops.revolve_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.revol",
@@ -110,16 +96,11 @@ def linear_extrude(
 )
 def revol(
     shape: Shape,
-    r: ScalarInput | None = None,
-    yaw: ScalarInput = 0,
-) -> OperationArguments:
+    r: float | None = None,
+    yaw: float = 0,
+) -> Shape:
     _require_shape(shape, "revol")
-    context = resolve_context(shape, r, yaw)
-    return arguments(
-        shape,
-        _optional_scalar_state(context, r),
-        _scalar_state(context, yaw),
-    )
+    return Shape(ops.revolve_shape(shape._legacy(), r, yaw))
 
 
 def _loft_result_type(
@@ -175,7 +156,6 @@ def loft(
 
 
 @operation(
-    backend=ops.loft_shapes,
     result=SOLID_SPEC,
     returns=_loft_result_type,
     select_result=_loft_result_spec,
@@ -187,22 +167,22 @@ def loft(
     smooth: bool = False,
     shell: bool = False,
     max_degree: int = 4,
-) -> OperationArguments:
+) -> Solid | Shell:
     _require_bool(smooth, "loft smooth")
     _require_bool(shell, "loft shell")
     values = _require_wire_parts(sections, "loft")
     if len(values) < 2:
         raise ValueError("loft requires at least two sections")
-    return arguments(
-        values,
+    resolved = ops.loft_shapes(
+        tuple(value._legacy() for value in values),
         smooth,
         shell,
         _require_positive_int(max_degree, "loft max_degree"),
     )
+    return Shell(resolved) if shell else Solid(resolved)
 
 
 @operation(
-    backend=ops.pipe_shape,
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.pipe",
@@ -215,13 +195,17 @@ def pipe(
     *,
     trihedron: PipeTrihedron = PipeTrihedron.CORRECTED_FRENET,
     force_approx_c1: bool = False,
-) -> OperationArguments:
+) -> Shape:
     _require_shape(profile, "pipe profile")
     _require_pipe_spine(spine, "pipe spine")
     if not isinstance(trihedron, PipeTrihedron):
         raise TypeError("pipe trihedron must be PipeTrihedron")
     _require_bool(force_approx_c1, "pipe force_approx_c1")
-    return arguments(profile, spine, trihedron.value, force_approx_c1)
+    return Shape(
+        ops.pipe_shape(
+            profile._legacy(), spine._legacy(), trihedron.value, force_approx_c1
+        )
+    )
 
 
 def _pipe_shell_result_type(
@@ -288,7 +272,6 @@ def pipe_shell(
 
 
 @operation(
-    backend=ops.pipe_shell_shapes,
     result=SOLID_SPEC,
     returns=_pipe_shell_result_type,
     select_result=_pipe_shell_result_spec,
@@ -307,7 +290,7 @@ def pipe_shell(
     discrete: bool = False,
     solid: bool = True,
     transition: PipeTransition = PipeTransition.TRANSFORMED,
-) -> OperationArguments:
+) -> Solid | Shell:
     values = _require_wire_parts(profiles, "pipe_shell profiles")
     _require_pipe_spine(spine, "pipe_shell spine")
     for flag, name in (
@@ -325,18 +308,18 @@ def pipe_shell(
     selected_modes = sum((frenet, binormal is not None, parallel is not None, discrete))
     if selected_modes > 1:
         raise ValueError("pipe_shell orientation modes are mutually exclusive")
-    resolve_context(values, spine, binormal, parallel)
-    return arguments(
-        values,
-        spine,
+    resolved = ops.pipe_shell_shapes(
+        tuple(value._legacy() for value in values),
+        spine._legacy(),
         frenet,
         approx_c1,
-        binormal,
-        parallel,
+        None if binormal is None else binormal._resolved(),
+        None if parallel is None else parallel._resolved(),
         discrete,
         solid,
         transition.value,
     )
+    return Solid(resolved) if solid else Shell(resolved)
 
 
 def sweep(
@@ -352,7 +335,6 @@ def sweep(
 
 
 @operation(
-    backend=ops.revolve_sections_shape,
     result=SOLID_SPEC,
     returns=Solid,
     operation_id="zencad.typed.revol2",
@@ -360,14 +342,14 @@ def sweep(
 )
 def revol2(
     profile: Shape,
-    radius: ScalarInput,
+    radius: float,
     /,
     *,
     sections: int = 30,
-    yaw: Interval | Sequence[ScalarInput] = (0, 2 * math.pi),
-    roll: Interval | Sequence[ScalarInput] = (0, 0),
+    yaw: Interval | Sequence[float] = (0, 2 * math.pi),
+    roll: Interval | Sequence[float] = (0, 0),
     parts: int | None = None,
-) -> OperationArguments:
+) -> Solid:
     _require_shape(profile, "revol2 profile")
     resolved_sections = _require_positive_int(sections, "revol2 sections")
     if resolved_sections < 2:
@@ -377,14 +359,15 @@ def revol2(
         resolved_parts = _require_positive_int(parts, "revol2 parts")
         if resolved_sections < resolved_parts * 2:
             raise ValueError("revol2 sections must provide at least two per part")
-    context = resolve_context(profile, radius, yaw, roll)
-    return arguments(
-        profile,
-        _scalar_state(context, radius),
-        resolved_sections,
-        _interval_state(context, yaw, "revol2 yaw"),
-        _interval_state(context, roll, "revol2 roll"),
-        resolved_parts,
+    return Solid(
+        ops.revolve_sections_shape(
+            profile._legacy(),
+            radius,
+            resolved_sections,
+            _interval_values(yaw, "revol2 yaw"),
+            _interval_values(roll, "revol2 roll"),
+            resolved_parts,
+        )
     )
 
 
@@ -413,19 +396,18 @@ def _require_wire_parts(
     return values
 
 
-def _interval_state(
-    context: Context,
-    interval: Interval | Sequence[ScalarInput],
+def _interval_values(
+    interval: Interval | Sequence[float],
     name: str,
-) -> tuple[State[float], State[float]]:
+) -> tuple[float, float]:
     if isinstance(interval, Interval):
-        return (interval.lower._state, interval.upper._state)
+        return interval.value()
     if isinstance(interval, (str, bytes)) or not isinstance(interval, Sequence):
         raise TypeError(f"{name} must contain two scalar bounds")
     values = tuple(interval)
     if len(values) != 2:
         raise TypeError(f"{name} must contain two scalar bounds")
-    return (_scalar_state(context, values[0]), _scalar_state(context, values[1]))
+    return (values[0], values[1])
 
 
 def _require_bool(value: object, name: str) -> None:

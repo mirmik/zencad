@@ -141,7 +141,9 @@ class TypedTransformTest(unittest.TestCase):
                     mass = shape.mass()
                     center = shape.center()
                     axis = typed.Vector3(center.x, center.y, center.z)
-                    quaternion = context.call(typed.quaternion_axis_angle, axis, mass / 10)
+                    quaternion = context.call(
+                        typed.quaternion_axis_angle, axis, mass / 10
+                    )
                     offset = typed.Vector3(center.x, center.y, center.z)
                     transform = (
                         context.call(typed.translation, offset)
@@ -207,18 +209,22 @@ class TypedTransformTest(unittest.TestCase):
                     progress_hooks=(events.append,),
                 )
                 first = context.call(typed.quaternion, 0, 0, 2, 2)
-                second = context.call(typed.quaternion_axis_angle,
-                    context.call(typed.vector, 0, 1, 0), math.pi / 3
+                second = context.call(
+                    typed.quaternion_axis_angle,
+                    context.call(typed.vector, 0, 1, 0),
+                    math.pi / 3,
                 )
                 quaternion = (first * second).inverse()
                 transform = (
                     context.call(typed.translation, 1, 2, 3)
                     * context.call(typed.rotation, quaternion)
-                    * context.call(typed.scale,
+                    * context.call(
+                        typed.scale,
                         -2,
                         center=context.call(typed.point, 3, 2, 1),
                     )
-                    * context.call(typed.mirror,
+                    * context.call(
+                        typed.mirror,
                         context.call(typed.vector, 0, 0, 1),
                         origin=context.call(typed.point, 0, 0, 2),
                     )
@@ -316,7 +322,8 @@ class TypedTransformTest(unittest.TestCase):
         context = typed.Context.deferred(cache=False)
         point = context.call(typed.point, 1, 0, 0)
         move = context.call(typed.translation, 1, 0, 0)
-        rotate = context.call(typed.rotation,
+        rotate = context.call(
+            typed.rotation,
             context.call(typed.vector, 0, 0, 1),
             math.pi / 2,
         )
@@ -338,8 +345,16 @@ class TypedTransformTest(unittest.TestCase):
 
     def test_quaternion_composition_norm_and_sign_canonicalization(self):
         context = typed.Context.deferred(cache=False)
-        x_rotation = context.call(typed.quaternion_axis_angle, context.call(typed.vector, 1, 0, 0), math.pi / 2)
-        y_rotation = context.call(typed.quaternion_axis_angle, context.call(typed.vector, 0, 1, 0), math.pi / 3)
+        x_rotation = context.call(
+            typed.quaternion_axis_angle,
+            context.call(typed.vector, 1, 0, 0),
+            math.pi / 2,
+        )
+        y_rotation = context.call(
+            typed.quaternion_axis_angle,
+            context.call(typed.vector, 0, 1, 0),
+            math.pi / 3,
+        )
         vector = context.call(typed.vector, 2, -3, 4)
 
         composed = y_rotation * x_rotation
@@ -369,8 +384,10 @@ class TypedTransformTest(unittest.TestCase):
             (1.0, 0.0, 0.0, 0.0),
         )
 
-        subnormal_axis = context.call(typed.quaternion_axis_angle,
-            context.call(typed.vector, 5e-324, 0, 0), math.pi / 2
+        subnormal_axis = context.call(
+            typed.quaternion_axis_angle,
+            context.call(typed.vector, 5e-324, 0, 0),
+            math.pi / 2,
         )
         self.assertCoordinatesAlmostEqual(
             subnormal_axis.rotate(context.call(typed.vector, 0, 1, 0)).value(),
@@ -381,7 +398,9 @@ class TypedTransformTest(unittest.TestCase):
         self.assertEqual((identity * positive).value(), positive.value())
         self.assertEqual((positive * identity).value(), positive.value())
         transform = context.call(typed.translation, 1, 2, 3) * positive.to_transform()
-        identity_transform = context.call(typed.identity_transform, )
+        identity_transform = context.call(
+            typed.identity_transform,
+        )
         self.assertEqual((identity_transform * transform).matrix(), transform.matrix())
         self.assertEqual((transform * identity_transform).matrix(), transform.matrix())
 
@@ -389,7 +408,9 @@ class TypedTransformTest(unittest.TestCase):
         context = typed.Context.deferred(cache=False)
         transform = (
             context.call(typed.translation, 10, -2, 7)
-            * context.call(typed.rotation, context.call(typed.vector, 0, 0, 1), math.pi / 2)
+            * context.call(
+                typed.rotation, context.call(typed.vector, 0, 0, 1), math.pi / 2
+            )
             * context.call(typed.scale, 2)
         )
         point = context.call(typed.point, 1, 2, 3)
@@ -414,11 +435,14 @@ class TypedTransformTest(unittest.TestCase):
 
     def test_transform_and_quaternion_inverses_round_trip(self):
         context = typed.Context.deferred(cache=False)
-        quaternion = context.call(typed.quaternion_axis_angle, context.call(typed.vector, 2, -1, 4), 1.234)
+        quaternion = context.call(
+            typed.quaternion_axis_angle, context.call(typed.vector, 2, -1, 4), 1.234
+        )
         transform = (
             context.call(typed.translation, 3, -5, 7)
             * context.call(typed.rotation, quaternion)
-            * context.call(typed.scale,
+            * context.call(
+                typed.scale,
                 -1.25,
                 center=context.call(typed.point, 2, 1, -3),
             )
@@ -440,7 +464,9 @@ class TypedTransformTest(unittest.TestCase):
         )
         self.assertMatricesAlmostEqual(
             (transform * transform.inverse()).matrix(),
-            context.call(typed.identity_transform, ).matrix(),
+            context.call(
+                typed.identity_transform,
+            ).matrix(),
         )
 
     def test_scale_about_center_supports_signed_scale(self):
@@ -461,7 +487,8 @@ class TypedTransformTest(unittest.TestCase):
 
     def test_mirror_plane_is_an_involution(self):
         context = typed.Context.deferred(cache=False)
-        mirror = context.call(typed.mirror,
+        mirror = context.call(
+            typed.mirror,
             context.call(typed.vector, 0, 0, 2),
             origin=context.call(typed.point, 0, 0, 3),
         )
@@ -486,12 +513,15 @@ class TypedTransformTest(unittest.TestCase):
         )
         self.assertMatricesAlmostEqual(
             (mirror * mirror).matrix(),
-            context.call(typed.identity_transform, ).matrix(),
+            context.call(
+                typed.identity_transform,
+            ).matrix(),
         )
 
     def test_ocp_round_trip_and_fresh_mutable_boundaries(self):
         context = typed.Context.deferred(cache=False)
-        quaternion = context.call(typed.quaternion_axis_angle,
+        quaternion = context.call(
+            typed.quaternion_axis_angle,
             context.call(typed.vector, 1, -2, 3),
             0.75,
         )
@@ -565,8 +595,8 @@ class TypedTransformTest(unittest.TestCase):
     def test_shape_transform_uses_the_typed_adapter(self):
         context = typed.Context.deferred(cache=False)
         shape = context.call(typed.box, 1, 2, 3)
-        transform = context.call(typed.translation, 4, -2, 7) * context.call(typed.rotation,
-            context.call(typed.vector, 0, 0, 1), math.pi / 2
+        transform = context.call(typed.translation, 4, -2, 7) * context.call(
+            typed.rotation, context.call(typed.vector, 0, 0, 1), math.pi / 2
         )
         moved = shape.transform(transform)
 
@@ -578,7 +608,9 @@ class TypedTransformTest(unittest.TestCase):
             (3.0, -1.5, 8.5),
         )
 
-        translated_by_transform = shape.transform(context.call(typed.translation, 2, 3, 4))
+        translated_by_transform = shape.transform(
+            context.call(typed.translation, 2, 3, 4)
+        )
         translated_by_legacy_adapter = shape.translate(2, 3, 4)
         self.assertCoordinatesAlmostEqual(
             translated_by_transform.center().value(),
@@ -595,21 +627,35 @@ class TypedTransformTest(unittest.TestCase):
         invalid_factories = (
             lambda: context.call(typed.quaternion, 0, 0, 0, 0),
             lambda: context.call(typed.quaternion, math.inf, 0, 0, 1),
-            lambda: context.call(typed.quaternion_axis_angle, context.call(typed.vector, 0, 0, 0), 1),
-            lambda: context.call(typed.quaternion_axis_angle, context.call(typed.vector, math.nan, 0, 1), 1),
-            lambda: context.call(typed.quaternion_axis_angle, context.call(typed.vector, 0, 0, 1), math.inf),
+            lambda: context.call(
+                typed.quaternion_axis_angle, context.call(typed.vector, 0, 0, 0), 1
+            ),
+            lambda: context.call(
+                typed.quaternion_axis_angle,
+                context.call(typed.vector, math.nan, 0, 1),
+                1,
+            ),
+            lambda: context.call(
+                typed.quaternion_axis_angle,
+                context.call(typed.vector, 0, 0, 1),
+                math.inf,
+            ),
             lambda: context.call(typed.translation, math.nan, 0, 0),
             lambda: context.call(typed.scale, 0),
             lambda: context.call(typed.scale, -0.0),
             lambda: context.call(typed.scale, sys.float_info.min),
             lambda: context.call(typed.scale, math.inf),
-            lambda: context.call(typed.scale,
+            lambda: context.call(
+                typed.scale,
                 2,
                 center=context.call(typed.point, 0, math.nan, 0),
             ),
             lambda: context.call(typed.mirror, context.call(typed.vector, 0, 0, 0)),
-            lambda: context.call(typed.mirror, context.call(typed.vector, 0, math.inf, 1)),
-            lambda: context.call(typed.mirror,
+            lambda: context.call(
+                typed.mirror, context.call(typed.vector, 0, math.inf, 1)
+            ),
+            lambda: context.call(
+                typed.mirror,
                 context.call(typed.vector, 0, 0, 1),
                 origin=context.call(typed.point, math.nan, 0, 0),
             ),
@@ -639,17 +685,21 @@ class TypedTransformTest(unittest.TestCase):
     def test_wrong_domain_types_are_rejected_at_the_boundary(self):
         context = typed.Context.deferred(cache=False)
         quaternion = context.call(typed.quaternion, 0, 0, 0, 1)
-        transform = context.call(typed.identity_transform, )
+        transform = context.call(
+            typed.identity_transform,
+        )
         point = context.call(typed.point, 1, 2, 3)
         shape = context.call(typed.box, 1)
         invalid_calls = (
             lambda: typed.Quaternion((1, 2, 3), context=context),
-            lambda: context.call(typed.quaternion, True, 0, 0, 1),
+            lambda: context.call(typed.quaternion, True, 0, 0, 1).value(),
             lambda: context.call(typed.translation, point),
             lambda: context.call(typed.translation, 1, 2),
             lambda: context.call(typed.rotation, context.call(typed.vector, 0, 0, 1)),
             lambda: context.call(typed.rotation, point, 1),
-            lambda: context.call(typed.scale, 2, center=context.call(typed.vector, 0, 0, 0)),
+            lambda: context.call(
+                typed.scale, 2, center=context.call(typed.vector, 0, 0, 0)
+            ),
             lambda: context.call(typed.mirror, point),
             lambda: quaternion.rotate(point),
             lambda: quaternion * transform,
@@ -671,20 +721,35 @@ class TypedTransformTest(unittest.TestCase):
     def test_handles_from_different_contexts_cannot_be_mixed(self):
         first = typed.Context.deferred(cache=False)
         second = typed.Context.deferred(cache=False)
-        first_quaternion = first.call(typed.quaternion_axis_angle, first.call(typed.vector, 0, 0, 1), 0.5)
-        second_quaternion = second.call(typed.quaternion_axis_angle, second.call(typed.vector, 0, 0, 1), 0.5)
+        first_quaternion = first.call(
+            typed.quaternion_axis_angle, first.call(typed.vector, 0, 0, 1), 0.5
+        )
+        second_quaternion = second.call(
+            typed.quaternion_axis_angle, second.call(typed.vector, 0, 0, 1), 0.5
+        )
         first_transform = first.call(typed.rotation, first_quaternion)
         second_transform = second.call(typed.rotation, second_quaternion)
         invalid_calls = (
-            lambda: first.call(typed.quaternion, first.call(typed.scalar, 1), second.call(typed.scalar, 2), 3, 4),
-            lambda: first.call(typed.quaternion_axis_angle, second.call(typed.vector, 1, 0, 0), 1),
+            lambda: first.call(
+                typed.quaternion,
+                first.call(typed.scalar, 1),
+                second.call(typed.scalar, 2),
+                3,
+                4,
+            ),
+            lambda: first.call(
+                typed.quaternion_axis_angle, second.call(typed.vector, 1, 0, 0), 1
+            ),
             lambda: first_quaternion * second_quaternion,
             lambda: first_quaternion.rotate(second.call(typed.vector, 1, 2, 3)),
             lambda: first.call(typed.rotation, second_quaternion),
             lambda: first.call(typed.translation, second.call(typed.vector, 1, 2, 3)),
             lambda: first.call(typed.scale, second.call(typed.scalar, 2)),
-            lambda: first.call(typed.scale, 2, center=second.call(typed.point, 1, 2, 3)),
-            lambda: first.call(typed.mirror,
+            lambda: first.call(
+                typed.scale, 2, center=second.call(typed.point, 1, 2, 3)
+            ),
+            lambda: first.call(
+                typed.mirror,
                 first.call(typed.vector, 0, 0, 1),
                 origin=second.call(typed.point, 0, 0, 0),
             ),
@@ -706,7 +771,8 @@ class TypedTransformTest(unittest.TestCase):
         randomizer = random.Random(0x5EED_2021)
 
         def random_vector():
-            return context.call(typed.vector,
+            return context.call(
+                typed.vector,
                 randomizer.uniform(-5, 5),
                 randomizer.uniform(-5, 5),
                 randomizer.uniform(-5, 5),
@@ -724,7 +790,8 @@ class TypedTransformTest(unittest.TestCase):
                 scale = -scale
             return (
                 context.call(typed.translation, random_vector())
-                * context.call(typed.rotation,
+                * context.call(
+                    typed.rotation,
                     random_axis(),
                     randomizer.uniform(-math.pi, math.pi),
                 )
@@ -766,7 +833,8 @@ class TypedTransformTest(unittest.TestCase):
                     composed(vector).value(),
                 )
 
-                quaternion = context.call(typed.quaternion_axis_angle,
+                quaternion = context.call(
+                    typed.quaternion_axis_angle,
                     random_axis(),
                     randomizer.uniform(-math.pi, math.pi),
                 )
