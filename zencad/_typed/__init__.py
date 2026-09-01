@@ -110,7 +110,7 @@ from .surfaces import (
     sweep_surface,
     sweep_surface_from_laws,
 )
-from .text import FontAspect
+from .text import FontAspect, register_font, text_to_brep, textshape
 from .topology import (
     Compound,
     CompSolid,
@@ -384,4 +384,7 @@ __all__ = [
     "ruled",
     "square",
     "widewire",
+    "register_font",
+    "text_to_brep",
+    "textshape",
 ]

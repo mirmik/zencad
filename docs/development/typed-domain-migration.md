@@ -1154,6 +1154,28 @@ Verification on 2026-09-01 after the face-constructor checkpoint:
   the wheel with published evalcache 2.0.0a1 and passes the expanded installed
   geometry/I/O smoke for direct face declarations and Runtime forwarding.
 
+Task #2073 extracts the typed text boundary. `_typed/text.py` now owns the
+module-level `text_to_brep` declaration and the `textshape` compatibility
+alias, while `register_font` remains an explicit immediate call into OCCT's
+process-wide font manager. `Runtime` only selects the evaluator context and
+forwards these calls.
+
+The extraction preserves the precise `Compound` result, FontAspect validation,
+the `zencad.typed.text_to_brep` operation ID, deferred scalar sizes, and the
+intentional `cacheable=False` policy required by mutable process-wide font
+state. `_typed/runtime.py` is reduced from 2753 to 2723 lines.
+
+Verification on 2026-09-01 after the text checkpoint:
+
+- pytest passes 383 tests and 405 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 367 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes direct module and
+  Runtime text smoke outside the checkout.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

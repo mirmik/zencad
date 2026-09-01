@@ -80,6 +80,7 @@ def main():
         assert isinstance(typed.infplane, DomainOperation)
         assert isinstance(typed.ruled, DomainOperation)
         assert isinstance(typed.widewire, DomainOperation)
+        assert isinstance(typed.text_to_brep, DomainOperation)
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(
@@ -318,8 +319,13 @@ def main():
         )
         typed_runtime.register_font(font_path)
         typed_text = typed_runtime.textshape("Hello", "MandarinC", 10)
+        typed.register_font(font_path)
+        with using_runtime(typed_runtime):
+            module_text = typed.text_to_brep("Module", "MandarinC", 10)
         assert type(typed_text) is typed.Compound
+        assert type(module_text) is typed.Compound
         assert len(typed_text.edges()) > 0
+        assert len(module_text.edges()) > 0
         builder = (
             typed_runtime.wire_builder(defrel=True)
             .l(2, 0)

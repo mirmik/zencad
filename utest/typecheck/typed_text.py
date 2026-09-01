@@ -22,3 +22,15 @@ def text_contract(runtime: typed.Runtime) -> None:
         typed.Compound,
     )
     assert_type(runtime.textshape("Hello", "Font", 10), typed.Compound)
+    assert_type(typed.register_font("font.ttf"), None)
+    assert_type(
+        typed.text_to_brep(
+            "Hello",
+            "Font",
+            runtime.box(2).mass(),
+            typed.FontAspect.BOLD,
+            composite_curve=True,
+        ),
+        typed.Compound,
+    )
+    assert_type(typed.textshape("Hello", "Font", 10), typed.Compound)

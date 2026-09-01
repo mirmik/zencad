@@ -5,6 +5,7 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 
 import zencad
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 FONT_PATH = (
@@ -13,6 +14,27 @@ FONT_PATH = (
 
 
 class TypedTextTest(unittest.TestCase):
+    def test_text_family_is_declared_at_module_level(self):
+        self.assertIsInstance(typed.text_to_brep, DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        typed.register_font(FONT_PATH)
+        with using_runtime(runtime):
+            text = typed.text_to_brep("Text", "MandarinC", 10)
+            alias = typed.textshape("Alias", "MandarinC", 10)
+
+        self.assertIs(type(text), typed.Compound)
+        self.assertIs(type(alias), typed.Compound)
+        self.assertIs(text.runtime, runtime)
+        self.assertIs(alias.runtime, runtime)
+        self.assertEqual(text._state.operation_id, "zencad.typed.text_to_brep")
+        self.assertEqual(alias._state.operation_id, "zencad.typed.text_to_brep")
+        self.assertEqual(events, [])
+
     def test_text_factories_are_policy_independent(self):
         observed_types = set()
 

@@ -32,13 +32,13 @@ from zencad.occ_compat import read_brep, vertex_point, write_brep
 from zencad.operation import using_runtime
 
 from . import _operations as ops
-from . import _text_operations as text_ops
 from . import bounds as bounds_api
 from . import curve_constructors as curve_api
 from . import face_constructors as face_api
 from . import modeling as modeling_api
 from . import surfaces as surface_api
 from . import sweeps as sweep_api
+from . import text as text_api
 from . import transforms as transform_api
 from ._core import State, require_same_runtime
 from .bounds import BoundaryBox
@@ -56,7 +56,6 @@ from .surfaces import (
 from .sweeps import PipeTransition, PipeTrihedron
 from .text import FontAspect
 from .topology import (
-    COMPOUND_SPEC,
     SHELL_SPEC,
     SOLID_SPEC,
     Compound,
@@ -79,7 +78,6 @@ from .values import (
     ScalarInput,
     Vector2,
     Vector3,
-    _scalar_state,
 )
 from .solid import (
     box as solid_box,
@@ -1443,11 +1441,7 @@ class Runtime:
         font_path: str | PathLike[str],
         aspect: FontAspect = FontAspect.UNDEFINED,
     ) -> None:
-        """Immediately register a font in OCCT's process-wide font manager."""
-        if not isinstance(font_path, (str, PathLike)):
-            raise TypeError("register_font path must be str or PathLike")
-        resolved_aspect = _require_font_aspect(aspect, "register_font aspect")
-        text_ops.register_font(font_path, resolved_aspect.value)
+        return text_api.register_font(font_path, aspect)
 
     def text_to_brep(
         self,
@@ -1457,26 +1451,14 @@ class Runtime:
         aspect: FontAspect = FontAspect.REGULAR,
         composite_curve: bool = False,
     ) -> Compound:
-        if not isinstance(text, str):
-            raise TypeError("text_to_brep text must be str")
-        if not isinstance(font_name, str):
-            raise TypeError("text_to_brep font_name must be str")
-        resolved_aspect = _require_font_aspect(aspect, "text_to_brep aspect")
-        _require_bool(composite_curve, "text_to_brep composite_curve")
-        expression = self._expression(
-            text_ops.text_to_brep,
-            result=COMPOUND_SPEC,
-            args=(
+        with using_runtime(self):
+            return text_api.text_to_brep(
                 text,
                 font_name,
-                _scalar_state(self, size),
-                resolved_aspect.value,
+                size,
+                aspect,
                 composite_curve,
-            ),
-            operation_id="zencad.typed.text_to_brep",
-            cacheable=False,
-        )
-        return Compound._from_state(self, expression)
+            )
 
     def textshape(
         self,
@@ -1485,14 +1467,8 @@ class Runtime:
         size: ScalarInput,
         composite_curve: bool = False,
     ) -> Compound:
-        """Legacy spelling for :meth:`text_to_brep`."""
-        return self.text_to_brep(
-            text,
-            fontname,
-            size,
-            FontAspect.REGULAR,
-            composite_curve,
-        )
+        with using_runtime(self):
+            return text_api.textshape(text, fontname, size, composite_curve)
 
     def make_shell(self, faces: Face | Sequence[Face], /) -> Shell:
         values = _require_faces(self, faces, "make_shell")
@@ -2566,12 +2542,6 @@ class Runtime:
 def _require_bool(value: object, name: str) -> None:
     if not isinstance(value, bool):
         raise TypeError(f"{name} must be bool")
-
-
-def _require_font_aspect(value: object, name: str) -> FontAspect:
-    if not isinstance(value, FontAspect):
-        raise TypeError(f"{name} must be FontAspect")
-    return value
 
 
 def _require_shape(runtime: Runtime, shape: Shape, name: str) -> None:
