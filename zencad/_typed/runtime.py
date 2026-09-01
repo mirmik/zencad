@@ -35,6 +35,7 @@ from . import _operations as ops
 from . import _text_operations as text_ops
 from . import bounds as bounds_api
 from . import curve_constructors as curve_api
+from . import face_constructors as face_api
 from . import modeling as modeling_api
 from . import surfaces as surface_api
 from . import sweeps as sweep_api
@@ -56,9 +57,6 @@ from .sweeps import PipeTransition, PipeTrihedron
 from .text import FontAspect
 from .topology import (
     COMPOUND_SPEC,
-    EDGE_SPEC,
-    FACE_SPEC,
-    SHAPE_SPEC,
     SHELL_SPEC,
     SOLID_SPEC,
     Compound,
@@ -81,7 +79,6 @@ from .values import (
     ScalarInput,
     Vector2,
     Vector3,
-    _angle_state,
     _scalar_state,
 )
 from .solid import (
@@ -1188,17 +1185,8 @@ class Runtime:
         points: Sequence[Point3],
         wire: bool = False,
     ) -> Face | Wire:
-        _require_bool(wire, "polygon wire")
-        values = _require_points(self, points, minimum=3, name="polygon")
-        if wire:
-            return self.polysegment(values, closed=True)
-        expression = self._expression(
-            ops.polygon,
-            result=FACE_SPEC,
-            args=(tuple(point._state for point in values),),
-            operation_id="zencad.typed.polygon",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.polygon(points, wire)
 
     @overload
     def rectangle(
@@ -1244,22 +1232,8 @@ class Runtime:
         center: bool = False,
         wire: bool = False,
     ) -> Face | Wire:
-        _require_bool(center, "rectangle center")
-        _require_bool(wire, "rectangle wire")
-        resolved_height = a if b is None else b
-        if wire:
-            return self.rectangle_wire(a, resolved_height, center)
-        expression = self._expression(
-            ops.rectangle,
-            result=FACE_SPEC,
-            args=(
-                _scalar_state(self, a),
-                _scalar_state(self, resolved_height),
-                center,
-            ),
-            operation_id="zencad.typed.rectangle",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.rectangle(a, b, center, wire)
 
     def rectangle_wire(
         self,
@@ -1267,20 +1241,8 @@ class Runtime:
         b: ScalarInput,
         center: bool = False,
     ) -> Wire:
-        _require_bool(center, "rectangle_wire center")
-        x0 = -_as_scalar(self, a) / 2 if center else self.scalar(0)
-        y0 = -_as_scalar(self, b) / 2 if center else self.scalar(0)
-        width = _as_scalar(self, a)
-        height = _as_scalar(self, b)
-        return self.polysegment(
-            (
-                self.point3(x0, y0, 0),
-                self.point3(x0 + width, y0, 0),
-                self.point3(x0 + width, y0 + height, 0),
-                self.point3(x0, y0 + height, 0),
-            ),
-            closed=True,
-        )
+        with using_runtime(self):
+            return face_api.rectangle_wire(a, b, center)
 
     @overload
     def square(
@@ -1326,7 +1288,8 @@ class Runtime:
         center: bool = False,
         wire: bool = False,
     ) -> Face | Wire:
-        return self.rectangle(a, b, center, wire)
+        with using_runtime(self):
+            return face_api.square(a, b, center, wire)
 
     @overload
     def ngon(
@@ -1348,21 +1311,8 @@ class Runtime:
         n: int,
         wire: bool = False,
     ) -> Face | Wire:
-        if isinstance(n, bool) or not isinstance(n, int):
-            raise TypeError("ngon n must be int")
-        if n < 3:
-            raise ValueError("ngon n must be at least 3")
-        _require_bool(wire, "ngon wire")
-        radius = _as_scalar(self, r)
-        points = tuple(
-            self.point3(
-                radius * math.cos(2 * math.pi * index / n),
-                radius * math.sin(2 * math.pi * index / n),
-                0,
-            )
-            for index in range(n)
-        )
-        return self.polygon(points, wire)
+        with using_runtime(self):
+            return face_api.ngon(r, n, wire)
 
     @overload
     def circle(
@@ -1403,20 +1353,8 @@ class Runtime:
         angle: ScalarInput | Sequence[ScalarInput] | None = None,
         wire: bool = False,
     ) -> Face | Edge:
-        _require_bool(wire, "circle wire")
-        expression = self._expression(
-            ops.circle_shape,
-            result=EDGE_SPEC if wire else FACE_SPEC,
-            args=(
-                _scalar_state(self, r),
-                _angle_state(self, angle, "circle angle"),
-                wire,
-            ),
-            operation_id="zencad.typed.face.circle",
-        )
-        if wire:
-            return Edge._from_state(self, expression)
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.circle(r, angle, wire)
 
     @overload
     def ellipse(
@@ -1462,31 +1400,12 @@ class Runtime:
         angle: ScalarInput | Sequence[ScalarInput] | None = None,
         wire: bool = False,
     ) -> Face | Edge:
-        _require_bool(wire, "ellipse wire")
-        expression = self._expression(
-            ops.ellipse_shape,
-            result=EDGE_SPEC if wire else FACE_SPEC,
-            args=(
-                _scalar_state(self, r1),
-                _scalar_state(self, r2),
-                _angle_state(self, angle, "ellipse angle"),
-                wire,
-            ),
-            operation_id="zencad.typed.face.ellipse",
-        )
-        if wire:
-            return Edge._from_state(self, expression)
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.ellipse(r1, r2, angle, wire)
 
     def fill(self, shapes: Edge | Wire | Sequence[Edge | Wire], /) -> Face:
-        values = _require_wire_parts(self, (shapes,), "fill")
-        expression = self._expression(
-            ops.fill_wires,
-            result=FACE_SPEC,
-            args=(tuple(shape._state for shape in values),),
-            operation_id="zencad.typed.face.fill",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.fill(shapes)
 
     def interpolate2(
         self,
@@ -1494,65 +1413,20 @@ class Runtime:
         degmin: int = 3,
         degmax: int = 7,
     ) -> Face:
-        if isinstance(refs, (str, bytes)) or not isinstance(refs, Sequence):
-            raise TypeError("interpolate2 expects a point grid")
-        rows = tuple(
-            _require_points(self, row, minimum=2, name="interpolate2 row")
-            for row in refs
-        )
-        if len(rows) < 2:
-            raise ValueError("interpolate2 requires at least two rows")
-        if len({len(row) for row in rows}) != 1:
-            raise ValueError("interpolate2 point grid must be rectangular")
-        degree_min = _require_positive_int(degmin, "interpolate2 degmin")
-        degree_max = _require_positive_int(degmax, "interpolate2 degmax")
-        if degree_min > degree_max:
-            raise ValueError("interpolate2 degmin must not exceed degmax")
-        expression = self._expression(
-            ops.interpolate_face,
-            result=FACE_SPEC,
-            args=(
-                tuple(tuple(point._state for point in row) for row in rows),
-                degree_min,
-                degree_max,
-            ),
-            operation_id="zencad.typed.face.interpolate2",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.interpolate2(refs, degmin, degmax)
 
     def fix_face(self, shape: Face, /) -> Face:
-        if not isinstance(shape, Face):
-            raise TypeError("fix_face expects Face")
-        require_same_runtime(self, shape)
-        expression = self._expression(
-            ops.fix_face,
-            result=FACE_SPEC,
-            args=(shape._state,),
-            operation_id="zencad.typed.face.fix",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.fix_face(shape)
 
     def infplane(self) -> Face:
-        expression = self._expression(
-            ops.infinite_plane,
-            result=FACE_SPEC,
-            args=(),
-            operation_id="zencad.typed.face.infplane",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.infplane()
 
     def ruled(self, first: Edge, second: Edge, /) -> Face:
-        if not isinstance(first, Edge) or not isinstance(second, Edge):
-            raise TypeError("ruled expects two Edge values")
-        require_same_runtime(self, first)
-        require_same_runtime(self, second)
-        expression = self._expression(
-            ops.ruled_face,
-            result=FACE_SPEC,
-            args=(first._state, second._state),
-            operation_id="zencad.typed.face.ruled",
-        )
-        return Face._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.ruled(first, second)
 
     def widewire(
         self,
@@ -1561,23 +1435,8 @@ class Runtime:
         circled_joints: bool = True,
         circled_ends: bool = True,
     ) -> Shape:
-        if not isinstance(spine, (Edge, Wire)):
-            raise TypeError("widewire spine must be Edge or Wire")
-        require_same_runtime(self, spine)
-        _require_bool(circled_joints, "widewire circled_joints")
-        _require_bool(circled_ends, "widewire circled_ends")
-        expression = self._expression(
-            ops.widewire,
-            result=SHAPE_SPEC,
-            args=(
-                spine._state,
-                _scalar_state(self, r),
-                circled_joints,
-                circled_ends,
-            ),
-            operation_id="zencad.typed.face.widewire",
-        )
-        return Shape._from_state(self, expression)
+        with using_runtime(self):
+            return face_api.widewire(spine, r, circled_joints, circled_ends)
 
     def register_font(
         self,
@@ -2784,27 +2643,6 @@ def _platonic_polyhedron(
     return runtime.polyhedron(points, faces, shell)
 
 
-def _require_wire_parts(
-    runtime: Runtime,
-    shapes: tuple[Edge | Wire | Sequence[Edge | Wire], ...],
-    name: str,
-) -> tuple[Edge | Wire, ...]:
-    if len(shapes) == 1 and isinstance(shapes[0], Sequence):
-        candidate = shapes[0]
-        if isinstance(candidate, (str, bytes)):
-            raise TypeError(f"{name} expects Edge or Wire handles")
-        values = tuple(candidate)
-    else:
-        values = cast(tuple[Edge | Wire, ...], shapes)
-    if not values:
-        raise ValueError(f"{name} requires at least one Edge or Wire")
-    if not all(isinstance(shape, (Edge, Wire)) for shape in values):
-        raise TypeError(f"{name} accepts only Edge or Wire handles")
-    for shape in values:
-        require_same_runtime(runtime, shape)
-    return values
-
-
 def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:
     if isinstance(value, Scalar):
         require_same_runtime(runtime, value)
@@ -2880,14 +2718,6 @@ def _require_positive_number(value: Number, name: str) -> float:
     if not math.isfinite(result) or result <= 0:
         raise ValueError(f"{name} must be finite and positive")
     return result
-
-
-def _require_positive_int(value: int, name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"{name} must be int")
-    if value <= 0:
-        raise ValueError(f"{name} must be positive")
-    return value
 
 
 def _require_int_between(

@@ -72,6 +72,14 @@ def main():
         assert isinstance(typed.offset, DomainOperation)
         assert isinstance(typed.unify, DomainOperation)
         assert isinstance(typed.near_face, DomainOperation)
+        assert isinstance(typed.circle, DomainOperation)
+        assert isinstance(typed.ellipse, DomainOperation)
+        assert isinstance(typed.fill, DomainOperation)
+        assert isinstance(typed.interpolate2, DomainOperation)
+        assert isinstance(typed.fix_face, DomainOperation)
+        assert isinstance(typed.infplane, DomainOperation)
+        assert isinstance(typed.ruled, DomainOperation)
+        assert isinstance(typed.widewire, DomainOperation)
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(
@@ -79,8 +87,14 @@ def main():
                 typed_runtime.point3(1, 0, 0),
             )
             module_wire = typed.make_wire(module_segment)
+            module_face = typed.rectangle(2, 1)
+            module_circle = typed.circle(2)
+            module_filled = typed.fill(typed.rectangle_wire(2, 1))
         assert type(module_curve) is typed.Curve
         assert type(module_wire) is typed.Wire
+        assert type(module_face) is typed.Face
+        assert type(module_circle) is typed.Face
+        assert type(module_filled) is typed.Face
         curve = typed_runtime.circle_curve(2)
         curve2 = typed_runtime.segment2(
             typed_runtime.point2(0, 0),

@@ -5,6 +5,7 @@ from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_WIRE
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 def _rectangle_points(runtime: typed.Runtime) -> tuple[typed.Point3, ...]:
@@ -27,6 +28,84 @@ def _surface_grid(
 
 
 class TypedFaceConstructorsTest(unittest.TestCase):
+    def test_face_family_is_declared_at_module_level(self):
+        for name in (
+            "circle",
+            "ellipse",
+            "fill",
+            "interpolate2",
+            "fix_face",
+            "infplane",
+            "ruled",
+            "widewire",
+        ):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        points = _rectangle_points(runtime)
+        grid = _surface_grid(runtime)
+        with using_runtime(runtime):
+            polygon = typed.polygon(points)
+            polygon_wire = typed.polygon(points, wire=True)
+            rectangle = typed.rectangle(4, 3)
+            rectangle_wire = typed.rectangle_wire(4, 3)
+            square = typed.square(3)
+            ngon = typed.ngon(3, 6)
+            circle = typed.circle(3)
+            ellipse = typed.ellipse(4, 2, wire=True)
+            filled = typed.fill(polygon_wire)
+            interpolated = typed.interpolate2(grid)
+            fixed = typed.fix_face(rectangle)
+            plane = typed.infplane()
+            ruled = typed.ruled(
+                runtime.segment(points[0], points[1]),
+                runtime.segment(points[3], points[2]),
+            )
+            wide = typed.widewire(polygon_wire, 0.2)
+
+        values = (
+            polygon,
+            polygon_wire,
+            rectangle,
+            rectangle_wire,
+            square,
+            ngon,
+            circle,
+            ellipse,
+            filled,
+            interpolated,
+            fixed,
+            plane,
+            ruled,
+            wide,
+        )
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertEqual(events, [])
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.polygon",
+                "zencad.typed.polysegment",
+                "zencad.typed.rectangle",
+                "zencad.typed.polysegment",
+                "zencad.typed.rectangle",
+                "zencad.typed.polygon",
+                "zencad.typed.face.circle",
+                "zencad.typed.face.ellipse",
+                "zencad.typed.face.fill",
+                "zencad.typed.face.interpolate2",
+                "zencad.typed.face.fix",
+                "zencad.typed.face.infplane",
+                "zencad.typed.face.ruled",
+                "zencad.typed.face.widewire",
+            ),
+        )
+
     def test_planar_factories_are_policy_independent(self):
         observed_types = set()
 

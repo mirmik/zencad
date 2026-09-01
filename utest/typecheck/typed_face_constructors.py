@@ -47,3 +47,35 @@ def face_constructor_contract(runtime: typed.Runtime) -> None:
         runtime.widewire(runtime.segment(points[0], points[1]), 1),
         typed.Shape,
     )
+
+    assert_type(typed.circle(2), typed.Face)
+    assert_type(typed.circle(2, wire=True), typed.Edge)
+    assert_type(typed.ellipse(4, 2), typed.Face)
+    assert_type(typed.ellipse(4, 2, wire=True), typed.Edge)
+    assert_type(typed.polygon(points), typed.Face)
+    assert_type(typed.polygon(points, True), typed.Wire)
+    assert_type(typed.rectangle(4, 3), typed.Face)
+    assert_type(typed.rectangle(4, 3, wire=True), typed.Wire)
+    assert_type(typed.rectangle_wire(4, 3), typed.Wire)
+    assert_type(typed.square(4), typed.Face)
+    assert_type(typed.square(4, wire=True), typed.Wire)
+    assert_type(typed.ngon(4, 6), typed.Face)
+    assert_type(typed.ngon(4, 6, True), typed.Wire)
+    module_face = assert_type(typed.fill(wire), typed.Face)
+    assert_type(typed.fix_face(module_face), typed.Face)
+    assert_type(typed.infplane(), typed.Face)
+    assert_type(
+        typed.ruled(
+            runtime.segment(points[0], points[1]),
+            runtime.segment(points[3], points[2]),
+        ),
+        typed.Face,
+    )
+    assert_type(
+        typed.interpolate2(((points[0], points[1]), (points[3], points[2]))),
+        typed.Face,
+    )
+    assert_type(
+        typed.widewire(runtime.segment(points[0], points[1]), 1),
+        typed.Shape,
+    )

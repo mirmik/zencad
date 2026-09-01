@@ -1130,6 +1130,30 @@ Verification on 2026-09-01 after the modeling/query checkpoint:
   geometry/I/O smoke for direct modeling/bounds declarations and Runtime
   forwarding.
 
+Task #2072 extracts the planar face-constructor family. Module-level entry
+points in `_typed/face_constructors.py` now own polygon, rectangle/square,
+regular polygon, circle and ellipse construction; wire filling, surface-grid
+interpolation, face repair, infinite and ruled faces, and wide-wire geometry.
+The public wrappers that select Face/Wire or Face/Edge preserve the existing
+overloads and compose the same decorated operations used by the compatibility
+Runtime methods.
+
+`Shape.fill()` delegates to the same module instead of constructing an
+expression itself. Operation IDs, deferred scalar and point graphs, dynamic
+result specs, validation messages, and immediate/deferred/cache behavior are
+unchanged. `_typed/runtime.py` is reduced from 2923 to 2753 lines.
+
+Verification on 2026-09-01 after the face-constructor checkpoint:
+
+- pytest passes 382 tests and 405 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 366 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff, compileall, and diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes the expanded installed
+  geometry/I/O smoke for direct face declarations and Runtime forwarding.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

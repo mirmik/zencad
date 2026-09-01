@@ -767,13 +767,9 @@ class Shape(Handle[ResolvedShape]):
         )
 
     def fill(self) -> Face:
-        expression = self.runtime._expression(
-            ops.fill_shape,
-            result=FACE_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.shape.fill",
-        )
-        return Face._from_state(self.runtime, expression)
+        from .face_constructors import _fill_shape
+
+        return _fill_shape(self)
 
     def extrude(
         self,

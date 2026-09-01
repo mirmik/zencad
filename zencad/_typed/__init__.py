@@ -36,6 +36,21 @@ from .curve_constructors import (
     trim_curve2,
 )
 from .exttrans import MultiTransform
+from .face_constructors import (
+    circle,
+    ellipse,
+    fill,
+    fix_face,
+    infplane,
+    interpolate2,
+    ngon,
+    polygon,
+    rectangle,
+    rectangle_wire,
+    ruled,
+    square,
+    widewire,
+)
 from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
 from .modeling import (
     boundbox,
@@ -356,4 +371,17 @@ __all__ = [
     "shapefix_solid",
     "thicksolid",
     "unify",
+    "circle",
+    "ellipse",
+    "fill",
+    "fix_face",
+    "infplane",
+    "interpolate2",
+    "ngon",
+    "polygon",
+    "rectangle",
+    "rectangle_wire",
+    "ruled",
+    "square",
+    "widewire",
 ]
