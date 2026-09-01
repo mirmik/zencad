@@ -17,6 +17,7 @@ from OCP.Geom import Geom_CartesianPoint
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
 from zencad.occ_compat import vertex_point
+from zencad.geom.validation import ValidationReport
 from zencad.operation import using_runtime
 
 from . import bounds as bounds_api
@@ -680,6 +681,56 @@ class RuntimeCompatibility(Context):
     def unify(self, shape: ShapeValueT, /) -> ShapeValueT:
         with using_runtime(self):
             return cast(ShapeValueT, modeling_api.unify(shape))
+
+    def validate(
+        self,
+        shape: Shape,
+        *,
+        exact: bool = False,
+        parallel: bool = False,
+    ) -> ValidationReport:
+        with using_runtime(self):
+            return modeling_api.validate(shape, exact=exact, parallel=parallel)
+
+    def is_valid(
+        self,
+        shape: Shape,
+        *,
+        exact: bool = False,
+        parallel: bool = False,
+    ) -> bool:
+        with using_runtime(self):
+            return modeling_api.is_valid(shape, exact=exact, parallel=parallel)
+
+    def assert_valid(
+        self,
+        shape: ShapeValueT,
+        *,
+        exact: bool = False,
+        parallel: bool = False,
+    ) -> ShapeValueT:
+        with using_runtime(self):
+            return modeling_api.assert_valid(
+                shape,
+                exact=exact,
+                parallel=parallel,
+            )
+
+    def clean(self, shape: ShapeValueT, /) -> ShapeValueT:
+        with using_runtime(self):
+            return cast(ShapeValueT, modeling_api.clean(shape))
+
+    def heal(
+        self,
+        shape: ShapeValueT,
+        tolerance: float = 1e-7,
+        max_tolerance: float = 1e-3,
+    ) -> ShapeValueT:
+        with using_runtime(self):
+            return cast(
+                ShapeValueT,
+                modeling_api.heal(shape, tolerance, max_tolerance),
+            )
 
     def near_vertex(self, shape: Shape, point: Point3, /) -> Vertex:
         with using_runtime(self):

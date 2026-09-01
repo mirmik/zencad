@@ -5,6 +5,11 @@ Nothing in this package is re-exported from :mod:`zencad` yet.
 
 from typing import TYPE_CHECKING
 
+from zencad.geom.validation import (
+    ShapeValidationError,
+    ValidationIssue,
+    ValidationReport,
+)
 from zencad.operation import resolve_context, using_context
 
 from .bounds import BoundaryBox, BoundaryBoxRecord, boundary_box, empty_boundary_box
@@ -81,12 +86,16 @@ from .meshes import (
     triangulate,
 )
 from .modeling import (
+    assert_valid,
     boundbox,
     chamfer,
     chamfer2d,
+    clean,
     draft,
     fillet,
     fillet2d,
+    heal,
+    is_valid,
     near_compound,
     near_compsolid,
     near_edge,
@@ -103,6 +112,7 @@ from .modeling import (
     shapefix_solid,
     thicksolid,
     unify,
+    validate,
 )
 from .records import (
     CircleParameters,
@@ -295,9 +305,12 @@ __all__ = [
     "Scalar",
     "SliceResult",
     "Shape",
+    "ShapeValidationError",
     "ShapeList",
     "ShapeKind",
     "ShapeProperties",
+    "ValidationIssue",
+    "ValidationReport",
     "Shell",
     "Solid",
     "SplitResult",
@@ -318,6 +331,7 @@ __all__ = [
     "asin",
     "atan",
     "atan2",
+    "assert_valid",
     "back",
     "bezier",
     "bezier_curve",
@@ -433,9 +447,12 @@ __all__ = [
     "boundbox",
     "chamfer",
     "chamfer2d",
+    "clean",
     "empty_boundary_box",
     "fillet",
     "fillet2d",
+    "heal",
+    "is_valid",
     "near_compound",
     "near_compsolid",
     "near_edge",
@@ -452,6 +469,7 @@ __all__ = [
     "shapefix_solid",
     "thicksolid",
     "unify",
+    "validate",
     "circle",
     "ellipse",
     "fill",

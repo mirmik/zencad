@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from typing import overload
+from typing import TypeVar, overload
 
-from evalcache import ResultSpec
+from evalcache import Expression, ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
+from zencad.geom.validation import (
+    ShapeValidationError,
+    ValidationReport,
+)
 from zencad.operation import (
     OperationArguments,
     arguments,
@@ -49,6 +53,11 @@ DraftPlaneInput = Face | tuple[
     Vector3 | Sequence[ScalarInput],
 ]
 RoundedReference = Point3 | Edge
+ShapeModelT = TypeVar("ShapeModelT", bound=Shape)
+VALIDATION_REPORT_SPEC = ResultSpec.for_type(
+    ValidationReport,
+    type_id="zencad.typed.ValidationReport.v1",
+)
 
 
 def _rounded_arguments(
@@ -392,6 +401,169 @@ def unify(shape: Shape, /) -> OperationArguments:
     return arguments(shape)
 
 
+def validate(
+    shape: Shape,
+    *,
+    exact: bool = False,
+    parallel: bool = False,
+) -> ValidationReport:
+    """Materialize a shape and return structured, non-mutating diagnostics."""
+
+    _require_shape(shape, "validate")
+    _require_bool(exact, "validate exact")
+    _require_bool(parallel, "validate parallel")
+    state = shape.runtime._value_state(
+        ops.validate_shape,
+        result=VALIDATION_REPORT_SPEC,
+        args=(shape._state, exact, parallel),
+        operation_id="zencad.typed.shape.validate",
+    )
+    if isinstance(state, Expression):
+        return shape.runtime._resolve(state)
+    return state
+
+
+def is_valid(
+    shape: Shape,
+    *,
+    exact: bool = False,
+    parallel: bool = False,
+) -> bool:
+    return validate(shape, exact=exact, parallel=parallel).valid
+
+
+def assert_valid(
+    shape: ShapeModelT,
+    *,
+    exact: bool = False,
+    parallel: bool = False,
+) -> ShapeModelT:
+    report = validate(shape, exact=exact, parallel=parallel)
+    if not report.valid:
+        raise ShapeValidationError(report)
+    return shape
+
+
+@overload
+def clean(shape: Solid, /) -> Solid: ...
+
+
+@overload
+def clean(shape: Shell, /) -> Shell: ...
+
+
+@overload
+def clean(shape: Face, /) -> Face: ...
+
+
+@overload
+def clean(shape: Wire, /) -> Wire: ...
+
+
+@overload
+def clean(shape: Edge, /) -> Edge: ...
+
+
+@overload
+def clean(shape: Vertex, /) -> Vertex: ...
+
+
+@overload
+def clean(shape: CompSolid, /) -> CompSolid: ...
+
+
+@overload
+def clean(shape: Compound, /) -> Compound: ...
+
+
+@overload
+def clean(shape: Shape, /) -> Shape: ...
+
+
+@operation(
+    backend=ops.clean_shape,
+    result=SHAPE_SPEC,
+    returns=_shape_result_type,
+    select_result=_shape_result_spec,
+    operation_id="zencad.typed.shape.clean",
+    operation_version="1",
+)
+def clean(shape: Shape, /) -> OperationArguments:
+    _require_shape(shape, "clean")
+    return arguments(shape)
+
+
+@overload
+def heal(
+    shape: Solid, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Solid: ...
+
+
+@overload
+def heal(
+    shape: Shell, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Shell: ...
+
+
+@overload
+def heal(
+    shape: Face, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Face: ...
+
+
+@overload
+def heal(
+    shape: Wire, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Wire: ...
+
+
+@overload
+def heal(
+    shape: Edge, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Edge: ...
+
+
+@overload
+def heal(
+    shape: Vertex, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Vertex: ...
+
+
+@overload
+def heal(
+    shape: CompSolid, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> CompSolid: ...
+
+
+@overload
+def heal(
+    shape: Compound, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Compound: ...
+
+
+@overload
+def heal(
+    shape: Shape, tolerance: float = 1e-7, max_tolerance: float = 1e-3
+) -> Shape: ...
+
+
+@operation(
+    backend=ops.heal_shape,
+    result=SHAPE_SPEC,
+    returns=_shape_result_type,
+    select_result=_shape_result_spec,
+    operation_id="zencad.typed.shape.heal",
+    operation_version="1",
+)
+def heal(
+    shape: Shape,
+    tolerance: float = 1e-7,
+    max_tolerance: float = 1e-3,
+) -> OperationArguments:
+    _require_shape(shape, "heal")
+    return arguments(shape, tolerance, max_tolerance)
+
+
 @operation(
     backend=ops.near_vertex,
     result=VERTEX_SPEC,
@@ -612,12 +784,16 @@ def _require_bool(value: object, name: str) -> None:
 
 
 __all__ = [
+    "assert_valid",
     "boundbox",
     "chamfer",
     "chamfer2d",
     "draft",
     "fillet",
     "fillet2d",
+    "clean",
+    "heal",
+    "is_valid",
     "near_compound",
     "near_compsolid",
     "near_edge",
@@ -634,4 +810,5 @@ __all__ = [
     "shapefix_solid",
     "thicksolid",
     "unify",
+    "validate",
 ]

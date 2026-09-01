@@ -45,18 +45,18 @@ their existing modules but are outside the typed-domain replacement surface.
   immutable typed model and needs a deliberate repaired spelling.
 - `unchanged`: the entry remains outside the lazy/domain migration.
 
-The expanded inventory contains 385 types, functions, methods, and
+The expanded inventory contains 398 types, functions, methods, and
 operators:
 
 | Family | Total | Implemented | Partial | Missing | Repair | Unchanged |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Values | 44 | 42 | 0 | 0 | 2 | 0 |
 | Transforms | 64 | 64 | 0 | 0 | 0 | 0 |
-| Topology and bounds | 117 | 112 | 0 | 0 | 4 | 1 |
+| Topology and bounds | 122 | 117 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
-| Sweeps and operations | 50 | 50 | 0 | 0 | 0 | 0 |
+| Sweeps and operations | 58 | 58 | 0 | 0 | 0 | 0 |
 | Mesh, convert, display | 18 | 16 | 0 | 0 | 0 | 2 |
-| **Total** | **385** | **376** | **0** | **0** | **6** | **3** |
+| **Total** | **398** | **389** | **0** | **0** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 rows are aliases, so a single typed operation can close several of them.
@@ -110,6 +110,13 @@ direction, position, measure, grouping, and stable sorting selectors remain in
 the evaluation graph and feed selected Edges/Faces directly to fillet,
 chamfer, and draft. `DeferredSequence` remains an alias, so existing private
 typed clients keep their runtime and annotation compatibility.
+
+#2000 adds structured, versioned shape validation backed by
+`BRepCheck_Analyzer`. Reports preserve topology and contextual paths plus
+machine-readable status codes for JSON inspection. Validation and assertion
+are explicit, non-mutating materialization boundaries; same-domain `clean`,
+general `heal`, and existing `sew` remain distinct graph operations. Cleanup
+and healing work on owned copies and preserve concrete typed topology handles.
 
 #2036 and #2042 complete the sweep family. Sweep laws are frozen compositions
 of typed curves, scalars, intervals, and enums; only the terminal Surface

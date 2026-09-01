@@ -95,6 +95,26 @@ class Shape(zencad.geom.transformable.Transformable, CurveAlgo):
         from zencad.geom.operations import _chamfer
         return _chamfer(self, r, refs=refs)
 
+    def validate(self, *, exact=False, parallel=False):
+        from zencad.geom.validation import validate
+        return validate(self, exact=exact, parallel=parallel)
+
+    def is_valid(self, *, exact=False, parallel=False):
+        from zencad.geom.validation import is_valid
+        return is_valid(self, exact=exact, parallel=parallel)
+
+    def assert_valid(self, *, exact=False, parallel=False):
+        from zencad.geom.validation import assert_valid
+        return assert_valid(self, exact=exact, parallel=parallel)
+
+    def clean(self):
+        from zencad.geom.validation import _clean
+        return _clean(self)
+
+    def heal(self, tolerance=1e-7, max_tolerance=1e-3):
+        from zencad.geom.validation import _heal
+        return _heal(self, tolerance, max_tolerance)
+
     def fillet2d(self, r, refs=None):
         from zencad.geom.operations import _fillet2d
         return _fillet2d(self, r, refs=refs)
@@ -362,7 +382,8 @@ class LazyObjectShape(evalcache.LazyObject):
         "Shape", "Vertex", "Wire", "Edge", "Solid", "Face",
         "Compound", "Shell", "CompSolid", "Wire_orEdgeToWire",
         "reflection_elements", "AdaptorSurface", "AdaptorCurve", "HCurveAdaptor",
-        "_SLProps", "VolumeProperties", "Curve", "SurfaceProperties"
+        "_SLProps", "VolumeProperties", "Curve", "SurfaceProperties",
+        "assert_valid", "is_valid", "validate"
     ]
 
     transparent_methods = [
@@ -371,7 +392,8 @@ class LazyObjectShape(evalcache.LazyObject):
     cached_methods = [
         "__add__", "__sub__", "__xor__",
         "scaleX", "scaleY", "scaleZ", "scaleXYZ",
-        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill", "trimmed_edge"
+        "extrude", "chamfer", "fillet", "chamfer2d", "fillet2d", "fill",
+        "trimmed_edge", "clean", "heal"
     ]
 
     nocached_methods = [

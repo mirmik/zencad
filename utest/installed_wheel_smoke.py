@@ -313,6 +313,13 @@ def main():
         assert type(projection) is typed.CurveProjection
         assert projection.value() == ((1.0, 0.0, 0.0), 1.0, 2.0)
         assert type(typed_runtime.unify(boolean_left)) is typed.Solid
+        assert typed_runtime.validate(boolean_left).to_dict()["valid"] is True
+        assert typed_runtime.is_valid(boolean_left)
+        assert typed_runtime.assert_valid(boolean_left) is boolean_left
+        assert type(typed_runtime.clean(boolean_left)) is typed.Solid
+        assert type(typed_runtime.heal(boolean_left)) is typed.Solid
+        assert zencad.box(1).validate().valid
+        assert zencad.box(1).assert_valid().is_valid()
         assert type(typed_runtime.offset(boolean_left, 0.1)) is typed.Shape
         with using_runtime(typed_runtime):
             module_modeling = (

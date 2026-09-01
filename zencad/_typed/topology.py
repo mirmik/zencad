@@ -41,6 +41,7 @@ from OCP.Geom import Geom_Curve, Geom_Surface
 from evalcache import Expression, ResultSpec
 
 from zencad.geom.shape import Shape as ResolvedShape
+from zencad.geom.validation import ValidationReport
 from zencad.operation import using_runtime
 from zencad.occ_compat import (
     as_compound,
@@ -840,6 +841,50 @@ class Shape(Handle[ResolvedShape]):
         from .modeling import unify
 
         return cast(ShapeT, unify(self))
+
+    def validate(
+        self,
+        *,
+        exact: bool = False,
+        parallel: bool = False,
+    ) -> ValidationReport:
+        from .modeling import validate
+
+        return validate(self, exact=exact, parallel=parallel)
+
+    def is_valid(
+        self,
+        *,
+        exact: bool = False,
+        parallel: bool = False,
+    ) -> bool:
+        from .modeling import is_valid
+
+        return is_valid(self, exact=exact, parallel=parallel)
+
+    def assert_valid(
+        self: ShapeT,
+        *,
+        exact: bool = False,
+        parallel: bool = False,
+    ) -> ShapeT:
+        from .modeling import assert_valid
+
+        return assert_valid(self, exact=exact, parallel=parallel)
+
+    def clean(self: ShapeT) -> ShapeT:
+        from .modeling import clean
+
+        return cast(ShapeT, clean(self))
+
+    def heal(
+        self: ShapeT,
+        tolerance: float = 1e-7,
+        max_tolerance: float = 1e-3,
+    ) -> ShapeT:
+        from .modeling import heal
+
+        return cast(ShapeT, heal(self, tolerance, max_tolerance))
 
     def near_vertex(self, point: Point3, /) -> Vertex:
         from .modeling import near_vertex

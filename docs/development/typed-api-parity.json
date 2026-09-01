@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline": "ZenCad legacy geometry API on feature/migration, 2026-08-30",
-  "legacy_signature_sha256": "5183b079ecbceca567cbc069dd8856bb3592b8cee64c457d0b53979b9767cec1",
+  "legacy_signature_sha256": "f2177f1dd8e6621307df386ad837886776ba2e806ad4ecfbdba04ec58a4c92ab",
   "status_meaning": {
     "implemented": "The private typed layer already provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
@@ -20,14 +20,19 @@
     "MESH_DISPLAY_MODES",
     "MeshData",
     "Shape",
+    "ShapeValidationError",
     "SliceResult",
     "SplitResult",
     "Transformation",
+    "ValidationIssue",
+    "ValidationReport",
+    "assert_valid",
     "back",
     "bezier",
     "box",
     "bspline",
     "chamfer",
+    "clean",
     "circle",
     "circle_arc",
     "cone",
@@ -56,6 +61,7 @@
     "get_nodes",
     "get_triangles",
     "halfspace",
+    "heal",
     "helix",
     "hexahedron",
     "highlight",
@@ -65,6 +71,7 @@
     "interpolate",
     "interpolate2",
     "intersect",
+    "is_valid",
     "law_constant_function",
     "law_corrected_frenet_trihedron",
     "law_evolved_section",
@@ -179,6 +186,7 @@
     "unify",
     "union",
     "up",
+    "validate",
     "vector3",
     "vectors",
     "widewire",
@@ -669,12 +677,13 @@
     },
     {
       "id": "topology-and-bounds",
-      "tasks": [2039, 2040, 2024],
+      "tasks": [2039, 2040, 2024, 2000],
       "checks": [
         "utest/migration_baseline_test.py",
         "utest/typed_topology_handles_test.py",
         "utest/typed_topology_queries_test.py",
         "utest/typed_topology_compat_test.py",
+        "utest/shape_validation_test.py",
         "utest/typed_value_transform_compat_test.py",
         "utest/typed_bounds_test.py"
       ],
@@ -705,6 +714,11 @@
             "__add__": {"status": "implemented", "typed": "Shape.__add__() -> Shape"},
             "__sub__": {"status": "implemented", "typed": "Shape.__sub__() -> Shape"},
             "__xor__": {"status": "implemented", "typed": "Shape.__xor__() -> Shape"},
+            "validate": {"status": "implemented", "typed": "Shape.validate() -> ValidationReport", "materialization": "explicit diagnostic boundary"},
+            "is_valid": {"status": "implemented", "typed": "Shape.is_valid() -> bool", "materialization": "explicit diagnostic boundary"},
+            "assert_valid": {"status": "implemented", "typed": "Shape.assert_valid() -> Shape", "materialization": "explicit diagnostic boundary"},
+            "clean": {"status": "implemented", "typed": "Shape.clean() preserves the concrete topology handle"},
+            "heal": {"status": "implemented", "typed": "Shape.heal() preserves the concrete topology handle"},
             "transform": {"status": "implemented", "typed": "Shape.transform(Transform)"},
             "Wire_orEdgeToWire": {"status": "implemented", "typed": "Shape.to_wire() -> Wire"},
             "shapetype": {"status": "implemented", "typed": "Shape.shapetype() -> ShapeKind", "materialization": "explicit Python query"},
@@ -1144,6 +1158,17 @@
           "default": {"status": "missing", "typed": "typed unify() -> Shape", "materialization": "none"},
           "overrides": {
             "unify": {"status": "implemented", "typed": "Runtime.unify() / Shape.unify() preserves the concrete topology handle"}
+          }
+        },
+        {
+          "source": "zencad.geom.validation",
+          "default": {"status": "implemented", "typed": "typed validation contract {name}", "materialization": "none"},
+          "overrides": {
+            "validate": {"typed": "validate(Shape) -> ValidationReport", "materialization": "explicit diagnostic boundary"},
+            "is_valid": {"typed": "is_valid(Shape) -> bool", "materialization": "explicit diagnostic boundary"},
+            "assert_valid": {"typed": "assert_valid(Shape) -> Shape", "materialization": "explicit diagnostic boundary"},
+            "clean": {"typed": "clean(Shape) preserves the concrete topology handle"},
+            "heal": {"typed": "heal(Shape) preserves the concrete topology handle"}
           }
         },
         {

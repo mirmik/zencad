@@ -32,6 +32,7 @@ try:
     from zencad.geom.boolops import *
     from zencad.geom.exttrans import *
     from zencad.geom.unify import *
+    from zencad.geom.validation import *
     from zencad.geom.offset import *
     from zencad.geom.operations import *
     from zencad.geom.mesh import *

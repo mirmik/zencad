@@ -53,6 +53,7 @@ from OCP.TopTools import TopTools_IndexedMapOfShape, TopTools_ListOfShape
 from OCP.TopoDS import TopoDS_Shape, TopoDS_Shell, TopoDS_Wire
 
 from zencad.geom.shape import Shape as ResolvedShape
+from zencad.geom.validation import ValidationReport
 from zencad.geom.trans import move
 from zencad.occ_compat import (
     as_compound,
@@ -1170,6 +1171,32 @@ def unify_shape(shape: ResolvedShape) -> ResolvedShape:
     if result.IsNull():
         raise ValueError("unify produced a null Shape")
     return ResolvedShape(result)
+
+
+def validate_shape(
+    shape: ResolvedShape,
+    exact: bool,
+    parallel: bool,
+) -> ValidationReport:
+    from zencad.geom.validation import _validate
+
+    return _validate(shape, exact=exact, parallel=parallel)
+
+
+def clean_shape(shape: ResolvedShape) -> ResolvedShape:
+    from zencad.geom.validation import _clean
+
+    return _clean(shape)
+
+
+def heal_shape(
+    shape: ResolvedShape,
+    tolerance: float,
+    max_tolerance: float,
+) -> ResolvedShape:
+    from zencad.geom.validation import _heal
+
+    return _heal(shape, tolerance=tolerance, max_tolerance=max_tolerance)
 
 
 def sew_wire(

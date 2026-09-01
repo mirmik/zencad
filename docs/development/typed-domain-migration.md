@@ -498,6 +498,13 @@ The resulting typed collections feed `fillet`, `chamfer`, and `draft`
 directly. Full semantics are recorded in
 [`topology-selectors.md`](topology-selectors.md).
 
+#2000 adds `validate()`, `is_valid()`, and `assert_valid()` as explicit
+materialization boundaries returning structured OCCT diagnostics. Lazy
+`clean()` and `heal()` operations preserve the concrete topology handle and
+operate on owned copies; sewing remains separate. The report and ownership
+contracts are documented in
+[`shape-validation.md`](shape-validation.md).
+
 `vertices()` is the one intentional departure from the legacy query
 semantics. It returns values unique by OCCT `IsSame` identity: the underlying
 TShape and Location participate in identity, while Orientation does not.
