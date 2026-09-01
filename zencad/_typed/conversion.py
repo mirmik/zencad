@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 import math
 from os import PathLike
 from pathlib import Path
+from typing import BinaryIO
 
 import evalcache
 from OCP.TopoDS import TopoDS_Shape
 
 from zencad.convert.api import _to_stl
+from zencad.convert.export import (
+    LengthUnit,
+    export_3mf as _export_3mf,
+    export_step as _export_step,
+    export_stl as _export_stl,
+)
 from zencad.convert.svg import SvgReader, shape_to_svg_string
 from zencad.geom.shape import Shape as ResolvedShape
 from zencad.occ_compat import read_brep, write_brep
@@ -69,6 +77,66 @@ def to_stl(
     )
 
 
+def export_stl(
+    shape: Shape,
+    destination: str | PathLike[str] | BinaryIO,
+    *,
+    unit: LengthUnit | str = LengthUnit.MILLIMETER,
+    linear_tolerance: float = 0.1,
+    angular_tolerance: float = 0.5,
+    binary: bool = True,
+) -> None:
+    _require_shape(shape, "export_stl")
+    _export_stl(
+        ResolvedShape(shape.native()),
+        destination,
+        unit=unit,
+        linear_tolerance=linear_tolerance,
+        angular_tolerance=angular_tolerance,
+        binary=binary,
+    )
+
+
+def export_step(
+    shape: Shape,
+    destination: str | PathLike[str] | BinaryIO,
+    *,
+    unit: LengthUnit | str = LengthUnit.MILLIMETER,
+    binary: bool = False,
+) -> None:
+    _require_shape(shape, "export_step")
+    _export_step(
+        ResolvedShape(shape.native()),
+        destination,
+        unit=unit,
+        binary=binary,
+    )
+
+
+def export_3mf(
+    shape: Shape,
+    destination: str | PathLike[str] | BinaryIO,
+    *,
+    unit: LengthUnit | str = LengthUnit.MILLIMETER,
+    linear_tolerance: float = 0.1,
+    angular_tolerance: float = 0.5,
+    binary: bool = True,
+    name: str = "ZenCad object",
+    metadata: Mapping[str, str] | None = None,
+) -> None:
+    _require_shape(shape, "export_3mf")
+    _export_3mf(
+        ResolvedShape(shape.native()),
+        destination,
+        unit=unit,
+        linear_tolerance=linear_tolerance,
+        angular_tolerance=angular_tolerance,
+        binary=binary,
+        name=name,
+        metadata=metadata,
+    )
+
+
 def to_svg_string(
     shape: Shape,
     color: object = (0, 0, 0),
@@ -112,6 +180,10 @@ def from_svg(path: str | PathLike[str], /) -> Shape:
 
 
 __all__ = [
+    "LengthUnit",
+    "export_3mf",
+    "export_step",
+    "export_stl",
     "from_brep",
     "from_svg",
     "from_svg_string",

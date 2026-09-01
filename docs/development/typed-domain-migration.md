@@ -505,6 +505,12 @@ operate on owned copies; sewing remains separate. The report and ownership
 contracts are documented in
 [`shape-validation.md`](shape-validation.md).
 
+#2004 adds matching legacy and typed `export_stl`, `export_step`, and
+`export_3mf` materialization boundaries. They accept paths or binary streams,
+use explicit units and tessellation policy, reject invalid topology, and do
+not depend on GUI or Scene state. Format details are documented in
+[`export-formats.md`](export-formats.md).
+
 `vertices()` is the one intentional departure from the legacy query
 semantics. It returns values unique by OCCT `IsSame` identity: the underlying
 TShape and Location participate in identity, while Orientation does not.

@@ -28,6 +28,10 @@ from .booleans import (
 )
 from .curves import Curve, Curve2, CurveKind
 from .conversion import (
+    LengthUnit,
+    export_3mf,
+    export_step,
+    export_stl,
     from_brep,
     from_svg,
     from_svg_string,
@@ -287,6 +291,7 @@ __all__ = [
     "GeomType",
     "Interval",
     "LineParameters",
+    "LengthUnit",
     "CircleParameters",
     "EllipseParameters",
     "MeshArrayRecord",
@@ -352,6 +357,9 @@ __all__ = [
     "ellipse2",
     "ellipse_curve",
     "exp",
+    "export_3mf",
+    "export_step",
+    "export_stl",
     "extrude",
     "forw",
     "halfspace",

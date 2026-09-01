@@ -45,7 +45,7 @@ their existing modules but are outside the typed-domain replacement surface.
   immutable typed model and needs a deliberate repaired spelling.
 - `unchanged`: the entry remains outside the lazy/domain migration.
 
-The expanded inventory contains 398 types, functions, methods, and
+The expanded inventory contains 402 types, functions, methods, and
 operators:
 
 | Family | Total | Implemented | Partial | Missing | Repair | Unchanged |
@@ -55,8 +55,8 @@ operators:
 | Topology and bounds | 122 | 117 | 0 | 0 | 4 | 1 |
 | Constructors | 92 | 92 | 0 | 0 | 0 | 0 |
 | Sweeps and operations | 58 | 58 | 0 | 0 | 0 | 0 |
-| Mesh, convert, display | 18 | 16 | 0 | 0 | 0 | 2 |
-| **Total** | **398** | **389** | **0** | **0** | **6** | **3** |
+| Mesh, convert, display | 22 | 20 | 0 | 0 | 0 | 2 |
+| **Total** | **402** | **393** | **0** | **0** | **6** | **3** |
 
 These counts describe API surface, not comparable implementation effort. Many
 rows are aliases, so a single typed operation can close several of them.
@@ -117,6 +117,13 @@ machine-readable status codes for JSON inspection. Validation and assertion
 are explicit, non-mutating materialization boundaries; same-domain `clean`,
 general `heal`, and existing `sew` remain distinct graph operations. Cleanup
 and healing work on owned copies and preserve concrete typed topology handles.
+
+#2004 adds consistent headless STL, STEP, and 3MF export boundaries for paths
+and binary streams. STL and 3MF share explicit linear/angular tessellation
+tolerances; all formats share `LengthUnit`, owned snapshots, topology
+validation, and contextual write errors. STEP preserves exact BREP geometry
+and exchange units, while the minimal 3MF package records object name, unit,
+mesh type, and caller metadata. The legacy `to_stl` facade remains available.
 
 #2036 and #2042 complete the sweep family. Sweep laws are frozen compositions
 of typed curves, scalars, intervals, and enums; only the terminal Surface

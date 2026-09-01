@@ -1,6 +1,7 @@
 """Smoke the installed wheel from a directory outside the source checkout."""
 
 import importlib.metadata
+import io
 import math
 import os
 import shutil
@@ -320,6 +321,15 @@ def main():
         assert type(typed_runtime.heal(boolean_left)) is typed.Solid
         assert zencad.box(1).validate().valid
         assert zencad.box(1).assert_valid().is_valid()
+        legacy_3mf = io.BytesIO()
+        zencad.export_3mf(zencad.box(1), legacy_3mf, name="Wheel smoke")
+        assert legacy_3mf.getvalue().startswith(b"PK")
+        typed_step = io.BytesIO()
+        typed_3mf = io.BytesIO()
+        typed_runtime.export_step(boolean_left, typed_step)
+        typed_runtime.export_3mf(boolean_left, typed_3mf)
+        assert typed_step.getvalue().startswith(b"ISO-10303-21")
+        assert typed_3mf.getvalue().startswith(b"PK")
         assert type(typed_runtime.offset(boolean_left, 0.1)) is typed.Shape
         with using_runtime(typed_runtime):
             module_modeling = (

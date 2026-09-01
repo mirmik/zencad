@@ -7,15 +7,16 @@ exposing lazy proxy types to callers.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 import math
 from os import PathLike
-from typing import TYPE_CHECKING, Literal, TypeVar, cast, overload
+from typing import TYPE_CHECKING, BinaryIO, Literal, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
+from zencad.convert.export import LengthUnit
 from zencad.occ_compat import vertex_point
 from zencad.geom.validation import ValidationReport
 from zencad.operation import using_runtime
@@ -607,6 +608,61 @@ class RuntimeCompatibility(Context):
     ) -> bool:
         _require_shape(self, shape, "to_stl")
         return conversion_api.to_stl(shape, path, deflection)
+
+    def export_stl(
+        self,
+        shape: Shape,
+        destination: str | PathLike[str] | BinaryIO,
+        *,
+        unit: LengthUnit | str = LengthUnit.MILLIMETER,
+        linear_tolerance: float = 0.1,
+        angular_tolerance: float = 0.5,
+        binary: bool = True,
+    ) -> None:
+        _require_shape(self, shape, "export_stl")
+        conversion_api.export_stl(
+            shape,
+            destination,
+            unit=unit,
+            linear_tolerance=linear_tolerance,
+            angular_tolerance=angular_tolerance,
+            binary=binary,
+        )
+
+    def export_step(
+        self,
+        shape: Shape,
+        destination: str | PathLike[str] | BinaryIO,
+        *,
+        unit: LengthUnit | str = LengthUnit.MILLIMETER,
+        binary: bool = False,
+    ) -> None:
+        _require_shape(self, shape, "export_step")
+        conversion_api.export_step(shape, destination, unit=unit, binary=binary)
+
+    def export_3mf(
+        self,
+        shape: Shape,
+        destination: str | PathLike[str] | BinaryIO,
+        *,
+        unit: LengthUnit | str = LengthUnit.MILLIMETER,
+        linear_tolerance: float = 0.1,
+        angular_tolerance: float = 0.5,
+        binary: bool = True,
+        name: str = "ZenCad object",
+        metadata: Mapping[str, str] | None = None,
+    ) -> None:
+        _require_shape(self, shape, "export_3mf")
+        conversion_api.export_3mf(
+            shape,
+            destination,
+            unit=unit,
+            linear_tolerance=linear_tolerance,
+            angular_tolerance=angular_tolerance,
+            binary=binary,
+            name=name,
+            metadata=metadata,
+        )
 
     def to_svg_string(
         self,

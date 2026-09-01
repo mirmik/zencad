@@ -16,22 +16,19 @@ import zencad
 import evalcache
 from zencad.lazifier import lazy
 
-from OCP.BRepMesh import BRepMesh_IncrementalMesh
-from OCP.StlAPI import StlAPI_Writer
 from OCP.TopoDS import TopoDS_Shape
+from zencad.convert.export import LengthUnit, export_3mf, export_step, export_stl
 from zencad.occ_compat import read_brep, write_brep
 
 
 def _to_stl(shp, path, delta):
-    path = os.path.expanduser(path)
-
-    mesh = BRepMesh_IncrementalMesh(shp.Shape(), delta)
-
-    if mesh.IsDone() is False:
-        return False
-
-    stl_writer = StlAPI_Writer()
-    return stl_writer.Write(shp.Shape(), path)
+    export_stl(
+        shp,
+        os.path.expanduser(path),
+        linear_tolerance=delta,
+        binary=False,
+    )
+    return True
 
 
 @lazy.file_creator(pathfield="path")

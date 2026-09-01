@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline": "ZenCad legacy geometry API on feature/migration, 2026-08-30",
-  "legacy_signature_sha256": "f2177f1dd8e6621307df386ad837886776ba2e806ad4ecfbdba04ec58a4c92ab",
+  "legacy_signature_sha256": "256f955a8a449c74664b752aeb9798ec053d7a6e3f233bcabdec9c9669ad3315",
   "status_meaning": {
     "implemented": "The private typed layer already provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
@@ -17,6 +17,7 @@
   ],
   "root_exports": [
     "DEFAULT_MESH_DISPLAY_MODE",
+    "LengthUnit",
     "MESH_DISPLAY_MODES",
     "MeshData",
     "Shape",
@@ -49,6 +50,9 @@
     "draft",
     "ellipse",
     "extrude",
+    "export_3mf",
+    "export_step",
+    "export_stl",
     "fill",
     "fill3d",
     "fillet",
@@ -1197,11 +1201,12 @@
     },
     {
       "id": "mesh-convert-display",
-      "tasks": [2044],
+      "tasks": [2044, 2004],
       "checks": [
         "utest/mesh_test.py",
         "utest/typed_meshes_test.py",
         "utest/convert.py",
+        "utest/export_formats_test.py",
         "utest/scene_presenter_test.py",
         "utest/typed_integration_test.py"
       ],
@@ -1232,6 +1237,16 @@
             "to_svg_string": {"status": "implemented", "typed": "Runtime.to_svg_string(Shape, color, mapping) -> str"},
             "from_svg": {"status": "implemented", "typed": "Runtime.from_svg(path) -> Shape"},
             "from_svg_string": {"status": "implemented", "typed": "Runtime.from_svg_string(str) -> Shape"}
+          }
+        },
+        {
+          "source": "zencad.convert.export",
+          "default": {"status": "implemented", "typed": "typed explicit export contract {name}", "materialization": "explicit headless file or stream boundary"},
+          "overrides": {
+            "LengthUnit": {"typed": "LengthUnit"},
+            "export_stl": {"typed": "Runtime.export_stl(Shape, destination, unit, tolerances, binary) -> None"},
+            "export_step": {"typed": "Runtime.export_step(Shape, destination, unit, binary=False) -> None"},
+            "export_3mf": {"typed": "Runtime.export_3mf(Shape, destination, unit, tolerances, metadata) -> None"}
           }
         },
         {
