@@ -56,14 +56,22 @@ def topology_contract(
     assert_type(face.linear_extrude(2), typed.Shape)
     assert_type(runtime.revol(face, 3, 1), typed.Shape)
     assert_type(face.revol(3, 1), typed.Shape)
+    assert_type(typed.extrude(face, 2), typed.Shape)
+    assert_type(typed.linear_extrude(face, 2), typed.Shape)
+    assert_type(typed.revol(face, 3, 1), typed.Shape)
     assert_type(runtime.loft((edge, wire)), typed.Solid)
     assert_type(runtime.loft((edge, wire), shell=True), typed.Shell)
+    assert_type(typed.loft((edge, wire)), typed.Solid)
+    assert_type(typed.loft((edge, wire), shell=True), typed.Shell)
     assert_type(
         runtime.pipe(wire, edge, trihedron=typed.PipeTrihedron.FRENET),
         typed.Shape,
     )
     assert_type(runtime.pipe_shell((wire,), edge), typed.Solid)
     assert_type(runtime.pipe_shell((wire,), edge, solid=False), typed.Shell)
+    assert_type(typed.pipe(wire, edge), typed.Shape)
+    assert_type(typed.pipe_shell((wire,), edge), typed.Solid)
+    assert_type(typed.pipe_shell((wire,), edge, solid=False), typed.Shell)
     assert_type(
         runtime.pipe_shell(
             (wire,),
@@ -74,13 +82,22 @@ def topology_contract(
         typed.Solid,
     )
     assert_type(runtime.sweep(wire, edge, frenet=True), typed.Solid)
+    assert_type(typed.sweep(wire, edge, frenet=True), typed.Solid)
     assert_type(
         runtime.revol2(face, 3, sections=12, yaw=(0, 1), roll=(0, 2)),
+        typed.Solid,
+    )
+    assert_type(
+        typed.revol2(face, 3, sections=12, yaw=(0, 1), roll=(0, 2)),
         typed.Solid,
     )
     assert_type(runtime.fillet(solid, 0.1), typed.Shape)
     assert_type(runtime.chamfer(solid, 0.1), typed.Shape)
     assert_type(runtime.fillet2d(face, 0.1), typed.Face)
+    assert_type(typed.fillet(solid, 0.1), typed.Shape)
+    assert_type(typed.chamfer(solid, 0.1), typed.Shape)
+    assert_type(typed.fillet2d(face, 0.1), typed.Face)
+    assert_type(typed.chamfer2d(face, 0.1), typed.Face)
     assert_type(runtime.restore_shapetype(solid), typed.Solid)
     assert_type(runtime.restore_shapetype(shape), typed.Shape)
     assert_type(shape.restore_shapetype(), typed.Shape)
@@ -101,13 +118,29 @@ def topology_contract(
     assert_type(runtime.from_svg("shape.svg"), typed.Shape)
     assert_type(runtime.sew((edge, wire)), typed.Wire)
     assert_type(runtime.sew((face, shell)), typed.Shell)
+    assert_type(typed.sew((edge, wire)), typed.Wire)
+    assert_type(typed.sew((face, shell)), typed.Shell)
     assert_type(runtime.offset(solid, 0.1), typed.Shape)
     assert_type(solid.offset(0.1), typed.Shape)
+    assert_type(typed.offset(solid, 0.1), typed.Shape)
     assert_type(runtime.thicksolid(solid, -0.1, (runtime.point3(),)), typed.Solid)
     assert_type(solid.thicksolid(-0.1, (runtime.point3(),)), typed.Solid)
+    assert_type(typed.thicksolid(solid, -0.1, (runtime.point3(),)), typed.Solid)
     assert_type(runtime.shapefix_solid(solid), typed.Solid)
     assert_type(solid.shapefix_solid(), typed.Solid)
+    assert_type(typed.shapefix_solid(solid), typed.Solid)
     assert_type(runtime.unify(solid), typed.Solid)
+    assert_type(typed.unify(solid), typed.Solid)
+    assert_type(typed.restore_shapetype(shape), typed.Shape)
+    assert_type(typed.near_vertex(shape, runtime.point3()), typed.Vertex)
+    assert_type(typed.near_edge(shape, runtime.point3()), typed.Edge)
+    assert_type(typed.near_wire(shape, runtime.point3()), typed.Wire)
+    assert_type(typed.near_face(shape, runtime.point3()), typed.Face)
+    assert_type(typed.near_shell(shape, runtime.point3()), typed.Shell)
+    assert_type(typed.near_solid(shape, runtime.point3()), typed.Solid)
+    assert_type(typed.near_compsolid(shape, runtime.point3()), typed.CompSolid)
+    assert_type(typed.near_compound(shape, runtime.point3()), typed.Compound)
+    assert_type(typed.project(runtime.point3(), edge), typed.CurveProjection)
     assert_type(solid.unify(), typed.Solid)
     query_point = runtime.point3()
     assert_type(runtime.near_vertex(shape, query_point), typed.Vertex)

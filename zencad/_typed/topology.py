@@ -56,11 +56,10 @@ from zencad.runtime.scene_protocol import encode_brep
 
 from . import _operations as ops
 from . import transforms as transform_api
-from . import _bound_operations as bound_ops
 from . import _mesh_operations as mesh_ops
-from ._core import Handle, State, require_same_runtime
+from ._core import Handle, State
 from ._serialization import ShapeBrepSerializer
-from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
+from .bounds import BoundaryBox
 from .curves import CURVE_SPEC, Curve, CurveKind
 from .meshes import MESH_SPEC, MeshData
 from .records import (
@@ -80,7 +79,6 @@ from .values import (
     Scalar,
     ScalarInput,
     Vector3,
-    _scalar_state,
 )
 
 if TYPE_CHECKING:
@@ -782,20 +780,9 @@ class Shape(Handle[ResolvedShape]):
         vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
         center: bool = False,
     ) -> Shape:
-        if not isinstance(center, bool):
-            raise TypeError("extrude center must be bool")
-        resolved_vector = (
-            self.runtime.vector3(0, 0, vec)
-            if isinstance(vec, (Scalar, int, float)) and not isinstance(vec, bool)
-            else self.runtime.vector3(vec)
-        )
-        expression = self.runtime._expression(
-            ops.extrude_shape,
-            result=SHAPE_SPEC,
-            args=(self._state, resolved_vector._state, center),
-            operation_id="zencad.typed.shape.extrude",
-        )
-        return Shape._from_state(self.runtime, expression)
+        from .sweeps import extrude
+
+        return extrude(self, vec, center)
 
     def linear_extrude(
         self,
@@ -810,176 +797,105 @@ class Shape(Handle[ResolvedShape]):
         r: ScalarInput | None = None,
         yaw: ScalarInput = 0,
     ) -> Shape:
-        expression = self.runtime._expression(
-            ops.revolve_shape,
-            result=SHAPE_SPEC,
-            args=(
-                self._state,
-                None if r is None else _scalar_state(self.runtime, r),
-                _scalar_state(self.runtime, yaw),
-            ),
-            operation_id="zencad.typed.shape.revol",
-        )
-        return Shape._from_state(self.runtime, expression)
+        from .sweeps import revol
 
-    def _reference_states(
-        self,
-        references: Sequence[Point3] | None,
-        name: str,
-    ) -> tuple[State[ops.Point3Value], ...] | None:
-        if references is None:
-            return None
-        values = tuple(references)
-        for value in values:
-            if not isinstance(value, Point3):
-                raise TypeError(f"{name} references must be Point3 values")
-            require_same_runtime(self.runtime, value)
-        return tuple(value._state for value in values)
-
-    def _rounded_operation(
-        self,
-        operation: Callable[..., ResolvedShape],
-        radius: ScalarInput,
-        references: Sequence[Point3] | None,
-        name: str,
-        result_spec: ResultSpec[ResolvedShape] = SHAPE_SPEC,
-    ) -> Shape:
-        expression = self.runtime._expression(
-            operation,
-            result=result_spec,
-            args=(
-                self._state,
-                _scalar_state(self.runtime, radius),
-                self._reference_states(references, name),
-            ),
-            operation_id=f"zencad.typed.shape.{name}",
-        )
-        return Shape._from_state(self.runtime, expression)
+        return revol(self, r, yaw)
 
     def fillet(
         self,
         r: ScalarInput,
         refs: Sequence[Point3] | None = None,
     ) -> Shape:
-        return self._rounded_operation(ops.fillet_shape, r, refs, "fillet")
+        from .modeling import fillet
+
+        return fillet(self, r, refs)
 
     def chamfer(
         self,
         r: ScalarInput,
         refs: Sequence[Point3] | None = None,
     ) -> Shape:
-        return self._rounded_operation(ops.chamfer_shape, r, refs, "chamfer")
+        from .modeling import chamfer
+
+        return chamfer(self, r, refs)
 
     def fillet2d(
         self,
         r: ScalarInput,
         refs: Sequence[Point3] | None = None,
     ) -> Face:
-        expression = self.runtime._expression(
-            ops.fillet2d_shape,
-            result=FACE_SPEC,
-            args=(
-                self._state,
-                _scalar_state(self.runtime, r),
-                self._reference_states(refs, "fillet2d"),
-            ),
-            operation_id="zencad.typed.shape.fillet2d",
-        )
-        return Face._from_state(self.runtime, expression)
+        from .modeling import fillet2d
+
+        if not isinstance(self, Face):
+            raise TypeError("fillet2d expects Face")
+        return fillet2d(self, r, refs)
 
     def chamfer2d(
         self,
         r: ScalarInput,
         refs: Sequence[Point3] | None = None,
     ) -> Face:
-        expression = self.runtime._expression(
-            ops.chamfer2d_shape,
-            result=FACE_SPEC,
-            args=(
-                self._state,
-                _scalar_state(self.runtime, r),
-                self._reference_states(refs, "chamfer2d"),
-            ),
-            operation_id="zencad.typed.shape.chamfer2d",
-        )
-        return Face._from_state(self.runtime, expression)
+        from .modeling import chamfer2d
+
+        if not isinstance(self, Face):
+            raise TypeError("chamfer2d expects Face")
+        return chamfer2d(self, r, refs)
 
     def restore_shapetype(self) -> Shape:
         """Recover a precise topology handle when exactly one subtype exists."""
-        return self.runtime.restore_shapetype(self)
+        from .modeling import restore_shapetype
+
+        return restore_shapetype(self)
 
     def offset(self, distance: ScalarInput, /) -> Shape:
-        expression = self.runtime._expression(
-            ops.offset_shape,
-            result=SHAPE_SPEC,
-            args=(self._state, _scalar_state(self.runtime, distance)),
-            operation_id="zencad.typed.shape.offset",
-        )
-        return Shape._from_state(self.runtime, expression)
+        from .modeling import offset
+
+        return offset(self, distance)
 
     def unify(self: ShapeT) -> ShapeT:
-        expression = self.runtime._expression(
-            ops.unify_shape,
-            result=self._result_spec,
-            args=(self._state,),
-            operation_id="zencad.typed.shape.unify",
-        )
-        return type(self)._from_state(self.runtime, expression)
+        from .modeling import unify
 
-    def _near(
-        self,
-        point: Point3,
-        operation: Callable[[ResolvedShape, ops.Point3Value], ResolvedShape],
-        result_spec: ResultSpec[ResolvedShape],
-        handle_type: type[ShapeHandleT],
-        name: str,
-    ) -> ShapeHandleT:
-        if not isinstance(point, Point3):
-            raise TypeError(f"near_{name} expects Point3")
-        require_same_runtime(self.runtime, point)
-        expression = self.runtime._expression(
-            operation,
-            result=result_spec,
-            args=(self._state, point._state),
-            operation_id=f"zencad.typed.shape.near_{name}",
-        )
-        return handle_type._from_state(self.runtime, expression)
+        return cast(ShapeT, unify(self))
 
     def near_vertex(self, point: Point3, /) -> Vertex:
-        return self._near(point, ops.near_vertex, VERTEX_SPEC, Vertex, "vertex")
+        from .modeling import near_vertex
+
+        return near_vertex(self, point)
 
     def near_edge(self, point: Point3, /) -> Edge:
-        return self._near(point, ops.near_edge, EDGE_SPEC, Edge, "edge")
+        from .modeling import near_edge
+
+        return near_edge(self, point)
 
     def near_wire(self, point: Point3, /) -> Wire:
-        return self._near(point, ops.near_wire, WIRE_SPEC, Wire, "wire")
+        from .modeling import near_wire
+
+        return near_wire(self, point)
 
     def near_face(self, point: Point3, /) -> Face:
-        return self._near(point, ops.near_face, FACE_SPEC, Face, "face")
+        from .modeling import near_face
+
+        return near_face(self, point)
 
     def near_shell(self, point: Point3, /) -> Shell:
-        return self._near(point, ops.near_shell, SHELL_SPEC, Shell, "shell")
+        from .modeling import near_shell
+
+        return near_shell(self, point)
 
     def near_solid(self, point: Point3, /) -> Solid:
-        return self._near(point, ops.near_solid, SOLID_SPEC, Solid, "solid")
+        from .modeling import near_solid
+
+        return near_solid(self, point)
 
     def near_compsolid(self, point: Point3, /) -> CompSolid:
-        return self._near(
-            point,
-            ops.near_compsolid,
-            COMPSOLID_SPEC,
-            CompSolid,
-            "compsolid",
-        )
+        from .modeling import near_compsolid
+
+        return near_compsolid(self, point)
 
     def near_compound(self, point: Point3, /) -> Compound:
-        return self._near(
-            point,
-            ops.near_compound,
-            COMPOUND_SPEC,
-            Compound,
-            "compound",
-        )
+        from .modeling import near_compound
+
+        return near_compound(self, point)
 
     def edges(self) -> DeferredSequence[Edge]:
         return self._topology_query(
@@ -1064,13 +980,9 @@ class Shape(Handle[ResolvedShape]):
 
     def boundbox(self) -> BoundaryBox:
         """Return graph-preserving axis-aligned bounds for this shape."""
-        expression = self.runtime._expression(
-            bound_ops.shape_boundary_box,
-            result=BOUNDARY_BOX_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.shape.boundbox",
-        )
-        return BoundaryBox._from_state(self.runtime, expression)
+        from .modeling import boundbox
+
+        return boundbox(self)
 
     def bbox(self) -> BoundaryBox:
         """Short alias for :meth:`boundbox`."""
@@ -1163,13 +1075,9 @@ class Face(Shape):
     _result_spec = FACE_SPEC
 
     def surface(self) -> Surface:
-        state = self.runtime._value_state(
-            ops.face_surface,
-            result=SURFACE_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.face.surface",
-        )
-        return Surface._from_state(self.runtime, state)
+        from .surface_topology import _face_surface
+
+        return _face_surface(self)
 
     def triangulate(
         self,
@@ -1213,28 +1121,14 @@ class Solid(Shape):
         references: Sequence[Point3],
         /,
     ) -> Solid:
-        reference_states = self._reference_states(references, "thicksolid")
-        assert reference_states is not None
-        expression = self.runtime._expression(
-            ops.thicksolid_shape,
-            result=SOLID_SPEC,
-            args=(
-                self._state,
-                _scalar_state(self.runtime, thickness),
-                reference_states,
-            ),
-            operation_id="zencad.typed.solid.thicksolid",
-        )
-        return Solid._from_state(self.runtime, expression)
+        from .modeling import thicksolid
+
+        return thicksolid(self, thickness, references)
 
     def shapefix_solid(self) -> Solid:
-        expression = self.runtime._expression(
-            ops.shapefix_solid_shape,
-            result=SOLID_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.solid.shapefix",
-        )
-        return Solid._from_state(self.runtime, expression)
+        from .modeling import shapefix_solid
+
+        return shapefix_solid(self)
 
     def native(self) -> TopoDS_Solid:
         return as_solid(super().native())

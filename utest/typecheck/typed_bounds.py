@@ -12,6 +12,9 @@ def bounds_contract(runtime: typed.Runtime, shape: typed.Shape) -> None:
         runtime.boundary_box(minimum, maximum),
         typed.BoundaryBox,
     )
+    assert_type(typed.boundary_box(minimum, maximum), typed.BoundaryBox)
+    assert_type(typed.empty_boundary_box(), typed.BoundaryBox)
+    assert_type(typed.boundbox(shape), typed.BoundaryBox)
 
     assert_type(runtime.empty_boundary_box(), typed.BoundaryBox)
     assert_type(shape.boundbox(), typed.BoundaryBox)

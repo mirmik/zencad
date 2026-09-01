@@ -32,19 +32,20 @@ from zencad.occ_compat import read_brep, vertex_point, write_brep
 from zencad.operation import using_runtime
 
 from . import _operations as ops
-from . import _bound_operations as bound_ops
-from . import _surface_operations as surface_ops
 from . import _text_operations as text_ops
+from . import bounds as bounds_api
 from . import curve_constructors as curve_api
+from . import modeling as modeling_api
+from . import surfaces as surface_api
+from . import sweeps as sweep_api
 from . import transforms as transform_api
 from ._core import State, require_same_runtime
-from .bounds import BOUNDARY_BOX_SPEC, BoundaryBox
+from .bounds import BoundaryBox
 from .curves import Curve, Curve2
 from .exttrans import MultiTransform
 from .meshes import MeshData
 from .records import CurveProjection, Interval
 from .surfaces import (
-    SURFACE_SPEC,
     Surface,
     SweepLocationLaw,
     SweepScaleLaw,
@@ -60,7 +61,6 @@ from .topology import (
     SHAPE_SPEC,
     SHELL_SPEC,
     SOLID_SPEC,
-    WIRE_SPEC,
     Compound,
     CompSolid,
     DeferredSequence,
@@ -388,8 +388,8 @@ class Runtime:
         vec: Vector3 | Sequence[ScalarInput] | ScalarInput,
         center: bool = False,
     ) -> Shape:
-        _require_shape(self, shape, "extrude")
-        return shape.extrude(vec, center)
+        with using_runtime(self):
+            return sweep_api.extrude(shape, vec, center)
 
     def linear_extrude(
         self,
@@ -398,7 +398,8 @@ class Runtime:
         center: bool = False,
     ) -> Shape:
         """Compatibility spelling for :meth:`extrude`."""
-        return self.extrude(shape, vec, center)
+        with using_runtime(self):
+            return sweep_api.linear_extrude(shape, vec, center)
 
     def revol(
         self,
@@ -406,8 +407,8 @@ class Runtime:
         r: ScalarInput | None = None,
         yaw: ScalarInput = 0,
     ) -> Shape:
-        _require_shape(self, shape, "revol")
-        return shape.revol(r, yaw)
+        with using_runtime(self):
+            return sweep_api.revol(shape, r, yaw)
 
     @overload
     def loft(
@@ -453,27 +454,8 @@ class Runtime:
         shell: bool = False,
         max_degree: int = 4,
     ) -> Solid | Shell:
-        _require_bool(smooth, "loft smooth")
-        _require_bool(shell, "loft shell")
-        resolved_degree = _require_positive_int(max_degree, "loft max_degree")
-        values = _require_wire_parts(self, (sections,), "loft")
-        if len(values) < 2:
-            raise ValueError("loft requires at least two sections")
-        result_spec = SHELL_SPEC if shell else SOLID_SPEC
-        expression = self._expression(
-            ops.loft_shapes,
-            result=result_spec,
-            args=(
-                tuple(value._state for value in values),
-                smooth,
-                shell,
-                resolved_degree,
-            ),
-            operation_id="zencad.typed.loft",
-        )
-        if shell:
-            return Shell._from_state(self, expression)
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return sweep_api.loft(sections, smooth, shell, max_degree)
 
     def pipe(
         self,
@@ -484,23 +466,13 @@ class Runtime:
         trihedron: PipeTrihedron = PipeTrihedron.CORRECTED_FRENET,
         force_approx_c1: bool = False,
     ) -> Shape:
-        _require_shape(self, profile, "pipe profile")
-        _require_pipe_spine(self, spine, "pipe spine")
-        if not isinstance(trihedron, PipeTrihedron):
-            raise TypeError("pipe trihedron must be PipeTrihedron")
-        _require_bool(force_approx_c1, "pipe force_approx_c1")
-        expression = self._expression(
-            ops.pipe_shape,
-            result=SHAPE_SPEC,
-            args=(
-                profile._state,
-                spine._state,
-                trihedron.value,
-                force_approx_c1,
-            ),
-            operation_id="zencad.typed.pipe",
-        )
-        return Shape._from_state(self, expression)
+        with using_runtime(self):
+            return sweep_api.pipe(
+                profile,
+                spine,
+                trihedron=trihedron,
+                force_approx_c1=force_approx_c1,
+            )
 
     @overload
     def pipe_shell(
@@ -564,44 +536,18 @@ class Runtime:
         solid: bool = True,
         transition: PipeTransition = PipeTransition.TRANSFORMED,
     ) -> Solid | Shell:
-        values = _require_wire_parts(self, (profiles,), "pipe_shell profiles")
-        _require_pipe_spine(self, spine, "pipe_shell spine")
-        _require_bool(frenet, "pipe_shell frenet")
-        _require_bool(approx_c1, "pipe_shell approx_c1")
-        _require_bool(discrete, "pipe_shell discrete")
-        _require_bool(solid, "pipe_shell solid")
-        if not isinstance(transition, PipeTransition):
-            raise TypeError("pipe_shell transition must be PipeTransition")
-        for value, name in ((binormal, "binormal"), (parallel, "parallel")):
-            if value is not None:
-                if not isinstance(value, Vector3):
-                    raise TypeError(f"pipe_shell {name} must be Vector3 or None")
-                require_same_runtime(self, value)
-        selected_modes = sum(
-            (frenet, binormal is not None, parallel is not None, discrete)
-        )
-        if selected_modes > 1:
-            raise ValueError("pipe_shell orientation modes are mutually exclusive")
-        result_spec = SOLID_SPEC if solid else SHELL_SPEC
-        expression = self._expression(
-            ops.pipe_shell_shapes,
-            result=result_spec,
-            args=(
-                tuple(value._state for value in values),
-                spine._state,
-                frenet,
-                approx_c1,
-                None if binormal is None else binormal._state,
-                None if parallel is None else parallel._state,
-                discrete,
-                solid,
-                transition.value,
-            ),
-            operation_id="zencad.typed.pipe_shell",
-        )
-        if solid:
-            return Solid._from_state(self, expression)
-        return Shell._from_state(self, expression)
+        with using_runtime(self):
+            return sweep_api.pipe_shell(
+                profiles,
+                spine,
+                frenet=frenet,
+                approx_c1=approx_c1,
+                binormal=binormal,
+                parallel=parallel,
+                discrete=discrete,
+                solid=solid,
+                transition=transition,
+            )
 
     def sweep(
         self,
@@ -612,7 +558,8 @@ class Runtime:
         frenet: bool = False,
     ) -> Solid:
         """Compatibility spelling for a single-profile solid pipe shell."""
-        return self.pipe_shell((profile,), path, frenet=frenet)
+        with using_runtime(self):
+            return sweep_api.sweep(profile, path, frenet=frenet)
 
     def revol2(
         self,
@@ -626,35 +573,15 @@ class Runtime:
         parts: int | None = None,
     ) -> Solid:
         """Approximate a rolled revolution through discrete profile sections."""
-        _require_shape(self, profile, "revol2 profile")
-        resolved_sections = _require_positive_int(sections, "revol2 sections")
-        if resolved_sections < 2:
-            raise ValueError("revol2 sections must be at least two")
-        if parts is not None:
-            resolved_parts = _require_positive_int(parts, "revol2 parts")
-            if resolved_sections < resolved_parts * 2:
-                raise ValueError(
-                    "revol2 sections must provide at least two per part"
-                )
-        else:
-            resolved_parts = None
-        yaw_states = _interval_state(self, yaw, "revol2 yaw")
-        roll_states = _interval_state(self, roll, "revol2 roll")
-        assert yaw_states is not None and roll_states is not None
-        expression = self._expression(
-            ops.revolve_sections_shape,
-            result=SOLID_SPEC,
-            args=(
-                profile._state,
-                _scalar_state(self, radius),
-                resolved_sections,
-                yaw_states,
-                roll_states,
-                resolved_parts,
-            ),
-            operation_id="zencad.typed.revol2",
-        )
-        return Solid._from_state(self, expression)
+        with using_runtime(self):
+            return sweep_api.revol2(
+                profile,
+                radius,
+                sections=sections,
+                yaw=yaw,
+                roll=roll,
+                parts=parts,
+            )
 
     def fillet(
         self,
@@ -663,8 +590,8 @@ class Runtime:
         references: Sequence[Point3] | None = None,
         /,
     ) -> Shape:
-        _require_shape(self, shape, "fillet")
-        return shape.fillet(radius, references)
+        with using_runtime(self):
+            return modeling_api.fillet(shape, radius, references)
 
     def chamfer(
         self,
@@ -673,8 +600,8 @@ class Runtime:
         references: Sequence[Point3] | None = None,
         /,
     ) -> Shape:
-        _require_shape(self, shape, "chamfer")
-        return shape.chamfer(radius, references)
+        with using_runtime(self):
+            return modeling_api.chamfer(shape, radius, references)
 
     def fillet2d(
         self,
@@ -683,10 +610,8 @@ class Runtime:
         references: Sequence[Point3] | None = None,
         /,
     ) -> Face:
-        if not isinstance(shape, Face):
-            raise TypeError("fillet2d expects Face")
-        require_same_runtime(self, shape)
-        return shape.fillet2d(radius, references)
+        with using_runtime(self):
+            return modeling_api.fillet2d(shape, radius, references)
 
     @overload
     def restore_shapetype(self, shape: Solid, /) -> Solid: ...
@@ -707,18 +632,8 @@ class Runtime:
     def restore_shapetype(self, shape: Shape, /) -> Shape: ...
 
     def restore_shapetype(self, shape: Shape, /) -> Shape:
-        _require_shape(self, shape, "restore_shapetype")
-        candidates = (
-            shape.solids(),
-            shape.shells(),
-            shape.faces(),
-            shape.wires(),
-            shape.edges(),
-        )
-        for candidates_of_kind in candidates:
-            if len(candidates_of_kind) == 1:
-                return candidates_of_kind[0]
-        return shape
+        with using_runtime(self):
+            return modeling_api.restore_shapetype(shape)
 
     def triangulate(self, shape: Shape, deflection: Number, /) -> MeshData:
         _require_shape(self, shape, "triangulate")
@@ -888,28 +803,12 @@ class Runtime:
         sort: bool = True,
         /,
     ) -> Wire | Shell:
-        _require_bool(sort, "sew sort")
-        values = _require_sew_shapes(self, shapes)
-        states = tuple(shape._state for shape in values)
-        if all(isinstance(shape, (Edge, Wire)) for shape in values):
-            expression = self._expression(
-                ops.sew_wire,
-                result=WIRE_SPEC,
-                args=(states, sort),
-                operation_id="zencad.typed.sew.wire",
-            )
-            return Wire._from_state(self, expression)
-        expression = self._expression(
-            ops.sew_shell,
-            result=SHELL_SPEC,
-            args=(states,),
-            operation_id="zencad.typed.sew.shell",
-        )
-        return Shell._from_state(self, expression)
+        with using_runtime(self):
+            return modeling_api.sew(shapes, sort)
 
     def offset(self, shape: Shape, distance: ScalarInput, /) -> Shape:
-        _require_shape(self, shape, "offset")
-        return shape.offset(distance)
+        with using_runtime(self):
+            return modeling_api.offset(shape, distance)
 
     def thicksolid(
         self,
@@ -918,52 +817,48 @@ class Runtime:
         references: Sequence[Point3],
         /,
     ) -> Solid:
-        if not isinstance(shape, Solid):
-            raise TypeError("thicksolid expects Solid")
-        require_same_runtime(self, shape)
-        return shape.thicksolid(thickness, references)
+        with using_runtime(self):
+            return modeling_api.thicksolid(shape, thickness, references)
 
     def shapefix_solid(self, shape: Solid, /) -> Solid:
-        if not isinstance(shape, Solid):
-            raise TypeError("shapefix_solid expects Solid")
-        require_same_runtime(self, shape)
-        return shape.shapefix_solid()
+        with using_runtime(self):
+            return modeling_api.shapefix_solid(shape)
 
     def unify(self, shape: ShapeValueT, /) -> ShapeValueT:
-        _require_shape(self, shape, "unify")
-        return shape.unify()
+        with using_runtime(self):
+            return cast(ShapeValueT, modeling_api.unify(shape))
 
     def near_vertex(self, shape: Shape, point: Point3, /) -> Vertex:
-        _require_shape(self, shape, "near_vertex")
-        return shape.near_vertex(point)
+        with using_runtime(self):
+            return modeling_api.near_vertex(shape, point)
 
     def near_edge(self, shape: Shape, point: Point3, /) -> Edge:
-        _require_shape(self, shape, "near_edge")
-        return shape.near_edge(point)
+        with using_runtime(self):
+            return modeling_api.near_edge(shape, point)
 
     def near_wire(self, shape: Shape, point: Point3, /) -> Wire:
-        _require_shape(self, shape, "near_wire")
-        return shape.near_wire(point)
+        with using_runtime(self):
+            return modeling_api.near_wire(shape, point)
 
     def near_face(self, shape: Shape, point: Point3, /) -> Face:
-        _require_shape(self, shape, "near_face")
-        return shape.near_face(point)
+        with using_runtime(self):
+            return modeling_api.near_face(shape, point)
 
     def near_shell(self, shape: Shape, point: Point3, /) -> Shell:
-        _require_shape(self, shape, "near_shell")
-        return shape.near_shell(point)
+        with using_runtime(self):
+            return modeling_api.near_shell(shape, point)
 
     def near_solid(self, shape: Shape, point: Point3, /) -> Solid:
-        _require_shape(self, shape, "near_solid")
-        return shape.near_solid(point)
+        with using_runtime(self):
+            return modeling_api.near_solid(shape, point)
 
     def near_compsolid(self, shape: Shape, point: Point3, /) -> CompSolid:
-        _require_shape(self, shape, "near_compsolid")
-        return shape.near_compsolid(point)
+        with using_runtime(self):
+            return modeling_api.near_compsolid(shape, point)
 
     def near_compound(self, shape: Shape, point: Point3, /) -> Compound:
-        _require_shape(self, shape, "near_compound")
-        return shape.near_compound(point)
+        with using_runtime(self):
+            return modeling_api.near_compound(shape, point)
 
     def project_point_on_curve(
         self,
@@ -971,41 +866,22 @@ class Runtime:
         target: Curve | Edge,
         /,
     ) -> CurveProjection:
-        if not isinstance(point, Point3):
-            raise TypeError("project_point_on_curve point must be Point3")
-        if not isinstance(target, (Curve, Edge)):
-            raise TypeError("project_point_on_curve target must be Curve or Edge")
-        require_same_runtime(self, point)
-        require_same_runtime(self, target)
-        curve = target.curve() if isinstance(target, Edge) else target
-        parameter = curve.lower_distance_parameter(point)
-        projected = curve.point(parameter)
-        return CurveProjection(
-            projected,
-            parameter,
-            (projected - point).length(),
-        )
+        with using_runtime(self):
+            return modeling_api.project_point_on_curve(point, target)
 
     def project(self, point: Point3, target: Curve | Edge, /) -> CurveProjection:
-        return self.project_point_on_curve(point, target)
+        with using_runtime(self):
+            return modeling_api.project(point, target)
 
     def empty_boundary_box(self) -> BoundaryBox:
         """Return the identity value for boundary-box union."""
-        return BoundaryBox._from_state(self, bound_ops.empty_boundary_box())
+        with using_runtime(self):
+            return bounds_api.empty_boundary_box()
 
     def boundary_box(self, minimum: Point3, maximum: Point3, /) -> BoundaryBox:
         """Create a graph-preserving box from its opposite corner points."""
-        if not isinstance(minimum, Point3) or not isinstance(maximum, Point3):
-            raise TypeError("boundary_box expects Point3 corners")
-        require_same_runtime(self, minimum)
-        require_same_runtime(self, maximum)
-        state = self._value_state(
-            bound_ops.boundary_box_from_points,
-            result=BOUNDARY_BOX_SPEC,
-            args=(minimum._state, maximum._state),
-            operation_id="zencad.typed.boundary-box.from-points",
-        )
-        return BoundaryBox._from_state(self, state)
+        with using_runtime(self):
+            return bounds_api.boundary_box(minimum, maximum)
 
     def line(self, origin: Point3, direction: Vector3, /) -> Curve:
         with using_runtime(self):
@@ -1196,13 +1072,8 @@ class Runtime:
             return curve_api.trim_curve2(curve, start, end)
 
     def cylinder_surface(self, radius: ScalarInput, /) -> Surface:
-        expression = self._expression(
-            surface_ops.cylinder_surface,
-            result=SURFACE_SPEC,
-            args=(_scalar_state(self, radius),),
-            operation_id="zencad.typed.cylinder_surface",
-        )
-        return Surface._from_state(self, expression)
+        with using_runtime(self):
+            return surface_api.cylinder_surface(radius)
 
     def sweep_surface(
         self,
@@ -1217,25 +1088,17 @@ class Runtime:
         max_degree: int = 5,
         max_segments: int = 20,
     ) -> Surface:
-        if not isinstance(section, Curve):
-            raise TypeError("sweep_surface section must be Curve")
-        if not isinstance(spine, Curve):
-            raise TypeError("sweep_surface spine must be Curve")
-        require_same_runtime(self, section)
-        require_same_runtime(self, spine)
-        if not isinstance(trihedron, SweepTrihedron):
-            raise TypeError("sweep_surface trihedron must be SweepTrihedron")
-        scale_law = self.constant_sweep_scale(scale, spine.range())
-        section_law = self.evolved_sweep_section(section, scale_law)
-        location_law = self.sweep_location(spine, trihedron)
-        return self.sweep_surface_from_laws(
-            section_law,
-            location_law,
-            tolerance=tolerance,
-            continuity=continuity,
-            max_degree=max_degree,
-            max_segments=max_segments,
-        )
+        with using_runtime(self):
+            return surface_api.sweep_surface(
+                section,
+                spine,
+                scale=scale,
+                trihedron=trihedron,
+                tolerance=tolerance,
+                continuity=continuity,
+                max_degree=max_degree,
+                max_segments=max_segments,
+            )
 
     def constant_sweep_scale(
         self,
@@ -1244,14 +1107,8 @@ class Runtime:
         /,
     ) -> SweepScaleLaw:
         """Describe a constant sweep scale over an explicit domain."""
-        if not isinstance(domain, Interval):
-            raise TypeError("constant_sweep_scale domain must be Interval")
-        require_same_runtime(self, domain.lower)
-        require_same_runtime(self, domain.upper)
-        return SweepScaleLaw(
-            Scalar._from_state(self, _scalar_state(self, scale)),
-            domain,
-        )
+        with using_runtime(self):
+            return surface_api.constant_sweep_scale(scale, domain)
 
     def evolved_sweep_section(
         self,
@@ -1260,14 +1117,8 @@ class Runtime:
         /,
     ) -> SweepSectionLaw:
         """Describe a curve section evolved by a scale law."""
-        if not isinstance(section, Curve):
-            raise TypeError("evolved_sweep_section section must be Curve")
-        if not isinstance(scale, SweepScaleLaw):
-            raise TypeError("evolved_sweep_section scale must be SweepScaleLaw")
-        require_same_runtime(self, section)
-        if scale.runtime is not self:
-            raise ValueError("cannot mix handles from different typed runtimes")
-        return SweepSectionLaw(section, scale)
+        with using_runtime(self):
+            return surface_api.evolved_sweep_section(section, scale)
 
     def sweep_location(
         self,
@@ -1276,12 +1127,8 @@ class Runtime:
         /,
     ) -> SweepLocationLaw:
         """Describe a spine location using an explicit trihedron law."""
-        if not isinstance(spine, Curve):
-            raise TypeError("sweep_location spine must be Curve")
-        if not isinstance(trihedron, SweepTrihedron):
-            raise TypeError("sweep_location trihedron must be SweepTrihedron")
-        require_same_runtime(self, spine)
-        return SweepLocationLaw(spine, trihedron)
+        with using_runtime(self):
+            return surface_api.sweep_location(spine, trihedron)
 
     def sweep_surface_from_laws(
         self,
@@ -1295,50 +1142,15 @@ class Runtime:
         max_segments: int = 20,
     ) -> Surface:
         """Build a surface from immutable section and location laws."""
-        if not isinstance(section, SweepSectionLaw):
-            raise TypeError("sweep_surface_from_laws section must be SweepSectionLaw")
-        if not isinstance(location, SweepLocationLaw):
-            raise TypeError(
-                "sweep_surface_from_laws location must be SweepLocationLaw"
+        with using_runtime(self):
+            return surface_api.sweep_surface_from_laws(
+                section,
+                location,
+                tolerance=tolerance,
+                continuity=continuity,
+                max_degree=max_degree,
+                max_segments=max_segments,
             )
-        if section.runtime is not self or location.runtime is not self:
-            raise ValueError("cannot mix handles from different typed runtimes")
-        resolved_tolerance = _require_positive_number(
-            tolerance,
-            "sweep_surface_from_laws tolerance",
-        )
-        resolved_continuity = _require_int_between(
-            continuity,
-            "sweep_surface_from_laws continuity",
-            minimum=0,
-            maximum=3,
-        )
-        resolved_max_degree = _require_positive_int(
-            max_degree,
-            "sweep_surface_from_laws max_degree",
-        )
-        resolved_max_segments = _require_positive_int(
-            max_segments,
-            "sweep_surface_from_laws max_segments",
-        )
-        expression = self._expression(
-            surface_ops.sweep_surface,
-            result=SURFACE_SPEC,
-            args=(
-                section.section._state,
-                section.scale.scale._state,
-                section.scale.domain.lower._state,
-                section.scale.domain.upper._state,
-                location.spine._state,
-                location.trihedron.value,
-                resolved_tolerance,
-                resolved_continuity,
-                resolved_max_degree,
-                resolved_max_segments,
-            ),
-            operation_id="zencad.typed.sweep_surface_from_laws",
-        )
-        return Surface._from_state(self, expression)
 
     def segment(self, start: Point3, end: Point3, /) -> Edge:
         with using_runtime(self):
@@ -2909,24 +2721,6 @@ def _require_shape(runtime: Runtime, shape: Shape, name: str) -> None:
     require_same_runtime(runtime, shape)
 
 
-def _require_sew_shapes(
-    runtime: Runtime,
-    shapes: Sequence[Edge | Wire] | Sequence[Face | Shell],
-) -> tuple[Edge | Wire | Face | Shell, ...]:
-    if isinstance(shapes, (str, bytes)) or not isinstance(shapes, Sequence):
-        raise TypeError("sew expects a sequence of topology handles")
-    values = tuple(shapes)
-    if not values:
-        raise ValueError("sew requires at least one topology handle")
-    wire_family = all(isinstance(shape, (Edge, Wire)) for shape in values)
-    shell_family = all(isinstance(shape, (Face, Shell)) for shape in values)
-    if not wire_family and not shell_family:
-        raise TypeError("sew operands must all be Edge/Wire or all be Face/Shell")
-    for shape in values:
-        require_same_runtime(runtime, shape)
-    return values
-
-
 def _require_faces(
     runtime: Runtime,
     faces: Face | Sequence[Face],
@@ -2990,24 +2784,6 @@ def _platonic_polyhedron(
     return runtime.polyhedron(points, faces, shell)
 
 
-def _interval_state(
-    runtime: Runtime,
-    interval: Interval | Sequence[ScalarInput] | None,
-    name: str,
-) -> tuple[State[float], State[float]] | None:
-    if interval is None:
-        return None
-    if isinstance(interval, Interval):
-        require_same_runtime(runtime, interval.lower)
-        return (interval.lower._state, interval.upper._state)
-    if isinstance(interval, (str, bytes)) or not isinstance(interval, Sequence):
-        raise TypeError(f"{name} must contain two scalar bounds")
-    values = tuple(interval)
-    if len(values) != 2:
-        raise TypeError(f"{name} must contain two scalar bounds")
-    return (_scalar_state(runtime, values[0]), _scalar_state(runtime, values[1]))
-
-
 def _require_wire_parts(
     runtime: Runtime,
     shapes: tuple[Edge | Wire | Sequence[Edge | Wire], ...],
@@ -3027,16 +2803,6 @@ def _require_wire_parts(
     for shape in values:
         require_same_runtime(runtime, shape)
     return values
-
-
-def _require_pipe_spine(
-    runtime: Runtime,
-    spine: Edge | Wire,
-    name: str,
-) -> None:
-    if not isinstance(spine, (Edge, Wire)):
-        raise TypeError(f"{name} must be Edge or Wire")
-    require_same_runtime(runtime, spine)
 
 
 def _as_scalar(runtime: Runtime, value: ScalarInput) -> Scalar:

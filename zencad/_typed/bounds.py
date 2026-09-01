@@ -5,11 +5,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from OCP.Bnd import Bnd_Box
 from evalcache import Expression, ResultSpec
+from OCP.Bnd import Bnd_Box
+
+from zencad.operation import (
+    OperationArguments,
+    arguments,
+    operation,
+    resolve_runtime,
+    using_runtime,
+)
 
 from . import _bound_operations as ops
-from ._core import Handle, State, require_same_runtime
+from ._core import Handle, State
 from ._serialization import BoundaryBoxSerializer
 from .records import Interval
 from .values import (
@@ -87,16 +95,7 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         return cls._from_state(runtime, ops.boundary_box_from_ocp(value))
 
     def union(self, other: BoundaryBox, /) -> BoundaryBox:
-        if not isinstance(other, BoundaryBox):
-            raise TypeError("BoundaryBox.union expects BoundaryBox")
-        require_same_runtime(self.runtime, other)
-        state = self.runtime._value_state(
-            ops.boundary_box_union,
-            result=BOUNDARY_BOX_SPEC,
-            args=(self._state, other._state),
-            operation_id="zencad.typed.boundary-box.union",
-        )
-        return BoundaryBox._from_state(self.runtime, state)
+        return _boundary_box_union(self, other)
 
     def add(self, other: BoundaryBox, /) -> BoundaryBox:
         """Immutable compatibility spelling: return the combined box."""
@@ -107,13 +106,7 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         return self._resolved().is_empty
 
     def _coordinate(self, index: int) -> Scalar:
-        state = self.runtime._value_state(
-            ops.boundary_box_coordinate,
-            result=SCALAR_SPEC,
-            args=(self._state, index),
-            operation_id="zencad.typed.boundary-box.coordinate",
-        )
-        return Scalar._from_state(self.runtime, state)
+        return _boundary_box_coordinate(self, index)
 
     @property
     def xmin(self) -> Scalar:
@@ -141,43 +134,19 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
 
     @property
     def minimum(self) -> Point3:
-        state = self.runtime._value_state(
-            ops.boundary_box_point,
-            result=POINT3_SPEC,
-            args=(self._state, False),
-            operation_id="zencad.typed.boundary-box.minimum",
-        )
-        return Point3._from_state(self.runtime, state)
+        return _boundary_box_minimum(self)
 
     @property
     def maximum(self) -> Point3:
-        state = self.runtime._value_state(
-            ops.boundary_box_point,
-            result=POINT3_SPEC,
-            args=(self._state, True),
-            operation_id="zencad.typed.boundary-box.maximum",
-        )
-        return Point3._from_state(self.runtime, state)
+        return _boundary_box_maximum(self)
 
     @property
     def size(self) -> Vector3:
-        state = self.runtime._value_state(
-            ops.boundary_box_size,
-            result=VECTOR3_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.boundary-box.size",
-        )
-        return Vector3._from_state(self.runtime, state)
+        return _boundary_box_size(self)
 
     @property
     def center(self) -> Point3:
-        state = self.runtime._value_state(
-            ops.boundary_box_center,
-            result=POINT3_SPEC,
-            args=(self._state,),
-            operation_id="zencad.typed.boundary-box.center",
-        )
-        return Point3._from_state(self.runtime, state)
+        return _boundary_box_center(self)
 
     def x_range(self) -> Interval:
         return Interval(self.xmin, self.xmax)
@@ -208,7 +177,10 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
 
     def shape(self) -> Solid:
         """Return a graph-preserving Solid occupying these bounds."""
-        return self.runtime.box(self.size).move(self.minimum)
+        from .solid import box
+
+        with using_runtime(self.runtime):
+            return box(self.size).move(self.minimum)
 
     def value(self) -> BoundaryBoxRecord:
         resolved = self._resolved()
@@ -223,3 +195,132 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
     def unlazy(self) -> BoundaryBox:
         super().unlazy()
         return self
+
+
+@operation(
+    backend=ops.empty_boundary_box,
+    result=BOUNDARY_BOX_SPEC,
+    returns=BoundaryBox,
+    operation_id="zencad.typed.boundary-box.empty",
+    operation_version="1",
+    fold_literals=True,
+)
+def empty_boundary_box() -> OperationArguments:
+    return arguments()
+
+
+@operation(
+    backend=ops.boundary_box_from_points,
+    result=BOUNDARY_BOX_SPEC,
+    returns=BoundaryBox,
+    operation_id="zencad.typed.boundary-box.from-points",
+    operation_version="1",
+    fold_literals=True,
+)
+def boundary_box(minimum: Point3, maximum: Point3, /) -> OperationArguments:
+    if not isinstance(minimum, Point3) or not isinstance(maximum, Point3):
+        raise TypeError("boundary_box expects Point3 corners")
+    resolve_runtime(minimum, maximum)
+    return arguments(minimum, maximum)
+
+
+@operation(
+    backend=ops.boundary_box_union,
+    result=BOUNDARY_BOX_SPEC,
+    returns=BoundaryBox,
+    operation_id="zencad.typed.boundary-box.union",
+    operation_version="1",
+    fold_literals=True,
+)
+def _boundary_box_union(
+    left: BoundaryBox,
+    right: BoundaryBox,
+    /,
+) -> OperationArguments:
+    if not isinstance(left, BoundaryBox) or not isinstance(right, BoundaryBox):
+        raise TypeError("BoundaryBox.union expects BoundaryBox")
+    return arguments(left, right)
+
+
+@operation(
+    backend=ops.boundary_box_coordinate,
+    result=SCALAR_SPEC,
+    returns=Scalar,
+    operation_id="zencad.typed.boundary-box.coordinate",
+    operation_version="1",
+    fold_literals=True,
+)
+def _boundary_box_coordinate(
+    value: BoundaryBox,
+    index: int,
+    /,
+) -> OperationArguments:
+    if not isinstance(value, BoundaryBox):
+        raise TypeError("boundary-box coordinate expects BoundaryBox")
+    if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < 6:
+        raise ValueError("boundary-box coordinate index must be between 0 and 5")
+    return arguments(value, index)
+
+
+@operation(
+    backend=ops.boundary_box_point,
+    result=POINT3_SPEC,
+    returns=Point3,
+    operation_id="zencad.typed.boundary-box.minimum",
+    operation_version="1",
+    fold_literals=True,
+)
+def _boundary_box_minimum(value: BoundaryBox, /) -> OperationArguments:
+    if not isinstance(value, BoundaryBox):
+        raise TypeError("boundary-box minimum expects BoundaryBox")
+    return arguments(value, False)
+
+
+@operation(
+    backend=ops.boundary_box_point,
+    result=POINT3_SPEC,
+    returns=Point3,
+    operation_id="zencad.typed.boundary-box.maximum",
+    operation_version="1",
+    fold_literals=True,
+)
+def _boundary_box_maximum(value: BoundaryBox, /) -> OperationArguments:
+    if not isinstance(value, BoundaryBox):
+        raise TypeError("boundary-box maximum expects BoundaryBox")
+    return arguments(value, True)
+
+
+@operation(
+    backend=ops.boundary_box_size,
+    result=VECTOR3_SPEC,
+    returns=Vector3,
+    operation_id="zencad.typed.boundary-box.size",
+    operation_version="1",
+    fold_literals=True,
+)
+def _boundary_box_size(value: BoundaryBox, /) -> OperationArguments:
+    if not isinstance(value, BoundaryBox):
+        raise TypeError("boundary-box size expects BoundaryBox")
+    return arguments(value)
+
+
+@operation(
+    backend=ops.boundary_box_center,
+    result=POINT3_SPEC,
+    returns=Point3,
+    operation_id="zencad.typed.boundary-box.center",
+    operation_version="1",
+    fold_literals=True,
+)
+def _boundary_box_center(value: BoundaryBox, /) -> OperationArguments:
+    if not isinstance(value, BoundaryBox):
+        raise TypeError("boundary-box center expects BoundaryBox")
+    return arguments(value)
+
+
+__all__ = [
+    "BoundaryBox",
+    "BoundaryBoxRecord",
+    "boundary_box",
+    "empty_boundary_box",
+]

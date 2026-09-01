@@ -21,18 +21,25 @@ a complete internal vertical slice passes all gates.
 
 ## Development checkout
 
-ZenCad and evalcache are developed as two adjacent repositories. The Python
-environment used for migration work must load the `v2` checkout rather than a
-previously published evalcache wheel:
+ZenCad consumes the published evalcache v2 API. A normal development install
+resolves `evalcache>=2.0.0a1,<3` from package metadata:
+
+```bash
+python -m pip install -e ".[gui]"
+python -c 'import evalcache; print(evalcache.__file__)'
+```
+
+When changing both repositories together, install the adjacent evalcache
+checkout explicitly:
 
 ```bash
 python -m pip install -e ../evalcache
 python -c 'import evalcache; print(evalcache.__file__)'
 ```
 
-The printed path must reside under the local evalcache checkout. A local path
-must not be added to ZenCad package metadata because it would make published
-artifacts machine-specific.
+In that case the printed path must reside under the local evalcache checkout.
+A local path must not be added to ZenCad package metadata because it would make
+published artifacts machine-specific.
 
 ## Dependency order
 
@@ -1054,11 +1061,10 @@ No evalcache change is required for this checkpoint. ZenCad consumes
 types from the canonical top-level package; a future evaluator-binding helper
 could reduce adapter plumbing but is not a migration blocker.
 
-The release dependency remains the separate #2019 gate: published evalcache
-1.15.1 does not yet export that top-level v2 API, while the local 2.0.0a1
-checkout does. The extraction therefore needs no evalcache source change, but
-a standalone ZenCad install cannot drop the local checkout until v2 is
-published and the dependency constraint is updated.
+The release dependency gate #2019 is satisfied by the published evalcache
+2.0.0a1 artifacts. ZenCad requires `evalcache>=2.0.0a1,<3`, so a standalone
+installation receives the top-level expression API without relying on an
+adjacent checkout.
 
 Verification on 2026-09-01 after the curve/wire checkpoint:
 
@@ -1070,8 +1076,59 @@ Verification on 2026-09-01 after the curve/wire checkpoint:
   identity, immediate literal folding, cross-runtime rejection, both bare
   compatibility decorators, and the curve/wire module declarations;
 - targeted Ruff and diff-integrity checks pass, and a clean wheel installed
-  with the local evalcache 2.0.0a1 checkout exercises both direct module
+  with the published evalcache 2.0.0a1 artifacts exercises both direct module
   declarations and Runtime forwarding outside the ZenCad checkout.
+
+Task #2069 extracts the surface and topology-sweep family. Surface
+construction, point/normal/bound/iso queries, Curve2 mapping, immutable sweep
+laws, and surface sweeps are now owned by declarations in `_typed/surfaces.py`
+and `_typed/surface_topology.py`. Topology extrusion, revolution, loft, pipe,
+pipe-shell, single-profile sweep, and rolled revolution are declared or
+composed in `_typed/sweeps.py`. `Surface`, `Face`, and `Shape` methods delegate
+to those same declarations, and the corresponding `Runtime` methods only
+select their evaluator context and forward compatibility signatures.
+
+The extraction preserves the established operation IDs, literal folding on
+surface value queries, exact Solid/Shell selection for loft and pipe-shell,
+and all overloads. It reduces `_typed/runtime.py` from 3157 to 2992 lines; the
+remaining operation families are handled by subsequent #2050 children.
+
+Verification on 2026-09-01 after the surface/sweep checkpoint:
+
+- pytest passes 379 tests and 380 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 363 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks reject bytecode and verify required assets;
+  a clean Python 3.10 venv installs the wheel with published evalcache 2.0.0a1
+  and passes the installed-package geometry/I/O smoke for both module-level
+  declarations and Runtime forwarding.
+
+Task #2071 extracts modeling and topology-query operations. Module-level
+declarations in `_typed/modeling.py` now own fillet/chamfer (including their 2D
+forms), sewing, offset and thick-solid construction, solid repair, topology
+unification, nearest-part selection, curve projection, and shape bounds.
+`_typed/bounds.py` owns boundary-box construction, union, corner, coordinate,
+size, and center declarations. Shape, Solid, BoundaryBox, and Runtime methods
+delegate to those declarations or their graph-preserving compositions.
+
+The extraction preserves precise sew and nearest-part result handles, exact
+topology preservation for `unify`, literal folding for boundary-box values,
+and all established operation IDs. `_typed/runtime.py` is reduced from 2992
+to 2923 lines.
+
+Verification on 2026-09-01 after the modeling/query checkpoint:
+
+- pytest passes 381 tests and 397 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 365 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes the expanded installed
+  geometry/I/O smoke for direct modeling/bounds declarations and Runtime
+  forwarding.
 
 ## Stage 8: typing and cleanup
 

@@ -124,6 +124,77 @@ class TypedSectionTest(unittest.TestCase):
 
 
 class TypedOperationCompatibilityTest(unittest.TestCase):
+    def test_modeling_family_is_declared_at_module_level(self):
+        for name in (
+            "fillet",
+            "chamfer",
+            "fillet2d",
+            "chamfer2d",
+            "offset",
+            "thicksolid",
+            "shapefix_solid",
+            "unify",
+            "near_vertex",
+            "near_edge",
+            "near_wire",
+            "near_face",
+            "near_shell",
+            "near_solid",
+            "near_compsolid",
+            "near_compound",
+            "boundbox",
+        ):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        runtime = typed.Runtime.deferred(cache=False)
+        solid = runtime.box(4)
+        face = runtime.rectangle(4, 4)
+        point = runtime.point3(0.1, 0.1, 5)
+        edge = runtime.segment(runtime.point3(), runtime.point3(1, 0, 0))
+        with using_runtime(runtime):
+            values = (
+                typed.fillet(solid, 0.1),
+                typed.chamfer(solid, 0.1),
+                typed.fillet2d(face, 0.1),
+                typed.chamfer2d(face, 0.1),
+                typed.offset(solid, 0.1),
+                typed.thicksolid(solid, -0.1, (runtime.point3(2, 2, 4),)),
+                typed.shapefix_solid(solid),
+                typed.unify(solid),
+                typed.near_vertex(solid, point),
+                typed.near_edge(solid, point),
+                typed.near_wire(solid, point),
+                typed.near_face(solid, point),
+                typed.near_shell(solid, point),
+                typed.near_solid(solid, point),
+                typed.boundbox(solid),
+            )
+            projection = typed.project(point, edge)
+
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertIs(projection.point.runtime, runtime)
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.shape.fillet",
+                "zencad.typed.shape.chamfer",
+                "zencad.typed.shape.fillet2d",
+                "zencad.typed.shape.chamfer2d",
+                "zencad.typed.shape.offset",
+                "zencad.typed.solid.thicksolid",
+                "zencad.typed.solid.shapefix",
+                "zencad.typed.shape.unify",
+                "zencad.typed.shape.near_vertex",
+                "zencad.typed.shape.near_edge",
+                "zencad.typed.shape.near_wire",
+                "zencad.typed.shape.near_face",
+                "zencad.typed.shape.near_shell",
+                "zencad.typed.shape.near_solid",
+                "zencad.typed.shape.boundbox",
+            ),
+        )
+
     def test_root_style_fillet_wrappers_preserve_typed_results(self):
         runtime = typed.Runtime.deferred(cache=False)
         solid = runtime.box(3)

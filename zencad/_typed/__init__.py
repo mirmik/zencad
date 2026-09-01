@@ -3,7 +3,7 @@
 Nothing in this package is re-exported from :mod:`zencad` yet.
 """
 
-from .bounds import BoundaryBox, BoundaryBoxRecord
+from .bounds import BoundaryBox, BoundaryBoxRecord, boundary_box, empty_boundary_box
 from .booleans import (
     difference,
     empty_shape,
@@ -37,6 +37,29 @@ from .curve_constructors import (
 )
 from .exttrans import MultiTransform
 from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
+from .modeling import (
+    boundbox,
+    chamfer,
+    chamfer2d,
+    fillet,
+    fillet2d,
+    near_compound,
+    near_compsolid,
+    near_edge,
+    near_face,
+    near_shell,
+    near_solid,
+    near_vertex,
+    near_wire,
+    offset,
+    project,
+    project_point_on_curve,
+    restore_shapetype,
+    sew,
+    shapefix_solid,
+    thicksolid,
+    unify,
+)
 from .records import (
     CircleParameters,
     CurveProjection,
@@ -47,13 +70,30 @@ from .records import (
 )
 from .runtime import Runtime
 from .solid import box, cone, cube, cylinder, halfspace, make_solid, sphere, torus
-from .sweeps import PipeTransition, PipeTrihedron
+from .sweeps import (
+    PipeTransition,
+    PipeTrihedron,
+    extrude,
+    linear_extrude,
+    loft,
+    pipe,
+    pipe_shell,
+    revol,
+    revol2,
+    sweep,
+)
 from .surfaces import (
     Surface,
     SweepLocationLaw,
     SweepScaleLaw,
     SweepSectionLaw,
     SweepTrihedron,
+    constant_sweep_scale,
+    cylinder_surface,
+    evolved_sweep_section,
+    sweep_location,
+    sweep_surface,
+    sweep_surface_from_laws,
 )
 from .text import FontAspect
 from .topology import (
@@ -205,12 +245,14 @@ __all__ = [
     "cos",
     "cube",
     "cylinder",
+    "cylinder_surface",
     "difference",
     "down",
     "empty_shape",
     "ellipse2",
     "ellipse_curve",
     "exp",
+    "extrude",
     "forw",
     "halfspace",
     "helix",
@@ -222,7 +264,9 @@ __all__ = [
     "identity_transform",
     "left",
     "line",
+    "linear_extrude",
     "log",
+    "loft",
     "make_edge",
     "make_solid",
     "make_wire",
@@ -246,9 +290,13 @@ __all__ = [
     "nullshape",
     "nulltrans",
     "polysegment",
+    "pipe",
+    "pipe_shell",
     "quaternion",
     "quaternion_axis_angle",
     "right",
+    "revol",
+    "revol2",
     "rounded_polysegment",
     "rotate",
     "rotateX",
@@ -279,4 +327,33 @@ __all__ = [
     "union",
     "up",
     "wire_builder",
+    "constant_sweep_scale",
+    "evolved_sweep_section",
+    "sweep",
+    "sweep_location",
+    "sweep_surface",
+    "sweep_surface_from_laws",
+    "boundary_box",
+    "boundbox",
+    "chamfer",
+    "chamfer2d",
+    "empty_boundary_box",
+    "fillet",
+    "fillet2d",
+    "near_compound",
+    "near_compsolid",
+    "near_edge",
+    "near_face",
+    "near_shell",
+    "near_solid",
+    "near_vertex",
+    "near_wire",
+    "offset",
+    "project",
+    "project_point_on_curve",
+    "restore_shapetype",
+    "sew",
+    "shapefix_solid",
+    "thicksolid",
+    "unify",
 ]

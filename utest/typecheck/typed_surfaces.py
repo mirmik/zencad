@@ -9,6 +9,7 @@ def surface_contract(runtime: typed.Runtime) -> None:
     shape = runtime.box(2)
     radius = shape.mass() / 4
     cylinder = assert_type(runtime.cylinder_surface(radius), typed.Surface)
+    assert_type(typed.cylinder_surface(radius), typed.Surface)
     sweep = assert_type(
         runtime.sweep_surface(
             runtime.circle_curve(radius / 2),
@@ -23,6 +24,10 @@ def surface_contract(runtime: typed.Runtime) -> None:
         runtime.constant_sweep_scale(radius, spine.range()),
         typed.SweepScaleLaw,
     )
+    assert_type(
+        typed.constant_sweep_scale(radius, spine.range()),
+        typed.SweepScaleLaw,
+    )
     section_law = assert_type(
         runtime.evolved_sweep_section(runtime.circle_curve(radius / 2), scale_law),
         typed.SweepSectionLaw,
@@ -35,6 +40,10 @@ def surface_contract(runtime: typed.Runtime) -> None:
         runtime.sweep_surface_from_laws(section_law, location_law),
         typed.Surface,
     )
+    assert_type(typed.evolved_sweep_section(section_law.section, scale_law), typed.SweepSectionLaw)
+    assert_type(typed.sweep_location(spine), typed.SweepLocationLaw)
+    assert_type(typed.sweep_surface_from_laws(section_law, location_law), typed.Surface)
+    assert_type(typed.sweep_surface(section_law.section, spine), typed.Surface)
     assert_type(scale_law.scale, typed.Scalar)
     assert_type(scale_law.domain, typed.Interval)
     assert_type(section_law.section, typed.Curve)

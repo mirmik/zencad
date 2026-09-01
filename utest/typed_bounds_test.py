@@ -1,11 +1,11 @@
-from dataclasses import FrozenInstanceError
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from dataclasses import FrozenInstanceError
+from pathlib import Path
 
 from evalcache.v2 import (
     CacheRecord,
@@ -17,6 +17,7 @@ from evalcache.v2 import (
 from OCP.Bnd import Bnd_Box
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 def _assert_coordinates(
@@ -30,6 +31,34 @@ def _assert_coordinates(
 
 
 class TypedBoundaryBoxTest(unittest.TestCase):
+    def test_boundary_box_family_is_declared_at_module_level(self):
+        self.assertIsInstance(typed.boundary_box, DomainOperation)
+        self.assertIsInstance(typed.empty_boundary_box, DomainOperation)
+        self.assertIsInstance(typed.boundbox, DomainOperation)
+
+        runtime = typed.Runtime.deferred(cache=False)
+        seed = runtime.box(2)
+        minimum = seed.center()
+        maximum = minimum + runtime.vector3(1, 2, 3)
+        with using_runtime(runtime):
+            bounds = typed.boundary_box(minimum, maximum)
+            empty = typed.empty_boundary_box()
+            shape_bounds = typed.boundbox(seed)
+
+        self.assertIs(bounds.runtime, runtime)
+        self.assertIs(empty.runtime, runtime)
+        self.assertIs(shape_bounds.runtime, runtime)
+        self.assertEqual(
+            bounds._state.operation_id,
+            "zencad.typed.boundary-box.from-points",
+        )
+        self.assertEqual(shape_bounds._state.operation_id, "zencad.typed.shape.boundbox")
+        self.assertEqual(bounds.minimum._state.operation_id, "zencad.typed.boundary-box.minimum")
+        self.assertEqual(bounds.maximum._state.operation_id, "zencad.typed.boundary-box.maximum")
+        self.assertEqual(bounds.size._state.operation_id, "zencad.typed.boundary-box.size")
+        self.assertEqual(bounds.center._state.operation_id, "zencad.typed.boundary-box.center")
+        self.assertEqual(bounds.xmin._state.operation_id, "zencad.typed.boundary-box.coordinate")
+
     def test_shape_bounds_are_policy_independent_structured_handles(self):
         observed_types = set()
 

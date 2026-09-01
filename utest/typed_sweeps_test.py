@@ -1,18 +1,57 @@
 import json
 import math
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 
 from zencad import _typed as typed
+from zencad.operation import DomainOperation, using_runtime
 
 
 class TypedBasicSweepsTest(unittest.TestCase):
+    def test_sweep_family_is_declared_at_module_level(self):
+        for name in ("extrude", "revol", "loft", "pipe", "pipe_shell", "revol2"):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        runtime = typed.Runtime.deferred(cache=False)
+        profile = runtime.rectangle(1, 2)
+        first = runtime.rectangle_wire(1, 2)
+        second = runtime.rectangle_wire(2, 1).up(3)
+        pipe_profile = runtime.circle(1, wire=True)
+        spine = runtime.segment(runtime.point3(), runtime.point3(0, 0, 5))
+        with using_runtime(runtime):
+            values = (
+                typed.extrude(profile, 3),
+                typed.linear_extrude(profile, 3),
+                typed.revol(profile, 3),
+                typed.loft((first, second)),
+                typed.pipe(pipe_profile, spine),
+                typed.pipe_shell((pipe_profile,), spine),
+                typed.sweep(pipe_profile, spine),
+                typed.revol2(profile, 3, sections=8),
+            )
+
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.shape.extrude",
+                "zencad.typed.shape.extrude",
+                "zencad.typed.shape.revol",
+                "zencad.typed.loft",
+                "zencad.typed.pipe",
+                "zencad.typed.pipe_shell",
+                "zencad.typed.pipe_shell",
+                "zencad.typed.revol2",
+            ),
+        )
+
     def test_extrude_and_revol_are_policy_independent(self):
         observed_types = set()
 

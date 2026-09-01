@@ -1,13 +1,13 @@
 import json
 import math
 import os
-from dataclasses import FrozenInstanceError
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from typing import get_type_hints
 import unittest
+from dataclasses import FrozenInstanceError
+from pathlib import Path
+from typing import get_type_hints
 
 from evalcache.v2 import (
     CacheRecord,
@@ -36,6 +36,7 @@ from OCP.gp import (
 from zencad import _typed as typed
 from zencad._typed import _curve_operations as curve_ops
 from zencad._typed._serialization import CurveSerializer
+from zencad.operation import DomainOperation, using_runtime
 
 
 def _assert_coordinates(
@@ -49,6 +50,58 @@ def _assert_coordinates(
 
 
 class TypedSurfaceHandlesTest(unittest.TestCase):
+    def test_surface_family_is_declared_at_module_level(self):
+        for name in ("cylinder_surface", "sweep_surface_from_laws"):
+            with self.subTest(operation=name):
+                self.assertIsInstance(getattr(typed, name), DomainOperation)
+
+        runtime = typed.Runtime.deferred(cache=False)
+        seed = runtime.box(2)
+        section = runtime.circle_curve(1)
+        spine = runtime.circle_curve(3)
+        with using_runtime(runtime):
+            cylinder = typed.cylinder_surface(seed.mass() / 4)
+            scale = typed.constant_sweep_scale(1, spine.range())
+            section_law = typed.evolved_sweep_section(section, scale)
+            location = typed.sweep_location(spine)
+            law_sweep = typed.sweep_surface_from_laws(section_law, location)
+            sweep = typed.sweep_surface(section, spine)
+            point = cylinder.point(seed.center().x, 0)
+            normal = cylinder.normal(seed.center().x, 0)
+            u_iso = cylinder.u_iso(seed.center().x)
+            v_iso = cylinder.v_iso(seed.center().x)
+            mapped = cylinder.map(
+                typed.segment2(runtime.point2(0, 0), runtime.point2(1, 1))
+            )
+            face_surface = runtime.rectangle(1, 2).surface()
+
+        values = (
+            cylinder,
+            law_sweep,
+            sweep,
+            point,
+            normal,
+            u_iso,
+            v_iso,
+            mapped,
+            face_surface,
+        )
+        self.assertTrue(all(value.runtime is runtime for value in values))
+        self.assertEqual(
+            tuple(value._state.operation_id for value in values),
+            (
+                "zencad.typed.cylinder_surface",
+                "zencad.typed.sweep_surface_from_laws",
+                "zencad.typed.sweep_surface_from_laws",
+                "zencad.typed.surface.point",
+                "zencad.typed.surface.normal",
+                "zencad.typed.surface.u_iso",
+                "zencad.typed.surface.v_iso",
+                "zencad.typed.surface.map",
+                "zencad.typed.face.surface",
+            ),
+        )
+
     def test_factories_and_queries_are_policy_independent(self):
         observed_types = set()
 

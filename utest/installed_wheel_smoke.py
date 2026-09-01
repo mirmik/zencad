@@ -3,23 +3,28 @@
 import importlib.metadata
 import math
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import evalcache
+import evalcache.v2
 from evalcache.dircache_v2 import DirCache_v2
-from zencad.runtime import RunnerMessage, RunnerSupervisor
-from zencad.runtime.scene_protocol import decode_mesh
-from zencad.scene_draft import SceneDraft
+
 import zencad
 from zencad import _typed as typed
 from zencad.convert.api import _from_brep, _to_brep, _to_stl
 from zencad.operation import DomainOperation, using_runtime
+from zencad.runtime import RunnerMessage, RunnerSupervisor
+from zencad.runtime.scene_protocol import decode_mesh
+from zencad.scene_draft import SceneDraft
 
 
 def main():
+    assert evalcache.Expression is evalcache.v2.Expression
+    assert evalcache.LazyObject is not None
     assert RunnerMessage is not None
     assert RunnerSupervisor is not None
     assert zencad.__version__ == importlib.metadata.version("zencad")
@@ -52,6 +57,21 @@ def main():
         typed_runtime = typed.Runtime.deferred(cache=False)
         assert isinstance(typed.circle_curve, DomainOperation)
         assert isinstance(typed.make_wire, DomainOperation)
+        assert isinstance(typed.cylinder_surface, DomainOperation)
+        assert isinstance(typed.sweep_surface_from_laws, DomainOperation)
+        assert isinstance(typed.extrude, DomainOperation)
+        assert isinstance(typed.revol, DomainOperation)
+        assert isinstance(typed.loft, DomainOperation)
+        assert isinstance(typed.pipe, DomainOperation)
+        assert isinstance(typed.pipe_shell, DomainOperation)
+        assert isinstance(typed.revol2, DomainOperation)
+        assert isinstance(typed.boundary_box, DomainOperation)
+        assert isinstance(typed.empty_boundary_box, DomainOperation)
+        assert isinstance(typed.boundbox, DomainOperation)
+        assert isinstance(typed.fillet, DomainOperation)
+        assert isinstance(typed.offset, DomainOperation)
+        assert isinstance(typed.unify, DomainOperation)
+        assert isinstance(typed.near_face, DomainOperation)
         with using_runtime(typed_runtime):
             module_curve = typed.circle_curve(2)
             module_segment = typed.segment(
@@ -103,6 +123,14 @@ def main():
         assert type(
             typed_runtime.sweep_surface_from_laws(section_law, location_law)
         ) is typed.Surface
+        with using_runtime(typed_runtime):
+            module_surface = typed.cylinder_surface(2)
+            module_surface_sweep = typed.sweep_surface_from_laws(
+                section_law,
+                location_law,
+            )
+        assert type(module_surface) is typed.Surface
+        assert type(module_surface_sweep) is typed.Surface
         sweep_profile = typed_runtime.rectangle(1, 2, center=True)
         assert type(typed_runtime.extrude(sweep_profile, 4)) is typed.Shape
         assert type(typed_runtime.revol(sweep_profile, 3)) is typed.Shape
@@ -137,6 +165,23 @@ def main():
                 roll=(0, math.pi / 2),
             )
         ) is typed.Solid
+        with using_runtime(typed_runtime):
+            module_sweeps = (
+                typed.extrude(sweep_profile, 4),
+                typed.revol(sweep_profile, 3),
+                typed.loft((loft_start, loft_end)),
+                typed.pipe(pipe_profile, pipe_spine),
+                typed.pipe_shell((pipe_profile,), pipe_spine),
+                typed.revol2(sweep_profile, 3, sections=8),
+            )
+        assert tuple(type(value) for value in module_sweeps) == (
+            typed.Shape,
+            typed.Shape,
+            typed.Solid,
+            typed.Shape,
+            typed.Solid,
+            typed.Solid,
+        )
         bounds = typed_runtime.box(2, 3, 4).boundbox()
         assert type(bounds) is typed.BoundaryBox
         assert type(bounds.value()) is typed.BoundaryBoxRecord
@@ -144,6 +189,14 @@ def main():
             abs(actual - expected) < 1e-12
             for actual, expected in zip(bounds.center.value(), (1.0, 1.5, 2.0))
         )
+        with using_runtime(typed_runtime):
+            module_bounds = typed.boundbox(typed_runtime.box(2))
+            explicit_bounds = typed.boundary_box(
+                typed_runtime.point3(),
+                typed_runtime.point3(1, 2, 3),
+            )
+        assert type(module_bounds) is typed.BoundaryBox
+        assert explicit_bounds.value().maximum == (1.0, 2.0, 3.0)
         mesh = typed_runtime.box(2).to_mesh()
         assert type(mesh) is typed.MeshData
         assert type(mesh.value()) is typed.MeshDataRecord
@@ -172,6 +225,30 @@ def main():
         assert projection.value() == ((1.0, 0.0, 0.0), 1.0, 2.0)
         assert type(typed_runtime.unify(boolean_left)) is typed.Solid
         assert type(typed_runtime.offset(boolean_left, 0.1)) is typed.Shape
+        with using_runtime(typed_runtime):
+            module_modeling = (
+                typed.fillet(boolean_left, 0.1),
+                typed.offset(boolean_left, 0.1),
+                typed.unify(boolean_left),
+                typed.near_face(
+                    boolean_left,
+                    typed_runtime.point3(0.5, 0.5, 3),
+                ),
+            )
+            module_projection = typed.project(
+                typed_runtime.point3(1, 2, 0),
+                typed_runtime.segment(
+                    typed_runtime.point3(),
+                    typed_runtime.point3(3, 0, 0),
+                ),
+            )
+        assert tuple(type(value) for value in module_modeling) == (
+            typed.Shape,
+            typed.Shape,
+            typed.Solid,
+            typed.Face,
+        )
+        assert module_projection.value() == ((1.0, 0.0, 0.0), 1.0, 2.0)
         draft = SceneDraft(generation=1)
         draft.add(boolean_left)
         draft.add(mesh, display_mode="shaded")
