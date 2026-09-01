@@ -172,7 +172,7 @@ class MeshData(Handle[ops.MeshValue]):
 
     def display_payload(self) -> bytes:
         """Encode the current provenance-free scene mesh transport."""
-        return ops.mesh_display_payload(self._resolved())
+        return mesh_display_payload(self)
 
     def unlazy(self) -> MeshData:
         super().unlazy()
@@ -326,6 +326,14 @@ def mesh_to_poly_triangulation(mesh: MeshData, /) -> Poly_Triangulation:
     return ops.mesh_to_poly_triangulation(mesh._resolved())
 
 
+def mesh_display_payload(mesh: MeshData, /) -> bytes:
+    """Materialize the provenance-free scene mesh transport."""
+
+    if not isinstance(mesh, MeshData):
+        raise TypeError("mesh_display_payload expects MeshData")
+    return ops.mesh_display_payload(mesh._resolved())
+
+
 __all__ = [
     "MESH_SPEC",
     "MeshArrayRecord",
@@ -334,6 +342,7 @@ __all__ = [
     "get_nodes",
     "get_triangles",
     "mesh_boundbox",
+    "mesh_display_payload",
     "mesh_to_poly_triangulation",
     "to_mesh",
     "triangulate",

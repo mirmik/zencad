@@ -48,6 +48,10 @@ class TypedMeshDataTest(unittest.TestCase):
         native = typed.mesh_to_poly_triangulation(direct_mesh)
         self.assertEqual(typed.get_nodes(native), direct_mesh.positions)
         self.assertEqual(typed.get_triangles(native), direct_mesh.triangles)
+        self.assertEqual(
+            typed.mesh_display_payload(direct_mesh),
+            direct_mesh.display_payload(),
+        )
 
         with self.assertRaisesRegex(TypeError, "to_mesh expects Shape"):
             typed.to_mesh(direct_mesh)  # type: ignore[arg-type]

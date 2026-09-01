@@ -6,9 +6,38 @@ from evalcache.v2 import EvaluationMode, MemoryCacheStore
 from OCP.Poly import Poly_Triangulation
 
 from zencad import _typed as typed
+from zencad.operation import using_runtime
 
 
 class TypedBrepBoundaryTest(unittest.TestCase):
+    def test_module_conversion_boundaries_match_runtime(self):
+        runtime = typed.Runtime.deferred(cache=False)
+        source = runtime.box(2)
+        svg_source = runtime.rectangle(2, 3)
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            brep_path = root / "module.brep"
+            stl_path = root / "module.stl"
+            svg_path = root / "module.svg"
+
+            typed.to_brep(source, brep_path)
+            self.assertTrue(typed.to_stl(source, stl_path, 0.1))
+            svg = typed.to_svg_string(svg_source)
+            typed.to_svg(svg_source, svg_path)
+            with using_runtime(runtime):
+                from_brep = typed.from_brep(brep_path)
+                from_svg_string = typed.from_svg_string(svg)
+                from_svg = typed.from_svg(svg_path)
+
+            self.assertIs(type(from_brep), typed.Shape)
+            self.assertIs(from_brep.runtime, runtime)
+            self.assertIs(from_svg_string.runtime, runtime)
+            self.assertIs(from_svg.runtime, runtime)
+            self.assertGreater(from_brep.mass().value(), 0)
+            self.assertGreater(len(from_svg.edges()), 0)
+            self.assertGreater(stl_path.stat().st_size, 0)
+
     def test_brep_round_trip_across_runtime_policies(self):
         with TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

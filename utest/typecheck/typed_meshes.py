@@ -29,6 +29,7 @@ def mesh_contract(
     assert_type(typed.get_nodes(mesh), tuple[tuple[float, float, float], ...])
     assert_type(typed.get_triangles(mesh), tuple[tuple[int, int, int], ...])
     assert_type(mesh.display_payload(), bytes)
+    assert_type(typed.mesh_display_payload(mesh), bytes)
     assert_type(mesh.unlazy(), typed.MeshData)
 
     record = mesh.value()

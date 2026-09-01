@@ -1,0 +1,122 @@
+"""Immediate typed file and text conversion boundaries."""
+
+from __future__ import annotations
+
+import math
+from os import PathLike
+from pathlib import Path
+
+import evalcache
+from OCP.TopoDS import TopoDS_Shape
+
+from zencad.convert.api import _to_stl
+from zencad.convert.svg import SvgReader, shape_to_svg_string
+from zencad.geom.shape import Shape as ResolvedShape
+from zencad.occ_compat import read_brep, write_brep
+from zencad.operation import resolve_runtime
+
+from .topology import Shape
+from .values import Number
+
+
+def _require_shape(value: object, name: str) -> Shape:
+    if not isinstance(value, Shape):
+        raise TypeError(f"{name} expects Shape")
+    return value
+
+
+def to_brep(shape: Shape, path: str | PathLike[str], /) -> None:
+    """Materialize and write a typed Shape at an explicit file boundary."""
+
+    _require_shape(shape, "to_brep")
+    resolved_path = str(Path(path).expanduser())
+    if not write_brep(shape.native(), resolved_path):
+        raise OSError(f"Failed to write BREP file: {resolved_path}")
+
+
+def from_brep(path: str | PathLike[str], /) -> Shape:
+    """Read a BREP snapshot into the selected typed runtime."""
+
+    resolved_path = str(Path(path).expanduser())
+    native = TopoDS_Shape()
+    if not read_brep(native, resolved_path):
+        raise OSError(f"Failed to read BREP file: {resolved_path}")
+    return Shape.from_ocp(native, runtime=resolve_runtime())
+
+
+def to_stl(
+    shape: Shape,
+    path: str | PathLike[str],
+    deflection: Number,
+    /,
+) -> bool:
+    """Write STL from an isolated native snapshot of a typed Shape."""
+
+    _require_shape(shape, "to_stl")
+    if (
+        isinstance(deflection, bool)
+        or not isinstance(deflection, (int, float))
+        or not math.isfinite(deflection)
+        or deflection <= 0
+    ):
+        raise ValueError("to_stl deflection must be finite and positive")
+    return bool(
+        _to_stl(
+            ResolvedShape(shape.native()),
+            str(Path(path).expanduser()),
+            float(deflection),
+        )
+    )
+
+
+def to_svg_string(
+    shape: Shape,
+    color: object = (0, 0, 0),
+    mapping: bool = False,
+) -> str:
+    _require_shape(shape, "to_svg_string")
+    if not isinstance(mapping, bool):
+        raise TypeError("to_svg_string mapping must be bool")
+    return str(
+        shape_to_svg_string(
+            ResolvedShape(shape.native()),
+            color,
+            mapping,
+        )
+    )
+
+
+def to_svg(
+    shape: Shape,
+    path: str | PathLike[str],
+    color: object = (0, 0, 0),
+    mapping: bool = False,
+) -> None:
+    Path(path).expanduser().write_text(
+        to_svg_string(shape, color, mapping),
+        encoding="utf-8",
+    )
+
+
+def from_svg_string(value: str, /) -> Shape:
+    if not isinstance(value, str):
+        raise TypeError("from_svg_string expects str")
+    legacy = evalcache.unlazy_if_need(SvgReader().read_string(value))
+    if not isinstance(legacy, ResolvedShape):
+        raise ValueError("SVG import did not produce a Shape")
+    return Shape.from_ocp(legacy.Shape(), runtime=resolve_runtime())
+
+
+def from_svg(path: str | PathLike[str], /) -> Shape:
+    return from_svg_string(Path(path).expanduser().read_text(encoding="utf-8"))
+
+
+__all__ = [
+    "from_brep",
+    "from_svg",
+    "from_svg_string",
+    "to_brep",
+    "to_stl",
+    "to_svg",
+    "to_svg_string",
+]

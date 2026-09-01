@@ -10,10 +10,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 import math
 from os import PathLike
-from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Literal, TypeVar, cast, overload
 
-from OCP.TopoDS import TopoDS_Shape, TopoDS_Vertex
+from OCP.TopoDS import TopoDS_Vertex
 from OCP.Geom import Geom_CartesianPoint
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Dir, gp_Pnt, gp_Quaternion, gp_Vec, gp_XYZ
@@ -28,11 +27,12 @@ from evalcache import (
     ResultSpec,
 )
 
-from zencad.occ_compat import read_brep, vertex_point, write_brep
+from zencad.occ_compat import vertex_point
 from zencad.operation import using_runtime
 
 from . import bounds as bounds_api
 from . import curve_constructors as curve_api
+from . import conversion as conversion_api
 from . import face_constructors as face_api
 from . import modeling as modeling_api
 from . import meshes as mesh_api
@@ -670,19 +670,12 @@ class Runtime:
         return mesh_api.mesh_to_poly_triangulation(mesh)
 
     def to_brep(self, shape: Shape, path: str | PathLike[str], /) -> None:
-        """Materialize and write a typed Shape at an explicit file boundary."""
         _require_shape(self, shape, "to_brep")
-        resolved_path = str(Path(path).expanduser())
-        if not write_brep(shape.native(), resolved_path):
-            raise OSError(f"Failed to write BREP file: {resolved_path}")
+        conversion_api.to_brep(shape, path)
 
     def from_brep(self, path: str | PathLike[str], /) -> Shape:
-        """Read a BREP snapshot without retaining mutable native ownership."""
-        resolved_path = str(Path(path).expanduser())
-        native = TopoDS_Shape()
-        if not read_brep(native, resolved_path):
-            raise OSError(f"Failed to read BREP file: {resolved_path}")
-        return Shape.from_ocp(native, runtime=self)
+        with using_runtime(self):
+            return conversion_api.from_brep(path)
 
     def to_stl(
         self,
@@ -691,26 +684,8 @@ class Runtime:
         deflection: Number,
         /,
     ) -> bool:
-        """Write STL from an isolated native snapshot of a typed Shape."""
-        from zencad.convert.api import _to_stl
-        from zencad.geom.shape import Shape as ResolvedShape
-
         _require_shape(self, shape, "to_stl")
-        if (
-            isinstance(deflection, bool)
-            or not isinstance(deflection, (int, float))
-            or not math.isfinite(deflection)
-            or deflection <= 0
-        ):
-            raise ValueError("to_stl deflection must be finite and positive")
-        resolved_path = str(Path(path).expanduser())
-        return bool(
-            _to_stl(
-                ResolvedShape(shape.native()),
-                resolved_path,
-                float(deflection),
-            )
-        )
+        return conversion_api.to_stl(shape, path, deflection)
 
     def to_svg_string(
         self,
@@ -718,18 +693,8 @@ class Runtime:
         color: object = (0, 0, 0),
         mapping: bool = False,
     ) -> str:
-        from zencad.convert.svg import shape_to_svg_string
-        from zencad.geom.shape import Shape as ResolvedShape
-
         _require_shape(self, shape, "to_svg_string")
-        _require_bool(mapping, "to_svg_string mapping")
-        return str(
-            shape_to_svg_string(
-                ResolvedShape(shape.native()),
-                color,
-                mapping,
-            )
-        )
+        return conversion_api.to_svg_string(shape, color, mapping)
 
     def to_svg(
         self,
@@ -738,28 +703,16 @@ class Runtime:
         color: object = (0, 0, 0),
         mapping: bool = False,
     ) -> None:
-        resolved_path = Path(path).expanduser()
-        resolved_path.write_text(
-            self.to_svg_string(shape, color, mapping),
-            encoding="utf-8",
-        )
+        _require_shape(self, shape, "to_svg")
+        conversion_api.to_svg(shape, path, color, mapping)
 
     def from_svg_string(self, value: str, /) -> Shape:
-        import evalcache
-
-        from zencad.convert.svg import SvgReader
-        from zencad.geom.shape import Shape as ResolvedShape
-
-        if not isinstance(value, str):
-            raise TypeError("from_svg_string expects str")
-        legacy = evalcache.unlazy_if_need(SvgReader().read_string(value))
-        if not isinstance(legacy, ResolvedShape):
-            raise ValueError("SVG import did not produce a Shape")
-        return Shape.from_ocp(legacy.Shape(), runtime=self)
+        with using_runtime(self):
+            return conversion_api.from_svg_string(value)
 
     def from_svg(self, path: str | PathLike[str], /) -> Shape:
-        resolved_path = Path(path).expanduser()
-        return self.from_svg_string(resolved_path.read_text(encoding="utf-8"))
+        with using_runtime(self):
+            return conversion_api.from_svg(path)
 
     @overload
     def sew(

@@ -235,6 +235,18 @@ def main():
         native_mesh = typed.mesh_to_poly_triangulation(module_mesh)
         assert typed.get_nodes(native_mesh) == module_mesh.positions
         assert typed.get_triangles(native_mesh) == module_mesh.triangles
+        assert typed.mesh_display_payload(module_mesh) == module_mesh.display_payload()
+        typed_brep_path = temporary_path / "typed-module.brep"
+        typed_stl_path = temporary_path / "typed-module.stl"
+        typed_svg_path = temporary_path / "typed-module.svg"
+        typed.to_brep(typed_runtime.box(2), typed_brep_path)
+        assert typed.to_stl(typed_runtime.box(2), typed_stl_path, 0.1)
+        typed_svg = typed.to_svg_string(typed_runtime.rectangle(2, 3))
+        typed.to_svg(typed_runtime.rectangle(2, 3), typed_svg_path)
+        with using_runtime(typed_runtime):
+            assert type(typed.from_brep(typed_brep_path)) is typed.Shape
+            assert type(typed.from_svg_string(typed_svg)) is typed.Shape
+            assert type(typed.from_svg(typed_svg_path)) is typed.Shape
         assert decode_mesh(mesh.display_payload()).triangles == list(mesh.triangles)
         boolean_left = typed_runtime.box(2)
         boolean_right = typed_runtime.box(2).translate(1, 0, 0)

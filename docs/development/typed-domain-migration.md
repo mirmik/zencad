@@ -1224,6 +1224,28 @@ Verification on 2026-09-01 after the mesh/triangulation checkpoint:
   the wheel with published evalcache 2.0.0a1 and passes direct module,
   Runtime, native-mesh, and headless I/O smoke outside the checkout.
 
+Task #2077 extracts the immediate conversion and display boundaries.
+`_typed/conversion.py` now owns typed BREP, STL, and SVG import/export;
+`_typed/meshes.py` exposes the scene mesh encoder as
+`mesh_display_payload`. These calls remain explicit materialization or I/O
+boundaries rather than cacheable domain operations. `Runtime` only validates
+ownership, selects its context for imported handles, and forwards.
+
+Path expansion, error and option validation, fresh imported Shape ownership,
+SVG mapping behavior, mesh transport bytes, and the Qt-free headless path are
+preserved. `_typed/runtime.py` is reduced from 2397 to 2350 lines.
+
+Verification on 2026-09-01 after the conversion/display checkpoint:
+
+- pytest passes 386 tests and 409 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 370 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes direct module,
+  Runtime, conversion/display, and headless I/O smoke outside the checkout.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative
