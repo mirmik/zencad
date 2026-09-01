@@ -18,9 +18,9 @@ from OCP.Geom import Geom_Circle, Geom_Curve
 from OCP.Geom2d import Geom2d_Curve, Geom2d_Ellipse
 from OCP.gp import gp_Ax2, gp_Ax2d, gp_Dir, gp_Dir2d, gp_Pnt, gp_Pnt2d
 
-from zencad import _typed as typed
-from zencad._typed import _curve_operations as curve_ops
-from zencad._typed._serialization import Curve2Serializer
+from zencad import geom as typed
+from zencad.geom import _curve_operations as curve_ops
+from zencad.geom._serialization import Curve2Serializer
 
 
 def _assert_coordinates(
@@ -297,7 +297,7 @@ from collections import Counter
 
 from evalcache import DirCache_v2
 from evalcache.v2 import MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

@@ -2,7 +2,7 @@
 
 from typing_extensions import assert_type
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 def algebra(context: typed.Context) -> None:

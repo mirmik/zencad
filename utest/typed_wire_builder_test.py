@@ -4,7 +4,7 @@ import unittest
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_WIRE
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 class TypedWireBuilderTest(unittest.TestCase):

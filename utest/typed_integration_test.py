@@ -3,7 +3,7 @@ import unittest
 import evalcache
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 class TypedDomainIntegrationTest(unittest.TestCase):

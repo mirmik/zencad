@@ -126,7 +126,7 @@ def _properties(value: Any) -> Mapping[str, Any]:
                 raise ProtocolError("visible must be a boolean")
             normalized[name] = raw
         elif name == "display_mode":
-            from zencad.geom.mesh import normalize_mesh_display_mode
+            from zencad._native.mesh import normalize_mesh_display_mode
 
             try:
                 normalized[name] = normalize_mesh_display_mode(raw)

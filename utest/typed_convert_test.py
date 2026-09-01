@@ -5,7 +5,7 @@ import unittest
 from evalcache.v2 import EvaluationMode, MemoryCacheStore
 from OCP.Poly import Poly_Triangulation
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.operation import using_context
 
 

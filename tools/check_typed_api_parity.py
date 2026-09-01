@@ -202,11 +202,11 @@ def validate(matrix: dict[str, Any], entries: list[dict[str, str]]) -> None:
     if not entries:
         raise ContractError("parity matrix is empty")
     zencad = importlib.import_module("zencad")
-    typed = importlib.import_module("zencad._typed")
+    domain = importlib.import_module("zencad.geom")
     root_exports = getattr(zencad, "__all__", ())
     if len(root_exports) != len(set(root_exports)):
         raise ContractError("public root export contract contains duplicate names")
-    missing_exports = [name for name in typed.__all__ if name not in root_exports]
+    missing_exports = [name for name in domain.__all__ if name not in root_exports]
     if missing_exports:
         raise ContractError(
             f"typed domain exports missing from zencad root: {missing_exports}"

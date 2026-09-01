@@ -2,7 +2,7 @@ import unittest
 
 from evalcache.v2 import EvaluationMode, Expression
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 class TypedTopologyCompatibilityTest(unittest.TestCase):

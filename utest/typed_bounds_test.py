@@ -16,7 +16,7 @@ from evalcache.v2 import (
 )
 from OCP.Bnd import Bnd_Box
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.operation import DomainOperation, using_context
 
 
@@ -323,7 +323,7 @@ from collections import Counter
 
 from evalcache import DirCache_v2
 from evalcache.v2 import MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

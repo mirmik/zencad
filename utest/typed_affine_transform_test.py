@@ -14,7 +14,7 @@ from evalcache.v2 import (
     Expression,
 )
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 TOLERANCE = 1e-11
@@ -258,7 +258,7 @@ import sys
 from collections import Counter
 from evalcache import DirCache_v2
 from evalcache.v2 import MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

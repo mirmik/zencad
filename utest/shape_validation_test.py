@@ -16,9 +16,9 @@ from OCP.TopoDS import (
 from OCP.gp import gp_Pnt
 
 import zencad
-from zencad import _typed as typed
-from zencad.geom.shape import Shape as ResolvedShape
-from zencad.geom.validation import ShapeValidationError
+from zencad import geom as typed
+from zencad._native.shape import Shape as ResolvedShape
+from zencad._native.validation import ShapeValidationError
 from zencad.occ_compat import as_face
 from zencad.runtime.scene_protocol import encode_brep
 

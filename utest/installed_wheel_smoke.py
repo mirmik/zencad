@@ -14,7 +14,9 @@ import evalcache
 import evalcache.v2
 
 import zencad
-from zencad import _typed as typed
+import zencad._typed as typed_compat
+import zencad.geom.solid as solid_module
+from zencad import geom as typed
 from zencad.operation import DomainOperation, using_context
 from zencad.runtime import RunnerMessage, RunnerSupervisor
 from zencad.runtime.scene_protocol import decode_mesh
@@ -54,6 +56,10 @@ def main():
 
         assert "Context" in typed.__all__
         assert zencad.Context is typed.Context
+        assert zencad.cylinder is typed.cylinder
+        assert typed.cylinder is solid_module.cylinder
+        assert typed_compat.cylinder is typed.cylinder
+        assert solid_module.cylinder.function.__module__ == "zencad.geom.solid"
         assert not hasattr(typed.Context, "box")
         assert not hasattr(typed, "RuntimeCompatibility")
         assert not hasattr(zencad, "Runtime")

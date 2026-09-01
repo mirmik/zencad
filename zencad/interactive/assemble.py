@@ -1,10 +1,10 @@
-from zencad.geom.transformable import Transformable
-from zencad.geom.trans import rotate, translate
-from zencad.geom.exttrans import nulltrans
-from zencad.geom.solid import _nullshape
+from zencad._native.transformable import Transformable
+from zencad._native.trans import rotate, translate
+from zencad._native.exttrans import nulltrans
+from zencad._native.solid import _nullshape
 from zencad.interactive.shape import ShapeInteractiveObject
 from zencad.interactive.line import arrow
-from zencad.geom.trans import rotateZ, rotateY, rotate, translate
+from zencad._native.trans import rotateZ, rotateY, rotate, translate
 from zencad.util import vector3, point3
 from zencad.color import Color as color
 from zencad.interactive import create_interactive_object
@@ -15,8 +15,8 @@ from zencad.libs.screw import screw
 def _display_transform(value):
     """Materialize a typed transform at the legacy viewer boundary."""
 
-    from zencad._typed.transforms import Transform
-    from zencad.geom.trans import Transformation
+    from zencad.geom.transforms import Transform
+    from zencad._native.trans import Transformation
 
     if isinstance(value, Transform):
         return Transformation(value.to_ocp())

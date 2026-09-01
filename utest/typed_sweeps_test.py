@@ -9,7 +9,7 @@ from pathlib import Path
 
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.operation import DomainOperation, using_context
 
 
@@ -369,7 +369,7 @@ import sys
 
 from evalcache import DirCache_v2
 from evalcache.v2 import EvaluationEventKind, MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

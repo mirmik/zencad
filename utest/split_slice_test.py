@@ -1,7 +1,7 @@
 import unittest
 
 import zencad
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 class SplitSliceTest(unittest.TestCase):

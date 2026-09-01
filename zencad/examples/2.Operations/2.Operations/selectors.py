@@ -2,7 +2,7 @@
 """Typed ShapeList selectors feeding modeling operations."""
 
 import zencad
-from zencad import _typed as cad
+from zencad import geom as cad
 
 
 context = cad.Context.deferred(cache=False)

@@ -16,15 +16,15 @@ from zencad.color import (
     default_point_color,
     default_wire_color,
 )
-from zencad.geom.exttrans import nulltrans
-from zencad.geom.shape import Shape
-from zencad.geom.mesh import MeshData, normalize_mesh_display_mode
-from zencad.geom.trans import Transformation
-from zencad.geom.transformable import Transformable
-from zencad._typed.meshes import MeshData as TypedMeshData
-from zencad._typed.topology import Shape as TypedShape
-from zencad._typed.transforms import Transform as TypedTransform
-from zencad._typed.values import Point3 as TypedPoint3
+from zencad._native.exttrans import nulltrans
+from zencad._native.shape import Shape
+from zencad._native.mesh import MeshData, normalize_mesh_display_mode
+from zencad._native.trans import Transformation
+from zencad._native.transformable import Transformable
+from zencad.geom.meshes import MeshData as TypedMeshData
+from zencad.geom.topology import Shape as TypedShape
+from zencad.geom.transforms import Transform as TypedTransform
+from zencad.geom.values import Point3 as TypedPoint3
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,

@@ -10,7 +10,7 @@ from OCP.TopoDS import (
     TopoDS_Wire,
 )
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 

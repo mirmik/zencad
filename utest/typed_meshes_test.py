@@ -17,7 +17,7 @@ from evalcache.v2 import (
 from OCP.Poly import Poly_Triangulation
 from OCP.gp import gp_Pnt
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.runtime.scene_protocol import decode_mesh
 
 
@@ -274,7 +274,7 @@ from collections import Counter
 
 from evalcache import DirCache_v2
 from evalcache.v2 import MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

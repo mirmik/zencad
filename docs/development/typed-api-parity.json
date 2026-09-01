@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "baseline": "ZenCad pre-cutover geometry capability inventory, archived 2026-09-02",
-  "legacy_signature_sha256": "b43da43ede5a34ea713468290a925668bc6eb1a4faa89914c87fe3ad649fb1eb",
+  "legacy_signature_sha256": "910ea0c2ba29564aae97e90d316cba8c86147db107d9ea020aae1f948ced9868",
   "status_meaning": {
-    "implemented": "The private typed layer already provides the complete domain capability.",
+    "implemented": "The canonical zencad.geom layer provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
     "missing": "No truthful typed equivalent exists yet.",
     "repair": "The legacy entry is broken or conflicts with the accepted typed model and needs an explicit repaired contract.",
@@ -458,7 +458,7 @@
       ],
       "surfaces": [
         {
-          "source": "zencad.geom.trans",
+          "source": "zencad._native.trans",
           "exclude": {
             "Transformation": "classified with its public methods below"
           },
@@ -521,7 +521,7 @@
           }
         },
         {
-          "source": "zencad.geom.trans:Transformation",
+          "source": "zencad._native.trans:Transformation",
           "include_type": true,
           "dunder": ["__call__", "__mul__", "__repr__", "__str__"],
           "default": {
@@ -591,7 +591,7 @@
           }
         },
         {
-          "source": "zencad.geom.general_transformation",
+          "source": "zencad._native.general_transformation",
           "exclude": {
             "GeneralTransformation": "classified with its public methods below"
           },
@@ -603,7 +603,7 @@
           "overrides": {}
         },
         {
-          "source": "zencad.geom.general_transformation:GeneralTransformation",
+          "source": "zencad._native.general_transformation:GeneralTransformation",
           "include_type": true,
           "dunder": ["__call__", "__mul__", "__repr__", "__str__"],
           "default": {
@@ -614,7 +614,7 @@
           "overrides": {}
         },
         {
-          "source": "zencad.geom.exttrans",
+          "source": "zencad._native.exttrans",
           "exclude": {
             "DEF_MTRANS_ARRAY": "legacy configuration constant, preserved unchanged",
             "DEF_MTRANS_UNIT": "legacy configuration constant, preserved unchanged",
@@ -657,7 +657,7 @@
           }
         },
         {
-          "source": "zencad.geom.exttrans:multitransform",
+          "source": "zencad._native.exttrans:multitransform",
           "include_type": true,
           "dunder": ["__call__"],
           "default": {
@@ -693,7 +693,7 @@
       ],
       "surfaces": [
         {
-          "source": "zencad.geom.shape:Shape",
+          "source": "zencad._native.shape:Shape",
           "include_type": true,
           "dunder": ["__add__", "__sub__", "__xor__"],
           "exclude": {
@@ -768,7 +768,7 @@
           }
         },
         {
-          "source": "zencad.geom.curve_algo:CurveAlgo",
+          "source": "zencad._native.curve_algo:CurveAlgo",
           "default": {
             "status": "missing",
             "typed": "Curve/Edge typed query for {name}",
@@ -789,7 +789,7 @@
           }
         },
         {
-          "source": "zencad.geom.transformable:Transformable",
+          "source": "zencad._native.transformable:Transformable",
           "include_type": true,
           "default": {
             "status": "missing",
@@ -890,7 +890,7 @@
           }
         },
         {
-          "source": "zencad.geom.solid",
+          "source": "zencad._native.solid",
           "default": {"status": "missing", "typed": "zencad.{name}() -> typed topology handle", "materialization": "none"},
           "overrides": {
             "box": {"status": "implemented", "typed": "zencad.box() -> Solid"},
@@ -905,7 +905,7 @@
           }
         },
         {
-          "source": "zencad.geom.platonic",
+          "source": "zencad._native.platonic",
           "default": {"status": "missing", "typed": "zencad.{name}() -> Solid | Shell", "materialization": "none"},
           "overrides": {
             "dodecahedron": {"status": "implemented", "typed": "zencad.dodecahedron() -> Solid | Shell"},
@@ -917,7 +917,7 @@
           }
         },
         {
-          "source": "zencad.geom.wire",
+          "source": "zencad._native.wire",
           "default": {"status": "missing", "typed": "zencad.{name}() -> Edge | Wire", "materialization": "none"},
           "overrides": {
             "segment": {"status": "implemented", "typed": "zencad.segment() -> Edge"},
@@ -933,7 +933,7 @@
           }
         },
         {
-          "source": "zencad.geom.wire_builder:wire_builder",
+          "source": "zencad._native.wire_builder:wire_builder",
           "include_type": true,
           "default": {"status": "missing", "typed": "typed WireBuilder.{name}", "materialization": "doit()/build() returns Wire"},
           "overrides": {
@@ -956,7 +956,7 @@
           }
         },
         {
-          "source": "zencad.geom.face",
+          "source": "zencad._native.face",
           "default": {"status": "missing", "typed": "zencad.{name}() -> Face | Wire", "materialization": "none"},
           "overrides": {
             "circle": {"status": "implemented", "typed": "zencad.circle() -> Face | Edge"},
@@ -977,7 +977,7 @@
           }
         },
         {
-          "source": "zencad.geom.shell",
+          "source": "zencad._native.shell",
           "default": {"status": "missing", "typed": "zencad.{name}() -> Shell | Solid | structured points", "materialization": "convex_hull numeric result materializes"},
           "overrides": {
             "convex_hull": {"status": "implemented", "typed": "zencad.convex_hull() -> tuple[tuple[int, ...], ...]", "materialization": "numeric result materializes"},
@@ -989,7 +989,7 @@
           }
         },
         {
-          "source": "zencad.geom.curve",
+          "source": "zencad._native.curve",
           "exclude": {
             "nocached_curve_generator": "legacy lazy proxy implementation",
             "Curve": "classified with its public methods below"
@@ -1005,7 +1005,7 @@
           }
         },
         {
-          "source": "zencad.geom.curve:Curve",
+          "source": "zencad._native.curve:Curve",
           "include_type": true,
           "default": {"status": "missing", "typed": "Curve.{name}", "materialization": "native() only for OCP accessors"},
           "overrides": {
@@ -1019,7 +1019,7 @@
           }
         },
         {
-          "source": "zencad.geom.curve2",
+          "source": "zencad._native.curve2",
           "exclude": {
             "nocached_curve2_generator": "legacy lazy proxy implementation",
             "Curve2": "classified with its public methods below"
@@ -1032,7 +1032,7 @@
           }
         },
         {
-          "source": "zencad.geom.curve2:Curve2",
+          "source": "zencad._native.curve2:Curve2",
           "include_type": true,
           "default": {"status": "missing", "typed": "Curve2.{name}", "materialization": "native() only for OCP accessors"},
           "overrides": {
@@ -1043,7 +1043,7 @@
           }
         },
         {
-          "source": "zencad.geom.surface",
+          "source": "zencad._native.surface",
           "exclude": {
             "nocached_surface_generator": "legacy lazy proxy implementation",
             "Surface": "classified with its public methods below"
@@ -1054,7 +1054,7 @@
           }
         },
         {
-          "source": "zencad.geom.surface:Surface",
+          "source": "zencad._native.surface:Surface",
           "include_type": true,
           "default": {"status": "implemented", "typed": "Surface.{name}", "materialization": "native() only for OCP accessors"},
           "overrides": {
@@ -1083,7 +1083,7 @@
       ],
       "surfaces": [
         {
-          "source": "zencad.geom.sweep",
+          "source": "zencad._native.sweep",
           "default": {"status": "missing", "typed": "typed sweep operation {name}", "materialization": "none"},
           "overrides": {
             "extrude": {"status": "implemented", "typed": "zencad.extrude() / Shape.extrude() -> Shape"},
@@ -1098,7 +1098,7 @@
           }
         },
         {
-          "source": "zencad.geom.sweep_law",
+          "source": "zencad._native.sweep_law",
           "default": {"status": "missing", "typed": "typed sweep-law contract for {name}, tracked by #2036", "materialization": "native law only inside sweep evaluation"},
           "overrides": {
             "LawFunction": {"status": "implemented", "typed": "SweepScaleLaw", "materialization": "none; immutable construction description"},
@@ -1113,7 +1113,7 @@
           }
         },
         {
-          "source": "zencad.geom.boolops",
+          "source": "zencad._native.boolops",
           "default": {"status": "missing", "typed": "typed boolean operation {name}", "materialization": "none"},
           "overrides": {
             "union": {"status": "implemented", "typed": "zencad.union(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__add__() pairwise"},
@@ -1127,7 +1127,7 @@
           }
         },
         {
-          "source": "zencad.geom.operations",
+          "source": "zencad._native.operations",
           "default": {"status": "missing", "typed": "typed topology operation/result for {name}", "materialization": "structured native data only at explicit boundary"},
           "overrides": {
             "chamfer": {"status": "implemented", "typed": "zencad.chamfer() / Shape.chamfer() -> Shape"},
@@ -1142,7 +1142,7 @@
           }
         },
         {
-          "source": "zencad.geom.offset",
+          "source": "zencad._native.offset",
           "default": {"status": "missing", "typed": "typed topology operation {name}", "materialization": "none"},
           "overrides": {
             "offset": {"status": "implemented", "typed": "zencad.offset() / Shape.offset() -> Shape"},
@@ -1151,21 +1151,21 @@
           }
         },
         {
-          "source": "zencad.geom.sew",
+          "source": "zencad._native.sew",
           "default": {"status": "missing", "typed": "typed sew() -> Wire | Shell", "materialization": "none"},
           "overrides": {
             "sew": {"status": "implemented", "typed": "zencad.sew(Sequence[Edge | Wire]) -> Wire | zencad.sew(Sequence[Face | Shell]) -> Shell"}
           }
         },
         {
-          "source": "zencad.geom.unify",
+          "source": "zencad._native.unify",
           "default": {"status": "missing", "typed": "typed unify() -> Shape", "materialization": "none"},
           "overrides": {
             "unify": {"status": "implemented", "typed": "zencad.unify() / Shape.unify() preserves the concrete topology handle"}
           }
         },
         {
-          "source": "zencad.geom.validation",
+          "source": "zencad._native.validation",
           "default": {"status": "implemented", "typed": "typed validation contract {name}", "materialization": "none"},
           "overrides": {
             "validate": {"typed": "validate(Shape) -> ValidationReport", "materialization": "explicit diagnostic boundary"},
@@ -1176,7 +1176,7 @@
           }
         },
         {
-          "source": "zencad.geom.near",
+          "source": "zencad._native.near",
           "default": {"status": "missing", "typed": "typed nearest-topology query {name}", "materialization": "none"},
           "overrides": {
             "near_compound": {"status": "implemented", "typed": "zencad.near_compound() / Shape.near_compound() -> Compound"},
@@ -1190,7 +1190,7 @@
           }
         },
         {
-          "source": "zencad.geom.project",
+          "source": "zencad._native.project",
           "default": {"status": "missing", "typed": "typed projection query {name}", "materialization": "none"},
           "overrides": {
             "project": {"status": "implemented", "typed": "zencad.project(Point3, Curve | Edge) -> CurveProjection"},
@@ -1212,7 +1212,7 @@
       ],
       "surfaces": [
         {
-          "source": "zencad.geom.mesh",
+          "source": "zencad._native.mesh",
           "exclude": {
             "normalize_mesh_display_mode": "display configuration helper, unchanged",
             "validated_mesh_data": "internal display validation helper"

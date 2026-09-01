@@ -3,7 +3,7 @@ from OCP.Aspect import Aspect_IS_EMPTY, Aspect_IS_SOLID
 
 from zencad.bbox import BoundaryBox
 from zencad.color import default_border_color
-from zencad.geom.mesh import (
+from zencad._native.mesh import (
     mesh_to_poly_triangulation,
     normalize_mesh_display_mode,
 )

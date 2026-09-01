@@ -9,11 +9,11 @@ from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCP.Geom import Geom_CartesianPoint
 from zencad.occ_compat import vertex_point
 
-import zencad.geom.transformable
+import zencad._native.transformable
 import evalcache
 
 
-class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
+class xyz(numpy.ndarray, zencad._native.transformable.Transformable):
     def __new__(cls, *args, info=None):
         args = [evalcache.unlazy_if_need(a) for a in args]
 

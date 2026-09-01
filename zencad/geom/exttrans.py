@@ -1,98 +1,76 @@
-import numpy as np
+"""Typed collections of similarity transforms."""
 
-from zencad.geom.trans import *
-from zencad.util import deg, vector3
-from zencad.geom.boolops import union
+from __future__ import annotations
 
-import evalcache
+from collections.abc import Iterator, Sequence
+from typing import TYPE_CHECKING, TypeVar
 
-DEF_MTRANS_ARRAY = False
-DEF_MTRANS_UNIT = False
+from ._core import require_same_context
+from .topology import Shape
+from .transforms import Transform
+
+if TYPE_CHECKING:
+    from .context import Context
 
 
-class multitransform:
-    """
-            fuse: True - вернуть объединение. False - вернуть массив.
-            multiply_interactive: True - делать копии интерактивных объектов и юнитов.
-    """
+ShapeT = TypeVar("ShapeT", bound=Shape)
 
-    def __init__(self, transes, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
-        self.transes = transes
+
+class MultiTransform:
+    """An immutable transform sequence whose members retain their lazy graphs."""
+
+    __slots__ = ("_context", "_transforms", "array", "unit")
+
+    def __init__(
+        self,
+        transforms: Sequence[Transform],
+        *,
+        context: Context,
+        array: bool = False,
+        unit: bool = False,
+    ) -> None:
+        if not isinstance(array, bool) or not isinstance(unit, bool):
+            raise TypeError("MultiTransform array and unit flags must be bool")
+        resolved = tuple(transforms)
+        for transform in resolved:
+            if not isinstance(transform, Transform):
+                raise TypeError("MultiTransform expects Transform items")
+            require_same_context(context, transform)
+        self._context = context
+        self._transforms = resolved
         self.array = array
         self.unit = unit
 
-    def __call__(self, shp):
-        # if isinstance(shp, (
-        #		interactive_object,
-        #			zencad.assemble.unit)):
-        #	rets = []
-        #	clones = [shp.copy() for i in range(len(self.transes)-1)]
-        #	objects = [shp] + clones
+    @property
+    def context(self) -> Context:
+        return self._context
 
-        #	lst = [ obj.transform(t) for obj, t in zip(objects, self.transes) ]
+    @property
+    def transforms(self) -> tuple[Transform, ...]:
+        return self._transforms
 
-        #	if self.array:
-        #		return lst
-        #	else:
-        #		return zencad.assemble.unit(parts=lst)
+    def __len__(self) -> int:
+        return len(self._transforms)
 
-        # else:
-        lst = [t(shp) for t in self.transes]
+    def __iter__(self) -> Iterator[Transform]:
+        return iter(self._transforms)
+
+    def items(self, shape: ShapeT, /) -> list[ShapeT]:
+        if not isinstance(shape, Shape):
+            raise TypeError("MultiTransform.items expects Shape")
+        require_same_context(self.context, shape)
+        return [shape.transform(transform) for transform in self._transforms]
+
+    def fused(self, shape: Shape, /) -> Shape:
+        items = self.items(shape)
+        if not items:
+            raise ValueError("cannot fuse an empty MultiTransform")
+        result: Shape = items[0]
+        for item in items[1:]:
+            result = result + item
+        return result
+
+    def __call__(self, shape: ShapeT, /) -> Shape | list[ShapeT]:
         if self.array:
-            return lst
-
-        #	if self.unit:
-        #		return zencad.assemble.unit(parts=lst)
-
-        return union(lst)
-
-
-def multitrans(transes, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
-    return multitransform(transes, array=array, unit=unit)
-
-
-def nulltrans():
-    return translate(0, 0, 0)
-
-
-def sqrmirror(array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
-    return multitransform([nulltrans(), mirrorYZ(), mirrorXZ(), mirrorZ()], array=array, unit=unit)
-
-
-def sqrtrans(*args, **kwargs):
-    print("sqrtrans renamed. use sqrmirror instead")
-    return sqrmirror(*args, **kwargs)
-
-
-def rotate_array(n, yaw=deg(360), endpoint=False, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
-    lspace = np.linspace(0, yaw, num=n, endpoint=endpoint)
-    transes = [	rotateZ(a) for a in lspace	]
-    return multitrans(transes, array=array, unit=unit)
-
-
-def rotate_array2(n, r=None, yaw=(0, deg(360)), roll=(0, 0), endpoint=False, array=DEF_MTRANS_ARRAY, unit=DEF_MTRANS_UNIT):
-    lspace1 = np.linspace(yaw[0], yaw[1], num=n, endpoint=endpoint)
-    lspace2 = np.linspace(roll[0], roll[1], num=n, endpoint=endpoint)
-
-    transes = [
-        rotateZ(a) * right(r) * rotateX(deg(90)) * rotateZ(a2) for a, a2 in zip(lspace1, lspace2)
-    ]
-
-    return multitrans(transes, array=array, unit=unit)
-
-
-def short_rotate(f, t):
-    f, t = vector3(evalcache.unlazy_if_need(f)), vector3(
-        evalcache.unlazy_if_need(t))
-
-    f = f / np.linalg.norm(f)
-    t = t / np.linalg.norm(t)
-
-    if np.linalg.norm(f - t) < 1e-5:
-        return nulltrans()
-
-    axis = np.cross(f, t)
-    dot_product = np.dot(f, t)
-    angle = np.arccos(dot_product)
-
-    return rotate(axis, angle)
+            return self.items(shape)
+        return self.fused(shape)

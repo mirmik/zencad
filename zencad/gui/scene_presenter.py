@@ -13,7 +13,7 @@ from OCP.gp import gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
 from OCP.Prs3d import Prs3d_ArrowAspect, Prs3d_LineAspect
 
 from zencad.color import Color
-from zencad.geom.mesh import normalize_mesh_display_mode
+from zencad._native.mesh import normalize_mesh_display_mode
 from zencad.runtime.scene_protocol import (
     SceneObjectRecord,
     SceneSnapshot,
@@ -153,7 +153,7 @@ def materialize_scene_object(record: SceneObjectRecord) -> PresentedSceneObject:
         shape = decode_brep(record.payload)
         ais_object = AIS_Shape(shape)
     elif record.kind == "mesh":
-        from zencad.geom.mesh import mesh_to_poly_triangulation
+        from zencad._native.mesh import mesh_to_poly_triangulation
 
         shape = None
         mesh = decode_mesh(record.payload)
@@ -527,7 +527,7 @@ class ScenePresenter:
         )
         try:
             from OCP.Bnd import Bnd_Box
-            from zencad.geom.shape import Shape
+            from zencad._native.shape import Shape
 
             self.widget._first_shape = Shape(first) if first is not None else None
             bounds = Bnd_Box()

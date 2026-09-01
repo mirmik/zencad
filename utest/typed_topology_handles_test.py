@@ -32,9 +32,9 @@ from OCP.TopoDS import (
 )
 from OCP.gp import gp_Pnt
 
-from zencad import _typed as typed
-from zencad._typed._serialization import ShapeBrepSerializer
-from zencad.geom.shape import Shape as ResolvedShape
+from zencad import geom as typed
+from zencad.geom._serialization import ShapeBrepSerializer
+from zencad._native.shape import Shape as ResolvedShape
 from zencad.occ_compat import as_edge, as_face, as_shell, as_vertex, as_wire
 
 

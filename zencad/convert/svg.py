@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 import zencad.util
-from zencad.geom.unify import _unify
-from zencad.geom.operations import _restore_shapetype
-from zencad.geom.face import _fix_face, _fill
-from zencad.geom.boolops import _union
-from zencad.geom.exttrans import nulltrans
-from zencad.geom.trans import mirrorO, mirrorX, mirrorY
-from zencad.geom.wire_builder import wire_builder as legacy_wire_builder
+from zencad._native.unify import _unify
+from zencad._native.operations import _restore_shapetype
+from zencad._native.face import _fix_face, _fill
+from zencad._native.boolops import _union
+from zencad._native.exttrans import nulltrans
+from zencad._native.trans import mirrorO, mirrorX, mirrorY
+from zencad._native.wire_builder import wire_builder as legacy_wire_builder
 import xml.etree.ElementTree as ET
 import math
 import re

@@ -36,8 +36,8 @@ their existing modules but are outside the typed-domain replacement surface.
 
 ## Status model
 
-- `implemented`: the private typed layer already provides the complete domain
-  capability.
+- `implemented`: the canonical `zencad.geom` layer provides the complete
+  domain capability.
 - `partial`: the typed core exists, but a legacy parameter variant, alias, or
   structured result remains.
 - `missing`: no complete typed equivalent exists.

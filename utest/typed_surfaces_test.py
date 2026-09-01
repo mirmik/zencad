@@ -33,9 +33,9 @@ from OCP.gp import (
     gp_Pnt2d,
 )
 
-from zencad import _typed as typed
-from zencad._typed import _curve_operations as curve_ops
-from zencad._typed._serialization import CurveSerializer
+from zencad import geom as typed
+from zencad.geom import _curve_operations as curve_ops
+from zencad.geom._serialization import CurveSerializer
 from zencad.operation import DomainOperation, using_context
 
 
@@ -563,7 +563,7 @@ from collections import Counter
 
 from evalcache import DirCache_v2
 from evalcache.v2 import MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

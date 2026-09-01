@@ -80,8 +80,9 @@ Materialization is explicit and directional:
 - `native()` returns an owned mutable OCP snapshot;
 - scene/export boundaries encode BREP or mesh data and do not leak native OCP
   ownership across processes;
-- private eager `zencad.geom` adapters operate only behind the domain backend
-  and do not construct evaluation proxies.
+- canonical domain types and operations live in `zencad.geom`;
+- private eager `zencad._native` adapters operate only at explicit OCP
+  boundaries and do not construct evaluation proxies.
 
 Topology queries return `ShapeList[T]` with precise element types. Indexing,
 filtering, sorting, and domain composition retain graph ownership; iteration,

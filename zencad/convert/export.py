@@ -27,9 +27,9 @@ from OCP.STEPControl import (
 from OCP.StlAPI import StlAPI_Writer
 from OCP.gp import gp_Pnt, gp_Trsf
 
-from zencad.geom.mesh import to_mesh
-from zencad.geom.shape import Shape
-from zencad.geom.validation import ShapeValidationError, _validate
+from zencad._native.mesh import to_mesh
+from zencad._native.shape import Shape
+from zencad._native.validation import ShapeValidationError, _validate
 
 
 class LengthUnit(str, Enum):

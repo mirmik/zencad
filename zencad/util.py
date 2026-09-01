@@ -9,7 +9,7 @@ from OCP.BRep import BRep_Tool
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCP.Geom import Geom_CartesianPoint
 
-import zencad.geom.transformable
+import zencad._native.transformable
 import evalcache
 
 from zencad.geombase import *

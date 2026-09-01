@@ -63,5 +63,5 @@ class BoundaryBox:
     def zlength(self): return self.zmax - self.zmin
 
     def shape(self):
-        from zencad.geom.solid import box
+        from zencad._native.solid import box
         return box(self.xlength(), self.ylength(), self.zlength()).move(self.xmin, self.ymin, self.zmin)

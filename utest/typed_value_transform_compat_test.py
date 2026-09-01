@@ -7,7 +7,7 @@ from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_Pnt, gp_Quaternion, gp_Vec
 from evalcache.v2 import EvaluationMode, Expression
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 class TypedValueTransformCompatibilityTest(unittest.TestCase):

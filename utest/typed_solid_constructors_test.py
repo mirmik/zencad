@@ -4,7 +4,7 @@ import unittest
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
 from OCP.TopAbs import TopAbs_SOLID
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.operation import DomainOperation, using_context
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 

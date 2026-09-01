@@ -15,8 +15,8 @@ except ImportError as exception:
 from zencad.version import __ocp_version__
 
 
-from zencad import _typed as _domain
-from zencad._typed import *
+from zencad import geom as _domain
+from zencad.geom import *
 from zencad.cache_config import clear_cache, configure
 from zencad.color import (
     Color,

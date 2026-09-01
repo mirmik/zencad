@@ -2,8 +2,8 @@
 
 from typing_extensions import assert_type
 
-from zencad import _typed as typed
-from zencad._typed.context import Context
+from zencad import geom as typed
+from zencad.geom.context import Context
 
 
 def operation_contract(context: Context) -> None:

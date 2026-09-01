@@ -5,7 +5,7 @@ import numpy
 from OCP.gp import gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d
 from evalcache.v2 import CacheRecord, EvaluationMode, Expression
 
-from zencad import _typed as typed
+from zencad import geom as typed
 
 
 class CountingStore:

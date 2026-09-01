@@ -1,6 +1,6 @@
 import unittest
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.runtime.scene_protocol import decode_brep, decode_json_payload, decode_mesh
 from zencad.scene import Scene
 from zencad.showapi import disp, display, highlight, hl, managed_scene, show

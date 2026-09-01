@@ -6,7 +6,7 @@ from OCP.Geom import Geom_Curve
 from OCP.GeomAdaptor import GeomAdaptor_Curve
 from OCP.TopAbs import TopAbs_EDGE, TopAbs_WIRE
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.operation import DomainOperation, using_context
 
 

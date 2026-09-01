@@ -24,8 +24,8 @@ from typing import (
 import evalcache
 
 if TYPE_CHECKING:
-    from zencad._typed._core import Handle
-    from zencad._typed.context import Context
+    from zencad.geom._core import Handle
+    from zencad.geom.context import Context
 
 
 P = ParamSpec("P")
@@ -80,7 +80,7 @@ def resolve_context(*values: object) -> Context:
 
     global _DEFAULT_CONTEXT
     if _DEFAULT_CONTEXT is None:
-        from zencad._typed.context import Context
+        from zencad.geom.context import Context
 
         _DEFAULT_CONTEXT = Context.deferred()
     return _DEFAULT_CONTEXT
@@ -267,7 +267,7 @@ def _annotation_accepts_literal(annotation: object, value: object) -> bool:
 def _handle_type_namespace() -> dict[str, type[object]]:
     """Expose loaded domain handle classes when annotations break import cycles."""
 
-    from zencad._typed._core import Handle
+    from zencad.geom._core import Handle
 
     result: dict[str, type[object]] = {}
     pending = list(Handle.__subclasses__())

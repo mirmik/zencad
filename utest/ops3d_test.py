@@ -64,8 +64,8 @@ class Ops3dProbe(unittest.TestCase):
 
     def test_shapefix_solid_downcasts_generic_shape(self):
         from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
-        from zencad.geom.offset import _shapefix_solid
-        from zencad.geom.shape import Shape
+        from zencad._native.offset import _shapefix_solid
+        from zencad._native.shape import Shape
 
         generic_solid = Shape(BRepPrimAPI_MakeBox(2, 3, 4).Shape())
         fixed = _shapefix_solid(generic_solid)

@@ -1,12 +1,12 @@
 from OCP.Aspect import Aspect_TOD_ABSOLUTE
 from OCP.TopLoc import TopLoc_Location
 
-from zencad.geom.shape import Shape
+from zencad._native.shape import Shape
 from zencad.color import Color, default_color, default_wire_color, default_border_color
 from zencad.axis import Axis
-from zencad.geom.trans import Transformation
-from zencad.geom.exttrans import nulltrans
-from zencad.geom.transformable import Transformable
+from zencad._native.trans import Transformation
+from zencad._native.exttrans import nulltrans
+from zencad._native.transformable import Transformable
 from zencad.interactive.displayable import Displayable
 from zencad.util import point3
 from zencad.settings import Settings
@@ -78,7 +78,7 @@ class InteractiveObject(Transformable, Displayable):
             self.ais_object.Attributes().SetWireAspect(aspect)
 
     def relocate(self, trsf):
-        from zencad._typed.transforms import Transform
+        from zencad.geom.transforms import Transform
 
         if isinstance(trsf, Transform):
             trsf = Transformation(trsf.to_ocp())

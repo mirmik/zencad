@@ -22,8 +22,8 @@ from zencad.geombase import vector3, point3
 from zencad.interactive import AxisInteractiveObject, ShapeInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
-import zencad.geom.trans
-import zencad.geom.solid
+import zencad._native.trans
+import zencad._native.solid
 from zencad.settings import Settings, normalize_msaa_samples
 from zencad.gui.navigation import (
     navigation_drag_action,
@@ -171,7 +171,7 @@ class DisplayWidget(BaseViewer):
             self.Context.Display(iobj.ais_object, False)
             iobj.bind_context(self.Context, update=False)
 
-        self.msphere = zencad.geom.solid._sphere(1)
+        self.msphere = zencad._native.solid._sphere(1)
         self.MarkerQController = ShapeInteractiveObject(
             self.msphere, color=zencad.color.Color(1, 0, 0))
         self.MarkerWController = ShapeInteractiveObject(
@@ -501,7 +501,7 @@ class DisplayWidget(BaseViewer):
 
     def location_changed_handle(self):
         for c in self.camera_center_axes:
-            c.relocate(zencad.geom.trans.translate(self.center()))
+            c.relocate(zencad._native.trans.translate(self.center()))
 
     def InitDriver(self):
         if self._display._window is None:

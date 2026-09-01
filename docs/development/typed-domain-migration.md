@@ -4,9 +4,11 @@
 > domain API directly; `Runtime`, `RuntimeCompatibility`, `zencad.lazy`,
 > `LazyObjectShape`, `.unlazy()`, and `zencad/lazifier.py` are removed.
 > `Context` owns evaluation and EvalCache v2 policy but deliberately has no CAD
-> facade. Module functions and domain methods are the canonical API. The
-> remaining `zencad.geom` classes are eager, private OCP backend adapters and do
-> not construct lazy proxies. The accepted direction and rationale are recorded in
+> facade. Module functions and domain methods are the canonical API. The domain
+> implementation physically lives in `zencad.geom`; eager OCP adapters are
+> private implementation details under `zencad._native`. `zencad._typed` is a
+> compatibility re-export and contains no second implementation. The accepted
+> direction and rationale are recorded in
 > [Typed domain handles and an internal lazy graph](../architecture-council/2026-08-30-typed-domain-handles.md).
 
 The detailed stage notes below are a chronological migration record. References
@@ -1306,6 +1308,18 @@ there is no parallel `zencad2` package. `py.typed`, overload contracts,
 representative type checks, examples, runtime tests, parity checks, and wheel
 smoke cover the canonical `Context`/module/domain API. Compatibility Runtime
 and the old external lazy geometry surface were removed atomically.
+
+## Stage 9: canonical package ownership
+
+Status: complete on 2026-09-02. The implementation staged in `zencad._typed`
+was moved into `zencad.geom`, replacing the former eager modules at their
+historical package location. Root exports and historical module paths such as
+`zencad.geom.solid`, `zencad.geom.shape`, `zencad.geom.curve`, and
+`zencad.geom.trans` now resolve to domain handles and operations. The old eager
+OCP boundary is isolated in the private `zencad._native` package; production
+code imports it only at explicit materialization, conversion, and GUI
+boundaries. The `_typed` package is retained solely as an identity-preserving
+compatibility alias for code written against the private preview.
 
 ## Cross-cutting rules
 

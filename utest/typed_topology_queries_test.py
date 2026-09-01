@@ -25,9 +25,9 @@ from OCP.TopoDS import (
 )
 from OCP.gp import gp_Pnt, gp_Trsf, gp_Vec
 
-from zencad import _typed as typed
-from zencad._typed._serialization import ShapeBrepSerializer
-from zencad.geom.shape import Shape as ResolvedShape
+from zencad import geom as typed
+from zencad.geom._serialization import ShapeBrepSerializer
+from zencad._native.shape import Shape as ResolvedShape
 from zencad.occ_compat import as_face, as_vertex
 
 

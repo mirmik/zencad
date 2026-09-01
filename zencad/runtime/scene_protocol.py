@@ -148,7 +148,7 @@ def decode_brep(payload: bytes) -> TopoDS_Shape:
 
 def encode_mesh(mesh) -> bytes:
     """Serialize display mesh geometry without JSON expansion or pickle."""
-    from zencad.geom.mesh import validated_mesh_data
+    from zencad._native.mesh import validated_mesh_data
 
     positions, normals, triangles = validated_mesh_data(mesh)
     if len(positions) > MAX_MESH_VERTICES:
@@ -172,7 +172,7 @@ def encode_mesh(mesh) -> bytes:
 
 def decode_mesh(payload: bytes):
     """Deserialize and fully validate a ZenCad display mesh payload."""
-    from zencad.geom.mesh import MeshData, validated_mesh_data
+    from zencad._native.mesh import MeshData, validated_mesh_data
 
     if not isinstance(payload, bytes):
         raise TypeError("Mesh payload must be bytes")

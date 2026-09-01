@@ -15,7 +15,7 @@ from evalcache.v2 import (
     MemoryCacheStore,
 )
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.runtime.scene_protocol import decode_brep, encode_brep
 
 
@@ -168,7 +168,7 @@ from collections import Counter
 
 from evalcache import DirCache_v2
 from evalcache.v2 import MappingCacheStore
-from zencad import _typed as typed
+from zencad import geom as typed
 
 events = []
 context = typed.Context.deferred(

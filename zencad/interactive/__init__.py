@@ -22,15 +22,15 @@ from OCP.TopoDS import (
 
 from zencad.axis import Axis
 from zencad.color import Color
-from zencad.geom.shape import Shape
-from zencad.geom.mesh import MeshData
+from zencad._native.shape import Shape
+from zencad._native.mesh import MeshData
 
 
 def _typed_display_value(obj):
     """Materialize typed handles only at the direct viewer boundary."""
-    from zencad._typed.meshes import MeshData as TypedMeshData
-    from zencad._typed.topology import Shape as TypedShape
-    from zencad._typed.values import Point3 as TypedPoint3
+    from zencad.geom.meshes import MeshData as TypedMeshData
+    from zencad.geom.topology import Shape as TypedShape
+    from zencad.geom.values import Point3 as TypedPoint3
 
     if isinstance(obj, TypedShape):
         return Shape(obj.native())

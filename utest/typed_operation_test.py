@@ -6,8 +6,8 @@ import evalcache
 
 import zencad
 import zencad.operation as operation_module
-from zencad import _typed as typed
-from zencad._typed.topology import SHAPE_SPEC
+from zencad import geom as typed
+from zencad.geom.topology import SHAPE_SPEC
 from zencad.operation import DomainOperation, operation, using_context
 
 

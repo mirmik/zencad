@@ -6,7 +6,7 @@ import unittest
 from OCP.gp import gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
 from evalcache.v2 import CacheRecord, EvaluationMode, Expression
 
-from zencad import _typed as typed
+from zencad import geom as typed
 from zencad.operation import DomainOperation, using_context
 
 

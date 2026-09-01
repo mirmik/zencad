@@ -1,199 +1,282 @@
-from zencad.geom.shape import Shape, nocached_shape_generator, shape_generator
-from zencad.util import as_indexed, angle_pair
-import OCP.BRepPrimAPI
-from OCP.gp import gp_Ax2, gp_Pnt, gp_Vec, gp_Dir, gp_Pln
-from OCP.BRepLib import BRepLib_MakeFace
-from OCP.BRepPrimAPI import BRepPrimAPI_MakeHalfSpace
+"""Typed solid primitives declared as module-level domain operations."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
+from OCP.BRepLib import BRepLib_MakeFace
+from OCP.BRepPrimAPI import (
+    BRepPrimAPI_MakeBox,
+    BRepPrimAPI_MakeCone,
+    BRepPrimAPI_MakeCylinder,
+    BRepPrimAPI_MakeHalfSpace,
+    BRepPrimAPI_MakeSphere,
+    BRepPrimAPI_MakeTorus,
+)
+from OCP.gp import gp_Ax2, gp_Dir, gp_Pln, gp_Pnt
 from OCP.ShapeFix import ShapeFix_Solid
 
-from zencad.geombase import point3
-from zencad._eager import eager
+from zencad.operation import operation
+
+from .topology import SOLID_SPEC, Shell, Solid
+from .values import Vector3
 
 
-def _box(x, y=None, z=None, center=False, size=None):
-    if size is None:
-        size = x
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.box",
+    operation_version="1",
+)
+def box(
+    x: float | Vector3 | Sequence[float] = 0,
+    y: float | None = None,
+    z: float | None = None,
+    center: bool | str | None = None,
+    size: float | Vector3 | Sequence[float] | None = None,
+) -> Solid:
+    """Build a box from concrete dimensions."""
 
-    if isinstance(size, (float, int)):
-        x = size
-        if y is None and z is None:
-            size = (x, x, x)
-        else:
-            if z is None:
-                size = (x, y, 0)
-            else:
-                size = (x, y, z)
-
-    x, y, z = size[0], size[1], size[2]
-
-    if center:
-        pnt = point3()
-
-        if center is True:
-            pnt = point3(-x / 2, -y / 2, -z / 2)
-
-        if isinstance(center, str):
-            if ("x" in center):
-                pnt += point3(-x/2, 0, 0)
-            if ("y" in center):
-                pnt += point3(0, -y/2, 0)
-            if ("z" in center):
-                pnt += point3(0, 0, -z/2)
-
-        ax2 = gp_Ax2(pnt.Pnt(), gp_Dir(0, 0, 1))
-        return Shape(OCP.BRepPrimAPI.BRepPrimAPI_MakeBox(ax2, *size).Shape())
-    else:
-        return Shape(OCP.BRepPrimAPI.BRepPrimAPI_MakeBox(*size).Shape())
+    resolved_center = _require_center(center, "box center")
+    length, width, height = _box_dimensions(x, y, z, size)
+    origin = gp_Pnt(0, 0, 0)
+    if resolved_center is True:
+        origin = gp_Pnt(-length / 2, -width / 2, -height / 2)
+    elif isinstance(resolved_center, str):
+        origin = gp_Pnt(
+            -length / 2 if "x" in resolved_center else 0,
+            -width / 2 if "y" in resolved_center else 0,
+            -height / 2 if "z" in resolved_center else 0,
+        )
+    builder = (
+        BRepPrimAPI_MakeBox(
+            gp_Ax2(origin, gp_Dir(0, 0, 1)),
+            length,
+            width,
+            height,
+        )
+        if resolved_center
+        else BRepPrimAPI_MakeBox(length, width, height)
+    )
+    return Solid(builder.Shape())
 
 
-def _cube(x, y=None, z=None, center=None, size=None):
-    return _box(x, y, z, center, size)
+def cube(
+    x: float | Vector3 | Sequence[float] = 0,
+    y: float | None = None,
+    z: float | None = None,
+    center: bool | str | None = None,
+    size: float | Vector3 | Sequence[float] | None = None,
+) -> Solid:
+    """Compatibility alias for :func:`box` with the legacy signature."""
+
+    return box(x, y, z, center, size)
 
 
-def _sphere(r, yaw=None, pitch=None):
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.sphere",
+    operation_version="1",
+)
+def sphere(
+    r: float,
+    yaw: float | None = None,
+    pitch: float | tuple[float, float] | None = None,
+) -> Solid:
     if yaw is None and pitch is None:
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(r).Shape()
-    elif yaw is None and pitch is not None:
-        pitch = angle_pair(pitch)
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(
-            r, pitch[0], pitch[1]).Shape()
-    elif yaw is not None and pitch is None:
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(r, yaw).Shape()
+        native = BRepPrimAPI_MakeSphere(r).Shape()
+    elif yaw is None:
+        start, finish = _angle_pair(pitch)
+        native = BRepPrimAPI_MakeSphere(r, start, finish).Shape()
+    elif pitch is None:
+        native = BRepPrimAPI_MakeSphere(r, yaw).Shape()
     else:
-        pitch = angle_pair(pitch)
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeSphere(
-            r, pitch[0], pitch[1], yaw).Shape()
-
-    return Shape(raw)
+        start, finish = _angle_pair(pitch)
+        native = BRepPrimAPI_MakeSphere(r, start, finish, yaw).Shape()
+    return Solid(native)
 
 
-def _cylinder(r, h, yaw=None, center=False):
-    if yaw:
-        if center:
-            ax2 = gp_Ax2(gp_Pnt(0, 0, -h/2), gp_Dir(0, 0, 1))
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
-                ax2, r, h, yaw).Shape()
-            return Shape(raw)
-        else:
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
-                r, h, yaw).Shape()
-            return Shape(raw)
-    else:
-        if center:
-            ax2 = gp_Ax2(gp_Pnt(0, 0, -h/2), gp_Dir(0, 0, 1))
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(
-                ax2, r, h).Shape()
-            return Shape(raw)
-        else:
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCylinder(r, h).Shape()
-            return Shape(raw)
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.cylinder",
+    operation_version="1",
+)
+def cylinder(
+    r: float,
+    h: float,
+    yaw: float | None = None,
+    center: bool = False,
+) -> Solid:
+    _require_bool(center, "cylinder center")
+    axis = gp_Ax2(
+        gp_Pnt(0, 0, -h / 2 if center else 0),
+        gp_Dir(0, 0, 1),
+    )
+    builder = (
+        BRepPrimAPI_MakeCylinder(axis, r, h, yaw)
+        if yaw is not None
+        else BRepPrimAPI_MakeCylinder(axis, r, h)
+    )
+    return Solid(builder.Shape())
 
 
-def _cone(r1, r2, h, yaw=None, center=False):
-    if yaw:
-        if center:
-            ax2 = gp_Ax2(gp_Pnt(0, 0, -h / 2), gp_Dir(0, 0, 1))
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(
-                ax2, r1, r2, h, yaw).Shape()
-            return Shape(raw)
-        else:
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(
-                r1, r2, h, yaw).Shape()
-            return Shape(raw)
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.cone",
+    operation_version="1",
+)
+def cone(
+    r1: float,
+    r2: float,
+    h: float,
+    yaw: float | None = None,
+    center: bool = False,
+) -> Solid:
+    _require_bool(center, "cone center")
+    axis = gp_Ax2(
+        gp_Pnt(0, 0, -h / 2 if center else 0),
+        gp_Dir(0, 0, 1),
+    )
+    builder = (
+        BRepPrimAPI_MakeCone(axis, r1, r2, h, yaw)
+        if yaw is not None
+        else BRepPrimAPI_MakeCone(axis, r1, r2, h)
+    )
+    return Solid(builder.Shape())
 
-    else:
-        if center:
-            ax2 = gp_Ax2(gp_Pnt(0, 0, -h / 2), gp_Dir(0, 0, 1))
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(
-                ax2, r1, r2, h).Shape()
-            return Shape(raw)
-        else:
-            raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeCone(r1, r2, h).Shape()
-            return Shape(raw)
 
-
-def _torus(r1, r2, yaw=None, pitch=None):
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.torus",
+    operation_version="1",
+)
+def torus(
+    r1: float,
+    r2: float,
+    yaw: float | None = None,
+    pitch: float | tuple[float, float] | None = None,
+) -> Solid:
     if yaw is None and pitch is None:
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2).Shape()
-    elif yaw is None and pitch is not None:
-        pitch = angle_pair(pitch)
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(
-            r1, r2, pitch[0], pitch[1]).Shape()
-    elif yaw is not None and pitch is None:
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(r1, r2, yaw).Shape()
+        native = BRepPrimAPI_MakeTorus(r1, r2).Shape()
+    elif yaw is None:
+        start, finish = _angle_pair(pitch)
+        native = BRepPrimAPI_MakeTorus(r1, r2, start, finish).Shape()
+    elif pitch is None:
+        native = BRepPrimAPI_MakeTorus(r1, r2, yaw).Shape()
     else:
-        pitch = angle_pair(pitch)
-        raw = OCP.BRepPrimAPI.BRepPrimAPI_MakeTorus(
-            r1, r2, pitch[0], pitch[1], yaw).Shape()
-
-    return Shape(raw)
+        start, finish = _angle_pair(pitch)
+        native = BRepPrimAPI_MakeTorus(r1, r2, start, finish, yaw).Shape()
+    return Solid(native)
 
 
-def _halfspace():
-    F = BRepLib_MakeFace(gp_Pln()).Face()
-    MHS = BRepPrimAPI_MakeHalfSpace(F, gp_Pnt(0, 0, -1))
-    return Shape(MHS.Solid())
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.halfspace",
+    operation_version="1",
+)
+def halfspace() -> Solid:
+    face = BRepLib_MakeFace(gp_Pln()).Face()
+    return Solid(BRepPrimAPI_MakeHalfSpace(face, gp_Pnt(0, 0, -1)).Solid())
 
 
-@eager.decorator(cls=nocached_shape_generator)
-def box(x=0, y=None, z=None, center=None, size=None):
-    return _box(x, y, z, center, size)
-
-
-@eager.decorator(cls=nocached_shape_generator)
-def cube(x=0, y=None, z=None, center=None, size=None):
-    return _cube(x, y, z, center, size)
-
-
-@eager.decorator(cls=nocached_shape_generator)
-def sphere(r, yaw=None, pitch=None):
-    return _sphere(r, yaw, pitch)
-
-
-@eager.decorator(cls=nocached_shape_generator)
-def cylinder(r, h, yaw=None, center=False):
-    return _cylinder(r, h, yaw, center)
-
-
-@eager.decorator(cls=nocached_shape_generator)
-def cone(r1, r2, h, yaw=None, center=False):
-    return _cone(r1, r2, h, yaw, center)
-
-
-@eager.decorator(cls=nocached_shape_generator)
-def torus(r1, r2, yaw=None, pitch=None):
-    return _torus(r1, r2, yaw=yaw, pitch=pitch)
-
-
-@eager.decorator(cls=nocached_shape_generator)
-def halfspace():
-    return _halfspace()
-
-
-def _make_solid(shells):
-    if not isinstance(shells, (list, tuple)):
-        shells = [shells]
-
-    algo = BRepBuilderAPI_MakeSolid()
-
-    for s in shells:
-        algo.Add(s.Shell())
-
-    fixer = ShapeFix_Solid(algo.Solid())
+@operation(
+    result=SOLID_SPEC,
+    returns=Solid,
+    operation_id="zencad.typed.make_solid",
+    operation_version="1",
+)
+def make_solid(shells: Shell | Sequence[Shell], /) -> Solid:
+    values = _require_shells(shells, "make_solid")
+    builder = BRepBuilderAPI_MakeSolid()
+    for shell in values:
+        builder.Add(shell._legacy().Shell())
+    fixer = ShapeFix_Solid(builder.Solid())
     fixer.Perform()
-    return Shape(fixer.Solid())
+    return Solid(fixer.Solid())
 
 
-@eager.decorator(cls=shape_generator)
-def make_solid(shells):
-    return _make_solid(shells)
+def _require_center(
+    value: bool | str | None,
+    name: str,
+) -> bool | str | None:
+    if value is not None and not isinstance(value, (bool, str)):
+        raise TypeError(f"{name} must be bool, str, or None")
+    return value
 
 
-def _nullshape():
-    return _box(1, 1, 1) - _box(1, 1, 1)
+def _require_bool(value: object, name: str) -> None:
+    if not isinstance(value, bool):
+        raise TypeError(f"{name} must be bool")
 
 
-@eager.decorator(cls=nocached_shape_generator)
-def nullshape():
-    return _nullshape()
+def _require_shells(
+    shells: Shell | Sequence[Shell],
+    name: str,
+) -> tuple[Shell, ...]:
+    values: tuple[Shell, ...]
+    if isinstance(shells, Shell):
+        values = (shells,)
+    elif isinstance(shells, Sequence) and not isinstance(shells, (str, bytes)):
+        values = tuple(shells)
+    else:
+        raise TypeError(f"{name} expects Shell or a sequence of Shell")
+    if not values:
+        raise ValueError(f"{name} requires at least one Shell")
+    if not all(isinstance(shell, Shell) for shell in values):
+        raise TypeError(f"{name} expects only Shell values")
+    return values
+
+
+def _box_dimensions(
+    x: float | Vector3 | Sequence[float],
+    y: float | None,
+    z: float | None,
+    size: float | Vector3 | Sequence[float] | None,
+) -> tuple[float, float, float]:
+    source = x if size is None else size
+    if size is not None:
+        y = None
+        z = None
+    if isinstance(source, Vector3):
+        if y is not None or z is not None:
+            raise TypeError("box Vector3 size cannot be combined with y or z")
+        return source.value()
+    if isinstance(source, Sequence) and not isinstance(source, (str, bytes)):
+        if y is not None or z is not None:
+            raise TypeError("box sequence size cannot be combined with y or z")
+        values = tuple(source)
+        if len(values) != 3:
+            raise TypeError("box size must contain exactly three dimensions")
+        return (float(values[0]), float(values[1]), float(values[2]))
+    scalar = float(source)
+    if y is None and z is None:
+        return (scalar, scalar, scalar)
+    if y is not None and z is not None:
+        return (scalar, float(y), float(z))
+    raise TypeError("box expects one size or all three dimensions")
+
+
+def _angle_pair(value: float | tuple[float, float]) -> tuple[float, float]:
+    if isinstance(value, tuple):
+        if len(value) != 2:
+            raise TypeError("angle interval expects exactly two scalar bounds")
+        return value
+    return (-value / 2, value / 2)
+
+
+__all__ = [
+    "box",
+    "cone",
+    "cube",
+    "cylinder",
+    "halfspace",
+    "make_solid",
+    "sphere",
+    "torus",
+]
