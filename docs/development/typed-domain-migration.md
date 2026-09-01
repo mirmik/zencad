@@ -1199,6 +1199,31 @@ Verification on 2026-09-01 after the shell/polyhedron checkpoint:
   the wheel with published evalcache 2.0.0a1 and passes direct module and
   Runtime shell/platonic smoke outside the checkout.
 
+Task #2076 extracts mesh construction and materialization boundaries.
+`_typed/meshes.py` now owns the module-level `to_mesh`, face-specific
+`triangulate`, and graph-preserving `mesh_boundbox` declarations, plus the
+explicit `get_nodes`, `get_triangles`, and `mesh_to_poly_triangulation`
+boundaries. `Shape`, `Face`, and `MeshData` delegate to those same entry
+points; `Runtime` only selects and checks its evaluator context before
+forwarding.
+
+The extraction preserves the `zencad.typed.shape.to-mesh` and
+`zencad.typed.mesh.boundbox` operation IDs, meshing option validation,
+deferred/cache behavior, zero-based triangle rows, fresh native snapshots,
+and cross-runtime rejection in the compatibility facade. `_typed/runtime.py`
+is reduced from 2410 to 2397 lines.
+
+Verification on 2026-09-01 after the mesh/triangulation checkpoint:
+
+- pytest passes 385 tests and 409 subtests; the isolated headless runner passes
+  its 3-test and 13-test groups plus all 369 discovered tests;
+- strict mypy with `--disallow-any-expr` passes all 16 representative typed
+  contracts, and targeted Ruff plus diff-integrity checks pass;
+- all 67 bundled examples evaluate successfully;
+- wheel and sdist content checks pass, and a clean Python 3.10 venv installs
+  the wheel with published evalcache 2.0.0a1 and passes direct module,
+  Runtime, native-mesh, and headless I/O smoke outside the checkout.
+
 ## Stage 8: typing and cleanup
 
 Publish `py.typed`, overload flexible constructors, type-check representative

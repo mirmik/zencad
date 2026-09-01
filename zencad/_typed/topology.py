@@ -56,12 +56,11 @@ from zencad.runtime.scene_protocol import encode_brep
 
 from . import _operations as ops
 from . import transforms as transform_api
-from . import _mesh_operations as mesh_ops
 from ._core import Handle, State
 from ._serialization import ShapeBrepSerializer
 from .bounds import BoundaryBox
 from .curves import CURVE_SPEC, Curve, CurveKind
-from .meshes import MESH_SPEC, MeshData
+from .meshes import MeshData
 from .records import (
     CircleParameters,
     EllipseParameters,
@@ -186,24 +185,6 @@ ShapeKind = Literal[
     "compsolid",
     "compound",
 ]
-
-
-def _mesh_positive_number(value: Number, name: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError(f"{name} must be int or float")
-    result = float(value)
-    if not math.isfinite(result) or result <= 0:
-        raise ValueError(f"{name} must be finite and positive")
-    return result
-
-
-def _mesh_crease_angle(value: Number) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError("crease_angle must be int or float")
-    result = float(value)
-    if not math.isfinite(result) or not 0 <= result <= math.pi:
-        raise ValueError("crease_angle must be finite and between zero and pi")
-    return result
 
 
 class Shape(Handle[ResolvedShape]):
@@ -995,28 +976,17 @@ class Shape(Handle[ResolvedShape]):
         weld_tolerance: Number | None = None,
     ) -> MeshData:
         """Create a stable indexed mesh while retaining this shape graph."""
-        if not isinstance(relative, bool) or not isinstance(parallel, bool):
-            raise TypeError("relative and parallel must be bool")
-        resolved_weld_tolerance = (
-            None
-            if weld_tolerance is None
-            else _mesh_positive_number(weld_tolerance, "weld_tolerance")
+        from .meshes import to_mesh
+
+        return to_mesh(
+            self,
+            linear_deflection,
+            angular_deflection,
+            crease_angle=crease_angle,
+            relative=relative,
+            parallel=parallel,
+            weld_tolerance=weld_tolerance,
         )
-        expression = self.runtime._expression(
-            mesh_ops.mesh_shape,
-            result=MESH_SPEC,
-            args=(
-                self._state,
-                _mesh_positive_number(linear_deflection, "linear_deflection"),
-                _mesh_positive_number(angular_deflection, "angular_deflection"),
-                _mesh_crease_angle(crease_angle),
-                relative,
-                parallel,
-                resolved_weld_tolerance,
-            ),
-            operation_id="zencad.typed.shape.to-mesh",
-        )
-        return MeshData._from_state(self.runtime, expression)
 
     def native(self) -> TopoDS_Shape:
         """Materialize an independent snapshot at the explicit OCP boundary."""
@@ -1086,7 +1056,10 @@ class Face(Shape):
         weld_tolerance: Number | None = None,
     ) -> MeshData:
         """Truthful typed replacement for legacy ``triangulate_face``."""
-        return self.to_mesh(
+        from .meshes import triangulate
+
+        return triangulate(
+            self,
             linear_deflection,
             angular_deflection,
             crease_angle=crease_angle,

@@ -51,7 +51,17 @@ from .face_constructors import (
     square,
     widewire,
 )
-from .meshes import MeshArrayRecord, MeshData, MeshDataRecord
+from .meshes import (
+    MeshArrayRecord,
+    MeshData,
+    MeshDataRecord,
+    get_nodes,
+    get_triangles,
+    mesh_boundbox,
+    mesh_to_poly_triangulation,
+    to_mesh,
+    triangulate,
+)
 from .modeling import (
     boundbox,
     chamfer,
@@ -407,10 +417,16 @@ __all__ = [
     "fill3d",
     "hexahedron",
     "icosahedron",
+    "get_nodes",
+    "get_triangles",
     "make_shell",
+    "mesh_boundbox",
+    "mesh_to_poly_triangulation",
     "octahedron",
     "platonic",
     "polyhedron",
     "polyhedron_shell",
     "tetrahedron",
+    "to_mesh",
+    "triangulate",
 ]

@@ -35,6 +35,7 @@ from . import bounds as bounds_api
 from . import curve_constructors as curve_api
 from . import face_constructors as face_api
 from . import modeling as modeling_api
+from . import meshes as mesh_api
 from . import shell_constructors as shell_api
 from . import surfaces as surface_api
 from . import sweeps as sweep_api
@@ -630,13 +631,15 @@ class Runtime:
 
     def triangulate(self, shape: Shape, deflection: Number, /) -> MeshData:
         _require_shape(self, shape, "triangulate")
-        return shape.to_mesh(linear_deflection=deflection)
+        with using_runtime(self):
+            return mesh_api.to_mesh(shape, linear_deflection=deflection)
 
     def triangulate_face(self, shape: Face, deflection: Number, /) -> MeshData:
         if not isinstance(shape, Face):
             raise TypeError("triangulate_face expects Face")
         require_same_runtime(self, shape)
-        return shape.triangulate(linear_deflection=deflection)
+        with using_runtime(self):
+            return mesh_api.triangulate(shape, linear_deflection=deflection)
 
     def get_nodes(
         self,
@@ -645,17 +648,7 @@ class Runtime:
     ) -> tuple[tuple[float, float, float], ...]:
         if isinstance(triangulation, MeshData):
             require_same_runtime(self, triangulation)
-            return triangulation.get_nodes()
-        if not isinstance(triangulation, Poly_Triangulation):
-            raise TypeError("get_nodes expects MeshData or Poly_Triangulation")
-        return tuple(
-            (
-                float(triangulation.Node(index).X()),
-                float(triangulation.Node(index).Y()),
-                float(triangulation.Node(index).Z()),
-            )
-            for index in range(1, triangulation.NbNodes() + 1)
-        )
+        return mesh_api.get_nodes(triangulation)
 
     def get_triangles(
         self,
@@ -664,13 +657,7 @@ class Runtime:
     ) -> tuple[tuple[int, int, int], ...]:
         if isinstance(triangulation, MeshData):
             require_same_runtime(self, triangulation)
-            return triangulation.get_triangles()
-        if not isinstance(triangulation, Poly_Triangulation):
-            raise TypeError("get_triangles expects MeshData or Poly_Triangulation")
-        return tuple(
-            tuple(value - 1 for value in triangulation.Triangle(index).Get())
-            for index in range(1, triangulation.NbTriangles() + 1)
-        )
+        return mesh_api.get_triangles(triangulation)
 
     def mesh_to_poly_triangulation(
         self,
@@ -680,7 +667,7 @@ class Runtime:
         if not isinstance(mesh, MeshData):
             raise TypeError("mesh_to_poly_triangulation expects MeshData")
         require_same_runtime(self, mesh)
-        return mesh.mesh_to_poly_triangulation()
+        return mesh_api.mesh_to_poly_triangulation(mesh)
 
     def to_brep(self, shape: Shape, path: str | PathLike[str], /) -> None:
         """Materialize and write a typed Shape at an explicit file boundary."""

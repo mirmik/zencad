@@ -68,6 +68,8 @@ def main():
         assert isinstance(typed.boundary_box, DomainOperation)
         assert isinstance(typed.empty_boundary_box, DomainOperation)
         assert isinstance(typed.boundbox, DomainOperation)
+        assert isinstance(typed.to_mesh, DomainOperation)
+        assert isinstance(typed.mesh_boundbox, DomainOperation)
         assert isinstance(typed.fillet, DomainOperation)
         assert isinstance(typed.offset, DomainOperation)
         assert isinstance(typed.unify, DomainOperation)
@@ -222,6 +224,17 @@ def main():
         assert mesh.vertex_count == 24
         assert mesh.triangle_count == 12
         assert type(typed_runtime.rectangle(2, 3).triangulate()) is typed.MeshData
+        with using_runtime(typed_runtime):
+            module_mesh = typed.to_mesh(typed_runtime.box(2))
+            module_face_mesh = typed.triangulate(typed_runtime.rectangle(2, 3))
+        assert type(module_mesh) is typed.MeshData
+        assert type(module_face_mesh) is typed.MeshData
+        assert typed.mesh_boundbox(module_mesh).value() == module_mesh.boundbox().value()
+        assert typed.get_nodes(module_mesh) == module_mesh.positions
+        assert typed.get_triangles(module_mesh) == module_mesh.triangles
+        native_mesh = typed.mesh_to_poly_triangulation(module_mesh)
+        assert typed.get_nodes(native_mesh) == module_mesh.positions
+        assert typed.get_triangles(native_mesh) == module_mesh.triangles
         assert decode_mesh(mesh.display_payload()).triangles == list(mesh.triangles)
         boolean_left = typed_runtime.box(2)
         boolean_right = typed_runtime.box(2).translate(1, 0, 0)

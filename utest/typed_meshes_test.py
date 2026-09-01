@@ -22,6 +22,38 @@ from zencad.runtime.scene_protocol import decode_mesh
 
 
 class TypedMeshDataTest(unittest.TestCase):
+    def test_module_declarations_match_domain_and_runtime_entry_points(self):
+        events = []
+        runtime = typed.Runtime.deferred(
+            cache=False,
+            progress_hooks=(events.append,),
+        )
+        shape = runtime.box(2)
+        face = runtime.rectangle(2, 3)
+
+        direct_mesh = typed.to_mesh(shape)
+        direct_face_mesh = typed.triangulate(face)
+        self.assertEqual(events, [])
+        self.assertEqual(direct_mesh.value(), shape.to_mesh().value())
+        self.assertEqual(direct_face_mesh.value(), face.triangulate().value())
+        self.assertEqual(
+            typed.mesh_boundbox(direct_mesh).value(),
+            direct_mesh.boundbox().value(),
+        )
+        self.assertEqual(typed.get_nodes(direct_mesh), direct_mesh.get_nodes())
+        self.assertEqual(
+            typed.get_triangles(direct_mesh),
+            direct_mesh.get_triangles(),
+        )
+        native = typed.mesh_to_poly_triangulation(direct_mesh)
+        self.assertEqual(typed.get_nodes(native), direct_mesh.positions)
+        self.assertEqual(typed.get_triangles(native), direct_mesh.triangles)
+
+        with self.assertRaisesRegex(TypeError, "to_mesh expects Shape"):
+            typed.to_mesh(direct_mesh)  # type: ignore[arg-type]
+        with self.assertRaisesRegex(TypeError, "triangulate expects Face"):
+            typed.triangulate(shape)  # type: ignore[arg-type]
+
     def test_shape_and_face_meshes_are_policy_independent(self):
         observed = set()
 

@@ -14,6 +14,8 @@ def mesh_contract(
     assert_type(shape.to_mesh(), typed.MeshData)
     assert_type(shape.to_mesh(0.2, 0.4), typed.MeshData)
     assert_type(face.triangulate(), typed.MeshData)
+    assert_type(typed.to_mesh(shape), typed.MeshData)
+    assert_type(typed.triangulate(face), typed.MeshData)
     assert_type(mesh.value(), typed.MeshDataRecord)
     assert_type(mesh.positions, tuple[tuple[float, float, float], ...])
     assert_type(mesh.normals, tuple[tuple[float, float, float], ...])
@@ -23,6 +25,9 @@ def mesh_contract(
     assert_type(mesh.triangle_count, int)
     assert_type(mesh.dropped_triangles, int)
     assert_type(mesh.boundbox(), typed.BoundaryBox)
+    assert_type(typed.mesh_boundbox(mesh), typed.BoundaryBox)
+    assert_type(typed.get_nodes(mesh), tuple[tuple[float, float, float], ...])
+    assert_type(typed.get_triangles(mesh), tuple[tuple[int, int, int], ...])
     assert_type(mesh.display_payload(), bytes)
     assert_type(mesh.unlazy(), typed.MeshData)
 
