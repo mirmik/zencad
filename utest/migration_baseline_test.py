@@ -120,6 +120,7 @@ class PublicDomainCutoverTest(unittest.TestCase):
             namespace["hole"].bbox().value().zmax,
             namespace["base"].bbox().value().zmax,
         )
+        self.assertEqual(len(namespace["handle"].solids()), 1)
         cup_solids = namespace["cup"].solids()
         self.assertEqual(len(cup_solids), 1)
         self.assertGreater(cup_solids[0].mass().value(), 0)
