@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Named Linux smoke for the OCP-backed ZenCad viewer."""
+"""Named native-window smoke for the OCP-backed ZenCad viewer."""
 
 from zencad.gui.qt_backend import configure_qt_platform
 
