@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-import zencad
-from zencad import *
 import math
 import sys
+
+from zencad import *
 
 
 def instrument_metric_nut(drad, step, h):

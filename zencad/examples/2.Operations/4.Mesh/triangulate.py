@@ -10,7 +10,7 @@ triangles = mesh.triangles
 nsize = len(nodes)
 tsize = len(triangles)
 
-print(f"Nodes: len:{nsize} : {nodes}")
+print(f"Nodes: len:{nsize} : {mesh.positions}")
 print(f"Triangles: len:{tsize} : {triangles}")
 
 m1 = polyhedron(nodes, triangles)

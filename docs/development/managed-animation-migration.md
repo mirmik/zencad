@@ -48,7 +48,7 @@ replaces its external slider window with keyboard controls.
 | Scenario | Managed status | Notes |
 | --- | --- | --- |
 | `3.Animation/base.py` | Supported | Transform patches |
-| `3.Animation/color.py` | Supported | Color/transparency patches; cheap cold start |
+| `3.Animation/color.py` | Supported | Dodecahedron color/transparency patches |
 | `3.Animation/pacman.py` | Supported | Assembly transforms and visibility |
 | `4.Assemble/robot.py` | Supported contract | Shape-only nested assembly animation |
 | `MiniGames/tetris.py` | Supported | InputEvent arrows, visibility/color patches |

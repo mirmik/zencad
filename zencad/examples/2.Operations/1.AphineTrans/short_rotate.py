@@ -15,8 +15,17 @@ In that example you can play with `src` and `tgt` arrays.
 Practice shooting :).
 """
 
+import os
+
+import zencad
 from zencad import *
 from zencad.interactive import arrow, line
+
+mandarinc = os.path.join(
+    zencad.moduledir,
+    "examples/fonts/mandarinc.ttf",
+)
+register_font(mandarinc)
 
 u = 20
 
@@ -58,5 +67,21 @@ for i in range(N):
                 disp(line(point3(i*u, j*u, k*u).value(), point3(i*u, j*u+u, k*u).value()))
             if k < N-1:
                 disp(line(point3(i*u, j*u, k*u).value(), point3(i*u, j*u, k*u+u).value()))
+
+for target in tgt:
+    target_value = target.value()
+    if any(target_value == source.value() for source in src):
+        disp(
+            textshape(
+                "BOOM!!!!",
+                "Mandarinc",
+                20,
+                True,
+            )
+            .rotateX(deg(90))
+            .translate(*target_value)
+            .up(15),
+            color=color.red,
+        )
 
 show()
