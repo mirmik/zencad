@@ -1,4 +1,6 @@
+import runpy
 import unittest
+from pathlib import Path
 from importlib import import_module
 
 import evalcache
@@ -103,6 +105,19 @@ class PublicDomainCutoverTest(unittest.TestCase):
             first.call(
                 zencad.union, (first.call(zencad.box, 1), second.call(zencad.box, 1))
             )
+
+    def test_legacy_cup_example_keeps_vertical_handle(self):
+        published = []
+        example = Path(zencad.exampledir) / "Models" / "cup.py"
+
+        with zencad.managed_scene(1, published.append):
+            namespace = runpy.run_path(str(example), run_name="__main__")
+
+        bounds = namespace["spine"].bbox().value()
+        self.assertAlmostEqual(bounds.ymax - bounds.ymin, 0, places=5)
+        self.assertGreater(bounds.zmax - bounds.zmin, 60)
+        self.assertGreater(namespace["cup"].mass().value(), 0)
+        self.assertEqual(len(published), 1)
 
 
 if __name__ == "__main__":

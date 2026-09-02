@@ -28,6 +28,9 @@ def value_transform_compatibility(context: typed.Context) -> None:
         [context.call(typed.vector3, value) for value in ((1, 2, 3), vector)],
         list[typed.Vector3],
     )
+    assert_type(typed.points(((1, 2, 3), point)), list[typed.Point3])
+    assert_type(typed.points2((((1, 2, 3),),)), list[list[typed.Point3]])
+    assert_type(typed.vectors(((1, 2, 3), vector)), list[typed.Vector3])
 
     assert_type(point.to_vector3(), typed.Vector3)
     assert_type(vector.to_point3(), typed.Point3)

@@ -253,6 +253,8 @@ from .values import (
     point,
     point2,
     point3,
+    points,
+    points2,
     scalar,
     sin,
     sqrt,
@@ -260,6 +262,7 @@ from .values import (
     vector,
     vector2,
     vector3,
+    vectors,
 )
 from .wire_builder import WireBuilder, wire_builder
 
@@ -393,6 +396,8 @@ __all__ = [
     "point",
     "point2",
     "point3",
+    "points",
+    "points2",
     "quaternion",
     "quaternion_axis_angle",
     "right",
@@ -434,6 +439,7 @@ __all__ = [
     "vector",
     "vector2",
     "vector3",
+    "vectors",
     "wire_builder",
     "constant_sweep_scale",
     "evolved_sweep_section",

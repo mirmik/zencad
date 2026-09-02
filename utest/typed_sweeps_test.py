@@ -236,6 +236,27 @@ class TypedBasicSweepsTest(unittest.TestCase):
                     5 * math.pi,
                 )
 
+    def test_pipe_accepts_legacy_keyword_contract(self):
+        context = typed.Context.deferred(cache=False)
+        profile = context.call(typed.circle, 1, wire=True)
+        spine = context.call(
+            typed.segment,
+            context.call(typed.point3),
+            context.call(typed.point3, 0, 0, 5),
+        )
+
+        canonical = context.call(typed.pipe, profile, spine)
+        legacy = context.call(typed.pipe, shp=profile, spine=spine)
+        legacy_mode = context.call(
+            typed.pipe,
+            shp=profile,
+            spine=spine,
+            mode="corrected_frenet",
+        )
+
+        self.assertAlmostEqual(canonical.mass().value(), legacy.mass().value())
+        self.assertAlmostEqual(canonical.mass().value(), legacy_mode.mass().value())
+
     def test_invalid_inputs_fail_at_the_typed_or_resolved_boundary(self):
         context = typed.Context.deferred(cache=False)
         other = typed.Context.deferred(cache=False)

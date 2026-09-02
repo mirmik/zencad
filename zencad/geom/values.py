@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 
 import numpy
@@ -1162,6 +1162,24 @@ def vector3(*args: object) -> Vector3:
         require_same_context(context, args[0])
         return args[0]
     return Vector3(*_compat_components3(context, args, "vector3"), context=context)
+
+
+def points(values: Iterable[object]) -> list[Point3]:
+    """Construct legacy-compatible 3D points from an iterable of values."""
+
+    return [point3(value) for value in values]
+
+
+def points2(values: Iterable[Iterable[object]]) -> list[list[Point3]]:
+    """Construct nested legacy-compatible point rows."""
+
+    return [points(row) for row in values]
+
+
+def vectors(values: Iterable[object]) -> list[Vector3]:
+    """Construct legacy-compatible 3D vectors from an iterable of values."""
+
+    return [vector3(value) for value in values]
 
 
 def _unary_math(

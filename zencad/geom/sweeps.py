@@ -182,12 +182,7 @@ def loft(
     return Shell(resolved) if shell else Solid(resolved)
 
 
-@operation(
-    result=SHAPE_SPEC,
-    returns=Shape,
-    operation_id="zencad.typed.pipe",
-    operation_version="1",
-)
+@overload
 def pipe(
     profile: Shape,
     spine: Edge | Wire,
@@ -195,7 +190,50 @@ def pipe(
     *,
     trihedron: PipeTrihedron = PipeTrihedron.CORRECTED_FRENET,
     force_approx_c1: bool = False,
+) -> Shape: ...
+
+
+@overload
+def pipe(
+    *,
+    shp: Shape,
+    spine: Edge | Wire,
+    mode: str | PipeTrihedron | None = None,
+    force_approx_c1: bool = False,
+) -> Shape: ...
+
+
+@operation(
+    result=SHAPE_SPEC,
+    returns=Shape,
+    operation_id="zencad.typed.pipe",
+    operation_version="1",
+)
+def pipe(
+    profile: Shape | None = None,
+    /,
+    spine: Edge | Wire | None = None,
+    *,
+    shp: Shape | None = None,
+    mode: str | PipeTrihedron | None = None,
+    trihedron: PipeTrihedron = PipeTrihedron.CORRECTED_FRENET,
+    force_approx_c1: bool = False,
 ) -> Shape:
+    if shp is not None:
+        if profile is not None:
+            raise TypeError("pipe profile and legacy shp cannot both be provided")
+        profile = shp
+    if profile is None:
+        raise TypeError("pipe requires a profile")
+    if spine is None:
+        raise TypeError("pipe requires a spine")
+    if mode is not None:
+        if trihedron is not PipeTrihedron.CORRECTED_FRENET:
+            raise TypeError("pipe mode and trihedron cannot both be provided")
+        try:
+            trihedron = mode if isinstance(mode, PipeTrihedron) else PipeTrihedron(mode)
+        except ValueError as exception:
+            raise ValueError(f"pipe: undefined mode {mode!r}") from exception
     _require_shape(profile, "pipe profile")
     _require_pipe_spine(spine, "pipe spine")
     if not isinstance(trihedron, PipeTrihedron):

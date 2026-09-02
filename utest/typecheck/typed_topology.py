@@ -91,6 +91,12 @@ def topology_contract(
     assert_type(context.call(typed.pipe_shell, (wire,), edge), typed.Solid)
     assert_type(context.call(typed.pipe_shell, (wire,), edge, solid=False), typed.Shell)
     assert_type(typed.pipe(wire, edge), typed.Shape)
+    assert_type(typed.pipe(shp=wire, spine=edge), typed.Shape)
+    assert_type(context.call(typed.pipe, shp=wire, spine=edge), typed.Shape)
+    assert_type(
+        typed.pipe(shp=wire, spine=edge, mode="corrected_frenet"),
+        typed.Shape,
+    )
     assert_type(typed.pipe_shell((wire,), edge), typed.Solid)
     assert_type(typed.pipe_shell((wire,), edge, solid=False), typed.Shell)
     assert_type(

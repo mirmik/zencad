@@ -79,22 +79,15 @@ class TypedValueTransformCompatibilityTest(unittest.TestCase):
 
     def test_bulk_value_and_native_conversion_helpers(self):
         context = typed.Context.deferred(cache=False)
-        points = tuple(
-            context.call(typed.point3, value)
-            for value in ((1, 2), gp_Pnt(3, 4, 5))
-        )
-        nested = tuple(
-            tuple(context.call(typed.point3, value) for value in row)
-            for row in (((1, 2, 3),), ((4, 5, 6),))
-        )
-        vectors = tuple(
-            context.call(typed.vector3, value)
-            for value in ((7, 8, 9), points[0])
-        )
+        with typed.using_context(context):
+            points = typed.points(((1, 2), gp_Pnt(3, 4, 5)))
+            nested = typed.points2((((1, 2, 3),), ((4, 5, 6),)))
+            vectors = typed.vectors(((7, 8, 9), points[0]))
 
         self.assertEqual(
             [point.value() for point in points], [(1.0, 2.0, 0.0), (3.0, 4.0, 5.0)]
         )
+        self.assertTrue(all(point.context is context for point in points))
         self.assertEqual(nested[1][0].value(), (4.0, 5.0, 6.0))
         self.assertEqual(vectors[1].value(), (1.0, 2.0, 0.0))
         self.assertIsInstance(context.call(typed.point3, 1, 2, 3).Vtx(), TopoDS_Vertex)
