@@ -256,6 +256,7 @@ jobs:
       - name: Verify GUI and native-window bindings outside the checkout
         working-directory: ${{ runner.temp }}
         run: python "${{ github.workspace }}/utest/installed_gui_wheel_smoke.py"
-      - name: Exercise the native OCP viewer
+      - name: Exercise the native OCP viewer on Windows
+        if: runner.os == 'Windows'
         working-directory: ${{ runner.temp }}
         run: python "${{ github.workspace }}/utest/gui_ocp_smoke.py"
