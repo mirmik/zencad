@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Sequence
-from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
+from numbers import Real
+from typing import Annotated, TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 
 import numpy
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
@@ -12,8 +13,9 @@ from OCP.gp import gp_Dir, gp_Pnt, gp_Pnt2d, gp_Vec, gp_Vec2d, gp_XYZ
 from evalcache import Expression, ResultSpec
 
 from zencad.occ_compat import vertex_point
+from zencad.operation import COERCE_ARGUMENT
 from zencad.operation import operation as _domain_operation
-from zencad.operation import resolve_context
+from zencad.operation import resolve_context, using_context
 
 from . import _value_operations as ops
 from ._core import Handle, State, require_same_context
@@ -35,7 +37,7 @@ VECTOR3_SPEC = ResultSpec.for_type(ops.Vector3Value, type_id="zencad.typed.Vecto
 
 
 def _number(value: Number) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+    if isinstance(value, bool) or not isinstance(value, Real):
         raise TypeError("expected int or float")
     return float(value)
 
@@ -312,6 +314,81 @@ class _Coordinate3Handle(_CoordinateHandle[ValueT]):
 
     def to_unit_vector(self) -> Vector3:
         return self.to_vector3().normalized()
+
+    def transform(self, transformation: object) -> Point3 | Vector3:
+        """Apply a typed transform while preserving point/vector semantics."""
+
+        from .transforms import AffineTransform, Transform
+
+        if not isinstance(transformation, (Transform, AffineTransform)):
+            raise TypeError("coordinate transform expects Transform or AffineTransform")
+        return transformation(self)
+
+    def move(self, *args: object) -> Point3 | Vector3:
+        from .transforms import move
+
+        with using_context(self.context):
+            return self.transform(move(*args))
+
+    def mov(self, *args: object) -> Point3 | Vector3:
+        return self.move(*args)
+
+    def moveX(self, value: ScalarInput, /) -> Point3 | Vector3:
+        from .transforms import moveX
+
+        with using_context(self.context):
+            return self.transform(moveX(value))
+
+    def moveY(self, value: ScalarInput, /) -> Point3 | Vector3:
+        from .transforms import moveY
+
+        with using_context(self.context):
+            return self.transform(moveY(value))
+
+    def moveZ(self, value: ScalarInput, /) -> Point3 | Vector3:
+        from .transforms import moveZ
+
+        with using_context(self.context):
+            return self.transform(moveZ(value))
+
+    def movX(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveX(value)
+
+    def movY(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveY(value)
+
+    def movZ(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveZ(value)
+
+    def translate(self, *args: object) -> Point3 | Vector3:
+        return self.move(*args)
+
+    def translateX(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveX(value)
+
+    def translateY(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveY(value)
+
+    def translateZ(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveZ(value)
+
+    def right(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveX(value)
+
+    def left(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveX(-value)
+
+    def forw(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveY(value)
+
+    def back(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveY(-value)
+
+    def up(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveZ(value)
+
+    def down(self, value: ScalarInput, /) -> Point3 | Vector3:
+        return self.moveZ(-value)
 
     def length(self) -> Scalar:
         return self.to_vector3().length()
@@ -730,6 +807,20 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
         self._bind(resolved_context, state)
 
     @classmethod
+    def __zencad_coerce_argument__(
+        cls,
+        context: Context,
+        value: object,
+    ) -> Point3:
+        """Restore a point state or coerce a legacy coordinate sequence."""
+
+        if isinstance(value, ops.Point3Value):
+            return cls._from_state(context, value)
+        components = _compat_components3(context, (value,), "Point3")
+        resolved = tuple(_number(component) for component in components)
+        return cls(ops.Point3Value(*resolved), context=context)
+
+    @classmethod
     def _from_state(cls, context: Context, state: State[ops.Point3Value]) -> Point3:
         if not isinstance(state, Expression):
             state = POINT3_SPEC.validate(state, "zencad.typed.point3.bind")
@@ -805,6 +896,15 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
 
     def __isub__(self, other: Vector3) -> Point3:
         return self - other
+
+    def __neg__(self) -> Point3:
+        state = self.context._value_state(
+            ops.point3_negate,
+            result=POINT3_SPEC,
+            args=(self._state,),
+            operation_id="zencad.typed.point3.negate",
+        )
+        return Point3._from_state(self.context, state)
 
     def distance_to(self, other: Point3) -> Scalar:
         if not isinstance(other, Point3):
@@ -890,6 +990,20 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             operation_id="zencad.typed.vector3",
         )
         self._bind(resolved_context, state)
+
+    @classmethod
+    def __zencad_coerce_argument__(
+        cls,
+        context: Context,
+        value: object,
+    ) -> Vector3:
+        """Restore a vector state or coerce a legacy coordinate sequence."""
+
+        if isinstance(value, ops.Vector3Value):
+            return cls._from_state(context, value)
+        components = _compat_components3(context, (value,), "Vector3")
+        resolved = tuple(_number(component) for component in components)
+        return cls(ops.Vector3Value(*resolved), context=context)
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Vector3Value]) -> Vector3:
@@ -1136,7 +1250,7 @@ def _compat_components3(
             values = (native.X(), native.Y(), native.Z())
         elif isinstance(value, (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
             values = (value.X(), value.Y(), value.Z())
-        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        elif isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
             values = tuple(value)
         else:
             values = (value,)
@@ -1162,6 +1276,10 @@ def vector3(*args: object) -> Vector3:
         require_same_context(context, args[0])
         return args[0]
     return Vector3(*_compat_components3(context, args, "vector3"), context=context)
+
+
+Point3Input = Annotated[Point3, COERCE_ARGUMENT]
+Vector3Input = Annotated[Vector3, COERCE_ARGUMENT]
 
 
 def points(values: Iterable[object]) -> list[Point3]:

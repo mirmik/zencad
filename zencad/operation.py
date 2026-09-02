@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import (
+    Annotated,
     TYPE_CHECKING,
     Any,
     Generic,
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 ResolvedT = TypeVar("ResolvedT")
 PublicT = TypeVar("PublicT")
+COERCE_ARGUMENT = "zencad.coerce_argument.v1"
 
 
 _CURRENT_CONTEXT: ContextVar[Context | None] = ContextVar(
@@ -187,10 +189,18 @@ def _rehydrate(annotation: object, value: object) -> object:
 
     if annotation in (inspect.Parameter.empty, Any, object):
         return value
+    origin = get_origin(annotation)
+    if origin is Annotated:
+        base, *metadata = get_args(annotation)
+        if COERCE_ARGUMENT in metadata:
+            coercer = getattr(base, "__zencad_coerce_argument__", None)
+            if not callable(coercer):
+                raise TypeError(f"{base!r} does not support argument coercion")
+            return coercer(execution_context(), value)
+        return _rehydrate(base, value)
     argument_factory = getattr(annotation, "__zencad_from_arguments__", None)
     if callable(argument_factory):
         return argument_factory(execution_context(), value)
-    origin = get_origin(annotation)
     if origin in (types.UnionType, Union):
         members = get_args(annotation)
         for member in members:
@@ -210,8 +220,12 @@ def _rehydrate(annotation: object, value: object) -> object:
                 ):
                     return _rehydrate(member, value)
         for member in members:
+            candidate = (
+                get_args(member)[0] if get_origin(member) is Annotated else member
+            )
             if not (
-                isinstance(member, type) and getattr(member, "__zencad_handle__", False)
+                isinstance(candidate, type)
+                and getattr(candidate, "__zencad_handle__", False)
             ):
                 continue
             try:
@@ -325,6 +339,7 @@ class DomainOperation(Generic[P, ResolvedT, PublicT]):
             self._type_hints = get_type_hints(
                 self.function,
                 localns=_handle_type_namespace(),
+                include_extras=True,
             )
         for name, value in tuple(bound.arguments.items()):
             annotation = self._type_hints.get(name, inspect.Parameter.empty)
@@ -446,6 +461,7 @@ def operation(
 
 
 __all__ = [
+    "COERCE_ARGUMENT",
     "DomainOperation",
     "execution_context",
     "operation",

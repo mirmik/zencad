@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 import math
+from numbers import Integral
 from typing import Literal, overload
 
 from evalcache import ResultSpec
@@ -66,21 +67,23 @@ def _require_points(
 
 
 def _require_polyhedron_faces(
-    faces: Sequence[Sequence[int]],
+    faces: Iterable[Iterable[int]],
     point_count: int,
     name: str,
 ) -> tuple[tuple[int, ...], ...]:
-    if isinstance(faces, (str, bytes)) or not isinstance(faces, Sequence):
+    if isinstance(faces, (str, bytes)) or not isinstance(faces, Iterable):
         raise TypeError(f"{name} faces must be a sequence")
     result: list[tuple[int, ...]] = []
     for face in faces:
-        if isinstance(face, (str, bytes)) or not isinstance(face, Sequence):
+        if isinstance(face, (str, bytes)) or not isinstance(face, Iterable):
             raise TypeError(f"{name} faces must contain index sequences")
-        indices = tuple(face)
+        raw_indices = tuple(face)
+        indices = tuple(int(index) for index in raw_indices)
         if len(indices) < 3:
             raise ValueError(f"{name} faces must contain at least three indices")
         if not all(
-            isinstance(index, int) and not isinstance(index, bool) for index in indices
+            isinstance(index, Integral) and not isinstance(index, bool)
+            for index in raw_indices
         ):
             raise TypeError(f"{name} face indices must be int")
         if any(index < 0 or index >= point_count for index in indices):
@@ -173,7 +176,21 @@ def polyhedron(
     shell: bool = False,
 ) -> Solid | Shell:
     _require_bool(shell, "polyhedron shell")
-    result = polyhedron_shell(pnts, faces)
+    raw_points = tuple(pnts)
+    if len(raw_points) < 3:
+        raise ValueError("polyhedron requires at least 3 points")
+    context = resolve_context(raw_points)
+    with using_context(context):
+        points = tuple(
+            value if isinstance(value, Point3) else point3(value)
+            for value in raw_points
+        )
+        normalized_faces = _require_polyhedron_faces(
+            faces,
+            len(points),
+            "polyhedron",
+        )
+        result = polyhedron_shell(points, normalized_faces)
     if shell:
         return result
     return fill3d(result)

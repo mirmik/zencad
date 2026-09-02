@@ -30,6 +30,7 @@ def algebra(context: typed.Context) -> None:
     assert_type(vector3 + point3, typed.Point3)
     assert_type(point3 - point3, typed.Vector3)
     assert_type(point3 - vector3, typed.Point3)
+    assert_type(-point3, typed.Point3)
     assert_type(vector3.dot(vector3), typed.Scalar)
     assert_type(vector3.cross(vector3), typed.Vector3)
     assert_type(vector3.normalized(), typed.Vector3)

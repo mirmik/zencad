@@ -795,7 +795,10 @@ class Shape(Handle[ResolvedShape]):
     def fillet(
         self,
         r: ScalarInput,
-        refs: Sequence[Point3] | ShapeList[Edge] | Sequence[Edge] | None = None,
+        refs: Sequence[Point3 | Vertex]
+        | ShapeList[Edge]
+        | Sequence[Edge]
+        | None = None,
     ) -> Shape:
         from .modeling import fillet
 
@@ -804,7 +807,10 @@ class Shape(Handle[ResolvedShape]):
     def chamfer(
         self,
         r: ScalarInput,
-        refs: Sequence[Point3] | ShapeList[Edge] | Sequence[Edge] | None = None,
+        refs: Sequence[Point3 | Vertex]
+        | ShapeList[Edge]
+        | Sequence[Edge]
+        | None = None,
     ) -> Shape:
         from .modeling import chamfer
 
@@ -813,7 +819,7 @@ class Shape(Handle[ResolvedShape]):
     def fillet2d(
         self,
         r: ScalarInput,
-        refs: Sequence[Point3] | None = None,
+        refs: Sequence[Point3 | Vertex] | None = None,
     ) -> Face:
         from .modeling import fillet2d
 
@@ -824,7 +830,7 @@ class Shape(Handle[ResolvedShape]):
     def chamfer2d(
         self,
         r: ScalarInput,
-        refs: Sequence[Point3] | None = None,
+        refs: Sequence[Point3 | Vertex] | None = None,
     ) -> Face:
         from .modeling import chamfer2d
 
@@ -1068,6 +1074,21 @@ class Vertex(Shape):
             operation_id="zencad.typed.vertex.point",
         )
         return Point3._from_state(self.context, state)
+
+    @property
+    def x(self) -> Scalar:
+        """Compatibility coordinate of this vertex."""
+        return self.point().x
+
+    @property
+    def y(self) -> Scalar:
+        """Compatibility coordinate of this vertex."""
+        return self.point().y
+
+    @property
+    def z(self) -> Scalar:
+        """Compatibility coordinate of this vertex."""
+        return self.point().z
 
     def native(self) -> TopoDS_Vertex:
         return as_vertex(super().native())

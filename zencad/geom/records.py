@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from typing import overload
 
 from ._core import require_same_context
 from .values import Point3, Scalar, Vector3
@@ -45,6 +46,15 @@ class Interval:
 
     def __len__(self) -> int:
         return 2
+
+    @overload
+    def __getitem__(self, index: int, /) -> Scalar: ...
+
+    @overload
+    def __getitem__(self, index: slice, /) -> tuple[Scalar, ...]: ...
+
+    def __getitem__(self, index: int | slice, /) -> Scalar | tuple[Scalar, ...]:
+        return (self._lower, self._upper)[index]
 
 
 class LineParameters:

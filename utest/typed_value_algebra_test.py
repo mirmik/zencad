@@ -105,6 +105,7 @@ class TypedValueAlgebraTest(unittest.TestCase):
             (vector + point, typed.Point3, (11.0, 22.0, 33.0)),
             (point - vector, typed.Point3, (9.0, 18.0, 27.0)),
             (point - other_point, typed.Vector3, (6.0, 15.0, 24.0)),
+            (-point, typed.Point3, (-10.0, -20.0, -30.0)),
             (vector * 2, typed.Vector3, (2.0, 4.0, 6.0)),
             (context.call(typed.scalar, 2) * vector, typed.Vector3, (2.0, 4.0, 6.0)),
             (vector / 2, typed.Vector3, (0.5, 1.0, 1.5)),

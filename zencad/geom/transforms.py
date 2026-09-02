@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, cast, overload
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, TypeVar, cast, overload
 
 from OCP.TopoDS import TopoDS_Vertex
 from OCP.gp import gp_GTrsf, gp_Quaternion, gp_Trsf
@@ -34,6 +34,10 @@ from .values import (
 
 if TYPE_CHECKING:
     from .context import Context
+    from .topology import Shape
+
+
+ShapeT = TypeVar("ShapeT", bound="Shape")
 
 
 QUATERNION_SPEC = ResultSpec.for_type(
@@ -299,12 +303,19 @@ class Transform(Handle[ops.TransformValue]):
     @overload
     def apply(self, value: Vector3, /) -> Vector3: ...
 
-    def apply(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
-        if not isinstance(value, (Point3, Vector3)):
-            raise TypeError("Transform.apply expects Point3 or Vector3")
+    @overload
+    def apply(self, value: ShapeT, /) -> ShapeT: ...
+
+    def apply(self, value: Point3 | Vector3 | ShapeT, /) -> Point3 | Vector3 | ShapeT:
+        from .topology import Shape
+
         if isinstance(value, Point3):
             return _transform_point(self, value)
-        return _transform_vector(self, value)
+        if isinstance(value, Vector3):
+            return _transform_vector(self, value)
+        if isinstance(value, Shape):
+            return value.transform(self)
+        raise TypeError("Transform.apply expects Point3 or Vector3 or Shape")
 
     @overload
     def __call__(self, value: Point3, /) -> Point3: ...
@@ -312,7 +323,14 @@ class Transform(Handle[ops.TransformValue]):
     @overload
     def __call__(self, value: Vector3, /) -> Vector3: ...
 
-    def __call__(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
+    @overload
+    def __call__(self, value: ShapeT, /) -> ShapeT: ...
+
+    def __call__(
+        self,
+        value: Point3 | Vector3 | ShapeT,
+        /,
+    ) -> Point3 | Vector3 | ShapeT:
         return self.apply(value)
 
     def transform_point(self, point: Point3, /) -> Point3:
@@ -523,12 +541,19 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
     @overload
     def apply(self, value: Vector3, /) -> Vector3: ...
 
-    def apply(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
-        if not isinstance(value, (Point3, Vector3)):
-            raise TypeError("AffineTransform.apply expects Point3 or Vector3")
+    @overload
+    def apply(self, value: ShapeT, /) -> ShapeT: ...
+
+    def apply(self, value: Point3 | Vector3 | ShapeT, /) -> Point3 | Vector3 | ShapeT:
+        from .topology import Shape
+
         if isinstance(value, Point3):
             return _affine_point(self, value)
-        return _affine_vector(self, value)
+        if isinstance(value, Vector3):
+            return _affine_vector(self, value)
+        if isinstance(value, Shape):
+            return value.transform(self)
+        raise TypeError("AffineTransform.apply expects Point3 or Vector3 or Shape")
 
     @overload
     def __call__(self, value: Point3, /) -> Point3: ...
@@ -536,7 +561,14 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
     @overload
     def __call__(self, value: Vector3, /) -> Vector3: ...
 
-    def __call__(self, value: Point3 | Vector3, /) -> Point3 | Vector3:
+    @overload
+    def __call__(self, value: ShapeT, /) -> ShapeT: ...
+
+    def __call__(
+        self,
+        value: Point3 | Vector3 | ShapeT,
+        /,
+    ) -> Point3 | Vector3 | ShapeT:
         return self.apply(value)
 
     def transform_point(self, point: Point3, /) -> Point3:
@@ -1396,7 +1428,7 @@ def _compat_components3(
             values = (point.X(), point.Y(), point.Z())
         elif isinstance(value, (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
             values = (value.X(), value.Y(), value.Z())
-        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        elif isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
             values = tuple(value)
         else:
             values = (value,)

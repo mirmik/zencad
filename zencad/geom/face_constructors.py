@@ -64,9 +64,17 @@ def _require_points(
     values = tuple(points)
     if len(values) < minimum:
         raise ValueError(f"{name} requires at least {minimum} points")
-    if not all(isinstance(point, Point3) for point in values):
-        raise TypeError(f"{name} expects only Point3 values")
-    return values
+    context = resolve_context(values)
+    try:
+        with using_context(context):
+            return tuple(
+                point if isinstance(point, Point3) else point3(point)
+                for point in values
+            )
+    except (TypeError, ValueError) as error:
+        raise TypeError(
+            f"{name} expects Point3 values or coordinate sequences"
+        ) from error
 
 
 def _require_wire_parts(

@@ -49,7 +49,9 @@ class TypedBrepBoundaryTest(unittest.TestCase):
                             cache=cache,
                             cache_store=MemoryCacheStore(),
                         )
-                        source = context.call(typed.box, 2) - context.call(typed.sphere, 0.5)
+                        source = context.call(typed.box, 2) - context.call(
+                            typed.sphere, 0.5
+                        )
                         path = root / f"shape-{mode.value}-{cache}.brep"
 
                         self.assertIsNone(context.call(typed.to_brep, source, path))
@@ -79,7 +81,9 @@ class TypedStlSvgBoundaryTest(unittest.TestCase):
             stl_path = root / "shape.stl"
             svg_path = root / "shape.svg"
 
-            self.assertTrue(context.call(typed.to_stl, context.call(typed.box, 1), stl_path, 0.1))
+            self.assertTrue(
+                context.call(typed.to_stl, context.call(typed.box, 1), stl_path, 0.1)
+            )
             svg = context.call(typed.to_svg_string, source)
             self.assertIs(type(svg), str)
             self.assertIn("<svg", svg)
@@ -94,6 +98,16 @@ class TypedStlSvgBoundaryTest(unittest.TestCase):
             self.assertGreater(stl_path.stat().st_size, 0)
             self.assertGreater(svg_path.stat().st_size, 0)
 
+    def test_svg_round_trip_accepts_curved_edges(self):
+        context = typed.Context.deferred(cache=False)
+        with using_context(context):
+            source = typed.rectangle(10, 20) + typed.ellipse(10, 8) - typed.circle(5)
+            restored = typed.from_svg_string(typed.to_svg_string(source))
+
+        self.assertIs(restored.context, context)
+        self.assertFalse(restored.native().IsNull())
+        self.assertGreater(len(restored.edges()), 4)
+
     def test_convert_inputs_are_validated_at_the_typed_boundary(self):
         context = typed.Context.deferred(cache=False)
         with self.assertRaisesRegex(ValueError, "deflection"):
@@ -101,7 +115,9 @@ class TypedStlSvgBoundaryTest(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "expects str"):
             context.call(typed.from_svg_string, b"<svg/>")  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "mapping must be bool"):
-            context.call(typed.to_svg_string, context.call(typed.rectangle, 1, 1), mapping=1)  # type: ignore[arg-type]
+            context.call(
+                typed.to_svg_string, context.call(typed.rectangle, 1, 1), mapping=1
+            )  # type: ignore[arg-type]
 
 
 class TypedMeshCompatibilityBoundaryTest(unittest.TestCase):
@@ -125,7 +141,9 @@ class TypedMeshCompatibilityBoundaryTest(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "expects MeshData"):
             context.call(typed.mesh_to_poly_triangulation, context.call(typed.box, 1))  # type: ignore[arg-type]
         with self.assertRaisesRegex(ValueError, "different contexts"):
-            context.call(typed.mesh_to_poly_triangulation, other.call(typed.box, 1).to_mesh())
+            context.call(
+                typed.mesh_to_poly_triangulation, other.call(typed.box, 1).to_mesh()
+            )
 
 
 if __name__ == "__main__":

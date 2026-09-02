@@ -234,6 +234,10 @@ def point3_distance(left: Point3Value, right: Point3Value) -> float:
     )
 
 
+def point3_negate(value: Point3Value) -> Point3Value:
+    return Point3Value(-value.x, -value.y, -value.z)
+
+
 def vector3_add(left: Vector3Value, right: Vector3Value) -> Vector3Value:
     return Vector3Value(left.x + right.x, left.y + right.y, left.z + right.z)
 

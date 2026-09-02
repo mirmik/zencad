@@ -168,8 +168,8 @@ class TypedShapeFactoriesTest(unittest.TestCase):
             context.call(typed.box, context.call(typed.vector, 1, 2, 3), 2, 3).native()
         with self.assertRaisesRegex(TypeError, "center must be bool, str, or None"):
             context.call(typed.box, 1, center=1.5).native()  # type: ignore[arg-type]
-        with self.assertRaises(TypeError):
-            context.call(typed.polysegment, (point, (1, 0, 0))).native()  # type: ignore[list-item]
+        mixed_points = context.call(typed.polysegment, (point, (1, 0, 0)))
+        self.assertEqual(mixed_points.native().ShapeType(), TopAbs_WIRE)
         with self.assertRaisesRegex(ValueError, "at least 3 points"):
             context.call(typed.polygon, (point, point)).native()
         with self.assertRaisesRegex(ValueError, "different contexts"):

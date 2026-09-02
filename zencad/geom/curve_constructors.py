@@ -13,7 +13,7 @@ from .curves import CURVE2_SPEC, CURVE_SPEC, Curve, Curve2
 from .records import Interval
 from .topology import EDGE_SPEC, WIRE_SPEC, Edge, Wire
 from .transforms import Transform
-from .values import Point2, Point3, Vector3
+from .values import Point2, Point3, Point3Input, Vector3, Vector3Input
 
 
 @operation(
@@ -22,7 +22,7 @@ from .values import Point2, Point3, Vector3
     operation_id="zencad.typed.line",
     operation_version="1",
 )
-def line(origin: Point3, direction: Vector3, /) -> Curve:
+def line(origin: Point3Input, direction: Vector3Input, /) -> Curve:
     if not isinstance(origin, Point3):
         raise TypeError("line origin must be Point3")
     if not isinstance(direction, Vector3):
@@ -61,8 +61,8 @@ def ellipse_curve(
     operation_version="1",
 )
 def interpolate_curve(
-    pnts: Sequence[Point3],
-    tangs: Sequence[Vector3 | None] | None = None,
+    pnts: Sequence[Point3Input],
+    tangs: Sequence[Vector3Input | None] | None = None,
     closed: bool = False,
 ) -> Curve:
     _require_bool(closed, "interpolate_curve closed")
@@ -82,8 +82,8 @@ def interpolate_curve(
 
 
 def interpolate(
-    pnts: Sequence[Point3],
-    tangs: Sequence[Vector3 | None] | None = None,
+    pnts: Sequence[Point3Input],
+    tangs: Sequence[Vector3Input | None] | None = None,
     closed: bool = False,
 ) -> Edge:
     """Compatibility edge alias for :func:`interpolate_curve`."""
@@ -98,7 +98,7 @@ def interpolate(
     operation_version="1",
 )
 def bezier_curve(
-    poles: Sequence[Point3],
+    poles: Sequence[Point3Input],
     weights: Sequence[float] | None = None,
 ) -> Curve:
     points = _require_points(poles, minimum=2, name="bezier_curve")
@@ -112,7 +112,7 @@ def bezier_curve(
 
 
 def bezier(
-    pnts: Sequence[Point3],
+    pnts: Sequence[Point3Input],
     weights: Sequence[float] | None = None,
 ) -> Edge:
     """Compatibility edge alias for :func:`bezier_curve`."""
@@ -127,7 +127,7 @@ def bezier(
     operation_version="1",
 )
 def bspline_curve(
-    poles: Sequence[Point3],
+    poles: Sequence[Point3Input],
     knots: Sequence[float],
     muls: Sequence[int],
     degree: int,
@@ -162,7 +162,7 @@ def bspline_curve(
 
 
 def bspline(
-    poles: Sequence[Point3],
+    poles: Sequence[Point3Input],
     knots: Sequence[float],
     muls: Sequence[int],
     degree: int,
@@ -210,7 +210,7 @@ def make_edge(
     operation_id="zencad.typed.circle_arc",
     operation_version="1",
 )
-def circle_arc(p1: Point3, p2: Point3, p3: Point3, /) -> Edge:
+def circle_arc(p1: Point3Input, p2: Point3Input, p3: Point3Input, /) -> Edge:
     points = _require_points((p1, p2, p3), minimum=3, name="circle_arc")
     return Edge(topology_ops.circle_arc(*(point._resolved() for point in points)))
 
@@ -264,7 +264,7 @@ def make_wire(*shapes: Edge | Wire | Sequence[Edge | Wire]) -> Wire:
     operation_version="1",
 )
 def rounded_polysegment(
-    pnts: Sequence[Point3],
+    pnts: Sequence[Point3Input],
     r: float,
     closed: bool = False,
 ) -> Wire:
@@ -346,7 +346,7 @@ def trim_curve2(
     operation_id="zencad.typed.segment",
     operation_version="1",
 )
-def segment(start: Point3, end: Point3, /) -> Edge:
+def segment(start: Point3Input, end: Point3Input, /) -> Edge:
     points = _require_points((start, end), minimum=2, name="segment")
     return Edge(topology_ops.segment(*(point._resolved() for point in points)))
 
@@ -358,7 +358,7 @@ def segment(start: Point3, end: Point3, /) -> Edge:
     operation_version="1",
 )
 def polysegment(
-    points: Sequence[Point3],
+    points: Sequence[Point3Input],
     /,
     *,
     closed: bool = False,
@@ -430,7 +430,7 @@ def _require_bool(value: object, name: str) -> None:
 
 
 def _require_points(
-    points: Sequence[Point3],
+    points: Sequence[Point3Input],
     *,
     minimum: int,
     name: str,
@@ -446,7 +446,7 @@ def _require_points(
 
 
 def _require_tangents(
-    tangents: Sequence[Vector3 | None] | None,
+    tangents: Sequence[Vector3Input | None] | None,
     point_count: int,
     name: str,
 ) -> tuple[Vector3 | None, ...] | None:

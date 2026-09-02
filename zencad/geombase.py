@@ -104,10 +104,18 @@ class xyz(numpy.ndarray, zencad._native.transformable.Transformable):
         )
 
     def __add__(self, oth):
-        return point3(self[0] + oth[0], self[1] + oth[1], self[2] + oth[2])
+        return point3(
+            self.x + float(oth.x),
+            self.y + float(oth.y),
+            self.z + float(oth.z),
+        )
 
     def __sub__(self, oth):
-        return vector3(self[0] - oth[0], self[1] - oth[1], self[2] - oth[2])
+        return vector3(
+            self.x - float(oth.x),
+            self.y - float(oth.y),
+            self.z - float(oth.z),
+        )
 
     def __iadd__(self, oth):
         self[0] += oth[0]

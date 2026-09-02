@@ -10,6 +10,18 @@ import evalcache
 import numpy
 
 
+def _point_distance(left, right):
+    return numpy.linalg.norm(
+        numpy.asarray(
+            (
+                float(left.x) - float(right.x),
+                float(left.y) - float(right.y),
+                float(left.z) - float(right.z),
+            )
+        )
+    )
+
+
 def __make_wire(lst):
     mk = BRepBuilderAPI_MakeWire()
 
@@ -38,25 +50,25 @@ def _sort_wires(lst):
             l_fini = l.endpoints()[1]
 
             # TODO: Fix point3 equality in servoce library and change equalities to early methods.
-            if numpy.linalg.norm(strt - l_strt) < 1e-5:
+            if _point_distance(strt, l_strt) < 1e-5:
                 strt = l_fini
                 del lst[i]
                 res.insert(0, l)
                 break
 
-            elif numpy.linalg.norm(strt - l_fini) < 1e-5:
+            elif _point_distance(strt, l_fini) < 1e-5:
                 strt = l_strt
                 del lst[i]
                 res.insert(0, l)
                 break
 
-            elif numpy.linalg.norm(fini - l_strt) < 1e-5:
+            elif _point_distance(fini, l_strt) < 1e-5:
                 fini = l_fini
                 del lst[i]
                 res.append(l)
                 break
 
-            elif numpy.linalg.norm(fini - l_fini) < 1e-5:
+            elif _point_distance(fini, l_fini) < 1e-5:
                 fini = l_strt
                 del lst[i]
                 res.append(l)

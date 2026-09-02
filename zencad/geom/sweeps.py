@@ -166,8 +166,18 @@ def loft(
     sections: Sequence[Edge | Wire],
     smooth: bool = False,
     shell: bool = False,
-    max_degree: int = 4,
+    max_degree: int | None = None,
+    *,
+    maxdegree: int | None = None,
 ) -> Solid | Shell:
+    if maxdegree is not None:
+        if max_degree is not None:
+            raise TypeError(
+                "loft max_degree and legacy maxdegree cannot both be provided"
+            )
+        max_degree = maxdegree
+    if max_degree is None:
+        max_degree = 4
     _require_bool(smooth, "loft smooth")
     _require_bool(shell, "loft shell")
     values = _require_wire_parts(sections, "loft")
@@ -263,10 +273,10 @@ def _pipe_shell_result_spec(
 
 @overload
 def pipe_shell(
-    profiles: Sequence[Edge | Wire],
-    spine: Edge | Wire,
-    /,
+    profiles: Sequence[Edge | Wire] | None = None,
+    spine: Edge | Wire | None = None,
     *,
+    arr: Sequence[Edge | Wire] | None = None,
     frenet: bool = False,
     approx_c1: bool = False,
     binormal: Vector3 | None = None,
@@ -279,10 +289,10 @@ def pipe_shell(
 
 @overload
 def pipe_shell(
-    profiles: Sequence[Edge | Wire],
-    spine: Edge | Wire,
-    /,
+    profiles: Sequence[Edge | Wire] | None = None,
+    spine: Edge | Wire | None = None,
     *,
+    arr: Sequence[Edge | Wire] | None = None,
     frenet: bool = False,
     approx_c1: bool = False,
     binormal: Vector3 | None = None,
@@ -317,10 +327,10 @@ def pipe_shell(
     operation_version="1",
 )
 def pipe_shell(
-    profiles: Sequence[Edge | Wire],
-    spine: Edge | Wire,
-    /,
+    profiles: Sequence[Edge | Wire] | None = None,
+    spine: Edge | Wire | None = None,
     *,
+    arr: Sequence[Edge | Wire] | None = None,
     frenet: bool = False,
     approx_c1: bool = False,
     binormal: Vector3 | None = None,
@@ -329,6 +339,16 @@ def pipe_shell(
     solid: bool = True,
     transition: PipeTransition = PipeTransition.TRANSFORMED,
 ) -> Solid | Shell:
+    if arr is not None:
+        if profiles is not None:
+            raise TypeError(
+                "pipe_shell profiles and legacy arr cannot both be provided"
+            )
+        profiles = arr
+    if profiles is None:
+        raise TypeError("pipe_shell requires profiles (legacy name: arr)")
+    if spine is None:
+        raise TypeError("pipe_shell requires spine")
     values = _require_wire_parts(profiles, "pipe_shell profiles")
     _require_pipe_spine(spine, "pipe_shell spine")
     for flag, name in (
@@ -379,15 +399,30 @@ def sweep(
     operation_version="1",
 )
 def revol2(
-    profile: Shape,
-    radius: float,
-    /,
+    profile: Shape | None = None,
+    radius: float | None = None,
     *,
-    sections: int = 30,
+    r: float | None = None,
+    sections: int | None = None,
+    n: int | None = None,
     yaw: Interval | Sequence[float] = (0, 2 * math.pi),
     roll: Interval | Sequence[float] = (0, 0),
     parts: int | None = None,
 ) -> Solid:
+    if profile is None:
+        raise TypeError("revol2 requires profile")
+    if r is not None:
+        if radius is not None:
+            raise TypeError("revol2 radius and legacy r cannot both be provided")
+        radius = r
+    if radius is None:
+        raise TypeError("revol2 requires radius (legacy name: r)")
+    if n is not None:
+        if sections is not None:
+            raise TypeError("revol2 sections and legacy n cannot both be provided")
+        sections = n
+    if sections is None:
+        sections = 30
     _require_shape(profile, "revol2 profile")
     resolved_sections = _require_positive_int(sections, "revol2 sections")
     if resolved_sections < 2:

@@ -1,6 +1,7 @@
 import unittest
 
 from evalcache.v2 import EvaluationEventKind, EvaluationMode, MemoryCacheStore
+import numpy
 from OCP.TopAbs import TopAbs_SHELL, TopAbs_SOLID
 
 from zencad import geom as typed
@@ -187,6 +188,21 @@ class TypedShellConstructorsTest(unittest.TestCase):
             tuple(len(shape.faces()) for shape in platonic), (4, 6, 8, 12, 20)
         )
         self.assertTrue(all(float(shape.mass()) > 0 for shape in platonic))
+
+    def test_polyhedron_accepts_numpy_mesh_arrays(self):
+        vertices = numpy.asarray(
+            ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            dtype=numpy.float64,
+        )
+        faces = numpy.asarray(
+            ((0, 2, 1), (0, 1, 3), (1, 2, 3), (2, 0, 3)),
+            dtype=numpy.int64,
+        )
+
+        solid = typed.polyhedron(vertices, faces)
+
+        self.assertIs(type(solid), typed.Solid)
+        self.assertAlmostEqual(float(solid.mass()), 1 / 6)
 
     def test_convex_hull_faces_are_an_explicit_materialization_boundary(self):
         events = []

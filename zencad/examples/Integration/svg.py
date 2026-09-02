@@ -2,6 +2,8 @@
 #coding: utf-8
 
 from tempfile import mkstemp
+
+import zencad
 from zencad import *
 
 m0 = \

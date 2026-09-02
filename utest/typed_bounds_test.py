@@ -102,6 +102,12 @@ class TypedBoundaryBoxTest(unittest.TestCase):
                     _assert_coordinates(self, bounds.center.value(), (0.0, 3.5, 7.0))
                     self.assertIs(type(bounds.x_range()), typed.Interval)
                     _assert_coordinates(self, bounds.x_range().value(), (-1.0, 1.0))
+                    self.assertAlmostEqual(bounds.xrange()[0].value(), -1.0, 6)
+                    _assert_coordinates(
+                        self,
+                        tuple(value.value() for value in bounds.xrange()[:]),
+                        (-1.0, 1.0),
+                    )
                     self.assertAlmostEqual(bounds.y_range().length().value(), 3.0, 6)
                     self.assertAlmostEqual(bounds.z_range().length().value(), 4.0, 6)
                     self.assertFalse(bounds.is_empty())

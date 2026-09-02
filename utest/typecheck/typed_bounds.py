@@ -45,6 +45,8 @@ def bounds_contract(context: typed.Context, shape: typed.Shape) -> None:
     assert_type(bounds.shape(), typed.Solid)
     assert_type(interval.lower, typed.Scalar)
     assert_type(interval.upper, typed.Scalar)
+    assert_type(interval[0], typed.Scalar)
+    assert_type(interval[:], tuple[typed.Scalar, ...])
     assert_type(interval.length(), typed.Scalar)
     assert_type(interval.value(), tuple[float, float])
     assert_type(bounds.value(), typed.BoundaryBoxRecord)

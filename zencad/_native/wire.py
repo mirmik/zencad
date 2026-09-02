@@ -298,6 +298,9 @@ def _make_wire(arr):
     mk = BRepBuilderAPI_MakeWire()
 
     for ptr in arr:
+        legacy = getattr(ptr, "_legacy", None)
+        if callable(legacy):
+            ptr = legacy()
         if (ptr.Shape().ShapeType() == TopAbs_WIRE):
             mk.Add(ptr.Wire())
         elif (ptr.Shape().ShapeType() == TopAbs_EDGE):

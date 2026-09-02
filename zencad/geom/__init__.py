@@ -62,7 +62,7 @@ from .curve_constructors import (
     segment2,
     trim_curve2,
 )
-from .exttrans import MultiTransform
+from .exttrans import MultiTransform, rotate_array, rotate_array2
 from .face_constructors import (
     circle,
     ellipse,
@@ -292,6 +292,8 @@ __all__ = [
     "MeshData",
     "MeshDataRecord",
     "MultiTransform",
+    "rotate_array",
+    "rotate_array2",
     "Point2",
     "Point3",
     "PipeTransition",

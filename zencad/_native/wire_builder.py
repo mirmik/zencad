@@ -108,8 +108,9 @@ class wire_builder:
                 .mov(cent)
 
             start_point_parameter = full_edge.lower_distance_parameter(
-                self.current)
-            finish_point_parameter = full_edge.lower_distance_parameter(target)
+                zencad.point3(self.current))
+            finish_point_parameter = full_edge.lower_distance_parameter(
+                zencad.point3(target))
 
             diff = finish_point_parameter - start_point_parameter
 
@@ -163,8 +164,9 @@ class wire_builder:
                 .mov(cent)
 
             start_point_parameter = full_edge.lower_distance_parameter(
-                self.current)
-            finish_point_parameter = full_edge.lower_distance_parameter(target)
+                zencad.point3(self.current))
+            finish_point_parameter = full_edge.lower_distance_parameter(
+                zencad.point3(target))
 
             diff = finish_point_parameter - start_point_parameter
 

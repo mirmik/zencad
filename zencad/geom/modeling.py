@@ -42,7 +42,7 @@ from .topology import (
     Vertex,
     Wire,
 )
-from .values import Point3, Vector3
+from .values import Point3, Point3Input, Vector3
 
 
 DraftPlaneInput = (
@@ -52,7 +52,8 @@ DraftPlaneInput = (
         Vector3 | Sequence[float],
     ]
 )
-RoundedReference = Point3 | Edge
+PointReference = Point3 | Vertex
+RoundedReference = PointReference | Edge
 ShapeModelT = TypeVar("ShapeModelT", bound=Shape)
 VALIDATION_REPORT_SPEC = ResultSpec.for_type(
     ValidationReport,
@@ -78,7 +79,11 @@ def _rounded_values(
         else tuple(
             reference._legacy()
             if isinstance(reference, Edge)
-            else reference._resolved()
+            else (
+                reference.point()._resolved()
+                if isinstance(reference, Vertex)
+                else reference._resolved()
+            )
             for reference in selected
         ),
     )
@@ -127,7 +132,7 @@ def chamfer(
 def fillet2d(
     shape: Face,
     radius: float,
-    references: Sequence[Point3] | None = None,
+    references: Sequence[Point3Input | Vertex] | None = None,
     /,
 ) -> Face:
     _require_face(shape, "fillet2d")
@@ -145,7 +150,7 @@ def fillet2d(
 def chamfer2d(
     shape: Face,
     radius: float,
-    references: Sequence[Point3] | None = None,
+    references: Sequence[Point3Input | Vertex] | None = None,
     /,
 ) -> Face:
     _require_face(shape, "chamfer2d")
@@ -329,10 +334,26 @@ def offset(shape: Shape, distance: float, /) -> Shape:
 )
 def thicksolid(
     shape: Solid,
-    thickness: float,
-    references: Sequence[Point3],
-    /,
+    thickness: float | None = None,
+    references: Sequence[Point3Input] | None = None,
+    *,
+    t: float | None = None,
+    refs: Sequence[Point3Input] | None = None,
 ) -> Solid:
+    if t is not None:
+        if thickness is not None:
+            raise TypeError("thicksolid thickness and legacy t cannot both be provided")
+        thickness = t
+    if refs is not None:
+        if references is not None:
+            raise TypeError(
+                "thicksolid references and legacy refs cannot both be provided"
+            )
+        references = refs
+    if thickness is None:
+        raise TypeError("thicksolid requires thickness (legacy name: t)")
+    if references is None:
+        raise TypeError("thicksolid requires references (legacy name: refs)")
     _require_solid(shape, "thicksolid")
     resolved_references = _require_references(references, "thicksolid")
     assert resolved_references is not None
@@ -708,18 +729,22 @@ def _require_references(
     if references is None:
         return None
     if isinstance(references, (str, bytes)):
-        raise TypeError(f"{name} references must be Point3 values or Edges")
+        raise TypeError(f"{name} references must be point/Vertex values or Edges")
     try:
         values = tuple(references)
     except TypeError as error:
-        raise TypeError(f"{name} references must be Point3 values or Edges") from error
+        raise TypeError(
+            f"{name} references must be point/Vertex values or Edges"
+        ) from error
     if not values:
         raise ValueError(f"{name} references must not be empty")
     if not (
-        all(isinstance(value, Point3) for value in values)
+        all(isinstance(value, (Point3, Vertex)) for value in values)
         or all(isinstance(value, Edge) for value in values)
     ):
-        raise TypeError(f"{name} references must be all Point3 values or all Edges")
+        raise TypeError(
+            f"{name} references must be all point/Vertex values or all Edges"
+        )
     resolve_context(values)
     return values
 
