@@ -28,6 +28,16 @@ def _has_solid(shape: ResolvedShape) -> bool:
     return TopExp_Explorer(shape.Shape(), TopAbs_SOLID).More()
 
 
+def _fuse(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
+    algorithm = BRepAlgoAPI_Fuse(left.Shape(), right.Shape())
+    algorithm.SetNonDestructive(True)
+    algorithm.SetFuzzyValue(_BOOLEAN_FUZZY_TOLERANCE)
+    algorithm.Build()
+    if not algorithm.IsDone():
+        raise ValueError("boolean union failed for Shape operands")
+    return ResolvedShape(algorithm.Shape())
+
+
 def empty_shape() -> ResolvedShape:
     """Return the algebraic zero of topology as a serializable empty Shape."""
 
@@ -45,14 +55,13 @@ def difference(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
 
 
 def union(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
-    algorithm = BRepAlgoAPI_Fuse(left.Shape(), right.Shape())
-    algorithm.SetNonDestructive(True)
-    algorithm.SetFuzzyValue(_BOOLEAN_FUZZY_TOLERANCE)
-    algorithm.Build()
-    if not algorithm.IsDone():
-        raise ValueError("boolean union failed for Shape operands")
-    result = ResolvedShape(algorithm.Shape())
-    if _has_solid(left) and _has_solid(right) and not _has_solid(result):
+    solid_operands = _has_solid(left) and _has_solid(right)
+    result = _fuse(left, right)
+    if solid_operands and not _has_solid(result):
+        # OCCT's pave-filler can be operand-order sensitive for coincident
+        # boundaries on some platforms even though union is commutative.
+        result = _fuse(right, left)
+    if solid_operands and not _has_solid(result):
         raise ValueError("boolean union produced an empty solid result")
     return result
 
