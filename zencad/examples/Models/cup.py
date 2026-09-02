@@ -26,7 +26,8 @@ handle = pipe_shell([profile], spine, solid=True)
 
 # Assemble:
 body = (base - hole).solids()[0]
-cup = body + handle.right(40).up(17)
+cup_handle = handle.right(40).up(17)
+cup = [body, cup_handle]
 
 # Display:
 hl(spine.right(100).up(17).forw(20))

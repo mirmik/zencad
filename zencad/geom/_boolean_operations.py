@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from OCP.BRep import BRep_Builder
-from OCP.BOPAlgo import BOPAlgo_BOP, BOPAlgo_FUSE, BOPAlgo_Splitter
+from OCP.BOPAlgo import BOPAlgo_Splitter
 from OCP.BRepAdaptor import BRepAdaptor_Surface
 from OCP.BRepAlgoAPI import (
     BRepAlgoAPI_Common,
@@ -38,19 +38,6 @@ def _fuse(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
     return ResolvedShape(algorithm.Shape())
 
 
-def _bop_fuse(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
-    algorithm = BOPAlgo_BOP()
-    algorithm.AddArgument(left.Shape())
-    algorithm.AddTool(right.Shape())
-    algorithm.SetOperation(BOPAlgo_FUSE)
-    algorithm.SetNonDestructive(True)
-    algorithm.SetFuzzyValue(_BOOLEAN_FUZZY_TOLERANCE)
-    algorithm.Perform()
-    if algorithm.HasErrors():
-        raise ValueError("boolean union fallback failed for Shape operands")
-    return ResolvedShape(algorithm.Shape())
-
-
 def empty_shape() -> ResolvedShape:
     """Return the algebraic zero of topology as a serializable empty Shape."""
 
@@ -70,12 +57,6 @@ def difference(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
 def union(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
     solid_operands = _has_solid(left) and _has_solid(right)
     result = _fuse(left, right)
-    if solid_operands and not _has_solid(result):
-        # OCCT's pave-filler can be operand-order sensitive for coincident
-        # boundaries on some platforms even though union is commutative.
-        result = _fuse(right, left)
-    if solid_operands and not _has_solid(result):
-        result = _bop_fuse(left, right)
     if solid_operands and not _has_solid(result):
         raise ValueError("boolean union produced an empty solid result")
     return result

@@ -122,10 +122,10 @@ class PublicDomainCutoverTest(unittest.TestCase):
         )
         self.assertEqual(len(namespace["body"].solids()), 1)
         self.assertEqual(len(namespace["handle"].solids()), 1)
-        cup_solids = namespace["cup"].solids()
-        self.assertEqual(len(cup_solids), 1)
-        self.assertGreater(cup_solids[0].mass().value(), 0)
-        self.assertGreater(namespace["cup"].mass().value(), 0)
+        self.assertEqual(len(namespace["cup"]), 2)
+        self.assertTrue(
+            all(part.mass().value() > 0 for part in namespace["cup"])
+        )
         self.assertEqual(len(published), 1)
 
 
