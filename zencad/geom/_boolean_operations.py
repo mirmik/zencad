@@ -21,6 +21,13 @@ from OCP.gp import gp_Dir, gp_Pln, gp_Pnt
 from zencad._native.shape import Shape as ResolvedShape
 
 
+_BOOLEAN_FUZZY_TOLERANCE = 1e-7
+
+
+def _has_solid(shape: ResolvedShape) -> bool:
+    return TopExp_Explorer(shape.Shape(), TopAbs_SOLID).More()
+
+
 def empty_shape() -> ResolvedShape:
     """Return the algebraic zero of topology as a serializable empty Shape."""
 
@@ -39,10 +46,15 @@ def difference(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
 
 def union(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:
     algorithm = BRepAlgoAPI_Fuse(left.Shape(), right.Shape())
+    algorithm.SetNonDestructive(True)
+    algorithm.SetFuzzyValue(_BOOLEAN_FUZZY_TOLERANCE)
     algorithm.Build()
     if not algorithm.IsDone():
         raise ValueError("boolean union failed for Shape operands")
-    return ResolvedShape(algorithm.Shape())
+    result = ResolvedShape(algorithm.Shape())
+    if _has_solid(left) and _has_solid(right) and not _has_solid(result):
+        raise ValueError("boolean union produced an empty solid result")
+    return result
 
 
 def intersection(left: ResolvedShape, right: ResolvedShape) -> ResolvedShape:

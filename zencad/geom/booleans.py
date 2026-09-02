@@ -49,7 +49,7 @@ def nullshape() -> Shape:
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.union",
-    operation_version="1",
+    operation_version="2",
 )
 def union(
     shapes: Shape | Sequence[Shape],
@@ -203,7 +203,7 @@ def section(
     result=SHAPE_SPEC,
     returns=Shape,
     operation_id="zencad.typed.shape.union",
-    operation_version="1",
+    operation_version="2",
 )
 def _shape_union(left: Shape, right: Shape) -> Shape:
     _require_binary_shapes(left, right, "union")
