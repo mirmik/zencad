@@ -166,12 +166,27 @@ class CacheConfigurationTest(unittest.TestCase):
             root = Path(directory)
             cache_directory = root / "settings-cache"
             config_directory = root / "config"
-            settings = ZencadSettings(config_directory / "ZenCad" / "settings.conf")
+            environment = os.environ.copy()
+            if sys.platform in ("win32", "win64"):
+                settings_path = config_directory / "ZenCad" / "settings.conf"
+                environment["APPDATA"] = str(config_directory)
+            elif sys.platform == "darwin":
+                home_directory = config_directory / "home"
+                settings_path = (
+                    home_directory
+                    / "Library"
+                    / "Application Support"
+                    / "ZenCad"
+                    / "settings.conf"
+                )
+                environment["HOME"] = str(home_directory)
+            else:
+                settings_path = config_directory / "ZenCad" / "settings.conf"
+                environment["XDG_CONFIG_HOME"] = str(config_directory)
+            settings = ZencadSettings(settings_path)
             settings.set(["cache", "directory"], str(cache_directory))
             settings.store()
 
-            environment = os.environ.copy()
-            environment["XDG_CONFIG_HOME"] = str(config_directory)
             environment.pop(CACHE_DIRECTORY_ENV, None)
             environment.pop(CACHE_DISABLE_ENV, None)
             process = subprocess.run(
