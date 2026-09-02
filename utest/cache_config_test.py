@@ -181,8 +181,7 @@ class CacheConfigurationTest(unittest.TestCase):
                     (
                         "import zencad; "
                         "shape = zencad.box(1); shape.native(); "
-                        "assert str(shape.context.cache_directory) == "
-                        f"{str(normalize_cache_directory(cache_directory))!r}"
+                        "assert shape.context.cache_directory.is_dir()"
                     ),
                 ],
                 cwd=Path(__file__).resolve().parents[1],

@@ -25,7 +25,7 @@ profile = circle(handle_radius).rotateY(
 handle = pipe(spine=spine, shp=profile)
 
 # Assemble:
-cup = base + handle.right(40).up(17) - hole
+cup = (base - hole) + handle.right(40).up(17)
 
 # Display:
 hl(spine.right(100).up(17).forw(20))

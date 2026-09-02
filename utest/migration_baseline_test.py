@@ -121,6 +121,7 @@ class PublicDomainCutoverTest(unittest.TestCase):
             namespace["base"].bbox().value().zmax,
         )
         self.assertGreater(namespace["cup"].mass().value(), 0)
+        self.assertEqual(len(namespace["cup"].solids()), 1)
         self.assertEqual(len(published), 1)
 
 
