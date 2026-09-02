@@ -25,7 +25,8 @@ profile = circle(handle_radius, wire=True).rotateY(
 handle = pipe_shell([profile], spine, solid=True)
 
 # Assemble:
-cup = (base - hole) + handle.right(40).up(17)
+body = (base - hole).solids()[0]
+cup = body + handle.right(40).up(17)
 
 # Display:
 hl(spine.right(100).up(17).forw(20))
