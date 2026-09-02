@@ -13,6 +13,7 @@ from zencad.cache_config import (
     CacheConfiguration,
     current_cache_configuration,
     default_cache_directory,
+    normalize_cache_directory,
     resolve_cache_configuration,
 )
 from zencad.settings import ZencadSettings
@@ -51,7 +52,10 @@ class CacheConfigurationTest(unittest.TestCase):
             )
             self.assertEqual(
                 resolved,
-                CacheConfiguration(root / "from-environment", True),
+                CacheConfiguration(
+                    normalize_cache_directory(root / "from-environment"),
+                    True,
+                ),
             )
 
     def test_environment_can_disable_and_reenable_cache(self):
@@ -86,9 +90,13 @@ class CacheConfigurationTest(unittest.TestCase):
                 cache_dir=cache_directory,
                 cache_enabled=True,
             )
-            self.assertEqual(configured.directory, cache_directory)
+            expected_cache_directory = normalize_cache_directory(cache_directory)
+            self.assertEqual(configured.directory, expected_cache_directory)
             self.assertTrue(cache_directory.is_dir())
-            self.assertEqual(zencad.box(1).context.cache_directory, cache_directory)
+            self.assertEqual(
+                zencad.box(1).context.cache_directory,
+                expected_cache_directory,
+            )
 
             disabled_directory = Path(directory) / "disabled"
             configured = zencad.configure(
@@ -174,7 +182,7 @@ class CacheConfigurationTest(unittest.TestCase):
                         "import zencad; "
                         "shape = zencad.box(1); shape.native(); "
                         "assert str(shape.context.cache_directory) == "
-                        f"{str(cache_directory)!r}"
+                        f"{str(normalize_cache_directory(cache_directory))!r}"
                     ),
                 ],
                 cwd=Path(__file__).resolve().parents[1],

@@ -92,6 +92,18 @@ class TypedShapeListTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must not be empty"):
             typed.fillet(body, 1, empty).mass().value()
 
+    def test_materialization_uses_the_expression_context(self) -> None:
+        expression_context = typed.Context.deferred(cache=False)
+        ambient_context = typed.Context.deferred(cache=False)
+
+        with typed.using_context(expression_context):
+            body = typed.box(10)
+            vertical_edges = body.edges().filter_by(typed.Axis.Z)
+            filleted = typed.fillet(body, 1, vertical_edges)
+
+        with typed.using_context(ambient_context):
+            self.assertGreater(float(filleted.mass()), 0)
+
     def test_composite_solid_selection_is_deterministic(self) -> None:
         with typed.using_context(self.context):
             composite = typed.union((typed.box(2), typed.box(2).right(4)))

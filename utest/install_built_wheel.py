@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gui", action="store_true")
     parser.add_argument("--examples", action="store_true")
+    parser.add_argument("--test", action="store_true")
     parser.add_argument("--dist-dir", default="dist")
     arguments = parser.parse_args()
 
@@ -27,6 +28,8 @@ def main():
         extras.append("gui")
     if arguments.examples:
         extras.append("examples")
+    if arguments.test:
+        extras.append("test")
     if extras:
         requirement = f"{requirement}[{','.join(extras)}]"
 

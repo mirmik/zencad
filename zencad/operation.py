@@ -72,7 +72,10 @@ def resolve_context(*values: object) -> Context:
     """Select the sole handle context, the active context, or the default."""
 
     contexts = {handle.context for value in values for handle in _walk_handles(value)}
-    active = _CURRENT_CONTEXT.get()
+    # Evaluating a deferred expression is isolated from whichever construction
+    # context happens to be active at the call site.  Nested operation helpers
+    # must therefore inherit the expression's execution context first.
+    active = _EXECUTION_CONTEXT.get() or _CURRENT_CONTEXT.get()
     if active is not None:
         contexts.add(active)
     if len(contexts) > 1:

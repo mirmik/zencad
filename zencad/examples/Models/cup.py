@@ -14,7 +14,9 @@ tangs = vectors([(1, 1), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0)])
 
 # Base:
 base = cylinder(r=radius, h=height)
-hole = cylinder(r=radius - thikness, h=height - thikness).up(thikness)
+# Extend the cutter past the rim.  A cutter ending exactly on the top face
+# makes the coplanar boolean platform-dependent in OpenCascade.
+hole = cylinder(r=radius - thikness, h=height).up(thikness)
 
 # Handle:
 spine = interpolate(pnts, tangs).rotateX(deg(90))

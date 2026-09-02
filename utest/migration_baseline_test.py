@@ -116,6 +116,10 @@ class PublicDomainCutoverTest(unittest.TestCase):
         bounds = namespace["spine"].bbox().value()
         self.assertAlmostEqual(bounds.ymax - bounds.ymin, 0, places=5)
         self.assertGreater(bounds.zmax - bounds.zmin, 60)
+        self.assertGreater(
+            namespace["hole"].bbox().value().zmax,
+            namespace["base"].bbox().value().zmax,
+        )
         self.assertGreater(namespace["cup"].mass().value(), 0)
         self.assertEqual(len(published), 1)
 

@@ -102,7 +102,7 @@ class SettingsTest(unittest.TestCase):
             )
             self.assertTrue(restored.get(["cache", "enabled"]))
             self.assertTrue(
-                str(restored.get(["cache", "directory"])).startswith("/")
+                Path(restored.get(["cache", "directory"])).is_absolute()
             )
 
     def test_reads_legacy_qsettings_ini_values(self):
