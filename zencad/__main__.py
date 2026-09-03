@@ -16,7 +16,7 @@ from zencad.gui.defaults import EVENT_LOOP_PULSE_MS, SCRIPT_TEMPLATE
 TEMPLATE = SCRIPT_TEMPLATE
 
 
-def console_options_handle():
+def console_options_handle(argv=None):
     parser = argparse.ArgumentParser(prog="zencad")
     parser.add_argument("--settings", action="store_true",
                         help="open the settings dialog")
@@ -30,7 +30,7 @@ def console_options_handle():
     parser.add_argument("-m", help=argparse.SUPPRESS)
     parser.add_argument("paths", nargs="*", help="Python script to open")
 
-    pargs = parser.parse_args()
+    pargs = parser.parse_args(argv)
     return pargs
 
 
@@ -129,6 +129,10 @@ def _run_main_window(pargs):
 
 def main():
     argv = sys.argv[1:]
+    if argv[:1] == ["render"]:
+        from zencad.render import render_cli
+
+        return render_cli(argv[1:])
     removed_modes = ("--unbound", "--frame", "--sleeped")
     if any(option in argv for option in removed_modes):
         raise SystemExit(
@@ -144,7 +148,7 @@ def main():
     from zencad.gui.qt_backend import configure_qt_platform
     configure_qt_platform()
 
-    pargs = console_options_handle()
+    pargs = console_options_handle(argv)
     try:
         import PyQt5  # noqa: F401
     except ImportError as exception:

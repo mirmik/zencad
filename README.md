@@ -136,3 +136,48 @@ show()
 ```
 Result:  
 ![result.png](https://mirmik.github.io/zencad/images/generic/zencad-logo.png)
+
+Deterministic PNG previews
+--------------------------
+The GUI installation can render a script without opening the editor:
+
+```sh
+zencad render model.py --output preview.png
+zencad render model.py --output views.png \
+  --views iso,front,top,right --size 640x480 \
+  --mode shaded-with-edges --background '#303030'
+```
+
+The fixed views are `iso`, `front`, `back`, `left`, `right`, `top`, and
+`bottom`. `--view` and its `--views` alias may be repeated or comma-separated.
+`--size` is the size of each tile; multiple views are placed in a
+row-major, near-square contact sheet in the requested order. Other options are
+`--mode shaded|shaded-with-edges|wireframe`, `--axes`, `--margin`, and
+`--timeout`. Every render uses an orthographic camera and a fresh `FitAll`, so
+saved editor camera state does not affect the image. Animated `show()` sessions
+are rejected because they do not have one final static scene.
+
+The same operation is available from Python (protect the entry point with the
+usual `if __name__ == "__main__"` guard because model evaluation uses an
+isolated child process):
+
+```python
+from zencad import render_script
+
+if __name__ == "__main__":
+    result = render_script(
+        "model.py",
+        "preview.png",
+        views=("iso", "front"),
+        size=(640, 480),
+    )
+    print(result.path, result.image_size)
+```
+
+Rendering uses the native OCCT/OpenGL viewer and therefore needs the `gui`
+extra. Windows and macOS use their normal desktop display. On desktop Linux it
+uses X11/XWayland; on a server or in CI, install Xvfb and run:
+
+```sh
+LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a zencad render model.py -o preview.png
+```

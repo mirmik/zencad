@@ -41,6 +41,7 @@ from zencad.color import (
 )
 from zencad.scene import Scene
 from zencad.scene_draft import SceneDraft, SceneObjectRef
+from zencad.render import render_script, render_snapshot
 from zencad.showapi import display, disp, highlight, hl, managed_scene, show
 from zencad.util import (
     closest_points_between_capsules,
@@ -92,6 +93,8 @@ _SUPPORT_API = [
     "orange",
     "rad2deg",
     "red",
+    "render_script",
+    "render_snapshot",
     "set_default_border_color",
     "set_default_point_color",
     "set_default_wire_color",
