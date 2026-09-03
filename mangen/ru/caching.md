@@ -16,28 +16,32 @@ Instead of calculating directly, evalcache builds a model building tree based on
 ### Отладка в условиях работы с ленивыми вычислениями.
 Так как evalcache выполняет вычисления только в момент, когда объект в действительности запрошен, а не тогда, когда он объявлен, могут возникать проблемы с пониманием точки возникновения возможной ошибки. Также могут возникать проблемы из-за неявного раскрытия ленивых объектов на некоторых операциях.
 
-Для отладки и понимания точки возникновения ошибки можно применять следующие опции:
+Для отладки и понимания точки возникновения ошибки можно временно включить
+немедленные вычисления. Публичные типы объектов при этом не меняются:
 :en
 ### Debugging with lazy evaluation.
 Since evalcache only performs computations when the object is actually requested, and not when it is declared, it can be difficult to understand where a possible error occurs. Problems can also arise due to the implicit expansion of lazy objects on some operations.
 
-The following options can be used to debug and understand where the error occurred: 
+Use a scoped immediate policy to report failures at the operation that declared
+them. Public object types do not change:
 ::
 
 ```python
-zencad.lazy.diag=True # Активировать вывод информации об операциях библиотеки кеширования.
-zencad.lazy.fastdo=True # Выполнять запрос объекта в момент его создания.
-zencad.lazy.encache=False # Запретить сохранение в кэш.
-zencad.lazy.decache=False # Запретить загрузку из кэша.
-
-zencad.lazy.onbool=False # Запретить автоматическое раскрытие на булевых операциях
-zencad.lazy.onstr=False # Запретить автоматическое раскрытие при преобразовании к строке.
-
-zencad.lazy.onplace=True # Раскрывать объект в момент его создания (не рекомендуется, может нарушать логику).
+with zencad.eager(cache=False):
+    model = zencad.box(20) - zencad.cylinder(3, 20)
 ```
 
 :ru
-Дополнительные опции можно найти в документации к коду библиотеки evalcache.
+Для headless-проверки тот же режим включается командой
+`zencad inspect model.py --eager --no-cache --json`. Контексты можно вкладывать;
+после выхода восстанавливается предыдущая политика. Старый глобальный интерфейс
+`zencad.lazy.onplace` в ZenCad 2 удалён.
+:en
+For a headless check, use
+`zencad inspect model.py --eager --no-cache --json`. Contexts may be nested and
+restore the previous policy on exit. The old global `zencad.lazy.onplace`
+interface was removed in ZenCad 2.
+::
 
 ----
 ### Где лежит кэш?

@@ -67,6 +67,12 @@ progress hooks. It does not expose CAD methods: scripts use module operations,
 domain methods, or `context.call(zencad.box, ...)` when they need an explicit
 owner. Deferred/immediate and cache on/off policies never change public classes.
 
+The scoped public spelling is `with zencad.eager(cache=False):`; the symmetric
+`evaluation(...)`, `immediate()`, and `deferred()` context managers restore the
+outer context on exit. Headless inspection passes the same policy through the
+runner protocol with `--eager`/`--evaluation` and `--no-cache`. The full
+contract is documented in [`evaluation-policy.md`](evaluation-policy.md).
+
 `Shape`, its exact topology subtypes, values, curves, surfaces, transforms,
 bounds, meshes, and structured results retain expressions internally. The
 runner reports v2 evaluation events directly; it does not install the former

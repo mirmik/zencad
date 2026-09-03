@@ -89,6 +89,32 @@ zencad.box(1).native()
         finally:
             supervisor.shutdown()
 
+    def test_evaluation_mode_is_passed_to_runner(self):
+        supervisor = RunnerSupervisor(
+            cancel_grace_period=0.1,
+            cache_directory=self.root / "eager-cache",
+            cache_enabled=False,
+            evaluation_mode="immediate",
+        )
+        try:
+            path = self.script(
+                "immediate.py",
+                """
+import zencad
+shape = zencad.box(1)
+assert shape.context.mode.value == "immediate"
+assert not shape.context.cache_enabled
+""",
+            )
+            generation = supervisor.start(path)
+            status = supervisor.wait(generation, timeout=10)
+            self.assertEqual(status, "success")
+        finally:
+            supervisor.shutdown()
+
+        with self.assertRaises(ValueError):
+            RunnerSupervisor(evaluation_mode="eventually")
+
     def test_control_message_round_trip_and_validation(self):
         frame = encode_control_message(
             "run",

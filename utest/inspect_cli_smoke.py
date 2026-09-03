@@ -68,6 +68,41 @@ show()
         assert api_report.to_dict() == payload
         assert not any(name.startswith("PyQt5") for name in sys.modules)
 
+        policy_model = root / "policy.py"
+        policy_model.write_text(
+            """
+import sys
+from zencad import box, display, show
+shape = box(2)
+assert shape.context.mode.value == sys.argv[1]
+if len(sys.argv) > 2:
+    assert shape.context.cache_enabled is (sys.argv[2] == "cache")
+display(shape)
+show()
+""",
+            encoding="utf-8",
+        )
+        deferred_result = run(root, policy_model, "--json", "--", "deferred")
+        assert json.loads(deferred_result.stdout)["status"] == "ok"
+        eager_result = run(
+            root,
+            policy_model,
+            "--json",
+            "--eager",
+            "--no-cache",
+            "--",
+            "immediate",
+            "no-cache",
+        )
+        assert json.loads(eager_result.stdout)["status"] == "ok"
+        api_eager = inspect_script(
+            policy_model,
+            evaluation_mode="immediate",
+            cache_enabled=False,
+            arguments=("immediate", "no-cache"),
+        )
+        assert api_eager.to_dict() == json.loads(eager_result.stdout)
+
         runtime_error = root / "runtime_error.py"
         runtime_error.write_text(
             "raise RuntimeError('inspection broke')\n", encoding="utf-8"
@@ -116,15 +151,11 @@ show()
         invalid = run(root, invalid_geometry, "--json")
         invalid_payload = json.loads(invalid.stdout)
         assert invalid_payload["objects"][0]["geometry"]["valid"] is False
-        assert invalid_payload["objects"][0]["geometry"]["validation"][
-            "issues"
-        ]
+        assert invalid_payload["objects"][0]["geometry"]["validation"]["issues"]
 
         timeout = root / "timeout.py"
         timeout.write_text("while True:\n    pass\n", encoding="utf-8")
-        timed_out = run(
-            root, timeout, "--json", "--timeout", "0.2", expected=5
-        )
+        timed_out = run(root, timeout, "--json", "--timeout", "0.2", expected=5)
         assert json.loads(timed_out.stdout)["error"]["code"] == "timeout"
 
     print("ZenCad headless inspect CLI smoke: OK")

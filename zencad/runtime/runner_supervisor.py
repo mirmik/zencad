@@ -8,6 +8,8 @@ import tempfile
 import threading
 from typing import Callable
 
+from evalcache import EvaluationMode
+
 from zencad.cache_config import (
     CacheConfiguration,
     normalize_cache_directory,
@@ -49,9 +51,7 @@ class _RunnerHandle:
     cancel_event: object
     data_root: Path
     input_buffer: InputEventBuffer
-    input_condition: threading.Condition = field(
-        default_factory=threading.Condition
-    )
+    input_condition: threading.Condition = field(default_factory=threading.Condition)
     input_sequence: int = 0
     input_closed: bool = False
     input_error: BaseException | None = None
@@ -73,6 +73,7 @@ class RunnerSupervisor:
         record_scene_patches: bool = True,
         cache_directory: str | Path | None = None,
         cache_enabled: bool | None = None,
+        evaluation_mode: EvaluationMode | str = EvaluationMode.DEFERRED,
     ):
         if cancel_grace_period < 0:
             raise ValueError("Cancellation grace period must be non-negative")
@@ -86,10 +87,11 @@ class RunnerSupervisor:
             else normalize_cache_directory(cache_directory)
         )
         self.cache_enabled = (
-            resolved_cache.enabled
-            if cache_enabled is None
-            else bool(cache_enabled)
+            resolved_cache.enabled if cache_enabled is None else cache_enabled
         )
+        if not isinstance(self.cache_enabled, bool):
+            raise TypeError("cache_enabled must be a boolean or None")
+        self.evaluation_mode = EvaluationMode(evaluation_mode)
         self._context = multiprocessing.get_context("spawn")
         self._lock = threading.RLock()
         self._generation = 0
@@ -151,6 +153,7 @@ class RunnerSupervisor:
             arguments=arguments,
             cache_directory=str(self.cache_directory),
             cache_enabled=self.cache_enabled,
+            evaluation_mode=self.evaluation_mode.value,
         )
         process = self._context.Process(
             target=run_generation,
@@ -177,15 +180,17 @@ class RunnerSupervisor:
         process.start()
         send_connection.close()
         input_receive_connection.close()
-        self._dispatch(RunnerMessage(
-            "run",
-            generation,
-            {
-                "script_path": str(script_path),
-                "cwd": str(cwd),
-                "arguments": arguments,
-            },
-        ))
+        self._dispatch(
+            RunnerMessage(
+                "run",
+                generation,
+                {
+                    "script_path": str(script_path),
+                    "cwd": str(cwd),
+                    "arguments": arguments,
+                },
+            )
+        )
         threading.Thread(
             target=self._read_messages,
             args=(handle,),
@@ -209,11 +214,7 @@ class RunnerSupervisor:
             if generation != self._current_generation:
                 return False
             handle = self._handles.get(generation)
-        if (
-            handle is None
-            or handle.cancel_requested
-            or not handle.process.is_alive()
-        ):
+        if handle is None or handle.cancel_requested or not handle.process.is_alive():
             return False
         with handle.input_condition:
             if handle.input_closed:
@@ -234,18 +235,13 @@ class RunnerSupervisor:
         try:
             while True:
                 with handle.input_condition:
-                    while (
-                        not handle.input_closed
-                        and not handle.input_buffer
-                    ):
+                    while not handle.input_closed and not handle.input_buffer:
                         handle.input_condition.wait()
                     if handle.input_closed and not handle.input_buffer:
                         return
                     event = handle.input_buffer.pop_left()
                 try:
-                    handle.input_connection.send_bytes(
-                        encode_input_frame(event)
-                    )
+                    handle.input_connection.send_bytes(encode_input_frame(event))
                 except (BrokenPipeError, EOFError, OSError) as exception:
                     handle.input_error = exception
                     return
@@ -305,9 +301,7 @@ class RunnerSupervisor:
         if frame.startswith(CAMERA_ACTION_FRAME_MAGIC):
             action = decode_camera_action_frame(frame)
             if action.generation != handle.generation:
-                raise ProtocolError(
-                    "CameraAction generation does not match its runner"
-                )
+                raise ProtocolError("CameraAction generation does not match its runner")
             return RunnerMessage(
                 "camera_action",
                 handle.generation,
@@ -385,16 +379,18 @@ class RunnerSupervisor:
 
             if protocol_failure is not None:
                 handle.status = "protocol_error"
-                self._dispatch(RunnerMessage(
-                    "error",
-                    handle.generation,
-                    {
-                        "kind": "protocol",
-                        "exception_type": type(protocol_failure).__name__,
-                        "message": str(protocol_failure),
-                        "traceback": "",
-                    },
-                ))
+                self._dispatch(
+                    RunnerMessage(
+                        "error",
+                        handle.generation,
+                        {
+                            "kind": "protocol",
+                            "exception_type": type(protocol_failure).__name__,
+                            "message": str(protocol_failure),
+                            "traceback": "",
+                        },
+                    )
+                )
             if not handle.saw_finished:
                 if protocol_failure is not None:
                     status = "protocol_error"
@@ -402,24 +398,28 @@ class RunnerSupervisor:
                     status = "cancelled"
                 else:
                     status = "crashed"
-                    self._dispatch(RunnerMessage(
-                        "error",
-                        handle.generation,
-                        {
-                            "kind": "crash",
-                            "exception_type": "RunnerCrash",
-                            "message": (
-                                f"Runner exited with code {handle.process.exitcode}"
-                            ),
-                            "traceback": "",
-                        },
-                    ))
+                    self._dispatch(
+                        RunnerMessage(
+                            "error",
+                            handle.generation,
+                            {
+                                "kind": "crash",
+                                "exception_type": "RunnerCrash",
+                                "message": (
+                                    f"Runner exited with code {handle.process.exitcode}"
+                                ),
+                                "traceback": "",
+                            },
+                        )
+                    )
                 handle.status = status
-                self._dispatch(RunnerMessage(
-                    "finished",
-                    handle.generation,
-                    {"status": status, "hard": handle.hard_cancelled},
-                ))
+                self._dispatch(
+                    RunnerMessage(
+                        "finished",
+                        handle.generation,
+                        {"status": status, "hard": handle.hard_cancelled},
+                    )
+                )
             shutil.rmtree(handle.data_root, ignore_errors=True)
             handle.finished.set()
 

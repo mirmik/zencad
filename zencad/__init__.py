@@ -18,6 +18,14 @@ from zencad.version import __ocp_version__
 from zencad import geom as _domain
 from zencad.geom import *
 from zencad.cache_config import clear_cache, configure
+from zencad.evaluation_policy import (
+    EvaluationMode,
+    deferred,
+    eager,
+    evaluation,
+    evaluation_mode,
+    immediate,
+)
 from zencad.color import (
     Color,
     black,
@@ -67,6 +75,7 @@ exampledir = os.path.join(os.path.dirname(__file__), "examples")
 
 _SUPPORT_API = [
     "Color",
+    "EvaluationMode",
     "Scene",
     "SceneDraft",
     "SceneObjectRef",
@@ -84,11 +93,15 @@ _SUPPORT_API = [
     "default_wire_color",
     "deg",
     "deg2rad",
+    "deferred",
     "disp",
     "display",
     "exampledir",
     "examples_dict",
     "examples_paths",
+    "eager",
+    "evaluation",
+    "evaluation_mode",
     "green",
     "highlight",
     "hl",
@@ -96,6 +109,7 @@ _SUPPORT_API = [
     "InspectionReport",
     "inspect_script",
     "inspect_snapshot",
+    "immediate",
     "magenta",
     "managed_scene",
     "mech",

@@ -9,12 +9,20 @@ checks, and shell pipelines that need geometry facts rather than a screenshot.
 zencad inspect model.py --json
 zencad inspect model.py --output report.json
 zencad inspect model.py --timeout 10 --json -- model-argument
+zencad inspect model.py --eager --no-cache --json
 ```
 
 `--json` writes exactly one JSON document to stdout. Output produced by the
 model is forwarded to stderr. `--output` atomically replaces its destination;
 it can be combined with `--json`. Without either option, the command prints a
 short human-readable summary.
+
+Evaluation is deferred by default. `--evaluation immediate` or its `--eager`
+shortcut evaluates every model operation as it is constructed, which usually
+places geometry failures closer to their source line. `--no-cache`
+independently disables cache reads and writes for that run. The corresponding
+Python keyword arguments are `evaluation_mode="immediate"` and
+`cache_enabled=False`.
 
 The same operation is available as a Qt-free Python API:
 

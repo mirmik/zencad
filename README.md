@@ -66,6 +66,17 @@ print(shape.mass().value())
 native_shape = shape.native()
 ```
 
+For debugging, tests, and agent runs, evaluation can be made immediate without
+changing the public result types:
+
+```python
+with zencad.eager(cache=False):
+    shape = zencad.box(10).fillet(1)  # every operation runs on this line
+```
+
+The context is nestable and restores the outer policy on exit. The equivalent
+headless command is `zencad inspect model.py --eager --no-cache`.
+
 The former `Runtime`, `zencad.lazy`, and `.unlazy()` API is not part of ZenCad
 2.
 
@@ -145,6 +156,7 @@ creating a Qt application:
 ```sh
 zencad inspect model.py --json
 zencad inspect model.py --output model-report.json
+zencad inspect model.py --eager --no-cache --json
 ```
 
 The versioned JSON report contains stable scene object IDs, optional names,

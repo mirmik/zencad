@@ -7,7 +7,7 @@ import sys
 import traceback
 from uuid import uuid4
 
-from evalcache import EvaluationEventKind
+from evalcache import EvaluationEventKind, EvaluationMode
 
 from zencad.runtime.input_protocol import (
     InputEventBuffer,
@@ -200,6 +200,11 @@ def run_generation(
 
         cache_directory = request.get("cache_directory")
         cache_enabled = request.get("cache_enabled", True)
+        if not isinstance(cache_enabled, bool):
+            raise TypeError("Runner cache_enabled must be a boolean")
+        evaluation_mode = EvaluationMode(
+            request.get("evaluation_mode", EvaluationMode.DEFERRED.value)
+        )
         if cache_directory is None:
             zencad.configure(cache_enabled=cache_enabled)
         else:
@@ -208,7 +213,8 @@ def run_generation(
                 cache_enabled=cache_enabled,
             )
 
-        context = Context.deferred(
+        context = Context(
+            mode=evaluation_mode,
             cache=cache_enabled,
             progress_hooks=(_progress_hook(reporter),),
         )

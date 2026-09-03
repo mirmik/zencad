@@ -6,6 +6,8 @@ from pathlib import Path
 import threading
 from typing import Callable, Mapping
 
+from evalcache import EvaluationMode
+
 from zencad.runtime.scene_protocol import SceneSnapshot
 
 
@@ -55,6 +57,8 @@ def evaluate_static_script(
     *,
     arguments=(),
     timeout=30,
+    evaluation_mode: EvaluationMode | str = EvaluationMode.DEFERRED,
+    cache_enabled: bool | None = None,
     output: Callable[[str, str], None] | None = None,
 ) -> StaticScriptResult:
     """Run a script in isolation and return its last published static scene."""
@@ -82,14 +86,15 @@ def evaluate_static_script(
             captured_output.append((stream, text))
             if output is not None:
                 output(stream, text)
-        elif (
-            message.message_type == "ready"
-            and message.payload.get("animated")
-        ):
+        elif message.message_type == "ready" and message.payload.get("animated"):
             animated.set()
             supervisor.cancel_current()
 
-    supervisor = RunnerSupervisor(on_message=on_message)
+    supervisor = RunnerSupervisor(
+        on_message=on_message,
+        evaluation_mode=evaluation_mode,
+        cache_enabled=cache_enabled,
+    )
     try:
         generation = supervisor.start(script, arguments=list(arguments))
         try:
@@ -111,19 +116,18 @@ def evaluate_static_script(
             raise AnimatedScriptError(
                 "Animated show() sessions do not have a final static scene"
             )
-        errors = [
-            message for message in messages
-            if message.message_type == "error"
-        ]
+        errors = [message for message in messages if message.message_type == "error"]
         if errors:
             raise ScriptExecutionError(errors[-1].payload)
         if status != "success":
-            raise ScriptExecutionError({
-                "kind": "runner",
-                "exception_type": "RunnerError",
-                "message": f"Script runner finished with status {status!r}",
-                "traceback": "",
-            })
+            raise ScriptExecutionError(
+                {
+                    "kind": "runner",
+                    "exception_type": "RunnerError",
+                    "message": f"Script runner finished with status {status!r}",
+                    "traceback": "",
+                }
+            )
 
         scenes = [message.snapshot for message in messages if message.snapshot]
         if not scenes:

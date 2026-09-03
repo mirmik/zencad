@@ -12,6 +12,8 @@ import sys
 import tempfile
 from typing import Any, Callable
 
+from evalcache import EvaluationMode
+
 from zencad.runtime.script_evaluator import (
     AnimatedScriptError,
     MissingSceneError,
@@ -71,8 +73,7 @@ class InspectionReport:
             "schema_version": self.schema_version,
             "status": "ok",
             "script": (
-                None if self.script_path is None
-                else {"path": self.script_path}
+                None if self.script_path is None else {"path": self.script_path}
             ),
             "scene": {
                 "object_count": len(self.objects),
@@ -95,13 +96,16 @@ def _plain(value):
 
 
 def _json_text(value, *, indent=2):
-    return json.dumps(
-        value,
-        allow_nan=False,
-        ensure_ascii=False,
-        indent=indent,
-        sort_keys=True,
-    ) + "\n"
+    return (
+        json.dumps(
+            value,
+            allow_nan=False,
+            ensure_ascii=False,
+            indent=indent,
+            sort_keys=True,
+        )
+        + "\n"
+    )
 
 
 def _vector(value, size, name):
@@ -138,14 +142,10 @@ def _transform_state(properties):
     scale = float(raw.get("scale", 1.0))
     if not math.isfinite(scale) or scale == 0:
         raise ValueError("transform scale must be finite and non-zero")
-    rotation = _vector(
-        raw.get("rotation", (0, 0, 0, 1)), 4, "transform rotation"
-    )
+    rotation = _vector(raw.get("rotation", (0, 0, 0, 1)), 4, "transform rotation")
     if not any(rotation):
         raise ValueError("transform rotation quaternion must be non-zero")
-    translation = _vector(
-        raw.get("translation", (0, 0, 0)), 3, "transform translation"
-    )
+    translation = _vector(raw.get("translation", (0, 0, 0)), 3, "transform translation")
     return {
         "scale": scale,
         "rotation": rotation,
@@ -172,15 +172,11 @@ def _presentation(record):
     if name is not None and (not isinstance(name, str) or not name):
         raise ValueError("name must be a non-empty string")
     presentation = {
-        "color": _rgba(
-            properties.get("color"), (0.6, 0.6, 0.8, 0), "color"
-        ),
+        "color": _rgba(properties.get("color"), (0.6, 0.6, 0.8, 0), "color"),
         "border_color": _rgba(
             properties.get("border_color"), (0, 0, 0, 0), "border_color"
         ),
-        "wire_color": _rgba(
-            properties.get("wire_color"), (0, 0, 0, 0), "wire_color"
-        ),
+        "wire_color": _rgba(properties.get("wire_color"), (0, 0, 0, 0), "wire_color"),
         "transform": _transform_state(properties),
     }
     if record.kind == "mesh":
@@ -199,9 +195,7 @@ def _bbox(coordinates):
     minimum = [float(xmin), float(ymin), float(zmin)]
     maximum = [float(xmax), float(ymax), float(zmax)]
     size = [maximum[index] - minimum[index] for index in range(3)]
-    center = [
-        (minimum[index] + maximum[index]) / 2 for index in range(3)
-    ]
+    center = [(minimum[index] + maximum[index]) / 2 for index in range(3)]
     return {
         "min": minimum,
         "max": maximum,
@@ -313,8 +307,12 @@ def _points_bbox(points):
         return None
     axes = tuple(zip(*points))
     return (
-        min(axes[0]), min(axes[1]), min(axes[2]),
-        max(axes[0]), max(axes[1]), max(axes[2]),
+        min(axes[0]),
+        min(axes[1]),
+        min(axes[2]),
+        max(axes[0]),
+        max(axes[1]),
+        max(axes[2]),
     )
 
 
@@ -374,9 +372,7 @@ def _inspect_line(record, transform):
     start = _vector(source.get("start"), 3, "line start")
     end = _vector(source.get("end"), 3, "line end")
     start, end = _transformed_points((start, end), transform)
-    length = math.sqrt(sum(
-        (end[index] - start[index]) ** 2 for index in range(3)
-    ))
+    length = math.sqrt(sum((end[index] - start[index]) ** 2 for index in range(3)))
     return {
         "payload_sha256": hashlib.sha256(record.payload).hexdigest(),
         "start": list(start),
@@ -410,14 +406,16 @@ def inspect_snapshot(snapshot, *, script_path=None) -> InspectionReport:
                 record,
                 _transformation(presentation["transform"]),
             )
-            objects.append(InspectionObject(
-                object_id=record.object_id,
-                name=name,
-                kind=record.kind,
-                visible=visible,
-                presentation=presentation,
-                geometry=geometry,
-            ))
+            objects.append(
+                InspectionObject(
+                    object_id=record.object_id,
+                    name=name,
+                    kind=record.kind,
+                    visible=visible,
+                    presentation=presentation,
+                    geometry=geometry,
+                )
+            )
         except GeometryInspectionError:
             raise
         except Exception as exception:
@@ -427,7 +425,8 @@ def inspect_snapshot(snapshot, *, script_path=None) -> InspectionReport:
     return InspectionReport(
         objects=tuple(objects),
         script_path=(
-            None if script_path is None
+            None
+            if script_path is None
             else str(Path(script_path).expanduser().resolve())
         ),
         metadata=snapshot.metadata,
@@ -439,6 +438,8 @@ def inspect_script(
     *,
     timeout=30,
     arguments=(),
+    evaluation_mode: EvaluationMode | str = EvaluationMode.DEFERRED,
+    cache_enabled: bool | None = None,
     output: Callable[[str, str], None] | None = None,
 ) -> InspectionReport:
     """Evaluate a script in isolation and return its inspection report."""
@@ -447,6 +448,8 @@ def inspect_script(
         script,
         arguments=arguments,
         timeout=timeout,
+        evaluation_mode=evaluation_mode,
+        cache_enabled=cache_enabled,
         output=output,
     )
     return inspect_snapshot(result.snapshot, script_path=script)
@@ -473,9 +476,7 @@ def inspection_error_report(
         "schema": INSPECTION_SCHEMA,
         "schema_version": INSPECTION_SCHEMA_VERSION,
         "status": "error",
-        "script": {
-            "path": str(Path(script_path).expanduser().resolve())
-        },
+        "script": {"path": str(Path(script_path).expanduser().resolve())},
         "error": error,
     }
 
@@ -515,9 +516,9 @@ def _human_report(report):
         )
         bounds = geometry.get("bbox")
         if bounds is not None:
-            lines.append("  bbox size: " + ", ".join(
-                f"{value:.9g}" for value in bounds["size"]
-            ))
+            lines.append(
+                "  bbox size: " + ", ".join(f"{value:.9g}" for value in bounds["size"])
+            )
         if geometry.get("volume") is not None:
             lines.append(f"  volume: {geometry['volume']:.12g}")
         if geometry.get("surface_area") is not None:
@@ -545,6 +546,27 @@ def _argument_parser():
         default=30,
         help="script evaluation timeout in seconds (default: 30)",
     )
+    evaluation_group = parser.add_mutually_exclusive_group()
+    evaluation_group.add_argument(
+        "--evaluation",
+        choices=tuple(mode.value for mode in EvaluationMode),
+        default=EvaluationMode.DEFERRED.value,
+        help="evaluation timing policy (default: deferred)",
+    )
+    evaluation_group.add_argument(
+        "--eager",
+        dest="evaluation",
+        action="store_const",
+        const=EvaluationMode.IMMEDIATE.value,
+        help="evaluate every operation as it is constructed",
+    )
+    parser.add_argument(
+        "--no-cache",
+        dest="cache_enabled",
+        action="store_false",
+        default=None,
+        help="disable cache reads and writes for this run",
+    )
     parser.add_argument(
         "script_arguments",
         nargs="*",
@@ -566,7 +588,7 @@ def _emit_cli_report(arguments, payload, *, human=None, error=False):
 def inspect_cli(argv=None):
     """Command-line adapter. Returns a stable process exit code."""
     parser = _argument_parser()
-    arguments = parser.parse_args(argv)
+    arguments = parser.parse_intermixed_args(argv)
 
     def script_output(_stream, text):
         sys.stderr.write(text)
@@ -577,6 +599,8 @@ def inspect_cli(argv=None):
             arguments.script,
             timeout=arguments.timeout,
             arguments=arguments.script_arguments,
+            evaluation_mode=arguments.evaluation,
+            cache_enabled=arguments.cache_enabled,
             output=script_output,
         )
         try:
