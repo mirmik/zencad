@@ -166,6 +166,23 @@ stdout and stderr are redirected to the command's stderr, so `--json` keeps
 stdout machine-readable. See
 [the inspect format and exit-code reference](docs/development/headless-inspect.md).
 
+Machine-verifiable geometry checks
+----------------------------------
+`zencad check` turns inspection facts into assertions with stable exit codes:
+
+```sh
+zencad check model.py --valid --solid
+zencad check model.py \
+  --volume 950:1050 --area 400:450 \
+  --bbox-size 9:11,19:21,4:6 --json
+```
+
+Checks target the visible result, aggregate multiple objects deterministically,
+and report `expected`, `actual`, and `tolerance` for every condition. Exit code
+`7` means the model ran successfully but an assertion failed; script, geometry,
+timeout, and usage failures retain distinct codes. See
+[the check contract](docs/development/headless-check.md).
+
 Deterministic PNG previews
 --------------------------
 The GUI installation can render a script without opening the editor:

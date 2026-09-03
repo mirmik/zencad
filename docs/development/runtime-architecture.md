@@ -73,6 +73,12 @@ outer context on exit. Headless inspection passes the same policy through the
 runner protocol with `--eager`/`--evaluation` and `--no-cache`. The full
 contract is documented in [`evaluation-policy.md`](evaluation-policy.md).
 
+`zencad inspect` materializes a versioned geometric report from the final
+snapshot. `zencad check` applies typed expectations to that same report and
+uses a distinct exit code for assertion failures, without conflating them with
+script, geometry, or timeout errors. The check schema and aggregation rules are
+documented in [`headless-check.md`](headless-check.md).
+
 `Shape`, its exact topology subtypes, values, curves, surfaces, transforms,
 bounds, meshes, and structured results retain expressions internally. The
 runner reports v2 evaluation events directly; it does not install the former

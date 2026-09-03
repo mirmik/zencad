@@ -18,6 +18,15 @@ from zencad.version import __ocp_version__
 from zencad import geom as _domain
 from zencad.geom import *
 from zencad.cache_config import clear_cache, configure
+from zencad.check import (
+    CheckAssertion,
+    CheckExpectations,
+    CheckReport,
+    CheckSubject,
+    NumericRange,
+    check_inspection,
+    check_script,
+)
 from zencad.evaluation_policy import (
     EvaluationMode,
     deferred,
@@ -75,7 +84,12 @@ exampledir = os.path.join(os.path.dirname(__file__), "examples")
 
 _SUPPORT_API = [
     "Color",
+    "CheckAssertion",
+    "CheckExpectations",
+    "CheckReport",
+    "CheckSubject",
     "EvaluationMode",
+    "NumericRange",
     "Scene",
     "SceneDraft",
     "SceneObjectRef",
@@ -83,6 +97,8 @@ _SUPPORT_API = [
     "blue",
     "cian",
     "clear_cache",
+    "check_inspection",
+    "check_script",
     "closest_points_between_capsules",
     "closest_points_between_segments",
     "color",

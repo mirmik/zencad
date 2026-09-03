@@ -56,8 +56,9 @@ Points include world coordinates; lines include world endpoints and length.
 
 An invalid but decodable shape remains part of a successful inspection and has
 `geometry.valid: false` with details in `geometry.validation`. This is
-deliberate: inspection reports facts. A future policy command can decide which
-invalidities should fail a build.
+deliberate: inspection reports facts. Use `zencad check model.py --valid` when
+invalid geometry should fail a build; its contract is documented in
+[`headless-check.md`](headless-check.md).
 
 Terminal failures still produce the same schema when `--json` or `--output` is
 used, with `status: "error"` and a structured `error` object. Script tracebacks
