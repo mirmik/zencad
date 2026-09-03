@@ -175,6 +175,8 @@ def run_generation(
     reporter = None
     generation = 0
     terminal_status = "error"
+    graph_recorder = None
+    failure_payload = None
     try:
         message_type, generation, request = decode_control_message(request_frame)
         if message_type != "run":
@@ -205,6 +207,16 @@ def run_generation(
         evaluation_mode = EvaluationMode(
             request.get("evaluation_mode", EvaluationMode.DEFERRED.value)
         )
+        capture_graph = request.get("capture_graph", False)
+        if not isinstance(capture_graph, bool):
+            raise TypeError("Runner capture_graph must be a boolean")
+        if capture_graph:
+            from zencad.computation_graph import ComputationGraphRecorder
+
+            graph_recorder = ComputationGraphRecorder(
+                max_nodes=request.get("graph_max_nodes", 4096),
+                cache_enabled=cache_enabled,
+            )
         if cache_directory is None:
             zencad.configure(cache_enabled=cache_enabled)
         else:
@@ -213,11 +225,25 @@ def run_generation(
                 cache_enabled=cache_enabled,
             )
 
+        progress_hooks = [_progress_hook(reporter)]
+        if graph_recorder is not None:
+            progress_hooks.append(graph_recorder.event)
         context = Context(
             mode=evaluation_mode,
             cache=cache_enabled,
-            progress_hooks=(_progress_hook(reporter),),
+            progress_hooks=tuple(progress_hooks),
         )
+        if graph_recorder is not None:
+            from zencad.computation_graph import TracingEvaluator
+
+            evaluator = context._evaluator
+            context._evaluator = TracingEvaluator(
+                graph_recorder=graph_recorder,
+                mode=evaluator.mode,
+                cache_policy=evaluator.cache_policy,
+                cache_store=evaluator.cache_store,
+                progress_hooks=evaluator.progress_hooks,
+            )
         reporter.control("started", pid=os.getpid(), cwd=str(cwd))
         reporter.control("progress", subcmd="runner", phase="evaluating")
 
@@ -244,7 +270,8 @@ def run_generation(
                     ),
                     cancel_event=cancel_event,
                     input_drain=input_receiver.drain,
-                ):
+                ) as scene:
+                    scene.graph_recorder = graph_recorder
                     runpy.run_path(str(script_path), run_name="__main__")
             terminal_status = "success"
         finally:
@@ -260,25 +287,32 @@ def run_generation(
         if exception.code in (None, 0):
             terminal_status = "success"
         elif reporter is not None:
-            reporter.control(
-                "error",
-                kind="system_exit",
-                exception_type="SystemExit",
-                message=str(exception.code),
-                traceback=traceback.format_exc(),
-            )
+            failure_payload = {
+                "kind": "system_exit",
+                "exception_type": "SystemExit",
+                "message": str(exception.code),
+                "traceback": traceback.format_exc(),
+            }
+            reporter.control("error", **failure_payload)
     except BaseException as exception:
         if reporter is None:
             reporter = _Reporter(connection, generation)
-        reporter.control(
-            "error",
-            kind="exception",
-            exception_type=type(exception).__name__,
-            message=str(exception),
-            traceback=traceback.format_exc(),
-        )
+        failure_payload = {
+            "kind": "exception",
+            "exception_type": type(exception).__name__,
+            "message": str(exception),
+            "traceback": traceback.format_exc(),
+        }
+        reporter.control("error", **failure_payload)
     finally:
         if reporter is not None:
+            if graph_recorder is not None:
+                graph = graph_recorder.graph(
+                    script_path=str(script_path),
+                    status=terminal_status,
+                    error=failure_payload,
+                )
+                reporter.control("graph", graph=graph.to_dict())
             reporter.control("finished", status=terminal_status)
         try:
             connection.close()

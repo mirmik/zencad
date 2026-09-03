@@ -64,6 +64,13 @@ from zencad.inspect import (
     inspect_script,
     inspect_snapshot,
 )
+from zencad.computation_graph import (
+    ComputationGraph,
+    ComputationNode,
+    ComputationRoot,
+    GraphArgument,
+    inspect_computation_graph,
+)
 from zencad.render import render_script, render_snapshot
 from zencad.showapi import display, disp, highlight, hl, managed_scene, show
 from zencad.util import (
@@ -123,6 +130,11 @@ _SUPPORT_API = [
     "hl",
     "InspectionObject",
     "InspectionReport",
+    "ComputationGraph",
+    "ComputationNode",
+    "ComputationRoot",
+    "GraphArgument",
+    "inspect_computation_graph",
     "inspect_script",
     "inspect_snapshot",
     "immediate",

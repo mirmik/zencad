@@ -269,6 +269,7 @@ class SceneDraft:
         self.ready_publisher = ready_publisher
         self.cancel_event = cancel_event
         self.input_drain = input_drain
+        self.graph_recorder = None
         self._objects: OrderedDict[str, _DraftObject] = OrderedDict()
         self._next_id = 0
         self._published = False
@@ -439,6 +440,8 @@ class SceneDraft:
     def snapshot(self, metadata=None) -> SceneSnapshot:
         records = []
         for obj in self._objects.values():
+            if self.graph_recorder is not None:
+                self.graph_recorder.add_root(obj.object_id, obj.source)
             if obj.kind == "brep":
                 payload = encode_brep(
                     obj.source.native()

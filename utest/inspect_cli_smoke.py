@@ -68,6 +68,28 @@ show()
         assert api_report.to_dict() == payload
         assert not any(name.startswith("PyQt5") for name in sys.modules)
 
+        graph_path = root / "reports" / "graph.json"
+        tree = run(
+            root,
+            model,
+            "--tree",
+            "--graph-json",
+            graph_path,
+            "--no-cache",
+        )
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        assert graph["schema"] == "zencad.computation_graph"
+        assert graph["status"] == "success"
+        assert graph["roots"][0]["id"] == "object-000000"
+        assert "zencad.typed.shape.transform" in tree.stdout
+        assert "0x" not in tree.stdout
+
+        from zencad import inspect_computation_graph
+
+        api_graph = inspect_computation_graph(model, cache_enabled=False)
+        assert api_graph.to_dict()["schema_version"] == 1
+        assert len(api_graph.nodes) == 2
+
         policy_model = root / "policy.py"
         policy_model.write_text(
             """
@@ -113,6 +135,26 @@ show()
         assert failure["error"]["code"] == "script_error"
         assert failure["error"]["exception_type"] == "RuntimeError"
         assert "inspection broke" in failure["error"]["message"]
+
+        graph_failure_model = root / "graph_failure.py"
+        graph_failure_model.write_text(
+            """
+from zencad import box, display, show
+display(box("bad", 2, 3).right(4))
+show()
+""",
+            encoding="utf-8",
+        )
+        graph_failure = run(
+            root,
+            graph_failure_model,
+            "--tree",
+            "--failed-path",
+            "--no-cache",
+            expected=3,
+        )
+        assert "zencad.typed.box [error" in graph_failure.stdout
+        assert "zencad.typed.shape.transform [error" in graph_failure.stdout
 
         syntax_error = root / "syntax_error.py"
         syntax_error.write_text("if True print('broken')\n", encoding="utf-8")

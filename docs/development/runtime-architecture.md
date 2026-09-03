@@ -79,6 +79,14 @@ uses a distinct exit code for assertion failures, without conflating them with
 script, geometry, or timeout errors. The check schema and aggregation rules are
 documented in [`headless-check.md`](headless-check.md).
 
+Computation-graph capture is an opt-in runner feature used by `zencad inspect
+--tree` and `--graph-json`. A tracing evaluator observes public EvalCache
+expressions and progress events without changing evaluation order or cache
+policy. Scene records contribute graph roots before materialization. The
+separate bounded graph frame contains digests and summaries only, never scene
+geometry payloads; it is also sent for failed evaluations so `--failed-path`
+can explain the partial computation.
+
 `Shape`, its exact topology subtypes, values, curves, surfaces, transforms,
 bounds, meshes, and structured results retain expressions internally. The
 runner reports v2 evaluation events directly; it does not install the former

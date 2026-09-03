@@ -19,6 +19,7 @@ MESSAGE_TYPES = {
     "started",
     "progress",
     "output",
+    "graph",
     "scene_file",
     "ready",
     "error",

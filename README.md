@@ -157,6 +157,8 @@ creating a Qt application:
 zencad inspect model.py --json
 zencad inspect model.py --output model-report.json
 zencad inspect model.py --eager --no-cache --json
+zencad inspect model.py --tree
+zencad inspect model.py --graph-json computation.json
 ```
 
 The versioned JSON report contains stable scene object IDs, optional names,
@@ -165,6 +167,9 @@ mesh statistics, payload digests, and structured validity results. Model
 stdout and stderr are redirected to the command's stderr, so `--json` keeps
 stdout machine-readable. See
 [the inspect format and exit-code reference](docs/development/headless-inspect.md).
+The computation view exposes stable EvalCache DAG IDs, shared dependencies,
+cache/evaluation state, source locations, and failed paths without transporting
+geometry payloads or importing Qt.
 
 Machine-verifiable geometry checks
 ----------------------------------

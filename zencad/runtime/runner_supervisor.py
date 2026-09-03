@@ -74,6 +74,8 @@ class RunnerSupervisor:
         cache_directory: str | Path | None = None,
         cache_enabled: bool | None = None,
         evaluation_mode: EvaluationMode | str = EvaluationMode.DEFERRED,
+        capture_graph: bool = False,
+        graph_max_nodes: int = 4096,
     ):
         if cancel_grace_period < 0:
             raise ValueError("Cancellation grace period must be non-negative")
@@ -92,6 +94,16 @@ class RunnerSupervisor:
         if not isinstance(self.cache_enabled, bool):
             raise TypeError("cache_enabled must be a boolean or None")
         self.evaluation_mode = EvaluationMode(evaluation_mode)
+        if not isinstance(capture_graph, bool):
+            raise TypeError("capture_graph must be a boolean")
+        if (
+            not isinstance(graph_max_nodes, int)
+            or isinstance(graph_max_nodes, bool)
+            or graph_max_nodes <= 0
+        ):
+            raise ValueError("graph_max_nodes must be a positive integer")
+        self.capture_graph = capture_graph
+        self.graph_max_nodes = graph_max_nodes
         self._context = multiprocessing.get_context("spawn")
         self._lock = threading.RLock()
         self._generation = 0
@@ -154,6 +166,8 @@ class RunnerSupervisor:
             cache_directory=str(self.cache_directory),
             cache_enabled=self.cache_enabled,
             evaluation_mode=self.evaluation_mode.value,
+            capture_graph=self.capture_graph,
+            graph_max_nodes=self.graph_max_nodes,
         )
         process = self._context.Process(
             target=run_generation,

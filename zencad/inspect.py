@@ -14,6 +14,10 @@ from typing import Any, Callable
 
 from evalcache import EvaluationMode
 
+from zencad.computation_graph import (
+    DEFAULT_MAX_GRAPH_NODES,
+    ComputationGraph,
+)
 from zencad.runtime.script_evaluator import (
     AnimatedScriptError,
     MissingSceneError,
@@ -534,11 +538,46 @@ def _argument_parser():
         description="Inspect a ZenCad model without opening a GUI.",
     )
     parser.add_argument("script", help="ZenCad Python script")
-    parser.add_argument(
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument(
         "--json", action="store_true", help="write the report to stdout as JSON"
+    )
+    output_group.add_argument(
+        "--tree", action="store_true", help="print the computation tree"
     )
     parser.add_argument(
         "-o", "--output", help="atomically write the JSON report to this file"
+    )
+    parser.add_argument(
+        "--graph-json",
+        help="atomically write the versioned computation DAG to this file",
+    )
+    parser.add_argument(
+        "--root",
+        action="append",
+        default=[],
+        help="include only this scene-object or node root (repeatable)",
+    )
+    parser.add_argument(
+        "--failed-path",
+        action="store_true",
+        help="include only paths leading to the originating evaluation error",
+    )
+    parser.add_argument(
+        "--max-depth",
+        type=int,
+        help="limit dependency traversal depth (root is depth zero)",
+    )
+    parser.add_argument(
+        "--hide-literals",
+        action="store_true",
+        help="hide argument entries that contain no expression dependency",
+    )
+    parser.add_argument(
+        "--max-graph-nodes",
+        type=int,
+        default=DEFAULT_MAX_GRAPH_NODES,
+        help=f"bound graph capture (default: {DEFAULT_MAX_GRAPH_NODES})",
     )
     parser.add_argument(
         "--timeout",
@@ -594,21 +633,83 @@ def inspect_cli(argv=None):
         sys.stderr.write(text)
         sys.stderr.flush()
 
-    try:
-        report = inspect_script(
-            arguments.script,
-            timeout=arguments.timeout,
-            arguments=arguments.script_arguments,
-            evaluation_mode=arguments.evaluation,
-            cache_enabled=arguments.cache_enabled,
-            output=script_output,
+    graph_requested = bool(
+        arguments.tree
+        or arguments.graph_json
+        or arguments.root
+        or arguments.failed_path
+        or arguments.max_depth is not None
+        or arguments.hide_literals
+    )
+    if arguments.max_depth is not None and arguments.max_depth < 0:
+        parser.error("--max-depth must be non-negative")
+    if arguments.max_graph_nodes <= 0:
+        parser.error("--max-graph-nodes must be positive")
+
+    graph = None
+
+    def filter_graph(value):
+        return value.filtered(
+            roots=arguments.root,
+            failed_path=arguments.failed_path,
+            max_depth=arguments.max_depth,
+            hide_literals=arguments.hide_literals,
         )
+
+    def emit_failure_graph(exception):
+        nonlocal graph
+        payload = getattr(exception, "graph", None)
+        if payload is None:
+            return
         try:
-            _emit_cli_report(
-                arguments,
-                report.to_dict(),
-                human=_human_report(report),
+            graph = filter_graph(ComputationGraph.from_dict(payload))
+            if arguments.graph_json:
+                _write_report(arguments.graph_json, graph.to_json())
+            if arguments.tree:
+                print(graph.to_tree())
+        except (OSError, ValueError) as graph_exception:
+            print(
+                f"zencad inspect: could not emit computation graph: {graph_exception}",
+                file=sys.stderr,
             )
+
+    try:
+        if graph_requested:
+            script = Path(arguments.script).expanduser().resolve()
+            result = evaluate_static_script(
+                script,
+                timeout=arguments.timeout,
+                arguments=arguments.script_arguments,
+                evaluation_mode=arguments.evaluation,
+                cache_enabled=arguments.cache_enabled,
+                output=script_output,
+                capture_graph=True,
+                graph_max_nodes=arguments.max_graph_nodes,
+            )
+            report = inspect_snapshot(result.snapshot, script_path=script)
+            if result.graph is None:
+                raise RuntimeError("Runner did not return a computation graph")
+            graph = filter_graph(ComputationGraph.from_dict(result.graph))
+        else:
+            report = inspect_script(
+                arguments.script,
+                timeout=arguments.timeout,
+                arguments=arguments.script_arguments,
+                evaluation_mode=arguments.evaluation,
+                cache_enabled=arguments.cache_enabled,
+                output=script_output,
+            )
+        try:
+            if arguments.output:
+                _write_report(arguments.output, _json_text(report.to_dict()))
+            if graph is not None and arguments.graph_json:
+                _write_report(arguments.graph_json, graph.to_json())
+            if arguments.tree:
+                print(graph.to_tree())
+            elif arguments.json:
+                sys.stdout.write(_json_text(report.to_dict()))
+            elif not arguments.output:
+                print(_human_report(report))
         except OSError as exception:
             print(
                 f"zencad inspect: could not write report: {exception}",
@@ -617,6 +718,7 @@ def inspect_cli(argv=None):
             return 6
         return 0
     except ScriptExecutionError as exception:
+        emit_failure_graph(exception)
         error = inspection_error_report(
             arguments.script,
             "script_error",
@@ -627,11 +729,13 @@ def inspect_cli(argv=None):
         )
         exit_code = 3
     except AnimatedScriptError as exception:
+        emit_failure_graph(exception)
         error = inspection_error_report(
             arguments.script, "animated_script", str(exception)
         )
         exit_code = 3
     except (MissingSceneError, GeometryInspectionError) as exception:
+        emit_failure_graph(exception)
         details = (
             {"object_id": exception.object_id}
             if isinstance(exception, GeometryInspectionError)

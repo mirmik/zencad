@@ -10,6 +10,8 @@ zencad inspect model.py --json
 zencad inspect model.py --output report.json
 zencad inspect model.py --timeout 10 --json -- model-argument
 zencad inspect model.py --eager --no-cache --json
+zencad inspect model.py --tree
+zencad inspect model.py --graph-json computation.json
 ```
 
 `--json` writes exactly one JSON document to stdout. Output produced by the
@@ -23,6 +25,39 @@ places geometry failures closer to their source line. `--no-cache`
 independently disables cache reads and writes for that run. The corresponding
 Python keyword arguments are `evaluation_mode="immediate"` and
 `cache_enabled=False`.
+
+## Computation graph
+
+`--tree` prints the EvalCache computation graph rooted at displayed scene
+objects. A shared expression is expanded once and then marked `(shared)`, so
+the output describes a DAG rather than duplicating work. Each line includes
+the canonical operation ID, evaluation state, cache hit/miss state, optional
+duration, and the stable expression digest prefix.
+
+`--graph-json PATH` writes the complete versioned graph (`schema:
+"zencad.computation_graph"`, version 1) while the ordinary inspection result
+continues to stdout. It can be combined with `--tree`. The graph contains
+stable full-digest node IDs, ordered dependency IDs, short argument summaries,
+result type IDs, source file/line when available, and evaluation errors. It
+never contains BREP/mesh payloads, arbitrary object reprs, or memory addresses.
+
+Graph capture is bounded to 4096 nodes by default. `--max-graph-nodes N`
+changes that bound and the JSON `limits.truncated` flag reports an incomplete
+capture. Views can be narrowed with repeatable `--root object-000000`,
+`--max-depth N`, `--failed-path`, and `--hide-literals`. `--failed-path` is
+especially useful when script evaluation fails: the partial DAG is emitted
+before the usual exit code 3.
+
+The typed, Qt-free API returns the same contract:
+
+```python
+from zencad import inspect_computation_graph
+
+graph = inspect_computation_graph("model.py", max_nodes=2000)
+print(graph.to_tree())
+for node in graph.nodes:
+    print(node.operation, node.dependencies, node.cache)
+```
 
 The same operation is available as a Qt-free Python API:
 

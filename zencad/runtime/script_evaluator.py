@@ -18,8 +18,14 @@ class StaticScriptError(RuntimeError):
 class ScriptExecutionError(StaticScriptError):
     """The user script or its isolated runner failed."""
 
-    def __init__(self, payload: Mapping[str, object]):
+    def __init__(
+        self,
+        payload: Mapping[str, object],
+        *,
+        graph: Mapping[str, object] | None = None,
+    ):
         self.payload = dict(payload)
+        self.graph = None if graph is None else dict(graph)
         message = str(self.payload.get("message") or "script evaluation failed")
         exception_type = self.payload.get("exception_type")
         if exception_type:
@@ -41,15 +47,24 @@ class ScriptTimeoutError(StaticScriptError):
 class AnimatedScriptError(StaticScriptError):
     """A live animation has no final static scene to inspect or render."""
 
+    def __init__(self, message, *, graph=None):
+        self.graph = None if graph is None else dict(graph)
+        super().__init__(message)
+
 
 class MissingSceneError(StaticScriptError):
     """The script completed without publishing a managed scene."""
+
+    def __init__(self, message, *, graph=None):
+        self.graph = None if graph is None else dict(graph)
+        super().__init__(message)
 
 
 @dataclass(frozen=True, slots=True)
 class StaticScriptResult:
     snapshot: SceneSnapshot
     output: tuple[tuple[str, str], ...]
+    graph: Mapping[str, object] | None = None
 
 
 def evaluate_static_script(
@@ -60,6 +75,8 @@ def evaluate_static_script(
     evaluation_mode: EvaluationMode | str = EvaluationMode.DEFERRED,
     cache_enabled: bool | None = None,
     output: Callable[[str, str], None] | None = None,
+    capture_graph: bool = False,
+    graph_max_nodes: int = 4096,
 ) -> StaticScriptResult:
     """Run a script in isolation and return its last published static scene."""
     from zencad.runtime.runner_supervisor import RunnerSupervisor
@@ -94,6 +111,8 @@ def evaluate_static_script(
         on_message=on_message,
         evaluation_mode=evaluation_mode,
         cache_enabled=cache_enabled,
+        capture_graph=capture_graph,
+        graph_max_nodes=graph_max_nodes,
     )
     try:
         generation = supervisor.start(script, arguments=list(arguments))
@@ -112,13 +131,20 @@ def evaluate_static_script(
             for message in supervisor.messages
             if message.generation == generation
         )
+        graphs = [
+            message.payload.get("graph")
+            for message in messages
+            if message.message_type == "graph"
+        ]
+        graph = graphs[-1] if graphs else None
         if animated.is_set():
             raise AnimatedScriptError(
-                "Animated show() sessions do not have a final static scene"
+                "Animated show() sessions do not have a final static scene",
+                graph=graph,
             )
         errors = [message for message in messages if message.message_type == "error"]
         if errors:
-            raise ScriptExecutionError(errors[-1].payload)
+            raise ScriptExecutionError(errors[-1].payload, graph=graph)
         if status != "success":
             raise ScriptExecutionError(
                 {
@@ -126,13 +152,17 @@ def evaluate_static_script(
                     "exception_type": "RunnerError",
                     "message": f"Script runner finished with status {status!r}",
                     "traceback": "",
-                }
+                },
+                graph=graph,
             )
 
         scenes = [message.snapshot for message in messages if message.snapshot]
         if not scenes:
-            raise MissingSceneError("Script did not call show() with a scene")
-        return StaticScriptResult(scenes[-1], tuple(captured_output))
+            raise MissingSceneError(
+                "Script did not call show() with a scene",
+                graph=graph,
+            )
+        return StaticScriptResult(scenes[-1], tuple(captured_output), graph)
     finally:
         if supervisor is not None:
             supervisor.shutdown()
