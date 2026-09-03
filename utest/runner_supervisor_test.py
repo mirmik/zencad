@@ -277,6 +277,33 @@ show(animate=animate, animate_step=0.001, close_handle=close_handle)
         )
         self.assertIn("animation closed", stdout)
 
+    def test_animation_emits_only_successfully_committed_camera_actions(self):
+        path = self.script(
+            "animated_camera_failure.py",
+            """
+from zencad import box, deg, display, show
+display(box(2))
+ticks = 0
+def animate(state):
+    global ticks
+    ticks += 1
+    state.camera.orbit((0, 0, 1), deg(-1))
+    if ticks == 2:
+        raise RuntimeError("camera iteration failed")
+show(animate=animate, animate_step=0.001)
+""",
+        )
+        generation = self.supervisor.start(path)
+        self.assertEqual(self.supervisor.wait(generation, timeout=10), "error")
+
+        actions = self.messages(generation, "camera_action")
+        self.assertEqual(len(actions), 1)
+        self.assertEqual(actions[0].camera_action.sequence, 1)
+        self.assertEqual(actions[0].camera_action.action_revision, 1)
+        self.assertEqual(actions[0].camera_action.generation, generation)
+        error = self.messages(generation, "error")[-1]
+        self.assertIn("camera iteration failed", error.payload["message"])
+
     def test_live_animation_is_cooperatively_cancelled(self):
         path = self.script(
             "animated_cancel.py",

@@ -225,10 +225,13 @@ Qt event objects.  This permits simulations and games without giving scripts
 direct access to `DisplayWidget` or the AIS context.
 
 Arbitrary `preanimate` Qt widgets, GUI event monkeypatching, and direct
-viewer/AIS access are not part of managed compatibility.  Declarative control
-panels, live topology add/remove, and camera commands are potential later
-protocol extensions.  The transport DTO, validation, and coalescing foundation
-and runner/GUI animation path are implemented. Input v1 provides keyboard
+viewer/AIS access are not part of managed compatibility. Declarative control
+panels and live topology add/remove are potential later protocol extensions.
+Relative managed camera orbit uses a separate cumulative `CameraAction`
+contract; it deliberately remains outside ScenePatch and is specified in
+[CameraAction transport v1](camera-action-transport.md). The transport DTO,
+validation, coalescing, and runner/GUI animation path are implemented. Input
+v1 provides keyboard
 edges, persistent key state, mouse position/buttons, and wheel deltas through
 the Qt-free `state.input` facade. A bounded writer thread prevents the reverse
 pipe from blocking the GUI; only mouse motion is coalescible, while discrete

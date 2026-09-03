@@ -34,6 +34,10 @@ from zencad.runtime.scene_patch_protocol import (
     SCENE_PATCH_FRAME_MAGIC,
     decode_scene_patch_frame,
 )
+from zencad.runtime.camera_action_protocol import (
+    CAMERA_ACTION_FRAME_MAGIC,
+    decode_camera_action_frame,
+)
 
 
 @dataclass
@@ -254,7 +258,10 @@ class RunnerSupervisor:
         with self._lock:
             if message.generation != self._current_generation:
                 return False
-            if message.message_type != "scene_patch" or self.record_scene_patches:
+            if (
+                message.message_type not in {"scene_patch", "camera_action"}
+                or self.record_scene_patches
+            ):
                 self.messages.append(message)
         if self.on_message is not None:
             try:
@@ -294,6 +301,22 @@ class RunnerSupervisor:
                     "sequence": patch.sequence,
                 },
                 scene_patch=patch,
+            )
+        if frame.startswith(CAMERA_ACTION_FRAME_MAGIC):
+            action = decode_camera_action_frame(frame)
+            if action.generation != handle.generation:
+                raise ProtocolError(
+                    "CameraAction generation does not match its runner"
+                )
+            return RunnerMessage(
+                "camera_action",
+                handle.generation,
+                {
+                    "scene_revision": action.scene_revision,
+                    "sequence": action.sequence,
+                    "action_revision": action.action_revision,
+                },
+                camera_action=action,
             )
         if not frame.startswith(RUNNER_MAGIC):
             raise ProtocolError("Unknown runner frame magic")

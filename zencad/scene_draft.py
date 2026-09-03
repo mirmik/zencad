@@ -33,6 +33,12 @@ from zencad.runtime.scene_protocol import (
     encode_json_payload,
 )
 from zencad.runtime.scene_patch_protocol import SceneObjectPatch, ScenePatch
+from zencad.runtime.camera_action_protocol import (
+    CameraAction,
+    IDENTITY_QUATERNION,
+    quaternion_from_axis_angle,
+    quaternion_multiply,
+)
 from zencad.runtime.input_protocol import InputState
 
 
@@ -42,6 +48,43 @@ class SceneDraftError(ValueError):
 
 class SceneAnimationCancelled(BaseException):
     """The owning generation was cancelled during managed animation."""
+
+
+class ManagedCamera:
+    """Qt-free camera command facade owned by one animation state."""
+
+    def __init__(self):
+        self._committed = IDENTITY_QUATERNION
+        self._staged = self._committed
+        self._staged_actions = 0
+        self._action_revision = 0
+
+    def _begin_iteration(self):
+        self._staged = self._committed
+        self._staged_actions = 0
+
+    def _rollback_iteration(self):
+        self._staged = self._committed
+        self._staged_actions = 0
+
+    def _commit_iteration(self):
+        if self._staged_actions == 0:
+            return None
+        self._committed = self._staged
+        self._action_revision += self._staged_actions
+        result = self._committed, self._action_revision
+        self._staged_actions = 0
+        return result
+
+    def orbit(self, axis, angle):
+        """Request a relative world-axis camera orbit in radians."""
+        try:
+            rotation = quaternion_from_axis_angle(axis, angle)
+        except ValueError as exception:
+            raise SceneDraftError(str(exception)) from exception
+        self._staged = quaternion_multiply(rotation, self._staged)
+        self._staged_actions += 1
+        return self
 
 
 class ManagedAnimationState:
@@ -57,6 +100,7 @@ class ManagedAnimationState:
         self.loctime = 0.0
         self.scene = None
         self.input = InputState()
+        self.camera = ManagedCamera()
 
     def timestamp(self, timestamp):
         self.time = timestamp
@@ -206,6 +250,9 @@ class SceneDraft:
         publisher: Callable[[SceneSnapshot], None] | None = None,
         camera_policy: str = "preserve",
         patch_publisher: Callable[[ScenePatch], bool | None] | None = None,
+        camera_action_publisher: (
+            Callable[[CameraAction], bool | None] | None
+        ) = None,
         ready_publisher: Callable[[int, bool], bool | None] | None = None,
         cancel_event=None,
         input_drain: Callable[[], tuple] | None = None,
@@ -218,6 +265,7 @@ class SceneDraft:
         self.publisher = publisher
         self.camera_policy = camera_policy
         self.patch_publisher = patch_publisher
+        self.camera_action_publisher = camera_action_publisher
         self.ready_publisher = ready_publisher
         self.cancel_event = cancel_event
         self.input_drain = input_drain
@@ -227,6 +275,7 @@ class SceneDraft:
         self._ready = False
         self._scene_revision = 0
         self._patch_sequence = 0
+        self._camera_action_sequence = 0
         self._dirty: OrderedDict[str, dict] = OrderedDict()
 
     def _get(self, object_id: str) -> _DraftObject:
@@ -526,10 +575,32 @@ class SceneDraft:
                 state.input.begin_frame(
                     self.input_drain() if self.input_drain is not None else ()
                 )
-                callback(state)
+                state.camera._begin_iteration()
+                try:
+                    callback(state)
+                except BaseException:
+                    state.camera._rollback_iteration()
+                    raise
+                camera_state = state.camera._commit_iteration()
                 patch = self.drain_patch()
                 if patch is not None and self.patch_publisher is not None:
                     accepted = self.patch_publisher(patch)
+                    if accepted is False:
+                        raise SceneAnimationCancelled()
+                if (
+                    camera_state is not None
+                    and self.camera_action_publisher is not None
+                ):
+                    self._camera_action_sequence += 1
+                    cumulative, action_revision = camera_state
+                    action = CameraAction(
+                        generation=self.generation,
+                        scene_revision=self._scene_revision,
+                        sequence=self._camera_action_sequence,
+                        action_revision=action_revision,
+                        cumulative_orbit=cumulative,
+                    )
+                    accepted = self.camera_action_publisher(action)
                     if accepted is False:
                         raise SceneAnimationCancelled()
                 deadline = max(deadline + animate_step, time.monotonic())

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline": "ZenCad pre-cutover geometry capability inventory, archived 2026-09-02",
-  "legacy_signature_sha256": "910ea0c2ba29564aae97e90d316cba8c86147db107d9ea020aae1f948ced9868",
+  "legacy_signature_sha256": "4f4f9dd68d8bfde8d122310a5bf6102857737774871515011388766358cec94d",
   "status_meaning": {
     "implemented": "The canonical zencad.geom layer provides the complete domain capability.",
     "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",

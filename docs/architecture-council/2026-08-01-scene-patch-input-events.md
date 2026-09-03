@@ -126,8 +126,11 @@ memory growth.  Absolute updates make bounded latest-state delivery safe.
 - A bounded writer/coalescer is required so a blocked transport cannot grow
   memory or stall simulation logic indefinitely.
 - Existing examples that touch PyQt or the real viewer need explicit ports.
-- Live topology replacement, add/remove, camera commands, declarative control
-  panels, and reconnect/checkpoint semantics remain future extensions.
+- Live topology replacement, add/remove, declarative control panels, and
+  reconnect/checkpoint semantics remain future extensions. Relative managed
+  camera orbit is specified separately as a cumulative, GUI-relative stream in
+  [Managed camera actions](2026-09-03-managed-camera-actions.md); it does not
+  extend ScenePatch's absolute object-property contract.
 
 ## Follow-up work
 

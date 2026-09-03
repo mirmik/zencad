@@ -20,6 +20,7 @@ from zencad.settings import Settings
 class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
     runner_message = QtCore.pyqtSignal(object)
     scene_patch_ready = QtCore.pyqtSignal()
+    camera_action_ready = QtCore.pyqtSignal()
 
     def __init__(self,
                  title="ZenCad",
@@ -38,6 +39,9 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         self._scene_patch_lock = threading.Lock()
         self._scene_patch_notification_pending = False
         self._scene_patch_bridge_error = None
+        self._camera_action_lock = threading.Lock()
+        self._camera_action_notification_pending = False
+        self._camera_action_bridge_error = None
         self._failed_live_generation = None
 
         Settings.restore()
@@ -52,7 +56,11 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         if restore_gui:
             self.restore_gui_state()
 
-        from zencad.runtime import RunnerSupervisor, ScenePatchCoalescer
+        from zencad.runtime import (
+            CameraActionCoalescer,
+            RunnerSupervisor,
+            ScenePatchCoalescer,
+        )
 
         self.runner_message.connect(
             self._handle_runner_message,
@@ -62,11 +70,16 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self._apply_pending_scene_patch,
             QtCore.Qt.QueuedConnection,
         )
+        self.camera_action_ready.connect(
+            self._apply_pending_camera_action,
+            QtCore.Qt.QueuedConnection,
+        )
         self._runner_supervisor = RunnerSupervisor(
             on_message=self._queue_runner_message,
             record_scene_patches=False,
         )
         self._scene_patch_coalescer = ScenePatchCoalescer()
+        self._camera_action_coalescer = CameraActionCoalescer()
         self.display_widget.set_input_event_sink(self._forward_input_event)
         self.display_widget.set_viewer_event_sink(self._handle_viewer_event)
         self.create_actions()
@@ -219,6 +232,11 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
                 self._scene_patch_coalescer.clear()
                 self._scene_patch_notification_pending = False
                 self._scene_patch_bridge_error = None
+            with self._camera_action_lock:
+                self._camera_action_coalescer.clear()
+                self._camera_action_notification_pending = False
+                self._camera_action_bridge_error = None
+            self.display_widget.reset_camera_actions()
             self._failed_live_generation = None
             return generation
         finally:
@@ -233,11 +251,35 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
 
     def _queue_runner_message(self, message):
         """Coalesce patches before they can fill the queued Qt event stream."""
-        if message.message_type != "scene_patch":
+        if message.message_type not in {"scene_patch", "camera_action"}:
             self.runner_message.emit(message)
+            return
+        if message.message_type == "camera_action":
+            should_notify = False
+            with self._camera_action_lock:
+                if (
+                    message.generation
+                    != self._runner_supervisor.current_generation
+                ):
+                    return
+                try:
+                    self._camera_action_coalescer.push(message.camera_action)
+                except Exception as exception:
+                    self._camera_action_bridge_error = exception
+                    self._camera_action_coalescer.clear()
+                if not self._camera_action_notification_pending:
+                    self._camera_action_notification_pending = True
+                    should_notify = True
+            if should_notify:
+                self.camera_action_ready.emit()
             return
         should_notify = False
         with self._scene_patch_lock:
+            if (
+                message.generation
+                != self._runner_supervisor.current_generation
+            ):
+                return
             try:
                 self._scene_patch_coalescer.push(message.scene_patch)
             except Exception as exception:
@@ -291,7 +333,9 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             return
         if (
             generation == self._failed_live_generation
-            and message_type in {"scene", "ready", "scene_patch"}
+            and message_type in {
+                "scene", "ready", "scene_patch", "camera_action"
+            }
         ):
             return
 
@@ -318,7 +362,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
                 return
             self._pending_snapshots.pop(generation, None)
             try:
-                self.display_widget.scene_presenter.apply(
+                self.display_widget.apply_snapshot(
                     snapshot,
                     scene_revision=message.payload.get("scene_revision", 0),
                 )
@@ -332,6 +376,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self.calculation_overlay.finish()
         elif message_type == "error":
             self._apply_pending_scene_patch()
+            self._apply_pending_camera_action()
             details = message.payload.get("traceback")
             if not details:
                 details = "{}: {}\n".format(
@@ -400,12 +445,42 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self.console.write(traceback.format_exc())
             self._fail_live_scene("ScenePatch presentation failed")
 
+    @QtCore.pyqtSlot()
+    def _apply_pending_camera_action(self):
+        with self._camera_action_lock:
+            error = self._camera_action_bridge_error
+            self._camera_action_bridge_error = None
+            action = self._camera_action_coalescer.drain()
+            self._camera_action_notification_pending = False
+        if error is not None:
+            self.console.write(
+                "{}: {}\n".format(type(error).__name__, error)
+            )
+            self._fail_live_scene("Invalid CameraAction")
+            return
+        if action is None:
+            return
+        if action.generation != self._runner_supervisor.current_generation:
+            return
+        try:
+            self.display_widget.apply_camera_action(action)
+        except Exception:
+            import traceback
+
+            self.console.write(traceback.format_exc())
+            self._fail_live_scene("CameraAction presentation failed")
+
     def _fail_live_scene(self, message):
         self._failed_live_generation = self._runner_supervisor.current_generation
         with self._scene_patch_lock:
             self._scene_patch_coalescer.clear()
             self._scene_patch_notification_pending = False
             self._scene_patch_bridge_error = None
+        with self._camera_action_lock:
+            self._camera_action_coalescer.clear()
+            self._camera_action_notification_pending = False
+            self._camera_action_bridge_error = None
+        self.display_widget.reset_camera_actions()
         self.statusBar().showMessage(message)
         self.calculation_overlay.finish()
         self._runner_supervisor.cancel_current()

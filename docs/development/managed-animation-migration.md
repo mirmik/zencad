@@ -10,7 +10,9 @@ code remains ordinary Python, but it receives ZenCad state rather than a real
 `show(animate=callback, animate_step=..., close_handle=...)` retains its public
 shape. The callback argument provides the timing fields `start_time`, `time`,
 `last_time`, `delta`, and `loctime`, plus the Qt-free
-[`state.input`](input-event-transport.md) facade.
+[`state.input`](input-event-transport.md) facade. A separate cumulative
+[`state.camera`](camera-action-transport.md) facade for relative viewer-camera
+orbit.
 
 Objects returned by `display()` retain these live operations:
 
@@ -53,7 +55,7 @@ replaces its external slider window with keyboard controls.
 | `4.Assemble/robot.py` | Supported contract | Shape-only nested assembly animation |
 | `MiniGames/tetris.py` | Supported | InputEvent arrows, visibility/color patches |
 | `MiniGames/tennis.py` | Supported | Two-player keyboard input and assembly motion |
-| `3.Animation/camera.py` | Supported | Model orbit pauses while the user manipulates the GUI-owned camera |
+| `3.Animation/camera.py` | Supported | `state.camera.orbit(...)` rotates the GUI-owned camera and pauses during mouse drag |
 | `4.Assemble/manual-control.py` | Supported | Number keys select a joint; arrows rotate it |
 | `4.Assemble/manual-control-2.py` | Supported | Keyboard-driven inverse-kinematics target |
 

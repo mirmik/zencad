@@ -20,11 +20,18 @@ EXAMPLES = (
 class ManagedExamplesTest(unittest.TestCase):
     def setUp(self):
         self.patch_events = {}
+        self.camera_action_events = {}
+        self.camera_actions = {}
         self.cache_directory = TemporaryDirectory()
 
         def on_message(message):
             if message.message_type == "scene_patch":
                 self.patch_events.setdefault(
+                    message.generation, threading.Event()
+                ).set()
+            elif message.message_type == "camera_action":
+                self.camera_actions[message.generation] = message.camera_action
+                self.camera_action_events.setdefault(
                     message.generation, threading.Event()
                 ).set()
 
@@ -71,6 +78,31 @@ class ManagedExamplesTest(unittest.TestCase):
                     self.supervisor.wait(generation, timeout=10),
                     "cancelled",
                 )
+
+    def test_camera_example_orbits_viewer_without_model_patches(self):
+        generation = self.supervisor.start(
+            ROOT / "zencad/examples/3.Animation/camera.py"
+        )
+        ready = self.wait_for_message(generation, "ready")
+        self.assertTrue(ready.payload["animated"])
+        scene = self.wait_for_message(generation, "scene")
+        self.assertEqual(len(scene.snapshot.objects), 1)
+        self.assertEqual(
+            scene.snapshot.objects[0].properties["transform"]["rotation"],
+            (0.0, 0.0, 0.0, 1.0),
+        )
+        action_event = self.camera_action_events.setdefault(
+            generation, threading.Event()
+        )
+        self.assertTrue(action_event.wait(30))
+        self.assertGreaterEqual(
+            self.camera_actions[generation].action_revision, 1
+        )
+        self.assertNotIn(generation, self.patch_events)
+        self.assertTrue(self.supervisor.cancel_current())
+        self.assertEqual(
+            self.supervisor.wait(generation, timeout=10), "cancelled"
+        )
 
 
 if __name__ == "__main__":

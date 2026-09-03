@@ -106,11 +106,12 @@ class RunnerMessage:
     payload: Mapping[str, Any] = field(default_factory=dict)
     snapshot: Any = None
     scene_patch: Any = None
+    camera_action: Any = None
 
     def __post_init__(self):
         if (
             self.message_type not in MESSAGE_TYPES
-            and self.message_type not in {"scene", "scene_patch"}
+            and self.message_type not in {"scene", "scene_patch", "camera_action"}
         ):
             raise ProtocolError(
                 f"Unsupported runner message type: {self.message_type!r}"

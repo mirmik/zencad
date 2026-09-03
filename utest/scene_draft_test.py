@@ -136,6 +136,32 @@ class SceneDraftTest(unittest.TestCase):
         with self.assertRaisesRegex(SceneDraftError, "cannot add objects"):
             draft.add(zencad.sphere(1))
 
+    def test_camera_actions_commit_only_after_successful_callback(self):
+        actions = []
+        states = []
+
+        with zencad.managed_scene(
+            13,
+            camera_action_publisher=actions.append,
+        ):
+            zencad.display(zencad.box(1))
+
+            def animate(state):
+                states.append(state)
+                state.camera.orbit((1, 0, 0), zencad.deg(10))
+                if len(states) == 1:
+                    state.camera.orbit((0, 1, 0), zencad.deg(20))
+                else:
+                    raise RuntimeError("failed iteration")
+
+            with self.assertRaisesRegex(RuntimeError, "failed iteration"):
+                zencad.show(animate=animate, animate_step=0.001)
+
+        self.assertEqual(len(actions), 1)
+        self.assertEqual(actions[0].sequence, 1)
+        self.assertEqual(actions[0].action_revision, 2)
+        self.assertIsNone(states[0].widget)
+
     def test_managed_assembly_flattens_and_keeps_live_kinematics(self):
         import zencad.assemble
 

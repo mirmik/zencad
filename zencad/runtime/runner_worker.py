@@ -23,6 +23,7 @@ from zencad.runtime.scene_protocol import (
     select_snapshot_transport,
 )
 from zencad.runtime.scene_patch_protocol import encode_scene_patch_frame
+from zencad.runtime.camera_action_protocol import encode_camera_action_frame
 from zencad.scene_draft import SceneAnimationCancelled
 
 
@@ -65,6 +66,16 @@ class _Reporter:
             return False
         try:
             self.connection.send_bytes(encode_scene_patch_frame(patch))
+        except (BrokenPipeError, EOFError, OSError):
+            self.closed = True
+            return False
+        return True
+
+    def camera_action(self, action):
+        if self.closed:
+            return False
+        try:
+            self.connection.send_bytes(encode_camera_action_frame(action))
         except (BrokenPipeError, EOFError, OSError):
             self.closed = True
             return False
@@ -219,6 +230,7 @@ def run_generation(
                     generation,
                     lambda snapshot: reporter.scene(snapshot, bundle_root),
                     patch_publisher=reporter.scene_patch,
+                    camera_action_publisher=reporter.camera_action,
                     ready_publisher=lambda revision, animated: reporter.control(
                         "ready",
                         scene_revision=revision,

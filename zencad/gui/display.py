@@ -32,6 +32,8 @@ from zencad.gui.navigation import (
     wheel_zoom_factor,
 )
 from zencad.gui.scene_presenter import ScenePresenter
+from zencad.gui.camera_action_presenter import CameraActionPresenter
+from zencad.runtime.camera_action_protocol import rotate_vector
 
 from OpenGL.GL import GL_RGBA, GL_UNSIGNED_BYTE, glReadPixels
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
@@ -188,6 +190,7 @@ class DisplayWidget(BaseViewer):
             self.InitDriver()
 
         self.scene_presenter = ScenePresenter(self)
+        self.camera_action_presenter = CameraActionPresenter(self)
 
     def set_input_event_sink(self, sink):
         if sink is not None and not callable(sink):
@@ -281,11 +284,60 @@ class DisplayWidget(BaseViewer):
         if QtCore.QThread.currentThread() != self.thread():
             raise RuntimeError("Scene snapshots must be applied on the GUI thread")
 
-    def apply_snapshot(self, snapshot):
-        return self.scene_presenter.apply(snapshot)
+    def apply_snapshot(self, snapshot, scene_revision=0):
+        generation = self.scene_presenter.apply(
+            snapshot, scene_revision=scene_revision
+        )
+        self.camera_action_presenter.reset()
+        return generation
 
     def apply_scene_patch(self, patch):
         return self.scene_presenter.apply_patch(patch)
+
+    def reset_camera_actions(self):
+        self.camera_action_presenter.reset()
+
+    def apply_camera_action(self, action):
+        return self.camera_action_presenter.apply(
+            action,
+            self.scene_presenter.committed_generation,
+            self.scene_presenter.committed_scene_revision,
+        )
+
+    def apply_camera_orbit(self, quaternion):
+        """Transactionally rotate eye and up around the current center."""
+        self.assert_gui_thread()
+        camera = self._display.View.Camera()
+        saved = Graphic3d_Camera()
+        saved.Copy(camera)
+        saved_yaw = self.yaw
+        saved_pitch = self.pitch
+        eye = camera.Eye()
+        center = camera.Center()
+        up = camera.Up()
+        eye_offset = rotate_vector(quaternion, (
+            eye.X() - center.X(),
+            eye.Y() - center.Y(),
+            eye.Z() - center.Z(),
+        ))
+        rotated_up = rotate_vector(
+            quaternion, (up.X(), up.Y(), up.Z())
+        )
+        try:
+            camera.SetEye(gp_Pnt(
+                center.X() + eye_offset[0],
+                center.Y() + eye_offset[1],
+                center.Z() + eye_offset[2],
+            ))
+            camera.SetUp(gp_Dir(*rotated_up))
+            self.update_orient1_from_view()
+            self.location_changed_handle()
+            self.redraw()
+        except Exception:
+            camera.Copy(saved)
+            self.yaw = saved_yaw
+            self.pitch = saved_pitch
+            raise
 
     def set_navigation_scheme(self, scheme):
         self.navigation_scheme = normalize_navigation_scheme(scheme)
