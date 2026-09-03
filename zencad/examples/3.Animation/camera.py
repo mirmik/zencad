@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orbit the viewer camera while mouse interaction remains in control."""
+"""Orbit the viewer camera continuously, including during interaction."""
 
 from zencad import *
 
@@ -9,8 +9,7 @@ disp(model)
 
 
 def animate(state):
-    if not state.input.mouse_buttons:
-        state.camera.orbit((0, 0, 1), deg(-0.8))
+    state.camera.orbit((0, 0, 1), deg(-0.8))
 
 
 show(animate=animate)

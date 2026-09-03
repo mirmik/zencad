@@ -1,7 +1,7 @@
 # Managed camera actions for runner-driven animation
 
 - Date: 2026-09-03
-- Status: Accepted
+- Status: Accepted, amended to continuous drag composition
 - Kanboard: #2124 `[animation] Определить managed camera command contract`
 
 ## Context
@@ -11,9 +11,11 @@ Qt navigation in the GUI process. Animation callbacks remain in an isolated
 runner and currently update only scene objects through `ScenePatch`.
 
 The legacy `3.Animation/camera.py` callback rotated the viewer's current eye
-around the scene and paused while the user dragged the mouse. Replacing that
-behaviour with model rotation avoided cross-process camera access, but changed
-the meaning of a public example and is not accepted as the final migration.
+around the scene and stopped requesting motion while the user dragged the
+mouse. The pause is now treated as undesirable legacy behaviour: managed
+camera actions must compose continuously with navigation instead. Replacing
+camera motion with model rotation also changed the meaning of the public
+example and is not accepted as the final migration.
 
 Camera motion has different delivery semantics from object state. Scene
 properties are absolute latest-state values, while a camera orbit must be
@@ -70,19 +72,19 @@ pre-action camera is restored and the live generation is cancelled while the
 last valid scene remains visible.
 
 The callback remains responsible for deciding when to request motion. The
-restored bundled example pauses while a navigation button is held:
+bundled example requests motion continuously, including during navigation:
 
 ```python
 def animate(state):
-    if not state.input.mouse_buttons:
-        state.camera.orbit((0, 0, 1), deg(-0.8))
+    state.camera.orbit((0, 0, 1), deg(-0.8))
 ```
 
-This restores the observable legacy behaviour: the viewer camera orbits the
-model, user drag pauses automatic motion, and animation resumes from the
-camera orientation chosen by the user. The temporary model-orbit replacement
-must be removed from `camera.py`; it may survive only as a separately and
-honestly named model-animation example.
+This restores viewer-camera motion while deliberately repairing the legacy
+pause bug. Automatic and manual rotations compose in GUI event order, so a
+drag does not stop animation and no absolute runner state can snap the camera
+back. The temporary model-orbit replacement must be removed from `camera.py`;
+it may survive only as a separately and honestly named model-animation
+example.
 
 ## V1 boundary
 
@@ -119,9 +121,8 @@ contract.
 - Unit tests must cover codec validation, quaternion composition, gaps,
   replay, coalescing, stale generations, and reset behaviour.
 - GUI smoke must prove that orbit changes the camera without changing model
-  transforms, survives coalescing, pauses during drag, resumes from manual
+  transforms, survives coalescing, continues during drag, composes with manual
   navigation, and preserves the native viewer across reload/error/cancel.
 
 The concrete transport contract is specified in
 [`../development/camera-action-transport.md`](../development/camera-action-transport.md).
-

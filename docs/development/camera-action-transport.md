@@ -77,10 +77,11 @@ Camera actions are relative to the GUI camera at application time. A user's
 orbit, pan, or zoom therefore becomes the base for the next program action.
 The runner does not poll or reconstruct that state.
 
-The compatibility example explicitly pauses production while
-`state.input.mouse_buttons` is non-empty. GUI event ordering resolves the small
-in-flight boundary at drag start; no absolute runner value can overwrite the
-manual result. V1 does not buffer a backlog to replay after drag.
+Camera-action production continues while a mouse button is held. Manual drag
+events and relative actions are serialized on the GUI thread and compose with
+the camera state left by the preceding event. No absolute runner value can
+overwrite the manual result, and there is no pause or deferred backlog to
+replay after drag.
 
 ## Lifecycle
 
@@ -99,6 +100,5 @@ coalescing, bounds, and generation/revision filtering.
 Runner tests verify that successful iterations publish accumulated actions,
 failed iterations do not, and cancellation/reload resets state. GUI tests
 verify transactional application to a fake camera. Native GUI smoke verifies
-the restored `3.Animation/camera.py` scenario and stable viewer identity across
-reload, error, cancellation, user drag, and resumed orbit.
-
+the `3.Animation/camera.py` scenario, continuous orbit during user drag, and
+stable viewer identity across reload, error and cancellation.

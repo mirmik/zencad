@@ -3,6 +3,7 @@
 
 import math
 from pathlib import Path
+import time
 
 
 ROOT = Path(__file__).parents[1]
@@ -26,7 +27,7 @@ def main():
     configure_qt_platform()
 
     from OCP.gp import gp_Pnt
-    from PyQt5 import QtCore, QtWidgets
+    from PyQt5 import QtCore, QtTest, QtWidgets
     from zencad.gui.mainwindow import MainWindow
 
     application = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -52,6 +53,8 @@ def main():
         "projection": None,
         "handle": None,
         "manual_z": None,
+        "drag_position": None,
+        "deadline": None,
     }
 
     def poll():
@@ -85,6 +88,41 @@ def main():
             assert presenter.objects[0].properties["transform"]["rotation"] == (
                 0.0, 0.0, 0.0, 1.0
             )
+            position = display.rect().center()
+            QtTest.QTest.mousePress(
+                display,
+                QtCore.Qt.LeftButton,
+                QtCore.Qt.NoModifier,
+                position,
+            )
+            assert display.mousedown
+            state["drag_position"] = position
+            state["deadline"] = time.monotonic() + 0.25
+            state["phase"] = "held-settle"
+            return
+        if state["phase"] == "held-settle":
+            if time.monotonic() < state["deadline"]:
+                return
+            assert display.mousedown
+            state["sequence"] = camera_presenter.last_sequence
+            state["deadline"] = time.monotonic() + 0.30
+            state["phase"] = "held-observe"
+            return
+        if state["phase"] == "held-observe":
+            if time.monotonic() < state["deadline"]:
+                return
+            assert display.mousedown
+            assert camera_presenter.last_sequence >= state["sequence"] + 5
+            position = state["drag_position"] + QtCore.QPoint(40, 20)
+            QtTest.QTest.mouseMove(display, position)
+            QtTest.QTest.mouseRelease(
+                display,
+                QtCore.Qt.LeftButton,
+                QtCore.Qt.NoModifier,
+                position,
+            )
+            assert not display.mousedown
+            camera = display.View.Camera()
             center = camera.Center()
             state["manual_z"] = center.Z() + 7.0
             camera.SetEye(gp_Pnt(center.X() + 20.0, center.Y(), state["manual_z"]))

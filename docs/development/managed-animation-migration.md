@@ -55,7 +55,7 @@ replaces its external slider window with keyboard controls.
 | `4.Assemble/robot.py` | Supported contract | Shape-only nested assembly animation |
 | `MiniGames/tetris.py` | Supported | InputEvent arrows, visibility/color patches |
 | `MiniGames/tennis.py` | Supported | Two-player keyboard input and assembly motion |
-| `3.Animation/camera.py` | Supported | `state.camera.orbit(...)` rotates the GUI-owned camera and pauses during mouse drag |
+| `3.Animation/camera.py` | Supported | `state.camera.orbit(...)` continuously rotates the GUI-owned camera and composes with mouse navigation |
 | `4.Assemble/manual-control.py` | Supported | Number keys select a joint; arrows rotate it |
 | `4.Assemble/manual-control-2.py` | Supported | Keyboard-driven inverse-kinematics target |
 
