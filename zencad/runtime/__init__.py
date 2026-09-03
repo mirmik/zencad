@@ -18,6 +18,15 @@ from zencad.runtime.scene_protocol import (
 )
 from zencad.runtime.runner_protocol import RunnerMessage
 from zencad.runtime.runner_supervisor import RunnerSupervisor
+from zencad.runtime.script_evaluator import (
+    AnimatedScriptError,
+    MissingSceneError,
+    ScriptExecutionError,
+    ScriptTimeoutError,
+    StaticScriptError,
+    StaticScriptResult,
+    evaluate_static_script,
+)
 from zencad.runtime.input_protocol import (
     INPUT_FRAME_MAGIC,
     INPUT_PROTOCOL_VERSION,
@@ -84,6 +93,13 @@ __all__ = [
     "select_snapshot_transport",
     "RunnerMessage",
     "RunnerSupervisor",
+    "AnimatedScriptError",
+    "MissingSceneError",
+    "ScriptExecutionError",
+    "ScriptTimeoutError",
+    "StaticScriptError",
+    "StaticScriptResult",
+    "evaluate_static_script",
     "INPUT_FRAME_MAGIC",
     "INPUT_PROTOCOL_VERSION",
     "MAX_INPUT_BUFFER_EVENTS",

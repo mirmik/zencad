@@ -58,6 +58,9 @@ jobs:
       - name: Verify the installed wheel outside the checkout
         working-directory: ${{ runner.temp }}
         run: python "${{ github.workspace }}/utest/installed_wheel_smoke.py"
+      - name: Exercise headless model inspection outside the checkout
+        working-directory: ${{ runner.temp }}
+        run: python "${{ github.workspace }}/utest/inspect_cli_smoke.py"
       - name: Install the headless test extra
         run: python utest/install_built_wheel.py --test
       - name: Run the headless regression suite

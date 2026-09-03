@@ -137,6 +137,23 @@ show()
 Result:  
 ![result.png](https://mirmik.github.io/zencad/images/generic/zencad-logo.png)
 
+Machine-readable model inspection
+---------------------------------
+Agents and build scripts can inspect a model without opening the editor or
+creating a Qt application:
+
+```sh
+zencad inspect model.py --json
+zencad inspect model.py --output model-report.json
+```
+
+The versioned JSON report contains stable scene object IDs, optional names,
+presentation transforms, bounding boxes, BRep topology counts, area/volume,
+mesh statistics, payload digests, and structured validity results. Model
+stdout and stderr are redirected to the command's stderr, so `--json` keeps
+stdout machine-readable. See
+[the inspect format and exit-code reference](docs/development/headless-inspect.md).
+
 Deterministic PNG previews
 --------------------------
 The GUI installation can render a script without opening the editor:

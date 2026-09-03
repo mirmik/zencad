@@ -9,6 +9,14 @@ import tempfile
 import threading
 from typing import Callable, Iterable
 
+from zencad.runtime.script_evaluator import (
+    AnimatedScriptError,
+    MissingSceneError,
+    ScriptExecutionError,
+    ScriptTimeoutError,
+    evaluate_static_script,
+)
+
 
 VIEW_NAMES = (
     "iso",
@@ -144,74 +152,31 @@ def _evaluate_script(
     timeout,
     output: Callable[[str, str], None] | None,
 ):
-    from zencad.runtime.runner_supervisor import RunnerSupervisor
-
-    if timeout <= 0 or not math.isfinite(timeout):
-        raise ValueError("Timeout must be a positive finite number")
-    animated = []
-    supervisor = None
-
-    def on_message(message):
-        if message.message_type == "output" and output is not None:
-            output(message.payload["stream"], message.payload["text"])
-        if (
-            message.message_type == "ready"
-            and message.payload.get("animated")
-        ):
-            animated.append(True)
-            supervisor.cancel_current()
-
-    supervisor = RunnerSupervisor(on_message=on_message)
     try:
-        generation = supervisor.start(script_path, arguments=arguments)
-        try:
-            status = supervisor.wait(generation, timeout=timeout)
-        except TimeoutError as exception:
-            supervisor.cancel_current(grace_period=0.2)
-            try:
-                supervisor.wait(generation, timeout=2)
-            except TimeoutError:
-                pass
-            raise RenderTimeoutError(
-                f"Script did not finish within {timeout:g} seconds"
-            ) from exception
-
-        messages = tuple(
-            message
-            for message in supervisor.messages
-            if message.generation == generation
-        )
-        if animated:
-            raise RenderScriptError(
-                "Animated show() sessions cannot be rendered as a static preview"
-            )
-        errors = [message for message in messages if message.message_type == "error"]
-        if errors:
-            error = errors[-1].payload
-            message = error.get("message") or "script evaluation failed"
-            exception_type = error.get("exception_type")
-            if exception_type:
-                message = f"{exception_type}: {message}"
-            traceback_text = error.get("traceback", "").rstrip()
-            if traceback_text:
-                message = f"{message}\n{traceback_text}"
-            raise RenderScriptError(message)
-        if status != "success":
-            raise RenderScriptError(f"Script runner finished with status {status!r}")
-
-        scenes = [message.snapshot for message in messages if message.snapshot]
-        if not scenes:
-            raise EmptySceneError("Script did not call show() with a scene")
-        snapshot = scenes[-1]
+        snapshot = evaluate_static_script(
+            script_path,
+            arguments=arguments,
+            timeout=timeout,
+            output=output,
+        ).snapshot
         if not any(
             record.properties.get("visible", True)
             for record in snapshot.objects
         ):
             raise EmptySceneError("Script produced no visible scene objects")
         return snapshot
-    finally:
-        if supervisor is not None:
-            supervisor.shutdown()
+    except ScriptTimeoutError as exception:
+        raise RenderTimeoutError(str(exception)) from exception
+    except MissingSceneError as exception:
+        raise EmptySceneError(str(exception)) from exception
+    except (AnimatedScriptError, ScriptExecutionError) as exception:
+        message = str(exception)
+        if isinstance(exception, AnimatedScriptError):
+            message = (
+                "Animated show() sessions cannot be rendered as a static "
+                "preview"
+            )
+        raise RenderScriptError(message) from exception
 
 
 def _orientation_values():

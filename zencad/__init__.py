@@ -41,6 +41,12 @@ from zencad.color import (
 )
 from zencad.scene import Scene
 from zencad.scene_draft import SceneDraft, SceneObjectRef
+from zencad.inspect import (
+    InspectionObject,
+    InspectionReport,
+    inspect_script,
+    inspect_snapshot,
+)
 from zencad.render import render_script, render_snapshot
 from zencad.showapi import display, disp, highlight, hl, managed_scene, show
 from zencad.util import (
@@ -86,6 +92,10 @@ _SUPPORT_API = [
     "green",
     "highlight",
     "hl",
+    "InspectionObject",
+    "InspectionReport",
+    "inspect_script",
+    "inspect_snapshot",
     "magenta",
     "managed_scene",
     "mech",

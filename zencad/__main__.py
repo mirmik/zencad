@@ -129,6 +129,10 @@ def _run_main_window(pargs):
 
 def main():
     argv = sys.argv[1:]
+    if argv[:1] == ["inspect"]:
+        from zencad.inspect import inspect_cli
+
+        return inspect_cli(argv[1:])
     if argv[:1] == ["render"]:
         from zencad.render import render_cli
 
