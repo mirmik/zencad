@@ -11,7 +11,7 @@ __default_scene = Scene()  # Сцена, с которой работают ко
 # disp и show по умолчанию
 
 
-def display(shp, color=None, deep=True, scene=None, display_mode=None):
+def display(shp, color=None, deep=True, scene=None, display_mode=None, *, name=None):
     from zencad.settings import Settings
 
     if scene is None:
@@ -23,11 +23,15 @@ def display(shp, color=None, deep=True, scene=None, display_mode=None):
         Settings.restore()
 
     if (isinstance(shp, list)):
+        if name is not None:
+            raise ValueError("A named display object cannot be a list")
         ret = []
         for i in shp:
             ret.append(display(i, color, deep, scene, display_mode))
         return ret
 
+    if name is not None:
+        return scene.add(shp, color, display_mode=display_mode, name=name)
     if display_mode is None:
         return scene.add(shp, color)
     return scene.add(shp, color, display_mode=display_mode)

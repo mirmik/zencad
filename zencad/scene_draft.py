@@ -143,6 +143,7 @@ def _scene_transformation(value: object) -> Transformation:
 @dataclass
 class _DraftObject:
     object_id: str
+    name: str | None
     kind: str
     source: object
     location: Transformation
@@ -162,6 +163,10 @@ class SceneObjectRef(Transformable):
 
     def _object(self) -> _DraftObject:
         return self._draft._get(self.object_id)
+
+    @property
+    def name(self):
+        return self._object().name
 
     def relocate(self, transformation):
         transformation = _scene_transformation(transformation)
@@ -271,6 +276,7 @@ class SceneDraft:
         self.input_drain = input_drain
         self.graph_recorder = None
         self._objects: OrderedDict[str, _DraftObject] = OrderedDict()
+        self._names: dict[str, str] = {}
         self._next_id = 0
         self._published = False
         self._ready = False
@@ -293,7 +299,7 @@ class SceneDraft:
         properties = self._dirty.setdefault(object_id, {})
         properties[property_name] = value
 
-    def add(self, obj, color=None, display_mode=None):
+    def add(self, obj, color=None, display_mode=None, *, name=None):
         if self._published:
             raise SceneDraftError(
                 "Managed scenes cannot add objects after initial publication"
@@ -303,7 +309,16 @@ class SceneDraft:
         from zencad.interactive.point import PointInteractiveObject
         from zencad.geombase import point3
 
+        if name is not None:
+            if not isinstance(name, str) or not name.strip():
+                raise SceneDraftError("Scene object name must be a non-empty string")
+            if name in self._names:
+                raise SceneDraftError(f"Duplicate scene object name: {name!r}")
         if isinstance(obj, unit):
+            if name is not None:
+                raise SceneDraftError(
+                    "A named scene object cannot be an assembly with multiple parts"
+                )
             if display_mode is not None:
                 raise SceneDraftError(
                     "display_mode is only supported for mesh objects"
@@ -388,6 +403,7 @@ class SceneDraft:
         self._next_id += 1
         self._objects[object_id] = _DraftObject(
             object_id=object_id,
+            name=name,
             kind=kind,
             source=source,
             location=location,
@@ -397,6 +413,8 @@ class SceneDraft:
             wire_color=wire_color,
             display_mode=display_mode,
         )
+        if name is not None:
+            self._names[name] = object_id
         return SceneObjectRef(self, object_id)
 
     def _add_assembly(self, root):
@@ -441,7 +459,7 @@ class SceneDraft:
         records = []
         for obj in self._objects.values():
             if self.graph_recorder is not None:
-                self.graph_recorder.add_root(obj.object_id, obj.source)
+                self.graph_recorder.add_root(obj.name or obj.object_id, obj.source)
             if obj.kind == "brep":
                 payload = encode_brep(
                     obj.source.native()
@@ -467,6 +485,8 @@ class SceneDraft:
                 "wire_color": _color_tuple(obj.wire_color),
                 "transform": _transformation_state(obj.location),
             }
+            if obj.name is not None:
+                properties["name"] = obj.name
             if obj.kind == "mesh":
                 properties["display_mode"] = obj.display_mode
             records.append(SceneObjectRecord(
@@ -481,6 +501,10 @@ class SceneDraft:
             camera_policy=self.camera_policy,
             metadata=metadata or {},
         )
+
+    def manifest(self, metadata=None):
+        """Return a versioned JSON-ready description without payload bytes."""
+        return self.snapshot(metadata).manifest()
 
     def publish(self) -> SceneSnapshot:
         if self._published:

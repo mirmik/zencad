@@ -159,10 +159,7 @@ def _evaluate_script(
             timeout=timeout,
             output=output,
         ).snapshot
-        if not any(
-            record.properties.get("visible", True)
-            for record in snapshot.objects
-        ):
+        if not any(item.visible for item in snapshot.manifest().objects):
             raise EmptySceneError("Script produced no visible scene objects")
         return snapshot
     except ScriptTimeoutError as exception:
@@ -281,9 +278,7 @@ def render_snapshot(
         or not 0 <= margin < 1
     ):
         raise ValueError("Margin must be a number from 0 up to (but not including) 1")
-    if not any(
-        record.properties.get("visible", True) for record in snapshot.objects
-    ):
+    if not any(item.visible for item in snapshot.manifest().objects):
         raise EmptySceneError("Scene contains no visible objects")
 
     destination = Path(output_path).expanduser().resolve()

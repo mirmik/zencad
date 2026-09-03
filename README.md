@@ -153,6 +153,12 @@ Machine-readable model inspection
 Agents and build scripts can inspect a model without opening the editor or
 creating a Qt application:
 
+```python
+housing = box(20, 10, 4)
+display(housing, name="housing")
+show()
+```
+
 ```sh
 zencad inspect model.py --json
 zencad inspect model.py --output model-report.json
@@ -170,6 +176,8 @@ stdout machine-readable. See
 The computation view exposes stable EvalCache DAG IDs, shared dependencies,
 cache/evaluation state, source locations, and failed paths without transporting
 geometry payloads or importing Qt.
+Named objects and the payload-free `SceneSnapshot.manifest()` contract are
+described in [the scene manifest reference](docs/development/scene-manifest.md).
 
 Machine-verifiable geometry checks
 ----------------------------------

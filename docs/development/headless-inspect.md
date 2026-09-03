@@ -82,6 +82,12 @@ Top-level fields are:
 - `objects`: scene order, with stable `id`, optional `name`, `kind`, `visible`,
   `presentation`, and `geometry` fields.
 
+Give objects meaningful names with `disp(body, name="housing")`. The name is
+transported through `SceneSnapshot`, appears here, and becomes the root label
+in `inspect --tree`; generated object IDs remain available. Duplicate names
+are rejected. The smaller payload-free scene contract is documented in
+[`scene-manifest.md`](scene-manifest.md).
+
 All object kinds include a SHA-256 digest of their transported geometry and a
 world-space bounding box. BRep objects additionally include shape type,
 surface area and center, volume and center where applicable, unique topology

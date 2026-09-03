@@ -18,6 +18,8 @@ from zencad.occ_compat import read_brep, write_brep
 
 
 CURRENT_PROTOCOL_VERSION = 1
+SCENE_MANIFEST_SCHEMA = "zencad.scene_manifest"
+SCENE_MANIFEST_VERSION = 1
 FRAME_MAGIC = b"ZCSN"
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 MAX_PAYLOAD_COUNT = 1_000_000
@@ -72,6 +74,14 @@ def _freeze_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any]:
     return _freeze_json(dict(value or {}))
 
 
+def _validate_object_name(value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise ProtocolError("Scene object name must be a non-empty string")
+    return value
+
+
 @dataclass(frozen=True)
 class SceneObjectRecord:
     object_id: str
@@ -86,6 +96,7 @@ class SceneObjectRecord:
             raise ProtocolError("Scene object kind must not be empty")
         if not isinstance(self.payload, bytes):
             raise ProtocolError("Scene object payload must be bytes")
+        _validate_object_name((self.properties or {}).get("name"))
         object.__setattr__(self, "properties", _freeze_mapping(self.properties))
 
 
@@ -112,6 +123,182 @@ class SceneSnapshot:
         identifiers = [record.object_id for record in self.objects]
         if len(identifiers) != len(set(identifiers)):
             raise ProtocolError("Scene object IDs must be unique")
+        names = [
+            record.properties.get("name")
+            for record in self.objects
+            if record.properties.get("name") is not None
+        ]
+        if len(names) != len(set(names)):
+            raise ProtocolError("Scene object names must be unique")
+
+    def manifest(self) -> "SceneManifest":
+        """Return the public, payload-free description of this snapshot."""
+        return SceneManifest.from_snapshot(self)
+
+
+@dataclass(frozen=True, slots=True)
+class SceneManifestObject:
+    object_id: str
+    name: str | None
+    kind: str
+    visible: bool
+    presentation: Mapping[str, Any]
+    geometry: Mapping[str, Any]
+
+    def __post_init__(self):
+        if not isinstance(self.object_id, str) or not self.object_id:
+            raise ProtocolError("Scene manifest object ID must not be empty")
+        _validate_object_name(self.name)
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ProtocolError("Scene manifest object kind must not be empty")
+        if not isinstance(self.visible, bool):
+            raise ProtocolError("Scene manifest visibility must be a boolean")
+        if not isinstance(self.presentation, Mapping):
+            raise ProtocolError("Scene manifest presentation must be an object")
+        if not isinstance(self.geometry, Mapping):
+            raise ProtocolError("Scene manifest geometry must be an object")
+        object.__setattr__(self, "presentation", _freeze_mapping(self.presentation))
+        object.__setattr__(self, "geometry", _freeze_mapping(self.geometry))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.object_id,
+            "name": self.name,
+            "kind": self.kind,
+            "visible": self.visible,
+            "presentation": _plain_json(self.presentation),
+            "geometry": _plain_json(self.geometry),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class SceneManifest:
+    generation: int
+    objects: tuple[SceneManifestObject, ...]
+    camera_policy: str
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+    schema_version: int = SCENE_MANIFEST_VERSION
+
+    def __post_init__(self):
+        if (
+            not isinstance(self.generation, int)
+            or isinstance(self.generation, bool)
+            or self.generation < 0
+        ):
+            raise ProtocolError("Scene manifest generation must be non-negative")
+        if not isinstance(self.camera_policy, str) or self.camera_policy not in {
+            "preserve",
+            "fit",
+            "explicit",
+        }:
+            raise ProtocolError(
+                f"Unsupported camera policy: {self.camera_policy!r}"
+            )
+        if (
+            not isinstance(self.schema_version, int)
+            or isinstance(self.schema_version, bool)
+            or self.schema_version != SCENE_MANIFEST_VERSION
+        ):
+            raise UnsupportedProtocolVersion(
+                f"Unsupported scene manifest version {self.schema_version}"
+            )
+        if not isinstance(self.metadata, Mapping):
+            raise ProtocolError("Scene manifest metadata must be an object")
+        object.__setattr__(self, "objects", tuple(self.objects))
+        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata))
+        if not all(isinstance(item, SceneManifestObject) for item in self.objects):
+            raise ProtocolError("Scene manifest contains an invalid object")
+        identifiers = [item.object_id for item in self.objects]
+        if len(identifiers) != len(set(identifiers)):
+            raise ProtocolError("Scene manifest object IDs must be unique")
+        names = [item.name for item in self.objects if item.name is not None]
+        if len(names) != len(set(names)):
+            raise ProtocolError("Scene manifest object names must be unique")
+
+    @classmethod
+    def from_snapshot(cls, snapshot: SceneSnapshot) -> "SceneManifest":
+        if not isinstance(snapshot, SceneSnapshot):
+            raise TypeError("SceneManifest.from_snapshot requires a SceneSnapshot")
+        objects = []
+        for record in snapshot.objects:
+            properties = dict(record.properties)
+            name = properties.pop("name", None)
+            visible = properties.pop("visible", True)
+            encoding = {
+                "brep": "brep",
+                "mesh": "mesh-v1",
+                "point": "json",
+                "line": "json",
+            }.get(record.kind, "opaque")
+            objects.append(SceneManifestObject(
+                object_id=record.object_id,
+                name=name,
+                kind=record.kind,
+                visible=visible,
+                presentation=properties,
+                geometry={
+                    "encoding": encoding,
+                    "payload_size": len(record.payload),
+                    "payload_sha256": _payload_digest(record.payload),
+                },
+            ))
+        return cls(
+            generation=snapshot.generation,
+            objects=tuple(objects),
+            camera_policy=snapshot.camera_policy,
+            metadata=snapshot.metadata,
+        )
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> "SceneManifest":
+        if not isinstance(value, Mapping):
+            raise ProtocolError("Scene manifest must be an object")
+        if value.get("schema") != SCENE_MANIFEST_SCHEMA:
+            raise ProtocolError("Unsupported scene manifest schema")
+        objects = value.get("objects")
+        if not isinstance(objects, (list, tuple)):
+            raise ProtocolError("Scene manifest objects must be a list")
+        entries = []
+        for item in objects:
+            if not isinstance(item, Mapping):
+                raise ProtocolError("Scene manifest object must be an object")
+            entries.append(SceneManifestObject(
+                object_id=item.get("id"),
+                name=item.get("name"),
+                kind=item.get("kind"),
+                visible=item.get("visible"),
+                presentation=item.get("presentation"),
+                geometry=item.get("geometry"),
+            ))
+        metadata = value.get("metadata", {})
+        if not isinstance(metadata, Mapping):
+            raise ProtocolError("Scene manifest metadata must be an object")
+        return cls(
+            generation=value.get("generation"),
+            objects=tuple(entries),
+            camera_policy=value.get("camera_policy"),
+            metadata=metadata,
+            schema_version=value.get("schema_version"),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema": SCENE_MANIFEST_SCHEMA,
+            "schema_version": self.schema_version,
+            "generation": self.generation,
+            "camera_policy": self.camera_policy,
+            "metadata": _plain_json(self.metadata),
+            "objects": [item.to_dict() for item in self.objects],
+        }
+
+    def to_json(self, *, indent: int | None = 2) -> str:
+        return json.dumps(
+            self.to_dict(),
+            allow_nan=False,
+            ensure_ascii=False,
+            indent=indent,
+            sort_keys=True,
+        ) + "\n"
 
 
 def encode_brep(shape) -> bytes:

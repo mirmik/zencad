@@ -19,6 +19,7 @@ from zencad.runtime.scene_protocol import (
     FileSnapshotBundle,
     PayloadIntegrityError,
     ProtocolError,
+    SceneManifest,
     SceneObjectRecord,
     SceneSnapshot,
     SupersededGenerationError,
@@ -87,6 +88,7 @@ class SceneProtocolTest(unittest.TestCase):
                     properties={
                         "color": [0.1, 0.2, 0.3, 0.4],
                         "label": "форма",
+                        "name": "main",
                         "visible": True,
                     },
                 ),
@@ -128,6 +130,17 @@ class SceneProtocolTest(unittest.TestCase):
         )
         self.assertEqual(restored.objects[0].payload, source.objects[0].payload)
         decode_brep(restored.objects[0].payload)
+
+    def test_public_manifest_round_trip_has_no_geometry_payload(self):
+        source = self.make_snapshot()
+        manifest = source.manifest()
+        payload = json.loads(manifest.to_json())
+
+        self.assertEqual(payload["schema"], "zencad.scene_manifest")
+        self.assertEqual(payload["objects"][0]["name"], "main")
+        self.assertEqual(payload["objects"][0]["geometry"]["encoding"], "brep")
+        self.assertNotIn("payload", payload["objects"][0])
+        self.assertEqual(SceneManifest.from_dict(payload), manifest)
 
     def test_mesh_payload_round_trip_and_validation(self):
         source = zencad.to_mesh(zencad.box(2))

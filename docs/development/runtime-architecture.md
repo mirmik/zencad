@@ -87,6 +87,13 @@ separate bounded graph frame contains digests and summaries only, never scene
 geometry payloads; it is also sent for failed evaluations so `--failed-path`
 can explain the partial computation.
 
+Scene object identity is split deliberately: generated `object-NNNNNN` IDs
+remain deterministic within a snapshot, while optional unique user names from
+`disp(..., name=...)` provide semantic labels. `SceneSnapshot.manifest()` is
+the versioned payload-free identity/presentation view used by inspect, render
+preflight, and graph roots. Its contract is documented in
+[`scene-manifest.md`](scene-manifest.md).
+
 `Shape`, its exact topology subtypes, values, curves, surfaces, transforms,
 bounds, meshes, and structured results retain expressions internally. The
 runner reports v2 evaluation events directly; it does not install the former

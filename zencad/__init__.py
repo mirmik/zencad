@@ -58,6 +58,7 @@ from zencad.color import (
 )
 from zencad.scene import Scene
 from zencad.scene_draft import SceneDraft, SceneObjectRef
+from zencad.runtime.scene_protocol import SceneManifest, SceneManifestObject
 from zencad.inspect import (
     InspectionObject,
     InspectionReport,
@@ -99,6 +100,8 @@ _SUPPORT_API = [
     "NumericRange",
     "Scene",
     "SceneDraft",
+    "SceneManifest",
+    "SceneManifestObject",
     "SceneObjectRef",
     "black",
     "blue",

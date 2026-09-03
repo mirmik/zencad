@@ -29,9 +29,18 @@ def run(root, *arguments, expected=0):
 
 def main():
     assert not any(name.startswith("PyQt5") for name in sys.modules)
-    from zencad import inspect_script
+    import zencad
+    from zencad import SceneManifest, inspect_script
 
     assert not any(name.startswith("PyQt5") for name in sys.modules)
+    with zencad.managed_scene(1) as draft:
+        zencad.display(zencad.box(1), name="manifest-part")
+        manifest = draft.manifest()
+    manifest_payload = json.loads(manifest.to_json())
+    assert manifest_payload["objects"][0]["name"] == "manifest-part"
+    assert SceneManifest.from_dict(manifest_payload) == manifest
+    assert not any(name.startswith("PyQt5") for name in sys.modules)
+
     with TemporaryDirectory() as temporary_directory:
         root = Path(temporary_directory)
         model = root / "model.py"
@@ -42,7 +51,7 @@ assert not any(name.startswith("PyQt5") for name in sys.modules)
 from zencad import box, display, show
 print("model stdout")
 print("model stderr", file=sys.stderr)
-display(box(2, 3, 4).right(5))
+display(box(2, 3, 4).right(5), name="housing")
 show()
 """,
             encoding="utf-8",
@@ -52,6 +61,7 @@ show()
         payload = json.loads(first.stdout)
         assert payload["status"] == "ok"
         assert payload["scene"]["object_count"] == 1
+        assert payload["objects"][0]["name"] == "housing"
         assert payload["objects"][0]["geometry"]["topology"]["faces"] == 6
         assert "model stdout" in first.stderr
         assert "model stderr" in first.stderr
@@ -80,7 +90,7 @@ show()
         graph = json.loads(graph_path.read_text(encoding="utf-8"))
         assert graph["schema"] == "zencad.computation_graph"
         assert graph["status"] == "success"
-        assert graph["roots"][0]["id"] == "object-000000"
+        assert graph["roots"][0]["id"] == "housing"
         assert "zencad.typed.shape.transform" in tree.stdout
         assert "0x" not in tree.stdout
 

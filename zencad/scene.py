@@ -21,11 +21,16 @@ class Scene:
         self.interactives = []
         self.display = None
 
-    def add(self, obj, color=None, display_mode=None):
+    def add(self, obj, color=None, display_mode=None, *, name=None):
         from zencad.interactive.displayable import Displayable
 
         if color is None:
             color = default_color()
+        if name is not None:
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("Scene object name must be a non-empty string")
+            if any(getattr(item, "name", None) == name for item in self.interactives):
+                raise ValueError(f"Duplicate scene object name: {name!r}")
 
         if isinstance(obj, Displayable):
             if display_mode is not None:
@@ -35,15 +40,17 @@ class Scene:
                         "display_mode is only supported for mesh objects"
                     )
                 setter(display_mode)
-            obj.bind_to_scene(self)
             iobj = obj
+            if name is not None:
+                iobj.name = name
+            obj.bind_to_scene(self)
         else:
             iobj = create_interactive_object(
                 obj,
                 color,
                 display_mode=display_mode,
             )
-            self.add(iobj)
+            return self.add(iobj, name=name)
 
         return iobj
 

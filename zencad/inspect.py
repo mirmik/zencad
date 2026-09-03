@@ -399,10 +399,11 @@ def inspect_snapshot(snapshot, *, script_path=None) -> InspectionReport:
         "point": _inspect_point,
         "line": _inspect_line,
     }
+    manifest = snapshot.manifest()
     objects = []
-    for record in snapshot.objects:
+    for record, manifest_object in zip(snapshot.objects, manifest.objects):
         try:
-            name, visible, presentation = _presentation(record)
+            _name, visible, presentation = _presentation(record)
             inspector = inspectors.get(record.kind)
             if inspector is None:
                 raise ValueError(f"unsupported scene object kind {record.kind!r}")
@@ -413,7 +414,7 @@ def inspect_snapshot(snapshot, *, script_path=None) -> InspectionReport:
             objects.append(
                 InspectionObject(
                     object_id=record.object_id,
-                    name=name,
+                    name=manifest_object.name,
                     kind=record.kind,
                     visible=visible,
                     presentation=presentation,

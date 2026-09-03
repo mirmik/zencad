@@ -1,5 +1,6 @@
 from contextlib import redirect_stdout
 import io
+import json
 from pathlib import Path
 import runpy
 import subprocess
@@ -38,6 +39,47 @@ def shape_signature(shape):
 
 
 class SceneDraftTest(unittest.TestCase):
+    def test_names_and_payload_free_manifest_are_stable(self):
+        draft = SceneDraft(generation=3)
+        named = draft.add(zencad.box(2), name="housing")
+        draft.add(zencad.sphere(1))
+
+        manifest = draft.manifest({"purpose": "agent"})
+        payload = manifest.to_dict()
+
+        self.assertEqual(named.name, "housing")
+        self.assertEqual(payload["schema"], "zencad.scene_manifest")
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["metadata"], {"purpose": "agent"})
+        self.assertEqual(
+            [(item["id"], item["name"]) for item in payload["objects"]],
+            [("object-000000", "housing"), ("object-000001", None)],
+        )
+        geometry = payload["objects"][0]["geometry"]
+        self.assertEqual(geometry["encoding"], "brep")
+        self.assertGreater(geometry["payload_size"], 0)
+        self.assertEqual(len(geometry["payload_sha256"]), 64)
+        self.assertNotIn("payload", payload["objects"][0])
+        self.assertEqual(json.loads(manifest.to_json()), payload)
+
+        from zencad import SceneManifest
+
+        restored = SceneManifest.from_dict(json.loads(manifest.to_json()))
+        self.assertEqual(restored.to_dict(), payload)
+        self.assertEqual(manifest.to_json(), manifest.to_json())
+
+    def test_duplicate_blank_and_ambiguous_names_are_rejected(self):
+        draft = SceneDraft(generation=3)
+        draft.add(zencad.box(1), name="part")
+        with self.assertRaisesRegex(SceneDraftError, "Duplicate.*part"):
+            draft.add(zencad.sphere(1), name="part")
+        with self.assertRaisesRegex(SceneDraftError, "non-empty"):
+            draft.add(zencad.sphere(1), name="   ")
+
+        with zencad.managed_scene(4):
+            with self.assertRaisesRegex(ValueError, "cannot be a list"):
+                zencad.display([zencad.box(1), zencad.box(2)], name="parts")
+
     def test_mutations_are_frozen_into_snapshot_properties(self):
         draft = SceneDraft(generation=4)
         reference = draft.add(zencad.box(2), color=(0.1, 0.2, 0.3, 0.4))
