@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-# coding: utf-8
+"""Orbit the viewer camera continuously, including during interaction."""
 
 from zencad import *
-import time
-
-s = box(10, center=True)
-controller = disp(s)
 
 
-def animate(wdg):
-    if not wdg.mousedown:
-        wdg.set_eye(zencad.rotateZ(zencad.deg(-0.8))(wdg.eye()), orthogonal=True)
+model = box(10, center=True)
+disp(model)
+
+
+def animate(state):
+    state.camera.orbit((0, 0, 1), deg(-0.8))
 
 
 show(animate=animate)

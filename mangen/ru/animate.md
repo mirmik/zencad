@@ -1,10 +1,32 @@
 :ru
 # Анимация
 Графический интерфейс позволяет анимировать отображаемую сцену.
+
+> Примечание о миграции: managed runtime поддерживает базовый
+> `show(animate=...)`. Callback исполняется в отдельном вычислительном процессе,
+> а изменения `relocate`, `set_color` и `hide` применяются к постоянному viewer
+> через `ScenePatch`. Типизированный ввод с клавиатуры и мыши доступен через
+> `state.input`. Относительное вращение камеры доступно через Qt-free фасад
+> `state.camera`: `state.camera.orbit(axis, angle)` принимает мировую ось и
+> угол в радианах. GUI применяет команду к текущей камере, поэтому ручная
+> навигация остаётся базой для последующей анимации.
+> Произвольные PyQt-виджеты, `preanimate` и прямой доступ к viewer не входят в
+> новый контракт.
+
 Пример:
 :en
 # Animation
 The graphical interface allows you to animate the displayed scene.
+
+> Migration note: the managed runtime supports basic `show(animate=...)`.
+> Callbacks execute in the isolated runner, while `relocate`, `set_color`, and
+> `hide` mutations reach the persistent viewer as `ScenePatch` values. Typed
+> keyboard/mouse input is available through `state.input`. Relative camera
+> orbit is available as `state.camera.orbit(axis, angle)`; the GUI applies it
+> to the current camera, so manual navigation remains authoritative. Arbitrary
+> PyQt widgets, `preanimate`, and
+> direct viewer access are outside the new contract.
+
 Example: 
 ::
 

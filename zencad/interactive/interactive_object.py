@@ -1,19 +1,12 @@
-from OCC.Core.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Axis, AIS_Point
-from OCC.Core.Prs3d import Prs3d_LineAspect
-from OCC.Core.Quantity import Quantity_NOC_BLACK, Quantity_Color, Quantity_TOC_RGB
-from OCC.Core.Aspect import Aspect_TOL_SOLID, Aspect_TOD_ABSOLUTE
-from OCC.Core.TopoDS import TopoDS_Vertex
-from OCC.Core.Geom import Geom_CartesianPoint
-from OCC.Core.Prs3d import Prs3d_Drawer
-from OCC.Core.TopLoc import TopLoc_Location
-import OCC.Core
+from OCP.Aspect import Aspect_TOD_ABSOLUTE
+from OCP.TopLoc import TopLoc_Location
 
-from zencad.geom.shape import Shape
+from zencad._native.shape import Shape
 from zencad.color import Color, default_color, default_wire_color, default_border_color
 from zencad.axis import Axis
-from zencad.geom.trans import Transformation
-from zencad.geom.exttrans import nulltrans
-from zencad.geom.transformable import Transformable
+from zencad._native.trans import Transformation
+from zencad._native.exttrans import nulltrans
+from zencad._native.transformable import Transformable
 from zencad.interactive.displayable import Displayable
 from zencad.util import point3
 from zencad.settings import Settings
@@ -75,14 +68,20 @@ class InteractiveObject(Transformable, Displayable):
         self.ais_object.SetTransparency(self._color.a)
 
         aspect = self.ais_object.Attributes().LineAspect()
-        aspect.SetColor(self._border_color.to_Quantity_Color())
-        self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
+        if aspect is not None:
+            aspect.SetColor(self._border_color.to_Quantity_Color())
+            self.ais_object.Attributes().SetFaceBoundaryAspect(aspect)
 
         aspect = self.ais_object.Attributes().WireAspect()
-        aspect.SetColor(self._wire_color.to_Quantity_Color())
-        self.ais_object.Attributes().SetWireAspect(aspect)
+        if aspect is not None:
+            aspect.SetColor(self._wire_color.to_Quantity_Color())
+            self.ais_object.Attributes().SetWireAspect(aspect)
 
     def relocate(self, trsf):
+        from zencad.geom.transforms import Transform
+
+        if isinstance(trsf, Transform):
+            trsf = Transformation(trsf.to_ocp())
         self._location = trsf
         if self._context:
             loc = TopLoc_Location(trsf._trsf)
@@ -101,11 +100,11 @@ class InteractiveObject(Transformable, Displayable):
         self.relocate(trans * self.location())
         return self
 
-    def bind_context(self, context):
+    def bind_context(self, context, update=True):
         self._context = context
         self.relocate(self._location)
         self.hide(self._hide)
-        self._context.Update(self.ais_object, True)
+        self._context.Update(self.ais_object, update)
 
     def hide(self, en):
         self._hide = en

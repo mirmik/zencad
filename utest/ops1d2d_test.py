@@ -4,29 +4,31 @@ import zencad
 
 class Ops1d2dProbe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_fill(self):
-        zencad.fill(zencad.circle(5, wire=True)).unlazy()
-        zencad.circle(5, wire=True).fill().unlazy()
+        zencad.fill(zencad.circle(5, wire=True)).native()
+        zencad.circle(5, wire=True).fill().native()
 
     def test_interpolate(self):
-        zencad.interpolate([(0, 0, 0), (1, 1, 0), (1, 1, 1)])
-        zencad.interpolate(pnts=[(0, 0, 0), (1, 1, 0), (1, 1, 1)], closed=True)
-        zencad.interpolate(
-            [(0, 0, 0), (1, 1, 0), (1, 1, 1)], [
-                (0, 0, 0), (1, 1, 0), (1, 1, 1)]
+        points = tuple(
+            zencad.point3(*value)
+            for value in ((0, 0, 0), (1, 1, 0), (1, 1, 1))
         )
-        zencad.interpolate(
-            pnts=[(0, 0, 0), (1, 1, 0), (1, 1, 1)],
-            tangs=[(0, 0, 0), (1, 0, 0), (0, 0, 1)],
-            closed=True,
+        tangents = tuple(
+            zencad.vector3(*value)
+            for value in ((0, 0, 0), (1, 0, 0), (0, 0, 1))
         )
+        zencad.interpolate(points)
+        zencad.interpolate(points, closed=True)
+        zencad.interpolate(points, tangents)
+        zencad.interpolate(points, tangents, closed=True)
 
     def test_sew(self):
-        pnts = [(0, 0, 0), (1, 1, 1), (1, 0, 0)]
+        pnts = tuple(
+            zencad.point3(*value)
+            for value in ((0, 0, 0), (1, 1, 1), (1, 0, 0))
+        )
         zencad.sew(
             [
                 zencad.segment(pnts[0], pnts[1]),
@@ -37,12 +39,9 @@ class Ops1d2dProbe(unittest.TestCase):
 
     def test_fillet2d(self):
         zencad.square(20).fillet2d(1)
-        zencad.square(20).fillet2d(r=1)
-        zencad.fillet2d(shp=zencad.square(20), r=1)
-
-        zencad.square(20).fillet2d(1, [(0, 0, 0)])
-        zencad.square(20).fillet2d(refs=[(0, 0, 0)], r=1)
-        zencad.fillet2d(shp=zencad.square(20), refs=[(0, 0, 0)], r=1)
+        point = zencad.point3(0, 0, 0)
+        zencad.square(20).fillet2d(1, [point])
+        zencad.fillet2d(zencad.square(20), 1, [point])
 
     def test_chamfer2d(self):
         # not supported

@@ -1,142 +1,180 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
+import argparse
 import os
-import sys
-import time
-
-import psutil
-import traceback
+from pathlib import Path
 import runpy
 import signal
+import sys
+import tempfile
+import threading
 
-import zenframe.argparse
-import zenframe.configuration
-
-zenframe.configuration.Configuration.TEMPLATE = """#!/usr/bin/env python3
-#coding: utf-8
-
-from zencad import *
-
-m=box(10)
-disp(m)
-
-show()"""
+from zencad.gui.defaults import EVENT_LOOP_PULSE_MS, SCRIPT_TEMPLATE
 
 
-def console_options_handle():
+TEMPLATE = SCRIPT_TEMPLATE
 
-    parser = zenframe.argparse.ArgumentParser()
 
-    # Смотри аргументы в zenframe.ArgumentParser
-    parser.add_argument("--installer", action="store_true",
-                        help="Execute installer utility")
+def console_options_handle(argv=None):
+    parser = argparse.ArgumentParser(prog="zencad")
     parser.add_argument("--settings", action="store_true",
-                        help="Execute settings utility")
-    parser.add_argument("--install-libs", action="store_true",
-                        help="Console dialog for install third-libraries")
-    parser.add_argument("--install-occt-force", nargs="*",
-                        default=None, help="Download and install libocct")
-    parser.add_argument("--install-occt-to-pythonocc-dir", action="store_true",
-                        default=None, help="Download and install libocct")
-    parser.add_argument("--install-pythonocc-force", action="store_true",
-                        help="Download and install pythonocc package")
-    parser.add_argument("--lookup-libraries", action="store_true",
-                        help="Lookup depends")
-    parser.add_argument("--yes", action="store_true")
+                        help="open the settings dialog")
+    parser.add_argument("--display", action="store_true",
+                        help="run a script in a standalone viewer")
+    parser.add_argument("--no-show", action="store_true",
+                        help="evaluate a script without creating a GUI")
+    parser.add_argument("--no-restore", action="store_true",
+                        help="start with the default window layout")
+    parser.add_argument("--size", help=argparse.SUPPRESS)
+    parser.add_argument("-m", help=argparse.SUPPRESS)
+    parser.add_argument("paths", nargs="*", help="Python script to open")
 
-    pargs = parser.parse_args()
+    pargs = parser.parse_args(argv)
     return pargs
 
 
-def top_half(communicator):
-    from zencad.lazifier import install_evalcahe_notication
-    install_evalcahe_notication(communicator)
-
-
-def frame_creator(openpath, initial_communicator, norestore, unbound):
+def frame_creator(openpath, norestore):
     from zencad.gui.mainwindow import MainWindow
-    from zencad.settings import Settings
-    from zenframe.util import create_temporary_file
-    import PyQt5.QtWidgets
-    import PyQt5.QtGui
 
-    iconpath = os.path.join(os.path.dirname(__file__), "industrial-robot.svg")
-    if not os.path.exists(iconpath):
-        # for pyinstaller files configuration
-        iconpath = os.path.join(os.path.dirname(
-            __file__), "zencad", "industrial-robot.svg")
-
-    PyQt5.QtWidgets.QApplication.instance().setWindowIcon(PyQt5.QtGui.QIcon())
-
-    if openpath is None and not unbound:
-        openpath = create_temporary_file(
-            zenframe.configuration.Configuration.TEMPLATE)
+    if openpath is None:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".py",
+            encoding="utf-8",
+            delete=False,
+        ) as temporary:
+            temporary.write(SCRIPT_TEMPLATE)
+            openpath = temporary.name
 
     mainwindow = MainWindow(
-        initial_communicator=initial_communicator,
-        restore_gui=not norestore)
+        restore_gui=not norestore,
+    )
 
     return mainwindow, openpath
 
 
+def _run_script_path(path):
+    script_path = Path(path).resolve()
+    if not script_path.is_file():
+        raise FileNotFoundError(script_path)
+    os.chdir(script_path.parent)
+    sys.path.insert(0, str(script_path.parent))
+    runpy.run_path(str(script_path), run_name="__main__")
+
+
+def _run_no_show(argv):
+    paths = [argument for argument in argv if argument != "--no-show"]
+    if len(paths) != 1:
+        raise SystemExit("--no-show requires exactly one script")
+
+    # Keep this path independent of the optional GUI stack.  In
+    # particular, a headless wheel must be able to evaluate a model without
+    # importing Qt merely to configure show().
+    import zencad.showapi
+    zencad.showapi.NOSHOW = True
+    _run_script_path(paths[0])
+
+
+def _run_script_only(pargs):
+    if len(pargs.paths) != 1:
+        raise SystemExit("--display/--no-show requires exactly one script")
+    if pargs.no_show:
+        import zencad.showapi
+
+        zencad.showapi.NOSHOW = True
+    _run_script_path(pargs.paths[0])
+
+
+def _run_main_window(pargs):
+    from PyQt5 import QtCore, QtWidgets
+
+    application = QtWidgets.QApplication(sys.argv[1:])
+    interrupted = []
+    previous_sigint = None
+    sigint_replaced = False
+    if threading.current_thread() is threading.main_thread():
+        previous_sigint = signal.getsignal(signal.SIGINT)
+        if previous_sigint in (signal.SIG_DFL, signal.default_int_handler):
+            def handle_sigint(signum, _frame):
+                interrupted.append(signum)
+                application.quit()
+
+            signal.signal(signal.SIGINT, handle_sigint)
+            sigint_replaced = True
+
+    pulse = QtCore.QTimer(application)
+    pulse.setInterval(EVENT_LOOP_PULSE_MS)
+    pulse.timeout.connect(lambda: None)
+    window = None
+    try:
+        openpath = pargs.paths[0] if pargs.paths else None
+        window, openpath = frame_creator(openpath, pargs.no_restore)
+        if openpath:
+            window.open(openpath)
+        window.show()
+        pulse.start()
+        exit_code = application.exec()
+    finally:
+        pulse.stop()
+        if interrupted and window is not None:
+            window.close()
+        if sigint_replaced:
+            signal.signal(signal.SIGINT, previous_sigint)
+
+    if interrupted:
+        return 128 + interrupted[-1]
+    return exit_code
+
+
 def main():
-    pargs = console_options_handle()
+    argv = sys.argv[1:]
+    if argv[:1] == ["check"]:
+        from zencad.check import check_cli
+
+        return check_cli(argv[1:])
+    if argv[:1] == ["inspect"]:
+        from zencad.inspect import inspect_cli
+
+        return inspect_cli(argv[1:])
+    if argv[:1] == ["render"]:
+        from zencad.render import render_cli
+
+        return render_cli(argv[1:])
+    removed_modes = ("--unbound", "--frame", "--sleeped")
+    if any(option in argv for option in removed_modes):
+        raise SystemExit(
+            "Foreign-window --unbound/--frame/--sleeped modes were removed; "
+            "run 'zencad SCRIPT.py' or use --display for a standalone viewer"
+        )
+    if "--no-show" in argv:
+        _run_no_show(argv)
+        return 0
+
+    # OCCT's Linux Xw_Window requires an X11 XID.  Select XWayland before
+    # QApplication needs the backend choice before importing Qt on Wayland.
+    from zencad.gui.qt_backend import configure_qt_platform
+    configure_qt_platform()
+
+    pargs = console_options_handle(argv)
+    try:
+        import PyQt5  # noqa: F401
+    except ImportError as exception:
+        raise SystemExit(
+            "ZenCad GUI dependencies are missing; install them with "
+            "'python -m pip install zencad[gui]'"
+        ) from exception
 
     if pargs.settings:
         import zencad.gui.settingswdg
         zencad.gui.settingswdg.doit()
-        sys.exit()
-
-    if pargs.installer:
-        import zencad.gui.libinstaller
-        zencad.gui.libinstaller.doit()
-        sys.exit()
-
-    if pargs.install_libs:
-        from zencad.geometry_core_installer import console_third_libraries_installer_utility
-        console_third_libraries_installer_utility(yes=pargs.yes)
-        sys.exit()
-
-    if pargs.install_pythonocc_force:
-        import zencad.version
-        from zencad.geometry_core_installer import install_precompiled_python_occ
-        install_precompiled_python_occ(occversion=zencad.version.__pythonocc_version__)
-        return
-
-    if pargs.lookup_libraries:
-        from zencad.geometry_core_installer import test_third_libraries
-        print(test_third_libraries())
-        return
-
-    if pargs.install_occt_force is not None:
-        import zencad.version
-        from zencad.geometry_core_installer import install_precompiled_occt_library
-        path = pargs.install_occt_force[0] if len(
-            pargs.install_occt_force) > 0 else None
-        install_precompiled_occt_library(tgtpath=path, occt_version=zencad.version.__occt_version__)
-        return
-
-    if pargs.install_occt_to_pythonocc_dir:
-        import zencad.version
-        from zencad.geometry_core_installer import install_precompiled_occt_library
-        import zencad.gui.util
-        path = zencad.gui.util.pythonocc_core_directory()
-        if path is None:
-            print("PythonOCC is not installed")
-            return -1
-        install_precompiled_occt_library(tgtpath=path, occt_version=zencad.version.__occt_version__)
         return 0
 
-    from zencad.showapi import widget_creator
-    import zenframe.starter as frame
-
-    frame.invoke(
-        pargs,
-        frame_creator=frame_creator,
-        exec_top_half=top_half,
-        exec_bottom_half=widget_creator)
+    if pargs.display or pargs.no_show:
+        _run_script_only(pargs)
+        return 0
+    return _run_main_window(pargs)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

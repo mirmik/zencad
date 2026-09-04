@@ -3,17 +3,17 @@ import os
 import numpy
 import sys
 
-from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir, gp_XYZ, gp_Quaternion
-from OCC.Core.TopoDS import TopoDS_Vertex
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
-from OCC.Core.Geom import Geom_CartesianPoint
+from OCP.gp import gp_Pnt, gp_Vec, gp_Dir, gp_XYZ, gp_Quaternion
+from OCP.TopoDS import TopoDS_Vertex
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
+from OCP.Geom import Geom_CartesianPoint
+from zencad.occ_compat import vertex_point
 
-import zencad.geom.transformable
+import zencad._native.transformable
 import evalcache
 
 
-class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
+class xyz(numpy.ndarray, zencad._native.transformable.Transformable):
     def __new__(cls, *args, info=None):
         args = [evalcache.unlazy_if_need(a) for a in args]
 
@@ -21,7 +21,7 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
             input_array = (0, 0, 0)
 
         elif isinstance(args[0], TopoDS_Vertex):
-            pnt = BRep_Tool.Pnt(args[0])
+            pnt = vertex_point(args[0])
             input_array = (pnt.X(), pnt.Y(), pnt.Z())
 
         elif isinstance(args[0], (gp_Pnt, gp_Dir, gp_Vec, gp_XYZ)):
@@ -104,10 +104,18 @@ class xyz(numpy.ndarray, zencad.geom.transformable.Transformable):
         )
 
     def __add__(self, oth):
-        return point3(self[0] + oth[0], self[1] + oth[1], self[2] + oth[2])
+        return point3(
+            self.x + float(oth.x),
+            self.y + float(oth.y),
+            self.z + float(oth.z),
+        )
 
     def __sub__(self, oth):
-        return vector3(self[0] - oth[0], self[1] - oth[1], self[2] - oth[2])
+        return vector3(
+            self.x - float(oth.x),
+            self.y - float(oth.y),
+            self.z - float(oth.z),
+        )
 
     def __iadd__(self, oth):
         self[0] += oth[0]
@@ -227,7 +235,7 @@ def to_numpy(arg):
     if isinstance(arg, (gp_Vec, gp_Pnt, gp_Dir)):
         return numpy.array([arg.X(), arg.Y(), arg.Z()])
     elif isinstance(arg, (TopoDS_Vertex)):
-        arg = BRep_Tool.Pnt(arg)
+        arg = vertex_point(arg)
         return numpy.array([arg.X(), arg.Y(), arg.Z()])
     else:
         raise Exception("unresolved type", arg.__class__)

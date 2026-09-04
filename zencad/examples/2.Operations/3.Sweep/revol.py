@@ -4,6 +4,7 @@ ZenCad API example: revol
 """
 
 
+import math
 from zencad import *
 
 # Make revols:

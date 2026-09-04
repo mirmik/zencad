@@ -1,5 +1,12 @@
 # Анимация
 Графический интерфейс позволяет анимировать отображаемую сцену.
+
+> Migration note: the managed runtime supports basic `show(animate=...)`.
+> Callbacks execute in the isolated runner, while `relocate`, `set_color`, and
+> `hide` mutations reach the persistent viewer as `ScenePatch` values. Typed
+> keyboard/mouse input is not implemented yet; arbitrary PyQt widgets,
+> `preanimate`, and direct viewer access are outside the new contract.
+
 Пример:
 
 ```python3

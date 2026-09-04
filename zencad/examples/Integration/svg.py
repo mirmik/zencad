@@ -2,12 +2,13 @@
 #coding: utf-8
 
 from tempfile import mkstemp
+
+import zencad
 from zencad import *
-lazy.fastdo = True
 
 m0 = \
 (
-	zencad.rectangle(10,20) 
+	zencad.rectangle(10,20)
 	+ zencad.rectangle(10,20,center=True)
 	+ zencad.ellipse(10,8)
 	-zencad.circle(5)
@@ -32,12 +33,12 @@ m4 = m3 ^ infplane()
 
 hl(m3.move(0,45))
 disp(m4.move(0,45))
-disp(m4.move(35,45)) 
+disp(m4.move(35,45))
 
 # BSPLINE : TODO
 #svg = to_svg_string(m4)
 #m5 = from_svg_string(svg)
 
-#disp(m5.move(70,45)) 
+#disp(m5.move(70,45))
 
 show()

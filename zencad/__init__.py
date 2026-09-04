@@ -1,119 +1,172 @@
 #!/usr/bin/env python3
 
-from zencad.version import __occt_version__, __pythonocc_version__
+import importlib
 import os
-import sys
-from zencad.version import __occt_version__
-
-# Libraries loading test. Starts with gui mode only.
-
-if (
-    (True
-     #        sys.platform == "win32" or
-     #       sys.argv[0][-7:] == "/zencad"
-     #      or
-     #     sys.argv[0] == "zencad"
-     #    or
-     #   (len(sys.argv) > 2 and sys.argv[1]
-     #   == "-m" and sys.argv[2] == "zencad")
-     # or
-        # (len(sys.argv) >= 2 and sys.argv[0]
-     # == "-m" and sys.argv[1] == "zencad")
-     )
-    and not "--display-only" in sys.argv
-    and not "--install-pythonocc" in " ".join(sys.argv)
-    and not "--install-occt" in " ".join(sys.argv)
-    and not "--lookup-libraries" in " ".join(sys.argv)
-):
-    try:
-        import OCC
-        import OCC.Core.gp
-    except:
-        import zencad.gui.libinstaller
-        zencad.gui.libinstaller.doit()
-        exit()
-
-
-class PreventLibraryLoading(Exception):
-    pass
-
 
 try:
-    # Если активирована опция переустановки библиотек,
-    # не даём интерпретатору линковать имеющиеся
-    if ("--install-occt" in " ".join(sys.argv) or
-            "--install-pythonocc" in " ".join(sys.argv)):
-        print("Prevent library link.")
-        raise PreventLibraryLoading()
+    import OCP
+    import OCP.gp
+except ImportError as exception:
+    raise ImportError(
+        "ZenCad requires cadquery-ocp-novtk; install it with "
+        "'python -m pip install zencad'"
+    ) from exception
 
-    # Geometry API
-    from zencad.geom.solid import *
-    from zencad.geom.platonic import *
-    from zencad.geom.wire import *
-    from zencad.geom.face import *
-    from zencad.geom.shell import *
-    from zencad.geom.sweep import *
-    from zencad.geom.boolops import *
-    from zencad.geom.exttrans import *
-    from zencad.geom.unify import *
-    from zencad.geom.offset import *
-    from zencad.geom.operations import *
-    from zencad.geom.wire_builder import wire_builder
-    from zencad.geom.near import *
+from zencad.version import __ocp_version__
 
-    # Display API
-    from zencad.showapi import display, disp, show, hl, highlight
-    from zencad.scene import Scene
 
-    # Utility
-    from zencad.util import *
-    from zencad.color import Color
-    from zencad.color import default_color, set_default_point_color, default_point_color
-    from zencad.color import set_default_wire_color, default_wire_color
-    from zencad.color import set_default_border_color, default_border_color
-    import zencad.color as color
-    from zencad.lazifier import lazy
+from zencad import geom as _domain
+from zencad.geom import *
+from zencad.cache_config import clear_cache, configure
+from zencad.check import (
+    CheckAssertion,
+    CheckExpectations,
+    CheckReport,
+    CheckSubject,
+    NumericRange,
+    check_inspection,
+    check_script,
+)
+from zencad.evaluation_policy import (
+    EvaluationMode,
+    evaluation_mode,
+    set_evaluation_mode,
+)
+from zencad.color import (
+    Color,
+    black,
+    blue,
+    cian,
+    default_border_color,
+    default_color,
+    default_point_color,
+    default_wire_color,
+    green,
+    magenta,
+    mech,
+    orange,
+    red,
+    set_default_border_color,
+    set_default_point_color,
+    set_default_wire_color,
+    transmech,
+    white,
+    yellow,
+)
+from zencad.scene import Scene
+from zencad.scene_draft import SceneDraft, SceneObjectRef
+from zencad.runtime.scene_protocol import SceneManifest, SceneManifestObject
+from zencad.inspect import (
+    InspectionObject,
+    InspectionReport,
+    inspect_script,
+    inspect_snapshot,
+)
+from zencad.computation_graph import (
+    ComputationGraph,
+    ComputationNode,
+    ComputationRoot,
+    GraphArgument,
+    inspect_computation_graph,
+)
+from zencad.render import render_script, render_snapshot
+from zencad.showapi import display, disp, highlight, hl, managed_scene, show
+from zencad.util import (
+    closest_points_between_capsules,
+    closest_points_between_segments,
+    deg,
+    deg2rad,
+    examples_dict,
+    examples_paths,
+    rad2deg,
+)
+from zencad.version import __version__
 
-    import zencad.assemble
-
-    from zencad.color import (white,
-black,
-red,
-green,
-blue,
-yellow,
-magenta,
-cian,
-mech,
-transmech,
-orange)
-
-    # Transes
-    from zencad.geom.trans import move, moveX, moveY, moveZ, \
-        translate, translateX, translateY, translateZ, \
-        rotate, rotateX, rotateY, rotateZ, \
-        mirror_axis, mirrorX, mirrorY, mirrorZ, \
-        mirror_plane, mirrorXY, mirrorYZ, mirrorXZ, \
-        mirrorO, \
-        scale, \
-        up, down, left, right, forw, back
-
-    from zencad.geom.general_transformation import scaleXYZ, scaleX, scaleY, scaleZ
-
-    from zencad.geom.exttrans import multitrans, sqrmirror, sqrtrans, \
-        rotate_array, rotate_array2, short_rotate, nulltrans
-
-    from zencad.version import __version__
-
-    from zencad.convert.api import *
-
-except ImportError as ex:
-    if "libTK" in str(ex):
-        print("OCCT is not installed")
-    else:
-        raise ex
-except PreventLibraryLoading as ex:
-    pass
+from zencad import color as color
 
 moduledir = os.path.dirname(__file__)
 exampledir = os.path.join(os.path.dirname(__file__), "examples")
+
+_SUPPORT_API = [
+    "Color",
+    "CheckAssertion",
+    "CheckExpectations",
+    "CheckReport",
+    "CheckSubject",
+    "EvaluationMode",
+    "NumericRange",
+    "Scene",
+    "SceneDraft",
+    "SceneManifest",
+    "SceneManifestObject",
+    "SceneObjectRef",
+    "black",
+    "blue",
+    "cian",
+    "clear_cache",
+    "check_inspection",
+    "check_script",
+    "closest_points_between_capsules",
+    "closest_points_between_segments",
+    "color",
+    "configure",
+    "default_border_color",
+    "default_color",
+    "default_point_color",
+    "default_wire_color",
+    "deg",
+    "deg2rad",
+    "disp",
+    "display",
+    "exampledir",
+    "examples_dict",
+    "examples_paths",
+    "evaluation_mode",
+    "set_evaluation_mode",
+    "green",
+    "highlight",
+    "hl",
+    "InspectionObject",
+    "InspectionReport",
+    "ComputationGraph",
+    "ComputationNode",
+    "ComputationRoot",
+    "GraphArgument",
+    "inspect_computation_graph",
+    "inspect_script",
+    "inspect_snapshot",
+    "magenta",
+    "managed_scene",
+    "mech",
+    "moduledir",
+    "orange",
+    "rad2deg",
+    "red",
+    "render_script",
+    "render_snapshot",
+    "set_default_border_color",
+    "set_default_point_color",
+    "set_default_wire_color",
+    "show",
+    "transmech",
+    "white",
+    "yellow",
+]
+
+__all__ = [*_domain.__all__, *_SUPPORT_API]
+
+
+def __getattr__(name):
+    """Load the local assembly API only when it is requested."""
+    if name != "assemble":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    try:
+        module = importlib.import_module("zencad.assemble")
+    except ImportError as exception:
+        raise ImportError(
+            "zencad.assemble could not load its local kinematic API"
+        ) from exception
+
+    globals()[name] = module
+    return module

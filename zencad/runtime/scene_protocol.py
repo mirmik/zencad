@@ -1,0 +1,736 @@
+"""Versioned, pickle-free transport for complete ZenCad scene snapshots."""
+
+from dataclasses import dataclass, field
+import hashlib
+import io
+import json
+import os
+from pathlib import Path
+import shutil
+import struct
+from types import MappingProxyType
+from typing import Any, Iterable, Mapping
+from uuid import uuid4
+
+from OCP.TopoDS import TopoDS_Shape
+
+from zencad.occ_compat import read_brep, write_brep
+
+
+CURRENT_PROTOCOL_VERSION = 1
+SCENE_MANIFEST_SCHEMA = "zencad.scene_manifest"
+SCENE_MANIFEST_VERSION = 1
+FRAME_MAGIC = b"ZCSN"
+MAX_MANIFEST_BYTES = 16 * 1024 * 1024
+MAX_PAYLOAD_COUNT = 1_000_000
+INLINE_FRAME_LIMIT = 32 * 1024 * 1024
+
+_FRAME_HEADER = struct.Struct(">4sHII")
+_PAYLOAD_LENGTH = struct.Struct(">Q")
+_MESH_HEADER = struct.Struct(">4sB3xII")
+_MESH_VERTEX = struct.Struct(">6d")
+_MESH_TRIANGLE = struct.Struct(">III")
+MESH_MAGIC = b"ZCMS"
+MESH_PAYLOAD_VERSION = 1
+MAX_MESH_VERTICES = 50_000_000
+MAX_MESH_TRIANGLES = 100_000_000
+
+
+class ProtocolError(ValueError):
+    """The snapshot is malformed or violates the transport contract."""
+
+
+class UnsupportedProtocolVersion(ProtocolError):
+    """The sender and receiver do not share a protocol version."""
+
+
+class PayloadIntegrityError(ProtocolError):
+    """A payload does not match its declared size or digest."""
+
+
+class SupersededGenerationError(ProtocolError):
+    """A valid snapshot belongs to an iteration that is no longer current."""
+
+
+def _freeze_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType({
+            key: _freeze_json(item) for key, item in value.items()
+        })
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_json(item) for item in value)
+    return value
+
+
+def _plain_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _plain_json(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_plain_json(item) for item in value]
+    return value
+
+
+def _freeze_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any]:
+    return _freeze_json(dict(value or {}))
+
+
+def _validate_object_name(value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise ProtocolError("Scene object name must be a non-empty string")
+    return value
+
+
+@dataclass(frozen=True)
+class SceneObjectRecord:
+    object_id: str
+    kind: str
+    payload: bytes
+    properties: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if not isinstance(self.object_id, str) or not self.object_id:
+            raise ProtocolError("Scene object ID must not be empty")
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ProtocolError("Scene object kind must not be empty")
+        if not isinstance(self.payload, bytes):
+            raise ProtocolError("Scene object payload must be bytes")
+        _validate_object_name((self.properties or {}).get("name"))
+        object.__setattr__(self, "properties", _freeze_mapping(self.properties))
+
+
+@dataclass(frozen=True)
+class SceneSnapshot:
+    generation: int
+    objects: tuple[SceneObjectRecord, ...]
+    camera_policy: str = "preserve"
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if (
+            not isinstance(self.generation, int)
+            or isinstance(self.generation, bool)
+            or self.generation < 0
+        ):
+            raise ProtocolError("Scene generation must be non-negative")
+        object.__setattr__(self, "objects", tuple(self.objects))
+        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata))
+        if self.camera_policy not in {"preserve", "fit", "explicit"}:
+            raise ProtocolError(
+                f"Unsupported camera policy: {self.camera_policy!r}"
+            )
+        identifiers = [record.object_id for record in self.objects]
+        if len(identifiers) != len(set(identifiers)):
+            raise ProtocolError("Scene object IDs must be unique")
+        names = [
+            record.properties.get("name")
+            for record in self.objects
+            if record.properties.get("name") is not None
+        ]
+        if len(names) != len(set(names)):
+            raise ProtocolError("Scene object names must be unique")
+
+    def manifest(self) -> "SceneManifest":
+        """Return the public, payload-free description of this snapshot."""
+        return SceneManifest.from_snapshot(self)
+
+
+@dataclass(frozen=True, slots=True)
+class SceneManifestObject:
+    object_id: str
+    name: str | None
+    kind: str
+    visible: bool
+    presentation: Mapping[str, Any]
+    geometry: Mapping[str, Any]
+
+    def __post_init__(self):
+        if not isinstance(self.object_id, str) or not self.object_id:
+            raise ProtocolError("Scene manifest object ID must not be empty")
+        _validate_object_name(self.name)
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ProtocolError("Scene manifest object kind must not be empty")
+        if not isinstance(self.visible, bool):
+            raise ProtocolError("Scene manifest visibility must be a boolean")
+        if not isinstance(self.presentation, Mapping):
+            raise ProtocolError("Scene manifest presentation must be an object")
+        if not isinstance(self.geometry, Mapping):
+            raise ProtocolError("Scene manifest geometry must be an object")
+        object.__setattr__(self, "presentation", _freeze_mapping(self.presentation))
+        object.__setattr__(self, "geometry", _freeze_mapping(self.geometry))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.object_id,
+            "name": self.name,
+            "kind": self.kind,
+            "visible": self.visible,
+            "presentation": _plain_json(self.presentation),
+            "geometry": _plain_json(self.geometry),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class SceneManifest:
+    generation: int
+    objects: tuple[SceneManifestObject, ...]
+    camera_policy: str
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+    schema_version: int = SCENE_MANIFEST_VERSION
+
+    def __post_init__(self):
+        if (
+            not isinstance(self.generation, int)
+            or isinstance(self.generation, bool)
+            or self.generation < 0
+        ):
+            raise ProtocolError("Scene manifest generation must be non-negative")
+        if not isinstance(self.camera_policy, str) or self.camera_policy not in {
+            "preserve",
+            "fit",
+            "explicit",
+        }:
+            raise ProtocolError(
+                f"Unsupported camera policy: {self.camera_policy!r}"
+            )
+        if (
+            not isinstance(self.schema_version, int)
+            or isinstance(self.schema_version, bool)
+            or self.schema_version != SCENE_MANIFEST_VERSION
+        ):
+            raise UnsupportedProtocolVersion(
+                f"Unsupported scene manifest version {self.schema_version}"
+            )
+        if not isinstance(self.metadata, Mapping):
+            raise ProtocolError("Scene manifest metadata must be an object")
+        object.__setattr__(self, "objects", tuple(self.objects))
+        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata))
+        if not all(isinstance(item, SceneManifestObject) for item in self.objects):
+            raise ProtocolError("Scene manifest contains an invalid object")
+        identifiers = [item.object_id for item in self.objects]
+        if len(identifiers) != len(set(identifiers)):
+            raise ProtocolError("Scene manifest object IDs must be unique")
+        names = [item.name for item in self.objects if item.name is not None]
+        if len(names) != len(set(names)):
+            raise ProtocolError("Scene manifest object names must be unique")
+
+    @classmethod
+    def from_snapshot(cls, snapshot: SceneSnapshot) -> "SceneManifest":
+        if not isinstance(snapshot, SceneSnapshot):
+            raise TypeError("SceneManifest.from_snapshot requires a SceneSnapshot")
+        objects = []
+        for record in snapshot.objects:
+            properties = dict(record.properties)
+            name = properties.pop("name", None)
+            visible = properties.pop("visible", True)
+            encoding = {
+                "brep": "brep",
+                "mesh": "mesh-v1",
+                "point": "json",
+                "line": "json",
+            }.get(record.kind, "opaque")
+            objects.append(SceneManifestObject(
+                object_id=record.object_id,
+                name=name,
+                kind=record.kind,
+                visible=visible,
+                presentation=properties,
+                geometry={
+                    "encoding": encoding,
+                    "payload_size": len(record.payload),
+                    "payload_sha256": _payload_digest(record.payload),
+                },
+            ))
+        return cls(
+            generation=snapshot.generation,
+            objects=tuple(objects),
+            camera_policy=snapshot.camera_policy,
+            metadata=snapshot.metadata,
+        )
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> "SceneManifest":
+        if not isinstance(value, Mapping):
+            raise ProtocolError("Scene manifest must be an object")
+        if value.get("schema") != SCENE_MANIFEST_SCHEMA:
+            raise ProtocolError("Unsupported scene manifest schema")
+        objects = value.get("objects")
+        if not isinstance(objects, (list, tuple)):
+            raise ProtocolError("Scene manifest objects must be a list")
+        entries = []
+        for item in objects:
+            if not isinstance(item, Mapping):
+                raise ProtocolError("Scene manifest object must be an object")
+            entries.append(SceneManifestObject(
+                object_id=item.get("id"),
+                name=item.get("name"),
+                kind=item.get("kind"),
+                visible=item.get("visible"),
+                presentation=item.get("presentation"),
+                geometry=item.get("geometry"),
+            ))
+        metadata = value.get("metadata", {})
+        if not isinstance(metadata, Mapping):
+            raise ProtocolError("Scene manifest metadata must be an object")
+        return cls(
+            generation=value.get("generation"),
+            objects=tuple(entries),
+            camera_policy=value.get("camera_policy"),
+            metadata=metadata,
+            schema_version=value.get("schema_version"),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema": SCENE_MANIFEST_SCHEMA,
+            "schema_version": self.schema_version,
+            "generation": self.generation,
+            "camera_policy": self.camera_policy,
+            "metadata": _plain_json(self.metadata),
+            "objects": [item.to_dict() for item in self.objects],
+        }
+
+    def to_json(self, *, indent: int | None = 2) -> str:
+        return json.dumps(
+            self.to_dict(),
+            allow_nan=False,
+            ensure_ascii=False,
+            indent=indent,
+            sort_keys=True,
+        ) + "\n"
+
+
+def encode_brep(shape) -> bytes:
+    """Serialize a ZenCad Shape or raw TopoDS_Shape to BREP bytes."""
+    if hasattr(shape, "native"):
+        shape = shape.native()
+    if hasattr(shape, "Shape"):
+        shape = shape.Shape()
+    if not isinstance(shape, TopoDS_Shape):
+        raise TypeError("BREP payload requires Shape or TopoDS_Shape")
+
+    stream = io.BytesIO()
+    write_brep(shape, stream)
+    payload = stream.getvalue()
+    if not payload:
+        raise ProtocolError("OCP failed to serialize BREP payload")
+    return payload
+
+
+def decode_brep(payload: bytes) -> TopoDS_Shape:
+    """Deserialize BREP bytes and reject corrupt or empty shapes."""
+    if not isinstance(payload, bytes):
+        raise TypeError("BREP payload must be bytes")
+
+    shape = TopoDS_Shape()
+    try:
+        read_brep(shape, io.BytesIO(payload))
+    except Exception as exception:
+        raise PayloadIntegrityError("Invalid BREP payload") from exception
+    if shape.IsNull():
+        raise PayloadIntegrityError("Invalid BREP payload")
+    return shape
+
+
+def encode_mesh(mesh) -> bytes:
+    """Serialize display mesh geometry without JSON expansion or pickle."""
+    from zencad._native.mesh import validated_mesh_data
+
+    positions, normals, triangles = validated_mesh_data(mesh)
+    if len(positions) > MAX_MESH_VERTICES:
+        raise ProtocolError("Mesh vertex count exceeds the limit")
+    if len(triangles) > MAX_MESH_TRIANGLES:
+        raise ProtocolError("Mesh triangle count exceeds the limit")
+
+    stream = io.BytesIO()
+    stream.write(_MESH_HEADER.pack(
+        MESH_MAGIC,
+        MESH_PAYLOAD_VERSION,
+        len(positions),
+        len(triangles),
+    ))
+    for position, normal in zip(positions, normals):
+        stream.write(_MESH_VERTEX.pack(*(position + normal)))
+    for triangle in triangles:
+        stream.write(_MESH_TRIANGLE.pack(*triangle))
+    return stream.getvalue()
+
+
+def decode_mesh(payload: bytes):
+    """Deserialize and fully validate a ZenCad display mesh payload."""
+    from zencad._native.mesh import MeshData, validated_mesh_data
+
+    if not isinstance(payload, bytes):
+        raise TypeError("Mesh payload must be bytes")
+    if len(payload) < _MESH_HEADER.size:
+        raise PayloadIntegrityError("Truncated mesh payload header")
+    magic, version, vertex_count, triangle_count = _MESH_HEADER.unpack_from(
+        payload
+    )
+    if magic != MESH_MAGIC:
+        raise PayloadIntegrityError("Invalid mesh payload magic")
+    if version != MESH_PAYLOAD_VERSION:
+        raise PayloadIntegrityError(
+            f"Unsupported mesh payload version {version}"
+        )
+    if vertex_count > MAX_MESH_VERTICES:
+        raise PayloadIntegrityError("Mesh vertex count exceeds the limit")
+    if triangle_count > MAX_MESH_TRIANGLES:
+        raise PayloadIntegrityError("Mesh triangle count exceeds the limit")
+    expected_size = (
+        _MESH_HEADER.size
+        + vertex_count * _MESH_VERTEX.size
+        + triangle_count * _MESH_TRIANGLE.size
+    )
+    if len(payload) != expected_size:
+        raise PayloadIntegrityError("Mesh payload size mismatch")
+
+    cursor = _MESH_HEADER.size
+    positions = []
+    normals = []
+    for _ in range(vertex_count):
+        values = _MESH_VERTEX.unpack_from(payload, cursor)
+        cursor += _MESH_VERTEX.size
+        positions.append(values[:3])
+        normals.append(values[3:])
+    triangles = []
+    for _ in range(triangle_count):
+        triangles.append(_MESH_TRIANGLE.unpack_from(payload, cursor))
+        cursor += _MESH_TRIANGLE.size
+
+    mesh = MeshData(
+        positions=positions,
+        normals=normals,
+        triangles=triangles,
+        triangle_face_ids=[],
+    )
+    try:
+        validated_mesh_data(mesh)
+    except (TypeError, ValueError) as exception:
+        raise PayloadIntegrityError("Invalid mesh payload geometry") from exception
+    return mesh
+
+
+def encode_json_payload(value: Any) -> bytes:
+    """Encode small non-BREP scene data as strict canonical JSON."""
+    try:
+        return json.dumps(
+            value,
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exception:
+        raise ProtocolError("Scene object payload must contain JSON values") from exception
+
+
+def _json_payload_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ProtocolError(f"Duplicate JSON property: {key!r}")
+        result[key] = value
+    return result
+
+
+def _invalid_json_payload_constant(value):
+    raise ProtocolError(f"Invalid JSON number: {value}")
+
+
+def decode_json_payload(payload: bytes) -> Any:
+    """Decode a strict JSON scene payload."""
+    if not isinstance(payload, bytes):
+        raise TypeError("JSON scene payload must be bytes")
+    try:
+        return json.loads(
+            payload.decode("utf-8"),
+            object_pairs_hook=_json_payload_object,
+            parse_constant=_invalid_json_payload_constant,
+        )
+    except ProtocolError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exception:
+        raise PayloadIntegrityError("Invalid JSON scene payload") from exception
+
+
+def _payload_digest(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _build_manifest(snapshot: SceneSnapshot) -> tuple[dict[str, Any], list[bytes]]:
+    payloads: list[bytes] = []
+    objects: list[dict[str, Any]] = []
+    for index, record in enumerate(snapshot.objects):
+        payloads.append(record.payload)
+        objects.append({
+            "id": record.object_id,
+            "kind": record.kind,
+            "payload_index": index,
+            "payload_size": len(record.payload),
+            "payload_sha256": _payload_digest(record.payload),
+            "properties": _plain_json(record.properties),
+        })
+
+    manifest = {
+        "protocol_version": CURRENT_PROTOCOL_VERSION,
+        "generation": snapshot.generation,
+        "camera_policy": snapshot.camera_policy,
+        "metadata": _plain_json(snapshot.metadata),
+        "objects": objects,
+    }
+    return manifest, payloads
+
+
+def _encode_manifest(manifest: Mapping[str, Any]) -> bytes:
+    try:
+        encoded = json.dumps(
+            manifest,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exception:
+        raise ProtocolError("Snapshot manifest must contain JSON values") from exception
+    if len(encoded) > MAX_MANIFEST_BYTES:
+        raise ProtocolError("Snapshot manifest exceeds the size limit")
+    return encoded
+
+
+def encode_snapshot_frame(snapshot: SceneSnapshot) -> bytes:
+    """Encode one snapshot as a self-contained binary frame."""
+    manifest, payloads = _build_manifest(snapshot)
+    manifest_bytes = _encode_manifest(manifest)
+    frame_size = (
+        _FRAME_HEADER.size
+        + len(manifest_bytes)
+        + sum(_PAYLOAD_LENGTH.size + len(payload) for payload in payloads)
+    )
+    if frame_size > INLINE_FRAME_LIMIT:
+        raise ProtocolError(
+            "Snapshot exceeds the inline frame limit; use FileSnapshotBundle"
+        )
+    chunks = [
+        _FRAME_HEADER.pack(
+            FRAME_MAGIC,
+            CURRENT_PROTOCOL_VERSION,
+            len(manifest_bytes),
+            len(payloads),
+        ),
+        manifest_bytes,
+    ]
+    for payload in payloads:
+        chunks.extend((_PAYLOAD_LENGTH.pack(len(payload)), payload))
+    return b"".join(chunks)
+
+
+def _decode_manifest(data: bytes, version: int) -> dict[str, Any]:
+    if version != CURRENT_PROTOCOL_VERSION:
+        raise UnsupportedProtocolVersion(
+            f"Unsupported scene protocol version {version}; "
+            f"expected {CURRENT_PROTOCOL_VERSION}"
+        )
+    try:
+        manifest = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exception:
+        raise ProtocolError("Invalid snapshot manifest JSON") from exception
+    if not isinstance(manifest, dict):
+        raise ProtocolError("Snapshot manifest must be an object")
+    if manifest.get("protocol_version") != version:
+        raise ProtocolError("Frame and manifest protocol versions disagree")
+    return manifest
+
+
+def _snapshot_from_parts(
+    manifest: Mapping[str, Any], payloads: Iterable[bytes]
+) -> SceneSnapshot:
+    payloads = list(payloads)
+    raw_objects = manifest.get("objects")
+    if not isinstance(raw_objects, list):
+        raise ProtocolError("Snapshot manifest objects must be a list")
+    if len(raw_objects) != len(payloads):
+        raise ProtocolError("Manifest object and payload counts disagree")
+
+    records = []
+    seen_payloads = set()
+    for raw in raw_objects:
+        if not isinstance(raw, dict):
+            raise ProtocolError("Snapshot object entry must be an object")
+        index = raw.get("payload_index")
+        if not isinstance(index, int) or not 0 <= index < len(payloads):
+            raise ProtocolError("Snapshot object has invalid payload index")
+        if index in seen_payloads:
+            raise ProtocolError("Snapshot payload index is used more than once")
+        seen_payloads.add(index)
+        payload = payloads[index]
+        if raw.get("payload_size") != len(payload):
+            raise PayloadIntegrityError("Snapshot payload size mismatch")
+        if raw.get("payload_sha256") != _payload_digest(payload):
+            raise PayloadIntegrityError("Snapshot payload digest mismatch")
+        properties = raw.get("properties", {})
+        if not isinstance(properties, dict):
+            raise ProtocolError("Snapshot object properties must be an object")
+        records.append(SceneObjectRecord(
+            object_id=raw.get("id"),
+            kind=raw.get("kind"),
+            payload=payload,
+            properties=properties,
+        ))
+
+    generation = manifest.get("generation")
+    if not isinstance(generation, int) or isinstance(generation, bool):
+        raise ProtocolError("Snapshot generation must be an integer")
+    metadata = manifest.get("metadata", {})
+    if not isinstance(metadata, dict):
+        raise ProtocolError("Snapshot metadata must be an object")
+    camera_policy = manifest.get("camera_policy", "preserve")
+    if not isinstance(camera_policy, str):
+        raise ProtocolError("Snapshot camera policy must be a string")
+    return SceneSnapshot(
+        generation=generation,
+        objects=tuple(records),
+        camera_policy=camera_policy,
+        metadata=metadata,
+    )
+
+
+def decode_snapshot_frame(frame: bytes) -> SceneSnapshot:
+    """Decode and fully validate a binary scene frame."""
+    if not isinstance(frame, bytes):
+        raise TypeError("Snapshot frame must be bytes")
+    if len(frame) > INLINE_FRAME_LIMIT:
+        raise ProtocolError("Snapshot exceeds the inline frame limit")
+    if len(frame) < _FRAME_HEADER.size:
+        raise ProtocolError("Truncated snapshot frame header")
+
+    magic, version, manifest_size, payload_count = _FRAME_HEADER.unpack_from(frame)
+    if magic != FRAME_MAGIC:
+        raise ProtocolError("Invalid snapshot frame magic")
+    if version != CURRENT_PROTOCOL_VERSION:
+        raise UnsupportedProtocolVersion(
+            f"Unsupported scene protocol version {version}; "
+            f"expected {CURRENT_PROTOCOL_VERSION}"
+        )
+    if manifest_size > MAX_MANIFEST_BYTES:
+        raise ProtocolError("Snapshot manifest exceeds the size limit")
+    if payload_count > MAX_PAYLOAD_COUNT:
+        raise ProtocolError("Snapshot payload count exceeds the limit")
+
+    cursor = _FRAME_HEADER.size
+    manifest_end = cursor + manifest_size
+    if manifest_end > len(frame):
+        raise ProtocolError("Truncated snapshot manifest")
+    manifest = _decode_manifest(frame[cursor:manifest_end], version)
+    cursor = manifest_end
+
+    payloads = []
+    for _ in range(payload_count):
+        length_end = cursor + _PAYLOAD_LENGTH.size
+        if length_end > len(frame):
+            raise ProtocolError("Truncated snapshot payload length")
+        payload_size = _PAYLOAD_LENGTH.unpack_from(frame, cursor)[0]
+        cursor = length_end
+        payload_end = cursor + payload_size
+        if payload_end > len(frame):
+            raise ProtocolError("Truncated snapshot payload")
+        payloads.append(frame[cursor:payload_end])
+        cursor = payload_end
+    if cursor != len(frame):
+        raise ProtocolError("Unexpected bytes after snapshot payloads")
+
+    return _snapshot_from_parts(manifest, payloads)
+
+
+def ensure_current_generation(snapshot: SceneSnapshot, expected: int) -> None:
+    if snapshot.generation != expected:
+        raise SupersededGenerationError(
+            f"Snapshot generation {snapshot.generation} is not current "
+            f"generation {expected}"
+        )
+
+
+def select_snapshot_transport(snapshot: SceneSnapshot) -> str:
+    """Choose the v1 carrier without changing the logical protocol."""
+    manifest, payloads = _build_manifest(snapshot)
+    manifest_bytes = _encode_manifest(manifest)
+    frame_size = (
+        _FRAME_HEADER.size
+        + len(manifest_bytes)
+        + sum(_PAYLOAD_LENGTH.size + len(payload) for payload in payloads)
+    )
+    return "inline" if frame_size <= INLINE_FRAME_LIMIT else "file"
+
+
+class FileSnapshotBundle:
+    """Atomic directory-backed representation for large snapshot payloads."""
+
+    MANIFEST_NAME = "manifest.json"
+
+    @staticmethod
+    def _payload_name(index: int) -> str:
+        return f"payload-{index:06d}.bin"
+
+    @classmethod
+    def write(cls, path, snapshot: SceneSnapshot) -> Path:
+        path = Path(path)
+        if path.exists():
+            raise FileExistsError(path)
+        parent = path.parent
+        parent.mkdir(parents=True, exist_ok=True)
+        temporary = parent / f".{path.name}.{uuid4().hex}.tmp"
+        manifest, payloads = _build_manifest(snapshot)
+        try:
+            temporary.mkdir()
+            for index, payload in enumerate(payloads):
+                (temporary / cls._payload_name(index)).write_bytes(payload)
+            (temporary / cls.MANIFEST_NAME).write_bytes(
+                _encode_manifest(manifest)
+            )
+            os.replace(temporary, path)
+        except Exception:
+            if temporary.exists():
+                shutil.rmtree(temporary)
+            raise
+        return path
+
+    @classmethod
+    def read(cls, path) -> SceneSnapshot:
+        path = Path(path)
+        try:
+            manifest_bytes = (path / cls.MANIFEST_NAME).read_bytes()
+        except OSError as exception:
+            raise ProtocolError("Snapshot bundle manifest is unavailable") from exception
+        if len(manifest_bytes) > MAX_MANIFEST_BYTES:
+            raise ProtocolError("Snapshot manifest exceeds the size limit")
+        manifest = _decode_manifest(
+            manifest_bytes,
+            manifest_version(manifest_bytes),
+        )
+        raw_objects = manifest.get("objects")
+        if not isinstance(raw_objects, list):
+            raise ProtocolError("Snapshot manifest objects must be a list")
+        payloads = []
+        for index in range(len(raw_objects)):
+            try:
+                payloads.append(
+                    (path / cls._payload_name(index)).read_bytes()
+                )
+            except OSError as exception:
+                raise PayloadIntegrityError(
+                    f"Snapshot bundle payload {index} is unavailable"
+                ) from exception
+        return _snapshot_from_parts(manifest, payloads)
+
+
+def manifest_version(manifest_bytes: bytes) -> int:
+    try:
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exception:
+        raise ProtocolError("Invalid snapshot manifest JSON") from exception
+    if not isinstance(manifest, dict):
+        raise ProtocolError("Snapshot manifest must be an object")
+    version = manifest.get("protocol_version")
+    if not isinstance(version, int) or isinstance(version, bool):
+        raise ProtocolError("Snapshot protocol version must be an integer")
+    return version

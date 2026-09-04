@@ -1,6 +1,6 @@
 import zencad.util
-from OCC.Core.Geom import Geom_Line
-from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+from OCP.Geom import Geom_Line
+from OCP.gp import gp_Ax1, gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
 
 
 class Axis:
@@ -16,3 +16,9 @@ class Axis:
                         self._coords[0],
                         self._coords[1],
                         self._coords[2]))))
+
+    def to_gp_Ax1(self):
+        return gp_Ax1(
+            gp_Pnt(0, 0, 0),
+            gp_Dir(*self._coords),
+        )

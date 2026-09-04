@@ -1,102 +1,85 @@
-"""
-В этом файле определены операции экспорта и импорта геометрии.
+"""Conversion boundaries for the domain API and direct GUI export."""
 
-Операции экспорта реализованы с применением evalcache.lazyfile,
-что позволяет избежать множественных загрухок крайней ноды.
+from __future__ import annotations
 
-Политика хеширования в случае импорта требует учета возможности изменения
-файла. Поэтому в хэш загружаемого объекта подмешивается дата его модификации.
-Объект не кешируется, потому как операция восстановления из кэша
-ничем не отличается от загрузки из файла.
-"""
+from pathlib import Path
 
-import zencad.convert.svg
-import os
-import zencad
-import evalcache
-from zencad.lazifier import lazy
-
-from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
-from OCC.Core.StlAPI import StlAPI_Writer
-from OCC.Core.TopoDS import TopoDS_Shape
-from OCC.Core.BRep import BRep_Builder
-from OCC.Core.BRepTools import breptools
+from zencad.convert.export import export_stl
+from zencad._native.shape import Shape as ResolvedShape
+from zencad.occ_compat import write_brep
 
 
-def _to_stl(shp, path, delta):
-    path = os.path.expanduser(path)
+def _to_stl(shape: ResolvedShape, path, delta):
+    """Write a resolved viewer-side shape without constructing a domain graph."""
 
-    mesh = BRepMesh_IncrementalMesh(shp.Shape(), delta)
-
-    if mesh.IsDone() is False:
-        return False
-
-    stl_writer = StlAPI_Writer()
-    stl_writer.Write(shp.Shape(), path)
+    if not isinstance(shape, ResolvedShape):
+        raise TypeError("_to_stl expects a resolved Shape")
+    export_stl(
+        shape,
+        str(Path(path).expanduser()),
+        linear_tolerance=float(delta),
+        binary=False,
+    )
     return True
 
 
-@lazy.file_creator(pathfield="path")
+def _to_brep(shape: ResolvedShape, path):
+    """Write a resolved viewer-side shape without constructing a domain graph."""
+
+    if not isinstance(shape, ResolvedShape):
+        raise TypeError("_to_brep expects a resolved Shape")
+    if not write_brep(shape.Shape(), str(Path(path).expanduser())):
+        raise OSError(f"Failed to write BREP file: {path}")
+
+
 def to_stl(model, path, delta):
-    return _to_stl(model, path, delta)
+    from zencad.geom.conversion import to_stl as domain_to_stl
+
+    return domain_to_stl(model, path, delta)
 
 
-def _to_brep(model, path):
-    breptools.Write(model.Shape(), path)
-
-
-@lazy.file_creator(pathfield="path")
 def to_brep(model, path):
-    return _to_brep(model, path)
+    from zencad.geom.conversion import to_brep as domain_to_brep
 
-
-def _from_brep(path):
-    from zencad.geom.shape import Shape
-    path = os.path.expanduser(path)
-
-    shp = TopoDS_Shape()
-    builder = BRep_Builder()
-
-    breptools.Read(shp, path, builder)
-    return Shape(shp)
+    return domain_to_brep(model, path)
 
 
 def from_brep(path):
-    """Загрузить объект из файла его brep представления.
-    Если таймштамп загружаемого файла изменится, благодаря hint изменится его lazyhash"""
-    path = os.path.expanduser(path)
-    f = lazy(lambda p: _from_brep(p),
-             hint=str(os.path.getmtime(path)))
-    obj = f(path)
-    evalcache.nocache(obj)
-    return obj
+    from zencad.geom.conversion import from_brep as domain_from_brep
+
+    return domain_from_brep(path)
 
 
-@lazy.file_creator(pathfield="path", prevent_unwrap_in_child=["model"])
 def to_svg(model, path, color=(0, 0, 0), mapping=False):
-    path = os.path.expanduser(path)
-    string = zencad.convert.svg.shape_to_svg_string(model, color, mapping)
-    with open(path, "wb") as f:
-        f.write(string.encode("utf-8"))
+    from zencad.geom.conversion import to_svg as domain_to_svg
+
+    return domain_to_svg(model, path, color, mapping)
 
 
-@lazy.lazy(prevent_unwrap_in_child=["model"])
 def to_svg_string(model, color=(0, 0, 0), mapping=False):
-    return zencad.convert.svg.shape_to_svg_string(model, color, mapping)
+    from zencad.geom.conversion import to_svg_string as domain_to_svg_string
+
+    return domain_to_svg_string(model, color, mapping)
 
 
 def from_svg(path):
-    """Загрузить объект из файла его brep представления."""
-    path = os.path.expanduser(path)
+    from zencad.geom.conversion import from_svg as domain_from_svg
 
-    f = lazy(lambda p: zencad.convert.svg.svg_to_shape(
-        path), hint=str(os.path.getmtime(path)))
-    obj = f(path)
-    evalcache.nocache(obj)
-    return obj
+    return domain_from_svg(path)
 
 
-@lazy
-def from_svg_string(string):
-    reader = zencad.convert.svg.SvgReader()
-    return reader.read_string(string)
+def from_svg_string(value):
+    from zencad.geom.conversion import from_svg_string as domain_from_svg_string
+
+    return domain_from_svg_string(value)
+
+
+__all__ = [
+    "from_brep",
+    "from_svg",
+    "from_svg_string",
+    "to_brep",
+    "to_stl",
+    "to_svg",
+    "to_svg_string",
+]

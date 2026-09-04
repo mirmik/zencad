@@ -1,7 +1,7 @@
 from zencad.interactive.interactive_object import InteractiveObject
 from zencad.color import Color
 
-from OCC.Core.AIS import AIS_Shape
+from OCP.AIS import AIS_Shape
 from zencad.bbox import BoundaryBox
 
 

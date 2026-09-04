@@ -54,6 +54,45 @@ chamfer(proto=model, r=radius, refs=referencedPoints)
 
 ---
 :ru
+## Уклон граней (Draft)
+
+`draft` наклоняет выбранные грани относительно нейтральной плоскости. Это
+нужно, например, чтобы деталь извлекалась из пресс-формы. Положительный угол
+снимает материал по направлению вытяжки, отрицательный — добавляет. Нейтральная
+плоскость остаётся неподвижной.
+
+По умолчанию направление равно `+Z`, а нейтральная плоскость проходит через
+начало координат перпендикулярно направлению. `neutral` также принимает плоскую
+грань или пару `(origin, normal)`. Выбранные грани должны принадлежать исходному
+телу и быть плоскими, цилиндрическими или коническими.
+:en
+## Face draft
+
+`draft` inclines selected faces around a neutral plane, commonly so a molded
+part can be released from its tooling. A positive angle removes material along
+the pull direction; a negative angle adds it. The neutral plane remains fixed.
+
+The pull direction defaults to `+Z`, with an origin plane perpendicular to it.
+`neutral` also accepts a planar face or an `(origin, normal)` pair. Selected
+faces must belong to the source body and be planar, cylindrical, or conical.
+::
+
+```python
+body = box(20)
+side_faces = body.faces()[:4]
+
+narrower = draft(body, side_faces, deg(5))
+wider = draft(body, side_faces, deg(-5))
+midplane = draft(
+    body,
+    side_faces,
+    deg(5),
+    neutral=((0, 0, 10), (0, 0, 1)),
+)
+```
+
+---
+:ru
 ## Thicksolid
 Операция создания тонкостенного объёмного тела.
 Задаётся прототипной моделью `shp` и массивом точек, ближайших к удаляемым граням `refs`.
@@ -69,4 +108,4 @@ The wall thickness `t` is also specified. If the wall thickness is positive, the
 thicksolid(proto=model, t=thickness, refs=referencedPoints)
 ```
 
-![](../images/generic/thicksolid0.png) ![](../images/generic/thicksolid1.png)  
+![](../images/generic/thicksolid0.png) ![](../images/generic/thicksolid1.png)

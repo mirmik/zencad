@@ -1,0 +1,1272 @@
+{
+  "schema_version": 1,
+  "baseline": "ZenCad pre-cutover geometry capability inventory, archived 2026-09-02",
+  "legacy_signature_sha256": "1efebba7c8f9744db315b3bc0e3903ff3ab229de7a98f965aa6485019f1ab48a",
+  "status_meaning": {
+    "implemented": "The canonical zencad.geom layer provides the complete domain capability.",
+    "partial": "A typed capability exists but legacy parameters, variants, or result semantics are incomplete.",
+    "missing": "No truthful typed equivalent exists yet.",
+    "repair": "The legacy entry is broken or conflicts with the accepted typed model and needs an explicit repaired contract.",
+    "unchanged": "The entry remains supported outside the lazy/domain migration and needs no typed replacement."
+  },
+  "scope": [
+    "Factories and operations intentionally exposed from the zencad root.",
+    "Public methods of legacy domain values, transformations, Shape, Curve, Curve2, Surface, BoundaryBox, and wire_builder.",
+    "Mesh, conversion, and display boundaries that consume or produce domain values.",
+    "Imported OCP helpers and lazy proxy implementation classes accidentally leaked by star-import are excluded."
+  ],
+  "legacy_root_exports": [
+    "DEFAULT_MESH_DISPLAY_MODE",
+    "LengthUnit",
+    "MESH_DISPLAY_MODES",
+    "MeshData",
+    "Shape",
+    "ShapeValidationError",
+    "SliceResult",
+    "SplitResult",
+    "Transformation",
+    "ValidationIssue",
+    "ValidationReport",
+    "assert_valid",
+    "back",
+    "bezier",
+    "box",
+    "bspline",
+    "chamfer",
+    "clean",
+    "circle",
+    "circle_arc",
+    "cone",
+    "convex_hull",
+    "convex_hull_shape",
+    "cube",
+    "curve",
+    "cylinder",
+    "difference",
+    "disp",
+    "display",
+    "dodecahedron",
+    "down",
+    "draft",
+    "ellipse",
+    "extrude",
+    "export_3mf",
+    "export_step",
+    "export_stl",
+    "fill",
+    "fill3d",
+    "fillet",
+    "fillet2d",
+    "fix_face",
+    "forw",
+    "from_brep",
+    "from_svg",
+    "from_svg_string",
+    "get_nodes",
+    "get_triangles",
+    "halfspace",
+    "heal",
+    "helix",
+    "hexahedron",
+    "highlight",
+    "hl",
+    "icosahedron",
+    "infplane",
+    "interpolate",
+    "interpolate2",
+    "intersect",
+    "is_valid",
+    "law_constant_function",
+    "law_corrected_frenet_trihedron",
+    "law_evolved_section",
+    "law_spine_and_trihedron",
+    "left",
+    "linear_extrude",
+    "loft",
+    "make_edge",
+    "make_shell",
+    "make_solid",
+    "make_wire",
+    "managed_scene",
+    "mesh_to_poly_triangulation",
+    "mirrorO",
+    "mirrorX",
+    "mirrorXY",
+    "mirrorXZ",
+    "mirrorY",
+    "mirrorYZ",
+    "mirrorZ",
+    "mirror_axis",
+    "mirror_plane",
+    "movX",
+    "movY",
+    "movZ",
+    "move",
+    "moveX",
+    "moveY",
+    "moveZ",
+    "multitrans",
+    "multitransform",
+    "near_compound",
+    "near_compsolid",
+    "near_edge",
+    "near_face",
+    "near_shell",
+    "near_solid",
+    "near_vertex",
+    "near_wire",
+    "ngon",
+    "nullshape",
+    "nulltrans",
+    "octahedron",
+    "offset",
+    "pipe",
+    "pipe_shell",
+    "platonic",
+    "point3",
+    "points",
+    "points2",
+    "polygon",
+    "polyhedron",
+    "polyhedron_shell",
+    "polysegment",
+    "project",
+    "quat",
+    "rectangle",
+    "rectangle_wire",
+    "register_font",
+    "restore_shapetype",
+    "revol",
+    "revol2",
+    "right",
+    "rotate",
+    "rotateX",
+    "rotateY",
+    "rotateZ",
+    "rotate_array",
+    "rotate_array2",
+    "rotate_quat",
+    "rounded_polysegment",
+    "ruled",
+    "scale",
+    "scaleX",
+    "scaleXYZ",
+    "scaleY",
+    "scaleZ",
+    "section",
+    "slice",
+    "segment",
+    "sew",
+    "shapefix_solid",
+    "short_rotate",
+    "show",
+    "sphere",
+    "split",
+    "sqrmirror",
+    "sqrtrans",
+    "square",
+    "sweep",
+    "tetrahedron",
+    "text_to_brep",
+    "textshape",
+    "thicksolid",
+    "to_GeomPoint",
+    "to_Pnt",
+    "to_Vec",
+    "to_Vertex",
+    "to_brep",
+    "to_mesh",
+    "to_numpy",
+    "to_stl",
+    "to_svg",
+    "to_svg_string",
+    "torus",
+    "translate",
+    "translateX",
+    "translateY",
+    "translateZ",
+    "triangulate",
+    "triangulate_face",
+    "unify",
+    "union",
+    "up",
+    "validate",
+    "vector3",
+    "vectors",
+    "widewire",
+    "wire_builder",
+    "xyz"
+  ],
+  "families": [
+    {
+      "id": "values",
+      "tasks": [2039],
+      "checks": [
+        "utest/migration_baseline_test.py",
+        "utest/math_test.py",
+        "utest/typed_value_algebra_test.py",
+        "utest/typed_value_transform_compat_test.py"
+      ],
+      "surfaces": [
+        {
+          "source": "zencad.geombase",
+          "exclude": {
+            "xyz": "classified with its public methods below",
+            "point3": "classified with its public methods below",
+            "vector3": "classified with its public methods below",
+            "quat": "classified with its public methods below"
+          },
+          "default": {
+            "status": "partial",
+            "typed": "typed value compatibility adapter for {name}",
+            "materialization": "only OCP/NumPy conversion helpers"
+          },
+          "overrides": {
+            "to_numpy": {
+              "status": "implemented",
+              "typed": "numpy.asarray(Point2 | Point3 | Vector2 | Vector3)"
+            },
+            "to_Pnt": {
+              "status": "implemented",
+              "typed": "Point3.to_ocp()"
+            },
+            "to_Vec": {
+              "status": "implemented",
+              "typed": "Vector3.to_ocp()"
+            },
+            "points": {
+              "status": "implemented",
+              "typed": "zencad.points() -> list[Point3]"
+            },
+            "points2": {
+              "status": "implemented",
+              "typed": "zencad.points2() -> list[list[Point3]]"
+            },
+            "vectors": {
+              "status": "implemented",
+              "typed": "zencad.vectors() -> list[Vector3]"
+            },
+            "to_Vertex": {
+              "status": "implemented",
+              "typed": "zencad.to_Vertex() -> TopoDS_Vertex",
+              "materialization": "explicit native conversion"
+            },
+            "to_GeomPoint": {
+              "status": "implemented",
+              "typed": "zencad.to_GeomPoint() -> Geom_CartesianPoint",
+              "materialization": "explicit native conversion"
+            }
+          }
+        },
+        {
+          "source": "zencad.geombase:xyz",
+          "include_type": true,
+          "dunder": [
+            "__add__",
+            "__sub__",
+            "__iadd__",
+            "__isub__",
+            "__eq__",
+            "__ne__",
+            "__mul__",
+            "__div__",
+            "__lt__",
+            "__gt__"
+          ],
+          "default": {
+            "status": "partial",
+            "typed": "Point3/Vector3.{name} with type-correct algebra",
+            "materialization": "to_ocp(), value(), or numpy.asarray()"
+          },
+          "overrides": {
+            "@type": {
+              "status": "repair",
+              "typed": "Point3 | Vector3"
+            },
+            "__add__": {
+              "status": "implemented",
+              "typed": "typed point/vector __add__ algebra"
+            },
+            "__sub__": {
+              "status": "implemented",
+              "typed": "typed point/vector __sub__ algebra"
+            },
+            "__eq__": {
+              "status": "implemented",
+              "typed": "typed value equality"
+            },
+            "__ne__": {
+              "status": "implemented",
+              "typed": "typed value inequality"
+            },
+            "__mul__": {
+              "status": "implemented",
+              "typed": "Vector2/Vector3 scalar multiplication"
+            },
+            "__div__": {
+              "status": "repair",
+              "typed": "Vector3.__truediv__(); Point3 division is rejected"
+            },
+            "__iadd__": {
+              "status": "implemented",
+              "typed": "immutable typed point/vector __iadd__ algebra"
+            },
+            "__isub__": {
+              "status": "implemented",
+              "typed": "immutable typed point/vector __isub__ algebra"
+            },
+            "__lt__": {
+              "status": "implemented",
+              "typed": "Point3/Vector3 lexicographic comparison"
+            },
+            "__gt__": {
+              "status": "implemented",
+              "typed": "Point3/Vector3 lexicographic comparison"
+            },
+            "Pnt": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.Pnt() -> gp_Pnt"
+            },
+            "Vec": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.Vec() -> gp_Vec"
+            },
+            "Vtx": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.Vtx() -> TopoDS_Vertex"
+            },
+            "angle": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.angle() -> Scalar"
+            },
+            "cross": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.cross() -> Vector3"
+            },
+            "distance": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.distance() -> Scalar"
+            },
+            "early": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.early() -> bool",
+              "materialization": "explicit approximate comparison"
+            },
+            "length": {
+              "status": "implemented",
+              "typed": "Vector2/Vector3.length() -> Scalar"
+            },
+            "to_array": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_array()"
+            },
+            "to_point3": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_point3() -> Point3"
+            },
+            "to_tuple": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_tuple()"
+            },
+            "to_unit_vector": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_unit_vector() -> Vector3"
+            },
+            "to_vector3": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.to_vector3() -> Vector3"
+            },
+            "x": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.x -> Scalar"
+            },
+            "y": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.y -> Scalar"
+            },
+            "z": {
+              "status": "implemented",
+              "typed": "Point3/Vector3.z -> Scalar"
+            }
+          }
+        },
+        {
+          "source": "zencad.geombase:point3",
+          "include_type": true,
+          "default": {
+            "status": "implemented",
+            "typed": "Point3.{name}",
+            "materialization": "none"
+          },
+          "overrides": {
+            "transform": {
+              "typed": "Transform.apply(Point3) -> Point3"
+            }
+          }
+        },
+        {
+          "source": "zencad.geombase:vector3",
+          "include_type": true,
+          "default": {
+            "status": "implemented",
+            "typed": "Vector3.{name}",
+            "materialization": "none"
+          },
+          "overrides": {
+            "transform": {
+              "typed": "Transform.apply(Vector3) -> Vector3"
+            },
+            "normalize": {
+              "typed": "Vector3.normalized() -> Vector3"
+            }
+          }
+        },
+        {
+          "source": "zencad.geombase:quat",
+          "include_type": true,
+          "dunder": ["__str__"],
+          "default": {
+            "status": "partial",
+            "typed": "Quaternion.{name}",
+            "materialization": "value() or to_ocp()"
+          },
+          "overrides": {
+            "@type": {
+              "status": "implemented",
+              "typed": "Quaternion"
+            },
+            "to_array": {
+              "status": "implemented",
+              "typed": "Quaternion.value()"
+            },
+            "__str__": {
+              "status": "implemented",
+              "typed": "Quaternion.__str__()"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "transforms",
+      "tasks": [2039, 2024],
+      "checks": [
+        "utest/trans_test.py",
+        "utest/general_transformation_test.py",
+        "utest/typed_transform_test.py",
+        "utest/typed_value_transform_compat_test.py"
+      ],
+      "surfaces": [
+        {
+          "source": "zencad._native.trans",
+          "exclude": {
+            "Transformation": "classified with its public methods below"
+          },
+          "default": {
+            "status": "missing",
+            "typed": "Context/Transform compatibility operation for {name}",
+            "materialization": "none"
+          },
+          "overrides": {
+            "move": {
+              "status": "implemented",
+              "typed": "zencad.translation() -> Transform"
+            },
+            "translate": {
+              "status": "implemented",
+              "typed": "zencad.translation() -> Transform"
+            },
+            "moveX": {"status": "implemented", "typed": "zencad.moveX() -> Transform"},
+            "moveY": {"status": "implemented", "typed": "zencad.moveY() -> Transform"},
+            "moveZ": {"status": "implemented", "typed": "zencad.moveZ() -> Transform"},
+            "movX": {"status": "implemented", "typed": "zencad.moveX() -> Transform"},
+            "movY": {"status": "implemented", "typed": "zencad.moveY() -> Transform"},
+            "movZ": {"status": "implemented", "typed": "zencad.moveZ() -> Transform"},
+            "translateX": {"status": "implemented", "typed": "zencad.translateX() -> Transform"},
+            "translateY": {"status": "implemented", "typed": "zencad.translateY() -> Transform"},
+            "translateZ": {"status": "implemented", "typed": "zencad.translateZ() -> Transform"},
+            "right": {"status": "implemented", "typed": "zencad.right() -> Transform"},
+            "left": {"status": "implemented", "typed": "zencad.left() -> Transform"},
+            "forw": {"status": "implemented", "typed": "zencad.forw() -> Transform"},
+            "back": {"status": "implemented", "typed": "zencad.back() -> Transform"},
+            "up": {"status": "implemented", "typed": "zencad.up() -> Transform"},
+            "down": {"status": "implemented", "typed": "zencad.down() -> Transform"},
+            "rotate": {
+              "status": "implemented",
+              "typed": "zencad.rotation() -> Transform"
+            },
+            "rotate_quat": {
+              "status": "implemented",
+              "typed": "zencad.rotation(Quaternion) -> Transform"
+            },
+            "rotateX": {"status": "implemented", "typed": "zencad.rotateX() -> Transform"},
+            "rotateY": {"status": "implemented", "typed": "zencad.rotateY() -> Transform"},
+            "rotateZ": {"status": "implemented", "typed": "zencad.rotateZ() -> Transform"},
+            "mirror_plane": {
+              "status": "implemented",
+              "typed": "zencad.mirror(normal) -> Transform"
+            },
+            "mirrorXY": {"status": "implemented", "typed": "zencad.mirrorXY() -> Transform"},
+            "mirrorYZ": {"status": "implemented", "typed": "zencad.mirrorYZ() -> Transform"},
+            "mirrorXZ": {"status": "implemented", "typed": "zencad.mirrorXZ() -> Transform"},
+            "mirror_axis": {"status": "implemented", "typed": "zencad.mirror_axis() -> Transform"},
+            "mirrorX": {"status": "implemented", "typed": "zencad.mirrorX() -> Transform"},
+            "mirrorY": {"status": "implemented", "typed": "zencad.mirrorY() -> Transform"},
+            "mirrorZ": {"status": "implemented", "typed": "zencad.mirrorZ() -> Transform"},
+            "mirrorO": {"status": "implemented", "typed": "zencad.mirrorO() -> Transform"},
+            "scale": {
+              "status": "implemented",
+              "typed": "zencad.scale() -> Transform"
+            }
+          }
+        },
+        {
+          "source": "zencad._native.trans:Transformation",
+          "include_type": true,
+          "dunder": ["__call__", "__mul__", "__repr__", "__str__"],
+          "default": {
+            "status": "partial",
+            "typed": "Transform.{name}",
+            "materialization": "to_ocp() only at the native boundary"
+          },
+          "overrides": {
+            "@type": {
+              "status": "implemented",
+              "typed": "Transform"
+            },
+            "inverse": {
+              "status": "implemented",
+              "typed": "Transform.inverse()"
+            },
+            "translation": {
+              "status": "implemented",
+              "typed": "Transform.translation() -> Vector3"
+            },
+            "transform_vector": {
+              "status": "implemented",
+              "typed": "Transform.apply(Vector3) -> Vector3"
+            },
+            "transform_point": {
+              "status": "implemented",
+              "typed": "Transform.apply(Point3) -> Point3"
+            },
+            "inverse_transform_point": {
+              "status": "implemented",
+              "typed": "Transform.inverse_transform_point() -> Point3"
+            },
+            "inverse_transform_vector": {
+              "status": "implemented",
+              "typed": "Transform.inverse_transform_vector() -> Vector3"
+            },
+            "rotation": {
+              "status": "implemented",
+              "typed": "Transform.rotation_axis_angle() -> tuple[Vector3, Scalar]"
+            },
+            "rotation_quat": {
+              "status": "implemented",
+              "typed": "Transform.rotation() -> Quaternion"
+            },
+            "rotation_euler": {
+              "status": "implemented",
+              "typed": "Transform.rotation_euler() -> Vector3"
+            },
+            "__call__": {
+              "status": "implemented",
+              "typed": "Transform.apply(Point3 | Vector3)"
+            },
+            "__mul__": {
+              "status": "implemented",
+              "typed": "Transform.then(Transform)"
+            },
+            "__repr__": {
+              "status": "implemented",
+              "typed": "Transform.__repr__()",
+              "materialization": "explicit representation"
+            },
+            "__str__": {
+              "status": "implemented",
+              "typed": "Transform.__str__()",
+              "materialization": "explicit representation"
+            }
+          }
+        },
+        {
+          "source": "zencad._native.general_transformation",
+          "exclude": {
+            "GeneralTransformation": "classified with its public methods below"
+          },
+          "default": {
+            "status": "implemented",
+            "typed": "zencad.{name}() -> AffineTransform",
+            "materialization": "none"
+          },
+          "overrides": {}
+        },
+        {
+          "source": "zencad._native.general_transformation:GeneralTransformation",
+          "include_type": true,
+          "dunder": ["__call__", "__mul__", "__repr__", "__str__"],
+          "default": {
+            "status": "implemented",
+            "typed": "AffineTransform.{name}",
+            "materialization": "explicit gp_GTrsf boundary where requested"
+          },
+          "overrides": {}
+        },
+        {
+          "source": "zencad._native.exttrans",
+          "exclude": {
+            "DEF_MTRANS_ARRAY": "legacy configuration constant, preserved unchanged",
+            "DEF_MTRANS_UNIT": "legacy configuration constant, preserved unchanged",
+            "multitransform": "classified with its public methods below"
+          },
+          "default": {
+            "status": "missing",
+            "typed": "typed transformation helper for {name}",
+            "materialization": "none"
+          },
+          "overrides": {
+            "multitrans": {
+              "status": "implemented",
+              "typed": "zencad.multitrans() -> MultiTransform"
+            },
+            "nulltrans": {
+              "status": "implemented",
+              "typed": "zencad.identity_transform()"
+            },
+            "rotate_array": {
+              "status": "implemented",
+              "typed": "zencad.rotate_array() -> MultiTransform"
+            },
+            "rotate_array2": {
+              "status": "implemented",
+              "typed": "zencad.rotate_array2() -> MultiTransform"
+            },
+            "short_rotate": {
+              "status": "implemented",
+              "typed": "zencad.short_rotate() -> Transform"
+            },
+            "sqrmirror": {
+              "status": "implemented",
+              "typed": "zencad.sqrmirror() -> MultiTransform"
+            },
+            "sqrtrans": {
+              "status": "implemented",
+              "typed": "zencad.sqrtrans() -> MultiTransform"
+            }
+          }
+        },
+        {
+          "source": "zencad._native.exttrans:multitransform",
+          "include_type": true,
+          "dunder": ["__call__"],
+          "default": {
+            "status": "missing",
+            "typed": "typed MultiTransform sequence for {name}",
+            "materialization": "iteration materializes produced transforms/shapes"
+          },
+          "overrides": {
+            "@type": {
+              "status": "implemented",
+              "typed": "MultiTransform"
+            },
+            "__call__": {
+              "status": "implemented",
+              "typed": "MultiTransform.__call__() -> Shape | list[Shape]",
+              "materialization": "none; returned Shape handles retain their graphs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "topology-and-bounds",
+      "tasks": [2039, 2040, 2024, 2000],
+      "checks": [
+        "utest/migration_baseline_test.py",
+        "utest/typed_topology_handles_test.py",
+        "utest/typed_topology_queries_test.py",
+        "utest/typed_topology_compat_test.py",
+        "utest/shape_validation_test.py",
+        "utest/typed_value_transform_compat_test.py",
+        "utest/typed_bounds_test.py"
+      ],
+      "surfaces": [
+        {
+          "source": "zencad._native.shape:Shape",
+          "include_type": true,
+          "dunder": ["__add__", "__sub__", "__xor__"],
+          "exclude": {
+            "reflection_elements": "internal topology traversal helper"
+          },
+          "default": {
+            "status": "missing",
+            "typed": "Shape.{name}",
+            "materialization": "none unless the target is explicitly native"
+          },
+          "overrides": {
+            "@type": {"status": "implemented", "typed": "Shape and typed topology subclasses"},
+            "Shape": {"status": "implemented", "typed": "Shape.native()", "materialization": "native()"},
+            "Wire": {"status": "implemented", "typed": "Wire.native()", "materialization": "native()"},
+            "Edge": {"status": "implemented", "typed": "Edge.native()", "materialization": "native()"},
+            "Face": {"status": "implemented", "typed": "Face.native()", "materialization": "native()"},
+            "Vertex": {"status": "implemented", "typed": "Vertex.native()", "materialization": "native()"},
+            "Shell": {"status": "implemented", "typed": "Shell.native()", "materialization": "native()"},
+            "Solid": {"status": "implemented", "typed": "Solid.native()", "materialization": "native()"},
+            "Compound": {"status": "implemented", "typed": "Compound.native()", "materialization": "native()"},
+            "CompSolid": {"status": "implemented", "typed": "CompSolid.native()", "materialization": "native()"},
+            "__add__": {"status": "implemented", "typed": "Shape.__add__() -> Shape"},
+            "__sub__": {"status": "implemented", "typed": "Shape.__sub__() -> Shape"},
+            "__xor__": {"status": "implemented", "typed": "Shape.__xor__() -> Shape"},
+            "validate": {"status": "implemented", "typed": "Shape.validate() -> ValidationReport", "materialization": "explicit diagnostic boundary"},
+            "is_valid": {"status": "implemented", "typed": "Shape.is_valid() -> bool", "materialization": "explicit diagnostic boundary"},
+            "assert_valid": {"status": "implemented", "typed": "Shape.assert_valid() -> Shape", "materialization": "explicit diagnostic boundary"},
+            "clean": {"status": "implemented", "typed": "Shape.clean() preserves the concrete topology handle"},
+            "heal": {"status": "implemented", "typed": "Shape.heal() preserves the concrete topology handle"},
+            "transform": {"status": "implemented", "typed": "Shape.transform(Transform)"},
+            "Wire_orEdgeToWire": {"status": "implemented", "typed": "Shape.to_wire() -> Wire"},
+            "shapetype": {"status": "implemented", "typed": "Shape.shapetype() -> ShapeKind", "materialization": "explicit Python query"},
+            "is_vertex": {"status": "implemented", "typed": "Shape.is_vertex() -> bool", "materialization": "explicit Python predicate"},
+            "is_edge": {"status": "implemented", "typed": "Shape.is_edge() -> bool", "materialization": "explicit Python predicate"},
+            "is_wire": {"status": "implemented", "typed": "Shape.is_wire() -> bool", "materialization": "explicit Python predicate"},
+            "is_face": {"status": "implemented", "typed": "Shape.is_face() -> bool", "materialization": "explicit Python predicate"},
+            "is_shell": {"status": "implemented", "typed": "Shape.is_shell() -> bool", "materialization": "explicit Python predicate"},
+            "is_solid": {"status": "implemented", "typed": "Shape.is_solid() -> bool", "materialization": "explicit Python predicate"},
+            "is_compsolid": {"status": "implemented", "typed": "Shape.is_compsolid() -> bool", "materialization": "explicit Python predicate"},
+            "is_compound": {"status": "implemented", "typed": "Shape.is_compound() -> bool", "materialization": "explicit Python predicate"},
+            "is_wire_or_edge": {"status": "implemented", "typed": "Shape.is_wire_or_edge() -> bool", "materialization": "explicit Python predicate"},
+            "is_closed": {"status": "implemented", "typed": "Shape.is_closed() -> bool", "materialization": "explicit Python predicate"},
+            "is_volumed": {"status": "implemented", "typed": "Shape.is_volumed() -> bool", "materialization": "explicit Python predicate"},
+            "edges": {"status": "implemented", "typed": "Shape.edges() -> ShapeList[Edge]"},
+            "wires": {"status": "implemented", "typed": "Shape.wires() -> ShapeList[Wire]"},
+            "faces": {"status": "implemented", "typed": "Shape.faces() -> ShapeList[Face]"},
+            "solids": {"status": "implemented", "typed": "Shape.solids() -> ShapeList[Solid]"},
+            "compounds": {"status": "implemented", "typed": "Shape.compounds() -> ShapeList[Compound]"},
+            "shells": {"status": "implemented", "typed": "Shape.shells() -> ShapeList[Shell]"},
+            "vertices": {"status": "implemented", "typed": "Shape.vertices() -> ShapeList[Vertex]"},
+            "native_vertices": {"status": "implemented", "typed": "Shape.native_vertices() -> ShapeList[Vertex]"},
+            "fill": {"status": "implemented", "typed": "Shape.fill() -> Face"},
+            "extrude": {"status": "implemented", "typed": "Shape.extrude() -> Shape"},
+            "fillet": {"status": "implemented", "typed": "Shape.fillet() -> Shape"},
+            "chamfer": {"status": "implemented", "typed": "Shape.chamfer() -> Shape"},
+            "fillet2d": {"status": "implemented", "typed": "Shape.fillet2d() -> Face"},
+            "chamfer2d": {"status": "implemented", "typed": "Shape.chamfer2d() -> Face"},
+            "uniform": {"status": "implemented", "typed": "Shape.uniform() -> list[Scalar]"},
+            "uniform_points": {"status": "implemented", "typed": "Shape.uniform_points() -> list[Point3]"},
+            "to_mesh": {"status": "implemented", "typed": "Shape.to_mesh() -> MeshData", "materialization": "MeshData.value()/native()/display_payload()"},
+            "Curve": {"status": "implemented", "typed": "Edge.curve() -> Curve"},
+            "center": {"status": "implemented", "typed": "Shape.center() -> Point3"},
+            "mass": {"status": "implemented", "typed": "Shape.mass() -> Scalar"},
+            "bbox": {"status": "implemented", "typed": "Shape.bbox() -> BoundaryBox"},
+            "boundbox": {"status": "implemented", "typed": "Shape.boundbox() -> BoundaryBox"},
+            "normal": {"status": "implemented", "typed": "Face.normal(u, v) -> Vector3"},
+            "AdaptorSurface": {"status": "implemented", "typed": "Face.AdaptorSurface() -> Geom_Surface", "materialization": "explicit native compatibility boundary"},
+            "AdaptorCurve": {"status": "implemented", "typed": "Edge.AdaptorCurve() -> Geom_Curve", "materialization": "explicit native compatibility boundary"},
+            "HCurveAdaptor": {"status": "implemented", "typed": "Edge.HCurveAdaptor() -> Geom_Curve", "materialization": "explicit native compatibility boundary"},
+            "SurfaceProperties": {"status": "implemented", "typed": "Shape.SurfaceProperties() -> ShapeProperties"},
+            "VolumeProperties": {"status": "implemented", "typed": "Shape.VolumeProperties() -> ShapeProperties"}
+          }
+        },
+        {
+          "source": "zencad._native.curve_algo:CurveAlgo",
+          "default": {
+            "status": "missing",
+            "typed": "Curve/Edge typed query for {name}",
+            "materialization": "none"
+          },
+          "overrides": {
+            "d0": {"status": "implemented", "typed": "Curve.point() -> Point3"},
+            "value": {"status": "implemented", "typed": "Curve.point() -> Point3"},
+            "d1": {"status": "implemented", "typed": "Curve.tangent() -> Vector3"},
+            "range": {"status": "implemented", "typed": "Curve.range() -> Interval"},
+            "curvetype": {"status": "implemented", "typed": "Curve.curvetype() -> CurveKind", "materialization": "explicit Python query"},
+            "endpoints": {"status": "implemented", "typed": "Curve/Shape.endpoints() -> tuple[Point3, Point3]"},
+            "line_parameters": {"status": "implemented", "typed": "Curve.line_parameters() -> LineParameters"},
+            "circle_parameters": {"status": "implemented", "typed": "Curve.circle_parameters() -> CircleParameters"},
+            "ellipse_parameters": {"status": "implemented", "typed": "Curve.ellipse_parameters() -> EllipseParameters"},
+            "lower_distance_parameter": {"status": "implemented", "typed": "Curve.lower_distance_parameter() -> Scalar"},
+            "trimmed_edge": {"status": "implemented", "typed": "Curve.trimmed_edge() -> Edge"}
+          }
+        },
+        {
+          "source": "zencad._native.transformable:Transformable",
+          "include_type": true,
+          "default": {
+            "status": "missing",
+            "typed": "Shape transform compatibility method {name}",
+            "materialization": "none"
+          },
+          "overrides": {
+            "@type": {"status": "unchanged", "typed": "protocol-like compatibility facade"},
+            "move": {"status": "implemented", "typed": "Shape.translate()"},
+            "mov": {"status": "implemented", "typed": "Shape.move()"},
+            "moveX": {"status": "implemented", "typed": "Shape.moveX()"},
+            "moveY": {"status": "implemented", "typed": "Shape.moveY()"},
+            "moveZ": {"status": "implemented", "typed": "Shape.moveZ()"},
+            "movX": {"status": "implemented", "typed": "Shape.movX()"},
+            "movY": {"status": "implemented", "typed": "Shape.movY()"},
+            "movZ": {"status": "implemented", "typed": "Shape.movZ()"},
+            "translate": {"status": "implemented", "typed": "Shape.translate()"},
+            "translateX": {"status": "implemented", "typed": "Shape.translateX()"},
+            "translateY": {"status": "implemented", "typed": "Shape.translateY()"},
+            "translateZ": {"status": "implemented", "typed": "Shape.translateZ()"},
+            "right": {"status": "implemented", "typed": "Shape.right()"},
+            "left": {"status": "implemented", "typed": "Shape.left()"},
+            "forw": {"status": "implemented", "typed": "Shape.forw()"},
+            "back": {"status": "implemented", "typed": "Shape.back()"},
+            "up": {"status": "implemented", "typed": "Shape.up()"},
+            "down": {"status": "implemented", "typed": "Shape.down()"},
+            "rotate": {"status": "implemented", "typed": "Shape.transform(zencad.rotation())"},
+            "rot": {"status": "implemented", "typed": "Shape.rotate()"},
+            "rotateX": {"status": "implemented", "typed": "Shape.rotateX()"},
+            "rotateY": {"status": "implemented", "typed": "Shape.rotateY()"},
+            "rotateZ": {"status": "implemented", "typed": "Shape.rotateZ()"},
+            "rotX": {"status": "implemented", "typed": "Shape.rotX()"},
+            "rotY": {"status": "implemented", "typed": "Shape.rotY()"},
+            "rotZ": {"status": "implemented", "typed": "Shape.rotZ()"},
+            "scale": {"status": "implemented", "typed": "Shape.transform(zencad.scale())"},
+            "mirror": {"status": "implemented", "typed": "Shape.transform(zencad.mirror())"},
+            "mirrorX": {"status": "implemented", "typed": "Shape.mirrorX()"},
+            "mirrorY": {"status": "implemented", "typed": "Shape.mirrorY()"},
+            "mirrorZ": {"status": "implemented", "typed": "Shape.mirrorZ()"},
+            "mirrorXY": {"status": "implemented", "typed": "Shape.mirrorXY()"},
+            "mirrorXZ": {"status": "implemented", "typed": "Shape.mirrorXZ()"},
+            "mirrorYZ": {"status": "implemented", "typed": "Shape.mirrorYZ()"},
+            "scaleX": {"status": "implemented", "typed": "Shape.scaleX() -> same topology handle"},
+            "scaleY": {"status": "implemented", "typed": "Shape.scaleY() -> same topology handle"},
+            "scaleZ": {"status": "implemented", "typed": "Shape.scaleZ() -> same topology handle"},
+            "scaleXYZ": {"status": "implemented", "typed": "Shape.scaleXYZ() -> same topology handle"}
+          }
+        },
+        {
+          "source": "zencad.bbox:BoundaryBox",
+          "include_type": true,
+          "default": {
+            "status": "partial",
+            "typed": "BoundaryBox.{name}",
+            "materialization": "BoundaryBox.value()/native()"
+          },
+          "overrides": {
+            "@type": {"status": "implemented", "typed": "BoundaryBox"},
+            "assign_coords": {"status": "repair", "typed": "immutable zencad.boundary_box()"},
+            "assign": {"status": "repair", "typed": "immutable BoundaryBox value"},
+            "assign_Bnd_Box": {"status": "repair", "typed": "BoundaryBox.from_ocp()", "materialization": "native input snapshot"},
+            "add": {"status": "repair", "typed": "BoundaryBox.add() -> new BoundaryBox; no mutation"},
+            "xrange": {"status": "implemented", "typed": "BoundaryBox.x_range() -> Interval"},
+            "yrange": {"status": "implemented", "typed": "BoundaryBox.y_range() -> Interval"},
+            "zrange": {"status": "implemented", "typed": "BoundaryBox.z_range() -> Interval"},
+            "xlength": {"status": "implemented", "typed": "BoundaryBox.size().x -> Scalar"},
+            "ylength": {"status": "implemented", "typed": "BoundaryBox.size().y -> Scalar"},
+            "zlength": {"status": "implemented", "typed": "BoundaryBox.zlength() -> Scalar"},
+            "shape": {"status": "implemented", "typed": "BoundaryBox.shape() -> Solid"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "constructors",
+      "tasks": [2041],
+      "checks": [
+        "utest/prim1d_test.py",
+        "utest/prim2d_test.py",
+        "utest/prim3d_test.py",
+        "utest/curve3_test.py",
+        "utest/curve2_test.py",
+        "utest/typed_shape_factories_test.py",
+        "utest/typed_solid_constructors_test.py",
+        "utest/typed_curve_wire_constructors_test.py",
+        "utest/typed_shell_constructors_test.py",
+        "utest/typed_text_test.py",
+        "utest/typed_curves_test.py",
+        "utest/typed_surfaces_test.py"
+      ],
+      "surfaces": [
+        {
+          "source": "zencad.text",
+          "default": {"status": "missing", "typed": "typed text geometry adapter for {name}", "materialization": "font registration is process state; text_to_brep returns Shape"},
+          "overrides": {
+            "register_font": {"status": "implemented", "typed": "zencad.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
+            "text_to_brep": {"status": "implemented", "typed": "zencad.text_to_brep() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"}
+          }
+        },
+        {
+          "source": "zencad._native.solid",
+          "default": {"status": "missing", "typed": "zencad.{name}() -> typed topology handle", "materialization": "none"},
+          "overrides": {
+            "box": {"status": "implemented", "typed": "zencad.box() -> Solid"},
+            "cube": {"status": "implemented", "typed": "zencad.cube() compatibility alias -> Solid"},
+            "sphere": {"status": "implemented", "typed": "zencad.sphere() -> Solid, including yaw/pitch variants"},
+            "cylinder": {"status": "implemented", "typed": "zencad.cylinder() -> Solid"},
+            "cone": {"status": "implemented", "typed": "zencad.cone() -> Solid"},
+            "torus": {"status": "implemented", "typed": "zencad.torus() -> Solid, including yaw/pitch variants"},
+            "halfspace": {"status": "implemented", "typed": "zencad.halfspace() -> Solid"},
+            "make_solid": {"status": "implemented", "typed": "zencad.make_solid(Shell | Sequence[Shell]) -> Solid"},
+            "nullshape": {"status": "implemented", "typed": "zencad.nullshape()/empty_shape() -> Shape algebraic zero"}
+          }
+        },
+        {
+          "source": "zencad._native.platonic",
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Solid | Shell", "materialization": "none"},
+          "overrides": {
+            "dodecahedron": {"status": "implemented", "typed": "zencad.dodecahedron() -> Solid | Shell"},
+            "hexahedron": {"status": "implemented", "typed": "zencad.hexahedron() -> Solid | Shell"},
+            "icosahedron": {"status": "implemented", "typed": "zencad.icosahedron() -> Solid | Shell"},
+            "octahedron": {"status": "implemented", "typed": "zencad.octahedron() -> Solid | Shell"},
+            "platonic": {"status": "implemented", "typed": "zencad.platonic() -> Solid | Shell"},
+            "tetrahedron": {"status": "implemented", "typed": "zencad.tetrahedron() -> Solid | Shell"}
+          }
+        },
+        {
+          "source": "zencad._native.wire",
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Edge | Wire", "materialization": "none"},
+          "overrides": {
+            "segment": {"status": "implemented", "typed": "zencad.segment() -> Edge"},
+            "polysegment": {"status": "implemented", "typed": "zencad.polysegment() -> Wire"},
+            "circle_arc": {"status": "implemented", "typed": "zencad.circle_arc() -> Edge"},
+            "interpolate": {"status": "implemented", "typed": "zencad.interpolate() -> Edge"},
+            "bezier": {"status": "implemented", "typed": "zencad.bezier() -> Edge"},
+            "bspline": {"status": "implemented", "typed": "zencad.bspline() -> Edge"},
+            "make_edge": {"status": "implemented", "typed": "zencad.make_edge()/Curve.edge() -> Edge"},
+            "make_wire": {"status": "implemented", "typed": "zencad.make_wire() -> Wire"},
+            "rounded_polysegment": {"status": "implemented", "typed": "zencad.rounded_polysegment() -> Wire"},
+            "helix": {"status": "implemented", "typed": "zencad.helix() -> Wire"}
+          }
+        },
+        {
+          "source": "zencad._native.wire_builder:wire_builder",
+          "include_type": true,
+          "default": {"status": "missing", "typed": "typed WireBuilder.{name}", "materialization": "doit()/build() returns Wire"},
+          "overrides": {
+            "@type": {"status": "implemented", "typed": "WireBuilder"},
+            "arc": {"status": "implemented", "typed": "WireBuilder.arc() -> WireBuilder"},
+            "arc_by_points": {"status": "implemented", "typed": "WireBuilder.arc_by_points() -> WireBuilder"},
+            "close": {"status": "implemented", "typed": "WireBuilder.close() -> WireBuilder"},
+            "collect_point": {"status": "implemented", "typed": "WireBuilder.collect_point()"},
+            "doit": {"status": "implemented", "typed": "WireBuilder.doit() -> Wire", "materialization": "none"},
+            "elliptic_arc": {"status": "implemented", "typed": "WireBuilder.elliptic_arc() -> WireBuilder"},
+            "interpolate": {"status": "implemented", "typed": "WireBuilder.interpolate() -> WireBuilder"},
+            "l": {"status": "implemented", "typed": "WireBuilder.l() -> WireBuilder"},
+            "line": {"status": "implemented", "typed": "WireBuilder.line() -> WireBuilder"},
+            "plane_circle_arc": {"status": "implemented", "typed": "WireBuilder.plane_circle_arc() -> WireBuilder"},
+            "prepare": {"status": "implemented", "typed": "WireBuilder.prepare() -> list[Point3]"},
+            "restart": {"status": "implemented", "typed": "WireBuilder.restart() -> WireBuilder"},
+            "segment": {"status": "implemented", "typed": "WireBuilder.segment() -> WireBuilder"},
+            "svg_circle_arc": {"status": "implemented", "typed": "WireBuilder.svg_circle_arc() -> WireBuilder"},
+            "svg_elliptic_arc": {"status": "implemented", "typed": "WireBuilder.svg_elliptic_arc() -> WireBuilder"}
+          }
+        },
+        {
+          "source": "zencad._native.face",
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Face | Wire", "materialization": "none"},
+          "overrides": {
+            "circle": {"status": "implemented", "typed": "zencad.circle() -> Face | Edge"},
+            "ellipse": {"status": "implemented", "typed": "zencad.ellipse() -> Face | Edge"},
+            "fill": {"status": "implemented", "typed": "zencad.fill() -> Face"},
+            "fix_face": {"status": "implemented", "typed": "zencad.fix_face() -> Face"},
+            "infplane": {"status": "implemented", "typed": "zencad.infplane() -> Face"},
+            "interpolate2": {"status": "implemented", "typed": "zencad.interpolate2() -> Face"},
+            "ngon": {"status": "implemented", "typed": "zencad.ngon() -> Face | Wire"},
+            "polygon": {"status": "implemented", "typed": "zencad.polygon() -> Face | Wire"},
+            "rectangle": {"status": "implemented", "typed": "zencad.rectangle() -> Face | Wire"},
+            "rectangle_wire": {"status": "implemented", "typed": "zencad.rectangle_wire() -> Wire"},
+            "register_font": {"status": "implemented", "typed": "zencad.register_font(PathLike, FontAspect) -> None", "materialization": "immediate process-wide font registration"},
+            "ruled": {"status": "implemented", "typed": "zencad.ruled() -> Face"},
+            "square": {"status": "implemented", "typed": "zencad.square() -> Face | Wire"},
+            "textshape": {"status": "implemented", "typed": "zencad.textshape() -> Compound", "materialization": "none; deliberately not cacheable because font state is process-wide"},
+            "widewire": {"status": "implemented", "typed": "zencad.widewire(Edge | Wire, ScalarInput, bool, bool) -> Shape", "materialization": "none; legacy result topology varies between Face and Compound"}
+          }
+        },
+        {
+          "source": "zencad._native.shell",
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Shell | Solid | structured points", "materialization": "convex_hull numeric result materializes"},
+          "overrides": {
+            "convex_hull": {"status": "implemented", "typed": "zencad.convex_hull() -> tuple[tuple[int, ...], ...]", "materialization": "numeric result materializes"},
+            "convex_hull_shape": {"status": "implemented", "typed": "zencad.convex_hull_shape() -> Solid | Shell", "materialization": "none"},
+            "fill3d": {"status": "implemented", "typed": "zencad.fill3d(Shell) -> Solid", "materialization": "none"},
+            "make_shell": {"status": "implemented", "typed": "zencad.make_shell(Face | Sequence[Face]) -> Shell", "materialization": "none"},
+            "polyhedron": {"status": "implemented", "typed": "zencad.polyhedron() -> Solid | Shell", "materialization": "none"},
+            "polyhedron_shell": {"status": "implemented", "typed": "zencad.polyhedron_shell() -> Shell", "materialization": "none"}
+          }
+        },
+        {
+          "source": "zencad._native.curve",
+          "exclude": {
+            "nocached_curve_generator": "legacy lazy proxy implementation",
+            "Curve": "classified with its public methods below"
+          },
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Curve", "materialization": "none"},
+          "overrides": {
+            "line": {"status": "implemented", "typed": "zencad.line() -> Curve"},
+            "circle": {"status": "implemented", "typed": "zencad.circle_curve() -> Curve"},
+            "ellipse": {"status": "implemented", "typed": "zencad.ellipse_curve() -> Curve"},
+            "interpolate": {"status": "implemented", "typed": "zencad.interpolate_curve() -> Curve"},
+            "bezier": {"status": "implemented", "typed": "zencad.bezier_curve() -> Curve"},
+            "bspline": {"status": "implemented", "typed": "zencad.bspline_curve() -> Curve"}
+          }
+        },
+        {
+          "source": "zencad._native.curve:Curve",
+          "include_type": true,
+          "default": {"status": "missing", "typed": "Curve.{name}", "materialization": "native() only for OCP accessors"},
+          "overrides": {
+            "@type": {"status": "implemented", "typed": "Curve"},
+            "Curve": {"status": "implemented", "typed": "Curve.native()", "materialization": "native()"},
+            "d0": {"status": "implemented", "typed": "Curve.point() -> Point3"},
+            "AdaptorCurve": {"status": "implemented", "typed": "Curve.AdaptorCurve() -> GeomAdaptor_Curve", "materialization": "native()"},
+            "HCurveAdaptor": {"status": "implemented", "typed": "Curve.HCurveAdaptor() -> GeomAdaptor_Curve", "materialization": "native()"},
+            "edge": {"status": "implemented", "typed": "Curve.edge() -> Edge"},
+            "transform": {"status": "implemented", "typed": "Curve.transform(Transform) -> Curve"}
+          }
+        },
+        {
+          "source": "zencad._native.curve2",
+          "exclude": {
+            "nocached_curve2_generator": "legacy lazy proxy implementation",
+            "Curve2": "classified with its public methods below"
+          },
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Curve2", "materialization": "none"},
+          "overrides": {
+            "ellipse": {"status": "implemented", "typed": "zencad.ellipse2() -> Curve2"},
+            "trimmed_curve2": {"status": "implemented", "typed": "zencad.trim_curve2() -> Curve2"},
+            "segment": {"status": "implemented", "typed": "zencad.segment2() -> Curve2"}
+          }
+        },
+        {
+          "source": "zencad._native.curve2:Curve2",
+          "include_type": true,
+          "default": {"status": "missing", "typed": "Curve2.{name}", "materialization": "native() only for OCP accessors"},
+          "overrides": {
+            "@type": {"status": "implemented", "typed": "Curve2"},
+            "Curve2": {"status": "implemented", "typed": "Curve2.native()", "materialization": "native()"},
+            "rotate": {"status": "implemented", "typed": "Curve2.rotate(ScalarInput) -> Curve2"},
+            "value": {"status": "implemented", "typed": "Curve2.point() -> Point2"}
+          }
+        },
+        {
+          "source": "zencad._native.surface",
+          "exclude": {
+            "nocached_surface_generator": "legacy lazy proxy implementation",
+            "Surface": "classified with its public methods below"
+          },
+          "default": {"status": "missing", "typed": "zencad.{name}() -> Surface", "materialization": "none"},
+          "overrides": {
+            "cylinder": {"status": "implemented", "typed": "zencad.cylinder_surface() -> Surface"}
+          }
+        },
+        {
+          "source": "zencad._native.surface:Surface",
+          "include_type": true,
+          "default": {"status": "implemented", "typed": "Surface.{name}", "materialization": "native() only for OCP accessors"},
+          "overrides": {
+            "@type": {"typed": "Surface"},
+            "Surface": {"typed": "Surface.native()", "materialization": "native()"},
+            "v_iso_curve": {"typed": "Surface.v_iso() -> Curve"},
+            "u_iso_curve": {"typed": "Surface.u_iso() -> Curve"},
+            "urange": {"typed": "Surface.u_range() -> Interval"},
+            "vrange": {"typed": "Surface.v_range() -> Interval"},
+            "map": {"status": "implemented", "typed": "Surface.map(Curve2) -> Edge"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "sweeps-and-operations",
+      "tasks": [2036, 2042, 2043],
+      "checks": [
+        "utest/ops1d2d_test.py",
+        "utest/ops3d_test.py",
+        "utest/boolean_test.py",
+        "utest/make_test.py",
+        "utest/typed_integration_test.py",
+        "utest/typed_surfaces_test.py",
+        "utest/typed_sweeps_test.py"
+      ],
+      "surfaces": [
+        {
+          "source": "zencad._native.sweep",
+          "default": {"status": "missing", "typed": "typed sweep operation {name}", "materialization": "none"},
+          "overrides": {
+            "extrude": {"status": "implemented", "typed": "zencad.extrude() / Shape.extrude() -> Shape"},
+            "linear_extrude": {"status": "implemented", "typed": "zencad.linear_extrude() / Shape.linear_extrude() -> Shape"},
+            "revol": {"status": "implemented", "typed": "zencad.revol() / Shape.revol() -> Shape"},
+            "loft": {"status": "implemented", "typed": "zencad.loft(Sequence[Edge | Wire], ...) -> Solid | Shell"},
+            "geomfill_triedron_map": {"status": "implemented", "typed": "PipeTrihedron"},
+            "pipe": {"status": "implemented", "typed": "zencad.pipe(Shape, Edge | Wire, ...) -> Shape"},
+            "pipe_shell": {"status": "implemented", "typed": "zencad.pipe_shell(Sequence[Edge | Wire], Edge | Wire, ...) -> Solid | Shell"},
+            "sweep": {"status": "implemented", "typed": "zencad.sweep(Edge | Wire, Edge | Wire, ...) -> Solid"},
+            "revol2": {"status": "implemented", "typed": "zencad.revol2(Shape, ScalarInput, ...) -> Solid"}
+          }
+        },
+        {
+          "source": "zencad._native.sweep_law",
+          "default": {"status": "missing", "typed": "typed sweep-law contract for {name}, tracked by #2036", "materialization": "native law only inside sweep evaluation"},
+          "overrides": {
+            "LawFunction": {"status": "implemented", "typed": "SweepScaleLaw", "materialization": "none; immutable construction description"},
+            "LawSection": {"status": "implemented", "typed": "SweepSectionLaw", "materialization": "none; immutable construction description"},
+            "LawLocation": {"status": "implemented", "typed": "SweepLocationLaw", "materialization": "none; immutable construction description"},
+            "LawTrihedron": {"status": "implemented", "typed": "SweepTrihedron", "materialization": "none; immutable enum"},
+            "law_constant_function": {"status": "implemented", "typed": "zencad.constant_sweep_scale(ScalarInput, Interval) -> SweepScaleLaw", "materialization": "none; composed into terminal sweep"},
+            "law_evolved_section": {"status": "implemented", "typed": "zencad.evolved_sweep_section(Curve, SweepScaleLaw) -> SweepSectionLaw", "materialization": "none; composed into terminal sweep"},
+            "law_spine_and_trihedron": {"status": "implemented", "typed": "zencad.sweep_location(Curve, SweepTrihedron) -> SweepLocationLaw", "materialization": "none; composed into terminal sweep"},
+            "law_corrected_frenet_trihedron": {"status": "implemented", "typed": "SweepTrihedron.CORRECTED_FRENET"},
+            "law_frenet_trihedron": {"status": "implemented", "typed": "SweepTrihedron.FRENET"}
+          }
+        },
+        {
+          "source": "zencad._native.boolops",
+          "default": {"status": "missing", "typed": "typed boolean operation {name}", "materialization": "none"},
+          "overrides": {
+            "union": {"status": "implemented", "typed": "zencad.union(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__add__() pairwise"},
+            "intersect": {"status": "implemented", "typed": "zencad.intersect(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__xor__() pairwise"},
+            "difference": {"status": "implemented", "typed": "zencad.difference(Shape | Sequence[Shape], *Shape) -> Shape; Shape.__sub__() pairwise"},
+            "section": {"status": "implemented", "typed": "zencad.section(Shape | plane, Shape | plane) -> Shape"},
+            "split": {"status": "implemented", "typed": "split(Shape, Shape | Sequence[Shape]) -> SplitResult[Solid]"},
+            "slice": {"status": "implemented", "typed": "slice(Shape, z/axis | plane) -> SliceResult[Solid]"},
+            "SplitResult": {"status": "implemented", "typed": "typed.SplitResult deferred solid sequence"},
+            "SliceResult": {"status": "implemented", "typed": "typed.SliceResult ordered lower/upper solid pair"}
+          }
+        },
+        {
+          "source": "zencad._native.operations",
+          "default": {"status": "missing", "typed": "typed topology operation/result for {name}", "materialization": "structured native data only at explicit boundary"},
+          "overrides": {
+            "chamfer": {"status": "implemented", "typed": "zencad.chamfer() / Shape.chamfer() -> Shape"},
+            "draft": {"status": "implemented", "typed": "draft(Solid, Face | Iterable[Face], angle, direction, neutral) -> Solid"},
+            "fillet": {"status": "implemented", "typed": "zencad.fillet() / Shape.fillet() -> Shape"},
+            "fillet2d": {"status": "implemented", "typed": "zencad.fillet2d() / Face.fillet2d() -> Face"},
+            "get_nodes": {"status": "implemented", "typed": "zencad.get_nodes(MeshData | Poly_Triangulation) -> tuple[VectorRow, ...]"},
+            "get_triangles": {"status": "implemented", "typed": "zencad.get_triangles(MeshData | Poly_Triangulation) -> tuple[TriangleRow, ...]"},
+            "restore_shapetype": {"status": "implemented", "typed": "zencad.restore_shapetype() / Shape.restore_shapetype() -> precise Shape subtype"},
+            "triangulate": {"status": "implemented", "typed": "zencad.triangulate() / Shape.to_mesh() -> MeshData"},
+            "triangulate_face": {"status": "implemented", "typed": "zencad.triangulate_face() / Face.triangulate() -> MeshData"}
+          }
+        },
+        {
+          "source": "zencad._native.offset",
+          "default": {"status": "missing", "typed": "typed topology operation {name}", "materialization": "none"},
+          "overrides": {
+            "offset": {"status": "implemented", "typed": "zencad.offset() / Shape.offset() -> Shape"},
+            "shapefix_solid": {"status": "implemented", "typed": "zencad.shapefix_solid() / Solid.shapefix_solid() -> Solid"},
+            "thicksolid": {"status": "implemented", "typed": "zencad.thicksolid() / Solid.thicksolid() -> Solid"}
+          }
+        },
+        {
+          "source": "zencad._native.sew",
+          "default": {"status": "missing", "typed": "typed sew() -> Wire | Shell", "materialization": "none"},
+          "overrides": {
+            "sew": {"status": "implemented", "typed": "zencad.sew(Sequence[Edge | Wire]) -> Wire | zencad.sew(Sequence[Face | Shell]) -> Shell"}
+          }
+        },
+        {
+          "source": "zencad._native.unify",
+          "default": {"status": "missing", "typed": "typed unify() -> Shape", "materialization": "none"},
+          "overrides": {
+            "unify": {"status": "implemented", "typed": "zencad.unify() / Shape.unify() preserves the concrete topology handle"}
+          }
+        },
+        {
+          "source": "zencad._native.validation",
+          "default": {"status": "implemented", "typed": "typed validation contract {name}", "materialization": "none"},
+          "overrides": {
+            "validate": {"typed": "validate(Shape) -> ValidationReport", "materialization": "explicit diagnostic boundary"},
+            "is_valid": {"typed": "is_valid(Shape) -> bool", "materialization": "explicit diagnostic boundary"},
+            "assert_valid": {"typed": "assert_valid(Shape) -> Shape", "materialization": "explicit diagnostic boundary"},
+            "clean": {"typed": "clean(Shape) preserves the concrete topology handle"},
+            "heal": {"typed": "heal(Shape) preserves the concrete topology handle"}
+          }
+        },
+        {
+          "source": "zencad._native.near",
+          "default": {"status": "missing", "typed": "typed nearest-topology query {name}", "materialization": "none"},
+          "overrides": {
+            "near_compound": {"status": "implemented", "typed": "zencad.near_compound() / Shape.near_compound() -> Compound"},
+            "near_compsolid": {"status": "implemented", "typed": "zencad.near_compsolid() / Shape.near_compsolid() -> CompSolid"},
+            "near_edge": {"status": "implemented", "typed": "zencad.near_edge() / Shape.near_edge() -> Edge"},
+            "near_face": {"status": "implemented", "typed": "zencad.near_face() / Shape.near_face() -> Face"},
+            "near_shell": {"status": "implemented", "typed": "zencad.near_shell() / Shape.near_shell() -> Shell"},
+            "near_solid": {"status": "implemented", "typed": "zencad.near_solid() / Shape.near_solid() -> Solid"},
+            "near_vertex": {"status": "implemented", "typed": "zencad.near_vertex() / Shape.near_vertex() -> Vertex"},
+            "near_wire": {"status": "implemented", "typed": "zencad.near_wire() / Shape.near_wire() -> Wire"}
+          }
+        },
+        {
+          "source": "zencad._native.project",
+          "default": {"status": "missing", "typed": "typed projection query {name}", "materialization": "none"},
+          "overrides": {
+            "project": {"status": "implemented", "typed": "zencad.project(Point3, Curve | Edge) -> CurveProjection"},
+            "project_point_on_curve": {"status": "implemented", "typed": "zencad.project_point_on_curve(Point3, Curve | Edge) -> CurveProjection"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "mesh-convert-display",
+      "tasks": [2044, 2004],
+      "checks": [
+        "utest/mesh_test.py",
+        "utest/typed_meshes_test.py",
+        "utest/convert.py",
+        "utest/export_formats_test.py",
+        "utest/scene_presenter_test.py",
+        "utest/typed_integration_test.py"
+      ],
+      "surfaces": [
+        {
+          "source": "zencad._native.mesh",
+          "exclude": {
+            "normalize_mesh_display_mode": "display configuration helper, unchanged",
+            "validated_mesh_data": "internal display validation helper"
+          },
+          "default": {"status": "implemented", "typed": "typed mesh contract for {name}", "materialization": "MeshData.value()/native()/to_numpy()/display_payload()"},
+          "overrides": {
+            "MESH_DISPLAY_MODES": {"status": "unchanged", "typed": "MESH_DISPLAY_MODES"},
+            "DEFAULT_MESH_DISPLAY_MODE": {"status": "unchanged", "typed": "DEFAULT_MESH_DISPLAY_MODE"},
+            "MeshData": {"typed": "MeshData"},
+            "to_mesh": {"typed": "Shape.to_mesh() -> MeshData"},
+            "mesh_to_poly_triangulation": {"status": "implemented", "typed": "zencad.mesh_to_poly_triangulation() / MeshData.mesh_to_poly_triangulation() / MeshData.native()", "materialization": "native()"}
+          }
+        },
+        {
+          "source": "zencad.convert.api",
+          "default": {"status": "missing", "typed": "typed Shape import/export adapter {name}", "materialization": "file/string I/O materializes the domain value"},
+          "overrides": {
+            "to_brep": {"status": "implemented", "typed": "zencad.to_brep(Shape, path) -> None"},
+            "from_brep": {"status": "implemented", "typed": "zencad.from_brep(path) -> Shape"},
+            "to_stl": {"status": "implemented", "typed": "zencad.to_stl(Shape, path, deflection) -> bool"},
+            "to_svg": {"status": "implemented", "typed": "zencad.to_svg(Shape, path, color, mapping) -> None"},
+            "to_svg_string": {"status": "implemented", "typed": "zencad.to_svg_string(Shape, color, mapping) -> str"},
+            "from_svg": {"status": "implemented", "typed": "zencad.from_svg(path) -> Shape"},
+            "from_svg_string": {"status": "implemented", "typed": "zencad.from_svg_string(str) -> Shape"}
+          }
+        },
+        {
+          "source": "zencad.convert.export",
+          "default": {"status": "implemented", "typed": "typed explicit export contract {name}", "materialization": "explicit headless file or stream boundary"},
+          "overrides": {
+            "LengthUnit": {"typed": "LengthUnit"},
+            "export_stl": {"typed": "zencad.export_stl(Shape, destination, unit, tolerances, binary) -> None"},
+            "export_step": {"typed": "zencad.export_step(Shape, destination, unit, binary=False) -> None"},
+            "export_3mf": {"typed": "zencad.export_3mf(Shape, destination, unit, tolerances, metadata) -> None"}
+          }
+        },
+        {
+          "source": "zencad.showapi",
+          "exclude": {
+            "NOSHOW": "private runtime state",
+            "DISPLAY": "private runtime state",
+            "ANIMATE_THREAD": "private runtime state"
+          },
+          "default": {"status": "missing", "typed": "display adapter accepting typed handles for {name}", "materialization": "display transport is an explicit materialization boundary"},
+          "overrides": {
+            "disp": {"status": "implemented", "typed": "disp() accepts typed Shape, MeshData, and Point3"},
+            "display": {"status": "implemented", "typed": "display() accepts typed Shape, MeshData, and Point3"},
+            "highlight": {"status": "implemented", "typed": "highlight() accepts and returns typed handles"},
+            "hl": {"status": "implemented", "typed": "hl() accepts and returns typed handles"},
+            "managed_scene": {"status": "implemented", "typed": "managed_scene() retains typed sources until snapshot transport"},
+            "show": {"status": "implemented", "typed": "show() publishes typed managed-scene sources at the transport boundary"}
+          }
+        }
+      ]
+    }
+  ]
+}

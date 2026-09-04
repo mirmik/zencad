@@ -1,28 +1,40 @@
+from contextlib import contextmanager
+
 from zencad.scene import Scene
-from zenframe.configuration import Configuration
+from zencad.scene_draft import SceneDraft
 
 NOSHOW = False
 DISPLAY = None
 ANIMATE_THREAD = None
 
-# UNBOUND_MODE = False  # Устанавливается из zencad.gui.display_unbounded
-# сигнализирует об активации подчинённого режима работы
-
 __default_scene = Scene()  # Сцена, с которой работают команды
 # disp и show по умолчанию
 
 
-def display(shp, color=None, deep=True, scene=None):
+def display(shp, color=None, deep=True, scene=None, display_mode=None, *, name=None):
+    from zencad.settings import Settings
+
     if scene is None:
         scene = __default_scene
 
+    # Managed runners receive settings as data and must not initialize Qt just
+    # because a script called display().
+    if not NOSHOW and not isinstance(scene, SceneDraft):
+        Settings.restore()
+
     if (isinstance(shp, list)):
+        if name is not None:
+            raise ValueError("A named display object cannot be a list")
         ret = []
         for i in shp:
-            ret.append(display(i, color, deep, scene))
+            ret.append(display(i, color, deep, scene, display_mode))
         return ret
 
-    return scene.add(shp, color)
+    if name is not None:
+        return scene.add(shp, color, display_mode=display_mode, name=name)
+    if display_mode is None:
+        return scene.add(shp, color)
+    return scene.add(shp, color, display_mode=display_mode)
 
 
 def disp(*args, **kwargs):
@@ -38,67 +50,112 @@ def hl(*args, **kwargs):
     return highlight(*args, **kwargs)
 
 
-def widget_creator(communicator, scene, animate, preanimate, close_handle, animate_step=0.01):
+def _show_local(scene, animate, preanimate, close_handle, animate_step):
+    """Present a direct script in one same-process standalone viewer."""
     import zencad.animate
-    import zenframe.finisher
+    import zencad.gui.display_only
 
-    global DISPLAY
     global ANIMATE_THREAD
-    from zencad.gui.display import DisplayWidget
-    DISPLAY = DisplayWidget(
-        communicator=communicator)
+
+    zencad.gui.display_only.init_display_only_mode()
     DISPLAY.attach_scene(scene)
-
-    # todo: почему не внутри?
-    communicator.bind_handler(DISPLAY.external_communication_command)
-
-    if close_handle:
-        zenframe.finisher.register_destructor(None, close_handle)
-
-    if animate:
+    if animate is not None:
         animate_thread = zencad.animate.AnimateThread(
             widget=DISPLAY,
             updater_function=animate,
-            animate_step=animate_step)
-
-        if preanimate:
+            animate_step=animate_step,
+        )
+        if preanimate is not None:
             preanimate(DISPLAY, animate_thread)
+        animation_stopped = False
 
+        def stop_animation():
+            nonlocal animation_stopped
+            if animation_stopped:
+                return
+            animation_stopped = True
+            animate_thread.finish()
+            animate_thread.wait(1000)
+
+        DISPLAY.add_close_callback(stop_animation)
+        zencad.gui.display_only.QAPP.aboutToQuit.connect(stop_animation)
         animate_thread.start()
         ANIMATE_THREAD = animate_thread
+    if close_handle is not None:
+        close_handled = False
 
-    return DISPLAY
+        def handle_close():
+            nonlocal close_handled
+            if close_handled:
+                return
+            close_handled = True
+            close_handle()
+
+        DISPLAY.add_close_callback(handle_close)
+        zencad.gui.display_only.QAPP.aboutToQuit.connect(handle_close)
+    # Release the OCCT/OpenGL view before QApplication destroys its native
+    # window.  V3d_View finalization after the X11 drawable is gone otherwise
+    # produces a glXMakeCurrent() failure during an otherwise clean shutdown.
+    zencad.gui.display_only.QAPP.aboutToQuit.connect(DISPLAY.close_viewer)
+    zencad.gui.display_only.exec_display_only_mode()
 
 
 def show(scene=None, animate=None, preanimate=None, close_handle=None, animate_step=0.01, display_only=False):
-    from zenframe.unbound import (
-        is_unbound_mode,
-        unbound_worker_bottom_half,
-        unbound_frame_summon
-    )
-    from zenframe.configuration import Configuration
-
     if scene is None:
         scene = __default_scene
 
-    if Configuration.NOSHOW:
+    if isinstance(scene, SceneDraft):
+        if preanimate is not None:
+            raise ValueError(
+                "Managed scenes do not support preanimate or direct GUI access"
+            )
+        if animate is None and close_handle is not None:
+            raise ValueError(
+                "Managed static scenes do not support close_handle"
+            )
+        snapshot = scene.publish()
+        scene.ready(animated=animate is not None)
+        if animate is not None:
+            scene.run_animation(
+                animate,
+                animate_step=animate_step,
+                close_handle=close_handle,
+            )
+        return snapshot
+
+    if NOSHOW:
         return
 
-    if is_unbound_mode():
-        # Включён UNBOUND_MODE возвращаем управление модулю,
-        # который создаст виджет и прилинкует его к главному окну
-        unbound_worker_bottom_half(scene=scene, animate=animate, preanimate=preanimate,
-                                   close_handle=close_handle, animate_step=animate_step)
+    _show_local(scene, animate, preanimate, close_handle, animate_step)
 
-    elif display_only or Configuration.WIDGET_ONLY:
-        # Простой режим. Просто отображаем виджет без
-        # главной оболочки.
-        import zencad.gui.display_only
-        zencad.gui.display_only.init_display_only_mode()
-        DISPLAY.attach_scene(scene)
-        zencad.gui.display_only.exec_display_only_mode()
 
-    else:
-        # Запускаем оболочку как подчинённый процесс
-        unbound_frame_summon(widget_creator, "zencad",
-                             scene=scene, animate=animate, preanimate=preanimate, close_handle=close_handle, animate_step=animate_step)
+@contextmanager
+def managed_scene(
+    generation,
+    publisher=None,
+    camera_policy="preserve",
+    patch_publisher=None,
+    camera_action_publisher=None,
+    ready_publisher=None,
+    cancel_event=None,
+    input_drain=None,
+):
+    """Temporarily route the public display/show API into a data-only draft."""
+    global __default_scene
+
+    previous = __default_scene
+    draft = SceneDraft(
+        generation=generation,
+        publisher=publisher,
+        camera_policy=camera_policy,
+        patch_publisher=patch_publisher,
+        camera_action_publisher=camera_action_publisher,
+        ready_publisher=ready_publisher,
+        cancel_event=cancel_event,
+        input_drain=input_drain,
+    )
+    __default_scene = draft
+    try:
+        yield draft
+    finally:
+        __default_scene = previous

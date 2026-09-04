@@ -5,9 +5,7 @@ import os
 
 class Prim2dprobe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
 
     def test_rectangle_probe(self):
         x = 10
@@ -58,8 +56,11 @@ class Prim2dprobe(unittest.TestCase):
         #    zencad.ellipse(r1=radius2, r2=radius, wire=True)
 
     def test_polygon_probe(self):
-        pnts = [(0, 0), (0, 10), (10, 0)]
-        zencad.polygon(pnts=pnts)
+        points = tuple(
+            zencad.point3(*value)
+            for value in ((0, 0), (0, 10), (10, 0))
+        )
+        zencad.polygon(points)
 
     def test_ngon_probe(self):
         zencad.ngon(r=20, n=3, wire=True)
@@ -70,12 +71,22 @@ class Prim2dprobe(unittest.TestCase):
         zencad.ngon(r=20, n=30, wire=False)
 
     def test_textshape_probe(self):
-        text = "HelloWorld"
+        text = "Hello, Мир"
         directory = os.path.dirname(__file__)
         mandarinc = os.path.join(
             zencad.moduledir, "examples", "fonts/mandarinc.ttf")
         zencad.register_font(mandarinc)
-        zencad.textshape(text=text, fontname="Ubuntu Mono", size=20)
+        shape = zencad.textshape(
+            text=text, fontname="MandarinC", size=20
+        )
+        self.assertFalse(shape.native().IsNull())
+        self.assertGreater(len(shape.edges()), 0)
+        bounds = shape.bbox()
+        self.assertGreater(bounds.xmax - bounds.xmin, 50)
+        self.assertGreater(bounds.ymax - bounds.ymin, 10)
+
+        with self.assertRaises(FileNotFoundError):
+            zencad.register_font(os.path.join(directory, "missing.ttf"))
 
     def test_normales(self):
         self.assertGreater(zencad.circle(r=10).normal().z, 0)

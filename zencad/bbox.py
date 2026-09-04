@@ -1,4 +1,4 @@
-from OCC.Core.Bnd import Bnd_Box
+from OCP.Bnd import Bnd_Box
 
 
 class BoundaryBox:
@@ -63,5 +63,5 @@ class BoundaryBox:
     def zlength(self): return self.zmax - self.zmin
 
     def shape(self):
-        from zencad.geom.solid import box
+        from zencad._native.solid import box
         return box(self.xlength(), self.ylength(), self.zlength()).move(self.xmin, self.ymin, self.zmin)

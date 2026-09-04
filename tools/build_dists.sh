@@ -1,2 +1,4 @@
-./setup.py bdist_wheel
-./setup.py sdist
+#!/usr/bin/env sh
+set -eu
+
+python -m build

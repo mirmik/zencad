@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
+"""Managed Tetris: arrows move, rotate, and drop the active piece."""
 
 from zencad import *
-import threading
-import time
 import random
-import types
-
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
-import threading
 
 w, h = 10, 20
 sz = 10
@@ -163,22 +155,33 @@ def make_falled_body():
     return FalledBody(*tpl)
 
 
-def redraw():
-    zencad.gui.application.DISPLAY_WIDGET.view.redraw()
-
-
-lock = QMutex()
 falled_body = None
+next_fall = 0.0
+FALL_INTERVAL = 0.75
 
 
-def timer_loop(wdg):
-    global falled_body
+def timer_loop(state):
+    global falled_body, next_fall
 
-    lock.lock()
     if falled_body is None:
         falled_body = make_falled_body()
         falled_body.draw()
-    else:
+        next_fall = state.loctime + FALL_INTERVAL
+
+    for event in state.input.events:
+        if event.message_type != "key_down" or falled_body is None:
+            continue
+        key = event.data["key"]
+        if key == "up":
+            falled_body.up_handle()
+        elif key == "down":
+            falled_body.down_handle()
+        elif key == "right":
+            falled_body.right_handle()
+        elif key == "left":
+            falled_body.left_handle()
+
+    if state.loctime >= next_fall:
         if falled_body.can_fall():
             falled_body.hide()
             falled_body.fall()
@@ -186,37 +189,9 @@ def timer_loop(wdg):
         else:
             falled_body.keep()
             falled_body = None
+        next_fall = state.loctime + FALL_INTERVAL
 
     clean()
-    lock.unlock()
-
-    # redraw()
-
-
-def animate_settings(wdg, animate_thread):
-    def keyPressEvent(self, ev):
-        if falled_body is None:
-            return
-        lock.lock()
-        if ev.key() == Qt.Key_Up:
-            falled_body.up_handle()
-        elif ev.key() == Qt.Key_Down:
-            falled_body.down_handle()
-        elif ev.key() == Qt.Key_Right:
-            falled_body.right_handle()
-        elif ev.key() == Qt.Key_Left:
-            falled_body.left_handle()
-        clean()
-        wdg.redraw()
-        lock.unlock()
-
-    animate_thread.set_animate_step(0.75)
-    raw_keyPressEvent = wdg.keyPressEvent
-    wdg.keyPressEvent = types.MethodType(keyPressEvent, wdg)
-
-
-#thr = threading.Thread(target=timer_loop)
-# thr.start()
 
 disp(body)
-show(animate=timer_loop, preanimate=animate_settings)
+show(animate=timer_loop, animate_step=0.02)

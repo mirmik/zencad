@@ -1,15 +1,7 @@
-import pkg_resources
-import sys
+import OCP
 
-try:
-    __version__ = pkg_resources.get_distribution("zencad").version
-except:
-    __version__ = "Unresolved???"
+# Keep the runtime version independent of possibly stale editable-install
+# metadata.  Wheel smoke tests ensure this value matches pyproject.toml.
+__version__ = "2.0.0"
 
-if sys.version_info[1] >= 10:
-    __occt_version__ = "7.6.2"
-    __pythonocc_version__ = "7.6.2"
-
-else:
-    __occt_version__ = "7.5.1"
-    __pythonocc_version__ = "7.5.1"
+__ocp_version__ = OCP.__version__

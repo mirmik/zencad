@@ -1,48 +1,69 @@
 :ru
 # Установка
 
-Система ZenCad протестирована на Linux (семейство Debian), Windows.
+ZenCad устанавливается из PyPI вместе с готовым бинарным wheel геометрического
+backend. Conda и отдельная установка OpenCascade не требуются.
 
-## Установка pypi
-```python
+## Графический интерфейс
+```console
+python3 -m pip install "zencad[gui]"
+zencad
+```
+
+В Debian и Ubuntu перед первым запуском установите системные библиотеки Qt/X11:
+
+```console
+sudo apt update
+sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \
+  libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+  libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \
+  libxkbcommon-x11-0
+```
+
+Графический интерфейс использует X11; в Wayland-сессии требуется XWayland.
+
+## Только геометрия, без GUI
+```console
 python3 -m pip install zencad
 ```
 
-## Особенности установки на различных ОС.
-### Установка Windows.
-На текущий момент может понадобиться установка vcredist2019.
-
-### Установка MacOS.
-Версия для MacOS в разработке.
-
-### Установка standalone версии (Windows).
-StandAlone версия может быть найдена в [здесь](https://github.com/mirmik/zencad/releases). StandAlone версия может отстовать от основной ветки.
-
-## Установка из исходного кода.
-Для установки из исходного кода потребуется собрать, или получить, собранными бинарные зависимости:  
+Требуется 64-битный CPython 3.10–3.14. Геометрическая часть имеет готовые
+wheel для Windows x86-64, macOS 11+ x86-64/arm64 и Linux x86-64/aarch64 с
+glibc 2.31 или новее. GUI-extra доступен для Windows x86-64, macOS
+x86-64/arm64 и Linux x86-64; PyQt5 сейчас не публикует wheel для Linux
+aarch64.
 :en
 # Installation
 
-ZenCad system is tested on Linux (Debian family), Windows.
+ZenCad is installed from PyPI together with a prebuilt geometry-backend wheel.
+Conda and a separate OpenCascade installation are not required.
 
-## Installing pypi
-```python
+## Graphical interface
+```console
+python3 -m pip install "zencad[gui]"
+zencad
+```
+
+On Debian and Ubuntu, install the Qt/X11 system libraries before the first
+run:
+
+```console
+sudo apt update
+sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \
+  libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+  libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \
+  libxkbcommon-x11-0
+```
+
+The GUI uses X11; a Wayland session therefore needs XWayland.
+
+## Headless geometry only
+```console
 python3 -m pip install zencad
 ```
 
-## Features of installation on various OS.
-### Installing Windows.
-At the moment, you may need to install vcredist2019.
-
-### Installing MacOS.
-MacOS version in development.
-
-### Installing standalone version (Windows).
-The StandAlone version can be found at [here](https://github.com/mirmik/zencad/releases). The StandAlone version may lag behind the mainline.
-
-## Installing from source.
-To install from the source code, you need to build, or get the compiled binary dependencies:
-::
-
-* [pythonocc-core](https://github.com/tpaviot/pythonocc-core)  
-* [OpenCascade](https://www.opencascade.com/content/overview) 
+ZenCad requires 64-bit CPython 3.10–3.14. Headless geometry wheels cover
+Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc
+2.31 or newer. The GUI extra is available on Windows x86-64, macOS
+x86-64/arm64, and Linux x86-64; PyQt5 does not currently publish Linux
+aarch64 wheels.

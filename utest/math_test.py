@@ -1,9 +1,11 @@
 import unittest
+import math
+import zencad
 from zencad import *
 
-from OCC.Core.gp import gp_Dir, gp_Vec, gp_Pnt
-from OCC.Core.BinTools import BinTools_ShapeSet
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
+from OCP.gp import gp_Dir, gp_Vec, gp_Pnt
+from OCP.BinTools import BinTools_ShapeSet
+from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 
 
 def early(a, b):

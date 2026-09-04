@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from zencad.util import point3
-from zencad.geom.trans import rotateZ
+from zencad._native.trans import rotateZ
 from math import sqrt
 
 

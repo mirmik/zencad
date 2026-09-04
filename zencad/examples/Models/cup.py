@@ -14,16 +14,20 @@ tangs = vectors([(1, 1), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0)])
 
 # Base:
 base = cylinder(r=radius, h=height)
-hole = cylinder(r=radius - thikness, h=height - thikness).up(thikness)
+# Extend the cutter past the rim.  A cutter ending exactly on the top face
+# makes the coplanar boolean platform-dependent in OpenCascade.
+hole = cylinder(r=radius - thikness, h=height).up(thikness)
 
 # Handle:
 spine = interpolate(pnts, tangs).rotateX(deg(90))
-profile = circle(handle_radius).rotateY(
+profile = circle(handle_radius, wire=True).rotateY(
     deg(45)).translate(pnts[0].x, 0, pnts[0].y)
-handle = pipe(spine=spine, shp=profile)
+handle = pipe_shell([profile], spine, solid=True)
 
 # Assemble:
-cup = base + handle.right(40).up(17) - hole
+body = (base - hole).solids()[0]
+cup_handle = handle.right(40).up(17)
+cup = [body, cup_handle]
 
 # Display:
 hl(spine.right(100).up(17).forw(20))

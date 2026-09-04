@@ -3,6 +3,8 @@
 from zencad import *
 import zencad.assemble
 
+import math
+import os
 import time
 import numpy
 

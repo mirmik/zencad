@@ -1,6 +1,7 @@
 import unittest
 import zencad
 import math
+import pickle
 
 
 def early(a, b):
@@ -15,9 +16,12 @@ def early(a, b):
 
 class TransformationProbe(unittest.TestCase):
     def setUp(self):
-        zencad.lazy.encache = False
-        zencad.lazy.decache = False
-        zencad.lazy.fastdo = True
+        zencad.configure(cache_enabled=False)
+
+    def assertPointAlmostEqual(self, actual, expected):
+        self.assertAlmostEqual(actual.x, expected.x, places=12)
+        self.assertAlmostEqual(actual.y, expected.y, places=12)
+        self.assertAlmostEqual(actual.z, expected.z, places=12)
 
     def test_translate(self):
         x = 10
@@ -50,7 +54,7 @@ class TransformationProbe(unittest.TestCase):
         pnt = zencad.point3(x, y, z)
 
         ang = zencad.deg(v)
-        self.assertEqual(
+        self.assertPointAlmostEqual(
             zencad.rotateX(ang)(pnt),
             zencad.point3(
                 x,
@@ -58,7 +62,7 @@ class TransformationProbe(unittest.TestCase):
                 z*math.cos(ang)+y*math.sin(ang))
         )
 
-        self.assertEqual(
+        self.assertPointAlmostEqual(
             zencad.rotateY(ang)(pnt),
             zencad.point3(
                 x*math.cos(ang)+z*math.sin(ang),
@@ -66,7 +70,7 @@ class TransformationProbe(unittest.TestCase):
                 z*math.cos(ang)-x*math.sin(ang))
         )
 
-        self.assertEqual(
+        self.assertPointAlmostEqual(
             zencad.rotateZ(ang)(pnt),
             zencad.point3(
                 x*math.cos(ang)-y*math.sin(ang),
@@ -78,12 +82,13 @@ class TransformationProbe(unittest.TestCase):
         x = 10
         y = 20
         z = 30
-        v = 10
 
         box = zencad.box(10, 10, 10, center=True).translate(x, y, z)
 
-        self.assertEqual((zencad.translate(z, y, x)(
-            box)).center().unlazy(), zencad.point3(40, 40, 40))
+        self.assertEqual(
+            box.transform(zencad.translate(z, y, x)).center().value(),
+            (40.0, 40.0, 40.0),
+        )
 
     def test_short_rotate(self):
         t = zencad.short_rotate((0, 0, 1), (1, 0, 0))
@@ -91,6 +96,23 @@ class TransformationProbe(unittest.TestCase):
         m = zencad.point3(0, 0, 1)
         m = t(m)
 
-        m = round(m, 4)
+        self.assertEqual(
+            tuple(round(component, 4) for component in m.value()),
+            (1.0, 0.0, 0.0),
+        )
 
-        self.assertEqual(m, zencad.point3(1, 0, 0))
+    def test_pickle_restores_similarity_transform_state(self):
+        transform = (
+            zencad.move(1, 2, 3)
+            * zencad.rotateZ(math.pi / 4)
+            * zencad.scale(-2)
+        )
+        restored = pickle.loads(pickle.dumps(transform))
+        with zencad.using_context(restored.context):
+            restored_point = zencad.point3(3, -2, 5)
+            restored_value = restored.transform_point(restored_point).value()
+        with zencad.using_context(transform.context):
+            original_point = zencad.point3(3, -2, 5)
+            original_value = transform.transform_point(original_point).value()
+        self.assertEqual(restored_value, original_value)
+        self.assertEqual(restored.translation.value(), transform.translation.value())

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import zencad.util
-from zencad.geom.unify import _unify
-from zencad.geom.operations import _restore_shapetype
-from zencad.geom.face import _fix_face, _fill
-from zencad.geom.boolops import _union
-from zencad.geom.trans import mirrorO, mirrorX, mirrorY
+from zencad._native.unify import _unify
+from zencad._native.operations import _restore_shapetype
+from zencad._native.face import _fix_face, _fill
+from zencad._native.boolops import _union
+from zencad._native.exttrans import nulltrans
+from zencad._native.trans import mirrorO, mirrorX, mirrorY
+from zencad._native.wire_builder import wire_builder as legacy_wire_builder
 import xml.etree.ElementTree as ET
 import math
 import re
@@ -213,7 +215,7 @@ class SvgReader:
     def read_path_M(self):
         self.read_path_final_wb()
 
-        self.wb = zencad.wire_builder(start=(
+        self.wb = legacy_wire_builder(start=(
             float(next(self.iter)),
             float(next(self.iter)))
         )
@@ -303,7 +305,7 @@ class SvgReader:
                     s = a.attrib["transform"]
                     f = re.findall(r"\w* *\(.*\)", s)
 
-                    trans = zencad.nulltrans()
+                    trans = nulltrans()
 
                     for f in f:
                         sf = f
@@ -375,8 +377,6 @@ def svg_to_shape(path):
 if __name__ == "__main__":
     import zencad
     import zencad.gutil
-
-    zencad.lazifier.fastdo = True
 
     shp = \
         (

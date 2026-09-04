@@ -14,6 +14,63 @@ Functions for working with polygonal representation.
 
 ---
 :ru
+## Отображаемый меш
+
+Метод `Shape.to_mesh()` строит индексированную треугольную сетку `MeshData`.
+Такую сетку можно передать непосредственно в `disp`: просмотрщик отображает
+её через `AIS_Triangulation`, не превращая каждый треугольник в B-Rep-грань.
+:en
+## Displayable mesh
+
+`Shape.to_mesh()` builds an indexed `MeshData` triangle mesh. The mesh can be
+passed directly to `disp`; the viewer renders it through `AIS_Triangulation`
+without converting every triangle into a B-Rep face.
+::
+
+```python
+model = torus(30, 8) - box(60, 12, 12, center=True)
+mesh = model.to_mesh(linear_deflection=0.35)
+
+controller = disp(mesh, color=color.orange)
+show()
+```
+
+:ru
+По умолчанию используется режим `shaded_with_edges`: затенённая поверхность
+с рёбрами всех треугольников. Режим можно выбрать при отображении:
+:en
+The default is `shaded_with_edges`: a shaded surface with all triangle edges.
+The display mode can be selected when displaying the mesh:
+::
+
+```python
+disp(mesh, display_mode="shaded_with_edges")  # поверхность и рёбра
+disp(mesh, display_mode="shaded")             # только поверхность
+disp(mesh, display_mode="wireframe")          # только рёбра
+```
+
+:ru
+Режим уже отображённого объекта можно изменить через
+`controller.set_mesh_display_mode(...)`.
+:en
+The mode of an already displayed object can be changed with
+`controller.set_mesh_display_mode(...)`.
+::
+
+:ru
+`MeshData` содержит массивы `positions`, `normals`, `triangles` и
+`triangle_face_ids`. Параметры `linear_deflection` и `angular_deflection`
+задают детализацию, а `crease_angle` определяет, на каких рёбрах нормали
+должны оставаться раздельными.
+:en
+`MeshData` contains `positions`, `normals`, `triangles`, and
+`triangle_face_ids`. `linear_deflection` and `angular_deflection` control
+detail, while `crease_angle` determines where normals remain split across
+sharp edges.
+::
+
+---
+:ru
 ## Триангуляция
 Построение полигональной сетки в формате (_nodes_, _triangles_), где _pnts_ - массив точек, а _triangles_ - массив 3-кортежей, индексов точек.
 Параметр _deflection_ отвечает за разрешение разбиения. 

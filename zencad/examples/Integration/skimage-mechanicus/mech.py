@@ -43,7 +43,7 @@ def build():
 
     gons = zencad.union(gons)
 
-    pnts = chain(*[n.endpoints().unlazy() for n in ncls])
+    pnts = chain(*(n.endpoints() for n in ncls))
     pnts = list(pnts)
 
     rpnts = []

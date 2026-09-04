@@ -6,7 +6,7 @@ ZenCad API example: segment.py
 
 from zencad import *
 
-m = segment((10, 0, 0), (10, 20, 30))
+m = segment(point3(10, 0, 0), point3(10, 20, 30))
 display(m)
 
 show()

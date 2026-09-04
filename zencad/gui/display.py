@@ -6,31 +6,36 @@ import math
 import time
 import os
 
-from OCC.Core.AIS import AIS_Axis, AIS_Shaded, AIS_Shape
-from OCC.Core.Aspect import Aspect_GFM_VER
-from OCC.Core.Quantity import Quantity_TOC_RGB, Quantity_Color
-from OCC.Core.Geom import Geom_Line
-from OCC.Core.gp import gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
-from OCC.Core.Graphic3d import Graphic3d_Camera
-import OCC.Core.BRepPrimAPI
-from OCC.Core.IntCurvesFace import IntCurvesFace_ShapeIntersector
-from OCC.Core.Precision import precision_Confusion
-from OCC.Core.Aspect import Aspect_TOD_ABSOLUTE
+from OCP.AIS import AIS_Axis, AIS_Shaded, AIS_Shape
+from OCP.Aspect import Aspect_GFM_VER
+from OCP.Quantity import Quantity_TOC_RGB, Quantity_Color
+from OCP.Geom import Geom_Line
+from OCP.gp import gp_Ax1, gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+from OCP.Graphic3d import Graphic3d_Camera
+from OCP.IntCurvesFace import IntCurvesFace_ShapeIntersector
+from OCP.Aspect import Aspect_TOD_ABSOLUTE
 
-from OCC.Display import OCCViewer
+from zencad.gui import ocp_viewer
+from zencad.occ_compat import confusion
 from zencad.util import point3, to_Pnt
-from zenframe.util import print_to_stderr
 from zencad.geombase import vector3, point3
 from zencad.interactive import AxisInteractiveObject, ShapeInteractiveObject
 import zencad.color as color
 from zencad.axis import Axis
-import zencad.geom.trans
-import zencad.geom.solid
-from zencad.settings import Settings
+import zencad._native.trans
+import zencad._native.solid
+from zencad.settings import Settings, normalize_msaa_samples
+from zencad.gui.navigation import (
+    navigation_drag_action,
+    normalize_navigation_scheme,
+    normalized_custom_bindings,
+    wheel_zoom_factor,
+)
+from zencad.gui.scene_presenter import ScenePresenter
+from zencad.gui.camera_action_presenter import CameraActionPresenter
+from zencad.runtime.camera_action_protocol import rotate_vector
 
-from OpenGL.GLUT import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL.GL import GL_RGBA, GL_UNSIGNED_BYTE, glReadPixels
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
 
 STARTED_YAW = math.pi * (7 / 16)
@@ -44,9 +49,22 @@ class BaseViewer(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         fmt = QtOpenGL.QGLFormat()
         super().__init__(fmt, parent=parent)
+        # OCCT embeds into this widget's own native child window. Declare that
+        # relationship before winId() is created; wrapping the resulting XID
+        # in a second QWindow used to cause BadWindow/reparenting races.  A
+        # parentless standalone viewer must remain a real top-level window so
+        # Qt emits lastWindowClosed and stops its application event loop.
+        if parent is not None:
+            self.setWindowFlag(QtCore.Qt.SubWindow, True)
 
-        self._display = OCCViewer.Viewer3d()
+        self._display = ocp_viewer.Viewer3d()
+        Settings.restore()
+        self.set_msaa_samples(
+            Settings.get(["view", "msaa_samples"]),
+            redraw=False,
+        )
         self._inited = False
+        self._close_callbacks = []
 
         # enable Mouse Tracking
         self.setMouseTracking(True)
@@ -74,9 +92,33 @@ class BaseViewer(QtOpenGL.QGLWidget):
     def set_background_color(self, color):
         self.set_background_gradient(color, color)
 
+    def set_msaa_samples(self, samples, redraw=True):
+        samples = normalize_msaa_samples(samples)
+        self._display.View.ChangeRenderingParams().NbMsaaSamples = samples
+        self.msaa_samples = samples
+        if redraw and self._display._window is not None:
+            self._display.View.Redraw()
+        return samples
+
+    def close_viewer(self):
+        return self._display.Close()
+
+    def add_close_callback(self, callback):
+        if not callable(callback):
+            raise TypeError("Close callback must be callable")
+        self._close_callbacks.append(callback)
+
+    def closeEvent(self, event):
+        callbacks, self._close_callbacks = self._close_callbacks, []
+        for callback in callbacks:
+            callback()
+        self.close_viewer()
+        super().closeEvent(event)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._display.View.MustBeResized()
+        if self._display._window is not None and not self._display._closed:
+            self._display.View.MustBeResized()
 
     def paintEngine(self):
         return None
@@ -85,15 +127,17 @@ class BaseViewer(QtOpenGL.QGLWidget):
 class DisplayWidget(BaseViewer):
     def __init__(self,
                  axis_triedron=True,
-                 communicator=None):
+                 parent=None):
 
-        super().__init__()
+        super().__init__(parent=parent)
+        self.reload_navigation_settings()
         self.View = self._display.View
         self.Viewer = self._display.Viewer
         self.Context = self._display.Context
 
-        self.init_driver_in_constructor = sys.platform == "win32"
-        self._communicator = communicator
+        # A child viewer receives its final native window only when the full
+        # parent hierarchy is shown. Standalone viewers have no such reparent.
+        self.init_driver_in_constructor = parent is None
         self._orient = 1
         self._drawbox = False
         self._zoom_area = False
@@ -108,6 +152,8 @@ class DisplayWidget(BaseViewer):
         self.mousedown = False
         self.keyboard_retranslate_mode = False
         self.tracking_mode = False
+        self._input_event_sink = None
+        self._viewer_event_sink = None
 
         self.last_redraw = time.time()
         self.animate_updated = threading.Event()
@@ -125,23 +171,194 @@ class DisplayWidget(BaseViewer):
         )
         for iobj in self.camera_center_axes:
             self.Context.Display(iobj.ais_object, False)
-            iobj.bind_context(self.Context)
+            iobj.bind_context(self.Context, update=False)
 
-        self.msphere = zencad.geom.solid._sphere(1)
+        self.msphere = zencad._native.solid._sphere(1)
         self.MarkerQController = ShapeInteractiveObject(
             self.msphere, color=zencad.color.Color(1, 0, 0))
         self.MarkerWController = ShapeInteractiveObject(
             self.msphere, color=zencad.color.Color(0, 1, 0))
         self.Context.Display(self.MarkerWController.ais_object, False)
         self.Context.Display(self.MarkerQController.ais_object, False)
-        self.MarkerQController.bind_context(self.Context)
-        self.MarkerWController.bind_context(self.Context)
+        self.MarkerQController.bind_context(self.Context, update=False)
+        self.MarkerWController.bind_context(self.Context, update=False)
         self.MarkerWController.hide(True)
         self.MarkerQController.hide(True)
         self.set_center_visible(False)
 
         if self.init_driver_in_constructor:
             self.InitDriver()
+
+        self.scene_presenter = ScenePresenter(self)
+        self.camera_action_presenter = CameraActionPresenter(self)
+
+    def set_input_event_sink(self, sink):
+        if sink is not None and not callable(sink):
+            raise TypeError("Input event sink must be callable")
+        self._input_event_sink = sink
+
+    def set_viewer_event_sink(self, sink):
+        if sink is not None and not callable(sink):
+            raise TypeError("Viewer event sink must be callable")
+        self._viewer_event_sink = sink
+
+    def _emit_viewer_event(self, event_type, data):
+        if self._viewer_event_sink is not None:
+            self._viewer_event_sink(event_type, data)
+
+    def _emit_input_event(self, message_type, data):
+        if self._input_event_sink is not None:
+            return self._input_event_sink(message_type, data)
+        return False
+
+    @staticmethod
+    def _input_modifiers(modifiers):
+        values = []
+        for flag, name in (
+            (QtCore.Qt.ShiftModifier, "shift"),
+            (QtCore.Qt.ControlModifier, "control"),
+            (QtCore.Qt.AltModifier, "alt"),
+            (QtCore.Qt.MetaModifier, "meta"),
+        ):
+            if modifiers & flag:
+                values.append(name)
+        return values
+
+    @staticmethod
+    def _input_buttons(buttons):
+        values = []
+        for flag, name in (
+            (QtCore.Qt.LeftButton, "left"),
+            (QtCore.Qt.MidButton, "middle"),
+            (QtCore.Qt.RightButton, "right"),
+            (QtCore.Qt.BackButton, "back"),
+            (QtCore.Qt.ForwardButton, "forward"),
+        ):
+            if buttons & flag:
+                values.append(name)
+        return values
+
+    @staticmethod
+    def _input_button(button):
+        values = DisplayWidget._input_buttons(button)
+        return values[0] if values else None
+
+    @staticmethod
+    def _input_key(event):
+        key = event.key()
+        if QtCore.Qt.Key_A <= key <= QtCore.Qt.Key_Z:
+            return chr(key).lower()
+        if QtCore.Qt.Key_0 <= key <= QtCore.Qt.Key_9:
+            return chr(key)
+        special = {
+            QtCore.Qt.Key_Left: "left",
+            QtCore.Qt.Key_Right: "right",
+            QtCore.Qt.Key_Up: "up",
+            QtCore.Qt.Key_Down: "down",
+            QtCore.Qt.Key_Space: "space",
+            QtCore.Qt.Key_Escape: "escape",
+            QtCore.Qt.Key_Enter: "enter",
+            QtCore.Qt.Key_Return: "return",
+            QtCore.Qt.Key_Tab: "tab",
+            QtCore.Qt.Key_Backtab: "backtab",
+            QtCore.Qt.Key_Backspace: "backspace",
+            QtCore.Qt.Key_Delete: "delete",
+            QtCore.Qt.Key_Insert: "insert",
+            QtCore.Qt.Key_Home: "home",
+            QtCore.Qt.Key_End: "end",
+            QtCore.Qt.Key_PageUp: "page_up",
+            QtCore.Qt.Key_PageDown: "page_down",
+            QtCore.Qt.Key_Shift: "shift",
+            QtCore.Qt.Key_Control: "control",
+            QtCore.Qt.Key_Alt: "alt",
+            QtCore.Qt.Key_Meta: "meta",
+        }
+        if key in special:
+            return special[key]
+        if QtCore.Qt.Key_F1 <= key <= QtCore.Qt.Key_F35:
+            return "f{}".format(key - QtCore.Qt.Key_F1 + 1)
+        rendered = QtGui.QKeySequence(key).toString().strip().lower()
+        return rendered or "key:{}".format(key)
+
+    def assert_gui_thread(self):
+        if QtCore.QThread.currentThread() != self.thread():
+            raise RuntimeError("Scene snapshots must be applied on the GUI thread")
+
+    def apply_snapshot(self, snapshot, scene_revision=0):
+        generation = self.scene_presenter.apply(
+            snapshot, scene_revision=scene_revision
+        )
+        self.camera_action_presenter.reset()
+        return generation
+
+    def apply_scene_patch(self, patch):
+        return self.scene_presenter.apply_patch(patch)
+
+    def reset_camera_actions(self):
+        self.camera_action_presenter.reset()
+
+    def apply_camera_action(self, action):
+        return self.camera_action_presenter.apply(
+            action,
+            self.scene_presenter.committed_generation,
+            self.scene_presenter.committed_scene_revision,
+        )
+
+    def apply_camera_orbit(self, quaternion):
+        """Transactionally rotate eye and up around the current center."""
+        self.assert_gui_thread()
+        camera = self._display.View.Camera()
+        saved = Graphic3d_Camera()
+        saved.Copy(camera)
+        saved_yaw = self.yaw
+        saved_pitch = self.pitch
+        eye = camera.Eye()
+        center = camera.Center()
+        up = camera.Up()
+        eye_offset = rotate_vector(quaternion, (
+            eye.X() - center.X(),
+            eye.Y() - center.Y(),
+            eye.Z() - center.Z(),
+        ))
+        rotated_up = rotate_vector(
+            quaternion, (up.X(), up.Y(), up.Z())
+        )
+        try:
+            camera.SetEye(gp_Pnt(
+                center.X() + eye_offset[0],
+                center.Y() + eye_offset[1],
+                center.Z() + eye_offset[2],
+            ))
+            camera.SetUp(gp_Dir(*rotated_up))
+            self.update_orient1_from_view()
+            self.location_changed_handle()
+            self.redraw()
+        except Exception:
+            camera.Copy(saved)
+            self.yaw = saved_yaw
+            self.pitch = saved_pitch
+            raise
+
+    def set_navigation_scheme(self, scheme):
+        self.navigation_scheme = normalize_navigation_scheme(scheme)
+        return self.navigation_scheme
+
+    def reload_navigation_settings(self):
+        self.set_navigation_scheme(
+            Settings.get(["view", "navigation_scheme"])
+        )
+        self.navigation_custom_bindings = normalized_custom_bindings({
+            "rotate": Settings.get(["view", "navigation_rotate"]),
+            "pan": Settings.get(["view", "navigation_pan"]),
+            "zoom": Settings.get(["view", "navigation_zoom"]),
+        })
+        self.navigation_invert_wheel = bool(
+            Settings.get(["view", "navigation_invert_wheel"])
+        )
+        self.navigation_invert_orbit = bool(
+            Settings.get(["view", "navigation_invert_orbit"])
+        )
+        return self.navigation_scheme
 
     def set_perspective(self, en):
         self._perspective_mode = en
@@ -253,12 +470,9 @@ class DisplayWidget(BaseViewer):
         self.set_center(point3(0, 0, 0))
 
     def make_axis_triedron(self):
-        self.x_axis = AIS_Axis(
-            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(1, 0, 0)))))
-        self.y_axis = AIS_Axis(
-            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(0, 1, 0)))))
-        self.z_axis = AIS_Axis(
-            Geom_Line(gp_Lin(gp_Pnt(0, 0, 0), gp_Dir(gp_XYZ(0, 0, 1)))))
+        self.x_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(1, 0, 0)))
+        self.y_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(0, 1, 0)))
+        self.z_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(0, 0, 1)))
         self.x_axis.SetColor(Quantity_Color(1, 0, 0, Quantity_TOC_RGB))
         self.y_axis.SetColor(Quantity_Color(0, 1, 0, Quantity_TOC_RGB))
         self.z_axis.SetColor(Quantity_Color(0, 0, 1, Quantity_TOC_RGB))
@@ -287,41 +501,45 @@ class DisplayWidget(BaseViewer):
         self.Context.Display(iobj.ais_object, False)
         iobj.bind_context(self.Context)
 
-    def autoscale(self, koeff=0.07):
+    def autoscale(self, koeff=0.07, redraw=True):
         self.View.FitAll(koeff)
-        self.View.Redraw()
+        if redraw:
+            self.redraw()
 
     def enable_axis_triedron(self, en):
         if en:
-            self.Context.Display(self.x_axis, True)
-            self.Context.Display(self.y_axis, True)
-            self.Context.Display(self.z_axis, True)
+            self.Context.Display(self.x_axis, False)
+            self.Context.Display(self.y_axis, False)
+            self.Context.Display(self.z_axis, False)
         else:
-            self.Context.Erase(self.x_axis, True)
-            self.Context.Erase(self.y_axis, True)
-            self.Context.Erase(self.z_axis, True)
+            self.Context.Erase(self.x_axis, False)
+            self.Context.Erase(self.y_axis, False)
+            self.Context.Erase(self.z_axis, False)
+        self.redraw()
 
     def enable_axis_biedron(self, en, colors=None):
         if en:
-            self.Context.Display(self.x_axis, True)
-            self.Context.Display(self.y_axis, True)
+            self.Context.Display(self.x_axis, False)
+            self.Context.Display(self.y_axis, False)
         else:
-            self.Context.Erase(self.x_axis, True)
-            self.Context.Erase(self.y_axis, True)
+            self.Context.Erase(self.x_axis, False)
+            self.Context.Erase(self.y_axis, False)
 
         if colors is not None:
             self.x_axis.SetColor(colors[0].to_Quantity_Color())
             self.y_axis.SetColor(colors[1].to_Quantity_Color())
+        self.redraw()
 
-    def restore_location(self, dct):
+    def restore_location(self, dct, redraw=True):
         scale = dct["scale"]
         eye = point3(dct["eye"])
         center = point3(dct["center"])
 
-        self.set_center(center)
+        self.set_center(center, redraw=False)
         self.set_eye(eye)
         self.set_scale(scale)
-        self.redraw()
+        if redraw:
+            self.redraw()
 
         self.update_orient1_from_view()
         self.location_changed_handle()
@@ -335,22 +553,24 @@ class DisplayWidget(BaseViewer):
 
     def location_changed_handle(self):
         for c in self.camera_center_axes:
-            c.relocate(zencad.geom.trans.translate(self.center()))
-
-        if self._communicator:
-            loc = self.store_location()
-            self._communicator.send({"cmd": "location",  "loc": loc})
+            c.relocate(zencad._native.trans.translate(self.center()))
 
     def InitDriver(self):
-        self._display.Create(window_handle=int(self.winId()), parent=self)
+        if self._display._window is None:
+            self._display.Create(window_handle=self.winId(), parent=self)
+            self._display.View.MustBeResized()
 
         self.Viewer.SetDefaultLights()
         self.Viewer.SetLightOn()
         self.Context.SetDisplayMode(AIS_Shaded, False)
 
-        self.autoscale()
+        # showEvent runs while Qt is still mapping the parent hierarchy.
+        # NVIDIA GLX can block indefinitely if OCCT redraws synchronously at
+        # this point, so publish the first frame on the next event-loop turn.
+        self.autoscale(redraw=False)
         self.MarkerWController.hide(True)
         self.MarkerQController.hide(True)
+        QtCore.QTimer.singleShot(0, self.redraw)
 
     def redraw_marker(self, qw, x, y, z):
         if qw == "q":
@@ -371,12 +591,7 @@ class DisplayWidget(BaseViewer):
         y = self.marker1[0].y
         z = self.marker1[0].z
 
-        if self._communicator:
-            self._communicator.send({
-                "cmd": "qmarker",
-                "x": x,
-                "y": y,
-                "z": z})
+        self._emit_viewer_event("qmarker", {"x": x, "y": y, "z": z})
         self.redraw_marker("q", x, y, z)
 
     def markerWPressed(self):
@@ -387,15 +602,16 @@ class DisplayWidget(BaseViewer):
         y = self.marker2[0].y
         z = self.marker2[0].z
 
-        if self._communicator:
-            self._communicator.send({
-                "cmd": "wmarker",
-                "x": x,
-                "y": y,
-                "z": z})
+        self._emit_viewer_event("wmarker", {"x": x, "y": y, "z": z})
         self.redraw_marker("w", x, y, z)
 
     def keyPressEvent(self, event):
+        self._emit_input_event("key_down", {
+            "key": self._input_key(event),
+            "text": event.text(),
+            "modifiers": self._input_modifiers(event.modifiers()),
+            "repeat": event.isAutoRepeat(),
+        })
         MOVE_SCALE = 0.03
         modifiers = event.modifiers()  # QApplication.keyboardModifiers()
 
@@ -451,13 +667,13 @@ class DisplayWidget(BaseViewer):
             self.dragStartPosY = ev.y()
             return
 
-        # If signal not handling here, translate it onto top level
-        if self._communicator:
-            self._communicator.send({
-                "cmd": "keypressed_raw",
-                "key": event.key(),
-                "modifiers": "",
-                "text": event.text()})
+    def keyReleaseEvent(self, event):
+        self._emit_input_event("key_up", {
+            "key": self._input_key(event),
+            "text": event.text(),
+            "modifiers": self._input_modifiers(event.modifiers()),
+            "repeat": event.isAutoRepeat(),
+        })
 
     def zoom_factor(self, factor):
         self._display.ZoomFactor(factor)
@@ -484,27 +700,39 @@ class DisplayWidget(BaseViewer):
                 self.InitDriver()
 
     def paintEvent(self, event):
+        if self._display._closed:
+            return
         if not self._inited1:
-
-            QtGui.QWindow.fromWinId(self.winId()).setFlags(
-                QtGui.QWindow.fromWinId(self.winId()).flags() |
-                QtCore.Qt.SubWindow)
-
             self._inited1 = True
 
         self._display.Context.UpdateCurrentViewer()
 
     def wheelEvent(self, event):
-        mul = 1.1
-        delta = event.angleDelta().y()
-        if delta > 0:
-            zoom_factor = mul
-        else:
-            zoom_factor = 1/mul
+        delta_point = event.angleDelta()
+        position = event.pos()
+        self._emit_input_event("mouse_wheel", {
+            "dx": delta_point.x(),
+            "dy": delta_point.y(),
+            "x": position.x(),
+            "y": position.y(),
+            "modifiers": self._input_modifiers(event.modifiers()),
+        })
+        zoom_factor = wheel_zoom_factor(
+            delta_point.y(),
+            inverted=self.navigation_invert_wheel,
+        )
         self._display.ZoomFactor(zoom_factor)
         self.location_changed_handle()
 
     def mousePressEvent(self, event):
+        button = self._input_button(event.button())
+        if button is not None:
+            self._emit_input_event("mouse_button_down", {
+                "button": button,
+                "x": event.x(),
+                "y": event.y(),
+                "modifiers": self._input_modifiers(event.modifiers()),
+            })
         self.setFocus()
         ev = event.pos()
         self.dragStartPosX = ev.x()
@@ -514,6 +742,14 @@ class DisplayWidget(BaseViewer):
         self.mousedown = True
 
     def mouseReleaseEvent(self, event):
+        button = self._input_button(event.button())
+        if button is not None:
+            self._emit_input_event("mouse_button_up", {
+                "button": button,
+                "x": event.x(),
+                "y": event.y(),
+                "modifiers": self._input_modifiers(event.modifiers()),
+            })
         pt = event.pos()
         modifiers = event.modifiers()
 
@@ -530,6 +766,14 @@ class DisplayWidget(BaseViewer):
 
     def redraw(self):
         self.animate_updated.clear()
+        if self._display._closed or self._display._window is None:
+            self.animate_updated.set()
+            return
+        # A splitter can settle after the child's first showEvent without
+        # delivering another resize event to the already native OCCT window.
+        # Synchronizing here is cheap and guarantees the GL viewport matches
+        # the visible widget before every explicit frame.
+        self._display.View.MustBeResized()
         self._display.View.Redraw()
         self.last_redraw = time.time()
         self.animate_updated.set()
@@ -570,14 +814,14 @@ class DisplayWidget(BaseViewer):
         viewLine = self.viewline(x, y)
 
         for i in range(len(self.selected_shapes)):
-            hShape = AIS_Shape.DownCast(self.selected_ishapes[i])
-            shape = hShape.Shape()
+            hShape = self.selected_ishapes[i]
+            shape = self.selected_shapes[i]
 
             loc = self.Context.Location(hShape)
             loc_shape = shape.Located(loc)
 
             shapeIntersector = IntCurvesFace_ShapeIntersector()
-            shapeIntersector.Load(loc_shape, precision_Confusion())
+            shapeIntersector.Load(loc_shape, confusion())
             shapeIntersector.Perform(viewLine, float("-inf"), float("+inf"))
 
             if shapeIntersector.NbPnt() >= 1:
@@ -589,30 +833,36 @@ class DisplayWidget(BaseViewer):
         return point3(), False
 
     def mouseMoveEvent(self, evt):
+        self._emit_input_event("mouse_move", {
+            "x": evt.x(),
+            "y": evt.y(),
+            "buttons": self._input_buttons(evt.buttons()),
+            "modifiers": self._input_modifiers(evt.modifiers()),
+        })
         pt = evt.pos()
-        buttons = int(evt.buttons())
         modifiers = evt.modifiers()
         self.lastPosition = (evt.x(), evt.y())
 
         if self.tracking_mode and not self.mousedown:
             ip, sts = self.intersect_point(evt.x(), evt.y())
+            self._emit_viewer_event("trackinfo", (ip.to_tuple(), sts))
 
-            if self._communicator:
-                self._communicator.send({
-                    "cmd": "trackinfo",
-                    "data": (ip.to_tuple(), sts)
-                })
+        action = navigation_drag_action(
+            self.navigation_scheme,
+            self._input_buttons(evt.buttons()),
+            self._input_modifiers(modifiers),
+            self.navigation_custom_bindings,
+        )
 
-        # ROTATE
-        if (buttons == QtCore.Qt.LeftButton or
-                modifiers == QtCore.Qt.AltModifier):
+        if action == "rotate":
             if self._orient == 1:
 
                 mv = evt.pos() - self.temporary1
                 self.temporary1 = evt.pos()
 
-                self.yaw -= mv.x() * 0.01
-                self.pitch -= mv.y() * 0.01
+                direction = 1 if self.navigation_invert_orbit else -1
+                self.yaw += direction * mv.x() * 0.01
+                self.pitch += direction * mv.y() * 0.01
                 if self.pitch > math.pi * 0.4999:
                     self.pitch = math.pi * 0.4999
                 if self.pitch < -math.pi * 0.4999:
@@ -624,8 +874,7 @@ class DisplayWidget(BaseViewer):
 
             self.location_changed_handle()
 
-        # DYNAMIC ZOOM
-        elif (buttons == QtCore.Qt.MidButton):
+        elif action == "zoom":
             self._display.Repaint()
             self._display.DynamicZoom(abs(self.dragStartPosX),
                                       abs(self.dragStartPosY), abs(pt.x()),
@@ -634,9 +883,7 @@ class DisplayWidget(BaseViewer):
             self.dragStartPosY = pt.y()
             self.location_changed_handle()
 
-        # PAN
-        elif (buttons == QtCore.Qt.RightButton or
-                modifiers == QtCore.Qt.ShiftModifier):
+        elif action == "pan":
             dx = pt.x() - self.dragStartPosX
             dy = pt.y() - self.dragStartPosY
             self.dragStartPosX = pt.x()
@@ -695,7 +942,11 @@ class DisplayWidget(BaseViewer):
             elif cmd == "console":
                 sys.stdout.write(data["data"])
         except Exception as ex:
-            print_to_stderr("Error on external command handling", repr(ex))
+            print(
+                "Error on external command handling:",
+                repr(ex),
+                file=sys.stderr,
+            )
 
     def move_vector_cross(self, vecin, koeff):
         vec = self.center() - self.eye()

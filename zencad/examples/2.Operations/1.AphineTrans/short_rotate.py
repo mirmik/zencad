@@ -15,8 +15,17 @@ In that example you can play with `src` and `tgt` arrays.
 Practice shooting :).
 """
 
+import os
+
+import zencad
 from zencad import *
 from zencad.interactive import arrow, line
+
+mandarinc = os.path.join(
+    zencad.moduledir,
+    "examples/fonts/mandarinc.ttf",
+)
+register_font(mandarinc)
 
 u = 20
 
@@ -24,33 +33,19 @@ u = 20
 angle = deg(60)
 arrl, arrw, arrh = 2, 1, 15
 
-src = points([
-    (-1, -2, 1),
-    (1, -2, 1),
-    (-2, 1, 0),
-])
+src = [point3(-u, -2 * u, u), point3(u, -2 * u, u), point3(-2 * u, u, 0)]
 
-tgt = points([
-    (1, 2, 1),
-    (1, 1, 0),
-    (2, 2, 3)
-])
+tgt = [point3(u, 2 * u, u), point3(u, u, 0), point3(2 * u, 2 * u, 3 * u)]
 
 clr = [color.red, color.green, color.blue]
 
-# Scale
-for i in range(len(src)):
-    for j in range(3):
-        src[i][j] *= u
-        tgt[i][j] *= u
-
 # Make short rotate transformation
-transes = [translate(*src[i]) * short_rotate((0, 0, 1),
+transes = [translate(*src[i].value()) * short_rotate(vector3(0, 0, 1),
                                              tgt[i] - src[i]) for i in range(len(src))]
 
 # Make cylinders geometry
 cyl = cylinder(r=5, h=10, center=True)
-tgt_cyls = [trans(cyl) for trans in transes]
+tgt_cyls = [cyl.transform(trans) for trans in transes]
 
 # Draw cylinders
 for t in tgt_cyls:
@@ -58,7 +53,7 @@ for t in tgt_cyls:
 
 # Draw arrows
 for i in range(len(src)):
-    arr = arrow(src[i], tgt[i], arrlen=arrl, width=arrw, color=clr[i])
+    arr = arrow(src[i].value(), tgt[i].value(), arrlen=arrl, width=arrw, color=clr[i])
     disp(arr)
 
 # Draw white cube.
@@ -67,15 +62,26 @@ for i in range(N):
     for j in range(N):
         for k in range(N):
             if i < N-1:
-                disp(line(point3(i*u, j*u, k*u), point3(i*u+u, j*u, k*u)))
+                disp(line(point3(i*u, j*u, k*u).value(), point3(i*u+u, j*u, k*u).value()))
             if j < N-1:
-                disp(line(point3(i*u, j*u, k*u), point3(i*u, j*u+u, k*u)))
+                disp(line(point3(i*u, j*u, k*u).value(), point3(i*u, j*u+u, k*u).value()))
             if k < N-1:
-                disp(line(point3(i*u, j*u, k*u), point3(i*u, j*u, k*u+u)))
+                disp(line(point3(i*u, j*u, k*u).value(), point3(i*u, j*u, k*u+u).value()))
 
-for i in range(len(tgt)):
-    if tgt[i] in src:
-        disp(textshape("BOOM!!!!", os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf"),
-                       20, True).rotateX(deg(90)).translate(*tgt[i]).up(15), color=color.red)
+for target in tgt:
+    target_value = target.value()
+    if any(target_value == source.value() for source in src):
+        disp(
+            textshape(
+                "BOOM!!!!",
+                "Mandarinc",
+                20,
+                True,
+            )
+            .rotateX(deg(90))
+            .translate(*target_value)
+            .up(15),
+            color=color.red,
+        )
 
 show()

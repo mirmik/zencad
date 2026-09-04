@@ -3,22 +3,15 @@
 
 from zencad import *
 
-lazy.encache = False
-lazy.decache = False
-lazy.cached = False
-lazy.fastdo = True
-
 m0 = box(10, center=True)
-nodes, triangles = triangulate(m0, 0.5)
+mesh = m0.to_mesh(0.5)
+nodes = [point3(*position) for position in mesh.positions]
+triangles = mesh.triangles
+nsize = len(nodes)
+tsize = len(triangles)
 
-nodes_unlazy = nodes.unlazy()
-nsize = len(nodes_unlazy)
-
-triangles_unlazy = triangles.unlazy()
-tsize = len(triangles_unlazy)
-
-print(f"Nodes: len:{nsize} : {nodes_unlazy}")
-print(f"Triangles: len:{tsize} : {triangles_unlazy}")
+print(f"Nodes: len:{nsize} : {mesh.positions}")
+print(f"Triangles: len:{tsize} : {triangles}")
 
 m1 = polyhedron(nodes, triangles)
 
@@ -28,13 +21,11 @@ disp(m1.right(20))
 ##################
 
 m2 = cylinder(r=5, h=10, center=True)
-nodes, triangles = triangulate(m2, 0.5)
-
-nodes_unlazy = nodes.unlazy()
-nsize = len(nodes_unlazy)
-
-triangles_unlazy = triangles.unlazy()
-tsize = len(triangles_unlazy)
+mesh = m2.to_mesh(0.5)
+nodes = [point3(*position) for position in mesh.positions]
+triangles = mesh.triangles
+nsize = len(nodes)
+tsize = len(triangles)
 
 print(f"Nodes: len:{nsize}")
 print(f"Triangles: len:{tsize}")
@@ -47,13 +38,11 @@ disp(m3.forw(20).right(20))
 ##################
 
 m4 = sphere(5)
-nodes, triangles = triangulate(m4, 0.5)
-
-nodes_unlazy = nodes.unlazy()
-nsize = len(nodes_unlazy)
-
-triangles_unlazy = triangles.unlazy()
-tsize = len(triangles_unlazy)
+mesh = m4.to_mesh(0.5)
+nodes = [point3(*position) for position in mesh.positions]
+triangles = mesh.triangles
+nsize = len(nodes)
+tsize = len(triangles)
 
 print(f"Nodes: len:{nsize}")
 print(f"Triangles: len:{tsize}")

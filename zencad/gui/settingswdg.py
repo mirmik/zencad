@@ -4,8 +4,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-from zencad.settings import Settings
+from zencad.settings import (
+    MSAA_SAMPLE_OPTIONS,
+    Settings,
+    normalize_msaa_samples,
+)
 from zencad.color import Color
+from zencad.gui.navigation import (
+    CUSTOM_GESTURE_OPTIONS,
+    NAVIGATION_SCHEME_OPTIONS,
+    custom_bindings_conflict,
+    normalize_custom_gesture,
+    normalize_navigation_scheme,
+)
 
 
 class TableField(QWidget):
@@ -62,8 +73,33 @@ class Checker(QWidget):
         Settings.set(self.path, self.check.checkState() != 0)
 
     def restore(self):
-        self.check.setCheckState(
-            2 if Settings.get(self.path) == "true" else 0)
+        self.check.setChecked(bool(Settings.get(self.path)))
+
+
+def _identity(value):
+    return value
+
+
+class ChoiceFieldChanger(QWidget):
+    def __init__(self, label, path, choices, normalize=_identity):
+        super().__init__()
+        self.path = path
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(QLabel(label))
+        self.combo = QComboBox()
+        for text, value in choices:
+            self.combo.addItem(text, value)
+        current = normalize(Settings.get(path))
+        index = self.combo.findData(current)
+        self.combo.setCurrentIndex(max(0, index))
+        self.layout.addWidget(self.combo)
+        self.setLayout(self.layout)
+
+    def apply(self):
+        Settings.set(self.path, self.combo.currentData())
+
+    def restore(self):
+        pass
 
 
 class ColorChanger(QWidget):
@@ -123,12 +159,57 @@ class SettingsWidget(QDialog):
         self.default_color_edit = ColorChanger()
         self.texteditor_edit = TextFieldChanger(
             path=["gui", "text_editor"], label="Text editor command:")
-        self.bind_widget = Checker("Линковать виджет", path=[
-                                   "gui", "bind_widget"])
         self.marker_size_edit = TextFieldChanger(
             path=["markers", "size"], label="Marker size:")
+        self.cache_directory_edit = TextFieldChanger(
+            path=["cache", "directory"], label="Cache directory:")
+        self.cache_enabled_edit = Checker(
+            "Enable disk cache:",
+            ["cache", "enabled"],
+        )
         self.chordial_deflection_edit = TextFieldChanger(
             path=["view", "default_chordial_deviation"], label="Chordial deflection:")
+        self.msaa_edit = ChoiceFieldChanger(
+            label="MSAA:",
+            path=["view", "msaa_samples"],
+            choices=[
+                ("Off" if samples == 0 else "{}×".format(samples), samples)
+                for samples in MSAA_SAMPLE_OPTIONS
+            ],
+            normalize=normalize_msaa_samples,
+        )
+        self.navigation_scheme_edit = ChoiceFieldChanger(
+            label="Navigation:",
+            path=["view", "navigation_scheme"],
+            choices=NAVIGATION_SCHEME_OPTIONS,
+            normalize=normalize_navigation_scheme,
+        )
+        self.navigation_rotate_edit = ChoiceFieldChanger(
+            label="Custom rotate:",
+            path=["view", "navigation_rotate"],
+            choices=CUSTOM_GESTURE_OPTIONS,
+            normalize=lambda value: normalize_custom_gesture(value, "left"),
+        )
+        self.navigation_pan_edit = ChoiceFieldChanger(
+            label="Custom pan:",
+            path=["view", "navigation_pan"],
+            choices=CUSTOM_GESTURE_OPTIONS,
+            normalize=lambda value: normalize_custom_gesture(value, "middle"),
+        )
+        self.navigation_zoom_edit = ChoiceFieldChanger(
+            label="Custom zoom:",
+            path=["view", "navigation_zoom"],
+            choices=CUSTOM_GESTURE_OPTIONS,
+            normalize=normalize_custom_gesture,
+        )
+        self.navigation_invert_wheel_edit = Checker(
+            "Invert wheel zoom:",
+            ["view", "navigation_invert_wheel"],
+        )
+        self.navigation_invert_orbit_edit = Checker(
+            "Invert orbit direction:",
+            ["view", "navigation_invert_orbit"],
+        )
 
         self.appliers = []
         self.vlayout = QVBoxLayout()
@@ -140,12 +221,26 @@ class SettingsWidget(QDialog):
         append(self.texteditor_edit)
         append(self.default_color_edit)
         append(self.marker_size_edit)
+        append(self.cache_directory_edit)
+        append(self.cache_enabled_edit)
         append(self.chordial_deflection_edit)
+        append(self.msaa_edit)
+        append(self.navigation_scheme_edit)
+        append(self.navigation_rotate_edit)
+        append(self.navigation_pan_edit)
+        append(self.navigation_zoom_edit)
+        append(self.navigation_invert_wheel_edit)
+        append(self.navigation_invert_orbit_edit)
 
         self.vlayout.addLayout(self.hlayout)
 
         for a in self.appliers:
             a.restore()
+
+        self.navigation_scheme_edit.combo.currentIndexChanged.connect(
+            self.update_navigation_controls
+        )
+        self.update_navigation_controls()
 
         self.ok_button.clicked.connect(self.ok_handle)
         self.cancel_button.clicked.connect(self.cancel_handle)
@@ -157,7 +252,55 @@ class SettingsWidget(QDialog):
             a.apply()
         Settings.store()
 
+    def update_navigation_controls(self):
+        custom = self.navigation_scheme_edit.combo.currentData() == "custom"
+        self.navigation_rotate_edit.setEnabled(custom)
+        self.navigation_pan_edit.setEnabled(custom)
+        self.navigation_zoom_edit.setEnabled(custom)
+
+    def navigation_settings_are_valid(self):
+        if self.navigation_scheme_edit.combo.currentData() != "custom":
+            return True
+        bindings = {
+            "rotate": self.navigation_rotate_edit.combo.currentData(),
+            "pan": self.navigation_pan_edit.combo.currentData(),
+            "zoom": self.navigation_zoom_edit.combo.currentData(),
+        }
+        if not custom_bindings_conflict(bindings):
+            return True
+        QMessageBox.warning(
+            self,
+            "Navigation conflict",
+            "Rotate, pan, and zoom cannot use the same mouse gesture.",
+        )
+        return False
+
+    def cache_settings_are_valid(self):
+        from zencad.cache_config import (
+            normalize_cache_directory,
+            prepare_cache_directory,
+        )
+
+        try:
+            directory = normalize_cache_directory(
+                self.cache_directory_edit.edit.text()
+            )
+            if self.cache_enabled_edit.check.isChecked():
+                prepare_cache_directory(directory)
+        except (OSError, ValueError, RuntimeError) as exception:
+            QMessageBox.warning(
+                self,
+                "Invalid cache configuration",
+                str(exception),
+            )
+            return False
+        return True
+
     def ok_handle(self):
+        if not self.navigation_settings_are_valid():
+            return
+        if not self.cache_settings_are_valid():
+            return
         self.save_all()
         self.accept()
 
@@ -168,6 +311,7 @@ class SettingsWidget(QDialog):
 def doit():
     import sys
     app = QApplication(sys.argv[1:])
+    Settings.restore()
     wdg = SettingsWidget()
     wdg.exec()
 

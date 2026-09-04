@@ -1,19 +1,11 @@
 #!/usr/bin/env python3
+"""Managed two-player tennis: arrows control player 1, A/D player 2."""
 
-import time
 import math
 import random
 
 from zencad import *
 import zencad.assemble
-
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
-CTRWIDGET = None
-SLD0 = None
-SLD1 = None
 
 BALL_POSITION = [0, 0]
 BALL_SPEED_NORMAL = math.sqrt(150**2 * 2)
@@ -25,19 +17,8 @@ BOX_WIDTH = 300
 BOX_LENGTH = 500
 PLAYER_OFF = 40
 T = 10
-
-
-class Slider(QSlider):
-    def __init__(self):
-        super().__init__(Qt.Horizontal)
-        self.setRange(-5000, 5000)
-        self.setValue(0)
-        self.setSingleStep(1)
-
-    _value = QSlider.value
-
-    def value(self):
-        return self._value(self) / 10000 * (BOX_WIDTH-80)
+PLAYER_POSITIONS = [0.0, 0.0]
+PLAYER_SPEED = 180.0
 
 
 class player(zencad.assemble.unit):
@@ -75,43 +56,30 @@ def change_angle():
                   math.sin(angle) * BALL_SPEED_NORMAL]
 
 
-def preanimate(wdg, animate_thread):
-    global CTRWIDGET, SLD0, SLD1
-    CTRWIDGET = QWidget()
-    layout = QVBoxLayout()
-
-    SLD0 = Slider()
-    SLD1 = Slider()
-
-    layout.addWidget(SLD1)
-    layout.addWidget(SLD0)
-
-    CTRWIDGET.setLayout(layout)
-    CTRWIDGET.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Dialog)
-    CTRWIDGET.show()
-
-
-stime = time.time()
-lasttime = stime
-
-
-def animate(wdg):
+def animate(state):
     global BALL_POSITION
-    global lasttime
-    curtime = time.time()
-    DELTA = curtime - lasttime
-    lasttime = curtime
+    delta = min(state.delta, 0.1)
+    limit = (BOX_WIDTH - 80) / 2
 
-    player_one_pos = SLD0.value()
-    player_one_location = translate(SLD0.value(), -BOX_LENGTH/2-5, 0)
+    PLAYER_POSITIONS[0] += PLAYER_SPEED * delta * (
+        state.input.key_down("right") - state.input.key_down("left")
+    )
+    PLAYER_POSITIONS[1] += PLAYER_SPEED * delta * (
+        state.input.key_down("d") - state.input.key_down("a")
+    )
+    PLAYER_POSITIONS[0] = max(-limit, min(limit, PLAYER_POSITIONS[0]))
+    PLAYER_POSITIONS[1] = max(-limit, min(limit, PLAYER_POSITIONS[1]))
+
+    player_one_pos = PLAYER_POSITIONS[0]
+    player_one_location = translate(player_one_pos, -BOX_LENGTH/2-5, 0)
     player_one.relocate(player_one_location, view=True)
 
-    player_two_pos = SLD1.value()
-    player_two_location = translate(SLD1.value(), BOX_LENGTH/2+5, 0)
+    player_two_pos = PLAYER_POSITIONS[1]
+    player_two_location = translate(player_two_pos, BOX_LENGTH/2+5, 0)
     player_two.relocate(player_two_location, view=True)
 
-    BALL_POSITION[0] += BALL_SPEED[0] * DELTA
-    BALL_POSITION[1] += BALL_SPEED[1] * DELTA
+    BALL_POSITION[0] += BALL_SPEED[0] * delta
+    BALL_POSITION[1] += BALL_SPEED[1] * delta
 
     if BALL_POSITION[0] > BOX_WIDTH/2:
         BALL_SPEED[0] = - BALL_SPEED[0]
@@ -140,8 +108,4 @@ def animate(wdg):
     ball.relocate(translate(BALL_POSITION[0], BALL_POSITION[1]), view=True)
 
 
-def close_handle():
-    CTRWIDGET.close()
-
-
-show(animate=animate, preanimate=preanimate, close_handle=close_handle)
+show(animate=animate, animate_step=0.01)

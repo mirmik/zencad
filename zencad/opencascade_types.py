@@ -1,5 +1,5 @@
-from OCC.Core.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt, TColgp_Array2OfPnt, TColgp_Array1OfVec
-from OCC.Core.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
+from OCP.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt, TColgp_Array2OfPnt, TColgp_Array1OfVec
+from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
 
 from zencad.util import to_Pnt, to_Vec
 

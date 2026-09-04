@@ -12,14 +12,14 @@
 Окно графического интерфейса может быть вызвано следующими способами:
 
 * Вызов `zencad.show()` в интерпретаторе python.  
-* Выполнение `python3 -m pip zencad` в среде терминала. (usage: `python3 -m pip zencad [filepath]`)  
+* Выполнение `python3 -m zencad` в среде терминала. (usage: `python3 -m zencad [filepath]`)
 * Вызов утилиты командной строки `zencad` (usage: `zencad [filepath]`)
 :en
 ## Call
 The GUI window can be invoked in the following ways:
 
 * Calling `zencad.show ()` in the python interpreter.
-* Executing `python3 -m pip zencad` in a terminal environment. (usage: `python3 -m pip zencad [filepath]`)
+* Executing `python3 -m zencad` in a terminal environment. (usage: `python3 -m zencad [filepath]`)
 * Call the command line utility `zencad` (usage:` zencad [filepath] `) 
 ::  
 
@@ -65,15 +65,23 @@ To set markers, use the keys `Q (F1)`, `W (F2)`. After setting, the coordinates 
 :ru
 ## 3D навигация
 Вращение: MouseLeftClick/Alt + MouseMove  
-Смещение: MouseRightClick/Shift + MouseMove  
+Смещение: MouseMiddleClick/MouseRightClick/Shift + MouseMove
 Масштабирование: PgUp/PgDown/MouseWheel  
+
+Схему навигации можно выбрать в `Edit/Settings`: ZenCad, Legacy ZenCad,
+Blender, FreeCAD CAD, Maya или Custom. В Custom отдельно назначаются жесты
+Rotate, Pan и Zoom. Там же можно инвертировать колесо и направление вращения.
 
 Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - `Navigation/'Axionometric view'`, `Navigation/'Free rotation view'`
 :en
 ## 3D navigation
 Rotation: MouseLeftClick / Alt + MouseMove
-Offset: MouseRightClick / Shift + MouseMove
+Offset: MouseMiddleClick / MouseRightClick / Shift + MouseMove
 Scaling: PgUp / PgDown / MouseWheel
+
+The navigation preset can be selected in `Edit/Settings`: ZenCad, Legacy
+ZenCad, Blender, FreeCAD CAD, Maya, or Custom. Custom assigns separate Rotate,
+Pan, and Zoom gestures. Wheel zoom and orbit direction can also be inverted.
 
 The renderer supports two orientation modes. Orthogonal orientation (Z axis is always upward) and free rotation mode. Switch between them - `Navigation/'Axionometric view'`, `Navigation / 'Free rotation view'`. 
 ::
