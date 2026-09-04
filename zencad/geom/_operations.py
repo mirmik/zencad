@@ -84,6 +84,7 @@ from ._surface_operations import (
     surface_to_ocp,
 )
 from ._value_operations import Point3Value, Vector3Value
+from ._selector_operations import center_key
 
 
 def _point(value: Point3Value) -> gp_Pnt:
@@ -461,7 +462,7 @@ def _subshapes(
     kind: TopAbs_ShapeEnum,
     convert: Callable[[TopoDS_Shape], TopoDS_Shape],
 ) -> tuple[ResolvedShape, ...]:
-    """Preserve the legacy TopExp_Explorer occurrence semantics."""
+    """Sort explorer occurrences by center without changing their multiplicity."""
     native = shape.Shape()
     if native.IsNull():
         raise ValueError("cannot enumerate a null shape")
@@ -470,7 +471,7 @@ def _subshapes(
     while explorer.More():
         values.append(ResolvedShape(convert(explorer.Current())))
         explorer.Next()
-    return tuple(values)
+    return tuple(sorted(values, key=center_key))
 
 
 def vertices(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
@@ -480,10 +481,11 @@ def vertices(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:
         raise ValueError("cannot enumerate a null shape")
     values = TopTools_IndexedMapOfShape()
     TopExp.MapShapes_s(native, TopAbs_VERTEX, values)
-    return tuple(
-        ResolvedShape(as_vertex(values.FindKey(index)))
-        for index in range(1, values.Extent() + 1)
-    )
+    return tuple(sorted(
+        (ResolvedShape(as_vertex(values.FindKey(index)))
+         for index in range(1, values.Extent() + 1)),
+        key=center_key,
+    ))
 
 
 def edges(shape: ResolvedShape) -> tuple[ResolvedShape, ...]:

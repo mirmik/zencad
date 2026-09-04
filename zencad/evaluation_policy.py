@@ -1,80 +1,31 @@
-"""Public, nestable evaluation-policy contexts for ZenCad operations."""
-
-from contextlib import contextmanager
-from typing import Iterator
+"""Process-wide evaluation timing for ZenCad scripts."""
 
 from evalcache import EvaluationMode
 
-from zencad.geom.context import Context
-from zencad.operation import resolve_context, using_context
+from zencad.operation import resolve_context
 
 
-def _cache_enabled(value, inherited):
-    if value is None:
-        return inherited
-    if not isinstance(value, bool):
-        raise TypeError("cache must be a boolean or None")
-    return value
+_default_mode = EvaluationMode.DEFERRED
 
 
-@contextmanager
-def evaluation(
-    mode: EvaluationMode | str,
-    *,
-    cache: bool | None = None,
-) -> Iterator[Context]:
-    """Temporarily select evaluation timing and disk-cache policy.
+def set_evaluation_mode(mode: EvaluationMode | str) -> None:
+    """Set evaluation timing in the script header or before running a script.
 
-    A fresh context prevents expressions created under different policies from
-    being mixed accidentally. Nested uses restore the exact outer context.
-    When ``cache`` is omitted, the outer context's policy and store are reused.
+    Update the existing evaluator so handles, cache contents, progress hooks,
+    and runner graph recording keep their ownership. This does not evaluate
+    already-created expressions until a subsequent operation needs them.
     """
 
-    outer = resolve_context()
+    global _default_mode
     resolved_mode = EvaluationMode(mode)
-    enabled = _cache_enabled(cache, outer.cache_enabled)
-    cache_store = (
-        outer._evaluator.cache_store if enabled and outer.cache_enabled else None
-    )
-    context = Context(
-        mode=resolved_mode,
-        cache=enabled,
-        cache_store=cache_store,
-        progress_hooks=outer._evaluator.progress_hooks,
-    )
-    with using_context(context):
-        yield context
-
-
-def immediate(*, cache: bool | None = None):
-    """Return an immediate-evaluation context manager."""
-
-    return evaluation(EvaluationMode.IMMEDIATE, cache=cache)
-
-
-def eager(*, cache: bool | None = None):
-    """Alias for :func:`immediate`, analogous to the former onplace mode."""
-
-    return immediate(cache=cache)
-
-
-def deferred(*, cache: bool | None = None):
-    """Return a deferred-evaluation context manager."""
-
-    return evaluation(EvaluationMode.DEFERRED, cache=cache)
+    resolve_context()._evaluator.mode = resolved_mode
+    _default_mode = resolved_mode
 
 
 def evaluation_mode() -> EvaluationMode:
-    """Return the mode of the currently selected ZenCad context."""
+    """Return the evaluation mode selected for this script."""
 
     return resolve_context().mode
 
 
-__all__ = [
-    "EvaluationMode",
-    "deferred",
-    "eager",
-    "evaluation",
-    "evaluation_mode",
-    "immediate",
-]
+__all__ = ["EvaluationMode", "evaluation_mode", "set_evaluation_mode"]

@@ -602,6 +602,7 @@ class Shape(Handle[ResolvedShape]):
             args=(self._state,),
             operation_id=operation_id,
             cacheable=False,
+            operation_version="2",
         )
         return ShapeList(
             self.context,
@@ -1258,6 +1259,7 @@ class ShapeList(Generic[ShapeHandleT]):
             args=(self._state, *args),
             operation_id=operation_id,
             cacheable=False,
+            operation_version="2",
         )
         return ShapeList(
             self._context,
@@ -1279,6 +1281,7 @@ class ShapeList(Generic[ShapeHandleT]):
             result=self._item_spec,
             args=(self._state, *args),
             operation_id=operation_id,
+            operation_version="2",
         )
         return self._item_type._from_state(self._context, expression)
 
@@ -1415,7 +1418,7 @@ class ShapeList(Generic[ShapeHandleT]):
         *,
         reverse: bool = False,
     ) -> ShapeList[ShapeHandleT]:
-        """Stable-sort shapes by center projection on an axis or plane normal."""
+        """Sort by center projection, breaking ties by lexicographic center."""
 
         if isinstance(criterion, Axis):
             direction = criterion.direction
@@ -1436,7 +1439,7 @@ class ShapeList(Generic[ShapeHandleT]):
         *,
         reverse: bool = False,
     ) -> ShapeList[ShapeHandleT]:
-        """Stable-sort by the exact minimum OCCT distance to ``point``."""
+        """Sort by minimum OCCT distance, breaking ties by center."""
 
         with using_context(self._context):
             query = point3(point)

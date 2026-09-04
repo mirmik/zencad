@@ -29,11 +29,8 @@ from zencad.check import (
 )
 from zencad.evaluation_policy import (
     EvaluationMode,
-    deferred,
-    eager,
-    evaluation,
     evaluation_mode,
-    immediate,
+    set_evaluation_mode,
 )
 from zencad.color import (
     Color,
@@ -119,15 +116,13 @@ _SUPPORT_API = [
     "default_wire_color",
     "deg",
     "deg2rad",
-    "deferred",
     "disp",
     "display",
     "exampledir",
     "examples_dict",
     "examples_paths",
-    "eager",
-    "evaluation",
     "evaluation_mode",
+    "set_evaluation_mode",
     "green",
     "highlight",
     "hl",
@@ -140,7 +135,6 @@ _SUPPORT_API = [
     "inspect_computation_graph",
     "inspect_script",
     "inspect_snapshot",
-    "immediate",
     "magenta",
     "managed_scene",
     "mech",

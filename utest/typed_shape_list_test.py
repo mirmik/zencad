@@ -44,7 +44,7 @@ class TypedShapeListTest(unittest.TestCase):
 
         self.assertEqual(
             tuple(groups),
-            (typed.GeomType.CYLINDER, typed.GeomType.PLANE),
+            (typed.GeomType.PLANE, typed.GeomType.CYLINDER),
         )
         self.assertEqual(len(groups[typed.GeomType.CYLINDER]), 1)
         self.assertEqual(len(groups[typed.GeomType.PLANE]), 2)

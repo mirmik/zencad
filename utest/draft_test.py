@@ -13,7 +13,7 @@ class DraftTest(unittest.TestCase):
 
     def test_positive_and_negative_angles_taper_multiple_faces(self):
         body = zencad.box(10)
-        side_faces = body.faces()[:4]
+        side_faces = body.faces().filter_by_position(zencad.Axis.Z, 5)
 
         positive = zencad.draft(body, side_faces, ANGLE)
         negative = zencad.draft(body, side_faces, -ANGLE)
@@ -26,7 +26,7 @@ class DraftTest(unittest.TestCase):
 
     def test_neutral_face_and_origin_normal_are_equivalent(self):
         body = zencad.box(10)
-        side = body.faces()[2]
+        side = body.faces().filter_by_position(zencad.Axis.Y, 0).only()
         from_tuple = zencad.draft(
             body,
             side,
@@ -71,7 +71,7 @@ class DraftTest(unittest.TestCase):
         context = typed.Context.deferred(cache=False)
         with typed.using_context(context):
             body = typed.box(10)
-            side_faces = tuple(body.faces()[index] for index in range(4))
+            side_faces = body.faces().filter_by_position(typed.Axis.Z, 5)
             positive = typed.draft(body, side_faces, ANGLE)
             negative = typed.draft(body, side_faces, -ANGLE)
 

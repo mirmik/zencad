@@ -87,7 +87,9 @@ def resolve_context(*values: object) -> Context:
     if _DEFAULT_CONTEXT is None:
         from zencad.geom.context import Context
 
-        _DEFAULT_CONTEXT = Context.deferred()
+        from zencad.evaluation_policy import _default_mode
+
+        _DEFAULT_CONTEXT = Context(mode=_default_mode)
     return _DEFAULT_CONTEXT
 
 

@@ -127,13 +127,14 @@ class Context:
         args: tuple[object, ...],
         operation_id: str,
         cacheable: bool = True,
+        operation_version: str = "1",
     ) -> Expression[ResolvedT]:
         expression = self._evaluator.expression(
             operation,
             result=result,
             args=args,
             operation_id=operation_id,
-            operation_version="1",
+            operation_version=operation_version,
             cacheable=cacheable,
         )
         if self.mode is EvaluationMode.IMMEDIATE:

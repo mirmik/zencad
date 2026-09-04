@@ -7,6 +7,8 @@ import math
 from OCP.BRepAdaptor import BRepAdaptor_Curve, BRepAdaptor_Surface
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepGProp import BRepGProp
+from OCP.Bnd import Bnd_Box
+from OCP.TopExp import TopExp_Explorer
 from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
 from OCP.GProp import GProp_GProps
 from OCP.TopAbs import (
@@ -22,7 +24,7 @@ from OCP.TopAbs import (
 from OCP.gp import gp_Pnt
 
 from zencad._native.shape import Shape as ResolvedShape
-from zencad.occ_compat import as_edge, as_face, as_vertex, vertex_point
+from zencad.occ_compat import add_to_bounds, as_edge, as_face, as_vertex, vertex_point
 
 from ._value_operations import Point3Value
 
@@ -167,9 +169,33 @@ def _properties(shape: ResolvedShape) -> GProp_GProps:
 def _center(shape: ResolvedShape) -> tuple[float, float, float]:
     if shape.Shape().ShapeType() == TopAbs_VERTEX:
         point = vertex_point(as_vertex(shape.Shape()))
+    elif shape.Shape().ShapeType() == TopAbs_COMPOUND:
+        properties = GProp_GProps()
+        for kind, measure in (
+            (TopAbs_SOLID, BRepGProp.VolumeProperties_s),
+            (TopAbs_FACE, BRepGProp.SurfaceProperties_s),
+            (TopAbs_EDGE, BRepGProp.LinearProperties_s),
+        ):
+            if TopExp_Explorer(shape.Shape(), kind).More():
+                measure(shape.Shape(), properties)
+                point = properties.CentreOfMass()
+                break
+        else:
+            bounds = Bnd_Box()
+            add_to_bounds(shape.Shape(), bounds)
+            if bounds.IsVoid():
+                return (0.0, 0.0, 0.0)
+            low_x, low_y, low_z, high_x, high_y, high_z = bounds.Get()
+            return ((low_x + high_x) / 2, (low_y + high_y) / 2, (low_z + high_z) / 2)
     else:
         point = _properties(shape).CentreOfMass()
     return (float(point.X()), float(point.Y()), float(point.Z()))
+
+
+def center_key(shape: ResolvedShape) -> tuple[float, float, float]:
+    """Lexicographic center key in model units, ignoring sub-nanounit noise."""
+    x, y, z = _center(shape)
+    return (round(x, 9), round(y, 9), round(z, 9))
 
 
 def _measure(shape: ResolvedShape) -> float:
@@ -211,8 +237,9 @@ def sort_axis(
     return tuple(
         sorted(
             sequence,
-            key=lambda shape: sum(
-                value * axis for value, axis in zip(_center(shape), unit)
+            key=lambda shape: (
+                sum(value * axis for value, axis in zip(_center(shape), unit)),
+                center_key(shape),
             ),
             reverse=reverse,
         )
@@ -233,7 +260,11 @@ def sort_distance(
             raise ValueError("cannot compute selector distance")
         return float(extrema.Value())
 
-    return tuple(sorted(sequence, key=distance, reverse=reverse))
+    return tuple(sorted(
+        sequence,
+        key=lambda shape: (distance(shape), center_key(shape)),
+        reverse=reverse,
+    ))
 
 
 def filter_measure(
@@ -248,7 +279,7 @@ def filter_measure(
 def largest(sequence: tuple[ResolvedShape, ...]) -> ResolvedShape:
     if not sequence:
         raise ValueError("largest() requires a non-empty ShapeList")
-    return max(sequence, key=_measure)
+    return min(sequence, key=lambda shape: (-_measure(shape), center_key(shape)))
 
 
 def only(sequence: tuple[ResolvedShape, ...]) -> ResolvedShape:

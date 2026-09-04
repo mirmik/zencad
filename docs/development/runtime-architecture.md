@@ -67,10 +67,11 @@ progress hooks. It does not expose CAD methods: scripts use module operations,
 domain methods, or `context.call(zencad.box, ...)` when they need an explicit
 owner. Deferred/immediate and cache on/off policies never change public classes.
 
-The scoped public spelling is `with zencad.eager(cache=False):`; the symmetric
-`evaluation(...)`, `immediate()`, and `deferred()` context managers restore the
-outer context on exit. Headless inspection passes the same policy through the
-runner protocol with `--eager`/`--evaluation` and `--no-cache`. The full
+The script header selects evaluation timing with
+`zencad.set_evaluation_mode("immediate")`; the setting updates the existing
+evaluator and persists until explicitly changed. The inspect CLI carries the
+initial policy through the runner protocol with `--eager`/`--evaluation` and
+`--no-cache`. The full
 contract is documented in [`evaluation-policy.md`](evaluation-policy.md).
 
 `zencad inspect` materializes a versioned geometric report from the final

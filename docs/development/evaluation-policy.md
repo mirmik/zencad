@@ -1,67 +1,43 @@
 # Evaluation policy
 
-ZenCad operations always return the same public domain handles (`Solid`,
-`Face`, `Curve`, `Scalar`, and so on). Evaluation timing and cache access are
-independent policies owned by a `Context`; neither policy changes those public
-classes.
-
-The default is deferred evaluation with the configured shared cache. For a
-scoped immediate run use `eager` (an alias for `immediate`):
+ZenCad uses one evaluation mode for a script. Select it before execution through
+CLI/Python runner options, or set it in the script header:
 
 ```python
 import zencad
 
-with zencad.eager(cache=False) as context:
-    model = zencad.box(20) - zencad.cylinder(3, 20)
-    assert model.context is context
+zencad.configure(cache_enabled=False)  # optional, independent cache setting
+zencad.set_evaluation_mode("immediate")
+model = zencad.box(20) - zencad.cylinder(3, 20)
 ```
 
-Every expression is evaluated when it is constructed, so geometry failures
-are reported at the declaring operation instead of a later `display`, export,
-`native`, or `value` boundary. Evaluated handles still retain their expression
-identity where required for deterministic DAG and cache semantics.
+The default is `"deferred"`. The other mode, `"immediate"`, evaluates each
+operation when it is constructed, so geometry failures are reported at the
+operation instead of a later display, export, `native()`, or `value()` call.
+Both modes return the same public domain types.
 
-The complete public context-manager API is:
-
-```python
-with zencad.evaluation("immediate", cache=True):
-    ...
-
-with zencad.immediate():
-    ...
-
-with zencad.eager():
-    ...
-
-with zencad.deferred(cache=False):
-    ...
-
-mode = zencad.evaluation_mode()  # EvaluationMode.DEFERRED or IMMEDIATE
-```
-
-`cache=None` (the default) inherits the outer context's cache policy and store.
-`cache=False` disables reads and writes in the scoped context. Nested policy
-blocks restore the exact outer context even when an exception leaves the inner
-block. Handles belong to the context that created them and must not be mixed
-across policy blocks.
-
-For lower-level ownership, the equivalent explicit API remains available:
-
-```python
-context = zencad.Context.immediate(cache=False)
-shape = context.call(zencad.box, 10)
-```
-
-Headless model inspection accepts the same independent choices:
+`set_evaluation_mode` accepts a string or `EvaluationMode` and returns `None`.
+`evaluation_mode()` reports the selected mode. The setting persists until
+explicitly changed; it is not a context manager. Set it before constructing the
+model. Changing it updates the existing evaluator without changing handle
+ownership or discarding cached values, progress hooks, or graph recording.
+Already-created expressions are evaluated when needed, not by the setter itself.
+Subsequent cache configuration does not reset the selected default mode.
 
 ```sh
 zencad inspect model.py --evaluation immediate --no-cache --json
-# Short spelling:
+# Equivalent short spelling:
 zencad inspect model.py --eager --no-cache --json
 ```
 
-The isolated runner receives both policies as data. It does not mutate the
-parent process's context, import Qt, or rely on the removed
-`zencad.lazy.onplace` global. Existing ZenCad 1 code that used
-`zencad.lazy.onplace = True` should place the relevant model construction in a
-`with zencad.eager():` block instead.
+The isolated runner receives the initial mode and cache policy as data. Python
+runner APIs accept `evaluation_mode="immediate"` and `cache_enabled=False`.
+A mode explicitly set in the script header overrides that initial mode inside
+the child process, without changing the parent process. Cache remains controlled
+independently through the runner options or `zencad.configure`.
+
+The former public `eager()`, `immediate()`, `deferred()`, and `evaluation()`
+context managers are removed. ZenCad 1 scripts using `zencad.lazy.onplace = True`
+should use `zencad.set_evaluation_mode("immediate")` in the script header.
+Explicit low-level `Context` ownership remains available to internal integrations;
+script authors do not need to create or nest contexts to select evaluation timing.

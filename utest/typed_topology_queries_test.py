@@ -262,7 +262,7 @@ class TypedTopologyQueriesTest(unittest.TestCase):
 
         self.assertEqual(len(compound.vertices()), 1)
 
-    def test_vertex_order_uses_first_topology_traversal_occurrence(self):
+    def test_vertex_order_uses_lexicographic_coordinates(self):
         third = BRepBuilderAPI_MakeVertex(gp_Pnt(3, 0, 0)).Vertex()
         first = BRepBuilderAPI_MakeVertex(gp_Pnt(1, 0, 0)).Vertex()
         second = BRepBuilderAPI_MakeVertex(gp_Pnt(2, 0, 0)).Vertex()
@@ -275,7 +275,7 @@ class TypedTopologyQueriesTest(unittest.TestCase):
 
         self.assertEqual(
             [vertex.point().value() for vertex in compound.vertices()],
-            [(3.0, 0.0, 0.0), (1.0, 0.0, 0.0), (2.0, 0.0, 0.0)],
+            [(1.0, 0.0, 0.0), (2.0, 0.0, 0.0), (3.0, 0.0, 0.0)],
         )
 
     def test_vertex_point_composes_with_a_deferred_query(self):

@@ -70,11 +70,12 @@ For debugging, tests, and agent runs, evaluation can be made immediate without
 changing the public result types:
 
 ```python
-with zencad.eager(cache=False):
-    shape = zencad.box(10).fillet(1)  # every operation runs on this line
+zencad.configure(cache_enabled=False)
+zencad.set_evaluation_mode("immediate")  # set in the script header
+shape = zencad.box(10).fillet(1)  # every operation runs on this line
 ```
 
-The context is nestable and restores the outer policy on exit. The equivalent
+The mode applies to the script until explicitly changed. The equivalent
 headless command is `zencad inspect model.py --eager --no-cache`.
 
 The former `Runtime`, `zencad.lazy`, and `.unlazy()` API is not part of ZenCad
