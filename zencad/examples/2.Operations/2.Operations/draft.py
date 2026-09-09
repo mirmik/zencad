@@ -5,7 +5,7 @@ import zencad
 
 
 body = zencad.box(20, center="xy")
-side_faces = body.faces()[:4]
+side_faces = body.faces().filter_by_position(zencad.Axis.Z, 10)
 positive = zencad.draft(body, side_faces, zencad.deg(5)).left(25)
 negative = zencad.draft(body, side_faces, zencad.deg(-5)).right(25)
 

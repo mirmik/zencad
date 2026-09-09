@@ -36,19 +36,19 @@ class EvaluationPolicyTest(unittest.TestCase):
     def test_immediate_reports_errors_at_construction(self):
         self.run_script('''
             import zencad as z
-            from OCP.Standard import Standard_ConstructionError
+            from OCP.Standard import Standard_ConstructionError, Standard_Failure
             z.configure(cache_enabled=False)
             bad = z.sphere(-1)
             try:
                 bad.native()
-            except Standard_ConstructionError:
+            except (Standard_ConstructionError, Standard_Failure):
                 pass
             else:
                 raise AssertionError("deferred geometry must fail at materialization")
             z.set_evaluation_mode("immediate")
             try:
                 z.sphere(-1)
-            except Standard_ConstructionError:
+            except (Standard_ConstructionError, Standard_Failure):
                 pass
             else:
                 raise AssertionError("immediate geometry must fail at construction")

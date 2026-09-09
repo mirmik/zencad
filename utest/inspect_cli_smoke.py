@@ -9,15 +9,19 @@ import sys
 from tempfile import TemporaryDirectory
 
 
-def run(root, *arguments, expected=0):
+def run(root, *arguments, expected=0, io_encoding=None):
+    environment = os.environ.copy()
+    if io_encoding:
+        environment["PYTHONIOENCODING"] = io_encoding
     result = subprocess.run(
         [sys.executable, "-m", "zencad", "inspect", *map(str, arguments)],
         check=False,
         capture_output=True,
         text=True,
+        encoding=io_encoding,
         timeout=15,
         cwd=root,
-        env=os.environ.copy(),
+        env=environment,
     )
     assert result.returncode == expected, (
         result.returncode,
@@ -94,6 +98,9 @@ show()
         assert "zencad.typed.shape.transform" in tree.stdout
         assert "0x" not in tree.stdout
 
+        ansi_tree = run(root, model, "--tree", "--no-cache", io_encoding="cp1252")
+        assert "`- zencad.typed.box" in ansi_tree.stdout, ansi_tree.stdout
+
         from zencad import inspect_computation_graph
 
         api_graph = inspect_computation_graph(model, cache_enabled=False)
@@ -165,6 +172,11 @@ show()
         )
         assert "zencad.typed.box [error" in graph_failure.stdout
         assert "zencad.typed.shape.transform [error" in graph_failure.stdout
+        ansi_failure = run(
+            root, graph_failure_model, "--tree", "--failed-path", "--no-cache",
+            expected=3, io_encoding="cp1252",
+        )
+        assert "`- zencad.typed.box [error" in ansi_failure.stdout
 
         syntax_error = root / "syntax_error.py"
         syntax_error.write_text("if True print('broken')\n", encoding="utf-8")

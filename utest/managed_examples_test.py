@@ -4,6 +4,7 @@ import threading
 import time
 import unittest
 
+from utest.examples import run_managed_example
 from zencad.runtime.runner_supervisor import RunnerSupervisor
 
 
@@ -103,6 +104,15 @@ class ManagedExamplesTest(unittest.TestCase):
         self.assertEqual(
             self.supervisor.wait(generation, timeout=10), "cancelled"
         )
+
+    def test_examples_smoke_accepts_camera_only_animation(self):
+        self.supervisor.record_scene_patches = True
+        success, details = run_managed_example(
+            self.supervisor,
+            ROOT / "zencad/examples/3.Animation/camera.py",
+            timeout=10,
+        )
+        self.assertTrue(success, details)
 
 
 if __name__ == "__main__":

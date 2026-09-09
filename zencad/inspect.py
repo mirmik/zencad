@@ -625,6 +625,18 @@ def _emit_cli_report(arguments, payload, *, human=None, error=False):
         print(human, file=sys.stderr if error else sys.stdout)
 
 
+def _print_graph_tree(graph):
+    text = graph.to_tree()
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    try:
+        text.encode(encoding)
+    except UnicodeEncodeError:
+        # Redirected Windows stdout may use an ANSI code page without box drawing.
+        text = text.replace("└─ ", "`- ").replace("├─ ", "+- ")
+        text = text.encode(encoding, errors="backslashreplace").decode(encoding)
+    print(text)
+
+
 def inspect_cli(argv=None):
     """Command-line adapter. Returns a stable process exit code."""
     parser = _argument_parser()
@@ -667,7 +679,7 @@ def inspect_cli(argv=None):
             if arguments.graph_json:
                 _write_report(arguments.graph_json, graph.to_json())
             if arguments.tree:
-                print(graph.to_tree())
+                _print_graph_tree(graph)
         except (OSError, ValueError) as graph_exception:
             print(
                 f"zencad inspect: could not emit computation graph: {graph_exception}",
@@ -706,7 +718,7 @@ def inspect_cli(argv=None):
             if graph is not None and arguments.graph_json:
                 _write_report(arguments.graph_json, graph.to_json())
             if arguments.tree:
-                print(graph.to_tree())
+                _print_graph_tree(graph)
             elif arguments.json:
                 sys.stdout.write(_json_text(report.to_dict()))
             elif not arguments.output:

@@ -67,7 +67,9 @@ show()
         self.assertTrue(any(node.cache == "hit" for node in second.nodes))
         self.assertEqual(first.to_json(), first.to_json())
         self.assertNotIn("0x", first.to_tree())
-        self.assertTrue(all(node.source_file == str(model) for node in first.nodes))
+        self.assertTrue(
+            all(node.source_file == str(model.resolve()) for node in first.nodes)
+        )
 
         hidden = first.filtered(hide_literals=True)
         hidden_box = next(

@@ -69,7 +69,10 @@ def run_managed_example(supervisor, path, timeout):
         if errors:
             supervisor.wait(generation, timeout=5)
             return False, errors[-1].payload.get("traceback", "animation error")
-        if _messages(supervisor, generation, "scene_patch"):
+        if (
+            _messages(supervisor, generation, "scene_patch")
+            or _messages(supervisor, generation, "camera_action")
+        ):
             supervisor.cancel_current()
             status = supervisor.wait(generation, timeout=5)
             return status == "cancelled", f"animation cancelled as {status!r}"
@@ -77,7 +80,7 @@ def run_managed_example(supervisor, path, timeout):
 
     supervisor.cancel_current()
     supervisor.wait(generation, timeout=5)
-    return False, "animation produced no live scene patch"
+    return False, "animation produced no live scene patch or camera action"
 
 
 def main(argv=None):
