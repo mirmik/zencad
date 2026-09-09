@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/scriptcad.html">Ru</a>
-        <a href="../en/scriptcad.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — scriptcad</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/scriptcad.html">Ru</a> · <a href="../en/scriptcad.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,37 +44,42 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="cad">Скриптовые CAD системы.</h1>
+<article class="article"><h1 id="скриптовые-cad-системы">Скриптовые CAD системы.</h1>
 
-<p>Скриптовые CAD стоят особняком от общепринятых интерактивных CAD. Если в интерактивном CAD вы создаёте модель при помощи мыши и набора инструментов на панели слева или сверху, то в скриптовом CAD вы пишете программу, по которой строится ваша модель. Таким образом генерируемая модель по умолчанию получает хорошую параметрируемость и регуляризацию. Если при смене базовых параметров геометрии в интерактивном CAD вам может потребоваться перекроить всю модель, в скриптовом CAD вам потребуется просто заменить пару констант.</p>
+<p>Скриптовые CAD стоят особняком от общепринятых интерактивных CAD. Если в интерактивном CAD вы создаёте модель при помощи мыши и набора инструментов на панели слева или сверху, то в скриптовом CAD вы пишете программу, по которой строится ваша модель. Таким образом генерируемая модель по умолчанию получает хорошую параметрируемость и регуляризацию. Если при смене базовых параметров геометрии в интерактивном CAD вам может потребоваться перекроить всю модель, в скриптовом CAD вам потребуется просто заменить пару констант. </p>
 
 <p>С другой стороны скриптовый CAD может быть не очень дружелюбен к пользователю. Нужно иметь определённый навык для чтения модели в виде програмного кода. Тем не менее, успех OpenScad показывает необходимость человечества в инструментах такого типа.</p>
 
-<p>Скриптовый CAD хорош в написании деталей машин и прочих изделий с точно выверенными и обоснованными поверхностями. А вот попытка нарисовать на нем Венеру Милосскую ни к чему хорошему не приведет. Для художественных целей существует другой класс систем.</p>
+<p>Скриптовый CAD хорош в написании деталей машин и прочих изделиях с точно выверенными и обоснованными поверхностями. А вот попытка нарисовать на нем Венеру Милосскую ни к чему хорошему не приведет. Для художественных целей существует другой класс систем.</p>
 
-<p>Строго говоря, хотя в девизе zencad написано "CAD system for righteous programmers", zencad by design является в большей степени библиотекой с функциональностью cad, нежели законченной CAD системой. zencad проектировался как инструмент, который может интегрироваться с библиотеками экосистемы python с целью решения задач построения аналитических поверхностей, визуализации данных полунатурного моделирования и прочих задач, предполагающих интеграцию с зоопарком библиотек экосистемы python.</p>
+<p>Строго говоря, хотя в девизе zencad написано "CAD system for righteous programmers", zencad by design является в большей степени библиотекой с функциональность cad, нежели законченной CAD системой. zencad проектировался как инструмент, который может интегрироваться с библиотеками экосистемы python с целью решения задач построения аналитических поверхностей, визуализации данных полунатурного моделирования и прочих задач, предполагающих интеграцию с зоопарком библиотек экосистемы python.</p>
 
 <p><img src="../images/car.png" alt="" /></p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

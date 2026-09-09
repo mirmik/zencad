@@ -17,12 +17,11 @@ Practice shooting :).
 
 import os
 
-import zencad
 from zencad import *
 from zencad.interactive import arrow, line
 
 mandarinc = os.path.join(
-    zencad.moduledir,
+    moduledir,
     "examples/fonts/mandarinc.ttf",
 )
 register_font(mandarinc)

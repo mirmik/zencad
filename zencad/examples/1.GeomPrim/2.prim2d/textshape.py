@@ -5,10 +5,9 @@ date: 04.10.2019
 """
 
 import os
-import zencad
 from zencad import *
 
-zencad_example_directory = zencad.moduledir + "/examples"
+zencad_example_directory = moduledir + "/examples"
 
 testfont = os.path.join(zencad_example_directory, "fonts/testfont.ttf")
 mandarinc = os.path.join(zencad_example_directory, "fonts/mandarinc.ttf")

@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/ops3d.html">Ru</a>
-        <a href="../en/ops3d.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — ops3d</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/ops3d.html">Ru</a> · <a href="../en/ops3d.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,89 +44,106 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Ссылочная геометрия</h1>
+<article class="article"><h1 id="ссылочная-геометрия">Ссылочная геометрия</h1>
 
 <hr />
 
-<h2 id="-2">Смещение</h2>
+<h2 id="смещение">Смещение</h2>
 
 <p>Путём смещения оболочек, строит утолщённое/утончённое тело на основании прототипа <em>proto</em> и радиуса утолщения <em>r</em>. Если <em>r</em> положительный, оболочка смещается наружу, если отрицательный - внутрь.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/offset0.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-3">Линейчатая поверхность</h2>
+<h2 id="линеичатая-поверхность">Линейчатая поверхность</h2>
 
 <p>Строит грань, задаваемую линейчатое поверхностью, опирающейся на линии <em>a</em>, <em>b</em>.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
 <span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
 <span class="n">ruled</span><span class="p">(</span>
-<span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
-<span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">6</span><span class="p">,</span><span class="mi">40</span><span class="p">)]),</span>
+    <span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">),(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">30</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)])</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
 <span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/ruled0.png" alt="" /> <img src="../images/generic/ruled1.png" alt="" />   </br>
 <img src="../images/generic/ruled2.png" alt="" /> <img src="../images/generic/ruled3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="-4">Увязка</h2>
+<h2 id="увязка">Увязка</h2>
 
 <p>Построение оболочки на масиве каркасных линий <em>profiles</em>. При активации опции <em>shell</em> вместо твёрдого тела строится оболочка. Активации опции <em>smooth</em> изменяет режим линейчатой поверхности на гладкую апроксимацию. При активной апроксимации опция <em>maxdegree</em> ограничивает максимальную степень полинома.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/loft0.png" alt="" /> <img src="../images/generic/loft1.png" alt="" />  </br>
 <img src="../images/generic/loft2.png" alt="" /> <img src="../images/generic/loft3.png" alt="" />  </br>
-<img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" /></p>
+<img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" />  </p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

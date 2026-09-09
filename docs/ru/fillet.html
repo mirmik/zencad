@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/fillet.html">Ru</a>
-        <a href="../en/fillet.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — fillet</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/fillet.html">Ru</a> · <a href="../en/fillet.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,27 +44,33 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Топологически зависимые преобразования</h1>
+<article class="article"><h1 id="топологически-зависимые-преобразования">Топологически зависимые преобразования</h1>
 
-<p>Существует класс операций, требующий в качестве параметра выбрать элемент топологии модели. В интерактивных CAD мы можем, используя указатель мыши, выделить такой элемент и указать в качестве параметра. Этот метод недоступен в скриптовом CAD. Общий подход ZenCad состоит в том, что такой элемент задаётся методом "ближайшей точки". При задании аргумента, вместо элемента топологии задаётся точка. Выбранным считается элемент, растояние до которого от элемента топологии будет минимальным.</p>
+<p>Скругление, фаска и уклон требуют выбора элементов топологии модели. Их можно выбирать по геометрическим свойствам через <a href="selectors.html">селекторы</a> или передавать сами рёбра и грани. Для скруглений и фасок поддерживаются также ближайшие точки: выбирается элемент с минимальным расстоянием до точки.</p>
 
 <hr />
 
@@ -76,32 +78,65 @@
 
 <p>Операция скругления тела.
 Если тело объёмное - модификации подвергаются ребра. Если плоское - вершины.
-Скругления задаются радиусом <code>r</code> и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии.</p>
+Скругления задаются радиусом <code>r</code> и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
-<span class="n">fillet</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
+<span class="n">fillet</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/fillet0.png" alt="" /> <img src="../images/generic/fillet1.png" alt="" /> </br>
 <img src="../images/generic/fillet2.png" alt="" /> <img src="../images/generic/fillet3.png" alt="" /> </br>
-<img src="../images/generic/fillet4.png" alt="" /> <img src="../images/generic/fillet5.png" alt="" /></p>
+<img src="../images/generic/fillet4.png" alt="" /> <img src="../images/generic/fillet5.png" alt="" />  </p>
 
 <hr />
 
 <h2 id="chamfer">Chamfer</h2>
 
 <p>Операция взятия фаски тела. В отличие от скругления применяется только к объёмным телам.
-Фаска задаётся расстоянием <code>r</code>, взятым от ребра до линии фаски и массивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии.</p>
+Фаска задаётся расстоянием <code>r</code>, взятым от ребра до линии фаски и масивом ближайших точек <code>refs</code>. Если <code>refs == None</code>, выбранными считаются все элементы топологии. </p>
 
-<p>TODO: несимметричная фаска.</p>
+<p>TODO: несиметричная фаска. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/chamfer0.png" alt="" /> <img src="../images/generic/chamfer1.png" alt="" /> </br>
 <img src="../images/generic/chamfer2.png" alt="" /> <img src="../images/generic/chamfer3.png" alt="" /></p>
+
+<hr />
+
+<h2 id="уклон-гранеи-draft">Уклон граней (Draft)</h2>
+
+<p><code>draft</code> наклоняет выбранные грани относительно нейтральной плоскости. Это
+нужно, например, чтобы деталь извлекалась из пресс-формы. Положительный угол
+снимает материал по направлению вытяжки, отрицательный — добавляет. Нейтральная
+плоскость остаётся неподвижной.</p>
+
+<p>По умолчанию направление равно <code>+Z</code>, а нейтральная плоскость проходит через
+начало координат перпендикулярно направлению. <code>neutral</code> также принимает плоскую
+грань или пару <code>(origin, normal)</code>. Выбранные грани должны принадлежать исходному
+телу и быть плоскими, цилиндрическими или коническими.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">side_faces</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by_position</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="n">narrower</span> <span class="o">=</span> <span class="n">draft</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">side_faces</span><span class="p">,</span> <span class="n">deg</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">wider</span> <span class="o">=</span> <span class="n">draft</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">side_faces</span><span class="p">,</span> <span class="n">deg</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">midplane</span> <span class="o">=</span> <span class="n">draft</span><span class="p">(</span>
+    <span class="n">body</span><span class="p">,</span>
+    <span class="n">side_faces</span><span class="p">,</span>
+    <span class="n">deg</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span>
+    <span class="n">neutral</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+<span class="p">)</span>
+</code></pre>
+</div>
 
 <hr />
 
@@ -111,12 +146,13 @@
 Задаётся прототипной моделью <code>shp</code> и массивом точек, ближайших к удаляемым граням <code>refs</code>.
 Также задаётся толщина стенок <code>t</code>. Если толщина стенок положительная, стенки наращиваются наружу. Если отрицательная - внутрь.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/thicksolid0.png" alt="" /> <img src="../images/generic/thicksolid1.png" alt="" /></p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

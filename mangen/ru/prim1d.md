@@ -57,15 +57,15 @@ polysegment(pnts, closed=True/False)
 ---
 :ru
 ## Интерполяция по точкам
-Инструмент для построения интерполированной кривой, проходящей через набаор точек _pnts_. С помощью необязательного параметра _tangs_ в каждой точке можно задать направление, под которым кривая пройдёт через точку (нулевой вектор соответствует произвольному пересечению). Установка флага `closed` добавляет замыкающий участок кривой.
+Инструмент для построения интерполированной кривой, проходящей через набаор точек _pnts_. С помощью необязательного параметра _tangs_ в каждой точке можно задать направление, под которым кривая пройдёт через точку (`None` оставляет касательную свободной). Установка флага `closed` добавляет замыкающий участок кривой.
 :en
 ## Point Interpolation
-Tool for constructing an interpolated curve passing through a set of _pnts_ points. Using the optional _tangs_ parameter at each point, you can set the direction in which the curve will pass through the point (the zero vector corresponds to an arbitrary intersection). Setting the `closed` flag adds a trailing portion of the curve. 
+Tool for constructing an interpolated curve passing through a set of _pnts_ points. Using the optional _tangs_ parameter at each point, you can set the direction in which the curve will pass through the point (`None` leaves the tangent unconstrained). Setting the `closed` flag adds a trailing portion of the curve.
 ::
 
 Сигнатура:
 ```python
-interpolate(pnts, tangs=[], closed=False)
+interpolate(pnts, tangs=None, closed=False)
 ```
 ![](../images/generic/interpolate0.png) ![](../images/generic/interpolate1.png) </br>
 ![](../images/generic/interpolate2.png) ![](../images/generic/interpolate3.png)
@@ -130,23 +130,18 @@ bezier(pnts, weights)
 
 Сигнатура:
 ```python
-bspline(pnts, knots, muls, degree, periodic=False/True)
-bspline(pnts, knots, weights, muls, degree, periodic=False/True, check_rational=False/True)
-
-default: 
-	periodic=False
-	check_rational=True
+bspline(pnts, knots, muls, degree, periodic=False)
+bspline(pnts, knots, muls, degree, weights=weights, check_rational=True)
 ```
-![](../images/generic/bspline0.png) ![](../images/generic/bspline1.png) 
 
 ---
 :ru
 ## Скруглённый полисегмент
-В отличие от полисегмента, создаёт участки окружности в точках сопряжения сегментов. Переменная _r_ задаёт радиус скруглений. Может использоваться вместе с операцией tube (см. кинематические поверхности). 
+В отличие от полисегмента, создаёт участки окружности в точках сопряжения сегментов. Переменная _r_ задаёт радиус скруглений. Может использоваться вместе с операцией pipe_shell (см. кинематические поверхности).
 Опция closed позволяет замкнуть кривую с созданием скруглённого сегмента на стыке.
 :en
 ## Rounded polysegment
-Unlike a polysegment, it creates sections of a circle at the mating points of the segments. The _r_ variable sets the radius of the fillets. Can be used in conjunction with the tube operation (see kinematic surfaces).
+Unlike a polysegment, it creates sections of a circle at the mating points of the segments. The _r_ variable sets the radius of the fillets. Can be used in conjunction with the pipe_shell operation (see kinematic surfaces).
 The closed option allows you to close the curve and create a rounded segment at the junction. 
 ::
 

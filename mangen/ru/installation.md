@@ -67,3 +67,37 @@ Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc
 2.31 or newer. The GUI extra is available on Windows x86-64, macOS
 x86-64/arm64, and Linux x86-64; PyQt5 does not currently publish Linux
 aarch64 wheels.
+
+:ru
+## Текущая версия из исходников
+
+Это руководство описывает текущее исходное дерево ZenCad 2. `pip install zencad`
+получает опубликованный пакет, а не обязательно эту ревизию. В checkout:
+
+```sh
+python -m pip install -e ".[gui]"
+python -m zencad
+```
+
+Без GUI используйте `python -m pip install -e .`. Дополнительные зависимости
+примеров: `python -m pip install -e ".[examples]"`.
+
+Номер `2.0.0` в метаданных не означает завершённую платформенную приёмку.
+Windows/macOS-render ещё проверяется; Linux GUI требует рабочего X11/OpenGL.
+:en
+## Current version from source
+
+This guide describes the current ZenCad 2 source tree. `pip install zencad`
+selects the published package, not necessarily this revision. In a checkout:
+
+```sh
+python -m pip install -e ".[gui]"
+python -m zencad
+```
+
+For geometry only, use `python -m pip install -e .`. Optional example dependencies:
+`python -m pip install -e ".[examples]"`.
+
+Package version `2.0.0` does not imply completed platform acceptance.
+Windows/macOS rendering still needs verification; Linux GUI needs working X11/OpenGL.
+::

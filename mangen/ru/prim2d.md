@@ -79,7 +79,7 @@ _pnts_ is an array of vertex points.
 
 Сигнатура:
 ```python
-polygon(pnts=pnts, wire=True/False)
+polygon(points=pnts, wire=False)
 ```
 ![](../images/generic/polygon0.png) ![](../images/generic/polygon1.png)  
 

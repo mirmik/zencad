@@ -802,6 +802,13 @@ def identity_transform() -> Transform:
     return Transform(ops.identity_transform())
 
 
+def transform(
+    value: ops.TransformValue | None = None, *, context: Context | None = None
+) -> Transform:
+    """Construct a similarity transform; no arguments produce the identity."""
+    return Transform(value, context=resolve_context() if context is None else context)
+
+
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
@@ -1480,6 +1487,7 @@ __all__ = [
     "forw",
     "identity_affine_transform",
     "identity_transform",
+    "transform",
     "left",
     "mirror",
     "mirrorO",

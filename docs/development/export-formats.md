@@ -15,8 +15,8 @@ zencad.export_3mf(
 )
 ```
 
-The typed API provides the same module functions and
-`Runtime.export_stl/step/3mf`. All are explicit materialization boundaries and
+The public API exposes these module functions directly from `zencad`.
+There is no `Runtime` CAD facade. All are explicit materialization boundaries and
 operate on owned shape snapshots. Invalid topology raises
 `ShapeValidationError` before writing.
 

@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/prim1d.html">Ru</a>
-        <a href="../en/prim1d.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — prim1d</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/prim1d.html">Ru</a> · <a href="../en/prim1d.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,16 +55,20 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="lines-and-loops">Lines and loops.</h1>
+<article class="article"><h1 id="lines-and-loops">Lines and loops.</h1>
 
 <p>In many cases, three-dimensional and flat primitives are not enough to build the required geometry. Advanced operations, from among those that are found in this tutorial, allow you to create geometric bodies based on arbitrary lines.</p>
 
@@ -84,10 +86,12 @@
 
 <p>An ordinary segment, specified by two points.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">segment</span><span class="p">(</span><span class="n">pnt1</span><span class="p">,</span> <span class="n">pnt2</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">segment</span><span class="p">(</span><span class="n">pnt1</span><span class="p">,</span> <span class="n">pnt2</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/segment0.png" alt="" /></p>
 
@@ -97,23 +101,27 @@
 
 <p>Polysegment is a broken line. Set by an array of points. Setting the closed flag adds a polyline segment from the end point to the start point. <code>pnts</code> is an array of points.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<p><img src="../images/generic/polysegment0.png" alt="" /> <img src="../images/generic/polysegment1.png" alt="" /></p>
+<p><img src="../images/generic/polysegment0.png" alt="" /> <img src="../images/generic/polysegment1.png" alt="" />  </p>
 
 <hr />
 
 <h2 id="point-interpolation">Point Interpolation</h2>
 
-<p>Tool for constructing an interpolated curve passing through a set of <em>pnts</em> points. Using the optional <em>tangs</em> parameter at each point, you can set the direction in which the curve will pass through the point (the zero vector corresponds to an arbitrary intersection). Setting the <code>closed</code> flag adds a trailing portion of the curve.</p>
+<p>Tool for constructing an interpolated curve passing through a set of <em>pnts</em> points. Using the optional <em>tangs</em> parameter at each point, you can set the direction in which the curve will pass through the point (<code>None</code> leaves the tangent unconstrained). Setting the <code>closed</code> flag adds a trailing portion of the curve.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[],</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/interpolate0.png" alt="" /> <img src="../images/generic/interpolate1.png" alt="" /> </br>
 <img src="../images/generic/interpolate2.png" alt="" /> <img src="../images/generic/interpolate3.png" alt="" /></p>
@@ -122,12 +130,14 @@
 
 <h2 id="arc-of-a-circle-with-three-points">Arc of a circle with three points</h2>
 
-<p>This method represents an alternative to <em>circle</em> (see <a href="prim2d.html">Plane Primitives</a>) method of generating a circular arc from three points.</p>
+<p>This method represents an alternative to <em>circle</em> (see <a href="prim2d.html">Plane Primitives</a>) method of generating a circular arc from three points. </p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">circle_arc</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">circle_arc</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/circle_arc0.png" alt="" /></p>
 
@@ -135,12 +145,14 @@
 
 <h2 id="upward-spiral">Upward spiral</h2>
 
-<p>An upward spiral. It is set by the radius <em>r</em>, the height <em>h</em> and the step of the loop <em>step</em>. When setting the option <em>left</em>, it changes the right winding to the left one. When setting the optional parameter <em>angle</em>, the radius changes with the change of height according to the conical law.</p>
+<p>An upward spiral. It is set by the radius <em>r</em>, the height <em>h</em> and the step of the loop <em>step</em>. When setting the option <em>left</em>, it changes the right winding to the left one. When setting the optional parameter <em>angle</em>, the radius changes with the change of height according to the conical law. </p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/helix0.png" alt="" /> <img src="../images/generic/helix1.png" alt="" /> </br>
 <img src="../images/generic/helix2.png" alt="" /> <img src="../images/generic/helix3.png" alt="" /></p>
@@ -151,50 +163,52 @@
 
 <p>Bezier curve (<a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">wiki</a>).
 Defined by an array of control points and an array of weights (optional).
-If weights are not specified, all weights are considered equal to one.</p>
+If weights are not specified, all weights are considered equal to one. </p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">)</span>
 <span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
-<p><img src="../images/generic/bezier0.png" alt="" /> <img src="../images/generic/bezier1.png" alt="" /></p>
+<p><img src="../images/generic/bezier0.png" alt="" /> <img src="../images/generic/bezier1.png" alt="" />  </p>
 
 <hr />
 
 <h2 id="bspline">BSpline</h2>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="o">/</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="o">/</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_rational</span><span class="o">=</span><span class="kc">False</span><span class="o">/</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">default</span><span class="p">:</span>
-<span class="n">periodic</span><span class="o">=</span><span class="kc">False</span>
-<span class="n">check_rational</span><span class="o">=</span><span class="kc">True</span>
-</code></pre></div>
-
-<p><img src="../images/generic/bspline0.png" alt="" /> <img src="../images/generic/bspline1.png" alt="" /></p>
+<div class="codehilite">
+<pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">check_rational</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <hr />
 
 <h2 id="rounded-polysegment">Rounded polysegment</h2>
 
-<p>Unlike a polysegment, it creates sections of a circle at the mating points of the segments. The <em>r</em> variable sets the radius of the fillets. Can be used in conjunction with the tube operation (see kinematic surfaces).
-The closed option allows you to close the curve and create a rounded segment at the junction.</p>
+<p>Unlike a polysegment, it creates sections of a circle at the mating points of the segments. The <em>r</em> variable sets the radius of the fillets. Can be used in conjunction with the pipe_shell operation (see kinematic surfaces).
+The closed option allows you to close the curve and create a rounded segment at the junction. </p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<p>Example:</p>
+<p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span>
-<span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)],</span>
-<span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span>
+    <span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)],</span>
+    <span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/rounded_polysegment0.png" alt="" /></p>
 
@@ -206,22 +220,26 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <p>Objects of types Edge and Wire can act as elements of the <em>wires</em> array (<a href="https://mirmik.github.io/zencad/ru/geomcore.html">see geometric types</a>)</p>
 
-<p>Requirements. Parts of the line must necessarily border on each other. The order should not be out of order. If the <em>sort</em> argument is set, the algorithm will try to automatically sort the incoming lines in the correct order.</p>
+<p>Requirements. Parts of the line must necessarily border on each other. The order should not be out of order. If the <em>sort</em> argument is set, the algorithm will try to automatically sort the incoming lines in the correct order. </p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">])</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">])</span>
+</code></pre>
+</div>
 
-<p>Example:</p>
+<p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sew</span><span class="p">([</span>
-<span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
-<span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
-<span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
-<span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">sew</span><span class="p">([</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="n">circle_arc</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="n">segment</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="p">])</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/fill0.png" alt="" /></p>
 
@@ -233,37 +251,47 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <p>Constructor arguments:
 <em>start</em> - starting point
-<em>defrel</em> - default mode</p>
+<em>defrel</em> - default mode </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span> <span class="o">=</span> <span class="n">wire_builder</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">defrel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span> <span class="o">=</span> <span class="n">wire_builder</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">defrel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <hr />
 
 <h3 id="reinitialization">Reinitialization:</h3>
 
-<p>Reloads the instrument from a new point. Resets the list of edges.</p>
+<p>Reloads the instrument from a new point. Resets the list of edges. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">point3</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">point3</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <hr />
 
 <h3 id="drawing-a-line-segment">Drawing a line segment:</h3>
 
-<p>Draws a segment to the point <em>pnt</em>.</p>
+<p>Draws a segment to the point <em>pnt</em>. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">wb</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">wb</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># рисуем квадрат</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># рисуем квадрат</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/wb_segment0.png" alt="" /></p>
 
@@ -271,8 +299,10 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <h3 id="draw-a-circular-arc-by-points">Draw a circular arc by points:</h3>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">arc_by_points</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">arc_by_points</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <hr />
 
@@ -281,17 +311,20 @@ The closed option allows you to close the curve and create a rounded segment at 
 <p><em>curtang</em> allows you to set the direction of the curve at the starting point.
 Setting the <em>approx</em> option calculates <em>curtang</em> to the direction of the curve at the end of the last leg.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">curtang</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">approx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">curtang</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">approx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <h3 id="closure">Closure</h3>
 
 <p><em>close</em> builds a section of the curve up to the starting point. <em>approx_a</em>, <em>approx_b</em> allow for interpolation at snapping points.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">approx_a</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">approx_b</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">approx_a</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">approx_b</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

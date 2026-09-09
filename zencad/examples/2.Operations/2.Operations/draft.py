@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """ZenCad API example: positive and negative face draft."""
+from zencad import *
 
-import zencad
 
 
-body = zencad.box(20, center="xy")
-side_faces = body.faces().filter_by_position(zencad.Axis.Z, 10)
-positive = zencad.draft(body, side_faces, zencad.deg(5)).left(25)
-negative = zencad.draft(body, side_faces, zencad.deg(-5)).right(25)
+body = box(20, center="xy")
+side_faces = body.faces().filter_by_position(Axis.Z, 10)
+positive = draft(body, side_faces, deg(5)).left(25)
+negative = draft(body, side_faces, deg(-5)).right(25)
 
-zencad.display(positive, color=zencad.green)
-zencad.display(negative, color=zencad.yellow)
-zencad.show()
+display(positive, color=green)
+display(negative, color=yellow)
+show()

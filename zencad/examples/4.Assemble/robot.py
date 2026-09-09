@@ -33,11 +33,11 @@ class Robot(zencad.assemble.unit):
         super().__init__()
 
         arm_model = (
-            zencad.box(self.aw, self.aw, self.h / 2, center=True)
+            box(self.aw, self.aw, self.h / 2, center=True)
             .down(self.h / 4 - self.aw / 2)
             .rotateY(deg(90))
         )
-        body_model = zencad.cylinder(r=self.r, h=self.h)
+        body_model = cylinder(r=self.r, h=self.h)
         arm_translate = translate(
             self.r + self.aw / 2, 0, self.h / 6 * 4) * rotateY(-deg(90))
 
@@ -61,7 +61,7 @@ class Robot(zencad.assemble.unit):
 base = box(100, 100, 1, center=True).down(0.5)
 robot0 = Robot()
 
-register_font(os.path.join(zencad.moduledir, "examples/fonts/mandarinc.ttf"))
+register_font(os.path.join(moduledir, "examples/fonts/mandarinc.ttf"))
 text = textshape(text="Brutality", fontname="Mandarinc", size=15).extrude(2)
 tcenter = text.center()
 text = text.translate(-tcenter.x, -tcenter.y, -tcenter.z)

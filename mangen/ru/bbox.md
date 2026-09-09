@@ -1,59 +1,31 @@
 :ru
 # Ограничивающая коробка
 
-Ограничивающая коробка - это это минимальный основанный на осях Ox, Oy, Oz параллелепипед, описывающий геометрическую форму shape.
-:en
-# Bounding box
+`shape.boundbox()` и `shape.bbox()` возвращают `BoundaryBox`, выровненную по осям. Координаты — `Scalar`, `minimum`/`maximum`/`center` — `Point3`, `size` — `Vector3`.
 
-The bounding box is a minimal Ox, Oy, Oz-based box that describes the geometric shape shape. 
-::
-
----
-:ru
-## shape.bbox
-Построить ограничивающую коробку на основе формы shape.
-:en
-## shape.bbox
-Construct a bounding box based on the shape. 
-::
-
-Пример
 ```python
-shp = sphere(10)
-bbox = shp.bbox()
+import zencad as z
+
+bounds = z.box(2, 3, 4).bbox()
+assert all(abs(a - b) < 1e-5 for a, b in zip(bounds.size.value(), (2, 3, 4)))
+record = bounds.value()
+print(record.minimum, record.maximum)
 ```
 
-:ru
-## Поля.
+`xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax` — свойства, `xlength()`/`ylength()`/`zlength()` — методы. `.value()` возвращает материализованную запись; `.native()` — `Bnd_Box`. Допуски OCCT могут немного расширять границы, поэтому сравнивайте размеры с допуском. Пустая геометрия требует отдельной обработки, не предполагает нулевую коробку.
 :en
-## Fields. 
-::
-```python3
-bbox.xmin
-bbox.ymin
-bbox.zmin
-bbox.xmax
-bbox.ymax
-bbox.zmax
-```
+# Bounding boxes
 
-:ru
-## Методы.
-:en
-## Methods.
-::
-bbox.xrange()
-bbox.yrange()
-bbox.zrange()
+`shape.boundbox()` and `shape.bbox()` return an axis-aligned `BoundaryBox`. Coordinates are `Scalar`; `minimum`/`maximum`/`center` are `Point3`; `size` is `Vector3`.
 
-:ru
-## Построить коробку как форму.
-:en
-## To Shape.
-::
-Пример
 ```python
-shp = sphere(10)
-bbox = shp.bbox()
-disp(bbox.shape())
+import zencad as z
+
+bounds = z.box(2, 3, 4).bbox()
+assert all(abs(a - b) < 1e-5 for a, b in zip(bounds.size.value(), (2, 3, 4)))
+record = bounds.value()
+print(record.minimum, record.maximum)
 ```
+
+`xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax` are properties; `xlength()`/`ylength()`/`zlength()` are methods. `.value()` returns a materialized record; `.native()` returns `Bnd_Box`. OCCT tolerances may slightly enlarge bounds, so compare dimensions with tolerance. Empty geometry needs explicit handling, rather than assuming a zero-sized box.
+::

@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/sweep.html">Ru</a>
-        <a href="../en/sweep.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — sweep</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/sweep.html">Ru</a> · <a href="../en/sweep.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,16 +55,20 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="trajectory-sweep">Trajectory sweep.</h1>
+<article class="article"><h1 id="trajectory-sweep">Trajectory sweep.</h1>
 
 <p>A wide class of reference geometry operations is represented by operations, constructing a body by translation (English sweep) of a certain profile or a family of profiles (<em>profile</em>, <em>profiles</em>) along a given trajectory <em>spine</em>.</p>
 
@@ -92,50 +94,48 @@
 <p>The most commonly used method of adding volume to a flat object. The operation unfolds the flat body <em>face</em> along the vector <em>vec</em>. Specifying a single coordinate instead of a vector will stretch the model in the positive Z direction.
 If the center option is specified, after the operation is performed, the model will be translated in the direction opposite to vec by its half length.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">extrude</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">extrude</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="n">face</span><span class="p">,</span> <span class="n">vec</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#equal: vec=(0,0,z)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">extrude</span><span class="p">(</span><span class="n">face</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">extrude</span><span class="p">(</span><span class="n">face</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#equal: vec=(0,0,z)</span>
 <span class="n">face</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="c1">#alternate</span>
-</code></pre></div>
+</code></pre>
+</div>
 
-<p>Example:</p>
+<p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">extrude</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">extrude</span><span class="p">(</span><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;TextShape&quot;</span><span class="p">,</span> <span class="n">fontpath</span><span class="o">=</span><span class="n">FONTPATH</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span> <span class="mi">20</span><span class="p">)</span>
-</code></pre></div>
+<span class="n">extrude</span><span class="p">(</span><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">register_font</span><span class="p">(</span><span class="n">FONTPATH</span><span class="p">)</span>
+<span class="n">extrude</span><span class="p">(</span><span class="n">textshape</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;TextShape&quot;</span><span class="p">,</span> <span class="n">fontname</span><span class="o">=</span><span class="n">FONTNAME</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span> <span class="mi">20</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<p><img src="../images/generic/extrude0.png" alt="" /> <img src="../images/generic/extrude1.png" alt="" /> </br>
+<p><img src="../images/generic/extrude0.png" alt="" /> <img src="../images/generic/extrude1.png" alt="" /> </br><br />
 <img src="../images/generic/extrude2.png" alt="" /> <img src="../images/generic/extrude3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="trumpet">Trumpet.</h2>
+<h2 id="tube">Tube</h2>
 
-<p>Draws on the path <em>spine</em> and the circular profile of the radius <em>r</em>.
-<em>maxdegree</em> is the maximum bspline degree of the surface.
-<em>maxsegm</em> -?
-<em>bounds</em> - when this option is set, the operation returns a tuple from the result, as well as the profiles in the first and last positions.</p>
+<p>Sweep a circular profile with <code>pipe_shell</code>. Subtract two sweeps to form a hollow tube. Place the profile at the start of the spine, perpendicular to its initial direction.</p>
 
-<p>Signature:</p>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
-<div class="codehilite"><pre><span></span><code><span class="n">tube</span><span class="p">(</span><span class="n">spine</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">cont</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">maxsegm</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-</code></pre></div>
-
-<p>Примеры:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">POINTS</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span>
-<span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">40</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="p">]</span>
-<span class="n">spine</span> <span class="o">=</span> <span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">POINTS</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">tube</span><span class="p">(</span><span class="n">spine</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-
-<span class="n">POINTS</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span> <span class="p">]</span>
-<span class="n">TANGS</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
-<span class="n">spine</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">POINTS</span><span class="p">,</span> <span class="n">TANGS</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">tube</span><span class="p">(</span><span class="n">spine</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</code></pre></div>
+<span class="n">spine</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">55</span><span class="p">),</span> <span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]),</span>
+    <span class="n">tangs</span><span class="o">=</span><span class="p">[</span><span class="n">vector3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="n">outer</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">circle</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">inner</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">circle</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">outer</span> <span class="o">-</span> <span class="n">inner</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/tube0.png" alt="" /> <img src="../images/generic/tube1.png" alt="" /></p>
 
@@ -146,15 +146,19 @@ If the center option is specified, after the operation is performed, the model w
 <p>The operation constructs a body from one profile or a set of successive <em>profiles</em> profiles, stretched along the <em>spine</em> path.
 Specifying the <em>frenet</em> option activates the law of variation of the angular position of the profile in accordance with the Frenet-Serre trihedron. The <em>binormal</em> option activates the law of variation of the angular position of the profile in accordance with the constant binormal.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">pipe_shell</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binormal</span><span class="o">=</span><span class="n">vector3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">solid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">pipe_shell</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binormal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">solid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Примеры:</p>
 
-<div class="codehilite"><pre><span></span><code>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/sweep0.png" alt="" /> <img src="../images/generic/sweep1.png" alt="" />  </br>
 <img src="../images/generic/sweep2.png" alt="" /> <img src="../images/generic/sweep3.png" alt="" />  </br>
@@ -167,38 +171,45 @@ Specifying the <em>frenet</em> option activates the law of variation of the angu
 <p>The operation of creating a body of revolution from the <em>proto</em> prototype. If it is necessary to create a sector, the angle <em>yaw</em> is set.
 If radius <em>r</em> is specified, the object is rotated 90 degrees around the X axis and displaced along the X axis by a distance equal to the radius <em>r</em>.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">))</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">))</span>
+</code></pre>
+</div>
 
-<p>Example:</p>
+<p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/revol0.png" alt="" /> <img src="../images/generic/revol1.png" alt="" />  </br>
-<img src="../images/generic/revol2.png" alt="" /> <img src="../images/generic/revol3.png" alt="" /></p>
+<img src="../images/generic/revol2.png" alt="" /> <img src="../images/generic/revol3.png" alt="" />  </p>
 
 <hr />
 
 <h2 id="body-of-rotation-extended-version">Body of rotation. (extended version).</h2>
 
-<p>An extended version of the <em>revol</em> operation. Constructs a body of revolution from the prototype <em>proto</em> at the interval of the rotation angle <em>yaw</em>. Specifying the <em>roll</em> option allows you to change the rotation angle of the prototype as it traverses the interval. The body is built from reference copies of the prototype body, the number of copies is set by the <em>n</em> option. <em>nparts</em> defines the number of segments of the resulting rotation body.</p>
+<p>An extended version of the <em>revol</em> operation. Constructs a body of revolution from the prototype <em>proto</em> at the interval of the rotation angle <em>yaw</em>. Specifying the <em>roll</em> option allows you to change the rotation angle of the prototype as it traverses the interval. The body is built from reference copies of the prototype body, the number of copies is set by the <em>n</em> option. <em>parts</em> defines the number of segments of the resulting rotation body.</p>
 
-<p>Signature:</p>
+<p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">nparts</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">parts</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Примеры:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">profile</span><span class="o">=</span><span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)))</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">profile</span><span class="o">=</span><span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)))</span>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/revol20.png" alt="" /></p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

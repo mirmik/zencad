@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/animate.html">Ru</a>
-        <a href="../en/animate.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — animate</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/animate.html">Ru</a> · <a href="../en/animate.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,37 +55,54 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="animation">Animation</h1>
+<article class="article"><h1 id="animation-input-and-camera">Animation, input and camera</h1>
 
-<p>The graphical interface allows you to animate the displayed scene.
-Example:</p>
+<p>Editor callbacks run in an isolated runner. The GUI owns the persistent viewer and receives presentation changes. The callback argument is ZenCad state, not a <code>DisplayWidget</code>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">controller</span> <span class="o">=</span> <span class="n">disp</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="n">nulltime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<p>Save as <code>animation.py</code> and open with <code>zencad animation.py</code>:</p>
 
-<span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">widget</span><span class="p">):</span>
-<span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">nulltime</span><span class="p">)</span> <span class="o">*</span> <span class="n">right</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-<span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">)</span>
-</code></pre></div>
+<span class="n">controller</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-<p>Here we use a special animation function <code>animate</code>, which, using the controller object returned by the disp function, updates the location of the controlled object based on the current moment in time.
-The transformation object is used as a parameter of the <code>relocate</code> method. (More details in <a href="trans0.html">Transformations</a>, <a href="trans1.html">Transformations</a>)</p>
+<span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">loctime</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">key_pressed</span><span class="p">(</span><span class="s2">&quot;Space&quot;</span><span class="p">):</span>
+        <span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="ow">not</span> <span class="n">controller</span><span class="o">.</span><span class="n">is_hidden</span><span class="p">())</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">orbit</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">z</span><span class="o">.</span><span class="n">deg</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
 
-<p>In addition to the <code>animate</code> parameter, the show function has associated<code>preanimate</code> and <code>close_handle</code> parameters. <code>preanimate</code> takes a function that is called once before the first iteration of<code>animate</code>, but after the graphical environment has been created. <code>close_handle</code> is called as a handler when the process ends.</p>
+<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">,</span> <span class="n">animate_step</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p><code>loctime</code> is elapsed animation time in seconds; <code>delta</code> is the frame interval. <code>start_time</code>, <code>time</code> and <code>last_time</code> are also available. <code>animate_step</code> requests an interval rather than guaranteeing an exact frame rate; using <code>delta</code> makes motion independent of actual frame speed.</p>
+
+<p><code>state.input.key_down()</code> reads a held key; <code>key_pressed()</code>/<code>key_released()</code> read transitions in the current frame. Ordered events are in <code>state.input.events</code>, with mouse position/delta/buttons/wheel state also available. Do not replace Qt handlers manually.</p>
+
+<p><code>state.camera.orbit(axis, angle)</code> requests a relative camera rotation about a world axis in radians. It composes with the current GUI camera and manual mouse navigation. Camera animation does not require model changes.</p>
+
+<h2 id="managed-scene-limits">Managed scene limits</h2>
+
+<p>Create all geometry before <code>show()</code>. Callbacks may change placement, color and visibility, but cannot add/remove shapes or replace their BREP payloads. <code>assemble.unit</code> trees support relocating existing parts.</p>
+
+<p><code>preanimate</code>, arbitrary QWidget panels and direct viewer access are unsupported in managed runners. <code>close_handle</code> is available for animated managed sessions, not static scenes. Standalone display has a separate contract; the example above targets the editor.</p>
+
+<p><code>inspect</code>, <code>check</code> and <code>render</code> require a final static scene and reject animated <code>show()</code>. Details: <a href="../development/managed-animation-migration.md">managed migration</a>.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

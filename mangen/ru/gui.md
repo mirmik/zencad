@@ -11,14 +11,14 @@
 ## Вызов
 Окно графического интерфейса может быть вызвано следующими способами:
 
-* Вызов `zencad.show()` в интерпретаторе python.  
+* Вызов `show()` в Python-скрипте открывает самостоятельный viewer в процессе скрипта; полный редактор запускается командами ниже.
 * Выполнение `python3 -m zencad` в среде терминала. (usage: `python3 -m zencad [filepath]`)
 * Вызов утилиты командной строки `zencad` (usage: `zencad [filepath]`)
 :en
 ## Call
 The GUI window can be invoked in the following ways:
 
-* Calling `zencad.show ()` in the python interpreter.
+* Calling `show()` in a Python script opens a standalone viewer in that process; the commands below start the full editor.
 * Executing `python3 -m zencad` in a terminal environment. (usage: `python3 -m zencad [filepath]`)
 * Call the command line utility `zencad` (usage:` zencad [filepath] `) 
 ::  
@@ -26,10 +26,10 @@ The GUI window can be invoked in the following ways:
 ---
 :ru
 ## Обновление модели по обновлению файла источника
-Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Следует учесть, что реализация этой функциональности выполняется путём изменения работы функции `zencad.show()` (То есть, есть разница в запуске скрипта из терминала, или из программы визуализатора).  
+Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Редактор запускает отдельного исполнителя скрипта и получает снимок сцены. Сам viewer и камера сохраняются между пересчётами. При ошибке остаётся видимым последний успешный результат. См. [«Внутренняя кухня»](internal.html).
 :en
 ## Updating the model by updating the source file
-The renderer keeps track of changes in the file, the source of the geometry. When the source is updated, the program automatically starts re-executing the script. It should be noted that this functionality is implemented by changing the operation of the `zencad.show ()` function (That is, there is a difference in running the script from the terminal, or from the visualizer program). 
+The renderer keeps track of changes in the file, the source of the geometry. When the source is updated, the program automatically starts re-executing the script. The editor starts a separate script runner and receives a scene snapshot. The viewer and camera persist across evaluations. On failure, the last successful result remains visible. See [ZenCad internals](internal.html).
 ::
 
 ---

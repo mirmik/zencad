@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/animate.html">Ru</a>
-        <a href="../en/animate.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — animate</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/animate.html">Ru</a> · <a href="../en/animate.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,46 +44,65 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Анимация</h1>
+<article class="article"><h1 id="анимация-ввод-и-камера">Анимация, ввод и камера</h1>
 
-<p>Графический интерфейс позволяет анимировать отображаемую сцену.
-Пример:</p>
+<p>В редакторе callback выполняется в изолированном runner. GUI владеет постоянным viewer и получает изменения представления. Аргумент callback — состояние ZenCad, не <code>DisplayWidget</code>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">controller</span> <span class="o">=</span> <span class="n">disp</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="n">nulltime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<p>Сохраните как <code>animation.py</code> и откройте командой <code>zencad animation.py</code>:</p>
 
-<span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">widget</span><span class="p">):</span>
-<span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">nulltime</span><span class="p">)</span> <span class="o">*</span> <span class="n">right</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-<span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">)</span>
-</code></pre></div>
+<span class="n">controller</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-<p>Здесь мы используем специальную функцию анимации <code>animate</code>, которая, используя объект контроллер, возвращенный функцией disp, в зависимости от текущего момента времени обновляет местоположение контролируемого объекта.
-В качестве параметра метода <code>relocate</code> выступает объект преобразования. (Подробнее в <a href="trans0.html">Преобразования</a>, <a href="trans1.html">Комбинации преобразований</a>)</p>
+<span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">loctime</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">key_pressed</span><span class="p">(</span><span class="s2">&quot;Space&quot;</span><span class="p">):</span>
+        <span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="ow">not</span> <span class="n">controller</span><span class="o">.</span><span class="n">is_hidden</span><span class="p">())</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">orbit</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">z</span><span class="o">.</span><span class="n">deg</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
 
-<p>Кроме параметра <code>animate</code> функция show имеет связанные параметры <code>preanimate</code> и <code>close_handle</code>. <code>preanimate</code> принимает функцию, вызывающуюся один раз до первой итерации <code>animate</code>, но уже после создания графического окружения. <code>close_handle</code> вызывается как обработчик при завершении процесса.</p>
+<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">animate</span><span class="o">=</span><span class="n">animate</span><span class="p">,</span> <span class="n">animate_step</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p><code>loctime</code> — время с начала анимации в секундах, <code>delta</code> — интервал кадра. Доступны также <code>start_time</code>, <code>time</code>, <code>last_time</code>. <code>animate_step</code> задаёт желаемый шаг, а не гарантию точной частоты; движение по <code>delta</code> не зависит от фактической скорости кадров.</p>
+
+<p><code>state.input.key_down()</code> читает удерживаемую клавишу, <code>key_pressed()</code>/<code>key_released()</code> — переход в текущем кадре. Для упорядоченных событий есть <code>state.input.events</code>, для мыши — position/delta/buttons/wheel. Не заменяйте обработчики Qt вручную.</p>
+
+<p><code>state.camera.orbit(axis, angle)</code> задаёт относительный поворот камеры вокруг мировой оси, угол в радианах. Он применяется к текущей GUI-камере и сочетается с ручным вращением мышью. Камера может анимироваться без изменения модели.</p>
+
+<h2 id="ограничения-managed-сцены">Ограничения managed-сцены</h2>
+
+<p>Создайте всю геометрию до <code>show()</code>. Callback может менять размещение, цвет и видимость, но не добавлять/удалять формы и не заменять их BREP. Деревья <code>assemble.unit</code> поддерживают изменение размещения существующих частей.</p>
+
+<p><code>preanimate</code>, произвольные QWidget-панели и прямой доступ к viewer не поддерживаются managed runner. <code>close_handle</code> доступен для анимированной managed-сессии, но не для статической. Standalone-путь имеет отдельный контракт; пример выше предназначен для редактора.</p>
+
+<p><code>inspect</code>, <code>check</code> и <code>render</code> ожидают конечную статическую сцену, поэтому отвергают анимированный <code>show()</code>. Подробности: <a href="../development/managed-animation-migration.md">managed migration</a>.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

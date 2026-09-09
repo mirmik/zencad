@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/caching.html">Ru</a>
-        <a href="../en/caching.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — caching</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/caching.html">Ru</a> · <a href="../en/caching.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,61 +55,90 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="caching-and-lazy-objects">Caching and lazy objects.</h1>
+<article class="article"><h1 id="evaluation-and-caching">Evaluation and caching</h1>
 
-<p>A feature of the scripted cad is the need to restart the geometry generation script every time the model is updated. As the size of the model grows, this leads to a significant increase in the time required for calculating and drawing geometry. To solve this problem, computationally intensive ZenCad operations are cached and lenified by the [evalcache] library (https://github.com/mirmik/evalcache).</p>
+<p>Evaluation is deferred by default: operations construct a graph, and geometry is computed for display, export, <code>native()</code> or <code>value()</code>. Caching reuses identical computation results, including across processes.</p>
 
-<p>Instead of calculating directly, evalcache builds a model building tree based on the hash keys of the generated objects. The library saves all performed calculations in the cache on the hard disk and, if the object has already been calculated earlier, retrieves it from the cache. evalcache monitors changes in parameters in the model tree and updates computation objects that have ceased to be up-to-date on the fly.</p>
+<p>Enable immediate evaluation before constructing your model when debugging:</p>
 
-<h3 id="debugging-with-lazy-evaluation">Debugging with lazy evaluation.</h3>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<p>Since evalcache only performs computations when the object is actually requested, and not when it is declared, it can be difficult to understand where a possible error occurs. Problems can also arise due to the implicit expansion of lazy objects on some operations.</p>
-
-<p>The following options can be used to debug and understand where the error occurred:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">diag</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Активировать вывод информации об операциях библиотеки кеширования.</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">fastdo</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Выполнять запрос объекта в момент его создания.</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">encache</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить сохранение в кэш.</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">decache</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить загрузку из кэша.</span>
-
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onbool</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить автоматическое раскрытие на булевых операциях</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onstr</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Запретить автоматическое раскрытие при преобразовании к строке.</span>
-
-<span class="n">zencad</span><span class="o">.</span><span class="n">lazy</span><span class="o">.</span><span class="n">onplace</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Раскрывать объект в момент его создания (не рекомендуется, может нарушать логику).</span>
-</code></pre></div>
-
-<p>Additional options can be found in the documentation for the evalcache library code.</p>
-
-<hr />
-
-<h3 id="where-is-the-cache">Where is the cache?</h3>
-
-<p>By default, every ZenCad process of the current user shares
-<code>tempfile.gettempdir()/zencad-cache-&lt;uid&gt;</code>. ZenCad does not
-remove it at process exit, although the operating system may clean its
-temporary area.</p>
-
-<p>The ZenCad settings dialog can change the directory and enabled state.
-<code>ZENCAD_CACHE_DIR</code> overrides the saved directory, while
-<code>ZENCAD_CACHE_DISABLE=1</code> disables both disk-cache reads and writes.
-Lazy evaluation remains enabled.</p>
-
-<p>A user script can configure caching before creating geometry:</p>
-
-<pre><code class="language-python">zencad.configure(cache_dir="/path/to/cache")
-zencad.configure(cache_enabled=False)
+<span class="n">z</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">set_evaluation_mode</span><span class="p">(</span><span class="s2">&quot;immediate&quot;</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Shape</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">set_evaluation_mode</span><span class="p">(</span><span class="s2">&quot;deferred&quot;</span><span class="p">)</span>
 </code></pre>
+</div>
+
+<p>The mode persists until changed and does not alter object types. Switching does not evaluate all existing expressions. Caching is independent: disabling it does not disable lazy evaluation.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Mode</th>
+  <th><code>cache_enabled=False</code></th>
+  <th><code>cache_enabled=True</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>immediate</code></td>
+  <td>The operation runs immediately without reading or writing the disk cache.</td>
+  <td>The result is requested immediately: loaded from disk cache, or computed and stored on a miss.</td>
+</tr>
+<tr>
+  <td><code>deferred</code></td>
+  <td>The operation runs when its result is needed, without reading or writing the disk cache.</td>
+  <td>When needed, the result is loaded from disk cache, or computed and stored on a miss.</td>
+</tr>
+</tbody>
+</table>
+
+<p><code>configure(cache_enabled=False)</code> disables disk cache reads and writes without deleting its files. Objects can reuse already computed results in memory. The table describes cacheable operations; simple values may be evaluated while constructing the graph.</p>
+
+<h2 id="shared-disk-cache">Shared disk cache</h2>
+
+<p>The default directory is <code>tempfile.gettempdir()/zencad-cache-&lt;uid&gt;</code>. ZenCad does not delete it on exit, but the OS may clean temporary storage. Precedence is explicit process <code>configure()</code>, then <code>ZENCAD_CACHE_DIR</code>/<code>ZENCAD_CACHE_DISABLE</code>, then saved user settings.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">z</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="s2">&quot;./model-cache&quot;</span><span class="p">,</span> <span class="n">cache_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+</code></pre>
+</div>
+
+<p><code>ZENCAD_CACHE_DISABLE=1</code> disables disk cache reads and writes. <code>z.clear_cache()</code> explicitly clears the configured cache; ordinary scripts do not need to call it.</p>
+
+<h2 id="diagnostics-without-the-editor">Diagnostics without the editor</h2>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--eager<span class="w"> </span>--no-cache<span class="w"> </span>--json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--failed-path
+</code></pre>
+</div>
+
+<p>A script header can override the runner's initial mode. The graph exposes dependencies, cache hits and failures. <a href="headless.html">Command line</a>.</p>
+
+<p>Integrations can use an explicit owner: <code>context = z.Context.deferred(cache=False)</code> and <code>context.call(z.box, 10)</code>. <code>Context</code> has no CAD facade; ordinary scripts do not need one. Old <code>zencad.lazy</code> settings appear only in the <a href="migration.html">migration guide</a>.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

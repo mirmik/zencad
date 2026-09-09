@@ -48,8 +48,8 @@ If the center option is specified, after the operation is performed, the model w
 
 Сигнатура:
 ```python
-extrude(proto=face, vec=(x,y,z), center=True/False)
-extrude(proto=face, vec=z, center=True/False) #equal: vec=(0,0,z)
+extrude(face, (x,y,z), center=False)
+extrude(face, z, center=False) #equal: vec=(0,0,z)
 face.extrude(vec) #alternate
 ```
 
@@ -57,8 +57,9 @@ face.extrude(vec) #alternate
 ```python
 ngon(r=10, n=10)
 ngon(r=10, n=10).extrude(4)
-extrude((1, 0, 4), ngon(r=10, n=10))
-extrude(textshape(text="TextShape", fontpath=FONTPATH, size=100), 20)
+extrude(ngon(r=10, n=10), (1, 0, 4))
+register_font(FONTPATH)
+extrude(textshape(text="TextShape", fontname=FONTNAME, size=100), 20)
 ```
 
 ![](../images/generic/extrude0.png) ![](../images/generic/extrude1.png) </br>  
@@ -66,36 +67,26 @@ extrude(textshape(text="TextShape", fontpath=FONTPATH, size=100), 20)
 
 --------------------------
 :ru
-## Труба.
-Строит на основе траектории _spine_ и профиля круглого сечения радиуса _r_.
-_maxdegree_ максимальная степень bspline поверхности.
-_maxsegm_ - ?
-_bounds_ - при установке этой опции операция возвращает кортеж из резултьата, а также профилей в первой и последней позициях.
+## Труба
+Круглый профиль можно протянуть по траектории с помощью `pipe_shell`. Полая труба получается вычитанием двух развёрток. Профиль располагают у начала траектории в плоскости, перпендикулярной её начальному направлению.
 :en
-## Trumpet.
-Draws on the path _spine_ and the circular profile of the radius _r_.
-_maxdegree_ is the maximum bspline degree of the surface.
-_maxsegm_ -?
-_bounds_ - when this option is set, the operation returns a tuple from the result, as well as the profiles in the first and last positions.
+## Tube
+Sweep a circular profile with `pipe_shell`. Subtract two sweeps to form a hollow tube. Place the profile at the start of the spine, perpendicular to its initial direction.
 ::
 
-Сигнатура:
 ```python
-tube(spine, r, tol=1e-6, cont=2, maxdegree=3, maxsegm=20, bounds=False):
+from zencad import *
+
+spine = interpolate(
+    points([(0, 0, 0), (0, 0, 35), (20, 0, 55), (45, 15, 65)]),
+    tangs=[vector3(0, 0, 1), None, None, vector3(1, 1, 0)],
+)
+outer = pipe_shell([circle(6, wire=True)], spine, frenet=True)
+inner = pipe_shell([circle(4, wire=True)], spine, frenet=True)
+body = outer - inner
+disp(body)
 ```
 
-Примеры:
-```python
-POINTS = [ (0,0,0), (0,0,20), (0,20,40),
-	(-90,20,40), (-90,20,20), (0,20,0) ]
-spine = rounded_polysegment(POINTS, r=10)
-a = tube(spine, r=5) 
-
-POINTS = [ (0,0,0), (20,0,40) ]
-TANGS = [ (0,0,1), (1,0,1) ]
-spine = interpolate(POINTS, TANGS)
-b = tube(spine, r=5, maxdegree=8)
-```
 ![](../images/generic/tube0.png) ![](../images/generic/tube1.png)
 
 ---
@@ -111,7 +102,7 @@ Specifying the _frenet_ option activates the law of variation of the angular pos
 
 Сигнатура:
 ```python
-pipe_shell(profiles, spine, frenet=False, binormal=vector3(0,0,0), solid=True)
+pipe_shell(profiles, spine, frenet=False, binormal=None, solid=True)
 ```
 
 Примеры:
@@ -148,15 +139,15 @@ revol(profile, r=None, yaw=deg(360))
 ---
 :ru
 ## Тело вращения. (расширенная версия).
-Расширенная версия операции _revol_. Строит тело вращения от прототипа _proto_ на интервале угла поворота _yaw_. Указание опции _roll_ позволяет изменять угол поворота прототипа по мере прохождения интервала. Тело строится по опорным копиям тела прототипа, количество копий задаётся опцией _n_. _nparts_ определяет количество сегментов результирующего тела вращения.
+Расширенная версия операции _revol_. Строит тело вращения от прототипа _proto_ на интервале угла поворота _yaw_. Указание опции _roll_ позволяет изменять угол поворота прототипа по мере прохождения интервала. Тело строится по опорным копиям тела прототипа, количество копий задаётся опцией _n_. _parts_ определяет количество сегментов результирующего тела вращения.
 :en
 ## Body of rotation. (extended version).
-An extended version of the _revol_ operation. Constructs a body of revolution from the prototype _proto_ at the interval of the rotation angle _yaw_. Specifying the _roll_ option allows you to change the rotation angle of the prototype as it traverses the interval. The body is built from reference copies of the prototype body, the number of copies is set by the _n_ option. _nparts_ defines the number of segments of the resulting rotation body.
+An extended version of the _revol_ operation. Constructs a body of revolution from the prototype _proto_ at the interval of the rotation angle _yaw_. Specifying the _roll_ option allows you to change the rotation angle of the prototype as it traverses the interval. The body is built from reference copies of the prototype body, the number of copies is set by the _n_ option. _parts_ defines the number of segments of the resulting rotation body.
 ::
 
 Сигнатура:
 ```python
-revol2(profile, r, n=30, yaw=(0,deg(360)), roll=(0,0), nparts=None)
+revol2(profile, r, n=30, yaw=(0,deg(360)), roll=(0,0), parts=None)
 ```
 
 Примеры:

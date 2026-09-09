@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/bool.html">Ru</a>
-        <a href="../en/bool.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — bool</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/bool.html">Ru</a> · <a href="../en/bool.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,27 +44,33 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Булевы операции.</h1>
+<article class="article"><h1 id="булевы-операции">Булевы операции.</h1>
 
-<p>CSG геометрия опирается на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д и 2д объектов. В zencad есть две группы этих операций:</p>
+<p>CSG геометрия операется на булевы операции. В zencad представлены операции объединения, вычитания и пересечения 3д и 2д объектов. В zencad есть два группы этих операций: </p>
 
 <ul>
 <li>над массивами тел с помощью функций <em>union</em>, <em>difference</em>, <em>intersect</em></li>
@@ -82,130 +84,171 @@
 
 <hr />
 
-<h2 id="-2">Объединение тел.</h2>
+<h2 id="объединение-тел">Объединение тел.</h2>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Функция:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
 <span class="c1"># Оператор:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">+</span> <span class="n">shp1</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 
 <span class="c1">#with function:</span>
 <span class="n">union</span><span class="p">([</span>
-<span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+    <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 <span class="p">])</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/union.png" alt="" /> <img src="../images/generic/union0.png" alt="" />   </br>
-<img src="../images/generic/union1.png" alt="" /> <img src="../images/generic/union2.png" alt="" /></p>
+<img src="../images/generic/union1.png" alt="" /> <img src="../images/generic/union2.png" alt="" />  </p>
 
 <hr />
 
-<h2 id="-3">Вычитание тел.</h2>
+<h2 id="вычитание-тел">Вычитание тел.</h2>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Функция:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">difference</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
 <span class="c1"># Оператор:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">-</span> <span class="n">shp1</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 
 <span class="c1">#with function:</span>
 <span class="n">difference</span><span class="p">([</span>
-<span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+    <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 <span class="p">])</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/difference.png" alt="" /> <img src="../images/generic/difference0.png" alt="" />   </br>
-<img src="../images/generic/difference1.png" alt="" /> <img src="../images/generic/difference2.png" alt="" /></p>
+<img src="../images/generic/difference1.png" alt="" /> <img src="../images/generic/difference2.png" alt="" />  </p>
 
 <hr />
 
-<h2 id="-4">Пересечение тел.</h2>
+<h2 id="пересечение-тел">Пересечение тел.</h2>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Функция:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">intersect</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
 <span class="c1"># Оператор:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">^</span> <span class="n">shp1</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1">#with operators:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1">#with operators:</span>
 <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">^</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">^</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 
 <span class="c1">#with function:</span>
 <span class="n">intersect</span><span class="p">([</span>
-<span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-<span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+    <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
 <span class="p">])</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/intersect.png" alt="" /> <img src="../images/generic/intersect0.png" alt="" />   </br>
-<img src="../images/generic/intersect1.png" alt="" /> <img src="../images/generic/intersect2.png" alt="" /></p>
+<img src="../images/generic/intersect1.png" alt="" /> <img src="../images/generic/intersect2.png" alt="" />  </p>
 
 <hr />
 
-<h2 id="-5">Пересечение оболочек.</h2>
+<h2 id="пересечение-оболочек">Пересечение оболочек.</h2>
 
-<p>Побратим операции <em>intersect</em>, производящий вычисление пересечения оболочек тел.</p>
+<p>Побратим операции <em>intersect</em>, производящий вычисление пересечения оболочек тел.  </p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Функция:</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Функция:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
 <span class="n">m1</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">7</span><span class="p">))</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/section0.png" alt="" />
-<img src="../images/generic/section1.png" alt="" /></p>
+<img src="../images/generic/section1.png" alt="" />   </p>
 
 <hr />
 
-<h2 id="-6">Булевы операции над двумерными телами.</h2>
+<h2 id="разбиение-и-сечение-плоскостью">Разбиение и сечение плоскостью.</h2>
 
-<p>Точно так же, как и к трёхмерным объектам, перечисленные выше операции могут применяться к двумерным объектам до тех пор, пока они находятся в одной плоскости.</p>
+<p><code>split(body, tools)</code> делит тело одним или несколькими Shape-инструментами и
+возвращает <code>SplitResult</code> — ленивую детерминированно упорядоченную
+последовательность получившихся solid-частей. Пустой набор инструментов и
+инструмент, который не делит тело (включая касание), приводят к <code>ValueError</code>.</p>
+
+<p><code>slice(body, z=..., axis=...)</code> — удобный частный случай для плоскости. Результат
+<code>SliceResult</code> можно распаковать как <code>(lower, upper)</code>; порядок идёт от
+отрицательной к положительной стороне нормали. Произвольная плоскость задаётся
+плоской гранью или парой <code>(origin, normal)</code>. Если получилось не ровно два
+solid-тела, операция неоднозначна и поднимает <code>ValueError</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">parts</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">7</span><span class="p">)))</span>
+
+<span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">z</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="n">negative</span><span class="p">,</span> <span class="n">positive</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">plane</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="булевы-операции-над-двумерными-телами">Булевы операции над двумерными телами.</h2>
+
+<p>Точно также как и к трёхмерным объектам, перечисленные выше операции могут применяться к двумерным объектам до тех пор, пока они находятся в одной плоскости.</p>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">m1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">m2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">^</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">m2</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/bool20.png" alt="" /> <img src="../images/generic/bool21.png" alt="" /> </br>
 <img src="../images/generic/bool22.png" alt="" /> <img src="../images/generic/bool23.png" alt="" /></p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

@@ -10,7 +10,10 @@ So, it's  openscad idea, python language and opencascade power in one.
 
 Manual and Information
 ----------------------
-- Manual: [here](https://mirmik.github.io/zencad/).
+- ZenCad 2 guide: [Русский](docs/ru/index.html) · [English](docs/en/index.html).
+- [Migration from v1](docs/en/migration.html).
+- [Published manual](https://mirmik.github.io/zencad/). The checkout guide describes
+  the current source, with a full thematic operation reference and illustrations.
 
 - Articles:  
 	- habr: [Система скриптового 3д моделирования ZenCad](https://habr.com/ru/post/443140/)
@@ -121,10 +124,14 @@ python -m zencad
 `python -m pip install -e .` installs only the headless geometry dependencies
 and is not sufficient to launch the GUI.
 
-Standalone Distribution
------------------------
-ZenCad have standalone version for Windows.
-Windows prerelease version in [releases](https://github.com/mirmik/zencad/releases).
+Release status
+--------------
+The source declares version 2.0.0; cross-platform release acceptance is still in
+progress, particularly native PNG rendering on Windows and macOS. Use the source
+installation above to try this checkout. `pip install zencad` installs the
+published package and does not necessarily select this development revision.
+Older standalone Windows downloads are historical artifacts, not verification
+of the v2 runtime.
 
 Source code
 ---------------

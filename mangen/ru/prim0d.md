@@ -1,186 +1,125 @@
 :ru
-# Точка, вектор, вспомогательные функции.
+# Значения, точки и преобразования
 
-В библиотеки ZenCad есть некоторые вспомогательные математические объекты и функции для работы с ними.
-:en
-# Point, vector, helper functions.
-
-ZenCad has some math helpers and functions for working with them.
-::
-
----
-:ru
-## Точка
-Некоторые функции ZenCad используют в качестве параметров точки или массивы точек. Для создания объекта точки можно использовать функцию `point3`. Кроме того, часто функция может сама сформировать точки по списку или кортежу координат.
-:en
-## Point
-Some ZenCad functions use points or point arrays as parameters. You can use the `point3` function to create a point object. In addition, often a function can itself form points from a list or a tuple of coordinates. 
-::
+`scalar`, `point2`, `point3`, `vector2`, `vector3`, `quaternion` и `transform` создают числа, точки, векторы, кватернионы и преобразования. Результаты имеют типы `Scalar`, `Point2`, `Point3`, `Vector2`, `Vector3`, `Quaternion` и `Transform` соответственно. Формы и численные зависимости сохраняются в графе до явного запроса результата.
 
 ```python
-point3(0,3,6)
+import zencad as z
 
-#Equivalent calls
-interpolate([point3(0,0,0), point3(0,0,10), point3(10,0,10)])
-interpolate([(0,0,0), (0,0,10), (10,0,10)])
-interpolate(points([(0,0,0), (0,0,10), (10,0,10)]))
+p = z.point3(1, 2, 3)
+v = z.vector3(4, 0, 0)
+q = p + v
+assert q.value() == (5, 2, 3)
+assert isinstance(q - p, z.Vector3)
+assert isinstance(v + v, z.Vector3)
+coordinates = q.to_numpy()
+assert coordinates.shape == (3,)
+body = z.box(2)
+volume = body.mass()
+assert isinstance(volume, z.Scalar)
+assert abs(volume.value() - 8) < 1e-7
+assert isinstance(body.center().x, z.Scalar)
 ```
 
-:ru
-Точка может быть отображена функцией display, как соответствующая такой точке вершина.
-:en
-A point can be displayed with the display function as the corresponding vertex for such a point.
-::
-
----
-:ru
-## Вектор
-Иногда кроме указаний точек используются объекты-векторы для указания направлений. Принцип работы с векторами аналогичен работе с точками.
-:en
-## Vector
-Sometimes, in addition to specifying points, vector objects are used to indicate directions. The principle of working with vectors is similar to working with points.
-::
+Координаты можно задавать числами, а поддерживаемые операции принимают зависимые `Scalar`. `Point + Point` запрещено. Масштабирование вектора даёт вектор; перенос действует на точку, но не на направление.
 
 ```python
-vector3(1,2,3)
+import zencad as z
 
-interpolate(pnts=[(0,0,0), (0,0,10), (10,0,10)], tangs=[(0,0,1), (1,0,0), (0,1,0)])
+number = z.scalar(2)
+p2 = z.point2(1, 2)
+p3 = z.point3(1, 2, 3)
+v2 = z.vector2(1, 0)
+v3 = z.vector3(0, 0, 1)
+rotation = z.quaternion(0, 0, 0, 1)
+placement = z.transform()
+assert placement(p3).value() == p3.value()
 ```
 
-:ru
-Вектор не может быть отображен непосредственно.  
-В отличии от точки вектор игнорирует трансляцию при преобразованиях.
+## Когда начинается вычисление
+
+- `Scalar.value()`, `float()`, `int()`, `bool()` и сравнения требуют число.
+- `Point/Vector.value()` возвращает кортеж; `.to_numpy()` — массив чисел.
+- `Shape.native()` возвращает OCP-форму; `Point/Vector.to_ocp()` — native точку/вектор.
+- `Transform.matrix()` возвращает числовую матрицу 4×4.
+
+Обычный `math.sin(scalar)` получает число через `float`; `z.sin(scalar)` сохраняет зависимость в графе. Доменные значения логически неизменяемы: новую позицию создают операцией, а не присваиванием координате.
+
+## Преобразования
+
+```python
+import zencad as z
+
+move = z.translate(10, 0, 0)
+turn = z.rotateZ(z.deg(90))
+combined = move * turn
+p = combined(z.point3(1, 0, 0))
+assert abs(float(p.x) - 10) < 1e-7
+assert abs(float(p.y) - 1) < 1e-7
+matrix = combined.matrix()
+```
+
+`outer * inner` сначала применяет `inner`, затем `outer`. `Transform` описывает перенос, вращение и равномерный масштаб, включая отражения через знаковый масштаб; для общего аффинного преобразования есть отдельный `AffineTransform`. [Селекторы топологии](selectors.html).
 :en
-The vector cannot be displayed directly.
-Unlike a point, a vector ignores translation during transformations.
+# Values, points and transforms
+
+`scalar`, `point2`, `point3`, `vector2`, `vector3`, `quaternion` and `transform` construct numbers, points, vectors, quaternions and transforms. Their result types are `Scalar`, `Point2`, `Point3`, `Vector2`, `Vector3`, `Quaternion` and `Transform`, respectively. Geometry and numeric dependencies remain in the graph until explicitly requested.
+
+```python
+import zencad as z
+
+p = z.point3(1, 2, 3)
+v = z.vector3(4, 0, 0)
+q = p + v
+assert q.value() == (5, 2, 3)
+assert isinstance(q - p, z.Vector3)
+assert isinstance(v + v, z.Vector3)
+coordinates = q.to_numpy()
+assert coordinates.shape == (3,)
+body = z.box(2)
+volume = body.mass()
+assert isinstance(volume, z.Scalar)
+assert abs(volume.value() - 8) < 1e-7
+assert isinstance(body.center().x, z.Scalar)
+```
+
+Coordinates accept numbers, and supported operations accept dependent `Scalar` values. `Point + Point` is invalid. Scaling a vector produces a vector; translation affects a point but not a direction.
+
+```python
+import zencad as z
+
+number = z.scalar(2)
+p2 = z.point2(1, 2)
+p3 = z.point3(1, 2, 3)
+v2 = z.vector2(1, 0)
+v3 = z.vector3(0, 0, 1)
+rotation = z.quaternion(0, 0, 0, 1)
+placement = z.transform()
+assert placement(p3).value() == p3.value()
+```
+
+## Materialization boundaries
+
+- `Scalar.value()`, `float()`, `int()`, `bool()` and comparisons require a number.
+- `Point/Vector.value()` returns a tuple; `.to_numpy()` returns a numeric array.
+- `Shape.native()` returns an OCP shape; `Point/Vector.to_ocp()` returns a native point/vector.
+- `Transform.matrix()` returns a numeric 4×4 matrix.
+
+Ordinary `math.sin(scalar)` requests a number through `float`; `z.sin(scalar)` retains the graph dependency. Domain values are logically immutable: create a new position with an operation rather than assigning a coordinate.
+
+## Transforms
+
+```python
+import zencad as z
+
+move = z.translate(10, 0, 0)
+turn = z.rotateZ(z.deg(90))
+combined = move * turn
+p = combined(z.point3(1, 0, 0))
+assert abs(float(p.x) - 10) < 1e-7
+assert abs(float(p.y) - 1) < 1e-7
+matrix = combined.matrix()
+```
+
+`outer * inner` applies `inner` first, then `outer`. `Transform` represents translation, rotation and uniform scale, including reflections through signed scale; general affine transformations use `AffineTransform`. [Topology selectors](selectors.html).
 ::
-
----
-:ru
-## Масивы точек и векторов
-Функции vectors и points явно создают массивы точек из массивов координат.
-points2 создаёт двумерный массив точек из двумерного списка.
-:en
-## Point and vector arrays
-The vectors and points functions explicitly create arrays of points from arrays of coordinates.
-points2 creates a two-dimensional array of points from a two-dimensional list.
-::
-
-```python
-points([(0,0,0), (0,0,10), (10,0,10)])
-vectors([(0,0,1), (1,0,0), (0,1,0)])
-
-points2([
-	[(0,0,0), (0,0,10), (10,0,10)],
-	[(1,6,0), (0,5,10), (10,5,10)]
-])
-```
-
----
-:ru
-## Инкрементальный масив точек
-Создаёт массив точек на основе смещений.
-:en
-## Incremental array of points
-Creates an array of points based on offsets.
-::
-```python
-points_incremental([(0,2,0), (0,0,10), (5,0,0), (5,0,0)])
-# Создаёт масив точек:
-# (0,2,0)
-# (0,2,10)
-# (5,2,10)
-# (10,2,10)
-```
-
----
-:ru 
-## Операции над точками и векторами
-Точки и вектора могут использоваться в математических операциях в соответствиями с правилами линейной алгебры.
-:en
-## Operations on points and vectors
-Points and vectors can be used in mathematical operations according to the rules of linear algebra.
-::
-
-```python
-pnt - pnt -> vec
-pnt + vec -> pnt
-vec + vec -> vec
-vec - vec -> vec
-```
-
----
-:ru
-## Пустое примитив. nullshape
-Пустой примитив. Может участвовать в булевых операциях.  
-
-Пример использования в цикле:
-:en
-## Empty primitive. nullshape
-Empty primitive. Can participate in boolean operations.
-
-An example of use in a loop:
-::
-```python
-it = nullshape()
-for i in range(7):
-	it = it + box(20).translate(10*i,10*i,10*i)
-
-#alternate: union([box(20).translate(10*i,10*i,10*i) for i in range(7)])
-```
-
----
-:ru
-## Перевод угловых величин. Радианы и градусы
-API zencad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg (синоним deg2rad):  
-`deg(180)` соответствует `math.pi`.
-
-Обратное преобразование выполняется функцией rad2deg.
-:en
-## Conversion of angular values. Radians and degrees
-The zencad API uses radians to define angles. Using degrees requires scaling a numerical factor. This is exactly what the deg function does (synonymous with deg2rad):
-`deg (180)` matches `math.pi`.
-
-The reverse conversion is performed by the rad2deg function.
-::
-
-Сигнатуры:
-```python
-# Convert degrees to radians:
-def deg2rad(grad)
-def deg(grad)
-
-# Convert radians to degrees:
-def rad2deg(rad)
-```
-
-:ru
-Код функции deg2rad, rad2deg:
-:en
-Function code deg2rad, rad2deg:
-::
-```python
-def deg2rad(grad):
-    return float(grad) / 180.0 * math.pi
-
-def rad2deg(rad):
-    return float(rad) * 180.0 / math.pi
-```
-
-Пример:
-```python
-rotateZ(deg(45))
-```
-
----
-:ru
-### Зарегистрировать шрифт
-Регистрирует в системе шрифт в формате FreeType.
-:en
-### Register font
-Register FreeType font in system.
-:end
-
-```python
-register_font(fontpath) 
-```

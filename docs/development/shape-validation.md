@@ -2,7 +2,7 @@
 
 ZenCad exposes OCCT topology diagnostics as a versioned, JSON-ready
 `ValidationReport`. Validation is read-only and is an explicit materialization
-boundary in both the legacy and typed APIs:
+boundary in the public domain API:
 
 ```python
 report = shape.validate(exact=False, parallel=False)
@@ -42,7 +42,7 @@ shell = zencad.sew(faces)
   modeling operation.
 
 `clean()` and `heal()` operate on owned copies and never modify their source.
-They retain laziness and, in the typed API, preserve the concrete topology
+They retain laziness and preserve the concrete topology
 handle (`Solid`, `Face`, and so on). Validation never performs hidden repair.
 
 Reports can be passed directly to inspection or logging code:

@@ -42,9 +42,9 @@ In different libraries using the BREP representation, the division of objects in
 ------------------------------------------------------
 ## Классы геометрических объектов.
 |ZenCad|OpenCascade|Составной|Мерность|Описание|
-|----|---|----|
+|----|---|----|----|----|
 |Shape|TopoDS\_Shape|неопр.|неопр.|Абстрактный геометрический объект|
-|Vertex*|TopoDS\_Vertex|нет|0|Вершина|
+|Vertex|TopoDS\_Vertex|нет|0|Вершина|
 |Edge|TopoDS\_Edge|нет|1|Ребро|
 |Wire|TopoDS\_Wire|да|1|Сложное ребро|
 |Face|TopoDS\_Face|нет|2|Грань|
@@ -53,7 +53,11 @@ In different libraries using the BREP representation, the division of objects in
 |CompSolid|TopoDS\_CompSolid|да|3|Множество твёрдых тел|
 |Compound|TopoDS\_Compound|да|неопр.|Составной объект|
 
->! * В zencad практически всегда вместо Vertex используется эквивалентный объект точки point3. 
+:ru
+`Vertex` — топологическая вершина, `Point3` — значение координат. `shape.vertices()` возвращает коллекцию вершин; `vertex.point()` получает точку.
+:en
+`Vertex` is a topological vertex; `Point3` holds coordinates. `shape.vertices()` returns a vertex collection; `vertex.point()` obtains a point.
+::
 
 ------------------------------------------------------
 :ru

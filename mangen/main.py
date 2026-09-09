@@ -1,133 +1,125 @@
 #!/usr/bin/env python3
-# coding: utf-8
+"""Build the bilingual manual without evaluating CAD/image scripts."""
+from __future__ import annotations
 
-import dominate
+import argparse
+from html import escape
+from pathlib import Path
+import shutil
+import re
+
 import markdown2
-import writer
-import os
-import sys
 
-languages_predicates = (":ru", ":en")
-
-list_of_changes = {
-    "Сигнатура:": {"ru": "Сигнатура:", "en": "Signature:"},
-    "Signature:": {"ru": "Сигнатура:", "en": "Signature:"},
-    "Пример:": {"ru": "Пример:", "en": "Example:"},
-    "Example:": {"ru": "Пример:", "en": "Example:"},
+ROOT = Path(__file__).resolve().parent
+EXAMPLE_PAGES = {
+    "index", "installation", "helloworld", "migration", "version2", "caching",
+    "prim0d", "modeling", "selectors", "validation", "show", "interactive_object",
+    "animate", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
 }
 
 
-def page_generate(path, title, mdpath, navpath, lang):
-    lines = open(mdpath).readlines()
-    lines = [l.strip() for l in lines]
-
-    filtered_lines = []
-    languages_predicates_prevent = [
-        l for l in languages_predicates if l != ":"+lang]
-
-    filter = False
-    for l in lines:
-        if l.startswith(":"):
-            filter = False
-            for r in languages_predicates_prevent:
-                if l.startswith(r):
-                    filter = True
-                    break
-            else:
-                filter = False
+def localized(source: str, language: str) -> str:
+    """Select language blocks without changing Python indentation."""
+    selected = True
+    result = []
+    for line in source.splitlines():
+        marker = line.strip()
+        if marker in {":ru", ":en", "::", ":end"}:
+            selected = marker in {"::", ":end", ":" + language}
             continue
-
-        for k, v in list_of_changes.items():
-            if l.startswith(k):
-                l = v[lang]
-                break
-
-        if filter is False:
-            filtered_lines.append(l)
-
-    text = "\n".join(filtered_lines)
-
-    page = dominate.document(title=title)
-    with page:
-        dominate.tags.meta(charset=u"utf-8")
-
-    header = page.add(dominate.tags.div(id="header", cls="header"))
-    content = page.add(dominate.tags.div(id="content"))
-    footer = page.add(dominate.tags.div(id="footer"))
-
-    nav = content.add(dominate.tags.nav(cls="nav"))
-    article = content.add(dominate.tags.article(cls="article"))
-
-    with page.head:
-        dominate.tags.link(rel="stylesheet", href="../main.css")
-
-    with header:
-        with dominate.tags.h1():
-            dominate.tags.a("ZenCad", href="index.html", cls="header_ref")
-        with dominate.tags.a(
-            "View on GitHub",
-            href="https://github.com/mirmik/zencad",
-            cls="btn btn-github",
-        ):
-            dominate.tags.span(cls="icon")
-        with dominate.tags.p():
-            dominate.tags.a("Ru", href="../ru/" + path.split("/")[1])
-            dominate.tags.a("En", href="../en/" + path.split("/")[1])
-
-    with nav:
-        dominate.util.raw(markdown2.markdown(open(navpath).read()))
-
-    with article:
-        dominate.util.raw(
-            markdown2.markdown(text, extras=[
-                               "fenced-code-blocks", "tables", "header-ids"])
-        )
-
-    writer.build_file(path, page)
+        if selected:
+            result.append(line)
+    return "\n".join(result) + "\n"
 
 
-# Подготавка файлов русской версии.
-for f in os.listdir("ru"):
-    target = os.path.splitext(f)[0] + ".html"
-    page_generate(
-        path="ru/" + target,
-        title="ZenCad",
-        mdpath=os.path.join("ru", f),
-        navpath="ru/nav.md",
-        lang="ru")
+def markdown(source: str) -> str:
+    return str(markdown2.markdown(
+        source, extras=["fenced-code-blocks", "tables", "header-ids"]
+    ))
 
-# Подготавка файлов английской версии.
-for f in os.listdir("ru"):
-    target = os.path.splitext(f)[0] + ".html"
-    page_generate(
-        path="en/" + target,
-        title="ZenCad",
-        mdpath=os.path.join("ru", f),
-        navpath="en/nav.md",
-        lang="en"
+
+
+def render_page(name: str, source: str, nav: str, language: str) -> str:
+    html = f'''<!DOCTYPE html>
+<html lang="{language}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — {escape(name)}</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/{name}.html">Ru</a> · <a href="../en/{name}.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav">{markdown(nav)}</nav>
+<article class="article">{markdown(source)}</article>
+</div>
+</body>
+</html>
+'''
+    return "\n".join(line.rstrip() for line in html.splitlines()) + "\n"
+
+
+def build(output: Path) -> None:
+    output.mkdir(parents=True, exist_ok=True)
+    for language in ("ru", "en"):
+        destination = output / language
+        destination.mkdir(exist_ok=True)
+        nav = (ROOT / language / "nav.md").read_text(encoding="utf-8")
+        generated = set()
+        for source in sorted((ROOT / "ru").glob("*.md")):
+            if source.stem == "nav":
+                continue
+            name = source.stem
+            content = localized(source.read_text(encoding="utf-8"), language)
+            (destination / f"{name}.html").write_text(
+                render_page(name, content, nav, language), encoding="utf-8"
+            )
+            generated.add(f"{name}.html")
+        # Preserve pages without a Markdown source and keep their navigation current.
+        for old in sorted((ROOT.parent / "docs" / language).glob("*.html")):
+            if old.name in generated:
+                continue
+            if old.stem == "trans1":
+                content = localized((ROOT / "ru" / "trans0.md").read_text(encoding="utf-8"), language)
+                (destination / old.name).write_text(
+                    render_page(old.stem, content, nav, language), encoding="utf-8"
+                )
+                continue
+            content = old.read_text(encoding="utf-8")
+            content = re.sub(r'<aside class="legacy-notice".*?</aside>', "", content, flags=re.S)
+            content = re.sub(r'<nav class="nav">.*?</nav>',
+                             lambda _: '<nav class="nav">' + markdown(nav) + '</nav>',
+                             content, flags=re.S)
+            (destination / old.name).write_text(content, encoding="utf-8")
+    (output / "index.html").write_text('''<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=ru/index.html">
+<title>ZenCad documentation</title></head>
+<body><h1>ZenCad 2</h1><p><a href="ru/index.html">Руководство на русском</a></p>
+<p><a href="en/index.html">English guide</a></p></body></html>
+''', encoding="utf-8")
+    shutil.copyfile(ROOT / "main.css", output / "main.css")
+    for name in ("images", "development", "architecture-council"):
+        source = ROOT.parent / "docs" / name
+        if source.exists() and source.resolve() != (output / name).resolve():
+            shutil.copytree(source, output / name, dirs_exist_ok=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", nargs="?", choices=["update"])
+    parser.add_argument("--output", type=Path)
+    arguments = parser.parse_args()
+    output = arguments.output or (
+        ROOT.parent / "docs" if arguments.action == "update" else ROOT / "build"
     )
+    build(output.resolve())
+    print(f"Manual built: {output.resolve()}")
 
-redirect_page = dominate.document()
-with redirect_page:
-    dominate.tags.meta(charset=u"utf-8")
-redirect_page.add(
-    dominate.util.raw(
-        """<meta http-equiv="refresh" content="0; url=ru/index.html" />"""
-    )
-)
-with redirect_page:
-    dominate.tags.p(
-        "Если ваш браузер не поддерживает redirect, перейдите по ссылке:")
-    with dominate.tags.p():
-        dominate.tags.a("ZenCad/ru", href="ru/index.html")
-    with dominate.tags.p():
-        dominate.tags.a("ZenCad/en", href="en/index.html")
-writer.build_file("index.html", redirect_page)
 
-os.system("cd images && ./imagen.py")
-writer.copy_tree(dst=".", src="images")
-writer.copy_file("main.css", "main.css")
-writer.remove_file("images/imagen.py")
-
-if len(sys.argv) > 1 and sys.argv[1] == "update":
-    os.system("cp -rfvT build ../docs")
+if __name__ == "__main__":
+    main()

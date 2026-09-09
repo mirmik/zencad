@@ -29,6 +29,31 @@ class TypedValueTransformCompatibilityTest(unittest.TestCase):
             {(typed.Point3, typed.Vector3, typed.Quaternion)},
         )
 
+    def test_lowercase_constructors_are_exported_and_preserve_dependencies(self):
+        namespace = {}
+        exec("from zencad import *", namespace)
+        for mode in (EvaluationMode.DEFERRED, EvaluationMode.IMMEDIATE):
+            with self.subTest(mode=mode):
+                context = typed.Context(mode=mode, cache=False)
+                with typed.using_context(context):
+                    mass = typed.box(2).mass()
+                    values = {
+                        "scalar": (namespace["scalar"](2), typed.Scalar),
+                        "point2": (namespace["point2"]((mass, 0)), typed.Point2),
+                        "point3": (namespace["point3"](mass, 0, 0), typed.Point3),
+                        "vector2": (namespace["vector2"]((mass, 0)), typed.Vector2),
+                        "vector3": (namespace["vector3"](mass, 0, 0), typed.Vector3),
+                        "quaternion": (namespace["quaternion"](0, 0, 0, mass), typed.Quaternion),
+                        "transform": (namespace["transform"](), typed.Transform),
+                    }
+                    for value, cls in values.values():
+                        self.assertIs(type(value), cls)
+                        self.assertIs(value.context, context)
+                    for name in ("point2", "point3", "vector2", "vector3"):
+                        self.assertAlmostEqual(float(values[name][0].x), 8)
+                    point = values["point3"][0]
+                    self.assertEqual(values["transform"][0](point).value(), point.value())
+
     def test_value_constructor_aliases_cover_legacy_inputs(self):
         context = typed.Context.deferred(cache=False)
         point = context.call(typed.point3, 1)

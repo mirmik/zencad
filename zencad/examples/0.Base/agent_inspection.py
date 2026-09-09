@@ -1,6 +1,6 @@
 """Small model suitable for ``zencad inspect`` examples."""
+from zencad import *
 
-from zencad import box, cylinder, display, show
 
 
 body = box(30, 20, 8, center=True)

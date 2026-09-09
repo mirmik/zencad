@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — agents</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/agents.html">Ru</a> · <a href="../en/agents.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
+<li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
+</ul></li>
+<li>Базовые примитивы и утилиты
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a></li>
+<li><a href="prim2d.html">Плоские примитивы</a></li>
+<li><a href="prim1d.html">Линии и циклы</a></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+</ul></li>
+<li>Преобразования, операции над геометрическими телами
+<ul>
+<li><a href="trans0.html">Афинные преобразования</a></li>
+<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
+<li><a href="trimesh.html">Триангуляция и меш</a></li>
+<li><a href="other.html">Прочие операции</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
+<li><a href="reflect.html">Рефлексия геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
+<li><a href="bbox.html">Ограничивающая коробка</a></li>
+</ul></li>
+<li>Визуализация
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
+<li><a href="animate.html">Анимация</a></li>
+</ul></li>
+<li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="работа-с-агентом">Работа с агентом</h1>
+
+<p>ZenCad позволяет агенту пройти полный цикл работы с моделью: изменить Python-скрипт, исполнить его, получить измерения и ошибки, проверить требования и подготовить изображение для просмотра. Для этого модель доступна как код, а результат — как геометрия и структурированный отчёт. Агенту не нужно управлять мышью в редакторе, чтобы проверить размеры или корректность тела.</p>
+
+<h2 id="что-агент-может-проверить">Что агент может проверить</h2>
+
+<table>
+<thead>
+<tr>
+  <th>Задача</th>
+  <th>Возможность ZenCad</th>
+  <th>Практический результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Построить и изменить модель</td>
+  <td>Python-скрипт с параметрами и геометрическими операциями</td>
+  <td>Изменения можно читать, сравнивать в Git и повторно исполнять.</td>
+</tr>
+<tr>
+  <td>Узнать, что получилось</td>
+  <td><code>inspect --json</code>: имена объектов, габариты, объём, топология и валидность</td>
+  <td>Агент получает измеримые свойства, а не только изображение.</td>
+</tr>
+<tr>
+  <td>Проверить условие задачи</td>
+  <td><code>check</code>: требования к валидности, типу тела, объёму и габаритам</td>
+  <td>Отчёт содержит ожидаемые и фактические значения; код выхода позволяет автоматически принять или отклонить результат.</td>
+</tr>
+<tr>
+  <td>Найти причину ошибки</td>
+  <td>Дерево и JSON графа вычислений, расположение операций в исходнике, <code>--failed-path</code></td>
+  <td>Можно проследить зависимости до сбойной операции и перейти к соответствующему коду.</td>
+</tr>
+<tr>
+  <td>Обратиться к нужной детали</td>
+  <td>Имена в <code>display(..., name=...)</code> и геометрические селекторы</td>
+  <td>Отчёт связывается с деталями модели, а грани и рёбра выбираются по свойствам.</td>
+</tr>
+<tr>
+  <td>Оценить внешний вид</td>
+  <td><code>render</code> с заданными ракурсами и размером PNG</td>
+  <td>Агент и человек могут просмотреть результат без ручной настройки камеры.</td>
+</tr>
+</tbody>
+</table>
+
+<p><code>inspect</code> и <code>check</code> запускают скрипт в отдельном процессе и работают без Qt и OpenGL. Вывод модели направляется в stderr, поэтому stdout с JSON можно разбирать программно. Команды различают ошибку скрипта, ошибку геометрии, таймаут и невыполнение требований.</p>
+
+<h2 id="один-проверяемыи-цикл">Один проверяемый цикл</h2>
+
+<p>Сохраним в <code>model.py</code> пластину с отверстием:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">plate</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">hole</span> <span class="o">=</span> <span class="n">cylinder</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="p">(</span><span class="n">plate</span> <span class="o">-</span> <span class="n">hole</span><span class="p">)</span><span class="o">.</span><span class="n">solids</span><span class="p">()</span><span class="o">.</span><span class="n">only</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;plate&quot;</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>Агент может запросить отчёт и проверить конкретные требования:</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
+zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="w"> </span>--valid<span class="w"> </span>--solid<span class="w"> </span>--volume<span class="w"> </span><span class="m">749</span>:751<span class="w"> </span>--bbox-size<span class="w"> </span><span class="m">19</span>.99:20.01,9.99:10.01,3.99:4.01<span class="w"> </span>--json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--no-cache
+</code></pre>
+</div>
+
+<p>Объём этой модели составляет примерно <code>749.735</code>, габариты — <code>20 × 10 × 4</code>. Проверка должна завершиться с кодом <code>0</code>. Если увеличить радиус отверстия до <code>3</code>, скрипт всё ещё строит валидное тело, но проверка объёма завершается с кодом <code>7</code>: модель перестала удовлетворять заданному требованию. Так агент получает обратную связь для следующей правки.</p>
+
+<p>Для визуальной проверки можно подготовить несколько видов:</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top<span class="w"> </span>--size<span class="w"> </span>640x480
+</code></pre>
+</div>
+
+<p>Рендер требует установленной GUI-части и работоспособного OpenGL. Численные проверки и изображения дополняют друг друга: корректный объём не доказывает правильность расположения отверстия, а подходящий силуэт не доказывает валидность геометрии.</p>
+
+<h2 id="диагностика-и-повторные-итерации">Диагностика и повторные итерации</h2>
+
+<p>Граф вычислений сохраняет зависимости между операциями. Если построение падает, <code>zencad inspect model.py --tree --failed-path</code> помогает сузить поиск причины. Для отладки можно выбрать немедленное вычисление и отключить дисковый кэш; при повторной работе кэш позволяет использовать сохранённые результаты. Эти настройки независимы — см. <a href="caching.html">«Вычисления и кэш»</a>.</p>
+
+<p><a href="selectors.html">Геометрические селекторы</a> позволяют описать смысл выбора, например направление ребра или положение грани, вместо предположения об их порядке. <a href="validation.html">Проверка геометрии</a> возвращает структурированные сведения об ошибках. Ни селекторы, ни проверка не заменяют условий задачи: агенту всё равно нужно сформулировать, какие размеры, расположения и свойства считаются правильными.</p>
+
+<p>Параметры команд, форматы отчётов и ограничения исполнения собраны в разделе <a href="headless.html">«Автоматизация: inspect, check, render»</a>.</p>
+</article>
+</div>
+</body>
+</html>

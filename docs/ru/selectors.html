@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — selectors</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/selectors.html">Ru</a> · <a href="../en/selectors.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
+<li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
+</ul></li>
+<li>Базовые примитивы и утилиты
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a></li>
+<li><a href="prim2d.html">Плоские примитивы</a></li>
+<li><a href="prim1d.html">Линии и циклы</a></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+</ul></li>
+<li>Преобразования, операции над геометрическими телами
+<ul>
+<li><a href="trans0.html">Афинные преобразования</a></li>
+<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
+<li><a href="trimesh.html">Триангуляция и меш</a></li>
+<li><a href="other.html">Прочие операции</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
+<li><a href="reflect.html">Рефлексия геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
+<li><a href="bbox.html">Ограничивающая коробка</a></li>
+</ul></li>
+<li>Визуализация
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
+<li><a href="animate.html">Анимация</a></li>
+</ul></li>
+<li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="топология-и-селекторы">Топология и селекторы</h1>
+
+<p><code>vertices()</code>, <code>edges()</code>, <code>faces()</code> и другие запросы возвращают <code>ShapeList[T]</code>. Индекс, срез, фильтр и сортировка создают выражение; <code>len()</code>, итерация, <code>geometry_types()</code> и <code>group_by()</code> материализуют коллекцию.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span>
+<span class="n">vertical</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+<span class="n">rounded</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">vertical</span><span class="p">)</span>
+<span class="n">side_faces</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by_position</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">tapered</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">draft</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">side_faces</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">deg</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">top</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">planar</span><span class="p">()</span><span class="o">.</span><span class="n">sort_by</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">side_faces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">top</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="n">rounded</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+<span class="n">tapered</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Запрос</th>
+  <th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>filter_by(GeomType.PLANE)</code> / <code>planar()</code></td>
+  <td>Плоские поверхности</td>
+</tr>
+<tr>
+  <td><code>normal_to(Axis.Z)</code></td>
+  <td>Плоские грани с нормалью параллельно Z, обоих знаков</td>
+</tr>
+<tr>
+  <td><code>filter_by_position(Axis.Z, z)</code></td>
+  <td>Центр на заданной высоте</td>
+</tr>
+<tr>
+  <td><code>filter_by(Plane.xy(z))</code></td>
+  <td>Центр на указанной плоскости</td>
+</tr>
+<tr>
+  <td><code>sort_by(Axis.Z)</code></td>
+  <td>Порядок по проекции центра</td>
+</tr>
+<tr>
+  <td><code>sort_by_distance(point)</code></td>
+  <td>Порядок по минимальному расстоянию до формы</td>
+</tr>
+<tr>
+  <td><code>longer_than(length)</code></td>
+  <td>Рёбра/проволоки с большей длиной</td>
+</tr>
+<tr>
+  <td><code>largest()</code></td>
+  <td>Наибольшая длина, площадь или объём по типу формы</td>
+</tr>
+<tr>
+  <td><code>only()</code></td>
+  <td>Ровно один элемент, иначе ошибка при вычислении</td>
+</tr>
+</tbody>
+</table>
+
+<p>Топологические запросы упорядочены лексикографически по центру X/Y/Z с округлением до девяти знаков. Это не постоянные идентификаторы топологии: после правки модели выбранный индекс может обозначать другую грань. При равных ключах сохраняется исходный порядок. Для моделирования предпочитайте геометрический критерий.</p>
+
+<p><code>fillet</code> и <code>chamfer</code> принимают выбранные рёбра, <code>draft</code> — выбранные грани. Повторные вхождения одного ребра дедуплицируются перед построением; чужие рёбра вызывают ошибку. Подробный контракт: <a href="../development/topology-selectors.md">Topology selectors</a>.</p>
+</article>
+</div>
+</body>
+</html>

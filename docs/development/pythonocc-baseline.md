@@ -1,8 +1,8 @@
 # pythonocc migration baseline
 
 This is the behavioral baseline used to evaluate the migration from
-`pythonocc-core` to `cadquery-ocp`. It describes the current implementation;
-it is not an installation recommendation.
+`pythonocc-core` to `cadquery-ocp`. It describes the historical pre-migration
+implementation, not the current API or an installation recommendation.
 
 ## Reference environment
 

@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/trans0.html">Ru</a>
-        <a href="../en/trans0.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — trans0</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/trans0.html">Ru</a> · <a href="../en/trans0.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,91 +44,102 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Афинные преобразования.</h1>
+<article class="article"><h1 id="афинные-преобразования">Афинные преобразования.</h1>
 
-<p>Парадигма <em>ZenCad</em> предполагает, что большая часть объектов появляется в точке начала координат, после чего перемещается к месту своего назначения с помощью механизма преобразований.</p>
+<p>Парадигма <em>ZenCad</em> предполагает, что большая часть объектов появляется в точке начала координат, после чего перемещается к месту своего назначения с помощью механизма преобразований. </p>
 
 <p>Обычно, при работе с геометрией, преобразования выполняются с помощью методов класса <em>Shape</em> (представляющего геометрические тела), но для построения сложных преобразований или работы с анимацией афинные преобразования также могут создаваться в качестве обособленных объектов.</p>
 
-<p>Афинные преобразования в <em>ZenCad</em> представлены объектами класса <em>Transformation</em> (однородные преобразования) и класса <em>GeneralTransformation</em> (афинное преобразование общего вида). Объекты этих класов порождаются семейством функций описанных ниже в этом разделе.</p>
+<p>Афинные преобразования в <em>ZenCad</em> представлены объектами класса <em>Transform</em> (однородные преобразования) и класса <em>AffineTransform</em> (афинное преобразование общего вида). Объекты этих класов порождаются семейством функций описанных ниже в этом разделе.</p>
 
-<p>Следует помнить, что преобразования общего вида вычислительно сложнее и могут сильно изменять внутреннее представление геометрического объекта.</p>
+<p>Следует помнить, что преобразования общего вида вычислительно сложнее и могут сильно изменять внутреннее представление геометрического объекта.  </p>
 
-<p>С математической точки зрения объекты преобразования является линейными операторами и относительно них допустимы некоторые операции линейной алгебры. Соответствующий функционал библиотеки описан в разделе "Операции над преобразованиями".</p>
+<p>С математической точки зрения объекты преобразования является линейными операторами и относительно них допустимы некоторые операции линейной алгебры. Соответствующий функционал библиотеки описан в разделе "Операции над преобразованиями".  </p>
 
 <p>Функции для работы с преобразованиями и специальные виды преобразований описаны в разделе "Дополнительные преобразования".</p>
 
 <hr />
 
-<h2 id="-2">Базовые преобразования.</h2>
+<h2 id="базовые-преобразования">Базовые преобразования.</h2>
 
 <p>Существует четыре базовых преобразования: поворот, трансляция, масштабирование и отражение.</p>
 
 <hr />
 
-<h3 id="-3">Поворот</h3>
+<h3 id="поворот">Поворот</h3>
 
 <p>Поворот тела вокруг оси заданной вектором <em>v</em> и проходящей через начало координат на угол <em>a</em>.</p>
 
 <p>Если угол <em>a</em> не указан, то в качестве угла поворота берётся радианная мера, численно равная модулю вектора <em>v</em>.</p>
 
-<p>Методы трансформируемых геометрических объектов:</p>
+<p>Методы трансформируемых геометрических объектов: </p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Основной синтаксис:</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Основной синтаксис:</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">angle</span><span class="p">)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotateY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 
 <span class="c1"># Сокращенный синтаксис:</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">angle</span><span class="p">)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">rot</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">rotZ</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Создание объекта трансформации:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="n">angle</span><span class="p">)</span>
+<span class="n">rotate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 <span class="n">rotateX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">rotateY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 <span class="n">rotateZ</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <hr />
 
-<h3 id="-4">Трансляция</h3>
+<h3 id="трансляция">Трансляция</h3>
 
 <p>Паралельный перенос тела на вектор <em>(x,y,z)</em>.
 По историческим причинам (в частности для совместимости с OpenScad), в библиотеке zencad есть два синонимичных семейства функций/методов translate и move, а также их мнемонические обозначения.</p>
 
-<p>Методы трансформируемых геометрических объектов:</p>
+<p>Методы трансформируемых геометрических объектов: </p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Основной, альтернативный, мнемонический синтаксис:</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Основной, альтернативный, мнемонический синтаксис:</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">translate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">move</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">moveX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">moveY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -148,16 +155,18 @@
 <span class="n">shp</span><span class="o">.</span><span class="n">movX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">movY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">movZ</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Создание объекта трансформации:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Основной синтаксис:</span>
-<span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Основной синтаксис:</span>
+<span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">translate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 
 <span class="c1"># Альтернативный синтаксис:</span>
-<span class="n">move</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">move</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">move</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 <span class="n">moveX</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">moveY</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -170,45 +179,51 @@
 <span class="n">back</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># moveY(-y)</span>
 <span class="n">up</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>    <span class="c1"># moveZ(+z)</span>
 <span class="n">down</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># moveZ(-z)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <hr />
 
-<h3 id="-5">Масштабирование</h3>
+<h3 id="масштабирование">Масштабирование</h3>
 
 <p>Изменение размера тела на коэффициент a. Может выполняться в направлении заданной оси или изотропно.</p>
 
 <p>Методы трансформируемых геометрических объектов:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">shp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">scaleX</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">scaleY</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">scaleZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>Создание объекта трансформации:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">scale</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">scale</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="n">scaleX</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="c1"># general_transformation</span>
 <span class="n">scaleY</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="c1"># general_transformation</span>
 <span class="n">scaleZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="c1"># general_transformation</span>
 <span class="n">scaleXYZ</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="c1"># general_transformation</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <hr />
 
-<h3 id="-6">Отражение</h3>
+<h3 id="отражение">Отражение</h3>
 
 <p>Операция отражения геометрии относительно точки, оси проходящей через начало координат или плоскости, проходящей через начало координат.</p>
 
-<p>При отражении относительно точки задаются координаты центра трансформации.
-При отражении относительно оси задаётся вектор оси трансформации.
-При отражении относительно плоскости задаётся вектор нормали отражающей плоскости.</p>
+<p>При отражение относительно точки задаются координаты центра трансформации.
+При отражение относительно оси задаётся вектор оси трансформации.
+При отражение относительно плоскости задаётся вектор нормали отражающей плоскости.</p>
 
-<p>Методы трансформируемых геометрических объектов:</p>
+<p>Методы трансформируемых геометрических объектов: </p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirrorO</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">mirrorO</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorO</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 
 <span class="c1"># Отражение относительно оси.</span>
@@ -221,15 +236,17 @@
 <span class="c1"># Отражение относительно плоскости.</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirror_plane</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirror_plane</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirrorXY</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(0,0,1)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirrorYZ</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(1,0,0)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirrorXZ</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(0,1,0)</span>
-</code></pre></div>
+<span class="n">shp</span><span class="o">.</span><span class="n">mirrorXY</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(0,0,1)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">mirrorYZ</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(1,0,0)</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">mirrorXZ</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(0,1,0)</span>
+</code></pre>
+</div>
 
 <p>Создание объекта трансформации:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
-<span class="n">mirrorO</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
+<span class="n">mirrorO</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">mirrorO</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
 
 <span class="c1"># Отражение относительно оси.</span>
@@ -242,20 +259,21 @@
 <span class="c1"># Отражение относительно плоскости.</span>
 <span class="n">mirror_plane</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
 <span class="n">mirror_plane</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
-<span class="n">mirrorXY</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(0,0,1)</span>
-<span class="n">mirrorYZ</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(1,0,0)</span>
-<span class="n">mirrorXZ</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(0,1,0)</span>
-</code></pre></div>
+<span class="n">mirrorXY</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(0,0,1)</span>
+<span class="n">mirrorYZ</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(1,0,0)</span>
+<span class="n">mirrorXZ</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(0,1,0)</span>
+</code></pre>
+</div>
 
 <hr />
 
-<h2 id="-7">Операции над преобразованиями.</h2>
+<h2 id="операции-над-преобразованиями">Операции над преобразованиями.</h2>
 
-<p>Аффинные преобразования являются линейными операторами и относительно них могут быть выполнены некоторые операции линейной алгебры.</p>
+<p>Аффинные преобразования являются линейными операторами и относительно них может быть выполнены некоторые операции линейной алгебры. </p>
 
 <hr />
 
-<h3 id="-8">Композиция.</h3>
+<h3 id="композиция">Композиция.</h3>
 
 <p>Композиции аффинных преобразований выполняются с помощью оператора умножения.
 Следует учесть, что композиции аффинных преобразований некоммутативны.</p>
@@ -264,12 +282,15 @@
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">trans</span> <span class="o">=</span> <span class="n">moveX</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">))</span>
-<span class="n">m</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">trans</span> <span class="o">=</span> <span class="n">moveX</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">knight</span><span class="p">()</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">trans</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
 
-<span class="c1"># alternate: box(5, center=True).rotZ(deg(60).movX(20)</span>
-</code></pre></div>
+<span class="c1"># alternate: box(5, center=True).rotZ(deg(60)).movX(20)</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -288,22 +309,27 @@
 
 <hr />
 
-<h3 id="-9">Инверсия.</h3>
+<h3 id="инверсия">Инверсия.</h3>
 
 <p>Вычисление обратного преобразования.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">trsf</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">trsf</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-<span class="n">m</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">trans</span> <span class="o">=</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">knight</span><span class="p">()</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">trans</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="n">color</span><span class="o">.</span><span class="n">green</span><span class="p">)</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">inverse</span><span class="p">()(</span><span class="n">m</span><span class="p">),</span> <span class="n">color</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -322,11 +348,14 @@
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">trans</span> <span class="o">=</span> <span class="n">moveX</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-<span class="n">m</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">trans</span> <span class="o">=</span> <span class="n">moveX</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">knight</span><span class="p">()</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">trans</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="n">color</span><span class="o">.</span><span class="n">green</span><span class="p">)</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">inverse</span><span class="p">()(</span><span class="n">m</span><span class="p">),</span> <span class="n">color</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -343,21 +372,23 @@
 </tbody>
 </table>
 
-<p>Примечание. Инверсия композиции преобразований может быть вычислена как:
+<p>Примечание. Инверсия композиции преобразований может быть вычислена как:<br />
 <em><p align=center>(A * B)<sup>-1</sup> = B<sup>-1</sup> * A<sup>-1</sup><p/></em></p>
 
 <hr />
 
-<h2 id="-10">Дополнительные преобразования.</h2>
+<h2 id="дополнительные-преобразования">Дополнительные преобразования.</h2>
 
 <hr />
 
-<h3 id="-11">Преобразование само в себя.</h3>
+<h3 id="преобразование-само-в-себя">Преобразование само в себя.</h3>
 
 <p>Специальное преобразование, никак не изменяющее объект.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">nulltrans</span><span class="p">()</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">nulltrans</span><span class="p">()</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -376,19 +407,24 @@
 
 <hr />
 
-<h3 id="-12">Минимальный поворот.</h3>
+<h3 id="минимальныи-поворот">Минимальный поворот.</h3>
 
-<p>Данное преобразование соответствует минимальному повороту от вектора <em><span style="color:green">f</span></em> к вектору <em><span style="color:blue">t</span></em>.</p>
+<p>Данное преобразование соответствует минимальному поворота от вектора <em><span style="color:green">f</span></em> к вектору <em><span style="color:blue">t</span></em>. </p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">short_rotate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">short_rotate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">short_rotate</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))(</span><span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">())</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">short_rotate</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))(</span><span class="n">knight</span><span class="p">())</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -407,29 +443,33 @@
 
 <hr />
 
-<h3 id="-13">Множественное преобразование.</h3>
+<h3 id="множественное-преобразование">Множественное преобразование.</h3>
 
-<p>Проводит операцию множественного преобразования прототипа на массив объектов преобразований transes.
-При этом, если опции <em>array</em> и <em>unit</em> неактивны, производится булево объединение результата. Если активен <em>array</em>, будет возвращен массив результатов. При активации опции <em>unit</em>, будет возвращен сборочный юнит, построенный на массиве результатов.</p>
-
-<p>Операция множественного преобразования может выполняться над интерактивными объектами и сборочными юнитами.
-В этом случае обыъект преобразования копируется необъходимое число раз. Возврат происходит в виде юнита объединяющего копии или в виде массива при активной опции <em>array</em>. Опция <em>unit</em> при этом ни на что не влияет.</p>
+<p>Произвольный набор преобразований можно применить списковым выражением. Результат — список геометрических объектов; <code>union()</code> объединяет его в одну форму. Для круговых массивов доступны <code>rotate_array</code> и <code>rotate_array2</code>: <code>array=True</code> возвращает список, иначе выполняется объединение. Аргумент <code>unit</code> не создаёт сборочный юнит.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">copies</span> <span class="o">=</span> <span class="p">[</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">]</span>
+<span class="n">fused</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">copies</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">extrans</span><span class="p">():</span> <span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span>
-<span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)),</span>
-<span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)),</span>
-<span class="n">translate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">180</span><span class="p">)),</span>
-<span class="n">nulltrans</span><span class="p">()</span>
-<span class="p">])</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">extrans</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()))</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extrans</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)),</span>
+    <span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)),</span>
+    <span class="n">translate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">180</span><span class="p">)),</span>
+    <span class="n">nulltrans</span><span class="p">()</span>
+<span class="p">]</span>
+    <span class="k">return</span> <span class="n">union</span><span class="p">([</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">])</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">extrans</span><span class="p">(</span><span class="n">knight</span><span class="p">()))</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -448,24 +488,26 @@
 
 <hr />
 
-<h3 id="-14">Круговой массив.</h3>
+<h3 id="круговои-массив">Круговой массив.</h3>
 
 <p>Множественное преобразование, порождающее круговой массив из <em>n</em> объектов на угловом диапазоне <em>yaw</em>. Параметр <em>endpoint</em> отвечает за включение последней точки линейного пространства углов.
 (праметры <em>array</em>, <em>unit</em> - см. Множественное преобразование.)</p>
 
 <p>Сигнатура и код преобразования:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="n">lspace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span>
-<span class="n">transes</span> <span class="o">=</span> <span class="p">[</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">lspace</span>  <span class="p">]</span>
-<span class="k">return</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">rotate_array</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Примеры:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">internal_models</span><span class="o">.</span><span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
-<span class="n">rotate_array</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">rotate_array</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">m</span><span class="p">))</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -484,34 +526,38 @@
 
 <hr />
 
-<h3 id="c">Круговой массив c дополнительным креном.</h3>
+<h3 id="круговои-массив-c-дополнительным-креном">Круговой массив c дополнительным креном.</h3>
 
 <p>Множественное преобразование, порождающее круговой массив из <em>n</em> объектов на угловом диапазоне <em>yaw</em>. Параметр <em>endpoint</em> отвечает за включение последней точки линейного пространства углов.
 (праметры <em>array</em>, <em>unit</em> - см. Множественное преобразование.)</p>
 
 <p>Опция <em>roll</em> задаёт интервал крена тела вокруг траектории вращения.</p>
 
-<p>В отличии от <em>rotate</em>array_ имеет несколько отличную семантику работы с исходным объектом. В <em>rotate</em>array2_ исходный объект изначально находится в начале координат, после чего разворачивается на 90 градусов вокруг оси X и смещается по оси X на растояние равное радиусу <em>r</em>.</p>
+<p>В отличии от <em>rotate</em>array_ имеет несколько отличную семантику работы с исходным объектом. В <em>rotate</em>array2_ исходный объект изначально находится в начале координат, после чего разворачивается на 90 градусов вокруг оси X и смещается по оси X на растояние равное радиусу <em>r</em>. </p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
-<span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
-<span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
-<span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
-<span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-<span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">)),</span>
-<span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span>
-<span class="n">array</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span>
-<span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
+    <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+    <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">)),</span>
+    <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span>
+    <span class="n">array</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span>
+        <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -528,20 +574,26 @@
 </tbody>
 </table>
 
-<h3 id="-15">Квадратное отражение.</h3>
+<h3 id="квадратное-отражение">Квадратное отражение.</h3>
 
 <p>Достраивает 3 отражения исходного объекта.</p>
 
 <p>Сигнатура и код преобразования:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">sqrmirror</span><span class="p">():</span>
-<span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span><span class="n">nulltrans</span><span class="p">(),</span> <span class="n">mirrorYZ</span><span class="p">(),</span> <span class="n">mirrorXZ</span><span class="p">(),</span> <span class="n">mirrorZ</span><span class="p">()])</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sqrmirror</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span><span class="n">transform</span><span class="p">(),</span> <span class="n">mirrorYZ</span><span class="p">(),</span> <span class="n">mirrorXZ</span><span class="p">(),</span> <span class="n">mirrorZ</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">union</span><span class="p">([</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">])</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">sqrmirror</span><span class="p">(</span><span class="n">knight</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
+<span class="n">sqrmirror</span><span class="p">(</span><span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+</code></pre>
+</div>
 
 <table>
 <thead>
@@ -558,7 +610,6 @@
 </tbody>
 </table>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

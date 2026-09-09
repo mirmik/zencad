@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — headless</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/headless.html">Ru</a> · <a href="../en/headless.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a></li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="automation-without-the-editor">Automation without the editor</h1>
+
+<p><code>inspect</code> and <code>check</code> need only the geometry installation. Scripts must declare a static scene with <code>display()</code> and <code>show()</code>, as in <a href="helloworld.html">your first model</a>. Model code runs in an isolated process.</p>
+
+<h2 id="inspection-and-computation-graphs">Inspection and computation graphs</h2>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--output<span class="w"> </span>report.json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--no-cache
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--graph-json<span class="w"> </span>graph.json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--failed-path
+</code></pre>
+</div>
+
+<p>Reports contain object IDs and names, placement, bounding boxes, topology types/counts, area/volume, mesh statistics, digests and validity. Model stdout/stderr is forwarded to command stderr, keeping JSON stdout suitable for pipelines.</p>
+
+<p>Trees show operations, shared dependencies, cache/evaluation state and source locations. <code>--root</code>, <code>--max-depth</code>, <code>--hide-literals</code> and <code>--max-graph-nodes</code> bound the view. If the output encoding cannot represent tree branches, the CLI uses ASCII; API <code>to_tree()</code> retains Unicode. <code>--graph-json</code> is a separate graph format, not the geometry report.</p>
+
+<h2 id="verifiable-requirements">Verifiable requirements</h2>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="w"> </span>--valid<span class="w"> </span>--solid
+zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="w"> </span>--volume<span class="w"> </span><span class="m">700</span>:800<span class="w"> </span>--bbox-size<span class="w"> </span><span class="m">19</span>:21,9:11,3:5<span class="w"> </span>--json
+</code></pre>
+</div>
+
+<p><code>--solid</code> requires each visible BREP object to have solid type; a compound containing a solid is not itself a solid. Checks target the visible result; multiple objects are aggregated according to the command contract. JSON includes expected/actual/tolerance. Exit <code>7</code> means an assertion failed after successful model execution; <code>0</code> means success. Script errors use <code>3</code>, geometry/scene errors <code>4</code>, timeouts <code>5</code>, output errors <code>6</code> and invalid arguments <code>2</code>. Details: <a href="../development/headless-inspect.md">inspect</a>, <a href="../development/headless-check.md">check</a>.</p>
+
+<h2 id="python-api">Python API</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="n">inspect_script</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="n">inspect_script</span><span class="p">(</span><span class="s2">&quot;model.py&quot;</span><span class="p">,</span> <span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+</code></pre>
+</div>
+
+<p>Protect the entry point because evaluation starts a child process. <code>check_script</code>, <code>inspect_computation_graph</code> and <code>render_script</code> are also available; see the development references for formats and parameters.</p>
+
+<h2 id="png-previews">PNG previews</h2>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
+zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top,right<span class="w"> </span>--size<span class="w"> </span>640x480
+</code></pre>
+</div>
+
+<p>Views are <code>iso</code>, <code>front</code>, <code>back</code>, <code>left</code>, <code>right</code>, <code>top</code>, <code>bottom</code>. Size applies to each tile; multiple views form a contact sheet. Rendering uses an orthographic camera and fresh FitAll, independent of saved editor state. Modes are <code>shaded</code>, <code>shaded-with-edges</code>, <code>wireframe</code>; background, axes and margin are configurable.</p>
+
+<p>Rendering requires the <code>gui</code> extra and working OpenGL. On a Linux server:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>xvfb-run<span class="w"> </span>-a<span class="w"> </span>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
+</code></pre>
+</div>
+
+<p>Windows/macOS rendering still needs platform acceptance; GitHub-hosted macOS has shown OpenGL context creation failures. This does not prevent headless inspect/check, which need no viewer. <a href="../development/deterministic-render.md">Rendering contract</a>.</p>
+</article>
+</div>
+</body>
+</html>

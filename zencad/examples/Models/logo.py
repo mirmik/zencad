@@ -4,10 +4,9 @@
 import math
 import os
 
-import zencad
 from zencad import *
 
-mandarinc = os.path.join(zencad.moduledir, "examples", "fonts/mandarinc.ttf")
+mandarinc = os.path.join(moduledir, "examples", "fonts/mandarinc.ttf")
 fontpath = register_font(mandarinc)
 
 NUT_RENDER = True

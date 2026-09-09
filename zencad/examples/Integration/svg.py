@@ -3,15 +3,14 @@
 
 from tempfile import mkstemp
 
-import zencad
 from zencad import *
 
 m0 = \
 (
-	zencad.rectangle(10,20)
-	+ zencad.rectangle(10,20,center=True)
-	+ zencad.ellipse(10,8)
-	-zencad.circle(5)
+	rectangle(10,20)
+	+ rectangle(10,20,center=True)
+	+ ellipse(10,8)
+	-circle(5)
 )
 
 svg = to_svg_string(m0)

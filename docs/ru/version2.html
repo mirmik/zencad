@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — version2</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/version2.html">Ru</a> · <a href="../en/version2.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
+<li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
+</ul></li>
+<li>Базовые примитивы и утилиты
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a></li>
+<li><a href="prim2d.html">Плоские примитивы</a></li>
+<li><a href="prim1d.html">Линии и циклы</a></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+</ul></li>
+<li>Преобразования, операции над геометрическими телами
+<ul>
+<li><a href="trans0.html">Афинные преобразования</a></li>
+<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
+<li><a href="trimesh.html">Триангуляция и меш</a></li>
+<li><a href="other.html">Прочие операции</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
+<li><a href="reflect.html">Рефлексия геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
+<li><a href="bbox.html">Ограничивающая коробка</a></li>
+</ul></li>
+<li>Визуализация
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
+<li><a href="animate.html">Анимация</a></li>
+</ul></li>
+<li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="чем-zencad-2-отличается-от-zencad-1">Чем ZenCad 2 отличается от ZenCad 1</h1>
+
+<p>ZenCad 2 сохраняет скриптовый способ моделирования на Python, но меняет установку геометрического backend, устройство визуализатора и представление результатов вычислений. Эти изменения упрощают установку, отделяют вычисление модели от её отображения и делают API более предсказуемым для человека и программных инструментов.</p>
+
+<h2 id="геометрическое-ядро-и-установка-из-pypi">Геометрическое ядро и установка из PyPI</h2>
+
+<p>Само геометрическое ядро остаётся <strong>OpenCascade</strong>. Меняется способ доступа к нему из Python: вместо <code>pythonocc-core</code> используются привязки <code>cadquery-ocp-novtk</code> с модулями <code>OCP</code>.</p>
+
+<p>В ZenCad 1 установка геометрических зависимостей требовала отдельного внимания к поставке <code>pythonocc-core</code> и OpenCascade. В ZenCad 2 backend поставляется готовыми бинарными wheel через PyPI и устанавливается как зависимость ZenCad. Для поддерживаемых платформ не нужно отдельно собирать OpenCascade или создавать окружение Conda.</p>
+
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;zencad[gui]&quot;</span>
+</code></pre>
+</div>
+
+<p>Это команда установки опубликованного пакета. Если нужная ревизия ZenCad 2 ещё не опубликована, используйте установку из исходников. Варианты установки и требования к платформе описаны в разделе <a href="installation.html">«Установка»</a>.</p>
+
+<h2 id="постоянныи-viewer-вместо-встраиваемых-окон">Постоянный viewer вместо встраиваемых окон</h2>
+
+<p>В ZenCad 1 процесс модели создавал собственное окно визуализации, которое встраивалось в главное окно приложения. Пересчёт модели затрагивал не только вычисления, но и жизненный цикл этого окна. Такая схема зависела от механизмов оконной системы.</p>
+
+<p>В редакторе ZenCad 2 viewer принадлежит главному GUI-процессу и сохраняется между запусками скрипта. В этом процессе находятся Qt, OpenGL, камера и объекты отображения OpenCascade. Отдельный исполнитель модели занимается геометрией и не создаёт окно, которое нужно встраивать.</p>
+
+<table>
+<thead>
+<tr>
+  <th>ZenCad 1</th>
+  <th>ZenCad 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Процесс модели создаёт окно viewer.</td>
+  <td>Процесс модели собирает данные сцены.</td>
+</tr>
+<tr>
+  <td>Главное окно встраивает окно другого процесса.</td>
+  <td>Главное окно отображает данные в собственном постоянном viewer.</td>
+</tr>
+<tr>
+  <td>Перезапуск вычислений связан с заменой окна модели.</td>
+  <td>Перезапускается исполнитель; viewer и камера сохраняются.</td>
+</tr>
+</tbody>
+</table>
+
+<p>При прямом запуске <code>python model.py</code> вызов <code>show()</code> открывает самостоятельный viewer в процессе скрипта. Описанное разделение GUI и исполнителя относится к работе редактора.</p>
+
+<h2 id="как-геометрия-передается-между-процессами">Как геометрия передаётся между процессами</h2>
+
+<p>Исполнитель собирает описание сцены: формы, их размещение, цвета, видимость и имена. BREP-геометрия сериализуется в байты; меши передаются как данные вершин и треугольников. Вместе с параметрами отображения они образуют снимок сцены <code>SceneSnapshot</code>, который передаётся по межпроцессному протоколу.</p>
+
+<p>GUI декодирует снимок и создаёт собственные объекты отображения AIS. Через границу процессов передаются <strong>данные геометрии</strong>, а не окно, указатели на объекты OpenCascade или объекты Qt.</p>
+
+<p>Каждый запуск имеет номер поколения. GUI принимает результат актуального запуска; запоздавший результат предыдущего пересчёта не заменит текущую сцену. Во время вычисления или при ошибке остаётся видимым последний успешный результат. В анимации изменения размещения, цвета и видимости передаются отдельными обновлениями, без повторной передачи всей геометрии на каждом кадре.</p>
+
+<p>Это же представление сцены используется для автоматического анализа: <code>inspect</code> и <code>check</code> могут получить результат модели без запуска viewer. Подробности — в разделах <a href="internal.html">«Внутренняя кухня»</a> и <a href="agents.html">«Работа с агентом»</a>.</p>
+
+<h2 id="типы-объектов-и-ленивые-вычисления">Типы объектов и ленивые вычисления</h2>
+
+<p>В ZenCad 1 ленивость была видна в типах результатов: отложенные операции могли возвращать оболочки <code>LazyObject</code> и <code>LazyObjectShape</code>. Основным представлением топологических объектов служил <code>Shape</code>; <code>point3</code> и <code>vector3</code> были классами, наследующимися от NumPy-массива.</p>
+
+<p>В ZenCad 2 публичные объекты сохраняют свой тип независимо от режима вычислений. Тела, грани, рёбра и вершины представлены типами <code>Solid</code>, <code>Face</code>, <code>Edge</code>, <code>Vertex</code>; числа, точки и векторы — <code>Scalar</code>, <code>Point3</code>, <code>Vector3</code> и другими типами значений. Ленивый граф хранится внутри этих объектов. Переключение <code>deferred</code>/<code>immediate</code> и включение кэша не подменяют их классы.</p>
+
+<p>Для создания значений в скриптах используются строчные функции:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">point3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">vector3</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">Point3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">Solid</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">)</span>
+<span class="k">assert</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p><code>point3</code> теперь является функцией создания <code>Point3</code>, а не самим классом. Точки и векторы не являются NumPy-массивами: для получения массива используется <code>.to_numpy()</code>. Численное значение запрашивается через <code>.value()</code> или <code>float()</code>, форма OCP — через <code>.native()</code>.</p>
+
+<p>Запросы топологии возвращают коллекции <code>ShapeList</code> с определённым типом элементов. Например, <code>body.faces()</code> содержит <code>Face</code>, а <code>body.vertices()</code> — <code>Vertex</code>; координаты вершины доступны через <code>.point()</code>. Индексирование и селекторы сохраняют зависимости, а итерация и запрос длины коллекции требуют вычисления.</p>
+
+<h2 id="система-ленивых-вычислении-evalcache-v2">Система ленивых вычислений: EvalCache v2</h2>
+
+<p>ZenCad 1 использовал механизм <code>Lazy</code> и универсальные оболочки <code>LazyObject</code>. Настройки вычисления и кэширования задавались через объект <code>zencad.lazy</code>; пользовательские функции можно было оборачивать декоратором <code>@lazy</code>.</p>
+
+<p>ZenCad 2 использует вычислитель <strong>EvalCache v2</strong>. Операции образуют граф с явно описанными типами результатов и правилами их сохранения. Публичный геометрический объект содержит значение или выражение этого графа. Поэтому ленивость сохраняется, но пользователь работает с объектом <code>Solid</code>, <code>Point3</code> или <code>Scalar</code>, а не с универсальной оболочкой.</p>
+
+<p>Зависимости могут проходить и через численные результаты. Например, объём одного тела можно использовать при построении другого, не преобразуя его заранее в Python-число:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>
+<span class="n">moved</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">volume</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">moved</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p><code>volume / 100</code> остаётся зависимостью в графе; явный <code>float()</code> запрашивает вычисленное число. Граф также доступен для диагностики: <code>inspect --tree</code> показывает операции и зависимости, а <code>--failed-path</code> помогает найти путь к сбойному вычислению.</p>
+
+<p>Режим выполнения и кэш задаются независимо:</p>
+
+<ul>
+<li><code>set_evaluation_mode("deferred")</code> откладывает вычисления до запроса результата; <code>set_evaluation_mode("immediate")</code> выполняет операции при построении.</li>
+<li><code>configure(cache_enabled=True)</code> разрешает дисковый кэш, а <code>False</code> отключает его чтение и запись, не отключая сам граф зависимостей.</li>
+</ul>
+
+<p>Сочетания этих настроек разобраны в таблице раздела <a href="caching.html">«Вычисления и кэш»</a>. Файлы кэша ZenCad 1 не являются совместимым кэшем ZenCad 2.</p>
+
+<p>Совместимость со старым объектом <code>zencad.lazy</code> и декоратором <code>@lazy</code> не поддерживается. Конкретные замены вызовов и правила адаптации скриптов приведены отдельно в <a href="migration.html">«Миграции с ZenCad 1»</a>.</p>
+</article>
+</div>
+</body>
+</html>

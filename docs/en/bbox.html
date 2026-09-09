@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/bbox.html">Ru</a>
-        <a href="../en/bbox.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — bbox</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/bbox.html">Ru</a> · <a href="../en/bbox.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,57 +55,35 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="bounding-box">Bounding box</h1>
+<article class="article"><h1 id="bounding-boxes">Bounding boxes</h1>
 
-<p>The bounding box is a minimal Ox, Oy, Oz-based box that describes the geometric shape shape.</p>
+<p><code>shape.boundbox()</code> and <code>shape.bbox()</code> return an axis-aligned <code>BoundaryBox</code>. Coordinates are <code>Scalar</code>; <code>minimum</code>/<code>maximum</code>/<code>center</code> are <code>Point3</code>; <code>size</code> is <code>Vector3</code>.</p>
 
-<hr />
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<h2 id="shapebbox">shape.bbox</h2>
+<span class="n">bounds</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-5</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">minimum</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">maximum</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<p>Construct a bounding box based on the shape.</p>
-
-<p>Пример</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
-</code></pre></div>
-
-<h2 id="fields">Fields.</h2>
-
-<div class="codehilite"><pre><span></span><code><span class="n">bbox</span><span class="o">.</span><span class="n">xmin</span>
-<span class="n">bbox</span><span class="o">.</span><span class="n">ymin</span>
-<span class="n">bbox</span><span class="o">.</span><span class="n">zmin</span>
-<span class="n">bbox</span><span class="o">.</span><span class="n">xmax</span>
-<span class="n">bbox</span><span class="o">.</span><span class="n">ymax</span>
-<span class="n">bbox</span><span class="o">.</span><span class="n">zmax</span>
-</code></pre></div>
-
-<h2 id="methods">Methods.</h2>
-
-<p>bbox.xrange()
-bbox.yrange()
-bbox.zrange()</p>
-
-<h2 id="to-shape">To Shape.</h2>
-
-<p>Пример</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">shape</span><span class="p">())</span>
-</code></pre></div>
+<p><code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code>, <code>zmax</code> are properties; <code>xlength()</code>/<code>ylength()</code>/<code>zlength()</code> are methods. <code>.value()</code> returns a materialized record; <code>.native()</code> returns <code>Bnd_Box</code>. OCCT tolerances may slightly enlarge bounds, so compare dimensions with tolerance. Empty geometry needs explicit handling, rather than assuming a zero-sized box.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

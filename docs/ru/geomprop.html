@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/geomprop.html">Ru</a>
-        <a href="../en/geomprop.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — geomprop</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/geomprop.html">Ru</a> · <a href="../en/geomprop.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,84 +44,47 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Геометрические характеристики.</h1>
+<article class="article"><h1 id="геометрические-характеристики">Геометрические характеристики</h1>
 
-<p>Раздел посвящен измерению геометрических характеристик конструируемой геометрии.</p>
+<p>Запросы геометрии возвращают доменные значения; используйте <code>.value()</code> для чисел Python. Для solid <code>mass()</code> измеряет объём при единичной плотности, а не физическую массу материала.</p>
 
-<p>Поскольку понятия плотности и масштаба весьма эфемерны для вычислительной библиотеки, все вычисления проводятся в условных единицах. Перевод величин в систему си требует дополнительных вычислений.</p>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<hr />
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>
+<span class="n">center</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="mi">24</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+</code></pre>
+</div>
 
-<h2 id="-2">Встроенные методы</h2>
-
-<p>Shape имеет ряд методов, позволяющих запросить геометрическую информацию.</p>
-
-<hr />
-
-<h3 id="-3">Центр масс.</h3>
-
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">center</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">point3</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">cmradius</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">vector3</span>
-</code></pre></div>
-
-<hr />
-
-<h3 id="-4">Объём.</h3>
-
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
-</code></pre></div>
-
-<hr />
-
-<h3 id="-5">Матрица инерции.</h3>
-
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">matrix_of_inertia</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">matrix33</span>
-</code></pre></div>
-
-<hr />
-
-<h3 id="-6">Статические моменты.</h3>
-
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">static_moments</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span>
-</code></pre></div>
-
-<hr />
-
-<h3 id="-7">Момент инерции относительно оси.</h3>
-
-<p>UNDER_CONSTRUCTION</p>
-
-<hr />
-
-<h3 id="-8">Радиус инерции.</h3>
-
-<p>UNDER_CONSTRUCTION</p>
-
-<hr />
-
-<h2 id="-9">Измерение систем тел</h2>
-
-<p>UNDER_CONSTRUCT</p>
+<p>Для площади и агрегированных свойств видимой сцены используйте <a href="headless.html">inspect</a>. <a href="bbox.html">Bounding box</a> и <a href="selectors.html">топология</a> сохраняют зависимости в графе. Физическую массу вычисляйте отдельно из объёма, единиц и плотности материала.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

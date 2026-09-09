@@ -1225,11 +1225,15 @@ def vector(x: ScalarInput, y: ScalarInput, z: ScalarInput) -> Vector3:
     return Vector3(x, y, z, context=resolve_context(x, y, z))
 
 
-def point2(x: ScalarInput, y: ScalarInput) -> Point2:
+def point2(
+    x: ScalarInput | tuple[ScalarInput, ScalarInput], y: ScalarInput | None = None
+) -> Point2:
     return Point2(x, y, context=resolve_context(x, y))
 
 
-def vector2(x: ScalarInput, y: ScalarInput) -> Vector2:
+def vector2(
+    x: ScalarInput | tuple[ScalarInput, ScalarInput], y: ScalarInput | None = None
+) -> Vector2:
     return Vector2(x, y, context=resolve_context(x, y))
 
 

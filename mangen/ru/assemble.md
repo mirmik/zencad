@@ -48,13 +48,13 @@ If an interactive object is passed as a parameter, the unit takes control of it.
 
 Signature: 
 ```python
-u.add(obj, color=zencad.default_color)
+u.add(obj, color=None)
 ```
 
 Пример:
 ```
 m = box(10)
-i = interactive_object(box(10).right(20))
+i = box(10).right(20)
 u.add(m)
 u.add(i)
 ``` 
@@ -78,7 +78,11 @@ u.link(child)
 
 Пример:
 ```python
-***
+from zencad.assemble import unit
+
+u = unit()
+child = unit()
+u.link(child)
 ```
 
 -------------------------------
@@ -110,7 +114,7 @@ Change current position to location object and apply location_update procedure w
 
 Сигнатура:
 ```python
-u.relocate(location, deep=True, view=True)
+u.relocate(location, deep=False, view=True)
 ```
 
 ----------------------
@@ -122,10 +126,10 @@ u.relocate(location, deep=True, view=True)
 
 Сигнатура:
 ```python
-u.bind_scene(scene, color=zencad.default_color, deep=True):
+u.bind_to_scene(scene)
 ```
 :ru
-Добавить юнит в сцену scene. Все объекты, цвета которых не установлены, будут окрашены в default_color. Если deep, рекурсивно добавить в сцену все зависимые юниты.
+Добавить юнит и его потомков в сцену `scene`. Для обычного скрипта достаточно `display(u)`: привязку к сцене выполняет система отображения. Цвет задаётся при добавлении геометрии через `u.add(obj, color=...)`.
 :en
-Add unit to scene scene. All objects whose colors are not set will be colored in default_color. If deep, recursively add all dependent units to the scene. 
+Add the unit and its descendants to `scene`. Ordinary scripts can call `display(u)` to bind it through the display system. Set colors with `u.add(obj, color=...)`.
 ::

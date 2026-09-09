@@ -22,12 +22,29 @@ def main():
     scene = Scene()
     interactive = scene.add(zencad.box(10))
 
-    widget = DisplayWidget(axis_triedron=False)
+    widget = DisplayWidget()
     widget.resize(640, 480)
     widget.show()
     application.processEvents()
 
     assert widget._display._window.IsMapped()
+    from OCP.AIS import AIS_Line
+    from OCP.Aspect import Aspect_TOL_DASH, Aspect_TOTP_LEFT_LOWER
+
+    for axis in (widget.x_axis, widget.y_axis, widget.z_axis):
+        assert isinstance(axis, AIS_Line)  # Lines have no axis arrowheads.
+        assert axis.IsInfinite()
+        assert axis.Attributes().LineAspect().Aspect().Type() == Aspect_TOL_DASH
+        assert widget.Context.IsDisplayed(axis)
+    assert widget.View.Trihedron(False) is not None
+    assert widget.View.Trihedron(False).TransformPersistence().Corner2d() == Aspect_TOTP_LEFT_LOWER
+    for axis in widget.camera_center_axes:
+        assert isinstance(axis.ais_object, AIS_Line)
+        assert axis.ais_object.Attributes().LineAspect().Aspect().Type() == Aspect_TOL_DASH
+    widget.enable_axis_triedron(False)
+    assert not widget.Context.IsDisplayed(widget.x_axis)
+    widget.enable_axis_triedron(True)
+    assert widget.Context.IsDisplayed(widget.x_axis)
     assert widget.msaa_samples in (0, 2, 4, 8)
     assert (
         widget.View.RenderingParams().NbMsaaSamples
@@ -61,6 +78,7 @@ def main():
     assert widget.close_viewer() is False
 
     reopened = DisplayWidget(axis_triedron=False)
+    assert reopened.View.Trihedron(False) is None
     reopened.resize(320, 240)
     reopened.show()
     application.processEvents()

@@ -56,8 +56,8 @@ The parameters of these points can be queried using the _range_ method.
 ::
 
 ```python 
-curve.endpoints() -> point3, point3
-curve.range() -> float, float
+curve.endpoints() # -> tuple[Point3, Point3]
+curve.range() # -> Interval; .lower/.upper -> Scalar
 ```
 
 ```python
@@ -66,15 +66,6 @@ s,f = crv.endpoints()
 disp([crv, s, f])
 ```
 ![](../images/generic/endpoints0.png)
-
------------------
-:ru
-## curve.length()
-Вернуть длину кривой между параметрами _U\_min_ и _U\_max_.
-:en
-## curve.length ()
-Return the length of the curve between the _U \ _min_ and _U \ _max_ parameters. 
-::
 
 --------------
 :ru
@@ -94,27 +85,8 @@ Return the point corresponding to the _u_ parameter.
 Return the vector of the first derivative matching the _u_ parameter. 
 ::
 
-------------------------
 :ru
-## curve.linoff(u, dist)
-Вернуть параметр точки, смещенной на длину _dist_ относительно точки задаваемой параметром _u_.
-:en
-## curve.linoff (u, dist)
-Return the parameter of the point offset by the length _dist_ relative to the point specified by the _u_ parameter. 
-::
-
-------------------------------
-:ru
-## curve.linoff_point(u, dist)
-Вернуть точку, смещенную на длину dist относительно точки задаваемой параметром _u_.  
-alternate: `curve.d0(curve.linoff(u,dist))`
-:en
-## curve.linoff_point (u, dist)
-Return the point offset by the length dist relative to the point specified by the _u_ parameter. 
-::
-
-:ru
-## curve.project(pnt)
+## curve.lower_distance_parameter(pnt)
 Вернуть параметр, соответствующий точке кривой наиболее близкой к точке pnt. 
 :en
 ## curve.project (pnt)
@@ -133,15 +105,15 @@ The parameters umin, umax set the range on the set of parameters in which the di
 ::
 
 ```python3
-curve.uniform(npnts, umin=U_min, umax=U_max) -> list(float) 
-curve.uniform_points(npnts, umin=U_min, umax=U_max) -> list(point3) 
+curve.uniform(npnts, U_min, U_max) # -> list[Scalar]
+curve.uniform_points(npnts, U_min, U_max) # -> list[Point3]
 ```  
 
 ```python
 crv = circle(r=5, wire=True, angle=deg(270))
 
 params = crv.uniform(8, math.pi/4, math.pi)
-print(params) # [0.7853981633974483, 1.121997376282069, 1.4585965891666897, 1.7951958020513104, 2.131795014935931, 2.4683942278205517, 2.8049934407051724, 3.141592653589793]
+print([float(p) for p in params]) # [0.7853981633974483, 1.121997376282069, 1.4585965891666897, 1.7951958020513104, 2.131795014935931, 2.4683942278205517, 2.8049934407051724, 3.141592653589793]
 
 pnts = crv.uniform_points(8, math.pi/4, math.pi)
 disp(pnts + [crv])

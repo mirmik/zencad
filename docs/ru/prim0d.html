@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/prim0d.html">Ru</a>
-        <a href="../en/prim0d.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — prim0d</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/prim0d.html">Ru</a> · <a href="../en/prim0d.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,155 +44,97 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Точка, вектор, вспомогательные функции.</h1>
+<article class="article"><h1 id="значения-точки-и-преобразования">Значения, точки и преобразования</h1>
 
-<p>В библиотеке ZenCad есть некоторые вспомогательные математические объекты и функции для работы с ними.</p>
+<p><code>scalar</code>, <code>point2</code>, <code>point3</code>, <code>vector2</code>, <code>vector3</code>, <code>quaternion</code> и <code>transform</code> создают числа, точки, векторы, кватернионы и преобразования. Результаты имеют типы <code>Scalar</code>, <code>Point2</code>, <code>Point3</code>, <code>Vector2</code>, <code>Vector3</code>, <code>Quaternion</code> и <code>Transform</code> соответственно. Формы и численные зависимости сохраняются в графе до явного запроса результата.</p>
 
-<hr />
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<h2 id="-2">Точка</h2>
+<span class="n">p</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">point3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">vector3</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">v</span>
+<span class="k">assert</span> <span class="n">q</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span> <span class="o">-</span> <span class="n">p</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Vector3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span> <span class="o">+</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Vector3</span><span class="p">)</span>
+<span class="n">coordinates</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<p>Некоторые функции ZenCad используют в качестве параметров точки или массивы точек. Для создания объекта точки можно использовать функцию <code>point3</code>. Кроме того, часто функция может сама сформировать точки по списку или кортежу координат.</p>
+<p>Координаты можно задавать числами, а поддерживаемые операции принимают зависимые <code>Scalar</code>. <code>Point + Point</code> запрещено. Масштабирование вектора даёт вектор; перенос действует на точку, но не на направление.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<span class="c1">#Equivalent calls</span>
-<span class="n">interpolate</span><span class="p">([</span><span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">point3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">point3</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
-<span class="n">interpolate</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
-<span class="n">interpolate</span><span class="p">(</span><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)]))</span>
-</code></pre></div>
+<span class="n">number</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">point2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">p3</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">point3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">vector2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">v3</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">vector3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">rotation</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">quaternion</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">placement</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">placement</span><span class="p">(</span><span class="n">p3</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="n">p3</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+</code></pre>
+</div>
 
-<p>Точка может быть отображена функцией display, как соответствующая такой точке вершина.</p>
+<h2 id="когда-начинается-вычисление">Когда начинается вычисление</h2>
 
-<hr />
+<ul>
+<li><code>Scalar.value()</code>, <code>float()</code>, <code>int()</code>, <code>bool()</code> и сравнения требуют число.</li>
+<li><code>Point/Vector.value()</code> возвращает кортеж; <code>.to_numpy()</code> — массив чисел.</li>
+<li><code>Shape.native()</code> возвращает OCP-форму; <code>Point/Vector.to_ocp()</code> — native точку/вектор.</li>
+<li><code>Transform.matrix()</code> возвращает числовую матрицу 4×4.</li>
+</ul>
 
-<h2 id="-3">Вектор</h2>
+<p>Обычный <code>math.sin(scalar)</code> получает число через <code>float</code>; <code>z.sin(scalar)</code> сохраняет зависимость в графе. Доменные значения логически неизменяемы: новую позицию создают операцией, а не присваиванием координате.</p>
 
-<p>Иногда кроме указаний точек используются объекты-векторы для указания направлений. Принцип работы с векторами аналогичен работе с точками.</p>
+<h2 id="преобразования">Преобразования</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span> <span class="n">tangs</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
-</code></pre></div>
+<span class="n">move</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">turn</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">combined</span> <span class="o">=</span> <span class="n">move</span> <span class="o">*</span> <span class="n">turn</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">combined</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">point3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="n">matrix</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">matrix</span><span class="p">()</span>
+</code></pre>
+</div>
 
-<p>Вектор не может быть отображен непосредственно.
-В отличие от точки вектор игнорирует трансляцию при преобразованиях.</p>
-
-<hr />
-
-<h2 id="-4">Массивы точек и векторов</h2>
-
-<p>Функции vectors и points явно создают массивы точек из массивов координат.
-points2 создаёт двумерный массив точек из двумерного списка.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
-<span class="n">vectors</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
-
-<span class="n">points2</span><span class="p">([</span>
-<span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)],</span>
-<span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)]</span>
-<span class="p">])</span>
-</code></pre></div>
-
-<hr />
-
-<h2 id="-5">Инкрементальный массив точек</h2>
-
-<p>Создаёт массив точек на основе смещений.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">points_incremental</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
-<span class="c1"># Создаёт масив точек:</span>
-<span class="c1"># (0,2,0)</span>
-<span class="c1"># (0,2,10)</span>
-<span class="c1"># (5,2,10)</span>
-<span class="c1"># (10,2,10)</span>
-</code></pre></div>
-
-<hr />
-
-<h2 id="-6">Операции над точками и векторами</h2>
-
-<p>Точки и вектора могут использоваться в математических операциях в соответствии с правилами линейной алгебры.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">pnt</span> <span class="o">-</span> <span class="n">pnt</span> <span class="o">-&gt;</span> <span class="n">vec</span>
-<span class="n">pnt</span> <span class="o">+</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">pnt</span>
-<span class="n">vec</span> <span class="o">+</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">vec</span>
-<span class="n">vec</span> <span class="o">-</span> <span class="n">vec</span> <span class="o">-&gt;</span> <span class="n">vec</span>
-</code></pre></div>
-
-<hr />
-
-<h2 id="nullshape">Пустой примитив. nullshape</h2>
-
-<p>Пустой примитив. Может участвовать в булевых операциях.</p>
-
-<p>Пример использования в цикле:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="n">nullshape</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
-<span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
-
-<span class="c1">#alternate: union([box(20).translate(10*i,10*i,10*i) for i in range(7)])</span>
-</code></pre></div>
-
-<hr />
-
-<h2 id="-7">Перевод угловых величин. Радианы и градусы</h2>
-
-<p>API zencad использует радианы для задания углов. Использование градусов требует масштабирования численного коэффициента. Именно этим и занимается функция deg (синоним deg2rad):
-<code>deg(180)</code> соответствует <code>math.pi</code>.</p>
-
-<p>Обратное преобразование выполняется функцией rad2deg.</p>
-
-<p>Сигнатуры:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="c1"># Convert degrees to radians:</span>
-<span class="k">def</span> <span class="nf">deg2rad</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
-
-<span class="c1"># Convert radians to degrees:</span>
-<span class="k">def</span> <span class="nf">rad2deg</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
-</code></pre></div>
-
-<p>Код функции deg2rad, rad2deg:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deg2rad</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
-<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
-
-<span class="k">def</span> <span class="nf">rad2deg</span><span class="p">(</span><span class="n">rad</span><span class="p">):</span>
-<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
-</code></pre></div>
-
-<p>Пример:</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">45</span><span class="p">))</span>
-</code></pre></div>
-
-<hr />
-
-<h3 id="-8">Зарегистрировать шрифт</h3>
-
-<p>Регистрирует в системе шрифт в формате FreeType.</p>
+<p><code>outer * inner</code> сначала применяет <code>inner</code>, затем <code>outer</code>. <code>Transform</code> описывает перенос, вращение и равномерный масштаб, включая отражения через знаковый масштаб; для общего аффинного преобразования есть отдельный <code>AffineTransform</code>. <a href="selectors.html">Селекторы топологии</a>.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

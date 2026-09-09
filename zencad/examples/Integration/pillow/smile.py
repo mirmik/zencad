@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import zencad
 from zencad import *
 from PIL import Image
 import numpy

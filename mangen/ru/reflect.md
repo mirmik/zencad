@@ -12,22 +12,22 @@ To work with these functions, it is recommended to study the topological structu
 
 ---------------------------
 :ru
-## Пустой объект
-Возвращает истину, если объект пустой, иначе ложь.
+## Проверка состава
+Для результата объёмной операции отсутствие тел можно проверить через `len(shape.solids()) == 0`. Это проверка наличия solid-компонентов, а не универсальная проверка пустоты: непустая грань или линия тоже не содержит solid.
 :en
-## Empty object
-Returns true if the object is empty, false otherwise.
+## Checking contents
+For a solid operation, test `len(shape.solids()) == 0` to check that no solid components remain. This is not a general emptiness test: a nonempty face or curve contains no solids either.
 ::
 
 Сигнатура:
 ```python
-shp.is_nullshape()
+len(shp.solids()) == 0
 ```
 Пример:
 ```python
 a = box(10, center=True)
 b = sphere(r=10)
-(a - b).is_nullshape() # True
+len((a - b).solids()) == 0 # True
 ```
 
 ---------------------------
@@ -35,22 +35,22 @@ b = sphere(r=10)
 ## Массивы базовых объектов
 Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. 
 
-Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция _filter_ позволяет отфильтровать выборку по необходимому условию.
+Методы возвращают `ShapeList` с элементами соответствующего типа. Для отбора используйте методы коллекции: `filter_by`, `filter_by_position`, `planar` и другие [селекторы](selectors.html). Вершина — объект `Vertex`; её координаты доступны через `.point()`.
 :en
 ## Arrays of base objects
 This family of methods allows you to retrieve and filter the underlying objects you need.
 
-All methods have the same signature and return an array of objects of the corresponding type. The optional _filter_ option allows you to filter the selection by a necessary condition. 
+Methods return a `ShapeList` with the corresponding element type. Use collection methods such as `filter_by`, `filter_by_position` and `planar` for [selection](selectors.html). A vertex is a `Vertex`; obtain its coordinates with `.point()`.
 ::
 ```python
-shape.vertices(filter=None) # -> [point3]
-shape.solids(filter=None) # -> [Shape; future:Solid] 
-shape.faces(filter=None) # -> [Face]
-shape.edges(filter=None) # -> [Edge]
-shape.wires(filter=None) # -> [Shape; future:Wire]
-shape.shells(filter=None) # -> [Shape; future:Shell]
-shape.compounds(filter=None) # -> [Shape; future:Compound]
-shape.compsolids(filter=None) # -> [Shape; future:Compsolid]
+shape.vertices() # -> ShapeList[Vertex]
+shape.solids() # -> ShapeList[Solid]
+shape.faces() # -> ShapeList[Face]
+shape.edges() # -> ShapeList[Edge]
+shape.wires() # -> ShapeList[Wire]
+shape.shells() # -> ShapeList[Shell]
+shape.compounds() # -> ShapeList[Compound]
+shape.compsolids() # -> ShapeList[CompSolid]
 ```
 
 ---------------------------------------------------
@@ -71,20 +71,16 @@ The following functions implement the closest point method and return the closes
 ```python
 near_edge(shp, pnt) # -> Edge
 near_face(shp, pnt) # -> Face
-near_vertex(shp, pnt) # -> point3
+near_vertex(shp, pnt) # -> Vertex; .point() -> Point3
 ```
 
 ---
 :ru
 ## Восстановление типа
-zencad выводит тип объекта и применимые к нему операции на основе дерева построения, что в некоторых случаях может давать неверный результат.
-
-Функция restore_shapetype восстанавливает тип на основе анализа реального представления объекта. 
+Типы `Solid`, `Face`, `Edge` и другие доступны непосредственно. `restore_shapetype` анализирует состав формы и извлекает единственный подходящий компонент. Если нужен ровно один solid, выразите это явно: `shp.solids().only()`.
 :en
 ## Type restoration
-zencad displays the type of object and the operations applicable to it based on the build tree, which in some cases may give incorrect results.
-
-The restore_shapetype function restores the type based on the analysis of the object's real representation. 
+Types such as `Solid`, `Face` and `Edge` are directly available. `restore_shapetype` examines a shape and extracts a single suitable component. To require exactly one solid, use `shp.solids().only()`.
 ::
 
 ```python

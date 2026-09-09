@@ -6,11 +6,13 @@ import math
 import time
 import os
 
-from OCP.AIS import AIS_Axis, AIS_Shaded, AIS_Shape
-from OCP.Aspect import Aspect_GFM_VER
+from OCP.AIS import AIS_Line, AIS_Shaded, AIS_Shape
+from OCP.Aspect import Aspect_GFM_VER, Aspect_TOL_DASH, Aspect_TOTP_LEFT_LOWER
+from OCP.Prs3d import Prs3d_LineAspect
+from OCP.V3d import V3d_ZBUFFER
 from OCP.Quantity import Quantity_TOC_RGB, Quantity_Color
 from OCP.Geom import Geom_Line
-from OCP.gp import gp_Ax1, gp_Lin, gp_Pnt, gp_Dir, gp_XYZ
+from OCP.gp import gp_Lin, gp_Pnt, gp_Dir
 from OCP.Graphic3d import Graphic3d_Camera
 from OCP.IntCurvesFace import IntCurvesFace_ShapeIntersector
 from OCP.Aspect import Aspect_TOD_ABSOLUTE
@@ -470,12 +472,19 @@ class DisplayWidget(BaseViewer):
         self.set_center(point3(0, 0, 0))
 
     def make_axis_triedron(self):
-        self.x_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(1, 0, 0)))
-        self.y_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(0, 1, 0)))
-        self.z_axis = AIS_Axis(gp_Ax1(gp_Pnt(), gp_Dir(0, 0, 1)))
-        self.x_axis.SetColor(Quantity_Color(1, 0, 0, Quantity_TOC_RGB))
-        self.y_axis.SetColor(Quantity_Color(0, 1, 0, Quantity_TOC_RGB))
-        self.z_axis.SetColor(Quantity_Color(0, 0, 1, Quantity_TOC_RGB))
+        def axis(direction):
+            line = AIS_Line(Geom_Line(gp_Lin(gp_Pnt(), gp_Dir(*direction))))
+            line.SetInfiniteState(True)  # Reference axes must not affect FitAll.
+            axis_color = Quantity_Color(*direction, Quantity_TOC_RGB)
+            line.SetColor(axis_color)
+            line.Attributes().SetLineAspect(
+                Prs3d_LineAspect(axis_color, Aspect_TOL_DASH, 1.0)
+            )
+            return line
+
+        self.x_axis = axis((1, 0, 0))
+        self.y_axis = axis((0, 1, 0))
+        self.z_axis = axis((0, 0, 1))
 
     def attach_scene(self, scene):
         scene.display = self
@@ -511,10 +520,17 @@ class DisplayWidget(BaseViewer):
             self.Context.Display(self.x_axis, False)
             self.Context.Display(self.y_axis, False)
             self.Context.Display(self.z_axis, False)
+            self.View.TriedronDisplay(
+                Aspect_TOTP_LEFT_LOWER,
+                Quantity_Color(1, 1, 0, Quantity_TOC_RGB),
+                0.08,
+                V3d_ZBUFFER,
+            )
         else:
             self.Context.Erase(self.x_axis, False)
             self.Context.Erase(self.y_axis, False)
             self.Context.Erase(self.z_axis, False)
+            self.View.TriedronErase()
         self.redraw()
 
     def enable_axis_biedron(self, en, colors=None):

@@ -15,12 +15,12 @@ By displacing the shells, builds a thickened / thinned body based on the prototy
 
 Сигнатура:
 ```python
-offset(proto, r)
+offset(proto, distance)
 ```
 
 Пример:
 ```python
-offset(cone(r1=15,r2=10,h=20), r=5)
+offset(cone(r1=15,r2=10,h=20), 5)
 ```
 ![](../images/generic/offset0.png)
 

@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/reflect.html">Ru</a>
-        <a href="../en/reflect.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — reflect</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/reflect.html">Ru</a> · <a href="../en/reflect.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,25 +44,31 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Рефлексия</h1>
+<article class="article"><h1 id="рефлексия">Рефлексия</h1>
 
 <p>Сложные геометрические объекты состоят из более простых. Данная группа функций и методов позволяет расскладывать сложные объекты на образующие их компоненты.</p>
 
@@ -74,66 +76,73 @@
 
 <hr />
 
-<h2 id="-2">Пустой объект</h2>
+<h2 id="проверка-состава">Проверка состава</h2>
 
-<p>Возвращает истину, если объект пустой, иначе ложь.</p>
+<p>Для результата объёмной операции отсутствие тел можно проверить через <code>len(shape.solids()) == 0</code>. Это проверка наличия solid-компонентов, а не универсальная проверка пустоты: непустая грань или линия тоже не содержит solid.</p>
 
 <p>Сигнатура:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shp</span><span class="o">.</span><span class="n">is_nullshape</span><span class="p">()</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="nb">len</span><span class="p">(</span><span class="n">shp</span><span class="o">.</span><span class="n">solids</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span>
+</code></pre>
+</div>
 
 <p>Пример:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">is_nullshape</span><span class="p">()</span> <span class="c1"># True</span>
-</code></pre></div>
+<span class="nb">len</span><span class="p">((</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">solids</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span> <span class="c1"># True</span>
+</code></pre>
+</div>
 
 <hr />
 
-<h2 id="-3">Массивы базовых объектов</h2>
+<h2 id="массивы-базовых-объектов">Массивы базовых объектов</h2>
 
-<p>Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты.</p>
+<p>Это семейство методов позволяет извлечь и отфильтровать необходимые базовые объекты. </p>
 
-<p>Все методы имеют однотипную сигнатуру, возвращают массив объектов соответствующего типа. Необязательная опция <em>filter</em> позволяет отфильтровать выборку по необходимому условию.</p>
+<p>Методы возвращают <code>ShapeList</code> с элементами соответствующего типа. Для отбора используйте методы коллекции: <code>filter_by</code>, <code>filter_by_position</code>, <code>planar</code> и другие <a href="selectors.html">селекторы</a>. Вершина — объект <code>Vertex</code>; её координаты доступны через <code>.point()</code>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [point3]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Solid]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Face]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Edge]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Wire]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Shell]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compound]</span>
-<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># -&gt; [Shape; future:Compsolid]</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Vertex]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Solid]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[CompSolid]</span>
+</code></pre>
+</div>
 
 <hr />
 
-<h2 id="-4">Взятие базового объекта по методу ближайшей точки</h2>
+<h2 id="взятие-базового-объекта-по-методу-ближаишеи-точки">Взятие базового объекта по методу ближайшей точки</h2>
 
 <p>Иногда требуется извлечь из сложного объекта конкретный базовый объект.
-В этом случае можно использовать метод базовой точки.</p>
+В этом случае можно использовать метод базовой точки.  </p>
 
 <p>Следующие функции реализуют метод ближайшей точке и возвращают ближайший к <em>pnt</em> базовый объект соответствующего типа, принадлежащий сложному объекту <em>shp</em>.</p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Edge</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Edge</span>
 <span class="n">near_face</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Face</span>
-<span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; point3</span>
-</code></pre></div>
+<span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Vertex; .point() -&gt; Point3</span>
+</code></pre>
+</div>
 
 <hr />
 
-<h2 id="-5">Восстановление типа</h2>
+<h2 id="восстановление-типа">Восстановление типа</h2>
 
-<p>zencad выводит тип объекта и применимые к нему операции на основе дерева построения, что в некоторых случаях может давать неверный результат.</p>
+<p>Типы <code>Solid</code>, <code>Face</code>, <code>Edge</code> и другие доступны непосредственно. <code>restore_shapetype</code> анализирует состав формы и извлекает единственный подходящий компонент. Если нужен ровно один solid, выразите это явно: <code>shp.solids().only()</code>.</p>
 
-<p>Функция restore_shapetype восстанавливает тип на основе анализа реального представления объекта.</p>
-
-<div class="codehilite"><pre><span></span><code><span class="n">original_shp</span> <span class="o">=</span> <span class="n">restore_shapetype</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">original_shp</span> <span class="o">=</span> <span class="n">restore_shapetype</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+</code></pre>
+</div>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

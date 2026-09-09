@@ -1,11 +1,11 @@
 :ru
 # Топологически зависимые преобразования
 
-Существует класс операций, требующий в качестве параметра выбрать элемент топологии модели. В интерактивных CAD мы можем, используя указатель мыши, выделить такой элемент и указать в качестве параметра. Этот метод недоступен в скриптовом CAD. Общий подход ZenCad состоит в том, что такой элемент задаётся методом "ближайшей точки". При задании аргумента, вместо элемента топологии задаётся точка. Выбранным считается элемент, растояние до которого от элемента топологии будет минимальным. 
+Скругление, фаска и уклон требуют выбора элементов топологии модели. Их можно выбирать по геометрическим свойствам через [селекторы](selectors.html) или передавать сами рёбра и грани. Для скруглений и фасок поддерживаются также ближайшие точки: выбирается элемент с минимальным расстоянием до точки.
 :en
 # Topologically dependent transformations
 
-There is a class of operations required as part of the model topology. In interactive CAD, we can, using the mouse pointer, point to such an element and point it as a guide. This method is not available in scripted CAD. The general approach of ZenCad is that such an element is specified using the "closest point" method. When specifying an argument, a point is specified instead of a topology element. The selected element is the element, the distance to which from the topology element will be minimal. 
+Fillets, chamfers and drafts require selecting model topology. Use [geometric selectors](selectors.html) or pass edges and faces directly. Fillets and chamfers also accept reference points, selecting the nearest topology element.
 ::
 
 ---
@@ -22,8 +22,8 @@ Fillets are specified by radius `r` and an array of nearest points`refs`. If `re
 ::
 
 ```python
-fillet(proto=model, r=radius, refs=referencedPoints)
-fillet(proto=model, r=radius)
+fillet(model, radius, referencedPoints)
+fillet(model, radius)
 model.fillet(radius, referencedPoints)
 model.fillet(radius)
 ```
@@ -47,7 +47,7 @@ TODO: asymmetrical chamfer.
 ::
 
 ```python
-chamfer(proto=model, r=radius, refs=referencedPoints)
+chamfer(model, radius, referencedPoints)
 ```
 ![](../images/generic/chamfer0.png) ![](../images/generic/chamfer1.png) </br>
 ![](../images/generic/chamfer2.png) ![](../images/generic/chamfer3.png)
@@ -79,7 +79,7 @@ faces must belong to the source body and be planar, cylindrical, or conical.
 
 ```python
 body = box(20)
-side_faces = body.faces()[:4]
+side_faces = body.faces().filter_by_position(Axis.Z, 10)
 
 narrower = draft(body, side_faces, deg(5))
 wider = draft(body, side_faces, deg(-5))
@@ -105,7 +105,7 @@ The wall thickness `t` is also specified. If the wall thickness is positive, the
 ::
 
 ```python
-thicksolid(proto=model, t=thickness, refs=referencedPoints)
+thicksolid(model, t=thickness, refs=referencedPoints)
 ```
 
 ![](../images/generic/thicksolid0.png) ![](../images/generic/thicksolid1.png)

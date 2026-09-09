@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/index.html">Ru</a>
-        <a href="../en/index.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — index</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/index.html">Ru</a> · <a href="../en/index.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,80 +55,60 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><p><center><h0>ZenCad.<h0/></center></p>
-
-<p><center></p>
-
-<div class="t0"><p>Script CAD for righteous programmers.</p></div>
-
-<p><img src="../images/generic/zencad-logo.png" alt="" />
-</center></p>
-
-<hr />
+<article class="article"><div class="home-hero">
+<h1>ZenCad.</h1>
+<p class="home-tagline">Script CAD for righteous programmers.</p>
+<img src="../images/generic/zencad-logo.png" alt="ZenCad model: a cube with spherical cutouts">
+</div>
 
 <h2 id="what-is-zencad">What is ZenCad?</h2>
 
-<p><em>ZenCad</em> is a library for parametric 3D modeling. the library adheres to the idea of ​​creating a 3D model by writing a script and its legs grow from the <em>OpenScad</em> system. Unlike <em>OpenScad</em>, the library uses the geometrical core of the boundary representation <em>OpenCascade</em> and the general-purpose language <em>Python</em>.</p>
+<p>ZenCad provides parametric 3D modeling in Python using OpenCascade. A script creates exact BREP geometry that you can display, validate and export without constructing it manually in an editor.</p>
 
-<p><em>ZenCad</em> can be used as an independent rapid prototyping system for prototyping or 3D printing purposes, and in combination with the libraries of the <em>Python</em> ecosystem, in particular for building 3D models based on calculations performed in such systems as scipy and sympy.</p>
+<p>Use ZenCad for prototyping, preparing models for 3D printing and constructing geometry from Python calculations. See <a href="installation.html">Installation</a> for source and package setup.</p>
 
-<hr />
+<h2 id="quick-start">Quick start</h2>
 
-<h1 id="fast-start">Fast start.</h1>
+<p>Install and start the editor:</p>
 
-<hr />
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;zencad[gui]&quot;</span>
+zencad
+</code></pre>
+</div>
 
-<h2 id="install">Install.</h2>
+<p>Save the model in a Python file and open it in the editor:</p>
 
-<div class="codehilite"><pre><span></span><code>python3 -m pip install <span class="s2">&quot;zencad[gui]&quot;</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<hr />
+<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
 
-<h2 id="graphic-user-intrface">Graphic user intrface.</h2>
+<h2 id="links">Links</h2>
 
-<div class="codehilite"><pre><span></span><code>zencad
-
-<span class="c1"># alternate:</span>
-python3 -m zencad
-</code></pre></div>
-
-<hr />
-
-<h2 id="helloworld">HelloWorld</h2>
-
-<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
-<span class="c1">#coding: utf-8</span>
-
-<span class="kn">from</span> <span class="nn">zencad</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">sphere1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
-<span class="n">sphere2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">box</span> <span class="o">-</span> <span class="n">sphere1</span> <span class="o">+</span> <span class="n">sphere2</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">show</span><span class="p">()</span>
-</code></pre></div>
-
-<hr />
-
-<h2 id="references">References</h2>
-
-<p>github: <a href="https://github.com/mirmik/zencad">https://github.com/mirmik/zencad</a>
-pypi: <a href="https://pypi.org/project/zencad">https://pypi.org/project/zencad</a></p>
+<ul>
+<li><a href="https://github.com/mirmik/zencad">Source on GitHub</a></li>
+<li><a href="https://pypi.org/project/zencad/">Package on PyPI</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
+</ul>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

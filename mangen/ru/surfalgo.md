@@ -19,14 +19,15 @@ The following surface classes exist in ZenCad:
 --------------------
 :ru
 ## Поиск нормали
-В точке поверхности, соответствующей параметрам _u_, _v_. По умолчанию _u_ и _v_ равны нулю.
+Нормаль возвращается как `Vector3` в точке с параметрами _u_, _v_. Для `Face.normal()` параметры по умолчанию равны нулю; для `Surface.normal(u, v)` оба параметра обязательны.
 :en
 ## Find normal
-At the point on the surface corresponding to the parameters _u_, _v_. By default, _u_ and _v_ are zero. 
+Returns a `Vector3` normal at parameters _u_, _v_. `Face.normal()` defaults both parameters to zero; `Surface.normal(u, v)` requires both parameters.
 ::
 
 Сигнатура:
 ```python
-surf.normal(u=0,v=0)
+face.normal()
+surface.normal(0, 0)
 ```
 

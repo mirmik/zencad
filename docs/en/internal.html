@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/internal.html">Ru</a>
-        <a href="../en/internal.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — internal</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/internal.html">Ru</a> · <a href="../en/internal.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,75 +55,59 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="zencad">Внутренняя кухня ZenCad</h1>
+<article class="article"><h1 id="zencad-internals">ZenCad internals</h1>
 
-<hr />
+<h2 id="geometry-kernel-and-evaluation">Geometry kernel and evaluation</h2>
 
-<h2 id="-1">Геометрическое ядро.</h2>
+<p>ZenCad uses OpenCascade through <code>cadquery-ocp-novtk</code> and its <code>OCP</code> Python modules. ZenCad geometry types and operations live in <code>zencad.geom</code>; kernel adapters live in <code>zencad._native</code>.</p>
 
-<p>Библиотека zencad базируется на геометрическом ядре OpenCascade. Доступ к API OpenCascade из Python предоставляет пакет cadquery-ocp-novtk.</p>
+<p>Geometry objects and values retain dependencies between operations. The EvalCache evaluator executes them in <code>deferred</code> or <code>immediate</code> mode and manages result reuse. A <code>Context</code> owns an evaluator; ordinary scripts use module functions and object methods. <code>.value()</code> obtains a computed value, while a shape's <code>.native()</code> obtains an OCP object. See <a href="caching.html">Evaluation and caching</a> and <a href="prim0d.html">Values, points and transforms</a>.</p>
 
-<hr />
+<h2 id="main-window-and-script-runner">Main window and script runner</h2>
 
-<h2 id="zencad-2">Организация и взаимодействие потоков и процессов ZenCad.</h2>
+<p>When started with <code>zencad model.py</code> or <code>python -m zencad model.py</code>, the main process owns Qt, the OpenCascade viewer and the OpenGL context. Camera, selection, markers and AIS presentation objects also belong to this process.</p>
 
-<p>Графический интерфейс ZenCad построен таким образом, чтобы по минимуму влиять на порядок вычислений в запускаемых скриптах. Для того, чтобы этого достичь, скрипты вызываются в отдельном процессе, пораждаемом путём вызова командной строки операционной системы (см. <code>zencad/gui/application.md</code>, <code>zencad.gui.__main__.py</code>). Общение между процессами осуществляется через каналы posix (или их аналоги). Зависимые процессы читают сообщения из stdin и отправляют сообщения через stdout. Консольный вывод зависимых процессов перехватывается системой пайпов и отправляется управляющему процессу со специальным маркером, чтобы тот в свою очередь вывел это сообщение на консоль. Поскольку система консольного вывода в результате получается довольно сложной и сама по себе требует отладки, отладочная информация отправляется в stderr, а не в stdout. Активация отладочного вывода выполняется ключём <em>--debug</em>.</p>
+<p><code>RunnerSupervisor</code> starts a separate model process using the <code>multiprocessing</code> <code>spawn</code> method. The runner constructs geometry and collects the scene without creating Qt or OpenGL windows. Scene data crosses the process boundary: serialized BREP geometry or meshes, placements, colors, names and visibility. The viewer window belongs to the main process and persists across model evaluations.</p>
 
-<p>Существует две схемы запуска графического интерфейса пользователя.</p>
+<p>Communication uses <code>multiprocessing.Pipe</code> connections and a versioned protocol. Messages carry scene snapshots, evaluation progress, script output and errors; control events and user input travel in the opposite direction. The runner captures script stdout and stderr and delivers them to the interface as messages.</p>
 
-<p>В первом случае графический интерфейс запускается непосредственно, путём применения команд (<code>zencad</code>, <code>python3 -m zencad</code>). Здесь графический интерфейс является корневым процессом.</p>
+<h2 id="evaluation-and-scene-updates">Evaluation and scene updates</h2>
 
-<p>Во втором случае графический интерфейс пользователя создаётся функцией show(), из процесса интерпретатора python скрипта. В этом случае графический интерфейс пользователя является порожденным корневым процессом и, например, для работы с консольным выводом, перенаправляет вывод всех порожденных им скриптов в корневой процесс. Корневой процесс не уничтожается до окончания работы графического интерфейса, даже если в интерфейсе был открыт другой файл.</p>
+<p>Each run receives a generation number. The runner collects object descriptions in a <code>SceneDraft</code> and publishes a <code>SceneSnapshot</code>. The GUI's <code>ScenePresenter</code> validates and decodes the snapshot before replacing the viewer contents. Only the current generation can be applied: a late message from a previous run cannot replace the current model.</p>
 
-<hr />
+<p>The last successful scene remains visible during evaluation, cancellation or failure. Camera state is preserved by default. A runner can be stopped and replaced without recreating the main window or viewer.</p>
 
-<h2 id="-2">Спящая оптимизация.</h2>
+<h2 id="what-show-does">What show() does</h2>
 
-<p>Интерперетатор языка python, увы, имеет свойство загружаться  довольно продолжительное время (вплоть до нескольких секунд), что несколько ухудшает отзывчивость системы, поскольку каждый перерасчет модели выполняется в ZenCad выполняется в новом процессе.</p>
+<p>Its behavior depends on how the script is launched:</p>
 
-<p>Чтобы несколько сгладить этот фактор, введена спящая оптимизация. Система заранее загружает и держит в спящем состоянии python процесс, который в дальнейшем может быть оперативно использован для выполнения следующего скрипта. Как только предыдущий спящий процесс использован, создаётся новый на его место.</p>
+<ul>
+<li>In scripts launched by the editor or <code>inspect</code>/<code>check</code>, <code>display()</code> adds data to a <code>SceneDraft</code>, and <code>show()</code> publishes a snapshot. Static scripts then continue without entering a GUI event loop.</li>
+<li>In a direct <code>python model.py</code> run, <code>show()</code> opens a standalone viewer in the same process and starts the Qt event loop. It does not create the full editor. This mode is also available through <code>zencad --display model.py</code>.</li>
+<li><code>zencad --no-show model.py</code> executes a script with display disabled. Use <a href="headless.html">inspect and check</a> to obtain geometry reports.</li>
+</ul>
 
-<p>Отключение спящей оптимизации выполняется ключём --no-sleeped</p>
+<h2 id="animation-and-input">Animation and input</h2>
 
-<hr />
+<p>In the editor, an animated runner stays active after publishing the scene. Its callback receives timing, input through <code>state.input</code> and camera controls through <code>state.camera</code>. Placement, color and visibility changes are sent as scene updates; camera actions use separate messages. Qt event handling and presentation run in the GUI process.</p>
 
-<h2 id="-3">Оконное встраивание.</h2>
+<p>Construct geometry for managed animations before the initial <code>show()</code>. The callback has no direct viewer-widget access and cannot replace geometry after publication. See <a href="animate.html">Animation</a> for the contract and examples.</p>
 
-<p><em>ZenCad</em> использует механизм встраиваемых окон для отображения графического вывода процессов в интерфейсе главного окна.</p>
-
-<p>Отключение оконного встраивания выполняется ключём --no-embed</p>
-
-<hr />
-
-<h2 id="-4">Запуск процесса из графического интерфейса.</h2>
-
-<p>При запуске процесса из графического интерфейса zencad производит некоторые предварительные операции.</p>
-
-<p>Вот неполный список:
-- Изменяет поведение функции show (см. ниже)
-- Перехватывает вывод в stdout, перенаправляет его в процесс-родитель.
-- Подписывается на уведомления от библиотеки кеширования для отображения прогресса вычисления.</p>
-
-<hr />
-
-<h2 id="show">Функция show.</h2>
-
-<p>В зависимости от контекста функция show может менять своё поведение (см. <code>zencad/showapi.py</code>).</p>
-
-<p>Если процесс запущен пользователем из консоли, функция show порождает процесс приложения, после чего конструирует окно визуализации, о чем уведомляет процесс приложения.</p>
-
-<p>Если процесс порождён приложением zencad, функция show конструирует окно визуализации, после чего уведомляет процесс приложения.</p>
+<p>See <a href="../development/runtime-architecture.md">Runtime architecture</a> for protocol details, object ownership and lifecycle.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — modeling</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/modeling.html">Ru</a> · <a href="../en/modeling.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a></li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="building-and-splitting-solids">Building and splitting solids</h1>
+
+<p>Module functions create primitives: <code>box</code>, <code>sphere</code>, <code>cylinder</code>, <code>cone</code>, <code>torus</code>. Shapes support translation, rotation, union (<code>+</code>), difference (<code>-</code>) and intersection (<code>^</code>). <code>extrude</code> extends a planar shape; <code>loft</code>, <code>revol</code>, <code>pipe_shell</code> and <code>sweep</code> work with profiles and paths. Valid inputs depend on the operation's topology requirements.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">outer</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">hole</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">part</span> <span class="o">=</span> <span class="n">outer</span> <span class="o">-</span> <span class="n">hole</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Shape</span><span class="p">)</span>
+<span class="n">part</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<h2 id="split-and-slice">Split and slice</h2>
+
+<p><code>split</code> partitions a body with tools and returns a collection of parts. <code>slice</code> cuts with a plane, returning lower/upper parts for a horizontal cut:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+<span class="n">parts</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">z</span><span class="o">.</span><span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">8</span><span class="p">)))</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">mass</span><span class="p">())</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">)</span> <span class="o">-</span> <span class="mi">7200</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+<span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lower</span><span class="o">.</span><span class="n">mass</span><span class="p">())</span> <span class="o">-</span> <span class="mi">4000</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper</span><span class="o">.</span><span class="n">mass</span><span class="p">())</span> <span class="o">-</span> <span class="mi">4000</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+</code></pre>
+</div>
+
+<p>Use <a href="selectors.html">selectors</a> for filleting/chamfering specific edges and drafting faces. Check results with <a href="validation.html">validate</a>, not only by looking at an image. More sweep and loft examples are in <code>zencad/examples/2.Operations/3.Sweep</code> and <code>zencad/examples/2.Operations/2.Operations/loft.py</code>.</p>
+</article>
+</div>
+</body>
+</html>

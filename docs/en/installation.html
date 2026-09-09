@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/installation.html">Ru</a>
-        <a href="../en/installation.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — installation</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/installation.html">Ru</a> · <a href="../en/installation.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,50 +55,76 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="installation">Installation</h1>
+<article class="article"><h1 id="installation">Installation</h1>
 
 <p>ZenCad is installed from PyPI together with a prebuilt geometry-backend wheel.
 Conda and a separate OpenCascade installation are not required.</p>
 
 <h2 id="graphical-interface">Graphical interface</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="go">python3 -m pip install &quot;zencad[gui]&quot;</span>
+<div class="codehilite">
+<pre><span></span><code><span class="go">python3 -m pip install &quot;zencad[gui]&quot;</span>
 <span class="go">zencad</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>On Debian and Ubuntu, install the Qt/X11 system libraries before the first
 run:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="go">sudo apt update</span>
+<div class="codehilite">
+<pre><span></span><code><span class="go">sudo apt update</span>
 <span class="go">sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \</span>
-<span class="go">libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \</span>
-<span class="go">libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \</span>
-<span class="go">libxkbcommon-x11-0</span>
-</code></pre></div>
+<span class="go">  libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \</span>
+<span class="go">  libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \</span>
+<span class="go">  libxkbcommon-x11-0</span>
+</code></pre>
+</div>
 
 <p>The GUI uses X11; a Wayland session therefore needs XWayland.</p>
 
 <h2 id="headless-geometry-only">Headless geometry only</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="go">python3 -m pip install zencad</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="go">python3 -m pip install zencad</span>
+</code></pre>
+</div>
 
 <p>ZenCad requires 64-bit CPython 3.10–3.14. Headless geometry wheels cover
 Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc
 2.31 or newer. The GUI extra is available on Windows x86-64, macOS
 x86-64/arm64, and Linux x86-64; PyQt5 does not currently publish Linux
 aarch64 wheels.</p>
+
+<h2 id="current-version-from-source">Current version from source</h2>
+
+<p>This guide describes the current ZenCad 2 source tree. <code>pip install zencad</code>
+selects the published package, not necessarily this revision. In a checkout:</p>
+
+<div class="codehilite">
+<pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[gui]&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>zencad
+</code></pre>
+</div>
+
+<p>For geometry only, use <code>python -m pip install -e .</code>. Optional example dependencies:
+<code>python -m pip install -e ".[examples]"</code>.</p>
+
+<p>Package version <code>2.0.0</code> does not imply completed platform acceptance.
+Windows/macOS rendering still needs verification; Linux GUI needs working X11/OpenGL.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

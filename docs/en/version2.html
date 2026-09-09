@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — version2</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/version2.html">Ru</a> · <a href="../en/version2.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a></li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="how-zencad-2-differs-from-zencad-1">How ZenCad 2 differs from ZenCad 1</h1>
+
+<p>ZenCad 2 retains Python scripting for modeling, while changing geometry-backend installation, viewer architecture and the representation of computation results. These changes simplify installation, separate model evaluation from presentation and make the API more predictable for people and software tools.</p>
+
+<h2 id="geometry-kernel-and-installation-from-pypi">Geometry kernel and installation from PyPI</h2>
+
+<p>The geometry kernel itself remains <strong>OpenCascade</strong>. Its Python bindings change from <code>pythonocc-core</code> to <code>cadquery-ocp-novtk</code>, exposed through the <code>OCP</code> modules.</p>
+
+<p>In ZenCad 1, geometry dependencies required separate attention to the distribution of <code>pythonocc-core</code> and OpenCascade. In ZenCad 2, the backend is distributed as prebuilt binary wheels through PyPI and installed as a ZenCad dependency. Supported platforms do not require a separate OpenCascade build or a Conda environment.</p>
+
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;zencad[gui]&quot;</span>
+</code></pre>
+</div>
+
+<p>This installs the published package. If the desired ZenCad 2 revision has not been published yet, install from source. See <a href="installation.html">Installation</a> for installation options and platform requirements.</p>
+
+<h2 id="a-persistent-viewer-instead-of-embedded-windows">A persistent viewer instead of embedded windows</h2>
+
+<p>In ZenCad 1, the model process created its own viewer window, which was embedded in the application's main window. Re-evaluating a model affected both computation and the lifecycle of that window. This design depended on window-system mechanisms.</p>
+
+<p>In the ZenCad 2 editor, the viewer belongs to the main GUI process and persists across script runs. Qt, OpenGL, the camera and OpenCascade presentation objects live in that process. A separate model runner computes geometry without creating a window to embed.</p>
+
+<table>
+<thead>
+<tr>
+  <th>ZenCad 1</th>
+  <th>ZenCad 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>The model process creates a viewer window.</td>
+  <td>The model process collects scene data.</td>
+</tr>
+<tr>
+  <td>The main window embeds another process's window.</td>
+  <td>The main window displays data in its own persistent viewer.</td>
+</tr>
+<tr>
+  <td>Restarting computation involves replacing the model window.</td>
+  <td>The runner restarts; the viewer and camera persist.</td>
+</tr>
+</tbody>
+</table>
+
+<p>When running <code>python model.py</code> directly, <code>show()</code> opens a standalone viewer in the script process. The GUI/runner separation described here applies to the editor.</p>
+
+<h2 id="how-geometry-crosses-process-boundaries">How geometry crosses process boundaries</h2>
+
+<p>The runner collects a scene description: shapes, placements, colors, visibility and names. BREP geometry is serialized to bytes; meshes are transmitted as vertex and triangle data. Together with presentation properties, these form a <code>SceneSnapshot</code> sent through the interprocess protocol.</p>
+
+<p>The GUI decodes the snapshot and creates its own AIS presentation objects. The process boundary carries <strong>geometry data</strong>, not a window, OpenCascade object pointers or Qt objects.</p>
+
+<p>Each run has a generation number. The GUI accepts the current run's result; a late result from an earlier evaluation cannot replace the current scene. The last successful result remains visible during computation or on failure. Animations send placement, color and visibility updates without retransmitting all geometry on each frame.</p>
+
+<p>The same scene representation supports automated analysis: <code>inspect</code> and <code>check</code> can obtain a model's result without starting a viewer. See <a href="internal.html">ZenCad internals</a> and <a href="agents.html">Working with an agent</a>.</p>
+
+<h2 id="object-types-and-lazy-evaluation">Object types and lazy evaluation</h2>
+
+<p>In ZenCad 1, laziness was visible in result types: deferred operations could return <code>LazyObject</code> and <code>LazyObjectShape</code> wrappers. <code>Shape</code> was the main representation of topology objects; <code>point3</code> and <code>vector3</code> were classes derived from NumPy arrays.</p>
+
+<p>In ZenCad 2, public objects retain their types regardless of evaluation mode. Solids, faces, edges and vertices use types such as <code>Solid</code>, <code>Face</code>, <code>Edge</code> and <code>Vertex</code>; numbers, points and vectors use <code>Scalar</code>, <code>Point3</code>, <code>Vector3</code> and other value types. Objects retain their lazy graphs internally. Switching between <code>deferred</code> and <code>immediate</code>, or enabling caching, does not replace their classes.</p>
+
+<p>Scripts construct values with lowercase functions:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">point3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">vector3</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">Point3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">Solid</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">)</span>
+<span class="k">assert</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p><code>point3</code> is now a function constructing a <code>Point3</code>, rather than the class itself. Points and vectors are not NumPy arrays; use <code>.to_numpy()</code> to obtain an array. Request numeric values with <code>.value()</code> or <code>float()</code>, and an OCP shape with <code>.native()</code>.</p>
+
+<p>Topology queries return <code>ShapeList</code> collections with specific element types. For example, <code>body.faces()</code> contains <code>Face</code> objects, while <code>body.vertices()</code> contains <code>Vertex</code> objects; use <code>.point()</code> to obtain vertex coordinates. Indexing and selectors retain dependencies, while iteration and collection length require evaluation.</p>
+
+<h2 id="lazy-evaluation-evalcache-v2">Lazy evaluation: EvalCache v2</h2>
+
+<p>ZenCad 1 used <code>Lazy</code> and generic <code>LazyObject</code> wrappers. Evaluation and caching were configured through <code>zencad.lazy</code>, and user functions could be wrapped with <code>@lazy</code>.</p>
+
+<p>ZenCad 2 uses the <strong>EvalCache v2</strong> evaluator. Operations form a graph with explicitly declared result types and serialization rules. Public geometry objects contain either a value or an expression in that graph. Evaluation remains lazy, but users work with <code>Solid</code>, <code>Point3</code> or <code>Scalar</code> objects instead of generic wrappers.</p>
+
+<p>Dependencies can also pass through numeric results. For example, one shape's volume can participate in another operation without first converting it to a Python number:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>
+<span class="n">moved</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">volume</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">moved</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p><code>volume / 100</code> retains the graph dependency; an explicit <code>float()</code> requests the computed number. The graph also supports diagnostics: <code>inspect --tree</code> shows operations and dependencies, while <code>--failed-path</code> helps trace a failed computation.</p>
+
+<p>Execution mode and caching are configured independently:</p>
+
+<ul>
+<li><code>set_evaluation_mode("deferred")</code> delays evaluation until a result is requested; <code>set_evaluation_mode("immediate")</code> evaluates operations as they are constructed.</li>
+<li><code>configure(cache_enabled=True)</code> enables disk caching; <code>False</code> disables cache reads and writes without disabling the dependency graph.</li>
+</ul>
+
+<p>The combinations are shown in the table in <a href="caching.html">Evaluation and caching</a>. ZenCad 1 cache files are not a compatible cache for ZenCad 2.</p>
+
+<p>The old <code>zencad.lazy</code> object and <code>@lazy</code> decorator are not supported. Call replacements and script adaptation rules are described separately in <a href="migration.html">Migrating from ZenCad 1</a>.</p>
+</article>
+</div>
+</body>
+</html>

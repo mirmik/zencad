@@ -5,6 +5,7 @@ ZenCad example: integration with skimage
 In that example we use skimage for countors finding.
 If we have contours, we can build geometry on their base.
 """
+from zencad import *
 
 
 import numpy as np
@@ -14,7 +15,6 @@ from skimage import measure, io
 from itertools import chain
 
 import math
-import zencad
 
 
 def build():
@@ -24,7 +24,7 @@ def build():
     contours = measure.find_contours(r, 0.8)
 
     zcountours = [
-        zencad.interpolate([zencad.point3(t[0], t[1]) for t in contour])
+        interpolate([point3(t[0], t[1]) for t in contour])
         for contour in contours
     ]
 
@@ -38,10 +38,10 @@ def build():
                 continue
             ints.append(gons[i] ^ gons[j])
 
-    ints = zencad.union(ints)
+    ints = union(ints)
     gons = [g - ints for g in gons]
 
-    gons = zencad.union(gons)
+    gons = union(gons)
 
     pnts = chain(*(n.endpoints() for n in ncls))
     pnts = list(pnts)
@@ -61,7 +61,7 @@ def build():
             ):
                 rpnts.append((i, j))
 
-    wires = ncls + [zencad.segment(pnts[a], pnts[b]) for a, b in rpnts]
+    wires = ncls + [segment(pnts[a], pnts[b]) for a, b in rpnts]
 
     wires = [
         wires[0],
@@ -75,15 +75,15 @@ def build():
     ]
 
     gons = gons.left(760 / 2).back(768 / 2)
-    w0 = zencad.sew(wires).left(760 / 2).back(768 / 2)
-    w1 = w0.scale(1.2, zencad.point3(0, 0, 0))
+    w0 = sew(wires).left(760 / 2).back(768 / 2)
+    w1 = w0.scale(1.2, point3(0, 0, 0))
 
     f = w1.fill() - w0.fill()
 
     mechanicus = gons + f
     mechanicus = mechanicus.extrude(20).up(20)
 
-    base = zencad.circle(r=500).extrude(20)
+    base = circle(r=500).extrude(20)
 
     return mechanicus, base, zcountours
 
@@ -92,16 +92,16 @@ if __name__ == "__main__":
     mechanicus, base, zcountours = build()
     for z in zcountours:
         if z.is_closed():
-            zencad.display(
+            display(
                 z.left(760 / 2).back(768 / 2).forw(760 +
                                                    200), color=(0, 1, 0)
             )
         else:
-            zencad.display(
+            display(
                 z.left(760 / 2).back(768 / 2).forw(760 +
                                                    200), color=(1, 0, 0)
             )
 
-    zencad.display(mechanicus, color=(1, 1, 1))
-    zencad.display(base, color=(0.2, 0.2, 0.2))
-    zencad.show()
+    display(mechanicus, color=(1, 1, 1))
+    display(base, color=(0.2, 0.2, 0.2))
+    show()

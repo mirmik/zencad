@@ -1,83 +1,75 @@
-<center><h0>ZenCad.<h0/></center>
-
 :ru
-<center>
-<div class="t0"><p>Скриптовый CAD для праведных прогеров.</p></div>
-![](../images/generic/zencad-logo.png)  
-</center>
-:en
-<center>
-<div class="t0"><p>Script CAD for righteous programmers.</p></div>
-![](../images/generic/zencad-logo.png)  
-</center>
-::
+<div class="home-hero">
+<h1>ZenCad.</h1>
+<p class="home-tagline">Скриптовый CAD для праведных прогеров.</p>
+<img src="../images/generic/zencad-logo.png" alt="Модель ZenCad: куб со сферическими вырезами">
+</div>
 
--------------
-:ru
 ## Что это?
-_ZenCad_ - это библиотека параметрического 3д моделирования. библиотека исповедует идею создания 3д модели путём написания скрипта и ноги её растут из системы _OpenScad_. В отличие от _OpenScad_, библиотека использует геометрическое ядро граничного представления _OpenCascade_ и язык общего назначения _Python_.
 
-_ZenCad_ может использоваться как самостоятельная система быстрого прототипирования для целей макетирования или 3д печати, так и в комплексе с библиотеками экосистемы _Python_, в частности для построения 3д моделий на основе расчетов выполненных в таких системах как scipy и sympy.
-:en
-## What is ZenCad?
-_ZenCad_ is a library for parametric 3D modeling. the library adheres to the idea of ​​creating a 3D model by writing a script and its legs grow from the _OpenScad_ system. Unlike _OpenScad_, the library uses the geometrical core of the boundary representation _OpenCascade_ and the general-purpose language _Python_.
+ZenCad — параметрическое 3D-моделирование на Python с геометрическим ядром OpenCascade. Скрипт создаёт точную BREP-геометрию, которую можно показать, проверить и экспортировать без ручного построения в редакторе.
 
-_ZenCad_ can be used as an independent rapid prototyping system for prototyping or 3D printing purposes, and in combination with the libraries of the _Python_ ecosystem, in particular for building 3D models based on calculations performed in such systems as scipy and sympy. 
-::
+ZenCad подходит для прототипирования, подготовки моделей к 3D-печати и построения геометрии по расчётам Python. Инструкции для разработки и установки находятся на странице [Установка](installation.html).
 
---------------
-:ru
-# Быстрый старт.
-:en
-# Fast start.
-::
+## Быстрый старт
 
-------------
-:ru
-## Установка.
-:en
-## Install.
-::
+Установка и запуск редактора:
+
 ```sh
 python3 -m pip install "zencad[gui]"
-```
-
---------------
-:ru
-## Запуск графической оболочки.
-:en
-## Graphic user intrface.
-::
-```sh
 zencad
-
-# alternate:
-python3 -m zencad
 ```
 
--------------
-## HelloWorld
+Сохраните модель в Python-файл и откройте его в редакторе:
+
 ```python
-#!/usr/bin/env python3
-#coding: utf-8
+import zencad as z
 
-from zencad import *
-
-box = box(200, 200, 200, center = True)
-sphere1 = sphere(120)
-sphere2 = sphere(60)
-
-model = box - sphere1 + sphere2
-
-display(model)
-show()
+model = z.box(200, center=True) - z.sphere(120) + z.sphere(60)
+z.display(model)
+z.show()
 ```
 
----------
-:ru
 ## Ссылки
+
+- [Исходный код на GitHub](https://github.com/mirmik/zencad)
+- [Пакет на PyPI](https://pypi.org/project/zencad/)
+- [Миграция с ZenCad 1](migration.html)
 :en
-## References
+<div class="home-hero">
+<h1>ZenCad.</h1>
+<p class="home-tagline">Script CAD for righteous programmers.</p>
+<img src="../images/generic/zencad-logo.png" alt="ZenCad model: a cube with spherical cutouts">
+</div>
+
+## What is ZenCad?
+
+ZenCad provides parametric 3D modeling in Python using OpenCascade. A script creates exact BREP geometry that you can display, validate and export without constructing it manually in an editor.
+
+Use ZenCad for prototyping, preparing models for 3D printing and constructing geometry from Python calculations. See [Installation](installation.html) for source and package setup.
+
+## Quick start
+
+Install and start the editor:
+
+```sh
+python3 -m pip install "zencad[gui]"
+zencad
+```
+
+Save the model in a Python file and open it in the editor:
+
+```python
+import zencad as z
+
+model = z.box(200, center=True) - z.sphere(120) + z.sphere(60)
+z.display(model)
+z.show()
+```
+
+## Links
+
+- [Source on GitHub](https://github.com/mirmik/zencad)
+- [Package on PyPI](https://pypi.org/project/zencad/)
+- [Migrating from ZenCad 1](migration.html)
 ::
-github: [https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
-pypi: [https://pypi.org/project/zencad](https://pypi.org/project/zencad)  

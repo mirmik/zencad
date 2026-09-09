@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/gui.html">Ru</a>
-        <a href="../en/gui.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — gui</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/gui.html">Ru</a> · <a href="../en/gui.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,76 +44,85 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Графический интерфейс, основные моменты.</h1>
+<article class="article"><h1 id="графическии-интерфеис-основные-моменты">Графический интерфейс, основные моменты.</h1>
 
 <p><img src="../images/gui.png" alt="gui.png" /></p>
 
 <hr />
 
-<h2 id="-2">Вызов</h2>
+<h2 id="вызов">Вызов</h2>
 
 <p>Окно графического интерфейса может быть вызвано следующими способами:</p>
 
 <ul>
-<li>Вызов <code>zencad.show()</code> в интерпретаторе python.</li>
+<li>Вызов <code>show()</code> в Python-скрипте открывает самостоятельный viewer в процессе скрипта; полный редактор запускается командами ниже.</li>
 <li>Выполнение <code>python3 -m zencad</code> в среде терминала. (usage: <code>python3 -m zencad [filepath]</code>)</li>
 <li>Вызов утилиты командной строки <code>zencad</code> (usage: <code>zencad [filepath]</code>)</li>
 </ul>
 
 <hr />
 
-<h2 id="-3">Обновление модели по обновлению файла источника</h2>
+<h2 id="обновление-модели-по-обновлению-фаила-источника">Обновление модели по обновлению файла источника</h2>
 
-<p>Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Следует учесть, что реализация этой функциональности выполняется путём изменения работы функции <code>zencad.show()</code> (То есть, есть разница в запуске скрипта из терминала, или из программы визуализатора).</p>
+<p>Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Редактор запускает отдельного исполнителя скрипта и получает снимок сцены. Сам viewer и камера сохраняются между пересчётами. При ошибке остаётся видимым последний успешный результат. См. <a href="internal.html">«Внутренняя кухня»</a>.</p>
 
 <hr />
 
-<h2 id="-4">Встроенный текстовый редактор</h2>
+<h2 id="встроенныи-текстовыи-редактор">Встроенный текстовый редактор</h2>
 
 <p>Визуализатор имеет встроенный виджет текстового редактора, который может быть использован для быстрого редактирования или проведения экспериментов. Отображение редактора <code>View/'Hide editor'</code></p>
 
 <hr />
 
-<h2 id="-5">Встроенная консоль</h2>
+<h2 id="встроенная-консоль">Встроенная консоль</h2>
 
 <p>ZenCad также ретранслирует вывод терминала на встроенную консоль. Отображение консоли <code>View/'Hide console'</code>.
 Это может использоваться в случае, когда вывод основного терминала недоступен.</p>
 
 <hr />
 
-<h2 id="-6">Маркеры, определение координат</h2>
+<h2 id="маркеры-определение-координат">Маркеры, определение координат</h2>
 
 <p>Для установки маркеров следует используются клавиши <code>Q(F1)</code>, <code>W(F2)</code>. После установки координаты маркера выводятся в соответствующем поле. Если установлены оба маркера, дистанция между ними отображается в поле Distance.</p>
 
 <hr />
 
-<h2 id="3d">3D навигация</h2>
+<h2 id="3d-навигация">3D навигация</h2>
 
-<p>Вращение: MouseLeftClick/Alt + MouseMove
-Смещение: MouseRightClick/Shift + MouseMove
-Масштабирование: PgUp/PgDown/MouseWheel</p>
+<p>Вращение: MouseLeftClick/Alt + MouseMove<br />
+Смещение: MouseMiddleClick/MouseRightClick/Shift + MouseMove
+Масштабирование: PgUp/PgDown/MouseWheel  </p>
+
+<p>Схему навигации можно выбрать в <code>Edit/Settings</code>: ZenCad, Legacy ZenCad,
+Blender, FreeCAD CAD, Maya или Custom. В Custom отдельно назначаются жесты
+Rotate, Pan и Zoom. Там же можно инвертировать колесо и направление вращения.</p>
 
 <p>Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - <code>Navigation/'Axionometric view'</code>, <code>Navigation/'Free rotation view'</code></p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

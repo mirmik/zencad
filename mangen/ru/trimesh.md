@@ -1,172 +1,135 @@
 :ru
-# Триангуляция и меш
+# Триангуляция и mesh
 
-__EXPERIMENTAL__
-
-Функции для работы с полигональным представлением.
-:en
-# Triangulation and mesh
-
-__EXPERIMENTAL__
-
-Functions for working with polygonal representation. 
-::
-
----
-:ru
-## Отображаемый меш
-
-Метод `Shape.to_mesh()` строит индексированную треугольную сетку `MeshData`.
-Такую сетку можно передать непосредственно в `disp`: просмотрщик отображает
-её через `AIS_Triangulation`, не превращая каждый треугольник в B-Rep-грань.
-:en
-## Displayable mesh
-
-`Shape.to_mesh()` builds an indexed `MeshData` triangle mesh. The mesh can be
-passed directly to `disp`; the viewer renders it through `AIS_Triangulation`
-without converting every triangle into a B-Rep face.
-::
+`Shape.to_mesh()` возвращает типизированный `MeshData`, сохраняя граф формы. Материализованная запись содержит позиции, нормали, индексы треугольников, соответствие граням и число отброшенных треугольников.
 
 ```python
-model = torus(30, 8) - box(60, 12, 12, center=True)
+import zencad as z
+
+mesh = z.box(10).to_mesh(0.5)
+record = mesh.value()
+assert record.vertex_count > 0
+assert record.triangle_count > 0
+arrays = mesh.to_numpy()
+assert arrays.positions.shape[1] == 3
+native = mesh.native()
+```
+
+`mesh.positions` и `mesh.triangles` дают численные кортежи, `.to_numpy()` — свежие изменяемые массивы, `.native()` — `Poly_Triangulation`. Это явные границы вычисления; изменение массива не меняет исходную форму. Mesh — приближение геометрии, не точный BREP. Для [STL/3MF](expimp.html) можно сразу вызвать экспорт без ручного построения сетки.
+## Отображение сетки
+
+```python
+import zencad as z
+
+model = z.torus(30, 8) - z.box(60, 12, 12, center=True)
 mesh = model.to_mesh(linear_deflection=0.35)
-
-controller = disp(mesh, color=color.orange)
-show()
+z.display(mesh, color=z.orange, display_mode="shaded_with_edges")
+z.show()
 ```
 
-:ru
-По умолчанию используется режим `shaded_with_edges`: затенённая поверхность
-с рёбрами всех треугольников. Режим можно выбрать при отображении:
-:en
-The default is `shaded_with_edges`: a shaded surface with all triangle edges.
-The display mode can be selected when displaying the mesh:
-::
+Просмотрщик отображает сетку напрямую, без преобразования каждого треугольника
+в BREP-грань. Режимы отображения: `shaded_with_edges`, `shaded`, `wireframe`.
+`linear_deflection` и `angular_deflection` задают детализацию; `crease_angle`
+определяет границы, на которых нормали остаются раздельными.
 
-```python
-disp(mesh, display_mode="shaded_with_edges")  # поверхность и рёбра
-disp(mesh, display_mode="shaded")             # только поверхность
-disp(mesh, display_mode="wireframe")          # только рёбра
-```
-
-:ru
-Режим уже отображённого объекта можно изменить через
-`controller.set_mesh_display_mode(...)`.
-:en
-The mode of an already displayed object can be changed with
-`controller.set_mesh_display_mode(...)`.
-::
-
-:ru
-`MeshData` содержит массивы `positions`, `normals`, `triangles` и
-`triangle_face_ids`. Параметры `linear_deflection` и `angular_deflection`
-задают детализацию, а `crease_angle` определяет, на каких рёбрах нормали
-должны оставаться раздельными.
-:en
-`MeshData` contains `positions`, `normals`, `triangles`, and
-`triangle_face_ids`. `linear_deflection` and `angular_deflection` control
-detail, while `crease_angle` determines where normals remain split across
-sharp edges.
-::
-
----
-:ru
-## Триангуляция
-Построение полигональной сетки в формате (_nodes_, _triangles_), где _pnts_ - массив точек, а _triangles_ - массив 3-кортежей, индексов точек.
-Параметр _deflection_ отвечает за разрешение разбиения. 
-:en
-## Triangulation
-Creation of a polygonal mesh in the format (_nodes_, _triangles_), where _pnts_ is an array of points, and _triangles_ is an array of 3-tuples, indices of points.
-The _deflection_ parameter is responsible for resolving the splitting. 
-::
-
-Сигнатура:
-```python
-nodes, triangles = triangulate(shp, deflection)
-```
-
-Пример:
-```python
-m=sphere(10)
-nodes, triangles = triangulate(m, 0.1)
-
-print("count_of_nodes:", len(nodes))
-print("count_of_triangles:", len(triangles))
-
-print("first_five_nodes:", nodes[:5])
-print("first_five_triangles:", triangles[:5])
-
-#count_of_nodes: 699
-#count_of_triangles: 1362
-#first_five_nodes: [point3(0.000000,-0.000000,10.000000), point3(0.000000,-0.000000,10.000000), point3(0.000000,-0.000000,-10.000000), point3(1.950903,-0.000000,-9.807853), point3(3.826834,-0.000000,-9.238795)]
-#first_five_triangles: [[237, 227, 200], [486, 482, 470], [237, 200, 211], [487, 472, 477], [238, 201, 212]]
-```
-
------------------------------
-:ru
 ## Полигедрон
-Объёмное тело, состоящее из плоских граней, заданное точками вершин _pnts_ и массивом кортежей индексов точек, задающих грани.
-:en
-## Polyhedrone
-A solid consisting of flat faces, specified by vertex points _pnts_ and an array of tuples of indices of points defining the faces. 
-::
 
-Сигнатура:
+`polyhedron(pnts, faces, shell=False)` строит форму из вершин и граней,
+заданных индексами вершин. Для оболочки вместо тела задайте `shell=True`.
+
 ```python
-polyhedron(pnts, faces, shell=False)
+import zencad as z
+
+mesh = z.sphere(10).to_mesh(0.5)
+model = z.polyhedron(mesh.positions, mesh.triangles)
+z.display(model)
+z.show()
 ```
 
-Пример:
-```python
-m=sphere(10)
-nodes, triangles = triangulate(m, 0.1)
-disp(polyhedron(nodes, triangles))
-```
-![](../images/generic/polyhedron0.png)
+![Полигедрон по триангуляции сферы](../images/generic/polyhedron0.png)
 
-----------------------------------------------
-:ru
 ## Выпуклая оболочка
-Построение выпуклой оболочки множества точек.
-Используется процедура scipy.spatial.ConvexHull
 
-_convex_hull_ вычисляет массив индексов точек полигонов выпуклой оболочки.
-_convex_hull_shape_ строит выпуклую оболочку, используя процедуру _polyhedron_.
+`convex_hull` вычисляет индексы граней выпуклой оболочки множества точек,
+`convex_hull_shape` строит соответствующую форму. Требуется SciPy.
+Параметры `incremental` и `qhull_options` передаются алгоритму SciPy;
+`convex_hull_shape(..., shell=True)` создаёт оболочку вместо тела.
 
-Опции:
-_incremental_ и _qhull_options_ являются опциями scipy.spatial.ConvexHull (см. документацию scipy).
-_shell_ - создать оболочку вместо тела.
+```python
+import zencad as z
+
+points = z.points([(0, 0, 0), (10, 0, 0), (10, 10, 0), (0, 10, 0), (5, 5, 10)])
+model = z.convex_hull_shape(points)
+z.display(model)
+z.show()
+```
+
+![Выпуклая оболочка пяти точек](../images/generic/convex_hull0.png)
 :en
+# Triangulation and meshes
+
+`Shape.to_mesh()` returns typed `MeshData`, retaining the shape graph. Its materialized record contains positions, normals, triangle indices, face IDs and the number of dropped triangles.
+
+```python
+import zencad as z
+
+mesh = z.box(10).to_mesh(0.5)
+record = mesh.value()
+assert record.vertex_count > 0
+assert record.triangle_count > 0
+arrays = mesh.to_numpy()
+assert arrays.positions.shape[1] == 3
+native = mesh.native()
+```
+
+`mesh.positions` and `mesh.triangles` expose numeric tuples; `.to_numpy()` returns fresh mutable arrays; `.native()` returns `Poly_Triangulation`. These are explicit evaluation boundaries; changing an array does not change the source shape. A mesh approximates geometry rather than retaining exact BREP. For [STL/3MF](expimp.html), export directly without manually creating a mesh.
+## Displaying a mesh
+
+```python
+import zencad as z
+
+model = z.torus(30, 8) - z.box(60, 12, 12, center=True)
+mesh = model.to_mesh(linear_deflection=0.35)
+z.display(mesh, color=z.orange, display_mode="shaded_with_edges")
+z.show()
+```
+
+The viewer displays the mesh directly without converting each triangle into a
+BREP face. Display modes are `shaded_with_edges`, `shaded` and `wireframe`.
+`linear_deflection` and `angular_deflection` control detail; `crease_angle`
+defines edges where normals remain split.
+
+## Polyhedron
+
+`polyhedron(pnts, faces, shell=False)` builds a shape from vertices and faces
+specified by vertex indices. Set `shell=True` to construct a shell instead of a solid.
+
+```python
+import zencad as z
+
+mesh = z.sphere(10).to_mesh(0.5)
+model = z.polyhedron(mesh.positions, mesh.triangles)
+z.display(model)
+z.show()
+```
+
+![Polyhedron from a sphere triangulation](../images/generic/polyhedron0.png)
+
 ## Convex hull
-Construction of the convex hull of a set of points.
-The scipy.spatial.ConvexHull procedure is used
 
-_convex_hull_ computes an array of convex hull polygon point indices.
-_convex_hull_shape_ builds a convex hull using the _polyhedron_ procedure.
+`convex_hull` computes face indices for the convex hull of a point set;
+`convex_hull_shape` constructs the corresponding shape. SciPy is required.
+`incremental` and `qhull_options` are passed to the SciPy algorithm;
+`convex_hull_shape(..., shell=True)` creates a shell instead of a solid.
 
-Options:
-_incremental_ and _qhull_options_ are scipy.spatial.ConvexHull options (see scipy documentation).
-_shell_ - create a shell instead of a body.
+```python
+import zencad as z
+
+points = z.points([(0, 0, 0), (10, 0, 0), (10, 10, 0), (0, 10, 0), (5, 5, 10)])
+model = z.convex_hull_shape(points)
+z.display(model)
+z.show()
+```
+
+![Convex hull of five points](../images/generic/convex_hull0.png)
 ::
-
-Сигнатура:
-```python
-convex_hull(pnts, incremental=False, qhull_options=None)
-convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None)
-```
-
-Пример:
-```python
-pnts = points([
-	( 0,  0,  0),
-	(10,  0,  0),
-	(10, 10,  0),
-	( 0, 10,  0),
-	( 5,  5, 10),
-])
-
-print(convex_hull(pnts))
-disp(convex_hull_shape(pnts))
-```
-
-![](../images/generic/convex_hull0.png)

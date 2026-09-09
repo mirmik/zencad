@@ -1,80 +1,103 @@
 :ru
-# Кэширование и ленивые объекты.
+# Вычисления и кэш
 
-Особенностью скриптового cad является необходимость перезапуска скрипта генерации геометрии при каждом обновлении модели. С ростом размера модели это приводит к значительному росту времени, требующегося на расчёт и отрисовку геометрии. С целью решения этой проблемы вычислительно ёмкие операции ZenCad закешированы и ленифицированы силами библиотеки [evalcache](https://github.com/mirmik/evalcache). 
+По умолчанию вычисления отложены (`deferred`): операции создают граф, а геометрия вычисляется, когда нужна для отображения, экспорта, `native()` или `value()`. Кэш помогает повторно использовать результаты одинаковых вычислений, в том числе в новом процессе.
 
-Вместо непосредственного расчета, evalcache строит дерево построения модели на основе хэшключей генерируемых объектов. Библиотека сохраняет в кэше на жестком диске все произведенные вычисления и в случае, если объект уже был расчитан ранее, достаёт его из кэша. evalcache отслеживает изменения параметров в дереве модели и на лету обновляет переставшие быть актуальными объекты вычисления.
-:en
-# Caching and lazy objects.
-
-A feature of the scripted cad is the need to restart the geometry generation script every time the model is updated. As the size of the model grows, this leads to a significant increase in the time required for calculating and drawing geometry. To solve this problem, computationally intensive ZenCad operations are cached and lenified by the [evalcache] library (https://github.com/mirmik/evalcache).
-
-Instead of calculating directly, evalcache builds a model building tree based on the hash keys of the generated objects. The library saves all performed calculations in the cache on the hard disk and, if the object has already been calculated earlier, retrieves it from the cache. evalcache monitors changes in parameters in the model tree and updates computation objects that have ceased to be up-to-date on the fly. 
-::
-
-:ru
-### Отладка в условиях работы с ленивыми вычислениями.
-Так как evalcache выполняет вычисления только в момент, когда объект в действительности запрошен, а не тогда, когда он объявлен, могут возникать проблемы с пониманием точки возникновения возможной ошибки. Также могут возникать проблемы из-за неявного раскрытия ленивых объектов на некоторых операциях.
-
-Для отладки и понимания точки возникновения ошибки можно в шапке скрипта включить
-немедленные вычисления. Публичные типы объектов при этом не меняются:
-:en
-### Debugging with lazy evaluation.
-Since evalcache only performs computations when the object is actually requested, and not when it is declared, it can be difficult to understand where a possible error occurs. Problems can also arise due to the implicit expansion of lazy objects on some operations.
-
-Set immediate evaluation in the script header to report failures at the
-operation that declared them. Public object types do not change:
-::
+Для отладки включите немедленные вычисления до построения модели:
 
 ```python
-zencad.configure(cache_enabled=False)
-zencad.set_evaluation_mode("immediate")
-model = zencad.box(20) - zencad.cylinder(3, 20)
+import zencad as z
+
+z.configure(cache_enabled=False)
+z.set_evaluation_mode("immediate")
+body = z.box(20) - z.cylinder(3, 20)
+assert isinstance(body, z.Shape)
+z.set_evaluation_mode("deferred")
 ```
 
-:ru
-Для headless-проверки тот же режим включается командой
-`zencad inspect model.py --eager --no-cache --json`. Режим устанавливается для всего
-скрипта и действует до явного изменения. Старый глобальный интерфейс
-`zencad.lazy.onplace` в ZenCad 2 удалён.
+Режим действует до явного изменения и не меняет типы объектов. Переключение не вычисляет все уже созданные выражения. Кэш независим от режима: его отключение само по себе не отключает ленивые вычисления.
+
+| Режим | `cache_enabled=False` | `cache_enabled=True` |
+| --- | --- | --- |
+| `immediate` | Операция вычисляется сразу, без чтения и записи дискового кэша. | Результат запрашивается сразу: берётся из дискового кэша, а при отсутствии вычисляется и сохраняется. |
+| `deferred` | Операция вычисляется, когда нужен результат, без чтения и записи дискового кэша. | Когда результат понадобится, он берётся из дискового кэша, а при отсутствии вычисляется и сохраняется. |
+
+`configure(cache_enabled=False)` отключает чтение и запись дискового кэша, но не удаляет его файлы. Уже вычисленные результаты объектов могут повторно использоваться в памяти. Таблица описывает операции, допускающие кэширование; простые значения могут вычисляться при построении графа.
+
+## Общий дисковый кэш
+
+По умолчанию каталог: `tempfile.gettempdir()/zencad-cache-<uid>`. ZenCad не удаляет его при выходе, но временный каталог может очистить ОС. Приоритет настроек: явный `configure()` в процессе, затем `ZENCAD_CACHE_DIR`/`ZENCAD_CACHE_DISABLE`, затем сохранённые пользовательские настройки.
+
+```python
+import zencad as z
+
+z.configure(cache_dir="./model-cache", cache_enabled=True)
+body = z.box(5)
+print(body.mass().value())
+```
+
+`ZENCAD_CACHE_DISABLE=1` отключает чтение и запись дискового кэша. `z.clear_cache()` явно очищает настроенный кэш; в обычном скрипте вызывать его не требуется.
+
+## Диагностика без редактора
+
+```sh
+zencad inspect model.py --eager --no-cache --json
+zencad inspect model.py --tree
+zencad inspect model.py --tree --failed-path
+```
+
+Заголовок скрипта может переопределить начальный режим runner. Граф показывает зависимости, cache hit и ошибки. [Командная строка](headless.html).
+
+Для интеграций доступен явный владелец вычислений: `context = z.Context.deferred(cache=False)` и `context.call(z.box, 10)`. У `Context` нет CAD-фасада; для обычных скриптов отдельный контекст не нужен. Старые настройки `zencad.lazy` описаны только в [руководстве миграции](migration.html).
 :en
-For a headless check, use
-`zencad inspect model.py --eager --no-cache --json`. The mode applies to the whole
-script and persists until explicitly changed. The old global `zencad.lazy.onplace`
-interface was removed in ZenCad 2.
-::
+# Evaluation and caching
 
-----
-### Где лежит кэш?
-По умолчанию все процессы ZenCad текущего пользователя используют один общий
-каталог tempfile.gettempdir()/zencad-cache-<uid>. ZenCad не удаляет его при
-завершении, но операционная система может очистить временный каталог.
+Evaluation is deferred by default: operations construct a graph, and geometry is computed for display, export, `native()` or `value()`. Caching reuses identical computation results, including across processes.
 
-Путь и состояние кэша можно изменить в окне настроек ZenCad. Переменная
-окружения ZENCAD_CACHE_DIR переопределяет сохранённый путь, а
-ZENCAD_CACHE_DISABLE=1 полностью отключает чтение и запись дискового кэша.
-Ленивые вычисления при этом остаются включёнными.
+Enable immediate evaluation before constructing your model when debugging:
 
-В пользовательском скрипте конфигурацию можно изменить до создания геометрии:
+```python
+import zencad as z
 
-    zencad.configure(cache_dir="/path/to/cache")
-    zencad.configure(cache_enabled=False)
-:en
-Additional options can be found in the documentation for the evalcache library code.
+z.configure(cache_enabled=False)
+z.set_evaluation_mode("immediate")
+body = z.box(20) - z.cylinder(3, 20)
+assert isinstance(body, z.Shape)
+z.set_evaluation_mode("deferred")
+```
 
-----
-### Where is the cache?
-By default, every ZenCad process of the current user shares
-tempfile.gettempdir()/zencad-cache-<uid>. ZenCad does not remove it at process
-exit, although the operating system may clean its temporary area.
+The mode persists until changed and does not alter object types. Switching does not evaluate all existing expressions. Caching is independent: disabling it does not disable lazy evaluation.
 
-The ZenCad settings dialog can change the directory and enabled state.
-ZENCAD_CACHE_DIR overrides the saved directory, while
-ZENCAD_CACHE_DISABLE=1 disables both disk-cache reads and writes. Lazy
-evaluation remains enabled.
+| Mode | `cache_enabled=False` | `cache_enabled=True` |
+| --- | --- | --- |
+| `immediate` | The operation runs immediately without reading or writing the disk cache. | The result is requested immediately: loaded from disk cache, or computed and stored on a miss. |
+| `deferred` | The operation runs when its result is needed, without reading or writing the disk cache. | When needed, the result is loaded from disk cache, or computed and stored on a miss. |
 
-A user script can configure caching before creating geometry:
+`configure(cache_enabled=False)` disables disk cache reads and writes without deleting its files. Objects can reuse already computed results in memory. The table describes cacheable operations; simple values may be evaluated while constructing the graph.
 
-    zencad.configure(cache_dir="/path/to/cache")
-    zencad.configure(cache_enabled=False)
+## Shared disk cache
+
+The default directory is `tempfile.gettempdir()/zencad-cache-<uid>`. ZenCad does not delete it on exit, but the OS may clean temporary storage. Precedence is explicit process `configure()`, then `ZENCAD_CACHE_DIR`/`ZENCAD_CACHE_DISABLE`, then saved user settings.
+
+```python
+import zencad as z
+
+z.configure(cache_dir="./model-cache", cache_enabled=True)
+body = z.box(5)
+print(body.mass().value())
+```
+
+`ZENCAD_CACHE_DISABLE=1` disables disk cache reads and writes. `z.clear_cache()` explicitly clears the configured cache; ordinary scripts do not need to call it.
+
+## Diagnostics without the editor
+
+```sh
+zencad inspect model.py --eager --no-cache --json
+zencad inspect model.py --tree
+zencad inspect model.py --tree --failed-path
+```
+
+A script header can override the runner's initial mode. The graph exposes dependencies, cache hits and failures. [Command line](headless.html).
+
+Integrations can use an explicit owner: `context = z.Context.deferred(cache=False)` and `context.call(z.box, 10)`. `Context` has no CAD facade; ordinary scripts do not need one. Old `zencad.lazy` settings appear only in the [migration guide](migration.html).
 ::

@@ -1,84 +1,33 @@
 :ru
-# Геометрические характеристики.
-Раздел посвящен измерению геометрических характеристик конструируемой геометрии.
+# Геометрические характеристики
 
-Поскольку понятия плотности и масштаба весьма эфемерны для вычислительной библиотеки, все вычисления проводятся в условных единицах. Перевод величин в систему си требует дополнительных вычислений.
-:en
-# Geometric characteristics.
-The section is devoted to measuring the geometric characteristics of the constructed geometry.
+Запросы геометрии возвращают доменные значения; используйте `.value()` для чисел Python. Для solid `mass()` измеряет объём при единичной плотности, а не физическую массу материала.
 
-Since the concepts of density and scale are very ephemeral for the computational library, all calculations are carried out in arbitrary units. Converting values to the si system requires additional calculations. 
-::
-
-----------------------------------------
-:ru
-## Встроенные методы
-Shape имеет ряд методов, позволяющих запросить геометрическую информацию.
-:en
-## Built-in methods
-Shape has a number of methods for querying geometric information. 
-::
-
-----
-:ru
-### Центр масс.
-:en
-::
 ```python
-shape.center() -> point3
-shape.cmradius() -> vector3
+import zencad as z
+
+body = z.box(2, 3, 4)
+volume = body.mass()
+center = body.center()
+assert abs(volume.value() - 24) < 1e-7
+assert all(abs(a - b) < 1e-7 for a, b in zip(center.value(), (1, 1.5, 2)))
 ```
 
-----
-:ru
-### Объём.
+Для площади и агрегированных свойств видимой сцены используйте [inspect](headless.html). [Bounding box](bbox.html) и [топология](selectors.html) сохраняют зависимости в графе. Физическую массу вычисляйте отдельно из объёма, единиц и плотности материала.
 :en
-### Center of mass. 
-::
+# Geometric properties
+
+Geometry queries return domain values; use `.value()` for Python numbers. On a solid, `mass()` measures volume at unit density, not physical material mass.
+
 ```python
-shape.mass() -> float
+import zencad as z
+
+body = z.box(2, 3, 4)
+volume = body.mass()
+center = body.center()
+assert abs(volume.value() - 24) < 1e-7
+assert all(abs(a - b) < 1e-7 for a, b in zip(center.value(), (1, 1.5, 2)))
 ```
 
-----
-:ru
-### Матрица инерции.
-:en
-### Matrix of inertia. 
+Use [inspect](headless.html) for area and aggregate properties of the visible scene. [Bounding boxes](bbox.html) and [topology](selectors.html) retain graph dependencies. Compute physical mass separately from volume, units and material density.
 ::
-```python
-shape.matrix_of_inertia() -> matrix33
-```
-
----
-:ru
-### Статические моменты.
-:en
-### Static moments. 
-::
-```python
-shape.static_moments() -> float, float, float
-```
-
----
-:ru
-### Момент инерции относительно оси.
-:en
-### Moment of inertia about the axis. 
-::
-UNDER_CONSTRUCTION
-
-------
-:ru
-### Радиус инерции.
-:en
-### Radius of gyration. 
-::
-UNDER_CONSTRUCTION
-
------------------------------------------
-:ru
-## Измерение систем тел
-:en
-## Measuring body systems 
-::
-UNDER_CONSTRUCT

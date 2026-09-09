@@ -191,3 +191,14 @@ pre
 .codehilite .vi    { color: #008080 } /* Name.Variable.Instance */
 .codehilite .il    { color: #099 } /* Literal.Number.Integer.Long */
 
+
+.article pre { overflow-x: auto; }
+
+.home-hero { text-align: center; }
+.article .home-hero h1 {
+    font-size: 60px;
+    text-align: center;
+    font-style: oblique;
+}
+.home-tagline { font-style: oblique; }
+.home-hero img { max-width: 100%; height: auto; }

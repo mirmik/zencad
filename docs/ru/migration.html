@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — migration</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/migration.html">Ru</a> · <a href="../en/migration.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
+<li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
+</ul></li>
+<li>Базовые примитивы и утилиты
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a></li>
+<li><a href="prim2d.html">Плоские примитивы</a></li>
+<li><a href="prim1d.html">Линии и циклы</a></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+</ul></li>
+<li>Преобразования, операции над геометрическими телами
+<ul>
+<li><a href="trans0.html">Афинные преобразования</a></li>
+<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
+<li><a href="trimesh.html">Триангуляция и меш</a></li>
+<li><a href="other.html">Прочие операции</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
+<li><a href="reflect.html">Рефлексия геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
+<li><a href="bbox.html">Ограничивающая коробка</a></li>
+</ul></li>
+<li>Визуализация
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
+<li><a href="animate.html">Анимация</a></li>
+</ul></li>
+<li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="переход-с-zencad-1">Переход с ZenCad 1</h1>
+
+<p>Функциональность геометрии сохраняется, но типы, материализация и некоторые исторические ошибки намеренно изменены. Сверяйте пользовательские скрипты с этой таблицей, а не переносите старые настройки lazy.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Раньше</th>
+  <th>ZenCad 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>shape.unlazy()</code> перед вызовом OCCT</td>
+  <td><code>shape.native()</code> возвращает объект OCP; сама форма уже имеет устойчивый тип</td>
+</tr>
+<tr>
+  <td>Раскрытие числового результата</td>
+  <td><code>shape.mass().value()</code> или <code>float(shape.mass())</code></td>
+</tr>
+<tr>
+  <td><code>zencad.lazy.onplace = True</code></td>
+  <td><code>zencad.set_evaluation_mode("immediate")</code> в начале скрипта</td>
+</tr>
+<tr>
+  <td>Настройки чтения/записи через <code>zencad.lazy</code></td>
+  <td><code>zencad.configure(cache_enabled=False)</code> отключает дисковый кэш</td>
+</tr>
+<tr>
+  <td><code>Runtime</code> с CAD-методами</td>
+  <td>Модульные функции <code>zencad.box(...)</code> и методы объектов</td>
+</tr>
+<tr>
+  <td>Наследование Point/Vector от NumPy</td>
+  <td><code>point.to_numpy()</code>, <code>vector.to_numpy()</code> или <code>.value()</code></td>
+</tr>
+<tr>
+  <td><code>faces()[:4]</code> как «четыре боковые грани»</td>
+  <td>Геометрический селектор, например <code>filter_by_position(Axis.Z, height / 2)</code></td>
+</tr>
+<tr>
+  <td>Callback с доступом к <code>DisplayWidget</code></td>
+  <td><code>state.input</code>, <code>state.camera</code> и контроллеры <code>display()</code></td>
+</tr>
+<tr>
+  <td>Вызов <code>zencad.color(...)</code></td>
+  <td><code>zencad.Color(...)</code>; <code>zencad.color</code> — модуль</td>
+</tr>
+<tr>
+  <td>Имена <code>time</code>, <code>math</code>, <code>numpy</code>, случайно попавшие через <code>import *</code></td>
+  <td>Явные импорты соответствующих модулей</td>
+</tr>
+</tbody>
+</table>
+
+<p>Совместимость с <code>zencad.lazy</code> намеренно не поддерживается в ZenCad 2. Старый пользовательский <code>@lazy</code> не имеет автоматической совместимой замены. Новые доменные операции используют <code>@zencad.operation</code>; описание деклараций находится в исходнике <code>zencad/operation.py</code> и development-документах. Не следует механически переименовывать декоратор.</p>
+
+<h2 id="граф-и-явные-границы">Граф и явные границы</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">z</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span>                  <span class="c1"># Scalar, а не float</span>
+<span class="n">moved</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">volume</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>      <span class="c1"># зависимость остаётся в графе</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="n">ocp_shape</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">native</span><span class="p">()</span>            <span class="c1"># вычисление для интеграции с OCP</span>
+</code></pre>
+</div>
+
+<p><code>native()</code> возвращает native-значение, а не «старую оболочку Shape». Для последующих операций ZenCad сохраняйте исходный handle. <code>Point + Point</code> недопустимо; <code>Point - Point</code> возвращает <code>Vector</code>, <code>Vector + Vector</code> — <code>Vector</code>. Координаты <code>.x/.y/.z</code> имеют тип <code>Scalar</code>.</p>
+
+<p><code>len()</code> и итерация коллекций топологии вычисляют их; индексирование, срезы и селекторы сохраняют граф. Индексы не являются постоянными идентификаторами граней после редактирования геометрии.</p>
+
+<h2 id="анимация-и-кэш">Анимация и кэш</h2>
+
+<p>В managed callback нельзя добавлять или заменять геометрию после начального <code>show()</code>. Создавайте объекты заранее, затем меняйте их размещение, цвет и видимость. <code>preanimate</code> и произвольный доступ к Qt не входят в managed-контракт. <a href="animate.html">Подробности</a>.</p>
+
+<p>Кэш общий для процессов текущего пользователя. Старые записи кэша не являются совместимым форматом и могут быть отброшены. <code>set_evaluation_mode()</code> — обычная функция, не context manager; ранее предложенные <code>eager()</code>/<code>immediate()</code>/<code>evaluation()</code> context managers удалены. <a href="caching.html">Вычисления</a>.</p>
+</article>
+</div>
+</body>
+</html>

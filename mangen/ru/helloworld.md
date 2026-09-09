@@ -1,95 +1,111 @@
 :ru
-# Привет, друг.
+# Первая модель
 
-Вот пример, демонстрирующий принцип построения моделей в zencad.
-:en
-# Hello Friend.
+Сохраните полный скрипт в `model.py`:
 
-Here is an example to demonstrate the principle of building models in zencad. 
-::
 ```python
-from zencad import *
+import zencad as z
 
-a = box(200, 200, 200, center = True)
-b = sphere(120)
-c = sphere(60)
+body = z.box(20, 10, 4)
+hole = z.cylinder(2, 4).translate(10, 5, 0)
+part = (body - hole).solids().only()
+z.display(part, name="bracket", color=z.green)
+z.show()
+```
 
+Размеры геометрии задаются в миллиметрах, углы — в радианах; `z.deg(90)` переводит градусы в радианы. `+`, `-`, `^` для форм означают объединение, разность и пересечение. Операции возвращают новые объекты. Булева операция может вернуть контейнер OCCT; `.solids().only()` явно выбирает единственное тело для проверки `--solid`. Если тел несколько, выберите нужное или отобразите их отдельно.
+
+Откройте модель в редакторе:
+
+```sh
+zencad model.py
+```
+
+После сохранения скрипт вычисляется заново. Постоянный viewer сохраняет окно; вычислительный процесс можно заменить при новом запуске или ошибке.
+
+Для проверки без GUI:
+
+```sh
+zencad inspect model.py --json
+zencad check model.py --valid --solid
+```
+
+`display()` добавляет результат в сцену, `show()` завершает объявление статической сцены в managed runner. Без отображаемого результата headless-инструмент не получит модель для проверки. [Далее: типы значений](prim0d.html).
+## Модель из куба и сфер
+
+Этот пример показывает построение формы последовательностью булевых операций:
+
+```python
+import zencad as z
+
+a = z.box(200, 200, 200, center=True)
+b = z.sphere(120)
+c = z.sphere(60)
 model = a - b + c
-
-display(model)
-
-show()
+z.display(model)
+z.show()
 ```
 
-------------------
-:ru
-## Что происходит:
+Куб `a` расположен симметрично относительно начала координат. Сфера `b` вырезает
+из него центральную часть; сфера `c` добавляет отдельный элемент в центре.
+Сначала вычисляется разность `a - b`, затем объединение с `c`. Разность зависит
+от порядка операндов. `display()` добавляет результат в сцену, `show()` запускает
+отображение или публикует сцену в вычислительном процессе редактора.
+
+![Результат построения куба и сфер](../images/helloworld.png)
 :en
-## What's happening: 
-::
+# Your first model
+
+Save this complete script as `model.py`:
+
 ```python
-from zencad import *
+import zencad as z
+
+body = z.box(20, 10, 4)
+hole = z.cylinder(2, 4).translate(10, 5, 0)
+part = (body - hole).solids().only()
+z.display(part, name="bracket", color=z.green)
+z.show()
 ```
-:ru
-В первой строчке мы импортируем в текущее пространство пространство имён zencad. В данном случае, нас интересуют функции `box`, `sphere`, `display`, `show`.
-:en
-In the first line, we import into the current zencad namespace. In this case, we are interested in the `box`,` sphere`, `display`,` show` functions. 
-::
-</br>
-</br>
 
+Geometry uses millimetres and angles use radians; `z.deg(90)` converts degrees to radians. Shape operators `+`, `-` and `^` mean union, difference and intersection. Operations return new objects. A boolean operation may return an OCCT container; `.solids().only()` explicitly selects its single solid for `--solid`. If there are several solids, select the required one or display them separately.
 
-```python
-a = box(200, 200, 200, center = True)
-b = sphere(120)
-c = sphere(60)
+Open the model in the editor:
+
+```sh
+zencad model.py
 ```
-:ru
-Подготавливаем геометрические примитивы. Создаётся объект box с размерами 200x200x200 и смещением геометрического центра в начало координат. Также создаются две сферы радиусом 120 и 60.
-:en
-Preparing geometric primitives. A box object is created with dimensions 200x200x200 and an offset of the geometric center to the origin. It also creates two spheres with a radius of 120 and 60. 
-::
-</br>
-</br>
 
+Saving reruns the script. The persistent viewer keeps its window while the computation process can be replaced on reload or failure.
+
+To check the model without a GUI:
+
+```sh
+zencad inspect model.py --json
+zencad check model.py --valid --solid
+```
+
+`display()` adds the result to the scene; `show()` finishes declaring a static scene in the managed runner. Headless tools need a displayed result to inspect. [Next: value types](prim0d.html).
+## A model built from a cube and spheres
+
+This example builds a shape with a sequence of boolean operations:
 
 ```python
+import zencad as z
+
+a = z.box(200, 200, 200, center=True)
+b = z.sphere(120)
+c = z.sphere(60)
 model = a - b + c
+z.display(model)
+z.show()
 ```
-:ru
-Вычисляем модель с применением булевых операций. Сперва из куба будет вычтена большая сфера. Потом добавлена малая. Порядок слагаемых в данном случае важен, поскольку операции объединения и разности геометрических тел некомутативны.
-:en
-Computing the model using boolean operations. First, a large sphere will be subtracted from the cube. Then a small one was added. The order of the terms is important in this case, since the operations of union and difference of geometric bodies are non-commutative. 
+
+Cube `a` is centered at the origin. Sphere `b` cuts out its central region;
+sphere `c` adds a separate element at the center. The difference `a - b` is
+computed first, followed by union with `c`. Difference depends on operand order.
+`display()` adds the result to a scene; `show()` starts presentation or publishes
+the scene in the editor's computation process.
+
+![Result of the cube and spheres construction](../images/helloworld.png)
 ::
-</br>
-</br>
-
-
-```python
-disp(model)
-```
-:ru
-Функция `disp` передаёт объект в сцену для последующего отображения.
-:en
-The `disp` function passes the object into the scene for later display. 
-::
-</br>
-</br>
-
-
-```python
-show()
-```
-:ru
-Отображаем виджет сцены.
-:en
-Displaying the scene widget. 
-::
-
----------------------------
-:ru
-## Если всё прошло благополучно:
-:en
-## If everything went well: 
-::
-![](../images/helloworld.png)

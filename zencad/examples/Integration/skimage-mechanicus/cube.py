@@ -8,7 +8,6 @@ from itertools import chain
 
 import time
 import math
-import zencad
 
 from zencad import *
 import mech

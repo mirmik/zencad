@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/installation.html">Ru</a>
-        <a href="../en/installation.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — installation</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/installation.html">Ru</a> · <a href="../en/installation.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
@@ -28,6 +22,7 @@
 <li><a href="scriptcad.html">Скриптовый CAD</a></li>
 <li><a href="geomcore.html">BREP представление</a></li>
 <li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
 </ul></li>
 <li>Базовые примитивы и утилиты
 <ul>
@@ -38,9 +33,10 @@
 </ul></li>
 <li>Преобразования, операции над геометрическими телами
 <ul>
-<li><a href="trans0.html">Афинные преобразования</a>  </li>
+<li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a> </li>
+<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
@@ -48,58 +44,86 @@
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
+<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
 <li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
 <li><a href="bbox.html">Ограничивающая коробка</a></li>
 </ul></li>
-<li>Визуализация <br />
+<li>Визуализация
 <ul>
 <li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a>  </li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
 <li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
 <li><a href="animate.html">Анимация</a></li>
 </ul></li>
 <li><a href="gui.html">Графический интерфейс</a></li>
 <li><a href="expimp.html">Экспорт/Импорт</a></li>
 <li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Установка</h1>
+<article class="article"><h1 id="установка">Установка</h1>
 
 <p>ZenCad устанавливается из PyPI вместе с готовым бинарным wheel геометрического
 backend. Conda и отдельная установка OpenCascade не требуются.</p>
 
-<h2 id="-2">Графический интерфейс</h2>
+<h2 id="графическии-интерфеис">Графический интерфейс</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="go">python3 -m pip install &quot;zencad[gui]&quot;</span>
+<div class="codehilite">
+<pre><span></span><code><span class="go">python3 -m pip install &quot;zencad[gui]&quot;</span>
 <span class="go">zencad</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p>В Debian и Ubuntu перед первым запуском установите системные библиотеки Qt/X11:</p>
 
-<div class="codehilite"><pre><span></span><code><span class="go">sudo apt update</span>
+<div class="codehilite">
+<pre><span></span><code><span class="go">sudo apt update</span>
 <span class="go">sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \</span>
-<span class="go">libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \</span>
-<span class="go">libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \</span>
-<span class="go">libxkbcommon-x11-0</span>
-</code></pre></div>
+<span class="go">  libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \</span>
+<span class="go">  libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \</span>
+<span class="go">  libxkbcommon-x11-0</span>
+</code></pre>
+</div>
 
 <p>Графический интерфейс использует X11; в Wayland-сессии требуется XWayland.</p>
 
-<h2 id="gui">Только геометрия, без GUI</h2>
+<h2 id="только-геометрия-без-gui">Только геометрия, без GUI</h2>
 
-<div class="codehilite"><pre><span></span><code><span class="go">python3 -m pip install zencad</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="go">python3 -m pip install zencad</span>
+</code></pre>
+</div>
 
 <p>Требуется 64-битный CPython 3.10–3.14. Геометрическая часть имеет готовые
 wheel для Windows x86-64, macOS 11+ x86-64/arm64 и Linux x86-64/aarch64 с
 glibc 2.31 или новее. GUI-extra доступен для Windows x86-64, macOS
 x86-64/arm64 и Linux x86-64; PyQt5 сейчас не публикует wheel для Linux
 aarch64.</p>
+
+<h2 id="текущая-версия-из-исходников">Текущая версия из исходников</h2>
+
+<p>Это руководство описывает текущее исходное дерево ZenCad 2. <code>pip install zencad</code>
+получает опубликованный пакет, а не обязательно эту ревизию. В checkout:</p>
+
+<div class="codehilite">
+<pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[gui]&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>zencad
+</code></pre>
+</div>
+
+<p>Без GUI используйте <code>python -m pip install -e .</code>. Дополнительные зависимости
+примеров: <code>python -m pip install -e ".[examples]"</code>.</p>
+
+<p>Номер <code>2.0.0</code> в метаданных не означает завершённую платформенную приёмку.
+Windows/macOS-render ещё проверяется; Linux GUI требует рабочего X11/OpenGL.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

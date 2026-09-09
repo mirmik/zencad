@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/crvalgo.html">Ru</a>
-        <a href="../en/crvalgo.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — crvalgo</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/crvalgo.html">Ru</a> · <a href="../en/crvalgo.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -28,19 +22,21 @@
 <li><a href="scriptcad.html">Scripting CAD</a></li>
 <li><a href="geomcore.html">Boundary representation</a></li>
 <li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
-<li><a href="prim3d.html">Solid primitives</a>  </li>
-<li><a href="prim2d.html">Plane primitives</a>  </li>
-<li><a href="prim1d.html">Lines and cycles</a>  </li>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
 <li><a href="prim0d.html">Points, vectors, utilities</a></li>
 </ul></li>
 <li>Transformations, geometric operations
 <ul>
-<li><a href="trans0.html">Aphine transform</a>  </li>
+<li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a>  </li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
@@ -48,6 +44,8 @@
 </ul></li>
 <li>Reflection and analysis
 <ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
 <li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
@@ -57,16 +55,20 @@
 <li>Visualization
 <ul>
 <li><a href="show.html">Displaying</a></li>
-<li><a href="interactive_object.html">Interactive object</a>  </li>
+<li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
 <li><a href="gui.html">Graphical user interface</a></li>
 <li><a href="expimp.html">Export/Import</a></li>
 <li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="curve-analysis">Curve analysis</h1>
+<article class="article"><h1 id="curve-analysis">Curve analysis</h1>
 
 <hr />
 
@@ -77,7 +79,7 @@
 <p>According to him, the curve is given by a continuous mapping of the scalar set <em>[U _min, U _max]</em> onto a space of a given dimension.
 <em>P = F (U): P ∈ R ^ N, U ∈ R ^ 1 [U _min, U _max]</em>, where <em>F</em> is the mapping functor and <em>N</em> is the dimension of the space.</p>
 
-<p>In practice, this means that any point <em>P</em> on the curve has a corresponding value of the scalar parameter <em>U</em>. It should be understood that, in the general case, the function connecting the parameter <em>U</em> at the point <em>P</em> and the length of the curve from the start point <em>O</em> to the point <em>P</em> is not linear. Therefore, calculations over a curve in terms of lengths require the use of a special mathematical apparatus (implemented in the form of methods in this library).</p>
+<p>In practice, this means that any point <em>P</em> on the curve has a corresponding value of the scalar parameter <em>U</em>. It should be understood that, in the general case, the function connecting the parameter <em>U</em> at the point <em>P</em> and the length of the curve from the start point <em>O</em> to the point <em>P</em> is not linear. Therefore, calculations over a curve in terms of lengths require the use of a special mathematical apparatus (implemented in the form of methods in this library). </p>
 
 <hr />
 
@@ -88,7 +90,7 @@
 <ul>
 <li>Edge (spawned by segment, interpolate, bezier, bspline, etc.)</li>
 <li>Curve</li>
-<li>Curve2</li>
+<li>Curve2 </li>
 </ul>
 
 <hr />
@@ -98,76 +100,65 @@
 <p>Determines the endpoints of the end curves.</p>
 
 <p>The <em>endpoints</em> method returns endpoint objects.
-The parameters of these points can be queried using the <em>range</em> method.</p>
+The parameters of these points can be queried using the <em>range</em> method. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">endpoints</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">point3</span><span class="p">,</span> <span class="n">point3</span>
-<span class="n">curve</span><span class="o">.</span><span class="n">range</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">endpoints</span><span class="p">()</span> <span class="c1"># -&gt; tuple[Point3, Point3]</span>
+<span class="n">curve</span><span class="o">.</span><span class="n">range</span><span class="p">()</span> <span class="c1"># -&gt; Interval; .lower/.upper -&gt; Scalar</span>
+</code></pre>
+</div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
 <span class="n">s</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">crv</span><span class="o">.</span><span class="n">endpoints</span><span class="p">()</span>
 <span class="n">disp</span><span class="p">([</span><span class="n">crv</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">f</span><span class="p">])</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/endpoints0.png" alt="" /></p>
 
 <hr />
 
-<h2 id="curvelength">curve.length ()</h2>
-
-<p>Return the length of the curve between the <em>U \ _min</em> and <em>U \ _max</em> parameters.</p>
-
-<hr />
-
 <h2 id="curved0-u">curve.d0 (u)</h2>
 
-<p>Return the point corresponding to the <em>u</em> parameter.</p>
+<p>Return the point corresponding to the <em>u</em> parameter. </p>
 
 <hr />
 
 <h2 id="curved1-u">curve.d1 (u)</h2>
 
-<p>Return the vector of the first derivative matching the <em>u</em> parameter.</p>
-
-<hr />
-
-<h2 id="curvelinoff-u-dist">curve.linoff (u, dist)</h2>
-
-<p>Return the parameter of the point offset by the length <em>dist</em> relative to the point specified by the <em>u</em> parameter.</p>
-
-<hr />
-
-<h2 id="curvelinoff_point-u-dist">curve.linoff_point (u, dist)</h2>
-
-<p>Return the point offset by the length dist relative to the point specified by the <em>u</em> parameter.</p>
+<p>Return the vector of the first derivative matching the <em>u</em> parameter. </p>
 
 <h2 id="curveproject-pnt">curve.project (pnt)</h2>
 
-<p>Return the parameter corresponding to the point on the curve closest to the point pnt.</p>
+<p>Return the parameter corresponding to the point on the curve closest to the point pnt. </p>
 
 <hr />
 
 <h2 id="equidistant-curve-points">Equidistant curve points.</h2>
 
 <p>Return an array of points equally spaced along the curve. The <em>npnts</em> parameter sets the number of points.
-The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out.</p>
+The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out. </p>
 
-<div class="codehilite"><pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-<span class="n">curve</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">umin</span><span class="o">=</span><span class="n">U_min</span><span class="p">,</span> <span class="n">umax</span><span class="o">=</span><span class="n">U_max</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">(</span><span class="n">point3</span><span class="p">)</span>
-</code></pre></div>
+<div class="codehilite">
+<pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">U_min</span><span class="p">,</span> <span class="n">U_max</span><span class="p">)</span> <span class="c1"># -&gt; list[Scalar]</span>
+<span class="n">curve</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">U_min</span><span class="p">,</span> <span class="n">U_max</span><span class="p">)</span> <span class="c1"># -&gt; list[Point3]</span>
+</code></pre>
+</div>
 
-<div class="codehilite"><pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
+<div class="codehilite">
+<pre><span></span><code><span class="n">crv</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">270</span><span class="p">))</span>
 
 <span class="n">params</span> <span class="o">=</span> <span class="n">crv</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="c1"># [0.7853981633974483, 1.121997376282069, 1.4585965891666897, 1.7951958020513104, 2.131795014935931, 2.4683942278205517, 2.8049934407051724, 3.141592653589793]</span>
+<span class="nb">print</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">])</span> <span class="c1"># [0.7853981633974483, 1.121997376282069, 1.4585965891666897, 1.7951958020513104, 2.131795014935931, 2.4683942278205517, 2.8049934407051724, 3.141592653589793]</span>
 
 <span class="n">pnts</span> <span class="o">=</span> <span class="n">crv</span><span class="o">.</span><span class="n">uniform_points</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">pnts</span> <span class="o">+</span> <span class="p">[</span><span class="n">crv</span><span class="p">])</span>
-</code></pre></div>
+</code></pre>
+</div>
 
 <p><img src="../images/generic/uniform_points0.png" alt="" /></p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

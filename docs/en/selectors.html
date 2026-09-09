@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — selectors</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/selectors.html">Ru</a> · <a href="../en/selectors.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="other.html">Other operations</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="reflect.html">Geometric reflection</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a></li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="topology-and-selectors">Topology and selectors</h1>
+
+<p><code>vertices()</code>, <code>edges()</code>, <code>faces()</code> and other queries return <code>ShapeList[T]</code>. Indexing, slicing, filtering and sorting construct expressions; <code>len()</code>, iteration, <code>geometry_types()</code> and <code>group_by()</code> materialize collections.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span>
+<span class="n">vertical</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+<span class="n">rounded</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">fillet</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">vertical</span><span class="p">)</span>
+<span class="n">side_faces</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by_position</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">tapered</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">draft</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">side_faces</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">deg</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">top</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">planar</span><span class="p">()</span><span class="o">.</span><span class="n">sort_by</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">Z</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">side_faces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">top</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="n">rounded</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+<span class="n">tapered</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Query</th>
+  <th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>filter_by(GeomType.PLANE)</code> / <code>planar()</code></td>
+  <td>Planar surfaces</td>
+</tr>
+<tr>
+  <td><code>normal_to(Axis.Z)</code></td>
+  <td>Planar faces with normals parallel to Z, either sign</td>
+</tr>
+<tr>
+  <td><code>filter_by_position(Axis.Z, z)</code></td>
+  <td>Center at the specified height</td>
+</tr>
+<tr>
+  <td><code>filter_by(Plane.xy(z))</code></td>
+  <td>Center on the specified plane</td>
+</tr>
+<tr>
+  <td><code>sort_by(Axis.Z)</code></td>
+  <td>Sort by center projection</td>
+</tr>
+<tr>
+  <td><code>sort_by_distance(point)</code></td>
+  <td>Sort by minimum shape-to-point distance</td>
+</tr>
+<tr>
+  <td><code>longer_than(length)</code></td>
+  <td>Edges/wires with greater length</td>
+</tr>
+<tr>
+  <td><code>largest()</code></td>
+  <td>Greatest length, area or volume for the shape type</td>
+</tr>
+<tr>
+  <td><code>only()</code></td>
+  <td>Exactly one element, otherwise an evaluation error</td>
+</tr>
+</tbody>
+</table>
+
+<p>Topology queries sort lexicographically by center X/Y/Z, rounded to nine decimal places. These are not persistent topology identities: an index can select another face after a model edit. Equal keys retain input order. Prefer geometric criteria for modeling.</p>
+
+<p><code>fillet</code> and <code>chamfer</code> accept selected edges; <code>draft</code> accepts selected faces. Repeated occurrences of an edge are deduplicated before building; foreign edges cause an error. Full contract: <a href="../development/topology-selectors.md">Topology selectors</a>.</p>
+</article>
+</div>
+</body>
+</html>
