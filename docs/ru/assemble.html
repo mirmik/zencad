@@ -78,7 +78,7 @@
 
 <p>Сборочный юнит - это объект, имеющий собственную локальную систему координат, относительно которой позиционируются связанные с этим юнитом интерактивные объекты и другие юниты. Юниты могут создавать структуру дерева, отсчитывая своё положение относительно положения юнита-предка (unit.parent). Если юнит не имеет предка, его положение отсчитывается от глобальной системы координат.</p>
 
-<p>Юнит содержит имеет два объекта координатного преобразования - location и global_location. </p>
+<p>Юнит содержит два объекта координатного преобразования - location и global_location.</p>
 
 <ul>
 <li>location - задаёт положение юнита относительно положения юнита предка. location может быть обновлён или непосредственно, или с помощью метода relocate.</li>
@@ -94,8 +94,6 @@
 <p>Если в качестве параметра передан интерактивный объект, юнит берёт его под управление. (Примечание: юнит управляет расположением интерактивного объекта).</p>
 
 <p>Сигнатура:</p>
-
-<p>Signature: </p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -175,6 +173,26 @@ deep - применить рекурсивно всех потомков объ�
 </div>
 
 <p>Добавить юнит и его потомков в сцену <code>scene</code>. Для обычного скрипта достаточно <code>display(u)</code>: привязку к сцене выполняет система отображения. Цвет задаётся при добавлении геометрии через <code>u.add(obj, color=...)</code>.</p>
+
+<h2 id="пример-сборки">Пример сборки</h2>
+
+<p>Обе детали находятся в системе координат <code>base</code>. Перемещение родителя переносит их вместе, сохраняя взаимное положение:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">unit</span><span class="p">()</span>
+<span class="n">base</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">blue</span><span class="p">)</span>
+<span class="n">post</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">base</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">post</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">yellow</span><span class="p">)</span>
+<span class="n">base</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">translate</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">global_location</span><span class="o">.</span><span class="n">translation</span><span class="p">())</span> <span class="o">==</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
 </article>
 </div>
 </body>

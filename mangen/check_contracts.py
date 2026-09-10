@@ -31,6 +31,24 @@ CASES = {
 }
 
 
+# The language trees may be edited independently.
+RU_CASES = {'prim1d': {0: 'Edge',
+            1: 'Wire',
+            2: 'Edge',
+            3: 'Edge',
+            4: 'Wire',
+            5: 'Edge',
+            6: 'Edge',
+            8: 'Wire',
+            10: 'Wire',
+            13: 'WireBuilder',
+            15: 'WireBuilder',
+            17: 'WireBuilder',
+            18: 'WireBuilder',
+            19: 'WireBuilder'},
+ 'surfalgo': {}}
+
+
 def fixtures(page, index):
     import zencad as z
     from zencad.geom.wire_builder import WireBuilder
@@ -88,7 +106,8 @@ def check_symbolic_calls():
     count=0
     failures=[]
     for language in ('ru','en'):
-        for page,cases in CASES.items():
+        language_cases = dict(CASES, **RU_CASES) if language == "ru" else CASES
+        for page,cases in language_cases.items():
             source=(MANGEN/language/f'{page}.md').read_text(encoding='utf-8')
             blocks=re.findall(r'```python\n(.*?)```',source,re.S)
             for index,types in cases.items():
@@ -96,7 +115,8 @@ def check_symbolic_calls():
                 for number,statement in enumerate(statements):
                     label=f'{page}:{language}:{index}:{number}'
                     try:
-                        ns=fixtures(page,index)
+                        fixture_index = index - 1 if language == "ru" and page == "prim1d" and index > 7 else index
+                        ns=fixtures(page,fixture_index)
                         expression=statement.value
                         result=eval(compile(ast.Expression(expression),label,'eval'),ns)
                         expected=types if isinstance(types,str) else types[number]
@@ -117,7 +137,7 @@ def check_symbolic_calls():
                         elif isinstance(result,z.Vector3):
                             assert math.isclose(float(result.length()),1,abs_tol=1e-8)
                         elif expected=='WireBuilder':
-                            if page == 'prim1d' and index == 12:
+                            if page == 'prim1d' and fixture_index == 12:
                                 assert not result.edges
                             else:
                                 result.doit().native()

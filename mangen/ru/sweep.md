@@ -51,9 +51,10 @@ spine = interpolate(
     points([(0, 0, 0), (0, 0, 35), (20, 0, 55), (45, 15, 65)]),
     tangs=[vector3(0, 0, 1), None, None, vector3(1, 1, 0)],
 )
-outer = pipe_shell([circle(6, wire=True)], spine, frenet=True)
-inner = pipe_shell([circle(4, wire=True)], spine, frenet=True)
+outer = pipe_shell([circle(3, wire=True)], spine, frenet=True)
+inner = pipe_shell([circle(2, wire=True)], spine, frenet=True)
 body = outer - inner
+body.assert_valid()
 disp(body)
 ```
 
@@ -119,3 +120,31 @@ revol2(profile=square(10, center=True), r=20, n=60, yaw=(0,deg(360)), roll=(0,de
 ## Типы результатов
 
 `extrude()` и `revol()` возвращают `Shape`; форму с единственным телом можно извлечь через `result.solids().only()`. `pipe_shell(..., solid=True)` возвращает `Solid` и требует замкнутых профилей; открытый профиль вызывает `ValueError` при вычислении, с указанием его номера. При `solid=False` результат имеет тип `Shell`, допустимы открытые профили. `revol2()` с параметрами приведённого примера возвращает `Solid`.
+
+<a id="sweep-surface"></a>
+
+## Параметрическая поверхность: sweep_surface
+
+`sweep_surface(section, spine)` протягивает кривую-профиль вдоль кривой-траектории и возвращает `Surface`. Это поверхность для дальнейших построений и измерений; для готового тела используйте `pipe_shell`.
+
+В примере круг радиусом 3 движется по окружности радиусом 12. Поверхность показана сеткой изолиний:
+
+```python
+from zencad import *
+
+surface = sweep_surface(circle_curve(3), circle_curve(12))
+u = surface.u_range()
+v = surface.v_range()
+
+for i in range(12):
+    value = u.lower + (u.upper - u.lower) * i / 12
+    display(surface.u_iso(value).edge(v)).set_color(blue, wire_color=blue)
+for i in range(8):
+    value = v.lower + (v.upper - v.lower) * i / 8
+    display(surface.v_iso(value).edge(u)).set_color(green, wire_color=green)
+show()
+```
+
+![Изолинии поверхности круговой развёртки](../images/surface-sweep.png)
+
+Параметр `scale` масштабирует профиль. `trihedron` задаёт способ его ориентации вдоль траектории: по умолчанию используется `SweepTrihedron.CORRECTED_FRENET`, доступен также `SweepTrihedron.FRENET`.

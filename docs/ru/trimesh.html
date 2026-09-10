@@ -76,7 +76,7 @@
 
 <p>Метод <code>Shape.to_mesh()</code> строит индексированную треугольную сетку <code>MeshData</code>.
 Такую сетку можно передать непосредственно в <code>disp</code>: просмотрщик отображает
-её через <code>AIS_Triangulation</code>, не превращая каждый треугольник в B-Rep-грань.</p>
+её непосредственно, без преобразования треугольников в BREP-грани.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">torus</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -100,17 +100,13 @@
 <p>Режим уже отображённого объекта можно изменить через
 <code>controller.set_mesh_display_mode(...)</code>.</p>
 
-<p><code>MeshData</code> содержит массивы <code>positions</code>, <code>normals</code>, <code>triangles</code> и
-<code>triangle_face_ids</code>. Параметры <code>linear_deflection</code> и <code>angular_deflection</code>
-задают детализацию, а <code>crease_angle</code> определяет, на каких рёбрах нормали
-должны оставаться раздельными.</p>
-
 <hr />
 
-<h2 id="триангуляция">Триангуляция</h2>
+<h2 id="данные-сетки">Данные сетки</h2>
 
-<p>Материализация полигональной сетки позволяет получить массивы в формате (<em>nodes</em>, <em>triangles</em>), где <em>pnts</em> - массив точек, а <em>triangles</em> - массив 3-кортежей, индексов точек.
-Параметр <em>deflection</em> отвечает за разрешение разбиения.</p>
+<p><code>Shape.to_mesh(linear_deflection, angular_deflection=...)</code> возвращает <code>MeshData</code>. Меньшее отклонение даёт более подробную сетку; <code>crease_angle</code> задаёт угол, начиная с которого нормали соседних треугольников разделяются для сохранения резких рёбер.</p>
+
+<p><code>positions</code> — координаты вершин, <code>normals</code> — нормали, <code>triangles</code> — тройки индексов вершин, <code>triangle_face_ids</code> — соответствие треугольников граням исходной формы.</p>
 
 <p>Сигнатура:</p>
 
@@ -134,6 +130,25 @@
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 </code></pre>
 </div>
+
+<h3 id="numpy-и-ocp">NumPy и OCP</h3>
+
+<p>Сетка вычисляется при запросе её данных. <code>.value()</code> возвращает численные данные и счётчики, <code>.to_numpy()</code> — массивы NumPy, <code>.native()</code> — <code>Poly_Triangulation</code> для работы с OCP.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">vertex_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">triangle_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="n">arrays</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">arrays</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="n">native</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">native</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>Изменение полученных массивов не меняет исходную форму. Сетка — приближение геометрии. Для <a href="expimp.html">STL/3MF</a> можно вызвать экспорт без ручного построения сетки.</p>
 
 <hr />
 
@@ -199,25 +214,6 @@
 </div>
 
 <p><img src="../images/generic/convex_hull0.png" alt="" /></p>
-
-<h2 id="доменные-значения-и-вычисления">Доменные значения и вычисления</h2>
-
-<p><code>Shape.to_mesh()</code> возвращает типизированный <code>MeshData</code>, сохраняя граф формы. Материализованная запись содержит позиции, нормали, индексы треугольников, соответствие граням и число отброшенных треугольников.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">record</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
-<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">vertex_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
-<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">triangle_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
-<span class="n">arrays</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-<span class="k">assert</span> <span class="n">arrays</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
-<span class="n">native</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">native</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><code>mesh.positions</code> и <code>mesh.triangles</code> дают численные кортежи, <code>.to_numpy()</code> — свежие изменяемые массивы, <code>.native()</code> — <code>Poly_Triangulation</code>. Это явные границы вычисления; изменение массива не меняет исходную форму. Mesh — приближение геометрии, не точный BREP. Для <a href="expimp.html">STL/3MF</a> можно сразу вызвать экспорт без ручного построения сетки.</p>
 </article>
 </div>
 </body>

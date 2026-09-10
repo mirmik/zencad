@@ -68,7 +68,7 @@
 </nav>
 <article class="article"><h1 id="ограничивающая-коробка">Ограничивающая коробка</h1>
 
-<p>Ограничивающая коробка - это это минимальный основанный на осях Ox, Oy, Oz параллелепипед, описывающий геометрическую форму shape.</p>
+<p>Ограничивающая коробка — параллелепипед вдоль осей X, Y, Z, охватывающий геометрическую форму.</p>
 
 <hr />
 
@@ -98,9 +98,7 @@
 
 <h2 id="методы">Методы.</h2>
 
-<p>bbox.xrange()
-bbox.yrange()
-bbox.zrange()</p>
+<p><code>bbox.xrange()</code>, <code>bbox.yrange()</code>, <code>bbox.zrange()</code> возвращают диапазоны координат.</p>
 
 <h2 id="построить-коробку-как-форму">Построить коробку как форму.</h2>
 
@@ -113,7 +111,7 @@ bbox.zrange()</p>
 </code></pre>
 </div>
 
-<h2 id="доменные-значения-и-вычисления">Доменные значения и вычисления</h2>
+<h2 id="размеры-и-координаты">Размеры и координаты</h2>
 
 <p><code>shape.boundbox()</code> и <code>shape.bbox()</code> возвращают <code>BoundaryBox</code>, выровненную по осям. Координаты — <code>Scalar</code>, <code>minimum</code>/<code>maximum</code>/<code>center</code> — <code>Point3</code>, <code>size</code> — <code>Vector3</code>.</p>
 
@@ -127,7 +125,7 @@ bbox.zrange()</p>
 </code></pre>
 </div>
 
-<p><code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code>, <code>zmax</code> — свойства, <code>xlength()</code>/<code>ylength()</code>/<code>zlength()</code> — методы. <code>.value()</code> возвращает материализованную запись; <code>.native()</code> — <code>Bnd_Box</code>. Допуски OCCT могут немного расширять границы, поэтому сравнивайте размеры с допуском. Пустая геометрия требует отдельной обработки, не предполагает нулевую коробку.</p>
+<p><code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code>, <code>zmax</code> — свойства, <code>xlength()</code>/<code>ylength()</code>/<code>zlength()</code> — методы. <code>.value()</code> возвращает численные границы; <code>.native()</code> — объект OCP <code>Bnd_Box</code>. Допуски OCCT могут немного расширять границы, поэтому сравнивайте размеры с допуском. Пустая геометрия требует отдельной обработки, не предполагает нулевую коробку.</p>
 </article>
 </div>
 </body>

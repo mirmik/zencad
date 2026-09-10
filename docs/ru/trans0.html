@@ -66,19 +66,17 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="афинные-преобразования">Афинные преобразования.</h1>
+<article class="article"><h1 id="аффинные-преобразования">Аффинные преобразования.</h1>
 
 <p>Парадигма <em>ZenCad</em> предполагает, что большая часть объектов появляется в точке начала координат, после чего перемещается к месту своего назначения с помощью механизма преобразований.</p>
 
-<p>Обычно, при работе с геометрией, преобразования выполняются с помощью методов класса <em>Shape</em> (представляющего геометрические тела), но для построения сложных преобразований или работы с анимацией афинные преобразования также могут создаваться в качестве обособленных объектов.</p>
-
-<p>Афинные преобразования в <em>ZenCad</em> представлены объектами класса <em>Transform</em> (однородные преобразования) и класса <em>AffineTransform</em> (афинное преобразование общего вида). Объекты этих класов порождаются семейством функций описанных ниже в этом разделе.</p>
+<p>Обычно, при работе с геометрией, преобразования выполняются с помощью методов класса <em>Shape</em> (представляющего геометрические тела), но для построения сложных преобразований или работы с анимацией аффинные преобразования также могут создаваться в качестве обособленных объектов.</p>
 
 <p><code>Transform</code> описывает перенос, вращение и равномерный масштаб, включая отражения через знаковый масштаб; для общего аффинного преобразования есть отдельный <code>AffineTransform</code>.</p>
 
 <p>Следует помнить, что преобразования общего вида вычислительно сложнее и могут сильно изменять внутреннее представление геометрического объекта.  </p>
 
-<p>С математической точки зрения объекты преобразования является линейными операторами и относительно них допустимы некоторые операции линейной алгебры. Соответствующий функционал библиотеки описан в разделе "Операции над преобразованиями".  </p>
+<p>Преобразования можно последовательно применять и обращать — см. «Операции над преобразованиями».</p>
 
 <p>Функции для работы с преобразованиями и специальные виды преобразований описаны в разделе "Дополнительные преобразования".</p>
 
@@ -278,7 +276,7 @@
 <p>Композиции аффинных преобразований выполняются с помощью оператора умножения.
 Следует учесть, что композиции аффинных преобразований некоммутативны.</p>
 
-<p>Композиции преобразований следует читать справа налево. Нпример, в примере ниже, запись <code>moveX(20) * rotateZ(deg(60))</code> Означает, что мы сначала совершаем поворот на 60 градусов, а потом делаем паралельный перенос по оси X на 20 единиц.</p>
+<p>Композиции преобразований следует читать справа налево. В записи <code>moveX(20) * rotateZ(deg(60))</code> сначала выполняется поворот на 60 градусов, затем перенос по оси X на 20 единиц.</p>
 
 <p>Пример:</p>
 
@@ -383,7 +381,7 @@
 
 <h3 id="преобразование-само-в-себя">Преобразование само в себя.</h3>
 
-<p>Специальное преобразование, никак не изменяющее объект.</p>
+<p>Преобразование, никак не изменяющее объект. Его создают <code>transform()</code> или <code>nulltrans()</code>.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">nulltrans</span><span class="p">()</span>
@@ -628,6 +626,25 @@
 <span class="n">matrix</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">matrix</span><span class="p">()</span>
 </code></pre>
 </div>
+
+<h2 id="кватернионы">Кватернионы</h2>
+
+<p><code>quaternion(x, y, z, w)</code> задаёт кватернион; скалярная компонента <code>w</code> идёт последней. <code>quaternion(0, 0, 0, 1)</code> соответствует отсутствию поворота. Для задания оси и угла удобнее <code>quaternion_axis_angle</code>:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">q</span> <span class="o">=</span> <span class="n">quaternion_axis_angle</span><span class="p">(</span><span class="n">vector3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="n">placement</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">to_transform</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">placement</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><code>q1 * q2</code> составляет повороты справа налево, <code>q.inverse()</code> возвращает обратный поворот. <code>q.normalized()</code> нормирует кватернион, <code>q.to_transform()</code> преобразует его в <code>Transform</code>.</p>
 </article>
 </div>
 </body>

@@ -66,112 +66,84 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="экспортимпорт">Экспорт/Импорт</h1>
+<article class="article"><h1 id="экспорт-и-импорт">Экспорт и импорт</h1>
 
-<p>Операции экспорта/импорта отличаются от большинства операций библиотеки zencad тем, что производятся не только над объектами в памяти программы, но и над файлами.</p>
-
-<hr />
-
-<h2 id="stl">STL</h2>
-
-<p>Создать файл мешсети формата STL, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>.
-Параметр <code>delta</code> определяет степень детализации. Чем меньше <code>delta</code>, тем меньше размер полигонов.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">to_stl</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Импортирование МАЛОПОЛИГОНАЛЬНЫХ stl и прочих форматов mesh сетей возможно с применением сторонних библиотек, таких как trimesh. (см. examples/Integration/trimesh)</p>
-
-<hr />
-
-<h2 id="brep">BREP</h2>
-
-<p>Создать файл brep представления формата BREP, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">to_brep</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Считать файл brep представления формата BREP, находящийся по пути <code>path</code>. Вернуть полученную модель.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">from_brep</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<hr />
-
-<h2 id="svg">SVG</h2>
-
-<p>Поддержка ограничена. Поддерживаются не все типы кривых.</p>
-
-<p>Создать/считать svg файл из плоского тела <code>model</code>, находящийся по пути <code>path</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">to_svg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Создать/считать строку svg представления плоского тела <code>model</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">svg</span> <span class="o">=</span> <span class="n">to_svg_string</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg_string</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<h2 id="экспорт-stl-step-и-3mf">Экспорт STL, STEP и 3MF</h2>
-
-<p>Экспорт — явная граница вычисления: форма материализуется, валидируется и записывается. Qt и вызов <code>show()</code> не нужны.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">part</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_stl</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.stl&quot;</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.step&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_3mf</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.3mf&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bracket&quot;</span><span class="p">)</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">stream</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;ISO-10303-21&quot;</span><span class="p">)</span>
-</code></pre>
-</div>
+<p>Экспорт вычисляет геометрию и записывает файл; <code>show()</code> и графический интерфейс не нужны.</p>
 
 <table>
 <thead>
 <tr>
   <th>Формат</th>
   <th>Что сохраняется</th>
+  <th>Запись</th>
+  <th>Чтение</th>
 </tr>
 </thead>
 <tbody>
 <tr>
   <td>STL</td>
-  <td>Треугольная сетка; формат не хранит единицы, координаты масштабируются</td>
+  <td>Треугольная сетка без единиц измерения</td>
+  <td><code>export_stl</code></td>
+  <td>Через сторонние библиотеки, например trimesh</td>
 </tr>
 <tr>
   <td>STEP</td>
-  <td>Точная BREP-геометрия и единицы; текст ISO-10303-21</td>
+  <td>Точная BREP-геометрия и единицы</td>
+  <td><code>export_step</code></td>
+  <td>Нет</td>
 </tr>
 <tr>
   <td>3MF</td>
-  <td>Сетка, единицы и метаданные; бинарный ZIP-контейнер</td>
+  <td>Сетка, единицы и метаданные</td>
+  <td><code>export_3mf</code></td>
+  <td>Нет</td>
 </tr>
 <tr>
   <td>BREP</td>
-  <td>Native-геометрия OCCT для обмена через <code>to_brep</code>/<code>from_brep</code></td>
+  <td>Геометрия OpenCascade</td>
+  <td><code>to_brep</code></td>
+  <td><code>from_brep</code></td>
+</tr>
+<tr>
+  <td>SVG</td>
+  <td>Плоская геометрия, поддержка ограничена</td>
+  <td><code>to_svg</code></td>
+  <td><code>from_svg</code></td>
 </tr>
 </tbody>
 </table>
 
-<p>STL/STEP/3MF принимают путь или бинарный поток с <code>write(bytes)</code>. Единицы: <code>mm</code>, <code>cm</code>, <code>m</code>, <code>um</code>, <code>in</code>, <code>ft</code> и полные имена. Внутренняя геометрия — в миллиметрах. <code>linear_tolerance</code> и <code>angular_tolerance</code> управляют сеткой STL/3MF; STEP не требует тесселяции. Линейный допуск задаётся в единицах экспорта.</p>
+<h2 id="stl-step-и-3mf">STL, STEP и 3MF</h2>
 
-<p>Невалидная форма вызывает <code>ShapeValidationError</code>, ошибка записи — <code>OSError</code> с контекстом формата и назначения. <code>to_stl(shape, path, delta)</code> остаётся совместимым ASCII-фасадом с <code>True</code> при успехе.</p>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">part</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_stl</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.stl&quot;</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.step&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_3mf</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.3mf&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bracket&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Экспортёры считают исходные координаты миллиметрами. <code>unit</code> выбирает единицы файла: <code>mm</code>, <code>cm</code>, <code>m</code>, <code>um</code>, <code>in</code>, <code>ft</code> или полные имена. Например, при <code>unit="cm"</code> размер 20 записывается как 2 сантиметра. STL не хранит единицы: в нём меняется только масштаб координат.</p>
+
+<p><code>linear_tolerance</code> и <code>angular_tolerance</code> управляют детализацией сетки STL/3MF. Линейный допуск задаётся в единицах файла; меньший допуск даёт более мелкую сетку. STEP не требует триангуляции.</p>
+
+<p>Вместо пути можно передать бинарный поток:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">stream</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;ISO-10303-21&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Невалидная форма вызывает <code>ShapeValidationError</code>, ошибка записи — <code>OSError</code>. <code>to_stl(model, path, delta)</code> — короткий вариант экспорта в ASCII STL; <code>delta</code> задаёт детализацию, при успехе возвращается <code>True</code>.</p>
+
+<h2 id="brep">BREP</h2>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
@@ -182,7 +154,20 @@
 </code></pre>
 </div>
 
-<p>SVG доступен через <code>to_svg</code>/<code>to_svg_string</code> и <code>from_svg</code>/<code>from_svg_string</code>. Наличие экспортёра STEP/3MF не означает наличия симметричного импортёра этих форматов. <a href="../development/export-formats.md">Полный контракт экспорта</a>.</p>
+<h2 id="svg">SVG</h2>
+
+<p>Для файлов используются <code>to_svg(model, path)</code> и <code>from_svg(path)</code>. Для обмена строками — <code>to_svg_string(model)</code> и <code>from_svg_string(svg)</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">svg</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">to_svg_string</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">restored</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">from_svg_string</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+<span class="n">restored</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>SVG работает с плоской геометрией; поддерживаются не все типы кривых. Пример импорта малополигонального STL через trimesh находится в <code>zencad/examples/Integration/trimesh</code>. <a href="../development/export-formats.md">Подробности экспорта</a>.</p>
 </article>
 </div>
 </body>

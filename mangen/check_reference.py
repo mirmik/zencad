@@ -24,6 +24,16 @@ EXAMPLES = {
 }
 
 
+# The language trees may be edited independently.
+RU_EXAMPLES = {'assemble': [2, 6],
+ 'prim0d': [2, 4, 5],
+ 'prim1d': [7, 9, 11, 12, 14, 16, 20],
+ 'surfalgo': [0, 1],
+ 'sweep': [1, 2, 4, 6, 8, 9],
+ 'trans0': [8, 10, 11, 14, 16, 18, 20, 22, 23, 24],
+ 'trimesh': [0, 1, 3, 6, 8]}
+
+
 def check_reference():
     import zencad as z
     import zencad.showapi
@@ -89,13 +99,17 @@ def check_reference():
                     except TypeError as error:
                         raise AssertionError(f"{page.stem}:{language}:{index}: {ast.unparse(node)}: {error}") from error
                     checked += 1
-            if page.stem not in EXAMPLES:
+            selected = (
+                RU_EXAMPLES.get(page.stem, EXAMPLES.get(page.stem))
+                if language == "ru" else EXAMPLES.get(page.stem)
+            )
+            if selected is None:
                 continue
             blocks = re.findall(r'```python\n(.*?)```', source, re.S)
             namespace = dict(vars(z), zencad=z, math=math, _force=force,
                              FONTPATH=str(MANGEN.parent / 'zencad/examples/fonts/mandarinc.ttf'),
                              FONTNAME='Mandarinc')
-            for index in EXAMPLES[page.stem]:
+            for index in selected:
                 tree = MaterializeExpressions().visit(ast.parse(blocks[index]))
                 exec(compile(ast.fix_missing_locations(tree),
                              f'{page.stem}:{language}:{index}', 'exec'), namespace)

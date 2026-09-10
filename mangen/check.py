@@ -24,6 +24,15 @@ STANDALONE_BLOCKS = {
 }
 
 
+# The language trees may be edited independently.
+RU_STANDALONE_BLOCKS = {'animate': [0],
+ 'expimp': [0, 1, 2, 3],
+ 'helloworld': [0],
+ 'prim0d': [0, 1, 3],
+ 'show': [0, 1, 2, 3, 4],
+ 'trimesh': [4]}
+
+
 def python_blocks(name: str, language: str) -> list[str]:
     source = (ROOT / "mangen" / language / f"{name}.md").read_text(encoding="utf-8")
     return re.findall(r"```python\n(.*?)```", source, re.S)
@@ -55,7 +64,11 @@ def check_examples() -> None:
         for name in sorted(EXAMPLE_PAGES):
             for language in ("ru", "en"):
                 for index, block in enumerate(python_blocks(name, language)):
-                    if name in STANDALONE_BLOCKS and index not in STANDALONE_BLOCKS[name]:
+                    selection = (
+                        RU_STANDALONE_BLOCKS.get(name, STANDALONE_BLOCKS.get(name))
+                        if language == "ru" else STANDALONE_BLOCKS.get(name)
+                    )
+                    if selection is not None and index not in selection:
                         continue
                     compile(block, f"{name}:{language}:{index}", "exec")
                     script = directory / f"{name}-{language}-{index}.py"

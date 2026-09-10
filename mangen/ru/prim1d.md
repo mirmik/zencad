@@ -85,6 +85,20 @@ bspline(pnts, knots, muls, degree, periodic=False)
 bspline(pnts, knots, muls, degree, weights=weights, check_rational=True)
 ```
 
+Узлы `knots` задают значения параметра, кратности `muls` — число повторений узлов. Например, кубическая кривая с четырьмя опорными точками и зафиксированными концами:
+
+```python
+from zencad import *
+
+curve = bspline(
+    [(0, 0, 0), (10, 20, 0), (20, -10, 0), (30, 0, 0)],
+    knots=[0, 1], muls=[4, 4], degree=3,
+)
+display(curve)
+show()
+```
+
+
 ---
 ## Скруглённый полисегмент
 В отличие от полисегмента, создаёт участки окружности в точках сопряжения сегментов. Переменная _r_ задаёт радиус скруглений. Может использоваться вместе с операцией pipe_shell (см. кинематические поверхности).
@@ -190,4 +204,22 @@ _сlose_ строит участок кривой до точки старта. 
 
 ```python
 wb.close(approx_a=False, approx_b=False)
+```
+
+## Готовый контур
+
+Метод `.doit()` возвращает построенный `Wire`. Контур можно заполнить и вытянуть в тело:
+
+```python
+from zencad import *
+
+contour = (wire_builder(start=(0, 0, 0))
+           .segment((30, 0, 0))
+           .arc_by_points((40, 10, 0), (30, 20, 0))
+           .segment((0, 20, 0))
+           .close()
+           .doit())
+body = fill(contour).extrude(5)
+display(body)
+show()
 ```

@@ -7,7 +7,7 @@
 
 Метод `Shape.to_mesh()` строит индексированную треугольную сетку `MeshData`.
 Такую сетку можно передать непосредственно в `disp`: просмотрщик отображает
-её через `AIS_Triangulation`, не превращая каждый треугольник в B-Rep-грань.
+её непосредственно, без преобразования треугольников в BREP-грани.
 
 ```python
 model = torus(30, 8) - box(60, 12, 12, center=True)
@@ -29,15 +29,13 @@ disp(mesh, display_mode="wireframe")          # только рёбра
 Режим уже отображённого объекта можно изменить через
 `controller.set_mesh_display_mode(...)`.
 
-`MeshData` содержит массивы `positions`, `normals`, `triangles` и
-`triangle_face_ids`. Параметры `linear_deflection` и `angular_deflection`
-задают детализацию, а `crease_angle` определяет, на каких рёбрах нормали
-должны оставаться раздельными.
 
 ---
-## Триангуляция
-Материализация полигональной сетки позволяет получить массивы в формате (_nodes_, _triangles_), где _pnts_ - массив точек, а _triangles_ - массив 3-кортежей, индексов точек.
-Параметр _deflection_ отвечает за разрешение разбиения.
+## Данные сетки
+
+`Shape.to_mesh(linear_deflection, angular_deflection=...)` возвращает `MeshData`. Меньшее отклонение даёт более подробную сетку; `crease_angle` задаёт угол, начиная с которого нормали соседних треугольников разделяются для сохранения резких рёбер.
+
+`positions` — координаты вершин, `normals` — нормали, `triangles` — тройки индексов вершин, `triangle_face_ids` — соответствие треугольников граням исходной формы.
 
 Сигнатура:
 ```python
@@ -58,6 +56,24 @@ print("first_five_nodes:", nodes[:5])
 print("first_five_triangles:", triangles[:5])
 
 ```
+
+### NumPy и OCP
+
+Сетка вычисляется при запросе её данных. `.value()` возвращает численные данные и счётчики, `.to_numpy()` — массивы NumPy, `.native()` — `Poly_Triangulation` для работы с OCP.
+
+```python
+import zencad as z
+
+mesh = z.box(10).to_mesh(0.5)
+record = mesh.value()
+assert record.vertex_count > 0
+assert record.triangle_count > 0
+arrays = mesh.to_numpy()
+assert arrays.positions.shape[1] == 3
+native = mesh.native()
+```
+
+Изменение полученных массивов не меняет исходную форму. Сетка — приближение геометрии. Для [STL/3MF](expimp.html) можно вызвать экспорт без ручного построения сетки.
 
 -----------------------------
 ## Полигедрон
@@ -110,22 +126,3 @@ disp(convex_hull_shape(pnts))
 ```
 
 ![](../images/generic/convex_hull0.png)
-
-
-## Доменные значения и вычисления
-
-`Shape.to_mesh()` возвращает типизированный `MeshData`, сохраняя граф формы. Материализованная запись содержит позиции, нормали, индексы треугольников, соответствие граням и число отброшенных треугольников.
-
-```python
-import zencad as z
-
-mesh = z.box(10).to_mesh(0.5)
-record = mesh.value()
-assert record.vertex_count > 0
-assert record.triangle_count > 0
-arrays = mesh.to_numpy()
-assert arrays.positions.shape[1] == 3
-native = mesh.native()
-```
-
-`mesh.positions` и `mesh.triangles` дают численные кортежи, `.to_numpy()` — свежие изменяемые массивы, `.native()` — `Poly_Triangulation`. Это явные границы вычисления; изменение массива не меняет исходную форму. Mesh — приближение геометрии, не точный BREP. Для [STL/3MF](expimp.html) можно сразу вызвать экспорт без ручного построения сетки.

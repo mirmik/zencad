@@ -68,136 +68,80 @@
 </nav>
 <article class="article"><h1 id="отображение">Отображение</h1>
 
-<h2 id="scene">Scene</h2>
+<h2 id="display-и-disp">display и disp</h2>
 
-<p>Scene - это контейнер, хранящий модели и закреплённые за ними цвета.</p>
+<p><code>display</code> добавляет геометрию в сцену. <code>disp</code> — её короткое имя. Возвращённый контроллер позволяет менять <a href="interactive_object.html">размещение, цвет и видимость</a> объекта.</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">()</span>
-<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">controller</span> <span class="o">=</span> <span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<p><code>scene.add</code> возвращает interactive_object, с помощью которого можно изменять состояние отображаемого объекта (см. <a href="interactive_object.html">interactive_object</a>)</p>
-
-<hr />
-
-<h2 id="zencaddisplay">zencad.display</h2>
-
-<p>Инструмент для добавления геометрии в сцену.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-
-<span class="n">zencad</span><span class="o">.</span><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># alternate</span>
-</code></pre>
-</div>
-
-<p>В зависимости от типа параметра, display может вести себя следующим образом:
-Для shape - добавляет в сцену, возвращает interactive<em>object
-Для assemble.unit - вызывает процедуру bind</em>to_scene, возвращает сам юнит
-Для list - вызывает итеративно display для элементов списка, возвращает список результатов.</p>
-
-<hr />
-
-<h2 id="zencadhighlight">zencad.highlight</h2>
-
-<p>Специальный вариант функции display, используемый для отладки конструируемой
-геометрии.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">hl</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># alternate naming</span>
-</code></pre>
-</div>
-
-<p>В отличии от display функция возвращает переданный ей объект.
-Пример использования (подсветим вычитаемую форму):</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">hl</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">100500</span><span class="p">))</span>
-</code></pre>
-</div>
+<p>Для списка <code>display</code> возвращает список контроллеров, для сборочного <code>unit</code> — сам юнит. Имена <code>name=</code> задаются отдельным объектам и должны быть уникальными в сцене. Они видны в отчётах <a href="headless.html">inspect</a>.</p>
 
 <h2 id="color">Color</h2>
 
-<p>Объект, содержащий информацию о цвете в формате rgba. Диапазон значений параметров [0,1].</p>
+<p><code>Color(r, g, b, a=0)</code> принимает компоненты от 0 до 1. Первые три задают RGB, четвёртая — прозрачность: 0 непрозрачно, 1 полностью прозрачно.</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">Color</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">sphere</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">yellow</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<p>ZenCad определяет стандартный набор цветов:</p>
+<p>Готовые цвета доступны по именам <code>white</code>, <code>black</code>, <code>red</code>, <code>green</code>, <code>blue</code>, <code>yellow</code>, <code>magenta</code>, <code>cian</code>, <code>mech</code>, <code>transmech</code>, а также через модуль <code>zencad.color</code>.</p>
+
+<h2 id="highlight-и-hl">highlight и hl</h2>
+
+<p>Подсветка добавляет форму в сцену и возвращает саму форму. Это удобно для показа вычитаемого объёма прямо в выражении:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span> <span class="o">=</span>     <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">black</span> <span class="o">=</span>     <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">red</span> <span class="o">=</span>       <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">green</span> <span class="o">=</span>     <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">blue</span> <span class="o">=</span>      <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">yellow</span> <span class="o">=</span>    <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">magenta</span> <span class="o">=</span>   <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">cian</span> <span class="o">=</span>      <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">mech</span> <span class="o">=</span>      <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">transmech</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">hl</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<h2 id="show">show</h2>
+<h2 id="show-и-явная-сцена">show и явная сцена</h2>
+
+<p><code>show()</code> отображает собранную сцену. При запуске скрипта из редактора результат появляется в его окне; при прямом запуске <code>python model.py</code> открывается отдельный просмотрщик.</p>
+
+<p>Обычно используется сцена по умолчанию. При необходимости можно создать свою:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">animate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">preanimate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">close_handle</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">()</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">blue</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">sphere</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">yellow</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">scene</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Функция show инициирует отображение программы визуализатора. Если функция вызывается без аргументов, отображается сцена по умолчанию .</p>
+<p><code>scene.add()</code> также возвращает контроллер объекта. Параметры <code>animate</code> и <code>animate_step</code> функции <code>show</code> описаны в разделе <a href="animate.html">«Анимация»</a>, устройство отображения — во <a href="internal.html">«Внутренней кухне»</a>.</p>
 
-<p>show также имеет набор параметров для поддержки фунций анимации модели (см. <a href="animate.html">Анимация</a>).</p>
+<h2 id="список-объектов-без-gui">Список объектов без GUI</h2>
 
-<p>Поведение функции show более подробно освещается в (<a href="internal.html">Внутренняя кухня</a>)</p>
-
-<h2 id="сцена-в-редакторе-и-имена-объектов">Сцена в редакторе и имена объектов</h2>
-
-<p>GUI владеет одним постоянным viewer. Скрипт вычисляется в изолированном процессе
-и передаёт сцену для отображения. При перезапуске скрипта вычислительный процесс
-можно заменить, сохранив окно viewer. Изменения представления анимированных
-объектов передаются отдельно от исходной геометрии.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">part</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">controller</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><code>disp</code> — короткое имя <code>display</code>. Функция добавляет объект в сцену; возвращённый контроллер управляет его представлением. В managed runner это логический <code>SceneObjectRef</code>, а не объект Qt/AIS. Публичного <code>zencad.default_scene</code> нет: вызов без <code>scene=</code> использует внутреннюю сцену по умолчанию. Для явной локальной сцены доступны <code>z.Scene()</code> и <code>display(..., scene=scene)</code>.</p>
-
-<p>Имена <code>name=</code> должны быть уникальными в сцене и задаются одному объекту, не списку. Автоматический ID и пользовательское имя — разные поля. Имена видны в inspect и manifest, ими удобно обозначать детали модели.</p>
-
-<p><code>Color(r, g, b, a=0)</code> принимает компоненты от 0 до 1. Четвёртая компонента — прозрачность: 0 непрозрачно, 1 прозрачно. Готовые цвета: <code>z.red</code>, <code>z.green</code>, <code>z.blue</code>, <code>z.yellow</code>, <code>z.white</code>, <code>z.mech</code>.</p>
-
-<p><code>highlight()</code>/<code>hl()</code> показывает форму и возвращает саму форму, поэтому может использоваться внутри булевого выражения. Контроллер отображения и геометрическая форма имеют разные назначения: <a href="interactive_object.html">управление объектом</a>.</p>
-
-<h2 id="именованныи-manifest-без-gui">Именованный manifest без GUI</h2>
+<p>Manifest содержит имена, идентификаторы и свойства отображения, без самой геометрии:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
 <span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">draft</span><span class="p">:</span>
     <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">)</span>
-    <span class="n">manifest</span> <span class="o">=</span> <span class="n">draft</span><span class="o">.</span><span class="n">manifest</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">draft</span><span class="o">.</span><span class="n">manifest</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
 </code></pre>
 </div>
 
-<p>Manifest содержит идентичность и свойства отображения без BREP/mesh payload. Для площади, объёма и валидности используйте <a href="headless.html">inspect</a>. Для анимации — <a href="animate.html">managed callback</a>.</p>
+<p>Для габаритов, объёма и валидности используйте <a href="headless.html">inspect</a>.</p>
 </article>
 </div>
 </body>

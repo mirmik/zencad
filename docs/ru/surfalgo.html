@@ -66,32 +66,90 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="классы-поверхностеи">Классы поверхностей.</h1>
+<article class="article"><h1 id="анализ-поверхностеи">Анализ поверхностей</h1>
 
-<hr />
+<p><code>Surface</code> задаёт поверхность, а <code>Face</code> — ограниченную область на ней. Например, боковая грань цилиндра ограничена по высоте, а её цилиндрическая поверхность продолжается в обе стороны.</p>
 
-<h2 id="классы-поверхностеи-2">Классы поверхностей.</h2>
+<h2 id="получение-поверхности">Получение поверхности</h2>
 
-<p>В ZenCad существуют следующие классы поверхностей:</p>
-
-<ul>
-<li>Face </li>
-<li>Surface </li>
-</ul>
-
-<hr />
-
-<h2 id="поиск-нормали">Поиск нормали</h2>
-
-<p>Нормаль возвращается как <code>Vector3</code> в точке с параметрами <em>u</em>, <em>v</em>. Для <code>Face.normal()</code> параметры по умолчанию равны нулю; для <code>Surface.normal(u, v)</code> оба параметра обязательны.</p>
-
-<p>Сигнатура:</p>
+<p><code>face.surface()</code> возвращает поверхность грани. Для построения цилиндрической поверхности вокруг оси Z есть <code>cylinder_surface(radius)</code>.</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">face</span><span class="o">.</span><span class="n">normal</span><span class="p">()</span>
-<span class="n">surface</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">plane</span> <span class="o">=</span> <span class="n">rectangle</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">surface</span><span class="p">()</span>
+<span class="n">point</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">normal</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="n">normal</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </code></pre>
 </div>
+
+<h2 id="параметры-и-нормаль">Параметры и нормаль</h2>
+
+<p>Точка поверхности задаётся двумя параметрами <code>u</code>, <code>v</code>. Их смысл зависит от поверхности: у цилиндра <code>u</code> — угол в радианах, <code>v</code> — высота вдоль Z.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Метод</th>
+  <th>Результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>surface.point(u, v)</code></td>
+  <td>Точка <code>Point3</code></td>
+</tr>
+<tr>
+  <td><code>surface.normal(u, v)</code></td>
+  <td>Единичная нормаль <code>Vector3</code></td>
+</tr>
+<tr>
+  <td><code>surface.u_range()</code>, <code>surface.v_range()</code></td>
+  <td>Диапазоны параметров с полями <code>.lower</code>, <code>.upper</code></td>
+</tr>
+<tr>
+  <td><code>surface.u_iso(u)</code></td>
+  <td>Кривая при постоянном <code>u</code></td>
+</tr>
+<tr>
+  <td><code>surface.v_iso(v)</code></td>
+  <td>Кривая при постоянном <code>v</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>Диапазоны относятся к поверхности, а не к границам грани; они могут быть бесконечными. У <code>Face</code> нормаль можно запросить напрямую: <code>face.normal(u, v)</code>. Без аргументов используются <code>u=0</code>, <code>v=0</code>.</p>
+
+<h2 id="кривая-на-поверхности">Кривая на поверхности</h2>
+
+<p><code>surface.map(curve2)</code> переносит двумерную кривую из пространства параметров <code>(u, v)</code> на поверхность и возвращает <code>Edge</code>. У цилиндра наклонный отрезок в <code>(u, v)</code> превращается в винтовую линию.</p>
+
+<p>В примере оранжевым показана винтовая линия, зелёным — образующая, синим — окружность на высоте 10:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">surface</span> <span class="o">=</span> <span class="n">cylinder_surface</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">uv_line</span> <span class="o">=</span> <span class="n">segment2</span><span class="p">(</span><span class="n">point2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">point2</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">helix</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">uv_line</span><span class="p">)</span>
+<span class="n">meridian</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">u_iso</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">edge</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">parallel</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">v_iso</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">edge</span><span class="p">()</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">helix</span><span class="p">)</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">orange</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">orange</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">meridian</span><span class="p">)</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">green</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">parallel</span><span class="p">)</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">blue</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">blue</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/surface-cylinder.png" alt="Кривые на цилиндрической поверхности" /></p>
+
+<p>Изолинии возвращаются как <code>Curve</code>. Метод <code>.edge()</code> создаёт отображаемое ребро; для бесконечной кривой укажите диапазон, например <code>.edge((0, 20))</code>.</p>
+
+<p>Поверхность также можно построить <a href="sweep.html#sweep-surface">движением профиля по траектории</a>.</p>
 </article>
 </div>
 </body>
