@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 
-import numpy as np
-
-import sys
-from skimage import measure, io
-from itertools import chain
-
 import time
-import math
 
 from zencad import *
 import mech
