@@ -68,16 +68,172 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="библиотека-кинематики">Библиотека кинематики.</h1>
+<article class="article"><h1 id="kinematics">Kinematics</h1>
 
-<p>Данная библиотека является дополнением к системе <a href="assemble.html">сборок</a> и позволяет управлять перемещением элементов сборок в терминах обобщенных кинематических координат, а так же осуществлять некоторые действия на кинематическими цепями.</p>
+<p>Kinematics extends <a href="assemble.html">assemblies</a>: generalized coordinates, such as a hinge angle or actuator travel, determine part placement. Ordinary ZenCad operations build the geometry; kinematic joints control where it is placed.</p>
 
-<p>Библиотека определяет дополнительные типы unit:</p>
+<h2 id="two-units-per-joint">Two units per joint</h2>
 
-<p>zencad.assemble.rotator - поворотное звено
-zencad.assemble.actuator - актуаторное звено</p>
+<p>A kinematic component consists of two units in relative motion:</p>
 
-<p>Runnable examples live in <code>zencad/examples/4.Assemble</code>. Use <code>set_coord()</code> to control joint coordinates; see <a href="assemble.html">assemblies</a> for the hierarchy.</p>
+<ul>
+<li>The joint object itself inherits <code>kinematic_unit</code> and serves as the input unit. Its <code>location</code> places the joint relative to its parent.</li>
+<li><code>joint.output</code> is the output unit, parented to the input. Its placement relative to the input is determined by the joint coordinates.</li>
+</ul>
+
+<div class="codehilite">
+<pre><span></span><code>parent
+└── joint                 input: joint mounting
+    └── joint.output      output: rotation or translation
+        └── payload       part or subsequent joint
+</code></pre>
+</div>
+
+<p><code>joint.add(shape)</code> attaches geometry to the input, such as an actuator housing. <code>joint.output.add(shape)</code> attaches it to the moving output. <code>joint.link(child)</code> also attaches to the <strong>output</strong>, whereas ordinary <code>unit.link(child)</code> attaches directly to that unit.</p>
+
+<p>Use <code>parent=joint.output</code> in a child's constructor to make it follow the output. <code>parent=joint</code> attaches it to the input instead.</p>
+
+<h2 id="rotary-and-linear-joints">Rotary and linear joints</h2>
+
+<p>Import these classes from <code>zencad.assemble</code>:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Joint</th>
+  <th>Coordinate</th>
+  <th>Output motion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>rotator(axis=...)</code></td>
+  <td><code>set_coord(angle)</code>, radians</td>
+  <td>Rotation about a local input axis</td>
+</tr>
+<tr>
+  <td><code>actuator(axis=...)</code></td>
+  <td><code>set_coord(distance)</code>, model length units</td>
+  <td>Translation along a local input axis</td>
+</tr>
+</tbody>
+</table>
+
+<p>The axis is normalized. <code>mul</code> scales the coordinate: the physical angle or displacement is <code>coord * mul</code>. <code>location</code> places the input; <code>set_coord()</code> changes the output relative to it. Single-coordinate joints return <code>1</code> from <code>dim()</code> and also accept <code>set_coords([value])</code>.</p>
+
+<p>A rotating arm:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span><span class="p">,</span> <span class="n">rotator</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">unit</span><span class="p">()</span>
+<span class="n">joint</span> <span class="o">=</span> <span class="n">rotator</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="n">joint</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">joint</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">tip</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">joint</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">translate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+<span class="n">base</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">joint</span><span class="o">.</span><span class="n">set_coord</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">),</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">position</span> <span class="o">=</span> <span class="n">tip</span><span class="o">.</span><span class="n">global_location</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="mi">20</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>The arm geometry stays unchanged; its placement changes. <code>global_location</code> includes all ancestors. After manually changing the hierarchy or local placements, call <code>base.location_update(deep=True)</code>. <code>view=False</code> is useful for calculations without presentation updates; use normal updates for displayed models.</p>
+
+<p>For animation, construct the assembly before <code>show()</code> and change joint coordinates in the callback. Examples live in <code>zencad/examples/4.Assemble</code>; see <a href="animate.html">Animation</a> for input handling.</p>
+
+<h2 id="kinematic-chains-and-trees">Kinematic chains and trees</h2>
+
+<p>ZenCad itself contains <code>kinematic_chain</code> in <code>zencad.libs.kinematic</code>. It is an algorithmic view of <strong>one path</strong> through the assembly tree, not another container for the parts.</p>
+
+<p><code>kinematic_chain(distant, proxymal=None)</code> follows <code>parent</code> links from the terminal unit <code>distant</code> to the initial unit <code>proxymal</code>, including it. With no initial unit, it walks to the root. <code>proxymal</code> is the actual API spelling; this unit must be an ancestor of the terminal unit.</p>
+
+<ul>
+<li><code>getchain()</code> returns every unit on the path, including fixed intermediate units.</li>
+<li><code>kinematic_pairs</code> contains only kinematic joints; <code>chain[i]</code> indexes this list.</li>
+<li>Ordering runs <strong>from the tip towards the base</strong>. Increments and matrix columns follow this order for single-coordinate joints.</li>
+</ul>
+
+<p>There is no separate <code>kinematic_tree</code> class. Ordinary <code>unit</code> links form the tree: an input or output can have multiple children. Construct a chain to a shared base for each end effector of interest. Changing a coordinate shared by several branches changes all dependent descendant placements.</p>
+
+<h2 id="sensitivities-and-jacobians">Sensitivities and Jacobians</h2>
+
+<p>A chain computes the local dependence of end-effector motion on joint coordinates:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Method</th>
+  <th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>sensivity(basis=None)</code></td>
+  <td>A list of <code>screw</code> objects with angular <code>.ang</code> and linear <code>.lin</code> components</td>
+</tr>
+<tr>
+  <td><code>sensivity_jacobian(basis=None)</code></td>
+  <td>A <code>6 × N</code> NumPy matrix: angular components in the first three rows, linear components in the last three</td>
+</tr>
+<tr>
+  <td><code>translation_sensivity_jacobian(basis=None)</code></td>
+  <td>A <code>3 × N</code> NumPy matrix of linear components</td>
+</tr>
+<tr>
+  <td><code>apply_step(increments)</code></td>
+  <td>Adds increments to single-coordinate joints</td>
+</tr>
+<tr>
+  <td><code>apply(speeds, delta)</code></td>
+  <td>Adds <code>speed * delta</code> to each coordinate</td>
+</tr>
+</tbody>
+</table>
+
+<p><code>sensivity</code> is the actual API spelling. Without <code>basis</code>, sensitivities are expressed in the terminal unit's frame; <code>basis=base</code> expresses them in that unit's frame. Update tree placements before calculating. Supply one increment or speed per single-coordinate joint in <code>kinematic_pairs</code> order.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span><span class="p">,</span> <span class="n">rotator</span><span class="p">,</span> <span class="n">actuator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.libs.kinematic</span><span class="w"> </span><span class="kn">import</span> <span class="n">kinematic_chain</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">unit</span><span class="p">()</span>
+<span class="n">hinge</span> <span class="o">=</span> <span class="n">rotator</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="n">slide</span> <span class="o">=</span> <span class="n">actuator</span><span class="p">(</span>
+    <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">hinge</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">tip</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">slide</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+<span class="n">base</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">slide</span><span class="o">.</span><span class="n">set_coord</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">chain</span> <span class="o">=</span> <span class="n">kinematic_chain</span><span class="p">(</span><span class="n">tip</span><span class="p">,</span> <span class="n">proxymal</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">kinematic_pairs</span> <span class="o">==</span> <span class="p">[</span><span class="n">slide</span><span class="p">,</span> <span class="n">hinge</span><span class="p">]</span>
+<span class="n">jacobian</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">translation_sensivity_jacobian</span><span class="p">(</span><span class="n">basis</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">jacobian</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+
+<span class="n">chain</span><span class="o">.</span><span class="n">apply_step</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tip</span><span class="o">.</span><span class="n">global_location</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="mi">13</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p>The first column describes the linear actuator; the second describes the hinge. At the initial reach of <code>12</code>, a small hinge rotation produces Y velocity with a coefficient of <code>12</code>.</p>
+
+<p>To track a local frame inside an intermediate unit, use <code>sensivity2(body, local, basis=None)</code>, <code>sensitivity_jacobian2(...)</code> or <code>translation_sensitivity_jacobian2(...)</code>. These methods can analyze a frame other than the chain's terminal frame, including a joint input or a unit on a sibling branch. Coordinates that do not affect the selected unit produce zero columns. <code>basis</code> changes the frame in which absolute velocity is expressed; its own motion is not subtracted.</p>
+
+<p>In <code>zencad/examples/4.Assemble/robot-arm.py</code>, a chain of rotary joints automatically follows a red ball along a closed spatial curve. The position Jacobian and damped least squares determine joint velocities; <code>chain.apply()</code> applies them in matrix-column order. The example controls the tip position, not its orientation.</p>
+
+<h2 id="support-boundaries">Support boundaries</h2>
+
+<p>The examples use <code>rotator</code> and <code>actuator</code>. The module also contains <code>planemover</code>, <code>freemover</code> and <code>spherical_rotator</code>, but support is uneven: <code>freemover</code> declares six degrees of freedom while coordinate updates only translate in XY; <code>spherical_rotator.senses()</code> is unimplemented. <code>freemover</code> and <code>spherical_rotator</code> are therefore not ready substitutes for single-coordinate joints in Jacobian calculations. <code>planemover.set_coords([x, y])</code> sets an XY translation; its <code>senses()</code> returns linear sensitivities along X and Y. The chain Jacobian reverses sensitivities within a pair: Y, then X. <code>apply_step()</code> and <code>apply()</code> accept only single-coordinate joints and validate the input vector length before changing coordinates.</p>
 </article>
 </div>
 </body>

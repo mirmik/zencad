@@ -335,14 +335,15 @@ class planemover(kinematic_unit):
 
     def senses(self):
         return (
-            screw(ang=vector3(1, 0, 0), lin=vector3()),
-            screw(ang=vector3(0, 1, 0), lin=vector3())
+            screw(lin=vector3(1, 0, 0)),
+            screw(lin=vector3(0, 1, 0))
         )
 
     def dim(self):
         return 2
 
     def set_coords(self, coords, **kwargs):
+        kwargs.setdefault("deep", True)
         self.x = coords[0]
         self.y = coords[1]
         self.output.relocate(

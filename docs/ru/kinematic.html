@@ -68,16 +68,172 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="библиотека-кинематики">Библиотека кинематики.</h1>
+<article class="article"><h1 id="кинематика">Кинематика</h1>
 
-<p>Данная библиотека является дополнением к системе <a href="assemble.html">сборок</a> и позволяет управлять перемещением элементов сборок в терминах обобщенных кинематических координат, а так же осуществлять некоторые действия на кинематическими цепями.</p>
+<p>Кинематика дополняет <a href="assemble.html">сборки</a>: положение деталей задаётся обобщёнными координатами — например, углом шарнира или ходом линейного привода. Геометрия деталей строится обычными функциями ZenCad, а кинематические звенья управляют их размещением.</p>
 
-<p>Библиотека определяет дополнительные типы unit:</p>
+<h2 id="два-юнита-одного-звена">Два юнита одного звена</h2>
 
-<p>zencad.assemble.rotator - поворотное звено
-zencad.assemble.actuator - актуаторное звено</p>
+<p>Кинематический компонент реализован парой юнитов, находящихся в относительном движении:</p>
 
-<p>Рабочие примеры находятся в <code>zencad/examples/4.Assemble</code>. Управление звеньями выполняется через <code>set_coord()</code>; структура связей описана в разделе <a href="assemble.html">сборок</a>.</p>
+<ul>
+<li>Сам объект звена, наследующий <code>kinematic_unit</code>, служит входным юнитом. Его <code>location</code> задаёт установку звена относительно родителя.</li>
+<li><code>joint.output</code> — выходной юнит, дочерний по отношению к входному. Его положение относительно входа определяется кинематическими координатами.</li>
+</ul>
+
+<div class="codehilite">
+<pre><span></span><code>parent
+└── joint                 вход: установка шарнира
+    └── joint.output      выход: вращение или перемещение
+        └── payload       деталь или следующее звено
+</code></pre>
+</div>
+
+<p><code>joint.add(shape)</code> прикрепляет геометрию к входу, например корпус привода. <code>joint.output.add(shape)</code> прикрепляет её к подвижному выходу. Вызов <code>joint.link(child)</code> также присоединяет <code>child</code> к <strong>выходу</strong>, в отличие от <code>unit.link(child)</code>, который присоединяет непосредственно к текущему юниту.</p>
+
+<p>При создании потомка через конструктор пишите <code>parent=joint.output</code>, если он должен двигаться вместе с выходом. <code>parent=joint</code> прикрепляет его к входному юниту.</p>
+
+<h2 id="вращательное-и-поступательное-звенья">Вращательное и поступательное звенья</h2>
+
+<p>Классы импортируются из <code>zencad.assemble</code>:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Звено</th>
+  <th>Координата</th>
+  <th>Движение выхода</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>rotator(axis=...)</code></td>
+  <td><code>set_coord(angle)</code>, угол в радианах</td>
+  <td>Вращение вокруг локальной оси входа</td>
+</tr>
+<tr>
+  <td><code>actuator(axis=...)</code></td>
+  <td><code>set_coord(distance)</code>, длина в единицах модели</td>
+  <td>Перемещение вдоль локальной оси входа</td>
+</tr>
+</tbody>
+</table>
+
+<p>Ось нормируется. Параметр <code>mul</code> масштабирует координату: фактический угол или ход равен <code>coord * mul</code>. <code>location</code> устанавливает вход звена, а <code>set_coord()</code> изменяет относительное положение выхода. У однокоординатных звеньев <code>dim()</code> возвращает <code>1</code>; доступна также запись <code>set_coords([value])</code>.</p>
+
+<p>Пример поворотного рычага:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span><span class="p">,</span> <span class="n">rotator</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">unit</span><span class="p">()</span>
+<span class="n">joint</span> <span class="o">=</span> <span class="n">rotator</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="n">joint</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">joint</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">tip</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">joint</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">translate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+<span class="n">base</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">joint</span><span class="o">.</span><span class="n">set_coord</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">),</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">position</span> <span class="o">=</span> <span class="n">tip</span><span class="o">.</span><span class="n">global_location</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="mi">20</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>Геометрия рычага остаётся прежней, меняется её размещение. <code>global_location</code> учитывает всех родителей. После ручного изменения структуры или локальных положений используйте <code>base.location_update(deep=True)</code>. <code>view=False</code> подходит для расчётов без обновления отображения; при работе с показанной моделью используйте обычное обновление.</p>
+
+<p>Для анимации создайте сборку до <code>show()</code>, а в callback меняйте координаты звеньев. Примеры находятся в <code>zencad/examples/4.Assemble</code>; взаимодействие с вводом описано в разделе <a href="animate.html">«Анимация»</a>.</p>
+
+<h2 id="кинематическая-цепь-и-дерево">Кинематическая цепь и дерево</h2>
+
+<p>В самом ZenCad есть класс <code>kinematic_chain</code> из <code>zencad.libs.kinematic</code>. Это алгоритмическое представление <strong>одного пути</strong> в дереве сборки, а не контейнер, в который нужно повторно добавлять детали.</p>
+
+<p>Конструктор <code>kinematic_chain(distant, proxymal=None)</code> идёт от конечного юнита <code>distant</code> по ссылкам <code>parent</code> к начальному <code>proxymal</code>, включая его. Если начало не указано, обход продолжается до корня. Имя аргумента <code>proxymal</code> приведено в том написании, которое используется в API; указанный юнит должен быть предком конечного.</p>
+
+<ul>
+<li><code>getchain()</code> возвращает все юниты пути, включая неподвижные промежуточные.</li>
+<li><code>kinematic_pairs</code> содержит только кинематические звенья; <code>chain[i]</code> обращается к этому списку.</li>
+<li>Порядок — <strong>от выхода к основанию</strong>. В таком же порядке задаются приращения и располагаются столбцы матриц для однокоординатных звеньев.</li>
+</ul>
+
+<p>Отдельного класса <code>kinematic_tree</code> нет. Дерево задаётся связями <code>unit</code>: у одного входа или выхода может быть несколько потомков. Для каждого интересующего рабочего органа можно построить свою цепь к общему основанию. При изменении общей для ветвей координаты меняются положения всех зависимых потомков.</p>
+
+<h2 id="чувствительности-и-матрица-якоби">Чувствительности и матрица Якоби</h2>
+
+<p>Цепь вычисляет локальную зависимость движения рабочего органа от изменения координат звеньев:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Метод</th>
+  <th>Результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>sensivity(basis=None)</code></td>
+  <td>Список объектов <code>screw</code> с угловой частью <code>.ang</code> и линейной <code>.lin</code></td>
+</tr>
+<tr>
+  <td><code>sensivity_jacobian(basis=None)</code></td>
+  <td>NumPy-матрица <code>6 × N</code>: угловые компоненты в первых трёх строках, линейные в последних</td>
+</tr>
+<tr>
+  <td><code>translation_sensivity_jacobian(basis=None)</code></td>
+  <td>NumPy-матрица <code>3 × N</code> линейных компонентов</td>
+</tr>
+<tr>
+  <td><code>apply_step(increments)</code></td>
+  <td>Прибавляет приращения к координатам однокоординатных звеньев</td>
+</tr>
+<tr>
+  <td><code>apply(speeds, delta)</code></td>
+  <td>Прибавляет <code>speed * delta</code> к каждой координате</td>
+</tr>
+</tbody>
+</table>
+
+<p>Написание <code>sensivity</code> сохранено в именах методов API. Без <code>basis</code> чувствительности выражены в системе конечного юнита; <code>basis=base</code> выражает их в системе указанного юнита. Положения дерева должны быть обновлены перед расчётом. Приращения и скорости передавайте по одному значению на каждое однокоординатное звено в порядке <code>kinematic_pairs</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span><span class="p">,</span> <span class="n">rotator</span><span class="p">,</span> <span class="n">actuator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.libs.kinematic</span><span class="w"> </span><span class="kn">import</span> <span class="n">kinematic_chain</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">unit</span><span class="p">()</span>
+<span class="n">hinge</span> <span class="o">=</span> <span class="n">rotator</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="n">slide</span> <span class="o">=</span> <span class="n">actuator</span><span class="p">(</span>
+    <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">hinge</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">tip</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">slide</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+<span class="n">base</span><span class="o">.</span><span class="n">location_update</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">slide</span><span class="o">.</span><span class="n">set_coord</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">chain</span> <span class="o">=</span> <span class="n">kinematic_chain</span><span class="p">(</span><span class="n">tip</span><span class="p">,</span> <span class="n">proxymal</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">kinematic_pairs</span> <span class="o">==</span> <span class="p">[</span><span class="n">slide</span><span class="p">,</span> <span class="n">hinge</span><span class="p">]</span>
+<span class="n">jacobian</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">translation_sensivity_jacobian</span><span class="p">(</span><span class="n">basis</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">jacobian</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+
+<span class="n">chain</span><span class="o">.</span><span class="n">apply_step</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tip</span><span class="o">.</span><span class="n">global_location</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="mi">13</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p>Здесь первый столбец описывает линейный привод, второй — шарнир. При исходном вылете <code>12</code> малый поворот шарнира даёт линейную скорость по Y с коэффициентом <code>12</code>.</p>
+
+<p>Есть и методы для отслеживания локальной системы внутри промежуточного юнита: <code>sensivity2(body, local, basis=None)</code>, <code>sensitivity_jacobian2(...)</code> и <code>translation_sensitivity_jacobian2(...)</code>. Они позволяют анализировать положение, отличающееся от конечной системы цепи, в том числе вход звена или юнит соседней ветви. Координаты, не влияющие на выбранный юнит, дают нулевые столбцы. <code>basis</code> меняет систему выражения абсолютной скорости; движение самого базиса из результата не вычитается.</p>
+
+<p>В <code>zencad/examples/4.Assemble/robot-arm.py</code> рука из поворотных звеньев автоматически следует за красным шариком на замкнутой пространственной траектории. Линейный Якобиан и метод наименьших квадратов с демпфированием задают скорости суставов; <code>chain.apply()</code> применяет их в порядке столбцов матрицы. Пример управляет положением конца руки, не его ориентацией.</p>
+
+<h2 id="границы-поддержки">Границы поддержки</h2>
+
+<p>Приведённые примеры используют <code>rotator</code> и <code>actuator</code>. В модуле есть также <code>planemover</code>, <code>freemover</code> и <code>spherical_rotator</code>, но их поддержка неоднородна: у <code>freemover</code> заявлены шесть степеней свободы, хотя установка координат реализует только перемещение по XY; <code>spherical_rotator.senses()</code> не реализован. Поэтому <code>freemover</code> и <code>spherical_rotator</code> нельзя считать готовыми заменами однокоординатных звеньев в расчёте Якоби. <code>planemover.set_coords([x, y])</code> задаёт перемещение по XY; его <code>senses()</code> возвращает линейные чувствительности по X и Y. В Якобиане цепи порядок чувствительностей внутри пары обратный: Y, затем X. <code>apply_step()</code> и <code>apply()</code> принимают только однокоординатные звенья и проверяют длину входного вектора до изменения координат.</p>
 </article>
 </div>
 </body>

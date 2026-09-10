@@ -62,16 +62,18 @@ class screw:
         return l  # math.sqrt(l)
 
     def transform_by(self, trans):
+        # A similarity has A = s R, with signed scale s and proper rotation R.
+        # Angular velocity transforms by R (also for mirrors), linear by A.
+        axes = [trans.transform_vector(zencad.util.vector3(axis)) for axis in
+                ((1, 0, 0), (0, 1, 0), (0, 0, 1))]
+        scale = math.copysign(axes[0].length(), axes[0].dot(axes[1].cross(axes[2])))
         return screw(
-            ang=trans.transform_vector(self.ang),
+            ang=trans.transform_vector(self.ang) / scale,
             lin=trans.transform_vector(self.lin)
         )
 
     def inverse_transform_by(self, trans):
-        return screw(
-            ang=trans.inverse_transform_vector(self.ang),
-            lin=trans.inverse_transform_vector(self.lin)
-        )
+        return self.transform_by(trans.inverse())
 
     # def to_array(self):
         """Массив имеет обратный принятому в screw порядку"""

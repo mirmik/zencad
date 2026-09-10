@@ -56,8 +56,7 @@ replaces its external slider window with keyboard controls.
 | `MiniGames/tetris.py` | Supported | InputEvent arrows, visibility/color patches |
 | `MiniGames/tennis.py` | Supported | Two-player keyboard input and assembly motion |
 | `3.Animation/camera.py` | Supported | `state.camera.orbit(...)` continuously rotates the GUI-owned camera and composes with mouse navigation |
-| `4.Assemble/manual-control.py` | Supported | Number keys select a joint; arrows rotate it |
-| `4.Assemble/manual-control-2.py` | Supported | Keyboard-driven inverse-kinematics target |
+| `4.Assemble/robot-arm.py` | Supported | Rotary-joint arm follows an animated target using damped least squares |
 
 Arbitrary custom QWidget panels remain outside the managed runner contract.
 Interactive examples use transported input events instead, so they work in the

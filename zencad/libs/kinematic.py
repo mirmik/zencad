@@ -1,6 +1,6 @@
 import zencad.assemble
 import zencad.libs.screw
-from zencad import nulltrans
+from zencad._native.exttrans import nulltrans
 import numpy
 import time
 
@@ -38,15 +38,16 @@ class kinematic_chain:
         return self.kinematic_pairs[key]
 
     def apply_step(self, x):
-        # TODO: не учитывает пары с несколькими степенями свободы
-        for i in range(len(x)):
-            k = self.kinematic_pairs[i]
-            k.set_coord(k.coord + x[i])
+        # Validate before changing any joint, including unsupported multi-DOF chains.
+        if any(k.dim() != 1 for k in self.kinematic_pairs):
+            raise NotImplementedError("apply_step supports only one-coordinate joints")
+        if len(x) != len(self.kinematic_pairs):
+            raise ValueError("Expected one coordinate change per kinematic pair")
+        for k, delta in zip(self.kinematic_pairs, x):
+            k.set_coord(k.coord + delta)
 
     def apply(self, speeds, delta):
-        for i in range(len(speeds)):
-            k = self.kinematic_pairs[i]
-            k.set_coord(k.coord + speeds[i] * delta)
+        self.apply_step([speed * delta for speed in speeds])
 
     @staticmethod
     def collect_chain(distant, proxymal=None):
@@ -54,6 +55,8 @@ class kinematic_chain:
         link = distant
 
         while link is not proxymal:
+            if link is None:
+                raise ValueError("proxymal must be an ancestor of distant")
             chain.append(link)
             link = link.parent
 
@@ -77,7 +80,7 @@ class kinematic_chain:
                 if tmp is None:
                     tmp = l.location
                 else:
-                    tmp = tmp * l.location
+                    tmp = l.location * tmp
 
         if tmp is not None:
             ret.append(tmp)
@@ -106,29 +109,26 @@ class kinematic_chain:
         basis - система координат, в которой возвращаются чувствительности
         """
 
-        top_kinunit = self.found_first_kinematic_unit_in_parent_tree(body)
-        if top_kinunit is None:
-            raise ValueError("No kinematic unit found in body parent tree")
+        ancestors = set()
+        ancestor = body
+        while ancestor is not None:
+            ancestors.add(ancestor)
+            ancestor = ancestor.parent
 
         senses = []
         outtrans = body.global_location * local
 
-        top_unit_founded = False
         for link in self.kinematic_pairs:
-            if link is top_kinunit:
-                top_unit_founded = True
-
             # Получаем собственные чувствительности текущего звена в его собственной системе координат
             lsenses = link.senses()
 
-            if top_unit_founded == False:
+            if link.output not in ancestors:
                 for _ in lsenses:
                     senses.append(zencad.libs.screw.screw())
                 continue
  
             # Получаем трансформацию выхода текущей пары
             linktrans = link.output.global_location
-            link.output.global_location
 
             # Получаем трансформацию цели в системе текущего звена
             trsf = linktrans.inverse() * outtrans
@@ -186,45 +186,7 @@ class kinematic_chain:
         """Вернуть массив тензоров производных положения выходного
         звена по вектору координат в виде [(w_i, v_i) ...]"""
 
-        senses = []
-        outtrans = self.distant.global_location
-
-        """Два разных алгоритма получения масива тензоров чувствительности.
-		Первый - проход по цепи с аккумулированием тензора трансформации.
-		Второй - по глобальным объектам трансформации
-
-		Возможно следует использовать второй и сразу же перегонять в btrsf вместо outtrans"""
-
-        for link in self.kinematic_pairs:
-            # Получаем собственные чувствительности текущего звена в его собственной системе координат
-            lsenses = link.senses()
-
-            # Получаем трансформацию выхода текущего звена
-            linktrans = link.output.global_location
-             
-            # Получаем трансформацию цели в системе текущего звена
-            trsf = linktrans.inverse() * outtrans
-            
-            # Получаем радиус-вектор в системе текущего звена
-            radius = trsf.translation()
-            
-            for sens in reversed(lsenses):
-                # Получаем линейную и угловую составляющие чувствительности
-                # в системе текущего звена
-                scr = sens.kinematic_carry(radius)
-
-                # Трансформируем их в систему цели и добавляем в список
-                senses.append((
-                    scr.inverse_transform_by(trsf)
-                ))
-            
-        # Перегоняем в систему basis, если она задана
-        if basis is not None:
-            btrsf = basis.global_location
-            trsf = btrsf.inverse() * outtrans
-            senses = [s.transform_by(trsf) for s in senses]
-
-        return senses
+        return self.sensivity2(self.distant, nulltrans(), basis)
 
     def sensivity_jacobian(self, basis=None):
         """Вернуть матрицу Якоби выхода по координатам в виде numpy массива 6xN"""

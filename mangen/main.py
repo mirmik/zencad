@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent
 EXAMPLE_PAGES = {
     "index", "installation", "helloworld", "migration", "version2", "caching",
     "prim0d", "modeling", "selectors", "validation", "show", "interactive_object",
-    "animate", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
+    "animate", "kinematic", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
 }
 
 
