@@ -158,4 +158,6 @@ def check_links() -> None:
 
 if __name__ == "__main__":
     check_links()
+    from check_reference import check_reference
+    check_reference()
     check_examples()

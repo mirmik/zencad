@@ -89,7 +89,7 @@ Return the vector of the first derivative matching the _u_ parameter.
 ## curve.lower_distance_parameter(pnt)
 Вернуть параметр, соответствующий точке кривой наиболее близкой к точке pnt. 
 :en
-## curve.project (pnt)
+## curve.lower_distance_parameter(pnt)
 Return the parameter corresponding to the point on the curve closest to the point pnt. 
 ::
 
@@ -120,3 +120,25 @@ disp(pnts + [crv])
 ```
 
 ![](../images/generic/uniform_points0.png)
+
+:ru
+## Двумерные кривые
+
+У `Curve2` свой интерфейс: `point(u)` возвращает `Point2`, `tangent(u)` — `Vector2` первой производной, `range()` — `Interval`. Для ограничения диапазона используйте `trim(start, end)`. Методы `d0`, `d1`, `endpoints` и `uniform_points`, описанные выше для `Edge` и `Curve`, не входят в интерфейс `Curve2`.
+:en
+## Two-dimensional curves
+
+`Curve2` has its own interface: `point(u)` returns `Point2`, `tangent(u)` returns the first derivative as `Vector2`, and `range()` returns `Interval`. Use `trim(start, end)` to restrict its domain. The `d0`, `d1`, `endpoints`, and `uniform_points` methods described above for `Edge` and `Curve` are not part of the `Curve2` interface.
+::
+
+```python
+from zencad import *
+
+curve2 = segment2(point2(0, 0), point2(10, 0))
+interval = curve2.range()
+start = curve2.point(interval.lower)
+end = curve2.point(interval.upper)
+assert float(start.x) == 0
+assert float(end.x) == 10
+assert isinstance(curve2.tangent(interval.lower), Vector2)
+```

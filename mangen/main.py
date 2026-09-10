@@ -11,10 +11,15 @@ import re
 import markdown2
 
 ROOT = Path(__file__).resolve().parent
+PAGE_ALIASES = {
+    "trans1": "trans0", "lincycle": "prim1d", "platonic": "prim3d",
+    "navigation": "gui", "markers": "interactive_object", "nut": "examples",
+}
+
 EXAMPLE_PAGES = {
     "index", "installation", "helloworld", "migration", "version2", "caching",
     "prim0d", "modeling", "selectors", "validation", "show", "interactive_object",
-    "animate", "kinematic", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
+    "animate", "examples", "kinematic", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
 }
 
 
@@ -84,8 +89,9 @@ def build(output: Path) -> None:
         for old in sorted((ROOT.parent / "docs" / language).glob("*.html")):
             if old.name in generated:
                 continue
-            if old.stem == "trans1":
-                content = localized((ROOT / "ru" / "trans0.md").read_text(encoding="utf-8"), language)
+            if old.stem in PAGE_ALIASES:
+                target = PAGE_ALIASES[old.stem]
+                content = localized((ROOT / "ru" / f"{target}.md").read_text(encoding="utf-8"), language)
                 (destination / old.name).write_text(
                     render_page(old.stem, content, nav, language), encoding="utf-8"
                 )

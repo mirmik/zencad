@@ -184,10 +184,10 @@ Just like with 3D objects, the above operations can be applied to 2D objects as 
 
 Пример:
 ```python
-m0 = sphere(10) - square(10)
-m1 = sphere(10) + square(10)
-m2 = sphere(10) ^ square(10)
-m2 = section(sphere(10), square(10))
+m0 = circle(10) - square(10)
+m1 = circle(10) + square(10)
+m2 = circle(10) ^ square(10)
+m3 = section(circle(10), square(10))
 ```
 
 ![](../images/generic/bool20.png) ![](../images/generic/bool21.png) </br>

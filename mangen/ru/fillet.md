@@ -37,13 +37,11 @@ model.fillet(radius)
 Операция взятия фаски тела. В отличие от скругления применяется только к объёмным телам.
 Фаска задаётся расстоянием `r`, взятым от ребра до линии фаски и масивом ближайших точек `refs`. Если `refs == None`, выбранными считаются все элементы топологии. 
 
-TODO: несиметричная фаска. 
 :en
 ## Chamfer
 Body chamfering operation. Unlike rounding, it is applied only to solid bodies.
 The chamfer is specified by the distance `r` taken from the edge to the chamfer line and an array of the nearest points` refs`. If `refs == None`, all elements of the topology are considered selected.
 
-TODO: asymmetrical chamfer. 
 ::
 
 ```python

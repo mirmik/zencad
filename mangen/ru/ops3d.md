@@ -67,6 +67,10 @@ loft(profiles, smooth=False, shell=False, maxdegree=4)
 
 Пример:
 ```python
+profiles = [circle(10, wire=True), circle(15, wire=True).up(20),
+            circle(8, wire=True).up(40)]
+body = loft(profiles, smooth=True)
+shell = loft(profiles, smooth=True, shell=True)
 ```
 
 ![](../images/generic/loft0.png) ![](../images/generic/loft1.png)  </br>

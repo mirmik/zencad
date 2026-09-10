@@ -1,26 +1,21 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/markers.html">Ru</a>
-        <a href="../en/markers.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — markers</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/markers.html">Ru</a> · <a href="../en/markers.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
+<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -74,9 +69,28 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article">English version in preparation. COMMING SOON.<p></p>
+<article class="article"><h1 id="controlling-displayed-objects">Controlling displayed objects</h1>
+
+<p>A geometry operation creates a new shape. The controller returned by <code>display()</code> changes the presentation of an existing scene object:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">controller</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;part&quot;</span><span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">yellow</span><span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">controller</span><span class="o">.</span><span class="n">is_hidden</span><span class="p">()</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p><code>relocate(transform)</code> sets placement and <code>location()</code> reads it; <code>set_color()</code>/<code>color()</code> update and read color; <code>hide()</code>/<code>is_hidden()</code> control visibility. Controllers also support transform helpers. Usually set an absolute placement each frame with <code>relocate</code> to avoid unintentionally accumulating transforms.</p>
+
+<p>This does not change BREP or perform a boolean operation: the source <code>body</code> remains unchanged. Managed animation updates properties of objects created beforehand. Do not construct <code>interactive_object</code> or QWidget instances manually to update a model. <a href="animate.html">Animation</a>.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

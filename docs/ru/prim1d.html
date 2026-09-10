@@ -15,6 +15,7 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
+<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -72,7 +73,7 @@
 
 <p>Во многих случаях объёмных и плоских примитивов недостаточно для построения требуемой геометрии. Продвинутые операции, из числа тех, что встречаются в данном руководстве позволяют строить геометрические тела на основе произвольных линий.</p>
 
-<p>В <em>ZenCad</em> (и геометрическом ядре opencascade) существует два класса одномерных геометрических тел - <em>Edge</em> и <em>Wire</em>. <em>Edge</em> является простым примитивом. Объединение нескольких Edge в одну составную кривую порождают объект Wire. Как правило, в <em>ZenCad</em>, <em>Wire</em> и <em>Edge</em> могут использоваться взаимозаменяемо, однако при анализе модели с использованием рефлексии эта разница может быть существенной.")</p>
+<p>В <em>ZenCad</em> (и геометрическом ядре opencascade) существует два класса одномерных геометрических тел - <em>Edge</em> и <em>Wire</em>. <em>Edge</em> является простым примитивом. Объединение нескольких Edge в одну составную кривую порождают объект Wire. Как правило, в <em>ZenCad</em>, <em>Wire</em> и <em>Edge</em> могут использоваться взаимозаменяемо, однако при анализе модели с использованием рефлексии эта разница может быть существенной.</p>
 
 <p>Набор <em>Wire</em> и/или <em>Edge</em> может быть соединён в сложную кривую с помощью функции <em>sew</em> (Подробнее ниже в этом разделе).</p>
 
@@ -104,7 +105,7 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -150,7 +151,7 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -227,7 +228,7 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">])</span>
+<pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="c1"># sort is positional; default: True</span>
 </code></pre>
 </div>
 

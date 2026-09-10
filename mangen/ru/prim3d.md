@@ -17,9 +17,9 @@ The volumetric body is a parallelepiped. It is set with the indication of three 
 
 Сигнатуры:
 ```python
-box(x, y, z, center=True/False)
-box(size=(x,y,z), center=True/False)
-box(size=a, center=True/False) 
+box(x, y, z, center=False)
+box(size=(x,y,z), center=False)
+box(size=a, center=False)
 ```
 
 Примеры:
@@ -66,7 +66,7 @@ The volumetric body is a cylinder. It is set with the indication of the radius a
 
 Сигнатура:
 ```python
-cylinder(r=radius, h=height, yaw=yaw, center=True/False)
+cylinder(r=radius, h=height, yaw=yaw, center=False)
 ```
 
 ```python
@@ -90,7 +90,7 @@ The volumetric body is a cone. It is specified by specifying the lower radius _r
 
 Сигнатура:
 ```python
-cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=True/False)
+cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=False)
 ```
 
 Примеры:

@@ -15,6 +15,7 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
+<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -156,7 +157,9 @@ Specifying the <em>frenet</em> option activates the law of variation of the angu
 <p>Примеры:</p>
 
 <div class="codehilite">
-<pre><span></span><code>
+<pre><span></span><code><span class="n">spine</span> <span class="o">=</span> <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
+<span class="n">profiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">circle</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">40</span><span class="p">)]</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">spine</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -181,7 +184,9 @@ If radius <em>r</em> is specified, the object is rotated 90 degrees around the X
 <p>Пример:</p>
 
 <div class="codehilite">
-<pre><span></span><code>
+<pre><span></span><code><span class="n">profile</span> <span class="o">=</span> <span class="n">rectangle</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">revol</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
+<span class="n">sector</span> <span class="o">=</span> <span class="n">revol</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">))</span>
 </code></pre>
 </div>
 

@@ -192,19 +192,19 @@ Methods for transformable geometric objects:
 ::
 ```python
 # Отражение относительно центра.
-shp.mirrorO(x,y,z)
-shp.mirrorO([x,y,z])
+shp.transform(mirrorO(x,y,z))
+shp.transform(mirrorO([x,y,z]))
 
 # Отражение относительно оси.
-shp.mirror_axis(x,y,z)
-shp.mirror_axis([x,y,z])
+shp.transform(mirror_axis(x,y,z))
+shp.transform(mirror_axis([x,y,z]))
 shp.mirrorX() # equal to mirror_axis(1,0,0)
 shp.mirrorY() # equal to mirror_axis(0,1,0)
 shp.mirrorZ() # equal to mirror_axis(0,0,1)
 
 # Отражение относительно плоскости.
-shp.mirror_plane(x,y,z)
-shp.mirror_plane([x,y,z])
+shp.transform(mirror_plane(x,y,z))
+shp.transform(mirror_plane([x,y,z]))
 shp.mirrorXY() # equal to mirror_plane(0,0,1)
 shp.mirrorYZ() # equal to mirror_plane(1,0,0)
 shp.mirrorXZ() # equal to mirror_plane(0,1,0)
@@ -239,11 +239,11 @@ mirrorXZ() # equal to mirror_plane(0,1,0)
 :ru
 ## Операции над преобразованиями.
 
-Аффинные преобразования являются линейными операторами и относительно них может быть выполнены некоторые операции линейной алгебры. 
+Аффинное преобразование имеет вид `p → A·p + t`. При ненулевом переносе оно не является линейным оператором над трёхмерными векторами; композицию удобно представлять матрицами 4 × 4 в однородных координатах.
 :en
 ## Operations on transformations.
 
-Affine transformations are linear operators and some linear algebra operations can be performed with respect to them. 
+An affine transformation has the form `p → A·p + t`. With nonzero translation it is not a linear operator on three-dimensional vectors; composition can be represented by 4 × 4 matrices in homogeneous coordinates.
 ::
 
 ---------------

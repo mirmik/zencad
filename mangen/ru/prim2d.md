@@ -17,9 +17,9 @@ The flat primitive is a rectangle. Set by two sides. It is permissible not to in
 
 Сигнатура:
 ```python
-rectangle(x, y, center=True/False, wire=True/False)
-rectangle(a, center=True/False, wire=True/False)
-square(a, center=True/False, wire=True/False) #alternate
+rectangle(x, y, center=False, wire=False)
+rectangle(a, center=False, wire=False)
+square(a, center=False, wire=False) #alternate
 ```
 ![](../images/generic/rectangle0.png) ![](../images/generic/rectangle1.png) </br> 
 ![](../images/generic/rectangle2.png) ![](../images/generic/rectangle3.png) 
@@ -37,9 +37,9 @@ When the _wire_ option is set, a wireframe circle will be generated instead of a
 
 Сигнатура:
 ```python
-circle(r=radius, wire=True/False)
-circle(r=radius, angle=angle, wire=True/False)
-circle(r=radius, angle=(start, stop), wire=True/False)
+circle(r=radius, wire=False)
+circle(r=radius, angle=angle, wire=False)
+circle(r=radius, angle=(start, stop), wire=False)
 ```
 ![](../images/generic/circle0.png) ![](../images/generic/circle1.png)   </br>
 ![](../images/generic/circle2.png) ![](../images/generic/circle3.png)  
@@ -57,9 +57,9 @@ When the _wire_ option is set, a wireframe will be generated instead of a filled
 
 Сигнатура:
 ```python
-ellipse(r1=major, r2=minor, wire=True/False)
-ellipse(r1=major, r2=minor, angle=angle, wire=True/False)
-ellipse(r1=major, r2=minor, angle=(start, stop), wire=True/False)
+ellipse(r1=major, r2=minor, wire=False)
+ellipse(r1=major, r2=minor, angle=angle, wire=False)
+ellipse(r1=major, r2=minor, angle=(start, stop), wire=False)
 ```
 ![](../images/generic/ellipse0.png) ![](../images/generic/ellipse1.png)   </br>
 ![](../images/generic/ellipse2.png) ![](../images/generic/ellipse3.png)  
@@ -96,7 +96,7 @@ When the _wire_ option is set, a wireframe will be generated instead of a filled
 
 Сигнатура:
 ```python
-ngon(r=radius, n=vertexCount, wire=True/False)
+ngon(r=radius, n=vertexCount, wire=False)
 ```
 ![](../images/generic/ngon0.png) ![](../images/generic/ngon1.png)  </br> 
 ![](../images/generic/ngon2.png) ![](../images/generic/ngon3.png)  </br> 
@@ -105,10 +105,10 @@ ngon(r=radius, n=vertexCount, wire=True/False)
 ---
 :ru
 ## Текст
-Плоский примитив - текст. Создаёт грань на основе строки `text`, названия шрифта `fontname` и размера шрифта `size`. Шрифт выбирается из числа зарегистрированных в системе. Для регистрации дополнительных шрифтов используйте комманду `register_font`. Опция `composite_curve` Позволяет снизить количество составных объектов результирующей формы путём увеличения их сложности. 
+Плоский примитив - текст. Возвращает `Compound` с гранями символов на основе строки `text`, названия шрифта `fontname` и размера шрифта `size`. Шрифт выбирается из числа зарегистрированных в системе. Для регистрации дополнительных шрифтов используйте комманду `register_font`. Опция `composite_curve` Позволяет снизить количество составных объектов результирующей формы путём увеличения их сложности.
 :en
 ## Text shape
-The flat primitive is text. Creates a face based on string `text` and name of font `fontname` with font size `size`. The font is selected from those registered in the system. To register additional fonts use `register_font` command. The `composite_curve` option reduce the number of edges in the resulting shape by increasing their complexity. 
+The flat primitive is text. Returns a `Compound` containing glyph faces based on string `text` and name of font `fontname` with font size `size`. The font is selected from those registered in the system. To register additional fonts use `register_font` command. The `composite_curve` option reduce the number of edges in the resulting shape by increasing their complexity.
 ::
 
 Сигнатура:

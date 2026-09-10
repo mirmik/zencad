@@ -1,26 +1,21 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/nut.html">Ru</a>
-        <a href="../en/nut.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — nut</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/nut.html">Ru</a> · <a href="../en/nut.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
+<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -74,11 +69,32 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Библиотека резьбовых соединений</h1>
+<article class="article"><h1 id="примеры">Примеры</h1>
 
-<p>UNDER_CONSTRUCT</p>
+<p>Примеры поставляются в каталоге <code>zencad/examples</code>. Откройте модель через меню примеров в GUI или запустите файл из checkout репозитория:</p>
+
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>zencad<span class="w"> </span>zencad/examples/4.Assemble/robot-arm.py
+</code></pre>
+</div>
+
+<ul>
+<li><code>4.Assemble/robot-arm.py</code> — рука из поворотных звеньев следует за шариком; используются Якобиан и обратная кинематика.</li>
+<li><code>4.Assemble/robot.py</code> — анимация иерархической сборки с поворотами головы и рук.</li>
+<li><code>4.Assemble/EulerAngles.py</code> — композиция поворотов.</li>
+<li><code>3.Animation/camera.py</code> — управление камерой из анимации.</li>
+<li><code>Models/nut.py</code> — построение резьбовой геометрии через спираль и развёртку профиля. Функции модели определены в самом примере; это не отдельная библиотека стандартных резьбовых соединений.</li>
+</ul>
+
+<p>Для проверки модели без окна:</p>
+
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>zencad<span class="w"> </span>--no-show<span class="w"> </span>zencad/examples/4.Assemble/robot-arm.py
+</code></pre>
+</div>
+
+<p>Этот режим проверяет построение начальной сцены; callback анимации выполняется при обычном запуске. Устройство анимации описано в разделе <a href="animate.html">Анимация</a>, работа с цепями — в разделе <a href="kinematic.html">Кинематика</a>.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

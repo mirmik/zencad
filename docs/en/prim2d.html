@@ -15,6 +15,7 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
+<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -81,9 +82,9 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">rectangle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">rectangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">square</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#alternate</span>
+<pre><span></span><code><span class="n">rectangle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">rectangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">square</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#alternate</span>
 </code></pre>
 </div>
 
@@ -100,9 +101,9 @@ When the <em>wire</em> option is set, a wireframe circle will be generated inste
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -119,9 +120,9 @@ When the <em>wire</em> option is set, a wireframe will be generated instead of a
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ellipse</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">major</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">minor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -155,7 +156,7 @@ When the <em>wire</em> option is set, a wireframe will be generated instead of a
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">vertexCount</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">vertexCount</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -167,7 +168,7 @@ When the <em>wire</em> option is set, a wireframe will be generated instead of a
 
 <h2 id="text-shape">Text shape</h2>
 
-<p>The flat primitive is text. Creates a face based on string <code>text</code> and name of font <code>fontname</code> with font size <code>size</code>. The font is selected from those registered in the system. To register additional fonts use <code>register_font</code> command. The <code>composite_curve</code> option reduce the number of edges in the resulting shape by increasing their complexity. </p>
+<p>The flat primitive is text. Returns a <code>Compound</code> containing glyph faces based on string <code>text</code> and name of font <code>fontname</code> with font size <code>size</code>. The font is selected from those registered in the system. To register additional fonts use <code>register_font</code> command. The <code>composite_curve</code> option reduce the number of edges in the resulting shape by increasing their complexity.</p>
 
 <p>Сигнатура:</p>
 

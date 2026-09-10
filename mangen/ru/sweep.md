@@ -107,6 +107,9 @@ pipe_shell(profiles, spine, frenet=False, binormal=None, solid=True)
 
 Примеры:
 ```python
+spine = segment((0, 0, 0), (0, 0, 40))
+profiles = [circle(10, wire=True), circle(5, wire=True).up(40)]
+body = pipe_shell(profiles, spine)
 ```
 
 ![](../images/generic/sweep0.png) ![](../images/generic/sweep1.png)  </br>
@@ -131,6 +134,9 @@ revol(profile, r=None, yaw=deg(360))
 
 Пример:
 ```python
+profile = rectangle(5, 12).rotateX(deg(90)).right(15)
+body = revol(profile)
+sector = revol(profile, yaw=deg(120))
 ```
 
 ![](../images/generic/revol0.png) ![](../images/generic/revol1.png)  </br>

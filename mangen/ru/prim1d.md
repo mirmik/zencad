@@ -3,7 +3,7 @@
 
 Во многих случаях объёмных и плоских примитивов недостаточно для построения требуемой геометрии. Продвинутые операции, из числа тех, что встречаются в данном руководстве позволяют строить геометрические тела на основе произвольных линий.
 
-В _ZenCad_ (и геометрическом ядре opencascade) существует два класса одномерных геометрических тел - _Edge_ и _Wire_. _Edge_ является простым примитивом. Объединение нескольких Edge в одну составную кривую порождают объект Wire. Как правило, в _ZenCad_, _Wire_ и _Edge_ могут использоваться взаимозаменяемо, однако при анализе модели с использованием рефлексии эта разница может быть существенной.")
+В _ZenCad_ (и геометрическом ядре opencascade) существует два класса одномерных геометрических тел - _Edge_ и _Wire_. _Edge_ является простым примитивом. Объединение нескольких Edge в одну составную кривую порождают объект Wire. Как правило, в _ZenCad_, _Wire_ и _Edge_ могут использоваться взаимозаменяемо, однако при анализе модели с использованием рефлексии эта разница может быть существенной.
 
 Набор _Wire_ и/или _Edge_ может быть соединён в сложную кривую с помощью функции _sew_ (Подробнее ниже в этом разделе).
 
@@ -15,7 +15,7 @@
 
 In many cases, three-dimensional and flat primitives are not enough to build the required geometry. Advanced operations, from among those that are found in this tutorial, allow you to create geometric bodies based on arbitrary lines.
 
-In _ZenCad_ (and the opencascade geometric kernel), there are two classes of one-dimensional geometric solids - _Edge_ and _Wire_. _Edge_ is a simple primitive. Combining multiple Edges into a single compound curve results in a Wire object. Typically, _ZenCad_, _Wire_, and _Edge_ can be used interchangeably, but when analyzing a model using reflection, this difference can be significant. ")
+In _ZenCad_ (and the opencascade geometric kernel), there are two classes of one-dimensional geometric solids - _Edge_ and _Wire_. _Edge_ is a simple primitive. Combining multiple Edges into a single compound curve results in a Wire object. Typically, _ZenCad_, _Wire_, and _Edge_ can be used interchangeably, but when analyzing a model using reflection, this difference can be significant.
 
 The _Wire_ and / or _Edge_ set can be connected to a complex curve using the _sew_ function (More details later in this section).
 
@@ -50,7 +50,7 @@ Polysegment is a broken line. Set by an array of points. Setting the closed flag
 
 Сигнатура:
 ```python
-polysegment(pnts, closed=True/False)
+polysegment(pnts, closed=False)
 ```
 ![](../images/generic/polysegment0.png) ![](../images/generic/polysegment1.png)  
 
@@ -96,7 +96,7 @@ An upward spiral. It is set by the radius _r_, the height _h_ and the step of th
 
 Сигнатура:
 ```python
-helix(r, h, step, angle=angle, left=True/False)
+helix(r, h, step, angle=angle, left=False)
 ```
 ![](../images/generic/helix0.png) ![](../images/generic/helix1.png) </br>
 ![](../images/generic/helix2.png) ![](../images/generic/helix3.png)
@@ -179,7 +179,7 @@ Requirements. Parts of the line must necessarily border on each other. The order
 
 Сигнатура:
 ```python
-sew(wires, [sort=True])
+sew(wires, True) # sort is positional; default: True
 ```
 
 Пример:

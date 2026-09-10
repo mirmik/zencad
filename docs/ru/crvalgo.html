@@ -15,6 +15,7 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
+<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -158,6 +159,23 @@
 </div>
 
 <p><img src="../images/generic/uniform_points0.png" alt="" /></p>
+
+<h2 id="двумерные-кривые">Двумерные кривые</h2>
+
+<p>У <code>Curve2</code> свой интерфейс: <code>point(u)</code> возвращает <code>Point2</code>, <code>tangent(u)</code> — <code>Vector2</code> первой производной, <code>range()</code> — <code>Interval</code>. Для ограничения диапазона используйте <code>trim(start, end)</code>. Методы <code>d0</code>, <code>d1</code>, <code>endpoints</code> и <code>uniform_points</code>, описанные выше для <code>Edge</code> и <code>Curve</code>, не входят в интерфейс <code>Curve2</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">curve2</span> <span class="o">=</span> <span class="n">segment2</span><span class="p">(</span><span class="n">point2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">point2</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">interval</span> <span class="o">=</span> <span class="n">curve2</span><span class="o">.</span><span class="n">range</span><span class="p">()</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">curve2</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">curve2</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">curve2</span><span class="o">.</span><span class="n">tangent</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="n">Vector2</span><span class="p">)</span>
+</code></pre>
+</div>
 </article>
 </div>
 </body>

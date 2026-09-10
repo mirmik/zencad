@@ -15,6 +15,7 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
+<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -72,7 +73,7 @@
 
 <p>In many cases, three-dimensional and flat primitives are not enough to build the required geometry. Advanced operations, from among those that are found in this tutorial, allow you to create geometric bodies based on arbitrary lines.</p>
 
-<p>In <em>ZenCad</em> (and the opencascade geometric kernel), there are two classes of one-dimensional geometric solids - <em>Edge</em> and <em>Wire</em>. <em>Edge</em> is a simple primitive. Combining multiple Edges into a single compound curve results in a Wire object. Typically, <em>ZenCad</em>, <em>Wire</em>, and <em>Edge</em> can be used interchangeably, but when analyzing a model using reflection, this difference can be significant. ")</p>
+<p>In <em>ZenCad</em> (and the opencascade geometric kernel), there are two classes of one-dimensional geometric solids - <em>Edge</em> and <em>Wire</em>. <em>Edge</em> is a simple primitive. Combining multiple Edges into a single compound curve results in a Wire object. Typically, <em>ZenCad</em>, <em>Wire</em>, and <em>Edge</em> can be used interchangeably, but when analyzing a model using reflection, this difference can be significant.</p>
 
 <p>The <em>Wire</em> and / or <em>Edge</em> set can be connected to a complex curve using the <em>sew</em> function (More details later in this section).</p>
 
@@ -104,7 +105,7 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -150,7 +151,7 @@
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -225,7 +226,7 @@ The closed option allows you to close the curve and create a rounded segment at 
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="p">[</span><span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">])</span>
+<pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="c1"># sort is positional; default: True</span>
 </code></pre>
 </div>
 

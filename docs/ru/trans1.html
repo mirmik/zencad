@@ -15,6 +15,7 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
+<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -223,19 +224,19 @@
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirrorO</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirrorO</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">mirrorO</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">))</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">mirrorO</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]))</span>
 
 <span class="c1"># Отражение относительно оси.</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirror_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirror_axis</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">mirror_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">))</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">mirror_axis</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]))</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorX</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(1,0,0)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorY</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(0,1,0)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorZ</span><span class="p">()</span> <span class="c1"># equal to mirror_axis(0,0,1)</span>
 
 <span class="c1"># Отражение относительно плоскости.</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirror_plane</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
-<span class="n">shp</span><span class="o">.</span><span class="n">mirror_plane</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">mirror_plane</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">))</span>
+<span class="n">shp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">mirror_plane</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]))</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorXY</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(0,0,1)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorYZ</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(1,0,0)</span>
 <span class="n">shp</span><span class="o">.</span><span class="n">mirrorXZ</span><span class="p">()</span> <span class="c1"># equal to mirror_plane(0,1,0)</span>
@@ -269,7 +270,7 @@
 
 <h2 id="операции-над-преобразованиями">Операции над преобразованиями.</h2>
 
-<p>Аффинные преобразования являются линейными операторами и относительно них может быть выполнены некоторые операции линейной алгебры. </p>
+<p>Аффинное преобразование имеет вид <code>p → A·p + t</code>. При ненулевом переносе оно не является линейным оператором над трёхмерными векторами; композицию удобно представлять матрицами 4 × 4 в однородных координатах.</p>
 
 <hr />
 

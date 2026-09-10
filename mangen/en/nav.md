@@ -1,4 +1,5 @@
 * [Main page](index.html)
+* [Examples](examples.html)
 * [Helloworld example](helloworld.html)
 * [Installation](installation.html)
 * Basic conceptions

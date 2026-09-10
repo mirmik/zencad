@@ -1,26 +1,21 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/nut.html">Ru</a>
-        <a href="../en/nut.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — nut</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/nut.html">Ru</a> · <a href="../en/nut.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
+<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -74,11 +69,32 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><h1 id="-1">Библиотека резьбовых соединений</h1>
+<article class="article"><h1 id="examples">Examples</h1>
 
-<p>UNDER_CONSTRUCT</p>
+<p>Examples are included in <code>zencad/examples</code>. Open a model from the GUI examples menu or run its file from a repository checkout:</p>
+
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>zencad<span class="w"> </span>zencad/examples/4.Assemble/robot-arm.py
+</code></pre>
+</div>
+
+<ul>
+<li><code>4.Assemble/robot-arm.py</code> — a rotary-joint arm follows a ball using a Jacobian and inverse kinematics.</li>
+<li><code>4.Assemble/robot.py</code> — an animated hierarchical assembly with rotating head and arms.</li>
+<li><code>4.Assemble/EulerAngles.py</code> — composition of rotations.</li>
+<li><code>3.Animation/camera.py</code> — camera control from an animation.</li>
+<li><code>Models/nut.py</code> — threaded geometry built with a helix and a swept profile. The model functions are defined in the example itself; this is not a separate standard fastener library.</li>
+</ul>
+
+<p>To check a model without opening a window:</p>
+
+<div class="codehilite">
+<pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>zencad<span class="w"> </span>--no-show<span class="w"> </span>zencad/examples/4.Assemble/robot-arm.py
+</code></pre>
+</div>
+
+<p>This mode checks the initial scene construction; the animation callback runs during normal execution. See <a href="animate.html">Animation</a> for animation behavior and <a href="kinematic.html">Kinematics</a> for chains.</p>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>
