@@ -160,7 +160,7 @@ def loft(
     returns=_loft_result_type,
     select_result=_loft_result_spec,
     operation_id="zencad.typed.loft",
-    operation_version="1",
+    operation_version="2",
 )
 def loft(
     sections: Sequence[Edge | Wire],
@@ -324,7 +324,7 @@ def pipe_shell(
     returns=_pipe_shell_result_type,
     select_result=_pipe_shell_result_spec,
     operation_id="zencad.typed.pipe_shell",
-    operation_version="1",
+    operation_version="2",
 )
 def pipe_shell(
     profiles: Sequence[Edge | Wire] | None = None,

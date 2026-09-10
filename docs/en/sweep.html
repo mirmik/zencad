@@ -217,7 +217,7 @@ If radius <em>r</em> is specified, the object is rotated 90 degrees around the X
 
 <h2 id="result-types">Result types</h2>
 
-<p><code>extrude()</code> and <code>revol()</code> return <code>Shape</code>; extract a single solid with <code>result.solids().only()</code>. <code>pipe_shell(..., solid=True)</code> returns <code>Solid</code> and requires closed profiles. With <code>solid=False</code>, it returns <code>Shell</code> and permits open profiles. <code>revol2()</code> with the parameters of the example above returns <code>Solid</code>.</p>
+<p><code>extrude()</code> and <code>revol()</code> return <code>Shape</code>; extract a single solid with <code>result.solids().only()</code>. <code>pipe_shell(..., solid=True)</code> returns <code>Solid</code> and requires closed profiles; an open profile raises <code>ValueError</code> at evaluation, identifying its index. With <code>solid=False</code>, it returns <code>Shell</code> and permits open profiles. <code>revol2()</code> with the parameters of the example above returns <code>Solid</code>.</p>
 </article>
 </div>
 </body>

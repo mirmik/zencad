@@ -71,7 +71,7 @@
 </nav>
 <article class="article"><h1 id="переход-с-zencad-1">Переход с ZenCad 1</h1>
 
-<p>Функциональность геометрии сохраняется, но типы, материализация и некоторые исторические ошибки намеренно изменены. Сверяйте пользовательские скрипты с этой таблицей, а не переносите старые настройки lazy.</p>
+<p>При переносе скриптов учитывайте изменения типов, материализации и доступных обёрток геометрических операций. Сверяйте пользовательские скрипты с этой таблицей, а не переносите старые настройки lazy.</p>
 
 <table>
 <thead>
@@ -171,6 +171,53 @@
 <p>В managed callback нельзя добавлять или заменять геометрию после начального <code>show()</code>. Создавайте объекты заранее, затем меняйте их размещение, цвет и видимость. <code>preanimate</code> и произвольный доступ к Qt не входят в managed-контракт. <a href="animate.html">Подробности</a>.</p>
 
 <p>Кэш общий для процессов текущего пользователя. Старые записи кэша не являются совместимым форматом и могут быть отброшены. <code>set_evaluation_mode()</code> — обычная функция, не context manager; ранее предложенные <code>eager()</code>/<code>immediate()</code>/<code>evaluation()</code> context managers удалены. <a href="caching.html">Вычисления</a>.</p>
+
+<h2 id="исторические-операции-кривых">Исторические операции кривых</h2>
+
+<p>В старых руководствах встречаются <code>curve.length()</code>, <code>curve.linoff(u, dist)</code> и <code>curve.linoff_point(u, dist)</code>. Они обозначали длину кривой, параметр после смещения на заданную длину и соответствующую точку. В текущем <code>Curve</code> таких методов нет. Для равномерного разбиения используйте <code>uniform()</code> или <code>uniform_points()</code>; это не замена смещению на произвольное расстояние.</p>
+
+<p>Длину и смещение по длине можно вычислить через OCP. <code>curve.native()</code> материализует кривую, результат вычисления OCP — обычное число, не зависимый <code>Scalar</code>. Начальный параметр и расстояние выбирайте внутри диапазона конечной кривой; перед чтением результата проверяйте <code>IsDone()</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">OCP.GeomAdaptor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeomAdaptor_Curve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">OCP.GCPnts</span><span class="w"> </span><span class="kn">import</span> <span class="n">GCPnts_AbscissaPoint</span>
+
+<span class="n">curve</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">curve</span><span class="p">()</span>
+<span class="n">interval</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">range</span><span class="p">()</span>
+<span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
+<span class="n">adaptor</span> <span class="o">=</span> <span class="n">GeomAdaptor_Curve</span><span class="p">(</span><span class="n">curve</span><span class="o">.</span><span class="n">native</span><span class="p">(),</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+<span class="n">length</span> <span class="o">=</span> <span class="n">GCPnts_AbscissaPoint</span><span class="o">.</span><span class="n">Length_s</span><span class="p">(</span><span class="n">adaptor</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">GCPnts_AbscissaPoint</span><span class="p">(</span><span class="n">adaptor</span><span class="p">,</span> <span class="n">length</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">solver</span><span class="o">.</span><span class="n">IsDone</span><span class="p">()</span>
+<span class="n">parameter</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">Parameter</span><span class="p">()</span>
+<span class="n">point</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">length</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">x</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<h2 id="историческая-функция-tube">Историческая функция tube</h2>
+
+<p>Старая <code>tube(spine, r)</code> строила боковую оболочку круглого профиля, а не трубу с толщиной стенки. Для такой поверхности используйте <code>pipe_shell([profile], spine, solid=False)</code>. Профиль должен находиться в начале траектории и быть перпендикулярен её касательной. В примере ниже траектория направлена по Z, а круг лежит в XY.</p>
+
+<p><code>solid=True</code> создаёт закрытое тело. Для трубы с толщиной стенки вычтите развёртку меньшего радиуса, как в разделе <a href="sweep.html">Траекторная развёртка</a>. Старые <code>bounds=True</code> и параметры аппроксимации <code>tol</code>, <code>cont</code>, <code>maxdegree</code>, <code>maxsegm</code> не имеют одноимённой автоматической замены: <code>pipe_shell</code> возвращает одну форму, не кортеж с граничными рёбрами.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">spine</span> <span class="o">=</span> <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">surface</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">profile</span><span class="p">],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">solid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">profile</span><span class="p">],</span> <span class="n">spine</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">Shell</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">Solid</span><span class="p">)</span>
+<span class="n">surface</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+<span class="n">body</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+</code></pre>
+</div>
 </article>
 </div>
 </body>

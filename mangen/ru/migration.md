@@ -1,7 +1,7 @@
 :ru
 # Переход с ZenCad 1
 
-Функциональность геометрии сохраняется, но типы, материализация и некоторые исторические ошибки намеренно изменены. Сверяйте пользовательские скрипты с этой таблицей, а не переносите старые настройки lazy.
+При переносе скриптов учитывайте изменения типов, материализации и доступных обёрток геометрических операций. Сверяйте пользовательские скрипты с этой таблицей, а не переносите старые настройки lazy.
 
 | Раньше | ZenCad 2 |
 | --- | --- |
@@ -64,7 +64,7 @@ ocp_shape = moved.native()            # вычисление для интегр
 :en
 # Migrating from ZenCad 1
 
-Geometry capabilities are retained, but types, materialization and some historical defects intentionally change. Use this table instead of copying old lazy settings.
+When migrating scripts, account for changes in types, materialization, and available geometry operation wrappers. Use this table instead of copying old lazy settings.
 
 | Before | ZenCad 2 |
 | --- | --- |
@@ -125,3 +125,64 @@ Managed callbacks cannot add or replace geometry after initial `show()`. Create 
 
 Processes of the same user share a cache. Old cache records are disposable, not a compatible format. `set_evaluation_mode()` is a regular function, not a context manager; the previously proposed `eager()`/`immediate()`/`evaluation()` context managers are removed. [Evaluation](caching.html).
 ::
+
+:ru
+## Исторические операции кривых
+
+В старых руководствах встречаются `curve.length()`, `curve.linoff(u, dist)` и `curve.linoff_point(u, dist)`. Они обозначали длину кривой, параметр после смещения на заданную длину и соответствующую точку. В текущем `Curve` таких методов нет. Для равномерного разбиения используйте `uniform()` или `uniform_points()`; это не замена смещению на произвольное расстояние.
+
+Длину и смещение по длине можно вычислить через OCP. `curve.native()` материализует кривую, результат вычисления OCP — обычное число, не зависимый `Scalar`. Начальный параметр и расстояние выбирайте внутри диапазона конечной кривой; перед чтением результата проверяйте `IsDone()`.
+:en
+## Historical curve operations
+
+Older manuals mention `curve.length()`, `curve.linoff(u, dist)`, and `curve.linoff_point(u, dist)`: curve length, the parameter after an arc-length offset, and the corresponding point. These methods are not present on the current `Curve`. Use `uniform()` or `uniform_points()` for equally spaced samples; sampling is not a replacement for an arbitrary distance offset.
+
+Use OCP to calculate length and arc-length offsets. `curve.native()` materializes the curve; OCP returns an ordinary number, not a dependent `Scalar`. Choose the initial parameter and distance within the finite curve domain, and check `IsDone()` before reading the result.
+::
+
+```python
+import math
+from zencad import *
+from OCP.GeomAdaptor import GeomAdaptor_Curve
+from OCP.GCPnts import GCPnts_AbscissaPoint
+
+curve = circle(5, wire=True).curve()
+interval = curve.range()
+start, end = float(interval.lower), float(interval.upper)
+adaptor = GeomAdaptor_Curve(curve.native(), start, end)
+length = GCPnts_AbscissaPoint.Length_s(adaptor, start, end)
+solver = GCPnts_AbscissaPoint(adaptor, length / 4, start)
+assert solver.IsDone()
+parameter = solver.Parameter()
+point = curve.point(parameter)
+assert abs(length - 10 * math.pi) < 1e-7
+assert abs(float(point.x)) < 1e-7
+assert abs(float(point.y) - 5) < 1e-7
+```
+
+:ru
+## Историческая функция tube
+
+Старая `tube(spine, r)` строила боковую оболочку круглого профиля, а не трубу с толщиной стенки. Для такой поверхности используйте `pipe_shell([profile], spine, solid=False)`. Профиль должен находиться в начале траектории и быть перпендикулярен её касательной. В примере ниже траектория направлена по Z, а круг лежит в XY.
+
+`solid=True` создаёт закрытое тело. Для трубы с толщиной стенки вычтите развёртку меньшего радиуса, как в разделе [Траекторная развёртка](sweep.html). Старые `bounds=True` и параметры аппроксимации `tol`, `cont`, `maxdegree`, `maxsegm` не имеют одноимённой автоматической замены: `pipe_shell` возвращает одну форму, не кортеж с граничными рёбрами.
+:en
+## Historical tube function
+
+The old `tube(spine, r)` constructed the lateral shell of a circular profile, not a tube with wall thickness. Use `pipe_shell([profile], spine, solid=False)` for that surface. Position the profile at the spine start, perpendicular to its tangent. The example uses a Z-directed spine and an XY circle.
+
+`solid=True` constructs a capped solid. For a tube with wall thickness, subtract a smaller-radius sweep as in [Sweeps](sweep.html). The old `bounds=True` and approximation parameters `tol`, `cont`, `maxdegree`, `maxsegm` have no automatic same-named replacements: `pipe_shell` returns one shape, not a tuple including boundary edges.
+::
+
+```python
+from zencad import *
+
+spine = segment((0, 0, 0), (0, 0, 20))
+profile = circle(3, wire=True)
+surface = pipe_shell([profile], spine, solid=False)
+body = pipe_shell([profile], spine)
+assert isinstance(surface, Shell)
+assert isinstance(body, Solid)
+surface.assert_valid()
+body.assert_valid()
+```

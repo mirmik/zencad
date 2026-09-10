@@ -14,6 +14,33 @@ from zencad.operation import DomainOperation, using_context
 
 
 class TypedBasicSweepsTest(unittest.TestCase):
+    def test_solid_sweeps_require_closed_profiles(self):
+        for mode in (EvaluationMode.IMMEDIATE, EvaluationMode.DEFERRED):
+            with self.subTest(mode=mode), using_context(typed.Context(mode=mode, cache=False)):
+                open_edge = typed.segment((0, 0, 0), (10, 0, 0))
+                open_wire = typed.make_wire([open_edge])
+                near_closed = typed.polysegment([(0,0,0),(10,0,0),(10,10,0),(0,0.00001,0)])
+                spine = typed.segment((0, 0, 0), (0, 0, 10))
+                closed = typed.circle(2, wire=True)
+                for profile in (open_edge, open_wire, near_closed):
+                    for name, build in (
+                        ("loft", lambda: typed.loft([closed, profile.up(10)])),
+                        ("pipe_shell", lambda: typed.pipe_shell([closed, profile.up(10)], spine)),
+                    ):
+                        with self.subTest(operation=name), self.assertRaisesRegex(ValueError, name + " profile 2 must be closed"):
+                            result = build()
+                            self.assertIs(mode, EvaluationMode.DEFERRED)
+                            result.native()
+                for profile in (closed, typed.rectangle(2, 2, wire=True)):
+                    for result in (typed.loft([profile,profile.up(10)]),
+                                   typed.pipe_shell([profile],spine)):
+                        self.assertIsInstance(result, typed.Solid)
+                        result.assert_valid()
+                for result in (typed.loft([open_edge,open_edge.up(10)],shell=True),
+                               typed.pipe_shell([open_edge],spine,solid=False)):
+                    self.assertIsInstance(result, typed.Shell)
+                    result.assert_valid()
+
     def test_sweep_family_is_declared_at_module_level(self):
         for name in ("extrude", "revol", "loft", "pipe", "pipe_shell", "revol2"):
             with self.subTest(operation=name):

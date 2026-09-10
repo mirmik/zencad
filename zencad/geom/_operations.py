@@ -939,6 +939,14 @@ def revolve_shape(
     return _revol(shape, r=radius, yaw=yaw)
 
 
+def _require_closed_profiles(profiles: tuple[ResolvedShape, ...], operation: str) -> None:
+    for index, profile in enumerate(profiles, 1):
+        if not BRep_Tool.IsClosed_s(profile.Wire_orEdgeToWire()):
+            raise ValueError(
+                f"{operation} profile {index} must be closed when building a solid"
+            )
+
+
 def loft_shapes(
     sections: tuple[ResolvedShape, ...],
     smooth: bool,
@@ -951,6 +959,8 @@ def loft_shapes(
         raise ValueError("loft requires at least two sections")
     if max_degree <= 0:
         raise ValueError("loft max_degree must be positive")
+    if not shell:
+        _require_closed_profiles(sections, "loft")
     return _loft(sections, smooth=smooth, shell=shell, maxdegree=max_degree)
 
 
@@ -983,6 +993,9 @@ def pipe_shell_shapes(
 ) -> ResolvedShape:
     from zencad._native.sweep import _pipe_shell
     from zencad.util import vector3
+
+    if solid:
+        _require_closed_profiles(profiles, "pipe_shell")
 
     resolved_binormal = (
         None if binormal is None else vector3(binormal.x, binormal.y, binormal.z)

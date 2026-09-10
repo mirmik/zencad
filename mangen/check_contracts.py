@@ -196,6 +196,8 @@ def check_boundaries():
         pipe=z.pipe_shell(profiles,spine,solid=solid)
         assert type(pipe) is kind
         pipe.assert_valid()
+    rejects(ValueError, lambda:z.loft([edge,edge.up(10)]).native())
+    rejects(ValueError, lambda:z.pipe_shell([edge],spine).native())
     for result in (z.loft([edge,edge.up(10)],shell=True),
                    z.pipe_shell([edge],spine,solid=False)):
         assert type(result) is z.Shell
