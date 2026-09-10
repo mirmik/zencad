@@ -16,9 +16,41 @@ def main():
         application = QtWidgets.QApplication([])
 
     from zencad.gui.display import DisplayWidget
+    from zencad.gui.mainwindow import MainWindow
     import zencad
     from zencad.scene import Scene
 
+    scene = Scene()
+    interactive = scene.add(zencad.box(10))
+
+    # The embedded viewer binds OCCT in showEvent, after Qt prepares the
+    # native window. On Windows a QGLWidget used to preselect an incompatible
+    # pixel format here, even though standalone initialization could succeed.
+    main_window = MainWindow(restore_gui=False)
+    embedded = main_window.display_widget
+    try:
+        main_window.show()
+        application.processEvents()
+        assert embedded._display._window.IsMapped()
+        embedded.attach_scene(scene)
+        embedded.autoscale()
+        native_handle = int(embedded.winId())
+        main_window.resize(1100, 750)
+        main_window.hide()
+        main_window.show()
+        application.processEvents()
+        assert int(embedded.winId()) == native_handle
+        embedded.redraw()
+        with TemporaryDirectory() as temporary_directory:
+            image_path = Path(temporary_directory) / "embedded.png"
+            assert embedded.View.Dump(str(image_path))
+            assert image_path.stat().st_size > 0
+    finally:
+        main_window.close()
+        application.processEvents()
+    assert embedded._display._closed
+
+    # Use a fresh interactive object after the embedded context is closed.
     scene = Scene()
     interactive = scene.add(zencad.box(10))
 

@@ -44,13 +44,22 @@ STARTED_YAW = math.pi * (7 / 16)
 STARTED_PITCH = math.pi * -0.15
 
 
-class BaseViewer(QtOpenGL.QGLWidget):
+# OCCT owns the OpenGL context on Windows. QGLWidget would set the HWND's
+# pixel format before OCCT binds its view, and Windows cannot change it again.
+# Keep the existing GL-capable visual selection on X11/macOS.
+_ViewerWidget = QtWidgets.QWidget if sys.platform == "win32" else QtOpenGL.QGLWidget
+
+
+class BaseViewer(_ViewerWidget):
     ''' The base Qt Widget for an OCC viewer
     '''
 
     def __init__(self, parent=None):
-        fmt = QtOpenGL.QGLFormat()
-        super().__init__(fmt, parent=parent)
+        if sys.platform == "win32":
+            super().__init__(parent=parent)
+        else:
+            fmt = QtOpenGL.QGLFormat()
+            super().__init__(fmt, parent=parent)
         # OCCT embeds into this widget's own native child window. Declare that
         # relationship before winId() is created; wrapping the resulting XID
         # in a second QWindow used to cause BadWindow/reparenting races.  A
