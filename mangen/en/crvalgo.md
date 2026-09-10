@@ -1,28 +1,29 @@
-# Curve analysis 
+# Curve analysis
 
 -------------------------
-## Theoretical summary.
-The generally accepted method for defining curves in computational geometry systems is the parametric method.
+## Theory
 
-According to him, the curve is given by a continuous mapping of the scalar set _[U \_min, U \_max]_ onto a space of a given dimension.
-_P = F (U): P ∈ R ^ N, U ∈ R ^ 1 [U \_min, U \_max]_, where _F_ is the mapping functor and _N_ is the dimension of the space.
+In the parametric representation, a curve is a continuous mapping from the scalar interval _[U_min, U_max]_ to points in space.
 
-In practice, this means that any point _P_ on the curve has a corresponding value of the scalar parameter _U_. It should be understood that, in the general case, the function connecting the parameter _U_ at the point _P_ and the length of the curve from the start point _O_ to the point _P_ is not linear. Therefore, calculations over a curve in terms of lengths require the use of a special mathematical apparatus (implemented in the form of methods in this library). 
+This means that every point _P_ on the curve has a corresponding scalar parameter _U_.
+The length of a curve segment generally differs from the difference between its endpoint parameters.
+
+This section describes methods relating curve parameters to points and lengths.
 
 -----------------
-## Classes of curves.
-ZenCad has the following classes that implement curve analysis methods:
+## Curve classes
+ZenCad provides curve analysis methods in the following classes:
 
-* Edge (spawned by segment, interpolate, bezier, bspline, etc.)
-* Curve
-* Curve2 
+* Edge (created by segment, interpolate, bezier, bspline, etc.);
+* Curve;
+* Curve2.
 
 ---
-## End points and end curve range.
-Determines the endpoints of the end curves.
+## Endpoints and parameter range
+Finding the endpoints of finite curves.
 
-The _endpoints_ method returns endpoint objects.
-The parameters of these points can be queried using the _range_ method. 
+The _endpoints_ method returns the endpoint objects.
+The _range_ method returns their parameters.
 
 ```python 
 curve.endpoints() # -> tuple[Point3, Point3]
@@ -37,21 +38,21 @@ disp([crv, s, f])
 ![](../images/generic/endpoints0.png)
 
 --------------
-## curve.d0 (u)
-Return the point corresponding to the _u_ parameter. 
+## `curve.d0(u)`
+Returns the point at parameter _u_.
 
 ---------------
-## curve.d1 (u)
-Return the vector of the first derivative matching the _u_ parameter. 
+## `curve.d1(u)`
+Returns the first derivative vector at parameter _u_.
 
-## curve.lower_distance_parameter(pnt)
-Return the parameter corresponding to the point on the curve closest to the point pnt. 
+## `curve.lower_distance_parameter(pnt)`
+Returns the parameter of the point on the curve closest to `pnt`.
 
 -------------------------------------------
-## Equidistant curve points.
-Return an array of points equally spaced along the curve. The _npnts_ parameter sets the number of points.
-The count must be an integer of at least two. Supply both range bounds together or omit both; the endpoints are included. Spacing is uniform along arc length, not in parameter values.
-The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out. 
+## Equally spaced points
+Returns an array of points equally spaced along the curve. The _npnts_ parameter sets the number of points.
+It must be an integer of at least two. Specify both range boundaries or omit both; the result includes the endpoints. Spacing is measured along the curve, rather than in parameter space.
+The `umin` and `umax` parameters define the parameter range to distribute the points over.
 
 ```python3
 curve.uniform(npnts, U_min, U_max) # -> list[Scalar]
@@ -72,7 +73,7 @@ disp(pnts + [crv])
 
 ## Two-dimensional curves
 
-`Curve2` has its own interface: `point(u)` returns `Point2`, `tangent(u)` returns the first derivative as `Vector2`, and `range()` returns `Interval`. Use `trim(start, end)` to restrict its domain. The `d0`, `d1`, `endpoints`, and `uniform_points` methods described above for `Edge` and `Curve` are not part of the `Curve2` interface.
+`Curve2` has its own interface: `point(u)` returns a `Point2`, `tangent(u)` returns a `Vector2` of the first derivative, and `range()` returns an `Interval`. Use `trim(start, end)` to restrict the range. The `d0`, `d1`, `endpoints` and `uniform_points` methods described above for `Edge` and `Curve` are not part of the `Curve2` interface.
 
 ```python
 from zencad import *

@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,27 +52,27 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
 <article class="article"><h1 id="animation-input-and-camera">Animation, input and camera</h1>
 
-<p>The graphical interface allows you to animate the displayed scene.</p>
+<p>The graphical interface can animate the displayed scene.</p>
 
-<p>Editor callbacks run in an isolated runner. The GUI owns the persistent viewer and receives presentation changes. The callback argument is ZenCad state, not a <code>DisplayWidget</code>.</p>
+<p>The animation function receives timing, input events and camera controls. It changes the state of objects created before <code>show()</code>.</p>
 
-<p>Save as <code>animation.py</code> and open with <code>zencad animation.py</code>:</p>
+<p>Save this as <code>animation.py</code> and open it with <code>zencad animation.py</code>:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
@@ -89,22 +89,19 @@
 </code></pre>
 </div>
 
-<p><code>loctime</code> is elapsed animation time in seconds; <code>delta</code> is the frame interval. <code>start_time</code>, <code>time</code> and <code>last_time</code> are also available. <code>animate_step</code> requests an interval rather than guaranteeing an exact frame rate; using <code>delta</code> makes motion independent of actual frame speed.</p>
+<p><code>loctime</code> is the time since animation started, in seconds; <code>delta</code> is the frame interval. <code>start_time</code>, <code>time</code> and <code>last_time</code> are also available. <code>animate_step</code> sets the desired interval, not a guaranteed frame rate; movement based on <code>delta</code> is independent of the actual frame rate.</p>
 
-<p><code>state.input.key_down()</code> reads a held key; <code>key_pressed()</code>/<code>key_released()</code> read transitions in the current frame. Ordered events are in <code>state.input.events</code>, with mouse position/delta/buttons/wheel state also available. Do not replace Qt handlers manually.</p>
+<p><code>state.input.key_down()</code> reads a held key; <code>key_pressed()</code> and <code>key_released()</code> report transitions in the current frame. Ordered events are available through <code>state.input.events</code>; mouse input includes position/delta/buttons/wheel. Do not replace Qt handlers manually.</p>
 
-<p><code>state.camera.orbit(axis, angle)</code> requests a relative camera rotation about a world axis in radians. It composes with the current GUI camera and manual mouse navigation. Camera animation does not require model changes.</p>
+<p><code>state.camera.orbit(axis, angle)</code> rotates the camera relative to its current position around a world axis, with the angle in radians. It works with the current GUI camera and combines with manual mouse rotation. The camera can be animated without changing the model.</p>
 
-<h2 id="managed-scene-limits">Managed scene limits</h2>
+<h2 id="animation-in-the-editor">Animation in the editor</h2>
 
-<p>Create all geometry before <code>show()</code>. Callbacks may change placement, color and visibility, but cannot add/remove shapes or replace their BREP payloads. <code>assemble.unit</code> trees support relocating existing parts.</p>
+<p>Create all geometry before <code>show()</code>. The callback can change placement, color and visibility, but cannot add/remove shapes or replace their BREP. <code>assemble.unit</code> trees support placement changes of existing parts.</p>
 
-<p><code>preanimate</code>, arbitrary QWidget panels and direct viewer access are unsupported in managed runners. <code>close_handle</code> is available for animated managed sessions, not static scenes. Standalone display has a separate contract; the example above targets the editor.</p>
+<p>When running in the editor, <code>preanimate</code> and direct access to Qt widgets are not supported. <code>close_handle</code> is called when the animated session ends.</p>
 
-<p><code>inspect</code>, <code>check</code> and <code>render</code> require a final static scene and reject animated <code>show()</code>. Details: <a href="../development/managed-animation-migration.md">managed migration</a>.</p>
-
-<p>Here we use a special animation function <code>animate</code>, which, using the controller object returned by the disp function, updates the location of the controlled object based on the current moment in time.
-The transformation object is used as a parameter of the <code>relocate</code> method. (More details in <a href="trans0.html">Transformations</a>, <a href="trans1.html">Transformations</a>)</p>
+<p><code>inspect</code>, <code>check</code> and <code>render</code> expect a finite static scene, so they reject animated <code>show()</code>. Details: <a href="../development/managed-animation-migration.md">managed migration</a>.</p>
 </article>
 </div>
 </body>

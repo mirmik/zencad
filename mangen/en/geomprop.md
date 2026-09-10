@@ -1,29 +1,27 @@
-# Geometric characteristics.
-The section is devoted to measuring the geometric characteristics of the constructed geometry.
+# Geometric properties
+This section covers measuring the geometric properties of a model.
 
-Since the concepts of density and scale are very ephemeral for the computational library, all calculations are carried out in arbitrary units. Converting values to the si system requires additional calculations.
+Geometry calculations use model units: volume is measured in cubic units. STL/STEP/3MF exporters interpret source coordinates as millimetres. To obtain physical mass, multiply volume by density in matching units.
 
 ----------------------------------------
 ## Built-in methods
-Shape has a number of methods for querying geometric information.
+Shape provides methods for querying geometric information.
 
 ----
-### Center of mass.
+### Center of mass
 ```python
 shape.center() # -> Point3
 ```
 
 ----
-### Volume.
+### Volume
 ```python
 shape.mass() # -> Scalar
 ```
 
+## Example
 
-
-## Domain values and evaluation
-
-Geometry queries return domain values; use `.value()` for Python numbers. On a solid, `mass()` measures volume at unit density, not physical material mass.
+For a solid, `mass()` returns volume as a `Scalar`; `center()` returns the center of mass as a `Point3`. `.value()` obtains a number or coordinate tuple.
 
 ```python
 import zencad as z
@@ -35,4 +33,4 @@ assert abs(volume.value() - 24) < 1e-7
 assert all(abs(a - b) < 1e-7 for a, b in zip(center.value(), (1, 1.5, 2)))
 ```
 
-Use [inspect](headless.html) for area and aggregate properties of the visible scene. [Bounding boxes](bbox.html) and [topology](selectors.html) retain graph dependencies. Compute physical mass separately from volume, units and material density.
+Use [inspect](headless.html) for area and aggregate properties of the visible scene, and the [bounding box](bbox.html) for dimensions.

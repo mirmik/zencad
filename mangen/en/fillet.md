@@ -1,14 +1,12 @@
-# Topologically dependent transformations
+# Topology-dependent operations
 
-There is a class of operations required as part of the model topology. In interactive CAD, we can, using the mouse pointer, point to such an element and point it as a guide. This method is not available in scripted CAD. One approach of ZenCad is that such an element is specified using the "closest point" method. When specifying an argument, a point is specified instead of a topology element. The selected element is the element, the distance to which from the specified point will be minimal.
+Some operations require a particular topological element of a model. In an interactive CAD system, you can select it with the mouse. Scripted CAD needs another approach. One ZenCad option is the "nearest point" method: pass a point instead of the element, and the closest element is selected.
 
-Fillets, chamfers and drafts require selecting model topology. Use [geometric selectors](selectors.html) or pass edges and faces directly. Fillets and chamfers also accept reference points, selecting the nearest topology element.
+For explicit selection of edges and faces, use [topology selectors](selectors.html).
 
 ---
 ## Fillet
-Body rounding operation.
-If the body is solid, the edges are modified. If flat - tops.
-Fillets are specified by radius `r` and an array of nearest points`refs`. If `refs == None`, all elements of the topology are considered selected.
+Rounds a shape: edges for a solid, vertices for a planar shape. Specify a radius `r` and an array of reference points `refs`. `refs=None` selects all elements.
 
 ```python
 fillet(model, radius, referencedPoints)
@@ -18,13 +16,11 @@ model.fillet(radius)
 ```
 ![](../images/generic/fillet0.png) ![](../images/generic/fillet1.png) </br>
 ![](../images/generic/fillet2.png) ![](../images/generic/fillet3.png) </br>
-![](../images/generic/fillet4.png) ![](../images/generic/fillet5.png)  
+![](../images/generic/fillet4.png) ![](../images/generic/fillet5.png)
 
 ---
 ## Chamfer
-Body chamfering operation. Unlike rounding, it is applied only to solid bodies.
-The chamfer is specified by the distance `r` taken from the edge to the chamfer line and an array of the nearest points` refs`. If `refs == None`, all elements of the topology are considered selected.
-
+Chamfers a body. Unlike fillet, it applies only to solids. `r` is the distance from the edge to the chamfer boundary; `refs` is an array of reference points. `refs=None` selects all elements.
 
 ```python
 chamfer(model, radius, referencedPoints)
@@ -35,13 +31,9 @@ chamfer(model, radius, referencedPoints)
 ---
 ## Face draft
 
-`draft` inclines selected faces around a neutral plane, commonly so a molded
-part can be released from its tooling. A positive angle removes material along
-the pull direction; a negative angle adds it. The neutral plane remains fixed.
+`draft` tilts selected faces relative to a neutral plane—for example, to help remove a part from a mold. A positive angle removes material along the pull direction; a negative angle adds it. The neutral plane remains fixed.
 
-The pull direction defaults to `+Z`, with an origin plane perpendicular to it.
-`neutral` also accepts a planar face or an `(origin, normal)` pair. Selected
-faces must belong to the source body and be planar, cylindrical, or conical.
+The default direction is `+Z`, with the neutral plane through the origin and perpendicular to that direction. `neutral` also accepts a planar face or an `(origin, normal)` pair. Selected faces must belong to the original body and be planar, cylindrical or conical.
 
 ```python
 body = box(20)
@@ -59,9 +51,7 @@ midplane = draft(
 
 ---
 ## Thicksolid
-The operation of creating a thin-walled volumetric body.
-Defined by the prototype model `shp` and an array of points closest to the removed faces` refs`.
-The wall thickness `t` is also specified. If the wall thickness is positive, the walls grow outward. If negative - inward.
+Creates a thin-walled solid from a prototype `shp`. `refs` contains points nearest to the faces to remove. Wall thickness `t` is measured outward when positive and inward when negative.
 
 ```python
 thicksolid(model, t=thickness, refs=referencedPoints)
@@ -69,8 +59,8 @@ thicksolid(model, t=thickness, refs=referencedPoints)
 
 ![](../images/generic/thicksolid0.png) ![](../images/generic/thicksolid1.png)
 
-## Result type and references
+## Result types and element selection
 
-`fillet()` and `chamfer()` return `Shape`; inspect their contents using `faces()` and `solids()`. The result handle remains `Shape` even when it contains one solid.
+`fillet()` and `chamfer()` return `Shape`; inspect the contents with `faces()` and `solids()`. Even a result containing one solid retains the `Shape` wrapper.
 
-Pass a list of `point3(...)` or `Vertex` values to select nearby elements, or a list of `Edge` objects from the original body to select edges explicitly. Do not mix edges and points. Plain numeric tuples inside the reference list are not supported; use `point3`. `None` selects all elements, while an empty list raises `ValueError`. Edges from another model are rejected. For a planar face fillet, select vertices or points.
+For nearest-element selection, pass a list of `point3(...)` or `Vertex` objects. For explicit edge selection, pass a list of `Edge` objects from the original body. Edges and points cannot be mixed. Plain coordinate tuples in the reference list are not supported; use `point3`. `None` selects all elements, while an empty list raises `ValueError`. Edges from another model are rejected. For filleting a planar face, select vertices or points.

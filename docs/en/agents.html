@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,73 +52,31 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
 <article class="article"><h1 id="working-with-an-agent">Working with an agent</h1>
 
-<p>ZenCad lets an agent complete a modeling cycle: edit a Python script, execute it, obtain measurements and errors, check requirements, and prepare an image for review. The model is available as code, and the result as geometry and a structured report. An agent can check dimensions and solid validity without operating an editor with a mouse.</p>
+<p>The move to ZenCad 2 was driven by a desire to make the system easier for an AI agent to use.</p>
 
-<h2 id="what-an-agent-can-verify">What an agent can verify</h2>
+<p>The API changes mainly address the principle of least surprise, which is particularly important for agent-written code. In particular, the type system now follows more familiar conventions, and lazy evaluation has a more systematic contract.</p>
 
-<table>
-<thead>
-<tr>
-  <th>Task</th>
-  <th>ZenCad capability</th>
-  <th>Practical result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Build and edit a model</td>
-  <td>Python scripts with parameters and geometry operations</td>
-  <td>Changes can be read, compared in Git and executed again.</td>
-</tr>
-<tr>
-  <td>Inspect the result</td>
-  <td><code>inspect --json</code>: object names, bounds, volume, topology and validity</td>
-  <td>The agent receives measurable properties as well as images.</td>
-</tr>
-<tr>
-  <td>Check requirements</td>
-  <td><code>check</code>: validity, solid type, volume and bounding dimensions</td>
-  <td>Reports contain expected and actual values; exit codes support automatic acceptance or rejection.</td>
-</tr>
-<tr>
-  <td>Locate a failure</td>
-  <td>Computation trees and graph JSON, source locations, <code>--failed-path</code></td>
-  <td>Dependencies can be traced to the failing operation and its source.</td>
-</tr>
-<tr>
-  <td>Address a particular part</td>
-  <td>Names in <code>display(..., name=...)</code> and geometric selectors</td>
-  <td>Reports identify model parts, while faces and edges can be selected by their properties.</td>
-</tr>
-<tr>
-  <td>Review appearance</td>
-  <td><code>render</code> with explicit views and PNG dimensions</td>
-  <td>Agents and people can review the result without manually adjusting the camera.</td>
-</tr>
-</tbody>
-</table>
+<p>The <a href="headless.html">automation tools</a> <code>inspect</code>, <code>check</code> and <code>render</code> let an agent complete a modeling and debugging cycle without leaving the terminal.</p>
 
-<p><code>inspect</code> and <code>check</code> execute scripts in a separate process without Qt or OpenGL. Model output goes to stderr, leaving JSON stdout available for parsing. Commands distinguish script errors, geometry errors, timeouts and unmet requirements.</p>
+<h2 id="one-verifiable-cycle">One verifiable cycle</h2>
 
-<h2 id="a-verifiable-iteration">A verifiable iteration</h2>
-
-<p>Save this plate with a hole as <code>model.py</code>:</p>
+<p>Save a plate with a hole as <code>model.py</code>:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -131,7 +89,7 @@
 </code></pre>
 </div>
 
-<p>An agent can request a report and check explicit requirements:</p>
+<p>The agent can request a report and check specific requirements:</p>
 
 <div class="codehilite">
 <pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
@@ -140,28 +98,26 @@ zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class
 </code></pre>
 </div>
 
-<p>The volume is approximately <code>749.735</code>, and the bounding dimensions are <code>20 × 10 × 4</code>. The check should exit with code <code>0</code>. Increasing the hole radius to <code>3</code> still produces a valid solid, but the volume check exits with code <code>7</code>: the model no longer meets the requirement. This gives the agent feedback for its next edit.</p>
+<p>The model's volume is approximately <code>749.735</code>, and its dimensions are <code>20 × 10 × 4</code>. The check should exit with code <code>0</code>. Increasing the hole radius to <code>3</code> still produces a valid solid, but the volume check exits with code <code>7</code>: the model no longer meets the requirement. This gives the agent feedback for its next edit.</p>
 
-<p>Prepare several views for visual inspection:</p>
+<p>For a visual check, generate several views:</p>
 
 <div class="codehilite">
 <pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top<span class="w"> </span>--size<span class="w"> </span>640x480
 </code></pre>
 </div>
 
-<p>Rendering requires the GUI dependencies and working OpenGL. Numeric checks and images complement each other: the correct volume does not prove that a hole is correctly positioned, and a suitable silhouette does not prove geometry validity.</p>
+<h2 id="diagnostics-and-further-iterations">Diagnostics and further iterations</h2>
 
-<h2 id="diagnosis-and-repeated-iterations">Diagnosis and repeated iterations</h2>
+<p>If construction fails, <code>zencad inspect model.py --tree --failed-path</code> helps narrow down the cause. For debugging, select immediate evaluation and disable the disk cache; for repeated work, the cache can reuse saved results. These settings are independent—see <a href="caching.html">Evaluation and caching</a>.</p>
 
-<p>The computation graph retains dependencies between operations. If construction fails, <code>zencad inspect model.py --tree --failed-path</code> helps narrow down the cause. Immediate evaluation and disabling disk caching are useful for debugging; caching can reuse stored results during repeated work. These settings are independent; see <a href="caching.html">Evaluation and caching</a>.</p>
+<p><a href="selectors.html">Geometric selectors</a> express what to select, such as an edge direction or face position, rather than assuming an order. <a href="validation.html">Geometry validation</a> returns structured error information.</p>
 
-<p><a href="selectors.html">Geometric selectors</a> express the intent of a selection, such as edge direction or face position, instead of assuming an ordering. <a href="validation.html">Geometry validation</a> returns structured error details. Neither replaces task requirements: the agent still needs to specify which dimensions, placements and properties count as correct.</p>
+<p>Command options, report formats and execution limits are covered in <a href="headless.html">Automation: inspect, check, render</a>.</p>
 
-<p>Command options, report formats and execution limitations are described in <a href="headless.html">Automation: inspect, check, render</a>.</p>
+<h2 id="can-an-agent-code-in-3d">Can an agent code in 3D?</h2>
 
-<h2 id="can-an-agent-model-in-3d">Can an agent model in 3D?</h2>
-
-<p>Yes. For example:</p>
+<p>You bet. Here is an example:</p>
 
 <p><code>antique_column.py</code>:</p>
 
@@ -276,7 +232,7 @@ zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class
 </code></pre>
 </div>
 
-<p><img src="../images/antique-column.png" alt="Rendered antique column" /></p>
+<p><img src="../images/antique-column.png" alt="Render of an antique column" /></p>
 
 <p>Command for this view:</p>
 

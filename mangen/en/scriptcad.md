@@ -1,11 +1,11 @@
-# Scripting CAD systems.
+# Scripted CAD systems
 
-Scripted CAD stands apart from mainstream interactive CAD. If in interactive CAD you create a model using the mouse and a set of tools in the panel on the left or above, then in scripted CAD you write the program on which your model is built. Thus, the generated model gets good parameterization and regularization by default. If, when changing the basic geometry parameters in interactive CAD, you may need to redraw the entire model, in scripted CAD you just need to replace a couple of constants.
+Scripted CAD stands apart from conventional interactive CAD. In interactive CAD, you create a model with a mouse and tools on a side or top panel. In scripted CAD, you write the program that builds it. This naturally lends itself to parameters and regular structures. Where changing basic dimensions in an interactive CAD system might require reworking the model, a script may only need a couple of constants changed.
 
-On the other hand, scripting CAD may not be very user friendly. You need to have some skill to read the model in the form of program code. However, the success of OpenScad demonstrates the human need for this type of tool.
+On the other hand, scripted CAD can be less approachable. Reading a model as program code takes practice. Still, the success of OpenSCAD shows there is a need for tools of this kind.
 
-Scripted CAD is good at writing machine parts and other products with precisely aligned and grounded surfaces. But an attempt to draw Venus de Milo on it will not lead to anything good. For artistic purposes, there is another class of systems.
+Scripted CAD is good at machine parts and other objects with precisely defined, purposeful surfaces. Trying to model the Venus de Milo in it is unlikely to end well. There is another class of systems for artistic work.
 
-Strictly speaking, although the motto of zencad says "CAD system for righteous programmers", zencad by design is more of a library with CAD functionality than a complete CAD system. zencad was designed as a tool that can integrate with the libraries of the python ecosystem in order to solve the problems of constructing analytical surfaces, visualizing semi-natural modeling data and other tasks involving the integration of the python ecosystem libraries with the zoo.  (???? Gogle translate is so translate...)
+Strictly speaking, although ZenCad's motto is "CAD system for righteous programmers", it is designed more as a library with CAD functionality than as a complete CAD system. It was built to integrate with the Python ecosystem: constructing analytical surfaces, visualizing hardware-in-the-loop simulation data, and tackling other tasks that call for Python's assorted libraries.
 
 ![](../images/car.png)

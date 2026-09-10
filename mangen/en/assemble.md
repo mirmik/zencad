@@ -1,30 +1,30 @@
-# Hierarchical assemblies.
+# Hierarchical assemblies
 
-When displaying a complex or animated scene, it is necessary to work with a large number of connected interactive objects that move relative to each other according to certain laws.
+Displaying a complex or animated scene often involves many related interactive objects moving relative to one another according to particular rules.
 
-To facilitate this behavior, zencad provides the zencad.assemble library and its main tool zencad.assemble.unit. 
+ZenCad provides the `zencad.assemble` library and its main tool, `zencad.assemble.unit`, to make this easier.
 
 ------------------------------------------------------------
-## Assembly unit (zencad.assemble.unit).
-An assembly unit is an object that has its own local coordinate system, relative to which interactive objects and other units associated with this unit are positioned. Units can create a tree structure by counting their position relative to the position of the parent unit (unit.parent). If the unit does not have an ancestor, its position is measured from the global coordinate system.
+## Assembly unit (zencad.assemble.unit)
+An assembly unit has its own local coordinate system, relative to which its interactive objects and child units are placed. Units can form a tree, with each unit positioned relative to its parent (`unit.parent`). A unit without a parent is positioned relative to the global coordinate system.
 
-The unit contains two coordinate transformation objects - location and global_location.
+A unit holds two transforms: `location` and `global_location`.
 
-- location - sets the position of the unit relative to the position of the ancestor unit. location can be updated either directly or using the relocate method.
-- global_location is the position of the unit relative to the global coordinate system. global_location is used when rendering an object. global_location is built from the unit.location tree and can be updated using location_update, relocate and other operations. 
+- `location` sets placement relative to the parent. It can be changed directly or with `relocate`.
+- `global_location` is the placement in global coordinates, used for display. It is derived from the tree of `unit.location` values and can be updated with `location_update`, `relocate` and other operations.
 
 ------------------
-## Adding an object.
-Creates and links to the unit an interactive object based on the passed geometry object _obj_.
+## Adding an object
+Creates an interactive object from the geometric object _obj_ and attaches it to the unit.
 
-If an interactive object is passed as a parameter, the unit takes control of it. (Note: the unit controls the location of the interactive object).
+If an interactive object is passed, the unit takes control of its placement.
 
-Signature: 
+Signature:
 ```python
 u.add(obj, color=None)
 ```
 
-Пример:
+Example:
 ```
 m = box(10)
 i = box(10).right(20)
@@ -33,17 +33,15 @@ u.add(i)
 ``` 
 
 --------------------------------
-## Adding a child unit.
-Sets the _u_ object to be the ancestor of the _child_ object.
-Now the position of objects in the unit _child_ (and its descendants) will be calculated taking into account the position of the object _u_. 
+## Adding a child unit
+Makes _u_ the parent of _child_. The placement of objects in _child_ and its descendants will then take _u_'s placement into account.
 
-
-Сигнатура:
+Signature:
 ```python
 u.link(child)
 ```
 
-Пример:
+Example:
 ```python
 from zencad.assemble import unit
 
@@ -53,30 +51,49 @@ u.link(child)
 ```
 
 -------------------------------
-## Update global position.
-Update the global position of the object according to its current position and the global position of the ancestor object.
-view - if the object is displayed, redraw it based on the new position.
-deep - apply recursively all descendants of an object. 
+## Updating global placement
+Updates the object's global placement from its local placement and its parent's global placement.
+`view` redraws a displayed object at its new placement.
+`deep` applies the update recursively to descendants.
 
-Сигнатура:
+Signature:
 ```python
 u.location_update(deep=True, view=True)
 ```
 
 -----------------------------------------
-## Update local position.
-Change current position to location object and apply location_update procedure with deep, view options.
+## Changing local placement
+Sets the local placement to `location` and calls `location_update` with the `deep` and `view` options.
 
-Сигнатура:
+Signature:
 ```python
 u.relocate(location, deep=False, view=True)
 ```
 
 ----------------------
-## Display on stage. 
+## Displaying in a scene
 
-Сигнатура:
+Signature:
 ```python
 u.bind_to_scene(scene)
 ```
-Add the unit and its descendants to `scene`. Ordinary scripts can call `display(u)` to bind it through the display system. Set colors with `u.add(obj, color=...)`.
+Adds the unit and its descendants to `scene`. In an ordinary script, `display(u)` handles the scene binding. Set colors when adding geometry with `u.add(obj, color=...)`.
+
+## Assembly example
+
+Both parts are in the coordinate system of `base`. Moving the parent moves them together while preserving their relative placement:
+
+```python
+from zencad import *
+from zencad.assemble import unit
+
+base = unit()
+base.add(box(20, 10, 3), color=blue)
+post = unit(parent=base, location=translate(10, 5, 3))
+post.add(cylinder(2, 12), color=yellow)
+base.relocate(translate(30, 0, 0), deep=True)
+
+assert tuple(post.global_location.translation()) == (40, 5, 3)
+display(base)
+show()
+```

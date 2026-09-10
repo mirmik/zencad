@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,39 +52,39 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="lines-and-loops">Lines and loops.</h1>
+<article class="article"><h1 id="lines-and-loops">Lines and loops</h1>
 
-<p>In many cases, three-dimensional and flat primitives are not enough to build the required geometry. Advanced operations, from among those that are found in this tutorial, allow you to create geometric bodies based on arbitrary lines.</p>
+<p>Solid and planar primitives are not always enough to build the geometry you need. The more advanced operations in this manual can construct bodies from arbitrary curves.</p>
 
-<p>In <em>ZenCad</em> (and the opencascade geometric kernel), there are two classes of one-dimensional geometric solids - <em>Edge</em> and <em>Wire</em>. <em>Edge</em> is a simple primitive. Combining multiple Edges into a single compound curve results in a Wire object. Typically, <em>ZenCad</em>, <em>Wire</em>, and <em>Edge</em> can be used interchangeably, but when analyzing a model using reflection, this difference can be significant.</p>
+<p><em>ZenCad</em> and the OpenCascade kernel have two classes of one-dimensional geometry: <em>Edge</em> and <em>Wire</em>. An <em>Edge</em> is a simple primitive; joining several edges into a composite curve produces a <em>Wire</em>. They can often be used interchangeably, but the distinction matters when inspecting a model's topology.</p>
 
-<p>The <em>Wire</em> and / or <em>Edge</em> set can be connected to a complex curve using the <em>sew</em> function (More details later in this section).</p>
+<p>A collection of <em>Wire</em> and/or <em>Edge</em> objects can be joined with <em>sew</em> (described below).</p>
 
-<p>Closed curves are called cycles. If the curve (all compound curves) of the cycle lies in the same plane, then such a cycle can be converted into a face (Face) using the <em>fill</em> function (see the section "Plane primitives".).</p>
+<p>Closed curves are called loops. If a loop and all its constituent curves lie in one plane, <em>fill</em> can turn it into a face (see "Planar primitives").</p>
 
-<p>Some additional operations when working with curves are described in the "Curve Analysis" section.</p>
+<p>Additional operations are described in "Curve analysis".</p>
 
 <hr />
 
 <h2 id="segment">Segment</h2>
 
-<p>An ordinary segment, specified by two points.</p>
+<p>An ordinary line segment, specified by two points.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">segment</span><span class="p">(</span><span class="n">pnt1</span><span class="p">,</span> <span class="n">pnt2</span><span class="p">)</span>
@@ -97,24 +97,24 @@
 
 <h2 id="polysegment">Polysegment</h2>
 
-<p>Polysegment is a broken line. Set by an array of points. Setting the closed flag adds a polyline segment from the end point to the start point. <code>pnts</code> is an array of points.</p>
+<p>A polysegment is a polyline specified by an array of points, <code>pnts</code>. Setting <code>closed</code> adds a segment from the final point back to the first.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p><img src="../images/generic/polysegment0.png" alt="" /> <img src="../images/generic/polysegment1.png" alt="" />  </p>
+<p><img src="../images/generic/polysegment0.png" alt="" /> <img src="../images/generic/polysegment1.png" alt="" /></p>
 
 <hr />
 
-<h2 id="point-interpolation">Point Interpolation</h2>
+<h2 id="interpolation-through-points">Interpolation through points</h2>
 
-<p>Tool for constructing an interpolated curve passing through a set of <em>pnts</em> points. Using the optional <em>tangs</em> parameter at each point, you can set the direction in which the curve will pass through the point (<code>None</code> leaves the tangent unconstrained). Setting the <code>closed</code> flag adds a trailing portion of the curve.</p>
+<p>Builds an interpolated curve through <em>pnts</em>. The optional <em>tangs</em> parameter specifies a tangent direction at each point (<code>None</code> leaves it unconstrained). Setting <code>closed</code> adds a closing curve segment.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -126,11 +126,11 @@
 
 <hr />
 
-<h2 id="arc-of-a-circle-with-three-points">Arc of a circle with three points</h2>
+<h2 id="circular-arc-through-three-points">Circular arc through three points</h2>
 
-<p>This method represents an alternative to <em>circle</em> (see <a href="prim2d.html">Plane Primitives</a>) method of generating a circular arc from three points. </p>
+<p>An alternative to <em>circle</em> (see <a href="prim2d.html">Planar primitives</a>) for creating a circular arc, using three points.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">circle_arc</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">)</span>
@@ -141,11 +141,11 @@
 
 <hr />
 
-<h2 id="upward-spiral">Upward spiral</h2>
+<h2 id="helix">Helix</h2>
 
-<p>An upward spiral. It is set by the radius <em>r</em>, the height <em>h</em> and the step of the loop <em>step</em>. When setting the option <em>left</em>, it changes the right winding to the left one. When setting the optional parameter <em>angle</em>, the radius changes with the change of height according to the conical law. </p>
+<p>An ascending helix specified by radius <em>r</em>, height <em>h</em> and pitch <em>step</em>. Setting <em>left</em> changes right-handed winding to left-handed winding. The optional <em>angle</em> makes the radius vary with height along a cone.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">helix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -157,13 +157,11 @@
 
 <hr />
 
-<h2 id="bezier-curve">Bezier Curve</h2>
+<h2 id="bezier-curve">Bézier curve</h2>
 
-<p>Bezier curve (<a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">wiki</a>).
-Defined by an array of control points and an array of weights (optional).
-If weights are not specified, all weights are considered equal to one. </p>
+<p>A Bézier curve (<a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">wiki</a>), specified by control points and optional weights. Omitted weights are all one.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">bezier</span><span class="p">(</span><span class="n">pnts</span><span class="p">)</span>
@@ -171,13 +169,15 @@ If weights are not specified, all weights are considered equal to one. </p>
 </code></pre>
 </div>
 
-<p><img src="../images/generic/bezier0.png" alt="" /> <img src="../images/generic/bezier1.png" alt="" />  </p>
+<p><img src="../images/generic/bezier0.png" alt="" /> <img src="../images/generic/bezier1.png" alt="" /></p>
 
 <hr />
 
 <h2 id="bspline">BSpline</h2>
 
-<p>Сигнатура:</p>
+<p>Creates a BSpline by specifying its parameters directly.</p>
+
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">bspline</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">muls</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -185,21 +185,34 @@ If weights are not specified, all weights are considered equal to one. </p>
 </code></pre>
 </div>
 
+<p><code>knots</code> gives parameter values; <code>muls</code> gives their multiplicities. For example, a cubic curve with four control points and clamped endpoints:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">curve</span> <span class="o">=</span> <span class="n">bspline</span><span class="p">(</span>
+    <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span>
+    <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">muls</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">curve</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
 <hr />
 
 <h2 id="rounded-polysegment">Rounded polysegment</h2>
 
-<p>Unlike a polysegment, it creates sections of a circle at the mating points of the segments. The <em>r</em> variable sets the radius of the fillets. Can be used in conjunction with the pipe_shell operation (see kinematic surfaces).
-The closed option allows you to close the curve and create a rounded segment at the junction. </p>
+<p>Adds circular arcs at the joins between line segments. <em>r</em> sets the fillet radius. It can be used with <code>pipe_shell</code> (see sweep surfaces). Setting <code>closed</code> closes the curve with a rounded join.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">rounded_polysegment</span><span class="p">(</span>
@@ -212,22 +225,22 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <hr />
 
-<h2 id="creating-a-complex-curve">Creating a complex curve</h2>
+<h2 id="creating-a-composite-curve">Creating a composite curve</h2>
 
-<p>The <em>sew</em> operation assembles a complex line from an array of <em>wires</em> pieces.</p>
+<p><em>sew</em> assembles a composite curve from the parts in <em>wires</em>.</p>
 
-<p>Objects of types Edge and Wire can act as elements of the <em>wires</em> array (<a href="https://mirmik.github.io/zencad/ru/geomcore.html">see geometric types</a>)</p>
+<p>The parts can be Edge and Wire objects (<a href="https://mirmik.github.io/zencad/en/geomcore.html">geometric types</a>).</p>
 
-<p>Requirements. Parts of the line must necessarily border on each other. The order should not be out of order. If the <em>sort</em> argument is set, the algorithm will try to automatically sort the incoming lines in the correct order. </p>
+<p>Parts must meet at their endpoints and follow the correct order. If <em>sort</em> is set, the algorithm attempts to order them automatically.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">sew</span><span class="p">(</span><span class="n">wires</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="c1"># sort is positional; default: True</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">sew</span><span class="p">([</span>
@@ -243,13 +256,13 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <hr />
 
-<h1 id="complex-curve-constructor">Complex curve constructor</h1>
+<h1 id="wire-builder">Wire builder</h1>
 
-<p>Tool for sequential construction of curve sections. Performing operations, constructs edges from the exit point of the previous edge. Each operation can be performed in absolute and relative modes. In relative mode, the coordinates of the anchor points are added to the last current coordinate of the constructor. The choice of the mode is carried out by the <em>rel</em> flag. False is absolute, True is relative. If no flag is declared, the <em>defrel</em> value is used.</p>
+<p>Builds a curve one section at a time, starting each edge at the previous edge's endpoint. Operations accept absolute or relative coordinates. In relative mode, control-point coordinates are added to the builder's current position. <em>rel</em> selects the mode: False for absolute, True for relative. If omitted, <em>defrel</em> is used.</p>
 
-<p>Constructor arguments:
-<em>start</em> - starting point
-<em>defrel</em> - default mode </p>
+<p>Constructor arguments:<br>
+<em>start</em> — starting point<br>
+<em>defrel</em> — default coordinate mode</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">wb</span> <span class="o">=</span> <span class="n">wire_builder</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">defrel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -258,9 +271,9 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <hr />
 
-<h3 id="reinitialization">Reinitialization:</h3>
+<h3 id="restarting">Restarting</h3>
 
-<p>Reloads the instrument from a new point. Resets the list of edges. </p>
+<p>Restarts at a new point and clears the edge list.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -275,9 +288,9 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <hr />
 
-<h3 id="drawing-a-line-segment">Drawing a line segment:</h3>
+<h3 id="adding-a-segment">Adding a segment</h3>
 
-<p>Draws a segment to the point <em>pnt</em>. </p>
+<p>Builds a segment to <em>pnt</em>.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -287,7 +300,7 @@ The closed option allows you to close the curve and create a rounded segment at 
 </div>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># рисуем квадрат</span>
+<pre><span></span><code><span class="n">wire_builder</span><span class="p">(</span><span class="n">defrel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">restart</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span> <span class="c1"># draw a square</span>
 </code></pre>
 </div>
 
@@ -295,7 +308,7 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <hr />
 
-<h3 id="draw-a-circular-arc-by-points">Draw a circular arc by points:</h3>
+<h3 id="adding-a-circular-arc-through-points">Adding a circular arc through points</h3>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">arc_by_points</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -304,22 +317,40 @@ The closed option allows you to close the curve and create a rounded segment at 
 
 <hr />
 
-<h3 id="plotting-an-interpolation-curve-by-points">Plotting an interpolation curve by points:</h3>
+<h3 id="adding-an-interpolated-curve">Adding an interpolated curve</h3>
 
-<p><em>curtang</em> allows you to set the direction of the curve at the starting point.
-Setting the <em>approx</em> option calculates <em>curtang</em> to the direction of the curve at the end of the last leg.</p>
+<p><em>curtang</em> sets the curve direction at the starting point. Setting <em>approx</em> derives <em>curtang</em> from the direction at the end of the preceding section.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">tangs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">curtang</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">approx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<h3 id="closure">Closure</h3>
+<h3 id="closing">Closing</h3>
 
-<p><em>close</em> builds a section of the curve up to the starting point. <em>approx_a</em>, <em>approx_b</em> allow for interpolation at snapping points.</p>
+<p><em>close</em> builds a section back to the starting point. <code>approx_a</code> and <code>approx_b</code> enable interpolation at the closing joins.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">approx_a</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">approx_b</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h2 id="the-finished-contour">The finished contour</h2>
+
+<p><code>.doit()</code> returns the constructed <code>Wire</code>. The contour can be filled and extruded into a body:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">contour</span> <span class="o">=</span> <span class="p">(</span><span class="n">wire_builder</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">segment</span><span class="p">((</span><span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">arc_by_points</span><span class="p">((</span><span class="mi">40</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">close</span><span class="p">()</span>
+           <span class="o">.</span><span class="n">doit</span><span class="p">())</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span><span class="o">.</span><span class="n">extrude</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 </article>

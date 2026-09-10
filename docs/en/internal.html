@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,17 +52,17 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
@@ -70,43 +70,43 @@
 
 <h2 id="geometry-kernel-and-evaluation">Geometry kernel and evaluation</h2>
 
-<p>ZenCad uses OpenCascade through <code>cadquery-ocp-novtk</code> and its <code>OCP</code> Python modules. ZenCad geometry types and operations live in <code>zencad.geom</code>; kernel adapters live in <code>zencad._native</code>.</p>
+<p>ZenCad uses the OpenCascade geometry kernel. The <code>cadquery-ocp-novtk</code> package provides Python access through the <code>OCP</code> modules. ZenCad's geometric types and operations live in <code>zencad.geom</code>; kernel adapters live in <code>zencad._native</code>.</p>
 
-<p>Geometry objects and values retain dependencies between operations. The EvalCache evaluator executes them in <code>deferred</code> or <code>immediate</code> mode and manages result reuse. A <code>Context</code> owns an evaluator; ordinary scripts use module functions and object methods. <code>.value()</code> obtains a computed value, while a shape's <code>.native()</code> obtains an OCP object. See <a href="caching.html">Evaluation and caching</a> and <a href="prim0d.html">Values, points and transforms</a>.</p>
+<p>Geometry objects and values preserve operation dependencies. EvalCache evaluates them in <code>deferred</code> or <code>immediate</code> mode and manages result reuse. <code>Context</code> owns the evaluator; ordinary scripts can use module functions and object methods. <code>.value()</code> obtains a computed value; <code>.native()</code> on a shape returns an OCP object. See <a href="caching.html">Evaluation and caching</a> and <a href="prim0d.html">Points and vectors</a>.</p>
 
-<h2 id="organization-and-interaction-of-zencad-threads-and-processes">Organization and interaction of ZenCad threads and processes.</h2>
+<h2 id="threads-processes-and-communication">Threads, processes and communication</h2>
 
-<p>The ZenCad graphical interface is designed to minimize its influence on the order of calculations in the running scripts. To achieve this, scripts run in a separate process.</p>
+<p>ZenCad's graphical interface is designed to interfere as little as possible with script execution. Scripts therefore run in a separate process.</p>
 
-<p>When started with <code>zencad model.py</code> or <code>python -m zencad model.py</code>, the main process owns Qt, the OpenCascade viewer and the OpenGL context. Camera, selection, markers and AIS presentation objects also belong to this process.</p>
+<p>When launched with <code>zencad model.py</code> or <code>python -m zencad model.py</code>, the main process owns the Qt interface, OpenCascade viewer and OpenGL context. It also owns the camera, selection, markers and AIS display objects.</p>
 
-<p><code>RunnerSupervisor</code> starts a separate model process using the <code>multiprocessing</code> <code>spawn</code> method. The runner constructs geometry and collects the scene without creating Qt or OpenGL windows. Scene data crosses the process boundary: serialized BREP geometry or meshes, placements, colors, names and visibility. The viewer window belongs to the main process and persists across model evaluations.</p>
+<p><code>RunnerSupervisor</code> starts a model worker with <code>multiprocessing</code> using <code>spawn</code>. The worker builds geometry and assembles the scene without creating Qt or OpenGL windows. Processes exchange scene data: serialized BREP geometry or meshes, placements, colors, names and visibility. The viewer window belongs to the main process and survives model recomputation.</p>
 
-<p>Communication uses <code>multiprocessing.Pipe</code> connections and a versioned protocol. Messages carry scene snapshots, evaluation progress, script output and errors; control events and user input travel in the opposite direction. The runner captures script stdout and stderr and delivers them to the interface as messages.</p>
+<p>Communication uses <code>multiprocessing.Pipe</code> channels and a versioned protocol. Scene snapshots, progress, script output and errors travel to the GUI; control events and user input travel back. The worker captures script <code>stdout</code> and <code>stderr</code> and delivers them as messages.</p>
 
-<h2 id="evaluation-and-scene-updates">Evaluation and scene updates</h2>
+<h2 id="recomputing-and-updating-the-scene">Recomputing and updating the scene</h2>
 
-<p>Each run receives a generation number. The runner collects object descriptions in a <code>SceneDraft</code> and publishes a <code>SceneSnapshot</code>. The GUI's <code>ScenePresenter</code> validates and decodes the snapshot before replacing the viewer contents. Only the current generation can be applied: a late message from a previous run cannot replace the current model.</p>
+<p>Each run receives a generation number. The worker gathers object descriptions in <code>SceneDraft</code>; publishing produces a <code>SceneSnapshot</code>. The GUI's <code>ScenePresenter</code> validates and decodes it, then replaces the viewer contents. Only the current generation is applied: a late message from an earlier run cannot replace the current model.</p>
 
-<p>The last successful scene remains visible during evaluation, cancellation or failure. Camera state is preserved by default. A runner can be stopped and replaced without recreating the main window or viewer.</p>
+<p>The last successful scene remains visible during calculation, cancellation or an error. Camera placement is preserved by default. The worker can be stopped and restarted without recreating the main window or viewer.</p>
 
-<h2 id="what-show-does">What show() does</h2>
+<h2 id="the-show-function">The show function</h2>
 
-<p>Its behavior depends on how the script is launched:</p>
+<p>The behavior of <code>show</code> depends on context (see <code>zencad/showapi.py</code>).</p>
 
 <ul>
-<li>In scripts launched by the editor or <code>inspect</code>/<code>check</code>, <code>display()</code> adds data to a <code>SceneDraft</code>, and <code>show()</code> publishes a snapshot. Static scripts then continue without entering a GUI event loop.</li>
-<li>In a direct <code>python model.py</code> run, <code>show()</code> opens a standalone viewer in the same process and starts the Qt event loop. It does not create the full editor. This mode is also available through <code>zencad --display model.py</code>.</li>
-<li><code>zencad --no-show model.py</code> executes a script with display disabled. Use <a href="headless.html">inspect and check</a> to obtain geometry reports.</li>
+<li>In a script run by the editor or by <code>inspect</code>/<code>check</code>, <code>display()</code> adds data to <code>SceneDraft</code>, and <code>show()</code> publishes a scene snapshot. For a static scene, execution then continues without starting a window event loop.</li>
+<li>Running <code>python model.py</code> directly makes <code>show()</code> open a standalone viewer in the same process and start the Qt event loop. It does not create the full editor. This mode is also available through <code>zencad --display model.py</code>.</li>
+<li><code>zencad --no-show model.py</code> executes a script with display disabled. Use the separate <a href="headless.html">inspect and check</a> commands for geometry reports.</li>
 </ul>
 
 <h2 id="animation-and-input">Animation and input</h2>
 
-<p>In the editor, an animated runner stays active after publishing the scene. Its callback receives timing, input through <code>state.input</code> and camera controls through <code>state.camera</code>. Placement, color and visibility changes are sent as scene updates; camera actions use separate messages. Qt event handling and presentation run in the GUI process.</p>
+<p>In the editor, an animated worker stays active after publishing its scene. The callback receives timing, input through <code>state.input</code> and camera controls through <code>state.camera</code>. Placement, color and visibility changes are sent as scene updates; camera actions use separate messages. Qt events and rendering are handled in the GUI process.</p>
 
-<p>Construct geometry for managed animations before the initial <code>show()</code>. The callback has no direct viewer-widget access and cannot replace geometry after publication. See <a href="animate.html">Animation</a> for the contract and examples.</p>
+<p>Create animation geometry before the initial <code>show()</code>. The callback does not directly access the viewer widget or replace geometry after publication. See <a href="animate.html">Animation</a> for the contract and examples.</p>
 
-<p>See <a href="../development/runtime-architecture.md">Runtime architecture</a> for protocol details, object ownership and lifecycle.</p>
+<p>Protocol, ownership and lifecycle details: <a href="../development/runtime-architecture.md">Runtime architecture</a>.</p>
 </article>
 </div>
 </body>

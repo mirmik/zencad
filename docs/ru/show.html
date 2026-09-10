@@ -127,21 +127,6 @@
 </div>
 
 <p><code>scene.add()</code> также возвращает контроллер объекта. Параметры <code>animate</code> и <code>animate_step</code> функции <code>show</code> описаны в разделе <a href="animate.html">«Анимация»</a>, устройство отображения — во <a href="internal.html">«Внутренней кухне»</a>.</p>
-
-<h2 id="список-объектов-без-gui">Список объектов без GUI</h2>
-
-<p>Manifest содержит имена, идентификаторы и свойства отображения, без самой геометрии:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">draft</span><span class="p">:</span>
-    <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">draft</span><span class="o">.</span><span class="n">manifest</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
-</code></pre>
-</div>
-
-<p>Для габаритов, объёма и валидности используйте <a href="headless.html">inspect</a>.</p>
 </article>
 </div>
 </body>

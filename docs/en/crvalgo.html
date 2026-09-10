@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,17 +52,17 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
@@ -70,35 +70,35 @@
 
 <hr />
 
-<h2 id="theoretical-summary">Theoretical summary.</h2>
+<h2 id="theory">Theory</h2>
 
-<p>The generally accepted method for defining curves in computational geometry systems is the parametric method.</p>
+<p>In the parametric representation, a curve is a continuous mapping from the scalar interval <em>[U</em>min, U<em>max]</em> to points in space.</p>
 
-<p>According to him, the curve is given by a continuous mapping of the scalar set <em>[U _min, U _max]</em> onto a space of a given dimension.
-<em>P = F (U): P ∈ R ^ N, U ∈ R ^ 1 [U _min, U _max]</em>, where <em>F</em> is the mapping functor and <em>N</em> is the dimension of the space.</p>
+<p>This means that every point <em>P</em> on the curve has a corresponding scalar parameter <em>U</em>.
+The length of a curve segment generally differs from the difference between its endpoint parameters.</p>
 
-<p>In practice, this means that any point <em>P</em> on the curve has a corresponding value of the scalar parameter <em>U</em>. It should be understood that, in the general case, the function connecting the parameter <em>U</em> at the point <em>P</em> and the length of the curve from the start point <em>O</em> to the point <em>P</em> is not linear. Therefore, calculations over a curve in terms of lengths require the use of a special mathematical apparatus (implemented in the form of methods in this library). </p>
+<p>This section describes methods relating curve parameters to points and lengths.</p>
 
 <hr />
 
-<h2 id="classes-of-curves">Classes of curves.</h2>
+<h2 id="curve-classes">Curve classes</h2>
 
-<p>ZenCad has the following classes that implement curve analysis methods:</p>
+<p>ZenCad provides curve analysis methods in the following classes:</p>
 
 <ul>
-<li>Edge (spawned by segment, interpolate, bezier, bspline, etc.)</li>
-<li>Curve</li>
-<li>Curve2 </li>
+<li>Edge (created by segment, interpolate, bezier, bspline, etc.);</li>
+<li>Curve;</li>
+<li>Curve2.</li>
 </ul>
 
 <hr />
 
-<h2 id="end-points-and-end-curve-range">End points and end curve range.</h2>
+<h2 id="endpoints-and-parameter-range">Endpoints and parameter range</h2>
 
-<p>Determines the endpoints of the end curves.</p>
+<p>Finding the endpoints of finite curves.</p>
 
-<p>The <em>endpoints</em> method returns endpoint objects.
-The parameters of these points can be queried using the <em>range</em> method. </p>
+<p>The <em>endpoints</em> method returns the endpoint objects.
+The <em>range</em> method returns their parameters.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">endpoints</span><span class="p">()</span> <span class="c1"># -&gt; tuple[Point3, Point3]</span>
@@ -117,27 +117,27 @@ The parameters of these points can be queried using the <em>range</em> method. <
 
 <hr />
 
-<h2 id="curved0-u">curve.d0 (u)</h2>
+<h2 id="curved0u"><code>curve.d0(u)</code></h2>
 
-<p>Return the point corresponding to the <em>u</em> parameter. </p>
-
-<hr />
-
-<h2 id="curved1-u">curve.d1 (u)</h2>
-
-<p>Return the vector of the first derivative matching the <em>u</em> parameter. </p>
-
-<h2 id="curvelower_distance_parameterpnt">curve.lower<em>distance</em>parameter(pnt)</h2>
-
-<p>Return the parameter corresponding to the point on the curve closest to the point pnt. </p>
+<p>Returns the point at parameter <em>u</em>.</p>
 
 <hr />
 
-<h2 id="equidistant-curve-points">Equidistant curve points.</h2>
+<h2 id="curved1u"><code>curve.d1(u)</code></h2>
 
-<p>Return an array of points equally spaced along the curve. The <em>npnts</em> parameter sets the number of points.
-The count must be an integer of at least two. Supply both range bounds together or omit both; the endpoints are included. Spacing is uniform along arc length, not in parameter values.
-The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out. </p>
+<p>Returns the first derivative vector at parameter <em>u</em>.</p>
+
+<h2 id="curvelower_distance_parameterpnt"><code>curve.lower_distance_parameter(pnt)</code></h2>
+
+<p>Returns the parameter of the point on the curve closest to <code>pnt</code>.</p>
+
+<hr />
+
+<h2 id="equally-spaced-points">Equally spaced points</h2>
+
+<p>Returns an array of points equally spaced along the curve. The <em>npnts</em> parameter sets the number of points.
+It must be an integer of at least two. Specify both range boundaries or omit both; the result includes the endpoints. Spacing is measured along the curve, rather than in parameter space.
+The <code>umin</code> and <code>umax</code> parameters define the parameter range to distribute the points over.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">curve</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">npnts</span><span class="p">,</span> <span class="n">U_min</span><span class="p">,</span> <span class="n">U_max</span><span class="p">)</span> <span class="c1"># -&gt; list[Scalar]</span>
@@ -160,7 +160,7 @@ The parameters umin, umax set the range on the set of parameters in which the di
 
 <h2 id="two-dimensional-curves">Two-dimensional curves</h2>
 
-<p><code>Curve2</code> has its own interface: <code>point(u)</code> returns <code>Point2</code>, <code>tangent(u)</code> returns the first derivative as <code>Vector2</code>, and <code>range()</code> returns <code>Interval</code>. Use <code>trim(start, end)</code> to restrict its domain. The <code>d0</code>, <code>d1</code>, <code>endpoints</code>, and <code>uniform_points</code> methods described above for <code>Edge</code> and <code>Curve</code> are not part of the <code>Curve2</code> interface.</p>
+<p><code>Curve2</code> has its own interface: <code>point(u)</code> returns a <code>Point2</code>, <code>tangent(u)</code> returns a <code>Vector2</code> of the first derivative, and <code>range()</code> returns an <code>Interval</code>. Use <code>trim(start, end)</code> to restrict the range. The <code>d0</code>, <code>d1</code>, <code>endpoints</code> and <code>uniform_points</code> methods described above for <code>Edge</code> and <code>Curve</code> are not part of the <code>Curve2</code> interface.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>

@@ -55,17 +55,3 @@ show(scene)
 ```
 
 `scene.add()` также возвращает контроллер объекта. Параметры `animate` и `animate_step` функции `show` описаны в разделе [«Анимация»](animate.html), устройство отображения — во [«Внутренней кухне»](internal.html).
-
-## Список объектов без GUI
-
-Manifest содержит имена, идентификаторы и свойства отображения, без самой геометрии:
-
-```python
-import zencad as z
-
-with z.managed_scene(1) as draft:
-    z.display(z.box(2), name="housing")
-    print(draft.manifest().to_json())
-```
-
-Для габаритов, объёма и валидности используйте [inspect](headless.html).

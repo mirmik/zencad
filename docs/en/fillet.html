@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,33 +52,31 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="topologically-dependent-transformations">Topologically dependent transformations</h1>
+<article class="article"><h1 id="topology-dependent-operations">Topology-dependent operations</h1>
 
-<p>There is a class of operations required as part of the model topology. In interactive CAD, we can, using the mouse pointer, point to such an element and point it as a guide. This method is not available in scripted CAD. One approach of ZenCad is that such an element is specified using the "closest point" method. When specifying an argument, a point is specified instead of a topology element. The selected element is the element, the distance to which from the specified point will be minimal.</p>
+<p>Some operations require a particular topological element of a model. In an interactive CAD system, you can select it with the mouse. Scripted CAD needs another approach. One ZenCad option is the "nearest point" method: pass a point instead of the element, and the closest element is selected.</p>
 
-<p>Fillets, chamfers and drafts require selecting model topology. Use <a href="selectors.html">geometric selectors</a> or pass edges and faces directly. Fillets and chamfers also accept reference points, selecting the nearest topology element.</p>
+<p>For explicit selection of edges and faces, use <a href="selectors.html">topology selectors</a>.</p>
 
 <hr />
 
 <h2 id="fillet">Fillet</h2>
 
-<p>Body rounding operation.
-If the body is solid, the edges are modified. If flat - tops.
-Fillets are specified by radius <code>r</code> and an array of nearest points<code>refs</code>. If <code>refs == None</code>, all elements of the topology are considered selected.</p>
+<p>Rounds a shape: edges for a solid, vertices for a planar shape. Specify a radius <code>r</code> and an array of reference points <code>refs</code>. <code>refs=None</code> selects all elements.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">fillet</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
@@ -90,14 +88,13 @@ Fillets are specified by radius <code>r</code> and an array of nearest points<co
 
 <p><img src="../images/generic/fillet0.png" alt="" /> <img src="../images/generic/fillet1.png" alt="" /> </br>
 <img src="../images/generic/fillet2.png" alt="" /> <img src="../images/generic/fillet3.png" alt="" /> </br>
-<img src="../images/generic/fillet4.png" alt="" /> <img src="../images/generic/fillet5.png" alt="" />  </p>
+<img src="../images/generic/fillet4.png" alt="" /> <img src="../images/generic/fillet5.png" alt="" /></p>
 
 <hr />
 
 <h2 id="chamfer">Chamfer</h2>
 
-<p>Body chamfering operation. Unlike rounding, it is applied only to solid bodies.
-The chamfer is specified by the distance <code>r</code> taken from the edge to the chamfer line and an array of the nearest points<code>refs</code>. If <code>refs == None</code>, all elements of the topology are considered selected.</p>
+<p>Chamfers a body. Unlike fillet, it applies only to solids. <code>r</code> is the distance from the edge to the chamfer boundary; <code>refs</code> is an array of reference points. <code>refs=None</code> selects all elements.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">chamfer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">referencedPoints</span><span class="p">)</span>
@@ -111,13 +108,9 @@ The chamfer is specified by the distance <code>r</code> taken from the edge to t
 
 <h2 id="face-draft">Face draft</h2>
 
-<p><code>draft</code> inclines selected faces around a neutral plane, commonly so a molded
-part can be released from its tooling. A positive angle removes material along
-the pull direction; a negative angle adds it. The neutral plane remains fixed.</p>
+<p><code>draft</code> tilts selected faces relative to a neutral plane—for example, to help remove a part from a mold. A positive angle removes material along the pull direction; a negative angle adds it. The neutral plane remains fixed.</p>
 
-<p>The pull direction defaults to <code>+Z</code>, with an origin plane perpendicular to it.
-<code>neutral</code> also accepts a planar face or an <code>(origin, normal)</code> pair. Selected
-faces must belong to the source body and be planar, cylindrical, or conical.</p>
+<p>The default direction is <code>+Z</code>, with the neutral plane through the origin and perpendicular to that direction. <code>neutral</code> also accepts a planar face or an <code>(origin, normal)</code> pair. Selected faces must belong to the original body and be planar, cylindrical or conical.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
@@ -138,9 +131,7 @@ faces must belong to the source body and be planar, cylindrical, or conical.</p>
 
 <h2 id="thicksolid">Thicksolid</h2>
 
-<p>The operation of creating a thin-walled volumetric body.
-Defined by the prototype model <code>shp</code> and an array of points closest to the removed faces<code>refs</code>.
-The wall thickness <code>t</code> is also specified. If the wall thickness is positive, the walls grow outward. If negative - inward.</p>
+<p>Creates a thin-walled solid from a prototype <code>shp</code>. <code>refs</code> contains points nearest to the faces to remove. Wall thickness <code>t</code> is measured outward when positive and inward when negative.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">thicksolid</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">refs</span><span class="o">=</span><span class="n">referencedPoints</span><span class="p">)</span>
@@ -149,11 +140,11 @@ The wall thickness <code>t</code> is also specified. If the wall thickness is po
 
 <p><img src="../images/generic/thicksolid0.png" alt="" /> <img src="../images/generic/thicksolid1.png" alt="" /></p>
 
-<h2 id="result-type-and-references">Result type and references</h2>
+<h2 id="result-types-and-element-selection">Result types and element selection</h2>
 
-<p><code>fillet()</code> and <code>chamfer()</code> return <code>Shape</code>; inspect their contents using <code>faces()</code> and <code>solids()</code>. The result handle remains <code>Shape</code> even when it contains one solid.</p>
+<p><code>fillet()</code> and <code>chamfer()</code> return <code>Shape</code>; inspect the contents with <code>faces()</code> and <code>solids()</code>. Even a result containing one solid retains the <code>Shape</code> wrapper.</p>
 
-<p>Pass a list of <code>point3(...)</code> or <code>Vertex</code> values to select nearby elements, or a list of <code>Edge</code> objects from the original body to select edges explicitly. Do not mix edges and points. Plain numeric tuples inside the reference list are not supported; use <code>point3</code>. <code>None</code> selects all elements, while an empty list raises <code>ValueError</code>. Edges from another model are rejected. For a planar face fillet, select vertices or points.</p>
+<p>For nearest-element selection, pass a list of <code>point3(...)</code> or <code>Vertex</code> objects. For explicit edge selection, pass a list of <code>Edge</code> objects from the original body. Edges and points cannot be mixed. Plain coordinate tuples in the reference list are not supported; use <code>point3</code>. <code>None</code> selects all elements, while an empty list raises <code>ValueError</code>. Edges from another model are rejected. For filleting a planar face, select vertices or points.</p>
 </article>
 </div>
 </body>

@@ -2,38 +2,38 @@
 
 ## Geometry kernel and evaluation
 
-ZenCad uses OpenCascade through `cadquery-ocp-novtk` and its `OCP` Python modules. ZenCad geometry types and operations live in `zencad.geom`; kernel adapters live in `zencad._native`.
+ZenCad uses the OpenCascade geometry kernel. The `cadquery-ocp-novtk` package provides Python access through the `OCP` modules. ZenCad's geometric types and operations live in `zencad.geom`; kernel adapters live in `zencad._native`.
 
-Geometry objects and values retain dependencies between operations. The EvalCache evaluator executes them in `deferred` or `immediate` mode and manages result reuse. A `Context` owns an evaluator; ordinary scripts use module functions and object methods. `.value()` obtains a computed value, while a shape's `.native()` obtains an OCP object. See [Evaluation and caching](caching.html) and [Values, points and transforms](prim0d.html).
+Geometry objects and values preserve operation dependencies. EvalCache evaluates them in `deferred` or `immediate` mode and manages result reuse. `Context` owns the evaluator; ordinary scripts can use module functions and object methods. `.value()` obtains a computed value; `.native()` on a shape returns an OCP object. See [Evaluation and caching](caching.html) and [Points and vectors](prim0d.html).
 
-## Organization and interaction of ZenCad threads and processes.
+## Threads, processes and communication
 
-The ZenCad graphical interface is designed to minimize its influence on the order of calculations in the running scripts. To achieve this, scripts run in a separate process.
+ZenCad's graphical interface is designed to interfere as little as possible with script execution. Scripts therefore run in a separate process.
 
-When started with `zencad model.py` or `python -m zencad model.py`, the main process owns Qt, the OpenCascade viewer and the OpenGL context. Camera, selection, markers and AIS presentation objects also belong to this process.
+When launched with `zencad model.py` or `python -m zencad model.py`, the main process owns the Qt interface, OpenCascade viewer and OpenGL context. It also owns the camera, selection, markers and AIS display objects.
 
-`RunnerSupervisor` starts a separate model process using the `multiprocessing` `spawn` method. The runner constructs geometry and collects the scene without creating Qt or OpenGL windows. Scene data crosses the process boundary: serialized BREP geometry or meshes, placements, colors, names and visibility. The viewer window belongs to the main process and persists across model evaluations.
+`RunnerSupervisor` starts a model worker with `multiprocessing` using `spawn`. The worker builds geometry and assembles the scene without creating Qt or OpenGL windows. Processes exchange scene data: serialized BREP geometry or meshes, placements, colors, names and visibility. The viewer window belongs to the main process and survives model recomputation.
 
-Communication uses `multiprocessing.Pipe` connections and a versioned protocol. Messages carry scene snapshots, evaluation progress, script output and errors; control events and user input travel in the opposite direction. The runner captures script stdout and stderr and delivers them to the interface as messages.
+Communication uses `multiprocessing.Pipe` channels and a versioned protocol. Scene snapshots, progress, script output and errors travel to the GUI; control events and user input travel back. The worker captures script `stdout` and `stderr` and delivers them as messages.
 
-## Evaluation and scene updates
+## Recomputing and updating the scene
 
-Each run receives a generation number. The runner collects object descriptions in a `SceneDraft` and publishes a `SceneSnapshot`. The GUI's `ScenePresenter` validates and decodes the snapshot before replacing the viewer contents. Only the current generation can be applied: a late message from a previous run cannot replace the current model.
+Each run receives a generation number. The worker gathers object descriptions in `SceneDraft`; publishing produces a `SceneSnapshot`. The GUI's `ScenePresenter` validates and decodes it, then replaces the viewer contents. Only the current generation is applied: a late message from an earlier run cannot replace the current model.
 
-The last successful scene remains visible during evaluation, cancellation or failure. Camera state is preserved by default. A runner can be stopped and replaced without recreating the main window or viewer.
+The last successful scene remains visible during calculation, cancellation or an error. Camera placement is preserved by default. The worker can be stopped and restarted without recreating the main window or viewer.
 
-## What show() does
+## The show function
 
-Its behavior depends on how the script is launched:
+The behavior of `show` depends on context (see `zencad/showapi.py`).
 
-- In scripts launched by the editor or `inspect`/`check`, `display()` adds data to a `SceneDraft`, and `show()` publishes a snapshot. Static scripts then continue without entering a GUI event loop.
-- In a direct `python model.py` run, `show()` opens a standalone viewer in the same process and starts the Qt event loop. It does not create the full editor. This mode is also available through `zencad --display model.py`.
-- `zencad --no-show model.py` executes a script with display disabled. Use [inspect and check](headless.html) to obtain geometry reports.
+- In a script run by the editor or by `inspect`/`check`, `display()` adds data to `SceneDraft`, and `show()` publishes a scene snapshot. For a static scene, execution then continues without starting a window event loop.
+- Running `python model.py` directly makes `show()` open a standalone viewer in the same process and start the Qt event loop. It does not create the full editor. This mode is also available through `zencad --display model.py`.
+- `zencad --no-show model.py` executes a script with display disabled. Use the separate [inspect and check](headless.html) commands for geometry reports.
 
 ## Animation and input
 
-In the editor, an animated runner stays active after publishing the scene. Its callback receives timing, input through `state.input` and camera controls through `state.camera`. Placement, color and visibility changes are sent as scene updates; camera actions use separate messages. Qt event handling and presentation run in the GUI process.
+In the editor, an animated worker stays active after publishing its scene. The callback receives timing, input through `state.input` and camera controls through `state.camera`. Placement, color and visibility changes are sent as scene updates; camera actions use separate messages. Qt events and rendering are handled in the GUI process.
 
-Construct geometry for managed animations before the initial `show()`. The callback has no direct viewer-widget access and cannot replace geometry after publication. See [Animation](animate.html) for the contract and examples.
+Create animation geometry before the initial `show()`. The callback does not directly access the viewer widget or replace geometry after publication. See [Animation](animate.html) for the contract and examples.
 
-See [Runtime architecture](../development/runtime-architecture.md) for protocol details, object ownership and lifecycle.
+Protocol, ownership and lifecycle details: [Runtime architecture](../development/runtime-architecture.md).

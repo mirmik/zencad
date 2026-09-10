@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,50 +52,50 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="boolean-operations">Boolean operations.</h1>
+<article class="article"><h1 id="boolean-operations">Boolean operations</h1>
 
-<p>CSG geometry is operated on boolean operations. Zencad provides operations for joining, subtracting and intersecting 3d and 2d objects. There are two groups of these operations in zencad:</p>
+<p>CSG geometry relies on Boolean operations. ZenCad provides union, difference and intersection for 3D and 2D objects, in two forms:</p>
 
 <ul>
-<li>over arrays of bodies using the functions <em>union</em>, <em>difference</em>, <em>intersect</em></li>
-<li>over pairs of bodies using the operators _ + _ <em>-</em> _ ^ _</li>
+<li>functions <em>union</em>, <em>difference</em> and <em>intersect</em> for arrays of shapes;</li>
+<li>operators <em>+</em>, <em>-</em> and <em>^</em> for pairs of shapes.</li>
 </ul>
 
 <blockquote>
   <p>! Note:
-  ! Do not attempt to boolean a compound line from simple lines or sew a shell from faces. For these manipulations, there are special stitching procedures outlined in the relevant sections. </p>
+  ! To join simple curves into a composite wire or sew faces into a shell, use the dedicated stitching operations described in the corresponding sections.</p>
 </blockquote>
 
 <hr />
 
-<h2 id="union">Union.</h2>
+<h2 id="union">Union</h2>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="c1"># Функция:</span>
+<pre><span></span><code><span class="c1"># Function:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
-<span class="c1"># Оператор:</span>
+<span class="c1"># Operator:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">+</span> <span class="n">shp1</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1">#with operators:</span>
@@ -110,25 +110,25 @@
 </code></pre>
 </div>
 
-<p><img src="../images/generic/union.png" alt="" /> <img src="../images/generic/union0.png" alt="" />   </br>
-<img src="../images/generic/union1.png" alt="" /> <img src="../images/generic/union2.png" alt="" />  </p>
+<p><img src="../images/generic/union.png" alt="" /> <img src="../images/generic/union0.png" alt="" /> </br>
+<img src="../images/generic/union1.png" alt="" /> <img src="../images/generic/union2.png" alt="" /></p>
 
 <hr />
 
-<h2 id="difference">Difference.</h2>
+<h2 id="difference">Difference</h2>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="c1"># Функция:</span>
+<pre><span></span><code><span class="c1"># Function:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">difference</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
-<span class="c1"># Оператор:</span>
+<span class="c1"># Operator:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">-</span> <span class="n">shp1</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1">#with operators:</span>
@@ -143,25 +143,25 @@
 </code></pre>
 </div>
 
-<p><img src="../images/generic/difference.png" alt="" /> <img src="../images/generic/difference0.png" alt="" />   </br>
-<img src="../images/generic/difference1.png" alt="" /> <img src="../images/generic/difference2.png" alt="" />  </p>
+<p><img src="../images/generic/difference.png" alt="" /> <img src="../images/generic/difference0.png" alt="" /> </br>
+<img src="../images/generic/difference1.png" alt="" /> <img src="../images/generic/difference2.png" alt="" /></p>
 
 <hr />
 
-<h2 id="intersect">Intersect.</h2>
+<h2 id="intersection">Intersection</h2>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="c1"># Функция:</span>
+<pre><span></span><code><span class="c1"># Function:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">intersect</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
-<span class="c1"># Оператор:</span>
+<span class="c1"># Operator:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">shp0</span> <span class="o">^</span> <span class="n">shp1</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1">#with operators:</span>
@@ -176,24 +176,24 @@
 </code></pre>
 </div>
 
-<p><img src="../images/generic/intersect.png" alt="" /> <img src="../images/generic/intersect0.png" alt="" />   </br>
-<img src="../images/generic/intersect1.png" alt="" /> <img src="../images/generic/intersect2.png" alt="" />  </p>
+<p><img src="../images/generic/intersect.png" alt="" /> <img src="../images/generic/intersect0.png" alt="" /> </br>
+<img src="../images/generic/intersect1.png" alt="" /> <img src="../images/generic/intersect2.png" alt="" /></p>
 
 <hr />
 
-<h2 id="crossing-shells">Crossing shells.</h2>
+<h2 id="shell-intersection">Shell intersection</h2>
 
-<p>Let's twin the operation <em>intersect</em>, which calculates the intersection of the shells of bodies. </p>
+<p>A relative of <em>intersect</em> that computes the intersection of the solids' shells.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="c1"># Функция:</span>
+<pre><span></span><code><span class="c1"># Function:</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">section</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
@@ -202,15 +202,15 @@
 </div>
 
 <p><img src="../images/generic/section0.png" alt="" />
-<img src="../images/generic/section1.png" alt="" />   </p>
+<img src="../images/generic/section1.png" alt="" /></p>
 
 <hr />
 
-<h2 id="splitting-and-slicing-by-a-plane">Splitting and slicing by a plane.</h2>
+<h2 id="splitting-and-slicing-with-a-plane">Splitting and slicing with a plane</h2>
 
-<p><code>split(body, tools)</code> partitions a body with Shape tools; <code>slice(body, z=..., axis=...)</code> uses one plane. Both return collections of solids and retain uncut bodies. An empty set of tools for <code>split</code> raises <code>ValueError</code>.</p>
+<p><code>split(body, tools)</code> splits a solid with Shape tools; <code>slice(body, z=..., axis=...)</code> uses a single plane. Both return collections of solid parts and preserve uncut solids. An empty tool collection for <code>split</code> raises <code>ValueError</code>.</p>
 
-<p>The parts returned by <code>slice</code> are ordered along the plane normal. With two parts, unpack the result as <code>lower, upper</code>. See <a href="split.html">Splitting bodies</a> for details and examples.</p>
+<p><code>slice</code> orders its parts along the plane normal. A two-part result can be unpacked as <code>lower, upper</code>. See <a href="split.html">Splitting solids</a> for details and examples.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">parts</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">7</span><span class="p">)))</span>
@@ -223,11 +223,11 @@
 
 <hr />
 
-<h2 id="boolean-operations-on-2d-solids">Boolean operations on 2D solids.</h2>
+<h2 id="boolean-operations-on-2d-shapes">Boolean operations on 2D shapes</h2>
 
-<p>Just like with 3D objects, the above operations can be applied to 2D objects as long as they are in the same plane. </p>
+<p>The same operations apply to two-dimensional objects as long as they lie in the same plane.</p>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">m0</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">-</span> <span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>

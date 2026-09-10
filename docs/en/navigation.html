@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,74 +52,74 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="graphical-interface-highlights">Graphical interface, highlights.</h1>
+<article class="article"><h1 id="graphical-interface-the-basics">Graphical interface: the basics</h1>
 
 <p><img src="../images/gui.png" alt="gui.png" /></p>
 
 <hr />
 
-<h2 id="call">Call</h2>
+<h2 id="launching">Launching</h2>
 
-<p>The GUI window can be invoked in the following ways:</p>
+<p>There are several ways to open the graphical interface:</p>
 
 <ul>
-<li>Calling <code>show()</code> in a Python script opens a standalone viewer in that process; the commands below start the full editor.</li>
-<li>Executing <code>python3 -m zencad</code> in a terminal environment. (usage: <code>python3 -m zencad [filepath]</code>)</li>
-<li>Call the command line utility <code>zencad</code> (usage:<code>zencad [filepath]</code>) </li>
+<li>Calling <code>show()</code> in a Python script opens a standalone viewer in the script process; the commands below launch the full editor.</li>
+<li>Running <code>python3 -m zencad</code> in a terminal (usage: <code>python3 -m zencad [filepath]</code>).</li>
+<li>Running the <code>zencad</code> command-line utility (usage: <code>zencad [filepath]</code>).</li>
 </ul>
 
 <hr />
 
-<h2 id="updating-the-model-by-updating-the-source-file">Updating the model by updating the source file</h2>
+<h2 id="updating-the-model-when-the-source-changes">Updating the model when the source changes</h2>
 
-<p>The renderer keeps track of changes in the file, the source of the geometry. When the source is updated, the program automatically starts re-executing the script. The editor starts a separate script runner and receives a scene snapshot. The viewer and camera persist across evaluations. On failure, the last successful result remains visible. See <a href="internal.html">ZenCad internals</a>.</p>
+<p>The viewer watches the geometry source file and automatically reruns the script when it changes. The editor starts a separate script worker and receives a scene snapshot. The viewer and camera persist between evaluations. If the script fails, the last successful result remains visible. See <a href="internal.html">Inside ZenCad</a>.</p>
 
 <hr />
 
 <h2 id="built-in-text-editor">Built-in text editor</h2>
 
-<p>The visualizer has a built-in text editor widget that can be used for quick editing or experimentation. Show editor <code>View/'Hide editor'</code></p>
+<p>The viewer includes a text editor for quick edits and experiments. Toggle it with <code>View/'Hide editor'</code>.</p>
 
 <hr />
 
 <h2 id="built-in-console">Built-in console</h2>
 
-<p>ZenCad also relays the terminal output to the embedded console. Show console <code>View/'Hide console'</code>.
-This can be used when the main terminal output is not available. </p>
+<p>ZenCad also forwards terminal output to its built-in console. Toggle it with <code>View/'Hide console'</code>.
+This is useful when the main terminal is unavailable.</p>
 
 <hr />
 
-<h2 id="markers-determination-of-coordinates">Markers, determination of coordinates</h2>
+<h2 id="markers-and-coordinates">Markers and coordinates</h2>
 
-<p>To set markers, use the keys <code>Q (F1)</code>, <code>W (F2)</code>. After setting, the coordinates of the marker are displayed in the corresponding field. If both markers are set, the distance between them is displayed in the Distance field. </p>
+<p>Use <code>Q(F1)</code> and <code>W(F2)</code> to place markers. Each marker's coordinates appear in the corresponding field. When both markers are set, the Distance field shows the distance between them.</p>
 
 <hr />
 
 <h2 id="3d-navigation">3D navigation</h2>
 
-<p>Rotation: MouseLeftClick / Alt + MouseMove
-Offset: MouseMiddleClick / MouseRightClick / Shift + MouseMove
-Scaling: PgUp / PgDown / MouseWheel</p>
+<p>Rotation: MouseLeftClick/Alt + MouseMove<br>
+Pan: MouseMiddleClick/MouseRightClick/Shift + MouseMove<br>
+Zoom: PgUp/PgDown/MouseWheel</p>
 
-<p>The navigation preset can be selected in <code>Edit/Settings</code>: ZenCad, Legacy
-ZenCad, Blender, FreeCAD CAD, Maya, or Custom. Custom assigns separate Rotate,
-Pan, and Zoom gestures. Wheel zoom and orbit direction can also be inverted.</p>
+<p>Choose a navigation scheme in <code>Edit/Settings</code>: ZenCad, Legacy ZenCad,
+Blender, FreeCAD CAD, Maya or Custom. Custom lets you assign Rotate, Pan
+and Zoom gestures separately. You can also invert the wheel and rotation direction.</p>
 
-<p>The renderer supports two orientation modes. Orthogonal orientation (Z axis is always upward) and free rotation mode. Switch between them - <code>Navigation/'Axionometric view'</code>, <code>Navigation / 'Free rotation view'</code>. </p>
+<p>The viewer supports two orientation modes: upright orientation (Z always points up) and free rotation. Switch between them with <code>Navigation/'Axionometric view'</code> and <code>Navigation/'Free rotation view'</code>.</p>
 </article>
 </div>
 </body>

@@ -1,7 +1,6 @@
 # Installation
 
-ZenCad is installed from PyPI together with a prebuilt geometry-backend wheel.
-Conda and a separate OpenCascade installation are not required.
+ZenCad installs from PyPI together with a binary wheel of the geometry backend. Neither Conda nor a separate OpenCascade installation is required.
 
 ## Graphical interface
 ```console
@@ -9,8 +8,7 @@ python3 -m pip install "zencad[gui]"
 zencad
 ```
 
-On Debian and Ubuntu, install the Qt/X11 system libraries before the first
-run:
+On Debian and Ubuntu, install the Qt/X11 system libraries before the first launch:
 
 ```console
 sudo apt update
@@ -20,31 +18,22 @@ sudo apt install libglu1-mesa libxcb-cursor0 libxcb-icccm4 \
   libxkbcommon-x11-0
 ```
 
-The GUI uses X11; a Wayland session therefore needs XWayland.
+The graphical interface uses X11; a Wayland session requires XWayland.
 
-## Headless geometry only
+## Geometry only, without GUI
 ```console
 python3 -m pip install zencad
 ```
 
-ZenCad requires 64-bit CPython 3.10–3.14. Headless geometry wheels cover
-Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc
-2.31 or newer. The GUI extra is available on Windows x86-64, macOS
-x86-64/arm64, and Linux x86-64; PyQt5 does not currently publish Linux
-aarch64 wheels.
+64-bit CPython 3.10–3.14 is required. Geometry wheels are available for Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc 2.31 or newer. The GUI extra is available for Windows x86-64, macOS x86-64/arm64 and Linux x86-64; PyQt5 currently provides no Linux aarch64 wheel.
 
 ## Current version from source
 
-This guide describes the current ZenCad 2 source tree. `pip install zencad`
-selects the published package, not necessarily this revision. In a checkout:
+This manual describes the current ZenCad 2 source tree. `pip install zencad` retrieves the published package, which may not match this revision. In a checkout:
 
 ```sh
 python -m pip install -e ".[gui]"
 python -m zencad
 ```
 
-For geometry only, use `python -m pip install -e .`. Optional example dependencies:
-`python -m pip install -e ".[examples]"`.
-
-Package version `2.0.0` does not imply completed platform acceptance.
-Windows/macOS rendering still needs verification; Linux GUI needs working X11/OpenGL.
+For geometry only, use `python -m pip install -e .`. Install optional example dependencies with `python -m pip install -e ".[examples]"`.

@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,47 +52,50 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="trajectory-sweep">Trajectory sweep.</h1>
+<article class="article"><h1 id="sweep-operations">Sweep operations</h1>
 
-<p>A wide class of reference geometry operations is represented by operations, constructing a body by translation (English sweep) of a certain profile or a family of profiles (<em>profile</em>, <em>profiles</em>) along a given trajectory <em>spine</em>.</p>
+<p>A broad family of geometry operations constructs a body by sweeping a profile or a series of profiles (<em>profile</em>, <em>profiles</em>) along a path (<em>spine</em>).</p>
 
-<h2 id="formally-about-what-a-trajectory-sweep-is">Formally about what a trajectory sweep is:</h2>
+<h2 id="what-a-sweep-describes">What a sweep describes</h2>
 
-<p>Trajectory sweep is a technique for constructing a surface by sweeping a profile along a path. In general, the profile view is not constant and can change according to certain laws. Thus, there are two questions regarding how the profile extends along the trajectory, or, in other words, we must define two laws, namely:</p>
+<p>A sweep builds a surface by moving a profile along a path. The profile may vary according to a rule. This leaves two things to define:</p>
 
 <ol>
-<li>The law that determines the shape of the trajectory.</li>
-<li>The law determining the shape of the profile.</li>
+<li>The shape of the path.</li>
+<li>How the profile varies.</li>
 </ol>
 
-<p>It is convenient to split the second law into two sub-laws:
-1.1. The law that determines the shape of the translated body.
-1.2. The law governing the angular evolution of the basis.</p>
+<p>The second can be split into two rules:</p>
 
-<p>In fact, the variety of all trajectory translation operations available in the system are different forms of answers to these questions.</p>
+<ol>
+<li>How the profile's shape varies.</li>
+<li>How its coordinate frame rotates.</li>
+</ol>
+
+<p>The different sweep operations provide different ways of specifying these rules.</p>
 
 <hr />
 
-<h2 id="linear-sweep">Linear sweep.</h2>
+<h2 id="linear-extrusion">Linear extrusion</h2>
 
-<p>The most commonly used method of adding volume to a flat object. The operation unfolds the flat body <em>face</em> along the vector <em>vec</em>. Specifying a single coordinate instead of a vector will stretch the model in the positive Z direction.
-If the center option is specified, after the operation is performed, the model will be translated in the direction opposite to vec by its half length.</p>
+<p>A common way to give a planar object volume. The operation sweeps <em>face</em> along <em>vec</em>. A single number in place of the vector extrudes the model along the positive Z direction.
+With <code>center</code> set, the result is translated back by half of <em>vec</em>.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">extrude</span><span class="p">(</span><span class="n">face</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">),</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -101,7 +104,7 @@ If the center option is specified, after the operation is performed, the model w
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">ngon</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
@@ -112,14 +115,14 @@ If the center option is specified, after the operation is performed, the model w
 </code></pre>
 </div>
 
-<p><img src="../images/generic/extrude0.png" alt="" /> <img src="../images/generic/extrude1.png" alt="" /> </br><br />
+<p><img src="../images/generic/extrude0.png" alt="" /> <img src="../images/generic/extrude1.png" alt="" /> </br>
 <img src="../images/generic/extrude2.png" alt="" /> <img src="../images/generic/extrude3.png" alt="" /></p>
 
 <hr />
 
 <h2 id="tube">Tube</h2>
 
-<p>Sweep a circular profile with <code>pipe_shell</code>. Subtract two sweeps to form a hollow tube. Place the profile at the start of the spine, perpendicular to its initial direction.</p>
+<p>A circular profile can be swept along a path with <code>pipe_shell</code>. Subtract two sweeps to obtain a hollow tube. Place the profile at the start of the path, perpendicular to its initial direction.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -128,9 +131,10 @@ If the center option is specified, after the operation is performed, the model w
     <span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">55</span><span class="p">),</span> <span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]),</span>
     <span class="n">tangs</span><span class="o">=</span><span class="p">[</span><span class="n">vector3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vector3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span>
 <span class="p">)</span>
-<span class="n">outer</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">circle</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">inner</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">circle</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">outer</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">circle</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">inner</span> <span class="o">=</span> <span class="n">pipe_shell</span><span class="p">([</span><span class="n">circle</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">body</span> <span class="o">=</span> <span class="n">outer</span> <span class="o">-</span> <span class="n">inner</span>
+<span class="n">body</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
 <span class="n">disp</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
 </code></pre>
 </div>
@@ -139,19 +143,18 @@ If the center option is specified, after the operation is performed, the model w
 
 <hr />
 
-<h2 id="sweep-a-profile-along-a-path-sweep-with-a-variable-profile">Sweep a profile along a path. Sweep with a variable profile.</h2>
+<h2 id="sweeping-a-profile-or-a-varying-series-of-profiles">Sweeping a profile or a varying series of profiles</h2>
 
-<p>The operation constructs a body from one profile or a set of successive <em>profiles</em> profiles, stretched along the <em>spine</em> path.
-Specifying the <em>frenet</em> option activates the law of variation of the angular position of the profile in accordance with the Frenet-Serre trihedron. The <em>binormal</em> option activates the law of variation of the angular position of the profile in accordance with the constant binormal.</p>
+<p>Builds a body from one profile or a sequence of <em>profiles</em> swept along <em>spine</em>. Setting <em>frenet</em> orients the profile according to the Frenet–Serret frame. <em>binormal</em> selects orientation using a constant binormal.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">pipe_shell</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">spine</span><span class="p">,</span> <span class="n">frenet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binormal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">solid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Примеры:</p>
+<p>Examples:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">spine</span> <span class="o">=</span> <span class="n">segment</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
@@ -160,25 +163,24 @@ Specifying the <em>frenet</em> option activates the law of variation of the angu
 </code></pre>
 </div>
 
-<p><img src="../images/generic/sweep0.png" alt="" /> <img src="../images/generic/sweep1.png" alt="" />  </br>
-<img src="../images/generic/sweep2.png" alt="" /> <img src="../images/generic/sweep3.png" alt="" />  </br>
+<p><img src="../images/generic/sweep0.png" alt="" /> <img src="../images/generic/sweep1.png" alt="" /> </br>
+<img src="../images/generic/sweep2.png" alt="" /> <img src="../images/generic/sweep3.png" alt="" /> </br>
 <img src="../images/generic/sweep4.png" alt="" /></p>
 
 <hr />
 
-<h2 id="body-of-rotation">Body of rotation.</h2>
+<h2 id="revolution">Revolution</h2>
 
-<p>The operation of creating a body of revolution from the <em>proto</em> prototype. If it is necessary to create a sector, the angle <em>yaw</em> is set.
-If radius <em>r</em> is specified, the object is rotated 90 degrees around the X axis and displaced along the X axis by a distance equal to the radius <em>r</em>.</p>
+<p>Creates a body of revolution from <em>proto</em>. Set <em>yaw</em> to create a sector. If <em>r</em> is given, the profile is first rotated 90 degrees around X and shifted along X by <em>r</em>.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">revol</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">))</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">profile</span> <span class="o">=</span> <span class="n">rectangle</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
@@ -187,23 +189,23 @@ If radius <em>r</em> is specified, the object is rotated 90 degrees around the X
 </code></pre>
 </div>
 
-<p><img src="../images/generic/revol0.png" alt="" /> <img src="../images/generic/revol1.png" alt="" />  </br>
-<img src="../images/generic/revol2.png" alt="" /> <img src="../images/generic/revol3.png" alt="" />  </p>
+<p><img src="../images/generic/revol0.png" alt="" /> <img src="../images/generic/revol1.png" alt="" /> </br>
+<img src="../images/generic/revol2.png" alt="" /> <img src="../images/generic/revol3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="body-of-rotation-extended-version">Body of rotation. (extended version).</h2>
+<h2 id="extended-revolution">Extended revolution</h2>
 
-<p>An extended version of the <em>revol</em> operation. Constructs a body of revolution from the prototype <em>proto</em> at the interval of the rotation angle <em>yaw</em>. Specifying the <em>roll</em> option allows you to change the rotation angle of the prototype as it traverses the interval. The body is built from reference copies of the prototype body, the number of copies is set by the <em>n</em> option. <em>parts</em> defines the number of segments of the resulting rotation body.</p>
+<p>An extended version of <em>revol</em>. Builds a body of revolution over the angular interval <em>yaw</em>. <em>roll</em> changes the profile's rotation along that interval. The body is constructed from <em>n</em> reference copies of the profile; <em>parts</em> sets the number of segments in the resulting body.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">parts</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Примеры:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">revol2</span><span class="p">(</span><span class="n">profile</span><span class="o">=</span><span class="n">square</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)))</span>
@@ -214,7 +216,36 @@ If radius <em>r</em> is specified, the object is rotated 90 degrees around the X
 
 <h2 id="result-types">Result types</h2>
 
-<p><code>extrude()</code> and <code>revol()</code> return <code>Shape</code>; extract a single solid with <code>result.solids().only()</code>. <code>pipe_shell(..., solid=True)</code> returns <code>Solid</code> and requires closed profiles; an open profile raises <code>ValueError</code> at evaluation, identifying its index. With <code>solid=False</code>, it returns <code>Shell</code> and permits open profiles. <code>revol2()</code> with the parameters of the example above returns <code>Solid</code>.</p>
+<p><code>extrude()</code> and <code>revol()</code> return <code>Shape</code>; extract a single solid with <code>result.solids().only()</code>. <code>pipe_shell(..., solid=True)</code> returns <code>Solid</code> and requires closed profiles; an open profile raises <code>ValueError</code> on evaluation, identifying its index. With <code>solid=False</code>, it returns <code>Shell</code> and accepts open profiles. <code>revol2()</code> with the example parameters returns <code>Solid</code>.</p>
+
+<p><a id="sweep-surface"></a></p>
+
+<h2 id="parametric-surface-sweep_surface">Parametric surface: sweep_surface</h2>
+
+<p><code>sweep_surface(section, spine)</code> sweeps a profile curve along a path curve and returns <code>Surface</code>. This is a surface for further construction and measurement; use <code>pipe_shell</code> for a finished solid.</p>
+
+<p>Here, a circle of radius 3 moves along a circle of radius 12. The surface is shown as a grid of isocurves:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">surface</span> <span class="o">=</span> <span class="n">sweep_surface</span><span class="p">(</span><span class="n">circle_curve</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">circle_curve</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">u_range</span><span class="p">()</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">v_range</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">12</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">lower</span> <span class="o">+</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">upper</span> <span class="o">-</span> <span class="n">u</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">/</span> <span class="mi">12</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">surface</span><span class="o">.</span><span class="n">u_iso</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">v</span><span class="p">))</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">blue</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">blue</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">upper</span> <span class="o">-</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">/</span> <span class="mi">8</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">surface</span><span class="o">.</span><span class="n">v_iso</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">u</span><span class="p">))</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">green</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/surface-sweep.png" alt="Isocurves of a circular sweep surface" /></p>
+
+<p><code>scale</code> scales the profile. <code>trihedron</code> controls its orientation along the path: the default is <code>SweepTrihedron.CORRECTED_FRENET</code>; <code>SweepTrihedron.FRENET</code> is also available.</p>
 </article>
 </div>
 </body>

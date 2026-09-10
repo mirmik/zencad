@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,162 +52,95 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="interactive-object">Interactive object</h1>
+<article class="article"><h1 id="interactive-objects">Interactive objects</h1>
 
-<p>An interactive object is a display unit in zencad.</p>
+<p>The controller returned by <code>display()</code> manages how geometry is displayed. Moving or hiding it does not change the original shape.</p>
 
-<p>This section lists the types of interactive objects and specifies the methods of the corresponding base class.</p>
-
-<hr />
-
-<h2 id="geometric-interactive-objects">Geometric interactive objects.</h2>
-
-<p>The interactive object engine is used to display geometric shapes processed by zencad.</p>
-
-<p>Example 1 (Creating an interactive form object):</p>
+<h2 id="placement-color-and-visibility">Placement, color and visibility</h2>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">scn</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">Scene</span><span class="p">()</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
-<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">scn</span><span class="p">)</span>
-
-<span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scn</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">controller</span> <span class="o">=</span> <span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+<span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">right</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">controller</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">yellow</span><span class="p">)</span>
+<span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<p>Example 2 (Create an interactive form object using the disp display function):</p>
+<table>
+<thead>
+<tr>
+  <th>Method</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>relocate(transform)</code></td>
+  <td>Set placement relative to the original position</td>
+</tr>
+<tr>
+  <td><code>location()</code></td>
+  <td>Get placement</td>
+</tr>
+<tr>
+  <td><code>set_color(color)</code></td>
+  <td>Change color</td>
+</tr>
+<tr>
+  <td><code>color()</code></td>
+  <td>Get color</td>
+</tr>
+<tr>
+  <td><code>hide(True)</code>, <code>hide(False)</code></td>
+  <td>Hide or show</td>
+</tr>
+<tr>
+  <td><code>is_hidden()</code></td>
+  <td>Check whether the object is hidden when running in the editor</td>
+</tr>
+</tbody>
+</table>
+
+<p>Colors can be <code>Color</code> objects or RGB/four-component tuples. The fourth component is transparency. <code>set_color</code> also accepts <code>border_color</code> for face boundaries and <code>wire_color</code> for lines.</p>
+
+<p>In animations, setting the full placement with <code>relocate</code> avoids accumulating transforms from frame to frame. When running in the editor, you can change properties of existing objects; creating new geometry inside a callback is not supported. See <a href="animate.html">Animation</a>.</p>
+
+<h2 id="arrows-and-lines">Arrows and lines</h2>
+
+<p>Graphic objects help show directions and auxiliary constructions. Add them to the scene with <code>display()</code>:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-
-<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">yellow</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<hr />
-
-<h2 id="methods-of-the-interactive_object-class">Methods of the interactive_object class:</h2>
-
-<h3 id="repositioning">Repositioning</h3>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">intobj</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Relocates the object to the <em>trans</em> position relative to its original location.</p>
-
-<h3 id="hiding">Hiding</h3>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">intobj</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Hide or re-display the object. The hidden object is not removed from memory.</p>
-
-<h3 id="color-setting">Color setting</h3>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
-
-<span class="c1"># Examples:</span>
-<span class="c1"># RGB:</span>
-<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
-<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
-
-<span class="c1"># RGBA:</span>
-<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
-</code></pre>
-</div>
-
-<p>Change the color of the interactive object.
-The color parameter represents either a tuple or a zencad.Color object.</p>
-
-<h2 id="controlling-an-object-in-the-editor">Controlling an object in the editor</h2>
-
-<p>A geometry operation creates a new shape. The controller returned by <code>display()</code> changes the presentation of an existing scene object:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-    <span class="n">controller</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;part&quot;</span><span class="p">)</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">yellow</span><span class="p">)</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">controller</span><span class="o">.</span><span class="n">is_hidden</span><span class="p">()</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p><code>relocate(transform)</code> sets placement and <code>location()</code> reads it; <code>set_color()</code>/<code>color()</code> update and read color; <code>hide()</code>/<code>is_hidden()</code> control visibility. Controllers also support transform helpers. Usually set an absolute placement each frame with <code>relocate</code> to avoid unintentionally accumulating transforms.</p>
-
-<p>This does not change BREP or perform a boolean operation: the source <code>body</code> remains unchanged. Managed animation updates properties of objects created beforehand. Do not construct <code>interactive_object</code> or QWidget instances manually to update a model. <a href="animate.html">Animation</a>.</p>
-
-<h2 id="graphical-interactive-objects">Graphical interactive objects.</h2>
-
-<p>In addition to interactive objects of geometric shapes, there are interactive objects that can be used to transfer additional information on the working stage:</p>
-
-<hr />
-
-<h3 id="arrow">Arrow:</h3>
-
-<p>Show an arrow corresponding to the vector <em>vec</em>, leading from the point <em>pnt</em>, the size of the arrow head is determined by the <em>arrlen</em> parameter, the line width by the <em>width</em> parameter.
-Add the object to a scene with <code>display()</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.interactive.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">arrow</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">arrow</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">pnt</span> <span class="o">+</span> <span class="n">vec</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-</code></pre>
-</div>
-
-<hr />
-
-<h3 id="line">Line:</h3>
-
-<p>Show the line, between the points <em>apnt</em> and <em>bpnt</em>, line width with the <em>width</em> parameter.
-Add the object to a scene with <code>display()</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.interactive.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">line</span> <span class="k">as</span> <span class="n">display_line</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">display_line</span><span class="p">(</span><span class="n">apnt</span><span class="p">,</span> <span class="n">bpnt</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-</code></pre>
-</div>
-
-<hr />
-
-<p>These functions take start and end points and create display objects; <code>zencad.line</code> creates a geometric curve and serves a different purpose.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zencad.interactive.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">arrow</span><span class="p">,</span> <span class="n">line</span> <span class="k">as</span> <span class="n">display_line</span>
 
-<span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">arrow</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">red</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">display_line</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">green</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">arrow</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">display_line</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">green</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
+
+<p>Both functions accept start and end points. <code>width</code> sets line thickness; <code>arrlen</code> sets the arrowhead size. To draw a vector <code>vec</code> from a point <code>pnt</code>, use <code>arrow(pnt, pnt + vec)</code>.</p>
+
+<p>Here, <code>display_line</code> names the graphic function. The <code>line</code> function in the main ZenCad API creates a geometric curve.</p>
 </article>
 </div>
 </body>

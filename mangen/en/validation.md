@@ -38,7 +38,7 @@ show()
 
 Repairs defects using OpenCascade, creating a new shape. Validate the result: repair is not always possible.
 
-This example uses a 10 × 10 × 10 cube with an incorrectly oriented face. Download [box-reversed-face.brep](../files/box-reversed-face.brep) and place it beside the script:
+The example ([box-reversed-face.brep](../files/box-reversed-face.brep)) is a 10 × 10 × 10 cube with an incorrectly oriented face.
 
 ```python
 from pathlib import Path

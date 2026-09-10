@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,31 +52,31 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
 <article class="article"><h1 id="bounding-box">Bounding box</h1>
 
-<p>The bounding box is a minimal Ox, Oy, Oz-based box that describes the geometric shape shape.</p>
+<p>A bounding box is a box aligned with the X, Y and Z axes that encloses a geometric shape.</p>
 
 <hr />
 
 <h2 id="shapebbox">shape.bbox</h2>
 
-<p>Construct a bounding box based on the shape.</p>
+<p>Build a bounding box for a shape.</p>
 
-<p>Пример</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -84,7 +84,7 @@
 </code></pre>
 </div>
 
-<h2 id="fields">Fields.</h2>
+<h2 id="fields">Fields</h2>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">bbox</span><span class="o">.</span><span class="n">xmin</span>
@@ -96,15 +96,13 @@
 </code></pre>
 </div>
 
-<h2 id="methods">Methods.</h2>
+<h2 id="methods">Methods</h2>
 
-<p>bbox.xrange()
-bbox.yrange()
-bbox.zrange()</p>
+<p><code>bbox.xrange()</code>, <code>bbox.yrange()</code> and <code>bbox.zrange()</code> return coordinate ranges.</p>
 
-<h2 id="to-shape">To Shape.</h2>
+<h2 id="creating-a-box-shape">Creating a box shape</h2>
 
-<p>Пример</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -113,9 +111,9 @@ bbox.zrange()</p>
 </code></pre>
 </div>
 
-<h2 id="domain-values-and-evaluation">Domain values and evaluation</h2>
+<h2 id="dimensions-and-coordinates">Dimensions and coordinates</h2>
 
-<p><code>shape.boundbox()</code> and <code>shape.bbox()</code> return an axis-aligned <code>BoundaryBox</code>. Coordinates are <code>Scalar</code>; <code>minimum</code>/<code>maximum</code>/<code>center</code> are <code>Point3</code>; <code>size</code> is <code>Vector3</code>.</p>
+<p><code>shape.boundbox()</code> and <code>shape.bbox()</code> return an axis-aligned <code>BoundaryBox</code>. Coordinates are <code>Scalar</code> values; <code>minimum</code>, <code>maximum</code> and <code>center</code> are <code>Point3</code>; <code>size</code> is <code>Vector3</code>.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
@@ -127,7 +125,7 @@ bbox.zrange()</p>
 </code></pre>
 </div>
 
-<p><code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code>, <code>zmax</code> are properties; <code>xlength()</code>/<code>ylength()</code>/<code>zlength()</code> are methods. <code>.value()</code> returns a materialized record; <code>.native()</code> returns <code>Bnd_Box</code>. OCCT tolerances may slightly enlarge bounds, so compare dimensions with tolerance. Empty geometry needs explicit handling, rather than assuming a zero-sized box.</p>
+<p><code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code> and <code>zmax</code> are properties; <code>xlength()</code>, <code>ylength()</code> and <code>zlength()</code> are methods. <code>.value()</code> returns numerical bounds; <code>.native()</code> returns an OCP <code>Bnd_Box</code>. OCCT tolerances may slightly enlarge the bounds, so compare dimensions with a tolerance. Empty geometry needs separate handling; do not assume it has a zero-sized box.</p>
 </article>
 </div>
 </body>

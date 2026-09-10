@@ -1,18 +1,18 @@
 # Bounding box
 
-The bounding box is a minimal Ox, Oy, Oz-based box that describes the geometric shape shape.
+A bounding box is a box aligned with the X, Y and Z axes that encloses a geometric shape.
 
 ---
 ## shape.bbox
-Construct a bounding box based on the shape.
+Build a bounding box for a shape.
 
-Пример
+Example:
 ```python
 shp = sphere(10)
 bbox = shp.bbox()
 ```
 
-## Fields.
+## Fields
 ```python3
 bbox.xmin
 bbox.ymin
@@ -22,23 +22,20 @@ bbox.ymax
 bbox.zmax
 ```
 
-## Methods.
-bbox.xrange()
-bbox.yrange()
-bbox.zrange()
+## Methods
+`bbox.xrange()`, `bbox.yrange()` and `bbox.zrange()` return coordinate ranges.
 
-## To Shape.
-Пример
+## Creating a box shape
+Example:
 ```python
 shp = sphere(10)
 bbox = shp.bbox()
 disp(bbox.shape())
 ```
 
+## Dimensions and coordinates
 
-## Domain values and evaluation
-
-`shape.boundbox()` and `shape.bbox()` return an axis-aligned `BoundaryBox`. Coordinates are `Scalar`; `minimum`/`maximum`/`center` are `Point3`; `size` is `Vector3`.
+`shape.boundbox()` and `shape.bbox()` return an axis-aligned `BoundaryBox`. Coordinates are `Scalar` values; `minimum`, `maximum` and `center` are `Point3`; `size` is `Vector3`.
 
 ```python
 import zencad as z
@@ -49,4 +46,4 @@ record = bounds.value()
 print(record.minimum, record.maximum)
 ```
 
-`xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax` are properties; `xlength()`/`ylength()`/`zlength()` are methods. `.value()` returns a materialized record; `.native()` returns `Bnd_Box`. OCCT tolerances may slightly enlarge bounds, so compare dimensions with tolerance. Empty geometry needs explicit handling, rather than assuming a zero-sized box.
+`xmin`, `xmax`, `ymin`, `ymax`, `zmin` and `zmax` are properties; `xlength()`, `ylength()` and `zlength()` are methods. `.value()` returns numerical bounds; `.native()` returns an OCP `Bnd_Box`. OCCT tolerances may slightly enlarge the bounds, so compare dimensions with a tolerance. Empty geometry needs separate handling; do not assume it has a zero-sized box.

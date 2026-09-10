@@ -1,26 +1,26 @@
-# Boolean operations.
+# Boolean operations
 
-CSG geometry is operated on boolean operations. Zencad provides operations for joining, subtracting and intersecting 3d and 2d objects. There are two groups of these operations in zencad:
+CSG geometry relies on Boolean operations. ZenCad provides union, difference and intersection for 3D and 2D objects, in two forms:
 
-* over arrays of bodies using the functions _union_, _difference_, _intersect_
-* over pairs of bodies using the operators _ + _ _-_ _ ^ _
+* functions _union_, _difference_ and _intersect_ for arrays of shapes;
+* operators _+_, _-_ and _^_ for pairs of shapes.
 
 >! Note:
->! Do not attempt to boolean a compound line from simple lines or sew a shell from faces. For these manipulations, there are special stitching procedures outlined in the relevant sections. 
+>! To join simple curves into a composite wire or sew faces into a shell, use the dedicated stitching operations described in the corresponding sections.
 
 ---
-## Union.
+## Union
 
-Сигнатура:
+Signature:
 ```python
-# Функция:
+# Function:
 result = union(array)
 
-# Оператор:
+# Operator:
 result = shp0 + shp1
 ```
 
-Пример:
+Example:
 ```python
 #with operators:
 sphere(r=10) + cylinder(r=5, h=10, center=True) + cylinder(r=5, h=10, center=True).rotateX(deg(90))
@@ -32,21 +32,21 @@ union([
 	cylinder(r=5, h=10, center=True).rotateX(deg(90))
 ])
 ```
-![](../images/generic/union.png) ![](../images/generic/union0.png)   </br>
-![](../images/generic/union1.png) ![](../images/generic/union2.png)  
+![](../images/generic/union.png) ![](../images/generic/union0.png) </br>
+![](../images/generic/union1.png) ![](../images/generic/union2.png)
 
 ---
-## Difference.
-Сигнатура:
+## Difference
+Signature:
 ```python
-# Функция:
+# Function:
 result = difference(array)
 
-# Оператор:
+# Operator:
 result = shp0 - shp1
 ```
 
-Пример:
+Example:
 ```python
 #with operators:
 sphere(r=10) - cylinder(r=5, h=10, center=True) - cylinder(r=5, h=10, center=True).rotateX(deg(90))
@@ -58,22 +58,22 @@ difference([
 	cylinder(r=5, h=10, center=True).rotateX(deg(90))
 ])
 ```
-![](../images/generic/difference.png) ![](../images/generic/difference0.png)   </br>
-![](../images/generic/difference1.png) ![](../images/generic/difference2.png)  
+![](../images/generic/difference.png) ![](../images/generic/difference0.png) </br>
+![](../images/generic/difference1.png) ![](../images/generic/difference2.png)
 
 ---
-## Intersect.
+## Intersection
 
-Сигнатура:
+Signature:
 ```python
-# Функция:
+# Function:
 result = intersect(array)
 
-# Оператор:
+# Operator:
 result = shp0 ^ shp1
 ```
 
-Пример:
+Example:
 ```python
 #with operators:
 sphere(r=10) ^ cylinder(r=5, h=10, center=True) ^ cylinder(r=5, h=10, center=True).rotateX(deg(90))
@@ -85,34 +85,34 @@ intersect([
 	cylinder(r=5, h=10, center=True).rotateX(deg(90))
 ])
 ```
-![](../images/generic/intersect.png) ![](../images/generic/intersect0.png)   </br>
-![](../images/generic/intersect1.png) ![](../images/generic/intersect2.png)  
+![](../images/generic/intersect.png) ![](../images/generic/intersect0.png) </br>
+![](../images/generic/intersect1.png) ![](../images/generic/intersect2.png)
 
 ---
-## Crossing shells.
-Let's twin the operation _intersect_, which calculates the intersection of the shells of bodies. 
+## Shell intersection
+A relative of _intersect_ that computes the intersection of the solids' shells.
 
-Сигнатура:
+Signature:
 ```python
-# Функция:
+# Function:
 result = section(a, b)
 ```
 
-Пример:
+Example:
 ```python
 m0 = section(box(10, center=True) - sphere(4))
 m1 = section(box(10, center=True), sphere(7))
 
 ```
 ![](../images/generic/section0.png)
-![](../images/generic/section1.png)   
+![](../images/generic/section1.png)
 
 ---
-## Splitting and slicing by a plane.
+## Splitting and slicing with a plane
 
-`split(body, tools)` partitions a body with Shape tools; `slice(body, z=..., axis=...)` uses one plane. Both return collections of solids and retain uncut bodies. An empty set of tools for `split` raises `ValueError`.
+`split(body, tools)` splits a solid with Shape tools; `slice(body, z=..., axis=...)` uses a single plane. Both return collections of solid parts and preserve uncut solids. An empty tool collection for `split` raises `ValueError`.
 
-The parts returned by `slice` are ordered along the plane normal. With two parts, unpack the result as `lower, upper`. See [Splitting bodies](split.html) for details and examples.
+`slice` orders its parts along the plane normal. A two-part result can be unpacked as `lower, upper`. See [Splitting solids](split.html) for details and examples.
 
 ```python
 parts = split(box(10), (infplane().up(3), infplane().up(7)))
@@ -123,10 +123,10 @@ negative, positive = slice(box(10), plane=((0, 5, 0), (0, 1, 0)))
 ```
 
 ---------------------------------------------
-## Boolean operations on 2D solids.
-Just like with 3D objects, the above operations can be applied to 2D objects as long as they are in the same plane. 
+## Boolean operations on 2D shapes
+The same operations apply to two-dimensional objects as long as they lie in the same plane.
 
-Пример:
+Example:
 ```python
 m0 = circle(10) - square(10)
 m1 = circle(10) + square(10)

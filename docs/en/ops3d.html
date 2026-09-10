@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,36 +52,36 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="reference-geometry">Reference geometry</h1>
+<article class="article"><h1 id="geometry-from-existing-shapes">Geometry from existing shapes</h1>
 
 <hr />
 
 <h2 id="offset">Offset</h2>
 
-<p>By displacing the shells, builds a thickened / thinned body based on the prototype <em>proto</em> and the radius of the thickening <em>r</em>. If <em>r</em> is positive, the shell is shifted outward, if negative - inward. </p>
+<p>Builds a thicker or thinner version of <em>proto</em> by offsetting its shells by <em>r</em>. A positive <em>r</em> offsets outward; a negative <em>r</em> offsets inward.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">offset</span><span class="p">(</span><span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">r2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">h</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
@@ -94,16 +94,16 @@
 
 <h2 id="ruled-surface">Ruled surface</h2>
 
-<p>Draws a face defined by a ruled surface based on the lines <em>a</em>, <em>b</em>. </p>
+<p>Builds a face on a ruled surface between curves <em>a</em> and <em>b</em>.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">ruled</span><span class="p">(</span><span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
@@ -115,23 +115,23 @@
 </code></pre>
 </div>
 
-<p><img src="../images/generic/ruled0.png" alt="" /> <img src="../images/generic/ruled1.png" alt="" />   </br>
+<p><img src="../images/generic/ruled0.png" alt="" /> <img src="../images/generic/ruled1.png" alt="" /> </br>
 <img src="../images/generic/ruled2.png" alt="" /> <img src="../images/generic/ruled3.png" alt="" /></p>
 
 <hr />
 
-<h2 id="binding">Binding</h2>
+<h2 id="loft">Loft</h2>
 
-<p>Constructing a shell on the <em>profiles</em> wireframe array. When the <em>shell</em> option is activated, a shell is built instead of a solid body. Activating the <em>smooth</em> option changes the ruled surface mode to a smooth approximation. When approximation is active, the <em>maxdegree</em> option limits the maximum degree of the polynomial.</p>
+<p>Builds a shape through an array of wire <em>profiles</em>. The <em>shell</em> option creates a shell instead of a solid. The <em>smooth</em> option switches from ruled surfaces to smooth approximation. When approximation is enabled, <em>maxdegree</em> limits the polynomial degree.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">loft</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxdegree</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">profiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">circle</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">circle</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
@@ -141,11 +141,11 @@
 </code></pre>
 </div>
 
-<p><img src="../images/generic/loft0.png" alt="" /> <img src="../images/generic/loft1.png" alt="" />  </br>
-<img src="../images/generic/loft2.png" alt="" /> <img src="../images/generic/loft3.png" alt="" />  </br>
-<img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" />  </p>
+<p><img src="../images/generic/loft0.png" alt="" /> <img src="../images/generic/loft1.png" alt="" /> </br>
+<img src="../images/generic/loft2.png" alt="" /> <img src="../images/generic/loft3.png" alt="" /> </br>
+<img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" /></p>
 
-<p><code>loft(..., shell=False)</code> returns <code>Solid</code> and requires closed profiles to construct a valid body. Use <code>shell=True</code> for open profiles; the result is <code>Shell</code>. An open profile with <code>shell=False</code> raises <code>ValueError</code> identifying the profile. This check runs when the operation is evaluated; use <code>result.validate()</code> to detect other geometry defects.</p>
+<p><code>loft(..., shell=False)</code> returns a <code>Solid</code> and requires closed profiles to build a valid solid. For open profiles, use <code>shell=True</code> to get a <code>Shell</code>. An open profile with <code>shell=False</code> raises <code>ValueError</code> identifying the profile. This check runs when the operation is evaluated; use <code>result.validate()</code> to check for other geometry defects.</p>
 </article>
 </div>
 </body>

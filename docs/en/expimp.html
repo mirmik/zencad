@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,124 +52,98 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="export-import">Export Import</h1>
+<article class="article"><h1 id="export-and-import">Export and import</h1>
 
-<p>Export/import operations differ from most operations of the zencad library in that they operate not only on objects in program memory, but also on files.</p>
-
-<hr />
-
-<h2 id="stl">STL</h2>
-
-<p>Create an STL mesh file located in the path from the solid model model.
-The <code>delta</code> parameter determines the granularity. The smaller the delta, the smaller the size of the polygons.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">to_stl</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Importing SMALL stl and other mesh mesh formats is possible using third-party libraries such as trimesh. (see examples / Integration / trimesh)</p>
-
-<hr />
-
-<p>Create a brep file of the BREP format located in the path <code>path</code> from the solid model<code>model</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">to_brep</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Read the brep file of the BREP format located in the path <code>path</code>. Return the resulting model.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">from_brep</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<hr />
-
-<h2 id="svg">SVG</h2>
-
-<p>("0.34.0: Currently limited support. Not all curve types are supported.")</p>
-
-<p>Create / read svg file from flat body <code>model</code>, located on path<code>path</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">to_svg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Create / read svg string of flat body representation <code>model</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">svg</span> <span class="o">=</span> <span class="n">to_svg_string</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg_string</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<h2 id="stl-step-and-3mf-export">STL, STEP and 3MF export</h2>
-
-<p>Export is an explicit evaluation boundary: the shape is materialized, validated and written. Qt and <code>show()</code> are not required.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">part</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_stl</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.stl&quot;</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.step&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_3mf</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.3mf&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bracket&quot;</span><span class="p">)</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
-<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">stream</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;ISO-10303-21&quot;</span><span class="p">)</span>
-</code></pre>
-</div>
+<p>Export evaluates geometry and writes a file; neither <code>show()</code> nor the graphical interface is needed.</p>
 
 <table>
 <thead>
 <tr>
   <th>Format</th>
   <th>Stored data</th>
+  <th>Write</th>
+  <th>Read</th>
 </tr>
 </thead>
 <tbody>
 <tr>
   <td>STL</td>
-  <td>Triangle mesh; no unit metadata, so coordinates are scaled</td>
+  <td>Triangle mesh without units</td>
+  <td><code>export_stl</code></td>
+  <td>Through third-party libraries such as trimesh</td>
 </tr>
 <tr>
   <td>STEP</td>
-  <td>Exact BREP geometry and units; ISO-10303-21 text</td>
+  <td>Exact BREP geometry and units</td>
+  <td><code>export_step</code></td>
+  <td>No</td>
 </tr>
 <tr>
   <td>3MF</td>
-  <td>Mesh, units and metadata; binary ZIP container</td>
+  <td>Mesh, units and metadata</td>
+  <td><code>export_3mf</code></td>
+  <td>No</td>
 </tr>
 <tr>
   <td>BREP</td>
-  <td>Native OCCT geometry through <code>to_brep</code>/<code>from_brep</code></td>
+  <td>OpenCascade geometry</td>
+  <td><code>to_brep</code></td>
+  <td><code>from_brep</code></td>
+</tr>
+<tr>
+  <td>SVG</td>
+  <td>Planar geometry, limited support</td>
+  <td><code>to_svg</code></td>
+  <td><code>from_svg</code></td>
 </tr>
 </tbody>
 </table>
 
-<p>STL/STEP/3MF accept a path or binary stream with <code>write(bytes)</code>. Units include <code>mm</code>, <code>cm</code>, <code>m</code>, <code>um</code>, <code>in</code>, <code>ft</code> and their full names. Internal geometry uses millimetres. <code>linear_tolerance</code> and <code>angular_tolerance</code> control STL/3MF meshing; STEP requires no tessellation. Linear tolerance uses export units.</p>
+<h2 id="stl-step-and-3mf">STL, STEP and 3MF</h2>
 
-<p>Invalid shapes raise <code>ShapeValidationError</code>; write failures raise <code>OSError</code> with format and destination context. <code>to_stl(shape, path, delta)</code> remains an ASCII compatibility facade returning <code>True</code> on success.</p>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">part</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_stl</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.stl&quot;</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.step&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_3mf</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;part.3mf&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bracket&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Exporters interpret source coordinates as millimetres. <code>unit</code> selects the file units: <code>mm</code>, <code>cm</code>, <code>m</code>, <code>um</code>, <code>in</code>, <code>ft</code> or their full names. For example, with <code>unit="cm"</code>, a dimension of 20 is written as 2 centimetres. STL stores no unit metadata: only the coordinate scale changes.</p>
+
+<p><code>linear_tolerance</code> and <code>angular_tolerance</code> control STL/3MF mesh detail. Linear tolerance uses the file units; a smaller tolerance produces a finer mesh. STEP does not require triangulation.</p>
+
+<p>A binary stream can be passed instead of a path:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<span class="n">z</span><span class="o">.</span><span class="n">export_step</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">stream</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;ISO-10303-21&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Invalid shapes raise <code>ShapeValidationError</code>; write failures raise <code>OSError</code>. <code>to_stl(model, path, delta)</code> is a shorthand for ASCII STL export; <code>delta</code> controls mesh detail, and success returns <code>True</code>.</p>
+
+<h2 id="brep">BREP</h2>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
@@ -180,7 +154,20 @@ The <code>delta</code> parameter determines the granularity. The smaller the del
 </code></pre>
 </div>
 
-<p>SVG uses <code>to_svg</code>/<code>to_svg_string</code> and <code>from_svg</code>/<code>from_svg_string</code>. STEP/3MF export does not imply matching import support. <a href="../development/export-formats.md">Full export contract</a>.</p>
+<h2 id="svg">SVG</h2>
+
+<p>For files, use <code>to_svg(model, path)</code> and <code>from_svg(path)</code>. For strings, use <code>to_svg_string(model)</code> and <code>from_svg_string(svg)</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">svg</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">to_svg_string</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">restored</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">from_svg_string</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+<span class="n">restored</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>SVG works with planar geometry; not all curve types are supported. An example of importing a low-polygon STL through trimesh is in <code>zencad/examples/Integration/trimesh</code>. <a href="../development/export-formats.md">Export details</a>.</p>
 </article>
 </div>
 </body>

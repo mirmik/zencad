@@ -1,20 +1,20 @@
-# Lines and loops.
+# Lines and loops
 
-In many cases, three-dimensional and flat primitives are not enough to build the required geometry. Advanced operations, from among those that are found in this tutorial, allow you to create geometric bodies based on arbitrary lines.
+Solid and planar primitives are not always enough to build the geometry you need. The more advanced operations in this manual can construct bodies from arbitrary curves.
 
-In _ZenCad_ (and the opencascade geometric kernel), there are two classes of one-dimensional geometric solids - _Edge_ and _Wire_. _Edge_ is a simple primitive. Combining multiple Edges into a single compound curve results in a Wire object. Typically, _ZenCad_, _Wire_, and _Edge_ can be used interchangeably, but when analyzing a model using reflection, this difference can be significant.
+_ZenCad_ and the OpenCascade kernel have two classes of one-dimensional geometry: _Edge_ and _Wire_. An _Edge_ is a simple primitive; joining several edges into a composite curve produces a _Wire_. They can often be used interchangeably, but the distinction matters when inspecting a model's topology.
 
-The _Wire_ and / or _Edge_ set can be connected to a complex curve using the _sew_ function (More details later in this section).
+A collection of _Wire_ and/or _Edge_ objects can be joined with _sew_ (described below).
 
-Closed curves are called cycles. If the curve (all compound curves) of the cycle lies in the same plane, then such a cycle can be converted into a face (Face) using the _fill_ function (see the section "Plane primitives".).
+Closed curves are called loops. If a loop and all its constituent curves lie in one plane, _fill_ can turn it into a face (see "Planar primitives").
 
-Some additional operations when working with curves are described in the "Curve Analysis" section.
+Additional operations are described in "Curve analysis".
 
 ---
 ## Segment
-An ordinary segment, specified by two points.
+An ordinary line segment, specified by two points.
 
-Сигнатура:
+Signature:
 ```python
 segment(pnt1, pnt2)
 ```
@@ -22,19 +22,19 @@ segment(pnt1, pnt2)
 
 ---
 ## Polysegment
-Polysegment is a broken line. Set by an array of points. Setting the closed flag adds a polyline segment from the end point to the start point. `pnts` is an array of points.
+A polysegment is a polyline specified by an array of points, `pnts`. Setting `closed` adds a segment from the final point back to the first.
 
-Сигнатура:
+Signature:
 ```python
 polysegment(pnts, closed=False)
 ```
-![](../images/generic/polysegment0.png) ![](../images/generic/polysegment1.png)  
+![](../images/generic/polysegment0.png) ![](../images/generic/polysegment1.png)
 
 ---
-## Point Interpolation
-Tool for constructing an interpolated curve passing through a set of _pnts_ points. Using the optional _tangs_ parameter at each point, you can set the direction in which the curve will pass through the point (`None` leaves the tangent unconstrained). Setting the `closed` flag adds a trailing portion of the curve.
+## Interpolation through points
+Builds an interpolated curve through _pnts_. The optional _tangs_ parameter specifies a tangent direction at each point (`None` leaves it unconstrained). Setting `closed` adds a closing curve segment.
 
-Сигнатура:
+Signature:
 ```python
 interpolate(pnts, tangs=None, closed=False)
 ```
@@ -42,20 +42,20 @@ interpolate(pnts, tangs=None, closed=False)
 ![](../images/generic/interpolate2.png) ![](../images/generic/interpolate3.png)
 
 ---
-## Arc of a circle with three points
-This method represents an alternative to _circle_ (see [Plane Primitives](prim2d.html)) method of generating a circular arc from three points. 
+## Circular arc through three points
+An alternative to _circle_ (see [Planar primitives](prim2d.html)) for creating a circular arc, using three points.
 
-Сигнатура:
+Signature:
 ```python
 circle_arc(p1, p2, p3) 
 ```
 ![](../images/generic/circle_arc0.png)
 
 ---
-## Upward spiral
-An upward spiral. It is set by the radius _r_, the height _h_ and the step of the loop _step_. When setting the option _left_, it changes the right winding to the left one. When setting the optional parameter _angle_, the radius changes with the change of height according to the conical law. 
+## Helix
+An ascending helix specified by radius _r_, height _h_ and pitch _step_. Setting _left_ changes right-handed winding to left-handed winding. The optional _angle_ makes the radius vary with height along a cone.
 
-Сигнатура:
+Signature:
 ```python
 helix(r, h, step, angle=angle, left=False)
 ```
@@ -63,38 +63,49 @@ helix(r, h, step, angle=angle, left=False)
 ![](../images/generic/helix2.png) ![](../images/generic/helix3.png)
 
 ---
-## Bezier Curve
-Bezier curve ([wiki](https://en.wikipedia.org/wiki/B%C3%A9zier_curve)).
-Defined by an array of control points and an array of weights (optional).
-If weights are not specified, all weights are considered equal to one. 
+## Bézier curve
+A Bézier curve ([wiki](https://en.wikipedia.org/wiki/B%C3%A9zier_curve)), specified by control points and optional weights. Omitted weights are all one.
 
-Сигнатура:
+Signature:
 ```python
 bezier(pnts)
 bezier(pnts, weights)
 ```
-![](../images/generic/bezier0.png) ![](../images/generic/bezier1.png)  
+![](../images/generic/bezier0.png) ![](../images/generic/bezier1.png)
 
 ---
 ## BSpline
+Creates a BSpline by specifying its parameters directly.
 
-Сигнатура:
+Signature:
 ```python
 bspline(pnts, knots, muls, degree, periodic=False)
 bspline(pnts, knots, muls, degree, weights=weights, check_rational=True)
 ```
 
+`knots` gives parameter values; `muls` gives their multiplicities. For example, a cubic curve with four control points and clamped endpoints:
+
+```python
+from zencad import *
+
+curve = bspline(
+    [(0, 0, 0), (10, 20, 0), (20, -10, 0), (30, 0, 0)],
+    knots=[0, 1], muls=[4, 4], degree=3,
+)
+display(curve)
+show()
+```
+
 ---
 ## Rounded polysegment
-Unlike a polysegment, it creates sections of a circle at the mating points of the segments. The _r_ variable sets the radius of the fillets. Can be used in conjunction with the pipe_shell operation (see kinematic surfaces).
-The closed option allows you to close the curve and create a rounded segment at the junction. 
+Adds circular arcs at the joins between line segments. _r_ sets the fillet radius. It can be used with `pipe_shell` (see sweep surfaces). Setting `closed` closes the curve with a rounded join.
 
-Сигнатура:
+Signature:
 ```python
 rounded_polysegment(pnts, r, closed=False)
 ```
 
-Пример:
+Example:
 ```python
 rounded_polysegment(
 	pnts=[(0,0,0), (20,0,0), (20,20,40), (-40,20,40), (-40,20,0)], 
@@ -103,21 +114,20 @@ rounded_polysegment(
 
 ![](../images/generic/rounded_polysegment0.png)
 
-
 ---
-## Creating a complex curve
-The _sew_ operation assembles a complex line from an array of _wires_ pieces.
+## Creating a composite curve
+_sew_ assembles a composite curve from the parts in _wires_.
 
-Objects of types Edge and Wire can act as elements of the _wires_ array ([see geometric types](https://mirmik.github.io/zencad/ru/geomcore.html))
+The parts can be Edge and Wire objects ([geometric types](https://mirmik.github.io/zencad/en/geomcore.html)).
 
-Requirements. Parts of the line must necessarily border on each other. The order should not be out of order. If the _sort_ argument is set, the algorithm will try to automatically sort the incoming lines in the correct order. 
+Parts must meet at their endpoints and follow the correct order. If _sort_ is set, the algorithm attempts to order them automatically.
 
-Сигнатура:
+Signature:
 ```python
 sew(wires, True) # sort is positional; default: True
 ```
 
-Пример:
+Example:
 ```python
 sew([
 	segment((0,0,0), (0,10,0)), 
@@ -128,23 +138,21 @@ sew([
 ```
 ![](../images/generic/fill0.png)
 
-
-
 ---
-# Complex curve constructor
-Tool for sequential construction of curve sections. Performing operations, constructs edges from the exit point of the previous edge. Each operation can be performed in absolute and relative modes. In relative mode, the coordinates of the anchor points are added to the last current coordinate of the constructor. The choice of the mode is carried out by the _rel_ flag. False is absolute, True is relative. If no flag is declared, the _defrel_ value is used.
+# Wire builder
+Builds a curve one section at a time, starting each edge at the previous edge's endpoint. Operations accept absolute or relative coordinates. In relative mode, control-point coordinates are added to the builder's current position. _rel_ selects the mode: False for absolute, True for relative. If omitted, _defrel_ is used.
 
-Constructor arguments:
-_start_ - starting point
-_defrel_ - default mode 
+Constructor arguments:<br>
+_start_ — starting point<br>
+_defrel_ — default coordinate mode
 
 ```python
 wb = wire_builder(start=(0,0,0), defrel=False)
 ``` 
 
 ---
-### Reinitialization:
-Reloads the instrument from a new point. Resets the list of edges. 
+### Restarting
+Restarts at a new point and clears the edge list.
 ```python
 wb.restart(pnt, y=None, z=None)
 ```
@@ -155,8 +163,8 @@ wb.restart(10,15)
 ```
 
 ---
-### Drawing a line segment:
-Draws a segment to the point _pnt_. 
+### Adding a segment
+Builds a segment to _pnt_.
 ```python
 wb.segment(pnt, y=None, z=None, rel=None)
 wb.line(b, y=None, z=None, rel=None)
@@ -165,28 +173,44 @@ wb.l(b, y=None, z=None, rel=None)
 ```
 
 ```python
-wire_builder(defrel=True).restart((0,10)).l(10,0).l(0,-10).close().doit() # рисуем квадрат
+wire_builder(defrel=True).restart((0,10)).l(10,0).l(0,-10).close().doit() # draw a square
 ```
 ![](../images/generic/wb_segment0.png)
 
 -----
-### Draw a circular arc by points: 
+### Adding a circular arc through points
 ```python
 wb.arc_by_points(a,b,rel=None)
 ```
 
-
 ---
-### Plotting an interpolation curve by points:
-_curtang_ allows you to set the direction of the curve at the starting point.
-Setting the _approx_ option calculates _curtang_ to the direction of the curve at the end of the last leg.
+### Adding an interpolated curve
+_curtang_ sets the curve direction at the starting point. Setting _approx_ derives _curtang_ from the direction at the end of the preceding section.
 ```python
 wb.interpolate(pnts, tangs=None, curtang=(0,0,0), approx=False, rel=None)
 ```
 
-### Closure
-_close_ builds a section of the curve up to the starting point. _approx\_a_, _approx\_b_ allow for interpolation at snapping points.
+### Closing
+_close_ builds a section back to the starting point. `approx_a` and `approx_b` enable interpolation at the closing joins.
 
 ```python
 wb.close(approx_a=False, approx_b=False)
+```
+
+## The finished contour
+
+`.doit()` returns the constructed `Wire`. The contour can be filled and extruded into a body:
+
+```python
+from zencad import *
+
+contour = (wire_builder(start=(0, 0, 0))
+           .segment((30, 0, 0))
+           .arc_by_points((40, 10, 0), (30, 20, 0))
+           .segment((0, 20, 0))
+           .close()
+           .doit())
+body = fill(contour).extrude(5)
+display(body)
+show()
 ```

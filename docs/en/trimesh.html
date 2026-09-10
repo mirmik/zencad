@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,31 +52,29 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="triangulation-and-mesh">Triangulation and mesh</h1>
+<article class="article"><h1 id="triangulation-and-meshes">Triangulation and meshes</h1>
 
-<p>Functions for working with polygonal representation.</p>
+<p>Functions for working with polygonal representations.</p>
 
 <hr />
 
-<h2 id="displayable-mesh">Displayable mesh</h2>
+<h2 id="displaying-a-mesh">Displaying a mesh</h2>
 
-<p><code>Shape.to_mesh()</code> builds an indexed <code>MeshData</code> triangle mesh. The mesh can be
-passed directly to <code>disp</code>; the viewer renders it through <code>AIS_Triangulation</code>
-without converting every triangle into a B-Rep face.</p>
+<p><code>Shape.to_mesh()</code> builds an indexed triangle mesh, <code>MeshData</code>. Pass it directly to <code>disp</code>: the viewer displays the mesh without converting triangles into BREP faces.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">torus</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -87,32 +85,26 @@ without converting every triangle into a B-Rep face.</p>
 </code></pre>
 </div>
 
-<p>The default is <code>shaded_with_edges</code>: a shaded surface with all triangle edges.
-The display mode can be selected when displaying the mesh:</p>
+<p>The default mode is <code>shaded_with_edges</code>: a shaded surface with all triangle edges visible. Choose a mode when displaying the mesh:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded_with_edges&quot;</span><span class="p">)</span>  <span class="c1"># поверхность и рёбра</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded&quot;</span><span class="p">)</span>             <span class="c1"># только поверхность</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;wireframe&quot;</span><span class="p">)</span>          <span class="c1"># только рёбра</span>
+<pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded_with_edges&quot;</span><span class="p">)</span>  <span class="c1"># surface and edges</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded&quot;</span><span class="p">)</span>             <span class="c1"># surface only</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;wireframe&quot;</span><span class="p">)</span>          <span class="c1"># edges only</span>
 </code></pre>
 </div>
 
-<p>The mode of an already displayed object can be changed with
-<code>controller.set_mesh_display_mode(...)</code>.</p>
-
-<p><code>MeshData</code> contains <code>positions</code>, <code>normals</code>, <code>triangles</code>, and
-<code>triangle_face_ids</code>. <code>linear_deflection</code> and <code>angular_deflection</code> control
-detail, while <code>crease_angle</code> determines where normals remain split across
-sharp edges.</p>
+<p>For an object already displayed, use <code>controller.set_mesh_display_mode(...)</code>.</p>
 
 <hr />
 
-<h2 id="triangulation">Triangulation</h2>
+<h2 id="mesh-data">Mesh data</h2>
 
-<p>Materializing a polygonal mesh provides arrays in the format (<em>nodes</em>, <em>triangles</em>), where <em>pnts</em> is an array of points, and <em>triangles</em> is an array of 3-tuples, indices of points.
-The <em>deflection</em> parameter is responsible for resolving the splitting.</p>
+<p><code>Shape.to_mesh(linear_deflection, angular_deflection=...)</code> returns <code>MeshData</code>. Smaller deflection produces a more detailed mesh; <code>crease_angle</code> sets the angle at which adjacent triangle normals are split to preserve sharp edges.</p>
 
-<p>Сигнатура:</p>
+<p><code>positions</code> contains vertex coordinates; <code>normals</code> contains normals; <code>triangles</code> contains triples of vertex indices; <code>triangle_face_ids</code> maps triangles to the original shape's faces.</p>
+
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">mesh</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">deflection</span><span class="p">)</span>
@@ -120,7 +112,7 @@ The <em>deflection</em> parameter is responsible for resolving the splitting.</p
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -135,20 +127,39 @@ The <em>deflection</em> parameter is responsible for resolving the splitting.</p
 </code></pre>
 </div>
 
+<h3 id="numpy-and-ocp">NumPy and OCP</h3>
+
+<p>The mesh is computed when its data is requested. <code>.value()</code> returns numerical data and counts, <code>.to_numpy()</code> returns NumPy arrays, and <code>.native()</code> returns a <code>Poly_Triangulation</code> for OCP.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">vertex_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">triangle_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="n">arrays</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">arrays</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="n">native</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">native</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>Changing the returned arrays does not alter the original shape. A mesh approximates the geometry. <a href="expimp.html">STL/3MF</a> export can be called without building the mesh manually.</p>
+
 <hr />
 
-<h2 id="polyhedrone">Polyhedrone</h2>
+<h2 id="polyhedron">Polyhedron</h2>
 
-<p>A solid consisting of flat faces, specified by vertex points <em>pnts</em> and an array of tuples of indices of points defining the faces.</p>
+<p>A solid made of planar faces, specified by vertex points <em>pnts</em> and tuples of vertex indices defining each face.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -164,17 +175,15 @@ The <em>deflection</em> parameter is responsible for resolving the splitting.</p
 
 <h2 id="convex-hull">Convex hull</h2>
 
-<p>Construction of the convex hull of a set of points.
-The scipy.spatial.ConvexHull procedure is used</p>
+<p>Builds the convex hull of a point set using <code>scipy.spatial.ConvexHull</code>.</p>
 
-<p><em>convex</em>hull_ computes an array of convex hull polygon point indices.
-<em>convex</em>hull<em>shape</em> builds a convex hull using the <em>polyhedron</em> procedure.</p>
+<p><em>convex</em>hull_ computes the point-index arrays of the hull's polygons. <em>convex</em>hull<em>shape</em> builds the hull using <em>polyhedron</em>.</p>
 
 <p>Options:
-<em>incremental</em> and <em>qhull</em>options_ are scipy.spatial.ConvexHull options (see scipy documentation).
-<em>shell</em> - create a shell instead of a body.</p>
+<em>incremental</em> and <em>qhull</em>options_ are options of <code>scipy.spatial.ConvexHull</code> (see the SciPy documentation).
+<em>shell</em> creates a shell instead of a solid.</p>
 
-<p>Сигнатура:</p>
+<p>Signature:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -182,7 +191,7 @@ The scipy.spatial.ConvexHull procedure is used</p>
 </code></pre>
 </div>
 
-<p>Пример:</p>
+<p>Example:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">pnts</span> <span class="o">=</span> <span class="n">points</span><span class="p">([</span>
@@ -199,25 +208,6 @@ The scipy.spatial.ConvexHull procedure is used</p>
 </div>
 
 <p><img src="../images/generic/convex_hull0.png" alt="" /></p>
-
-<h2 id="domain-values-and-evaluation">Domain values and evaluation</h2>
-
-<p><code>Shape.to_mesh()</code> returns typed <code>MeshData</code>, retaining the shape graph. Its materialized record contains positions, normals, triangle indices, face IDs and the number of dropped triangles.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">record</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
-<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">vertex_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
-<span class="k">assert</span> <span class="n">record</span><span class="o">.</span><span class="n">triangle_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
-<span class="n">arrays</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-<span class="k">assert</span> <span class="n">arrays</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
-<span class="n">native</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">native</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><code>mesh.positions</code> and <code>mesh.triangles</code> expose numeric tuples; <code>.to_numpy()</code> returns fresh mutable arrays; <code>.native()</code> returns <code>Poly_Triangulation</code>. These are explicit evaluation boundaries; changing an array does not change the source shape. A mesh approximates geometry rather than retaining exact BREP. For <a href="expimp.html">STL/3MF</a>, export directly without manually creating a mesh.</p>
 </article>
 </div>
 </body>

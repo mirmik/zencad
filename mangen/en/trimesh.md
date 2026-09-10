@@ -1,13 +1,11 @@
-# Triangulation and mesh
+# Triangulation and meshes
 
-Functions for working with polygonal representation.
+Functions for working with polygonal representations.
 
 ---
-## Displayable mesh
+## Displaying a mesh
 
-`Shape.to_mesh()` builds an indexed `MeshData` triangle mesh. The mesh can be
-passed directly to `disp`; the viewer renders it through `AIS_Triangulation`
-without converting every triangle into a B-Rep face.
+`Shape.to_mesh()` builds an indexed triangle mesh, `MeshData`. Pass it directly to `disp`: the viewer displays the mesh without converting triangles into BREP faces.
 
 ```python
 model = torus(30, 8) - box(60, 12, 12, center=True)
@@ -17,35 +15,30 @@ controller = disp(mesh, color=color.orange)
 show()
 ```
 
-The default is `shaded_with_edges`: a shaded surface with all triangle edges.
-The display mode can be selected when displaying the mesh:
+The default mode is `shaded_with_edges`: a shaded surface with all triangle edges visible. Choose a mode when displaying the mesh:
 
 ```python
-disp(mesh, display_mode="shaded_with_edges")  # поверхность и рёбра
-disp(mesh, display_mode="shaded")             # только поверхность
-disp(mesh, display_mode="wireframe")          # только рёбра
+disp(mesh, display_mode="shaded_with_edges")  # surface and edges
+disp(mesh, display_mode="shaded")             # surface only
+disp(mesh, display_mode="wireframe")          # edges only
 ```
 
-The mode of an already displayed object can be changed with
-`controller.set_mesh_display_mode(...)`.
-
-`MeshData` contains `positions`, `normals`, `triangles`, and
-`triangle_face_ids`. `linear_deflection` and `angular_deflection` control
-detail, while `crease_angle` determines where normals remain split across
-sharp edges.
+For an object already displayed, use `controller.set_mesh_display_mode(...)`.
 
 ---
-## Triangulation
-Materializing a polygonal mesh provides arrays in the format (_nodes_, _triangles_), where _pnts_ is an array of points, and _triangles_ is an array of 3-tuples, indices of points.
-The _deflection_ parameter is responsible for resolving the splitting.
+## Mesh data
 
-Сигнатура:
+`Shape.to_mesh(linear_deflection, angular_deflection=...)` returns `MeshData`. Smaller deflection produces a more detailed mesh; `crease_angle` sets the angle at which adjacent triangle normals are split to preserve sharp edges.
+
+`positions` contains vertex coordinates; `normals` contains normals; `triangles` contains triples of vertex indices; `triangle_face_ids` maps triangles to the original shape's faces.
+
+Signature:
 ```python
 mesh = shp.to_mesh(deflection)
 nodes, triangles = mesh.positions, mesh.triangles
 ```
 
-Пример:
+Example:
 ```python
 m=sphere(10)
 mesh = m.to_mesh(0.1)
@@ -59,16 +52,34 @@ print("first_five_triangles:", triangles[:5])
 
 ```
 
------------------------------
-## Polyhedrone
-A solid consisting of flat faces, specified by vertex points _pnts_ and an array of tuples of indices of points defining the faces.
+### NumPy and OCP
 
-Сигнатура:
+The mesh is computed when its data is requested. `.value()` returns numerical data and counts, `.to_numpy()` returns NumPy arrays, and `.native()` returns a `Poly_Triangulation` for OCP.
+
+```python
+import zencad as z
+
+mesh = z.box(10).to_mesh(0.5)
+record = mesh.value()
+assert record.vertex_count > 0
+assert record.triangle_count > 0
+arrays = mesh.to_numpy()
+assert arrays.positions.shape[1] == 3
+native = mesh.native()
+```
+
+Changing the returned arrays does not alter the original shape. A mesh approximates the geometry. [STL/3MF](expimp.html) export can be called without building the mesh manually.
+
+-----------------------------
+## Polyhedron
+A solid made of planar faces, specified by vertex points _pnts_ and tuples of vertex indices defining each face.
+
+Signature:
 ```python
 polyhedron(pnts, faces, shell=False)
 ```
 
-Пример:
+Example:
 ```python
 m=sphere(10)
 mesh = m.to_mesh(0.1)
@@ -79,23 +90,21 @@ disp(polyhedron(nodes, triangles))
 
 ----------------------------------------------
 ## Convex hull
-Construction of the convex hull of a set of points.
-The scipy.spatial.ConvexHull procedure is used
+Builds the convex hull of a point set using `scipy.spatial.ConvexHull`.
 
-_convex_hull_ computes an array of convex hull polygon point indices.
-_convex_hull_shape_ builds a convex hull using the _polyhedron_ procedure.
+_convex_hull_ computes the point-index arrays of the hull's polygons. _convex_hull_shape_ builds the hull using _polyhedron_.
 
 Options:
-_incremental_ and _qhull_options_ are scipy.spatial.ConvexHull options (see scipy documentation).
-_shell_ - create a shell instead of a body.
+_incremental_ and _qhull_options_ are options of `scipy.spatial.ConvexHull` (see the SciPy documentation).
+_shell_ creates a shell instead of a solid.
 
-Сигнатура:
+Signature:
 ```python
 convex_hull(pnts, incremental=False, qhull_options=None)
 convex_hull_shape(pnts, shell=False, incremental=False, qhull_options=None)
 ```
 
-Пример:
+Example:
 ```python
 pnts = points([
 	( 0,  0,  0),
@@ -110,22 +119,3 @@ disp(convex_hull_shape(pnts))
 ```
 
 ![](../images/generic/convex_hull0.png)
-
-
-## Domain values and evaluation
-
-`Shape.to_mesh()` returns typed `MeshData`, retaining the shape graph. Its materialized record contains positions, normals, triangle indices, face IDs and the number of dropped triangles.
-
-```python
-import zencad as z
-
-mesh = z.box(10).to_mesh(0.5)
-record = mesh.value()
-assert record.vertex_count > 0
-assert record.triangle_count > 0
-arrays = mesh.to_numpy()
-assert arrays.positions.shape[1] == 3
-native = mesh.native()
-```
-
-`mesh.positions` and `mesh.triangles` expose numeric tuples; `.to_numpy()` returns fresh mutable arrays; `.native()` returns `Poly_Triangulation`. These are explicit evaluation boundaries; changing an array does not change the source shape. A mesh approximates geometry rather than retaining exact BREP. For [STL/3MF](expimp.html), export directly without manually creating a mesh.

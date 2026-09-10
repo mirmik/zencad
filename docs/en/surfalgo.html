@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,46 +52,104 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="classes-of-surfaces">Classes of surfaces.</h1>
+<article class="article"><h1 id="surface-analysis">Surface analysis</h1>
 
-<hr />
+<p><code>Surface</code> describes a surface; <code>Face</code> is a bounded region on it. For example, the side face of a cylinder has a limited height, while its cylindrical surface extends in both directions.</p>
 
-<h2 id="surface-classes">Surface classes.</h2>
+<h2 id="getting-a-surface">Getting a surface</h2>
 
-<p>The following surface classes exist in ZenCad: </p>
-
-<ul>
-<li>Face </li>
-<li>Surface </li>
-</ul>
-
-<hr />
-
-<h2 id="find-normal">Find normal</h2>
-
-<p>Returns a <code>Vector3</code> normal at parameters <em>u</em>, <em>v</em>. <code>Face.normal()</code> defaults both parameters to zero; <code>Surface.normal(u, v)</code> requires both parameters.</p>
-
-<p>Сигнатура:</p>
+<p><code>face.surface()</code> returns the underlying surface of a face. Use <code>cylinder_surface(radius)</code> to create a cylindrical surface around the Z axis.</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">face</span><span class="o">.</span><span class="n">normal</span><span class="p">()</span>
-<span class="n">surface</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">plane</span> <span class="o">=</span> <span class="n">rectangle</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">surface</span><span class="p">()</span>
+<span class="n">point</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">normal</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">z</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+<span class="k">assert</span> <span class="n">normal</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </code></pre>
 </div>
+
+<h2 id="parameters-and-normals">Parameters and normals</h2>
+
+<p>A point on a surface is specified by two parameters, <code>u</code> and <code>v</code>. Their meaning depends on the surface: for a cylinder, <code>u</code> is an angle in radians and <code>v</code> is height along Z.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Method</th>
+  <th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>surface.point(u, v)</code></td>
+  <td>A <code>Point3</code> point</td>
+</tr>
+<tr>
+  <td><code>surface.normal(u, v)</code></td>
+  <td>A unit normal <code>Vector3</code></td>
+</tr>
+<tr>
+  <td><code>surface.u_range()</code>, <code>surface.v_range()</code></td>
+  <td>Parameter ranges with <code>.lower</code> and <code>.upper</code> fields</td>
+</tr>
+<tr>
+  <td><code>surface.u_iso(u)</code></td>
+  <td>A curve at constant <code>u</code></td>
+</tr>
+<tr>
+  <td><code>surface.v_iso(v)</code></td>
+  <td>A curve at constant <code>v</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>The ranges belong to the surface, not the face boundaries; they may be infinite. A <code>Face</code> also provides <code>face.normal(u, v)</code> directly. Omitting the arguments uses <code>u=0</code>, <code>v=0</code>.</p>
+
+<h2 id="curves-on-a-surface">Curves on a surface</h2>
+
+<p><code>surface.map(curve2)</code> maps a two-dimensional curve from parameter space <code>(u, v)</code> onto the surface and returns an <code>Edge</code>. On a cylinder, a sloping line segment in <code>(u, v)</code> becomes a helix.</p>
+
+<p>The example shows the helix in orange, a generator line in green, and a circle at height 10 in blue:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">surface</span> <span class="o">=</span> <span class="n">cylinder_surface</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">uv_line</span> <span class="o">=</span> <span class="n">segment2</span><span class="p">(</span><span class="n">point2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">point2</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">),</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">helix</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">uv_line</span><span class="p">)</span>
+<span class="n">meridian</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">u_iso</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">edge</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">parallel</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">v_iso</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">edge</span><span class="p">()</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">helix</span><span class="p">)</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">orange</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">orange</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">meridian</span><span class="p">)</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">green</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">parallel</span><span class="p">)</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">blue</span><span class="p">,</span> <span class="n">wire_color</span><span class="o">=</span><span class="n">blue</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/surface-cylinder.png" alt="Curves on a cylindrical surface" /></p>
+
+<p>Isocurves are returned as <code>Curve</code> objects. <code>.edge()</code> creates an edge for display; for an infinite curve, specify a range, such as <code>.edge((0, 20))</code>.</p>
+
+<p>A surface can also be built by <a href="sweep.html#sweep-surface">sweeping a profile along a path</a>.</p>
 </article>
 </div>
 </body>

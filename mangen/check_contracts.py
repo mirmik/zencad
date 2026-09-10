@@ -14,14 +14,14 @@ CASES = {
     'fillet': {0: 'Shape', 1: 'Shape', 3: 'Solid'},
     'ops3d': {0: 'Shape', 2: 'Face', 4: 'Solid'},
     'prim1d': {0: 'Edge', 1: 'Wire', 2: 'Edge', 3: 'Edge', 4: 'Wire',
-               5: 'Edge', 6: 'Edge', 7: 'Wire', 9: 'Wire',
-               12: 'WireBuilder', 14: 'WireBuilder', 16: 'WireBuilder',
-               17: 'WireBuilder', 18: 'WireBuilder'},
+               5: 'Edge', 6: 'Edge', 8: 'Wire', 10: 'Wire',
+               13: 'WireBuilder', 15: 'WireBuilder', 17: 'WireBuilder',
+               18: 'WireBuilder', 19: 'WireBuilder'},
     'prim2d': {0: 'Face', 1: 'Face', 2: 'Face', 3: 'Face', 4: 'Face',
                5: 'Compound', 8: 'Face', 10: 'Face'},
     'prim3d': {0: 'Solid', 2: 'Solid', 4: 'Solid', 6: 'Solid', 8: 'Solid', 11: 'Solid'},
     'selectors': {0: 'ShapeList', 2: ('Edge', 'Face', 'Vertex'), 3: 'bool', 4: 'Solid'},
-    'surfalgo': {0: 'Vector3'},
+    'surfalgo': {},
     'sweep': {0: 'Shape', 3: 'Solid', 5: 'Shape', 7: 'Solid'},
     'trans0': {0: 'Solid', 1: 'Transform', 2: 'Solid', 3: 'Transform',
                4: 'Solid', 5: ('Transform','AffineTransform','AffineTransform','AffineTransform','AffineTransform'),
@@ -29,24 +29,6 @@ CASES = {
                13: 'Transform', 15: ('list','Shape'), 17: 'MultiTransform',
                19: 'MultiTransform', 21: 'MultiTransform'},
 }
-
-
-# The language trees may be edited independently.
-RU_CASES = {'prim1d': {0: 'Edge',
-            1: 'Wire',
-            2: 'Edge',
-            3: 'Edge',
-            4: 'Wire',
-            5: 'Edge',
-            6: 'Edge',
-            8: 'Wire',
-            10: 'Wire',
-            13: 'WireBuilder',
-            15: 'WireBuilder',
-            17: 'WireBuilder',
-            18: 'WireBuilder',
-            19: 'WireBuilder'},
- 'surfalgo': {}}
 
 
 def fixtures(page, index):
@@ -87,7 +69,7 @@ def fixtures(page, index):
         ns.update(a=z.circle(2,wire=True),b=z.circle(3,wire=True).up(10))
     if page=='bool' and index==6:
         ns.update(a=shape,b=z.infplane().up(5))
-    if page=='prim1d' and index==16:
+    if page=='prim1d' and index==17:
         ns.update(a=(0,2,0),b=(2,0,0))
     if page=='prim2d' and index==3:
         ns['pnts']=[(0,0,0),(10,0,0),(10,10,0),(0,10,0)]
@@ -106,8 +88,7 @@ def check_symbolic_calls():
     count=0
     failures=[]
     for language in ('ru','en'):
-        language_cases = dict(CASES, **RU_CASES) if language == "ru" else CASES
-        for page,cases in language_cases.items():
+        for page,cases in CASES.items():
             source=(MANGEN/language/f'{page}.md').read_text(encoding='utf-8')
             blocks=re.findall(r'```python\n(.*?)```',source,re.S)
             for index,types in cases.items():
@@ -115,8 +96,7 @@ def check_symbolic_calls():
                 for number,statement in enumerate(statements):
                     label=f'{page}:{language}:{index}:{number}'
                     try:
-                        fixture_index = index - 1 if language == "ru" and page == "prim1d" and index > 7 else index
-                        ns=fixtures(page,fixture_index)
+                        ns=fixtures(page,index)
                         expression=statement.value
                         result=eval(compile(ast.Expression(expression),label,'eval'),ns)
                         expected=types if isinstance(types,str) else types[number]
@@ -137,7 +117,7 @@ def check_symbolic_calls():
                         elif isinstance(result,z.Vector3):
                             assert math.isclose(float(result.length()),1,abs_tol=1e-8)
                         elif expected=='WireBuilder':
-                            if page == 'prim1d' and fixture_index == 12:
+                            if page == 'prim1d' and index == 13:
                                 assert not result.edges
                             else:
                                 result.doit().native()

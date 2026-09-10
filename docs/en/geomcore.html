@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,129 +52,129 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="introduction-to-brep-representation-of-geometric-models">Introduction to BREP representation of geometric models.</h1>
+<article class="article"><h1 id="introduction-to-brep-geometry">Introduction to BREP geometry</h1>
 
-<p>The ZenCad library is based on the functionality and object structure of the OpenCascade geometric kernel, which uses boundary representation (BREP) for working with geometric models.</p>
+<p>ZenCad builds on the functionality and object structure of the OpenCascade geometry kernel, which uses BREP (boundary representation) for geometric models.</p>
 
-<p>For a more complete understanding of the library and the use of advanced functions, at least a superficial understanding of the BREP and the topological structure of geometric objects in the geometric kernel used is required. </p>
-
-<hr />
-
-<h2 id="boundary-representation">Boundary representation.</h2>
-
-<p>Boundary representation is a way of representing bodies by describing their boundaries.</p>
-
-<p>An object in Boundary Representation is defined topologically (using a set of references to its bounding objects) and geometrically (using a geometric rule that shapes its shape). Bounding objects, in turn, are set based on the same considerations.</p>
-
-<p>So, for example, a cube is a volumetric body formed by the inner space of a shell formed by 6 faces. Each face is geometrically defined by a plane equation and is bounded by 4 edge objects. Each edge is geometrically defined by the equation of a straight line and is bounded by two vertices.</p>
-
-<p>In different libraries using the BREP representation, the division of objects into classes can be done with certain specifics, but the general idea will be the same. ZenCad uses the OpenCascade core class system. </p>
+<p>A basic understanding of BREP and the kernel's topological structure helps when using the library's more advanced features.</p>
 
 <hr />
 
-<h2 id="классы-геометрических-объектов">Классы геометрических объектов.</h2>
+<h2 id="boundary-representation">Boundary representation</h2>
+
+<p>Boundary representation describes bodies through their boundaries.</p>
+
+<p>An object is defined topologically, through references to its bounding objects, and geometrically, through the rule that defines its shape. Its bounding objects are described in the same way.</p>
+
+<p>For example, a cube is a solid enclosed by a shell of six faces. Each face is defined geometrically by a plane and bounded by four edges. Each edge is defined by a straight line and bounded by two vertices.</p>
+
+<p>Different BREP libraries may divide objects into classes differently, but the general idea stays the same. ZenCad uses the OpenCascade class system.</p>
+
+<hr />
+
+<h2 id="geometric-object-classes">Geometric object classes</h2>
 
 <table>
 <thead>
 <tr>
   <th>ZenCad</th>
   <th>OpenCascade</th>
-  <th>Составной</th>
-  <th>Мерность</th>
-  <th>Описание</th>
+  <th>Composite</th>
+  <th>Dimension</th>
+  <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
   <td>Shape</td>
   <td>TopoDS_Shape</td>
-  <td>неопр.</td>
-  <td>неопр.</td>
-  <td>Абстрактный геометрический объект</td>
+  <td>Unspecified</td>
+  <td>Unspecified</td>
+  <td>Abstract geometric object</td>
 </tr>
 <tr>
   <td>Vertex</td>
   <td>TopoDS_Vertex</td>
-  <td>нет</td>
+  <td>No</td>
   <td>0</td>
-  <td>Вершина</td>
+  <td>Vertex</td>
 </tr>
 <tr>
   <td>Edge</td>
   <td>TopoDS_Edge</td>
-  <td>нет</td>
+  <td>No</td>
   <td>1</td>
-  <td>Ребро</td>
+  <td>Edge</td>
 </tr>
 <tr>
   <td>Wire</td>
   <td>TopoDS_Wire</td>
-  <td>да</td>
+  <td>Yes</td>
   <td>1</td>
-  <td>Сложное ребро</td>
+  <td>Composite curve</td>
 </tr>
 <tr>
   <td>Face</td>
   <td>TopoDS_Face</td>
-  <td>нет</td>
+  <td>No</td>
   <td>2</td>
-  <td>Грань</td>
+  <td>Face</td>
 </tr>
 <tr>
   <td>Shell</td>
   <td>TopoDS_Shell</td>
-  <td>да</td>
+  <td>Yes</td>
   <td>2</td>
-  <td>Оболочка</td>
+  <td>Shell</td>
 </tr>
 <tr>
   <td>Solid</td>
   <td>TopoDS_Solid</td>
-  <td>нет</td>
+  <td>No</td>
   <td>3</td>
-  <td>Твёрдое тело</td>
+  <td>Solid body</td>
 </tr>
 <tr>
   <td>CompSolid</td>
   <td>TopoDS_CompSolid</td>
-  <td>да</td>
+  <td>Yes</td>
   <td>3</td>
-  <td>Множество твёрдых тел</td>
+  <td>Set of solids</td>
 </tr>
 <tr>
   <td>Compound</td>
   <td>TopoDS_Compound</td>
-  <td>да</td>
-  <td>неопр.</td>
-  <td>Составной объект</td>
+  <td>Yes</td>
+  <td>Unspecified</td>
+  <td>Composite object</td>
 </tr>
 </tbody>
 </table>
 
-<p><code>Vertex</code> is a topological vertex; <code>Point3</code> holds coordinates. <code>shape.vertices()</code> returns a vertex collection; <code>vertex.point()</code> obtains a point.</p>
+<p><code>Vertex</code> is a topological vertex; <code>Point3</code> holds coordinates. <code>shape.vertices()</code> returns a collection of vertices; <code>vertex.point()</code> obtains a point.</p>
 
 <hr />
 
-<h2 id="learn-more-about-the-kernel">Learn more about the kernel.</h2>
+<h2 id="more-about-the-kernel">More about the kernel</h2>
 
-<p>The OpenCascade core is quite extensive, has countless tools, and therefore it is hardly possible to convey its essence in any way within the framework of this little help.</p>
+<p>OpenCascade is extensive, with far more tools than this brief introduction can cover.</p>
 
-<p>For detailed information on the OpenCascade geometric kernel, refer to the documentation:
-<a href="https://www.opencascade.com/doc/occt-7.3.0/overview/html/index.html">Technology Overview</a><br />
+<p>For details, refer to the kernel documentation:
+<a href="https://www.opencascade.com/doc/occt-7.3.0/overview/html/index.html">Technology Overview</a><br>
 <a href="https://www.opencascade.com/doc/occt-7.3.0/refman/html/index.html">Reference Manual</a></p>
 </article>
 </div>

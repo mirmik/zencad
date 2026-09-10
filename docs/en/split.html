@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,35 +52,33 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
 <article class="article"><h1 id="splitting-solids-split-and-slice">Splitting solids: split and slice</h1>
 
-<p><code>split</code> and <code>slice</code> cut a body into separate solid pieces. All material is retained: the volumes of the pieces add up to the original volume. Unlike subtraction, neither operation discards any of the resulting pieces.</p>
+<p><code>split</code> and <code>slice</code> cut a solid into separate solid parts.</p>
 
-<p>The pieces stay in their original positions. To reveal the cuts, the examples below color the pieces differently and move them apart after splitting. The original body is shown in gray for comparison.</p>
+<h2 id="split-split-a-solid-with-specified-geometry">split — split a solid with specified geometry</h2>
 
-<h2 id="split-divide-a-body-using-tool-geometry">split — divide a body using tool geometry</h2>
+<p><code>split(body, tools)</code> cuts <code>body</code> with one or more geometric tools. Each tool defines a cut boundary: it can be a planar face, such as <code>infplane()</code>, or another solid.</p>
 
-<p><code>split(body, tools)</code> divides <code>body</code> using one or more geometric tools. A tool defines a cutting boundary: it can be a planar face, such as <code>infplane()</code>, or another body. The tool itself is not added to the result; only pieces of the original body are returned.</p>
+<p>The result is a <code>SplitResult</code>, a collection of individual <code>Solid</code> objects. Iterate over the parts, access them by index and process them independently. Their number depends on the tool positions.</p>
 
-<p>The result is a <code>SplitResult</code>, a collection of individual <code>Solid</code> bodies. You can iterate over the pieces, access them by index, and process them independently. Their number depends on the placement of the tools.</p>
+<h3 id="two-planes-three-layers">Two planes, three layers</h3>
 
-<h3 id="two-planes-produce-three-layers">Two planes produce three layers</h3>
-
-<p>Cut a box of height 18 with horizontal planes at heights 6 and 12. This produces three layers, each 6 units thick. For the image, move the entire set to the right and add gaps between the layers.</p>
+<p>Cut a box of height 18 with two horizontal planes at heights 6 and 12. This produces three layers, each 6 units thick. For the illustration, move the set to the right and add gaps between the layers.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -93,7 +91,7 @@
 <span class="n">layers</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">part</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
 <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
 
-<span class="c1"># Original body on the left, separated layers on the right.</span>
+<span class="c1"># Original solid on the left, separated layers on the right.</span>
 <span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
     <span class="n">display</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span> <span class="o">*</span> <span class="mi">7</span><span class="p">),</span>
@@ -103,11 +101,11 @@
 </code></pre>
 </div>
 
-<p><img src="../images/split-planes.png" alt="Original body on the left and three separated layers on the right" /></p>
+<p><img src="../images/split-planes.png" alt="Original solid on the left; three separated layers on the right" /></p>
 
 <h3 id="splitting-with-a-cylinder">Splitting with a cylinder</h3>
 
-<p>Here the tool is a cylinder passing all the way through a cube. The result contains two pieces: a cube with a cylindrical hole and a cylindrical core. Subtracting <code>body - cutter</code> would retain only the first piece; <code>split</code> keeps both. The ends of the tool that extend beyond the cube are not included in the result.</p>
+<p>Here the tool is a cylinder passing through a cube. The result has two parts: a cube with a cylindrical hole and a cylindrical core. Subtracting <code>body - cutter</code> would leave only the first part; <code>split</code> preserves both.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -116,11 +114,11 @@
 <span class="n">cutter</span> <span class="o">=</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">parts</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">cutter</span><span class="p">)</span>
 
-<span class="c1"># For these dimensions, the cylindrical piece has the smaller volume.</span>
+<span class="c1"># With these dimensions, the cylindrical part has the smaller volume.</span>
 <span class="n">core</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">part</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">mass</span><span class="p">()))</span>
 <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">+</span> <span class="n">remainder</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">-</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()))</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
 
-<span class="c1"># Original body, body with a hole, and the extracted core.</span>
+<span class="c1"># Original solid, solid with a hole, and extracted core.</span>
 <span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
 <span class="n">display</span><span class="p">(</span><span class="n">remainder</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">36</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
 <span class="n">display</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
@@ -128,34 +126,34 @@
 </code></pre>
 </div>
 
-<p><img src="../images/split-cylinder.png" alt="Original cube on the left, body with a hole in the center, and cylindrical core on the right" /></p>
+<p><img src="../images/split-cylinder.png" alt="Original cube on the left, part with a hole in the center, cylindrical core on the right" /></p>
 
-<p>A tool may miss the body or merely touch its boundary. If no cut occurs, <code>split</code> returns the uncut body as the single element of its collection. For example, <code>split(box(2), infplane().up(3))</code> returns one solid with volume 8. If the input shape contains several solids, they are retained in the result. An empty set of tools raises <code>ValueError</code>; the input shape must contain solids.</p>
+<p>An empty tool collection raises <code>ValueError</code>; the input shape must contain solids.</p>
 
-<h2 id="slice-divide-a-body-with-one-plane">slice — divide a body with one plane</h2>
+<h2 id="slice-split-a-solid-with-one-plane">slice — split a solid with one plane</h2>
 
-<p><code>slice</code> partitions a body with one plane. For a horizontal cut, specify its height: <code>parts = slice(body, z=8)</code>. Parts are ordered by their center projection along the plane normal.</p>
+<p><code>slice</code> splits a solid with a single plane. For a horizontal cut, specify the height: <code>parts = slice(body, z=8)</code>. Parts are ordered by the projection of their centers onto the plane normal.</p>
 
-<p>The <code>SliceResult</code> is a collection of solids. A disjoint or touching plane leaves one uncut solid in the collection. For example, <code>len(slice(box(2), z=3)) == 1</code>.</p>
+<p>The result, <code>SliceResult</code>, is a collection of solids. If the plane does not cut the solid or only touches it, the collection contains one solid. For example, <code>len(slice(box(2), z=3)) == 1</code>.</p>
 
-<p>With two parts, use <code>lower, upper = parts</code>. The <code>.lower</code> and <code>.upper</code> properties alias <code>parts[0]</code> and <code>parts[1]</code>; with one part, accessing <code>.upper</code> raises <code>IndexError</code> on evaluation.</p>
+<p>For two parts, write <code>lower, upper = parts</code>. The <code>.lower</code> and <code>.upper</code> properties are aliases for <code>parts[0]</code> and <code>parts[1]</code>; with one part, accessing <code>.upper</code> raises <code>IndexError</code> on evaluation.</p>
 
 <h3 id="an-inclined-cut">An inclined cut</h3>
 
-<p>Specify an arbitrary plane as <code>plane=(point, normal)</code>. This example uses the point <code>(0, 0, 8)</code> and normal <code>(0, -0.3, 1)</code>: the cutting height increases from 8 to 14 as Y increases from 0 to 20.</p>
+<p>Specify an arbitrary plane as <code>plane=(point, normal)</code>. In this example, it passes through <code>(0, 0, 8)</code> with normal <code>(0, -0.3, 1)</code>: the cut height increases from 8 to 14 as Y goes from 0 to 20.</p>
 
-<p>For an inclined plane, the normal determines the order: the negative-side piece comes first, then the positive-side piece. Reversing the normal reverses the order. Here the normal points upward, so the names <code>lower</code> and <code>upper</code> retain their usual meaning.</p>
+<p>For an inclined plane, the normal determines the order: the first part lies on the negative side, the second on the positive side.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
 <span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-<span class="n">plane</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># Point on the plane and its normal.</span>
+<span class="n">plane</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># A point on the plane and its normal.</span>
 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="n">plane</span><span class="p">)</span>
 
 <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lower</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">+</span> <span class="n">upper</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">-</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()))</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
 
-<span class="c1"># The translations only separate the pieces for display.</span>
+<span class="c1"># Translations only separate the parts for display.</span>
 <span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
 <span class="n">display</span><span class="p">(</span><span class="n">lower</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">45</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
 <span class="n">display</span><span class="p">(</span><span class="n">upper</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
@@ -163,7 +161,7 @@
 </code></pre>
 </div>
 
-<p><img src="../images/slice-plane.png" alt="Original body on the left and two pieces with inclined cut faces on the right" /></p>
+<p><img src="../images/slice-plane.png" alt="Original solid on the left; two parts with inclined cut surfaces on the right" /></p>
 </article>
 </div>
 </body>

@@ -1,18 +1,18 @@
-# Volumetric bodies
-This section provides basic CSG geometry primitives.
+# Solids
+This section covers the basic primitives of CSG geometry.
 
 ---
 ## Box
-The volumetric body is a parallelepiped. It is set with the indication of three sizes _x_, _y_, _z_. Specifying one dimension _a_ generates a cube _(a, a, a)_. Setting the boolean option _center_ aligns the geometric center of the body with the origin.
+A box is defined by three dimensions: _x_, _y_ and _z_. A single dimension _a_ creates a cube _(a, a, a)_. `center=True` places the center of the box at the origin. A string selects the axes to center along: `box(10, 20, 30, center="xy")` spans −5 to 5 in X, −10 to 10 in Y, and 0 to 30 in Z.
 
-Сигнатуры:
+Signatures:
 ```python
 box(x, y, z, center=False)
 box(size=(x,y,z), center=False)
 box(size=a, center=False)
 ```
 
-Примеры:
+Examples:
 ```python
 box(10, 20, 30, center=False)
 box(size=(10,20,30), center=False) # alternate
@@ -23,14 +23,14 @@ box(10, center=True)
 
 ---
 ## Sphere
-The volumetric body is a sphere. Specified by specifying the radius. It is possible to construct a sector of a sphere using the optional parameters yaw, pitch. 
+A sphere is defined by its radius. The optional _yaw_ and _pitch_ parameters create spherical sectors.
 
-Сигнатура:
+Signature:
 ```python
 sphere(r=radius, yaw=yaw, pitch=(minPitch, maxPitch))
 ```
 
-Примеры:
+Examples:
 ```python
 sphere(10)
 sphere(10, yaw=math.pi*2/3)
@@ -42,9 +42,9 @@ sphere(10, yaw=deg(120), pitch=(deg(20), deg(60)))
 
 ---
 ## Cylinder
-The volumetric body is a cylinder. It is set with the indication of the radius and height. It is possible to build a cylinder sector using the optional _yaw_ parameter. Setting the _center_ option aligns the geometric center of the body with the origin.
+A cylinder is defined by its radius and height. The optional _yaw_ parameter creates a cylindrical sector. With `center=True`, the midpoint of its height lies at Z=0.
 
-Сигнатура:
+Signature:
 ```python
 cylinder(r=radius, h=height, yaw=yaw, center=False)
 ```
@@ -61,14 +61,14 @@ cylinder(r=10, h=20, yaw=deg(45), center=True)
 
 ---
 ## Cone
-The volumetric body is a cone. It is specified by specifying the lower radius _r1_, upper radius _r2_ and height. It is possible to create a cone sector using the optional _yaw_ parameter. Setting the _center_ option aligns the geometric center of the body with the origin. The radii _r1_ and _r2_ can be zero, which corresponds to a pointed cone. 
+A cone is defined by its lower radius _r1_, upper radius _r2_ and height. The optional _yaw_ parameter creates a conical sector. With `center=True`, the midpoint of its height lies at Z=0. Either radius may be zero to create a pointed cone.
 
-Сигнатура:
+Signature:
 ```python
 cone(r1=botRadius, r2=topRadius, h=height, yaw=yaw, center=False)
 ```
 
-Примеры:
+Examples:
 ```python
 cone(r1=20, r2=10, h=20)
 cone(r1=20, r2=10, h=20, yaw=deg(45))
@@ -81,16 +81,16 @@ cone(r1=20, r2=0, h=20, center=True)
 
 ---
 ## Torus
-The volumetric body is a torus. It is specified by specifying the central radius _r1_ and the local radius _r2_. It is possible to construct torus sectors using the optional parameters _yaw_, _pitch_.
+A torus is defined by its major radius _r1_ and minor radius _r2_. The optional _yaw_ and _pitch_ parameters create toroidal sectors.
 
-If the interval of the _pitch_ angle does not contain an inner region, a corresponding cylindrical insert is formed in the center. If the interval of the _pitch_ angle does not contain an outer region, the corresponding part of the torus is bounded by the plane. 
+If the _pitch_ interval excludes the inner portion, a cylindrical insert fills the corresponding region in the center. If it excludes the outer portion, that part of the torus is bounded by a plane.
 
-Сигнатура:
+Signature:
 ```python
 torus(r1=centralRadius, r2=localRadius, yaw=yaw, pitch=(minPitch, maxPitch))
 ```
 
-Примеры:
+Examples:
 ```python
 torus(r1=20, r2=5)
 torus(r1=20, r2=5, yaw=deg(120))
@@ -105,31 +105,32 @@ torus(r1=20, r2=5, pitch=(deg(-20), deg(190)), yaw=deg(120))
 ![](../images/generic/torus4.png) ![](../images/generic/torus5.png)
 
 ---
-A special volumetric body, which is the lower half-space. Like other solid bodies, it supports transformations and, using them, can represent any possible half-space. Unlike ordinary bodies, it cannot be displayed directly. Used in conjunction with the difference and intersection operations. 
+## Half-space
+A special solid representing the lower half-space. Like other solids, it supports transformations and can be positioned to represent any half-space. It cannot be displayed directly. Use it with difference and intersection operations.
 
 ```python
 sphere(r=10) - halfspace().rotateX(deg(150))
 sphere(r=10) ^ halfspace().rotateX(deg(150))
 ```
-![](../images/generic/halfspace0.png) ![](../images/generic/halfspace1.png)  
+![](../images/generic/halfspace0.png) ![](../images/generic/halfspace1.png)
 
 --------------------
 ## Platonic solids
 
-Construction of Platonic solids.
-The library is based on https://github.com/qalle2/plato.scad
+Constructing Platonic solids.
+The implementation is based on https://github.com/qalle2/plato.scad
 
-| Regular polyhedron | Number of vertices | Number of edges | Number of faces | Number of sides at a face | Number of edges adjacent to a vertex | Type of spatial symmetry |
-| ---          | ---| ---| ---| ---| ---| ---|
-| Tetrahedron  | 4  | 6  | 4  | 3  | 3  | Td |
-| Hexahedron   | 8  | 12 | 6  | 4  | 3  | Oh |
-| Octahedron   | 6  | 12 | 8  | 3  | 4  | Oh |
-| Dodecahedron | 20 | 30 | 12 | 5  | 3  | Ih |
-| Icosahedron  | 12 | 30 | 20 | 3  | 5  | Ih |
+|Regular polyhedron|Vertices|Edges|Faces|Sides per face|Edges per vertex|Symmetry group|
+| --- |--- |--- |--- |--- |--- |--- |
+| Tetrahedron | 4 | 6 | 4 | 3 | 3 | Td |
+| Hexahedron | 8 | 12 | 6 | 4 | 3 | Oh |
+| Octahedron | 6 | 12 | 8 | 3 | 4 | Oh |
+| Dodecahedron | 20 | 30 | 12 | 5 | 3 | Ih |
+| Icosahedron | 12 | 30 | 20 | 3 | 5 | Ih |
 
-The library allows you to specify the dimensions of bodies through the radius of the circumscribed circle _r_ or through the length of the edge _a_. 
+Set the size using the circumscribed radius _r_ or the edge length _a_.
 
-Сигнатуры:
+Signatures:
 ```python
 zencad.tetrahedron(r=1, a=None, shell=False)
 zencad.hexahedron(r=1, a=None, shell=False)
@@ -137,23 +138,23 @@ zencad.octahedron(r=1, a=None, shell=False)
 zencad.dodecahedron(r=1, a=None, shell=False)
 zencad.icosahedron(r=1, a=None, shell=False)
 
-# Альтернативный синтаксис
+# Alternative syntax
 zencad.platonic(nfaces, r=1, a=None, shell=False)
 ```
 
-Пример:
+Example:
 ```python
-# Через радиус:
+# By radius:
 tetrahedron(10)
 hexahedron(10)
 octahedron(r=10)
 dodecahedron(r=10)
 icosahedron(10)
 
-# Через длину ребра:
+# By edge length:
 icosahedron(a=10)
 
-# Альтернативный синтакис:
+# Alternative syntax:
 zencad.platonic(4, 10)
 zencad.platonic(6, 10)
 zencad.platonic(8, 10)

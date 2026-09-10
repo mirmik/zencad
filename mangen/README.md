@@ -67,5 +67,6 @@ run independently, so a builder operation is not accidentally repeated at the
 same point. It also checks boundary behavior (empty references, foreign edges,
 open shell profiles, sample counts) in immediate and deferred modes with cache
 disabled. `CASES` refers to the same zero-based Python fences as `EXAMPLES`.
-Language-specific `RU_EXAMPLES`, `RU_CASES`, and `RU_STANDALONE_BLOCKS`
-override these selections while the two source trees are edited independently.
+Keep the examples in the same order in both translations so these selections
+exercise the same code in Russian and English. The CLI fixture `model.py` comes
+from the first example in `agents.md`.

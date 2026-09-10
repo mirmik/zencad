@@ -1,9 +1,9 @@
 # Animation, input and camera
-The graphical interface allows you to animate the displayed scene.
+The graphical interface can animate the displayed scene.
 
-Editor callbacks run in an isolated runner. The GUI owns the persistent viewer and receives presentation changes. The callback argument is ZenCad state, not a `DisplayWidget`.
+The animation function receives timing, input events and camera controls. It changes the state of objects created before `show()`.
 
-Save as `animation.py` and open with `zencad animation.py`:
+Save this as `animation.py` and open it with `zencad animation.py`:
 
 ```python
 import zencad as z
@@ -19,19 +19,16 @@ def animate(state):
 z.show(animate=animate, animate_step=0.02)
 ```
 
-`loctime` is elapsed animation time in seconds; `delta` is the frame interval. `start_time`, `time` and `last_time` are also available. `animate_step` requests an interval rather than guaranteeing an exact frame rate; using `delta` makes motion independent of actual frame speed.
+`loctime` is the time since animation started, in seconds; `delta` is the frame interval. `start_time`, `time` and `last_time` are also available. `animate_step` sets the desired interval, not a guaranteed frame rate; movement based on `delta` is independent of the actual frame rate.
 
-`state.input.key_down()` reads a held key; `key_pressed()`/`key_released()` read transitions in the current frame. Ordered events are in `state.input.events`, with mouse position/delta/buttons/wheel state also available. Do not replace Qt handlers manually.
+`state.input.key_down()` reads a held key; `key_pressed()` and `key_released()` report transitions in the current frame. Ordered events are available through `state.input.events`; mouse input includes position/delta/buttons/wheel. Do not replace Qt handlers manually.
 
-`state.camera.orbit(axis, angle)` requests a relative camera rotation about a world axis in radians. It composes with the current GUI camera and manual mouse navigation. Camera animation does not require model changes.
+`state.camera.orbit(axis, angle)` rotates the camera relative to its current position around a world axis, with the angle in radians. It works with the current GUI camera and combines with manual mouse rotation. The camera can be animated without changing the model.
 
-## Managed scene limits
+## Animation in the editor
 
-Create all geometry before `show()`. Callbacks may change placement, color and visibility, but cannot add/remove shapes or replace their BREP payloads. `assemble.unit` trees support relocating existing parts.
+Create all geometry before `show()`. The callback can change placement, color and visibility, but cannot add/remove shapes or replace their BREP. `assemble.unit` trees support placement changes of existing parts.
 
-`preanimate`, arbitrary QWidget panels and direct viewer access are unsupported in managed runners. `close_handle` is available for animated managed sessions, not static scenes. Standalone display has a separate contract; the example above targets the editor.
+When running in the editor, `preanimate` and direct access to Qt widgets are not supported. `close_handle` is called when the animated session ends.
 
-`inspect`, `check` and `render` require a final static scene and reject animated `show()`. Details: [managed migration](../development/managed-animation-migration.md).
-
-Here we use a special animation function `animate`, which, using the controller object returned by the disp function, updates the location of the controlled object based on the current moment in time.
-The transformation object is used as a parameter of the `relocate` method. (More details in [Transformations](trans0.html), [Transformations](trans1.html))
+`inspect`, `check` and `render` expect a finite static scene, so they reject animated `show()`. Details: [managed migration](../development/managed-animation-migration.md).

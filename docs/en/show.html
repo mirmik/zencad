@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,152 +52,81 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="display">Display</h1>
+<article class="article"><h1 id="displaying-geometry">Displaying geometry</h1>
 
-<h2 id="scene">Scene</h2>
+<h2 id="display-and-disp">display and disp</h2>
 
-<p>Scene is a container that stores models and their associated colors.</p>
+<p><code>display</code> adds geometry to the scene. <code>disp</code> is its short name. The returned controller lets you change the object's <a href="interactive_object.html">placement, color and visibility</a>.</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">()</span>
-<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">controller</span> <span class="o">=</span> <span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<p><code>scene.add</code> returns an interactive_object with which you can change the state of the displayed object (see <a href="interactive_object.html">interactive_object</a>)</p>
-
-<hr />
-
-<h2 id="zencaddisplay">zencad.display</h2>
-
-<p>A tool for adding geometry to a scene.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-
-<span class="n">zencad</span><span class="o">.</span><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># alternate</span>
-</code></pre>
-</div>
-
-<p>Depending on the type of the parameter, display can behave as follows:
-For shape - adds to the scene, returns interactive<em>object
-For assemble.unit - calls the bind</em>to_scene procedure, returns the unit itself
-For list, it calls display iteratively on the list items, returns a list of results.</p>
-
-<hr />
-
-<h2 id="zencadhighlight">zencad.highlight</h2>
-
-<p>A special variant of the display function used to debug the constructed
-geometry.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">hl</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># alternate naming</span>
-</code></pre>
-</div>
-
-<p>Unlike display, the function returns the object passed to it.
-Usage example (highlight the subtracted form):</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">hl</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">100500</span><span class="p">))</span>
-</code></pre>
-</div>
+<p>For a list, <code>display</code> returns a list of controllers; for an assembly <code>unit</code>, it returns the unit itself. Names passed through <code>name=</code> belong to individual objects and must be unique within the scene. They appear in <a href="headless.html">inspect</a> reports.</p>
 
 <h2 id="color">Color</h2>
 
-<p>An object containing color information in rgba format. The range of parameter values is [0,1].</p>
+<p><code>Color(r, g, b, a=0)</code> accepts components from 0 to 1. The first three specify RGB; the fourth is transparency: 0 is opaque and 1 is fully transparent.</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">Color</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">sphere</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">yellow</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<p>ZenCad defines a standard set of colors:</p>
+<p>Predefined colors include <code>white</code>, <code>black</code>, <code>red</code>, <code>green</code>, <code>blue</code>, <code>yellow</code>, <code>magenta</code>, <code>cian</code>, <code>mech</code> and <code>transmech</code>. They are also available through the <code>zencad.color</code> module.</p>
+
+<h2 id="highlight-and-hl">highlight and hl</h2>
+
+<p>Highlighting adds a shape to the scene and returns the shape itself. This is useful for showing a cutting volume directly within an expression:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">white</span> <span class="o">=</span>     <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">black</span> <span class="o">=</span>     <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">red</span> <span class="o">=</span>       <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">green</span> <span class="o">=</span>     <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">blue</span> <span class="o">=</span>      <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">yellow</span> <span class="o">=</span>    <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">magenta</span> <span class="o">=</span>   <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">cian</span> <span class="o">=</span>      <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">mech</span> <span class="o">=</span>      <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
-<span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">transmech</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="n">hl</span><span class="p">(</span><span class="n">cylinder</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<h2 id="show">show</h2>
+<h2 id="show-and-an-explicit-scene">show and an explicit scene</h2>
+
+<p><code>show()</code> displays the assembled scene. When the editor runs the script, the result appears in its window; running <code>python model.py</code> directly opens a separate viewer.</p>
+
+<p>The default scene is normally used. You can create your own when needed:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scene</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">animate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">preanimate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">close_handle</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">()</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">blue</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">sphere</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">yellow</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">scene</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span>
 </code></pre>
 </div>
 
-<p>The show function initiates the display of the renderer program. If the function is called with no arguments, the default scene  is displayed.</p>
-
-<p>show also has a set of parameters to support animation functions for the model (see <a href="animate.html">Animation</a>).</p>
-
-<p>The show behavior is covered in more detail in (<a href="internal.html">Internal Kitchen</a>)</p>
-
-<h2 id="editor-scenes-and-object-names">Editor scenes and object names</h2>
-
-<p>The GUI owns one persistent viewer. A script evaluates in an isolated process
-and sends its scene for presentation. Reloading can replace the computation
-process while keeping the viewer window. Animated presentation changes travel
-separately from the initial geometry.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">part</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">controller</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><code>disp</code> is shorthand for <code>display</code>. It adds an object to the scene; the returned controller manages its presentation. In a managed runner this is a logical <code>SceneObjectRef</code>, not a Qt/AIS object. There is no public <code>zencad.default_scene</code>: omitting <code>scene=</code> uses an internal default. Explicit local scenes use <code>z.Scene()</code> and <code>display(..., scene=scene)</code>.</p>
-
-<p>A <code>name=</code> must be unique within the scene and applies to one object, not a list. Automatic IDs and user names are separate fields. Names appear in inspect and manifests to identify model parts.</p>
-
-<p><code>Color(r, g, b, a=0)</code> accepts components from 0 to 1. The fourth component is transparency: 0 is opaque, 1 transparent. Predefined colors include <code>z.red</code>, <code>z.green</code>, <code>z.blue</code>, <code>z.yellow</code>, <code>z.white</code> and <code>z.mech</code>.</p>
-
-<p><code>highlight()</code>/<code>hl()</code> displays a shape and returns that shape, allowing use inside a boolean expression. A display controller and a geometry handle have different roles: <a href="interactive_object.html">object control</a>.</p>
-
-<h2 id="named-manifest-without-a-gui">Named manifest without a GUI</h2>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">draft</span><span class="p">:</span>
-    <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;housing&quot;</span><span class="p">)</span>
-    <span class="n">manifest</span> <span class="o">=</span> <span class="n">draft</span><span class="o">.</span><span class="n">manifest</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
-</code></pre>
-</div>
-
-<p>A manifest contains identity and presentation properties without BREP/mesh payloads. Use <a href="headless.html">inspect</a> for area, volume and validity, and <a href="animate.html">managed callbacks</a> for animation.</p>
+<p><code>scene.add()</code> also returns an object controller. The <code>animate</code> and <code>animate_step</code> parameters of <code>show</code> are described in <a href="animate.html">Animation</a>; see <a href="internal.html">ZenCad internals</a> for how display works.</p>
 </article>
 </div>
 </body>

@@ -1,6 +1,6 @@
 # Kinematics
 
-Kinematics extends [assemblies](assemble.html): generalized coordinates, such as a hinge angle or actuator travel, determine part placement. Ordinary ZenCad operations build the geometry; kinematic joints control where it is placed.
+This library extends the [assembly system](assemble.html). It controls the movement of assembly parts through generalized kinematic coordinates and provides operations on kinematic chains.
 
 ## Two units per joint
 
@@ -115,7 +115,7 @@ To track a local frame inside an intermediate unit, use `sensivity2(body, local,
 In `zencad/examples/4.Assemble/robot-arm.py`, a chain of rotary joints automatically follows a red ball along a closed spatial curve. The position Jacobian and damped least squares determine joint velocities; `chain.apply()` applies them in matrix-column order. The example controls the tip position, not its orientation.
 
 
-## Support boundaries
+## Two-coordinate joints
 
 `spherical_rotator` has two coordinates: `set_coords([yaw, pitch])` sets `rotateZ(yaw) * rotateY(pitch)`. Angles are in radians; separate `set_yaw()` and `set_pitch()` methods are available. `dim()` returns `2`, and `get_coords()` returns `(yaw, pitch)`. `senses()` returns yaw and pitch angular sensitivities in the joint output frame, accounting for the current angles. This is a two-axis rotation, not a three-coordinate parameterization of arbitrary orientation.
 

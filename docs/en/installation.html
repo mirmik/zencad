@@ -14,37 +14,37 @@
 </div>
 <div id="content">
 <nav class="nav"><ul>
-<li><a href="index.html">Main page</a></li>
-<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="index.html">Home</a></li>
+<li><a href="helloworld.html">Hello World walkthrough</a></li>
 <li><a href="installation.html">Installation</a></li>
-<li>Basic conceptions
+<li>Basic concepts
 <ul>
-<li><a href="scriptcad.html">Scripting CAD</a></li>
-<li><a href="geomcore.html">Boundary representation</a></li>
-<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="scriptcad.html">Scripted CAD</a></li>
+<li><a href="geomcore.html">BREP representation</a></li>
+<li><a href="caching.html">Lazy evaluation</a></li>
 <li><a href="agents.html">Working with an agent</a></li>
 </ul></li>
 <li>Basic primitives and utilities
 <ul>
 <li><a href="prim3d.html">Solid primitives</a></li>
-<li><a href="prim2d.html">Plane primitives</a></li>
-<li><a href="prim1d.html">Lines and cycles</a></li>
-<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+<li><a href="prim2d.html">Planar primitives</a></li>
+<li><a href="prim1d.html">Lines and loops</a></li>
+<li><a href="prim0d.html">Points, vectors and utilities</a></li>
 </ul></li>
-<li>Transformations, geometric operations
+<li>Transformations and operations on shapes
 <ul>
-<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="trans0.html">Affine transformations</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
 <li><a href="split.html">Splitting solids: split and slice</a></li>
-<li><a href="fillet.html">Topologically dependent operations</a></li>
-<li><a href="ops3d.html">Reference geometry</a></li>
-<li><a href="sweep.html">Sweep operations</a></li>
-<li><a href="trimesh.html">Triangulate and meshing</a></li>
+<li><a href="fillet.html">Topology-dependent transformations</a></li>
+<li><a href="ops3d.html">Geometry from existing shapes</a></li>
+<li><a href="sweep.html">Sweeps</a></li>
+<li><a href="trimesh.html">Triangulation and meshes</a></li>
 </ul></li>
-<li>Reflection and analysis
+<li>Introspection and analysis
 <ul>
 <li><a href="selectors.html">Topology and selectors</a></li>
-<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="validation.html">Checking and repairing geometry</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -52,24 +52,23 @@
 </ul></li>
 <li>Visualization
 <ul>
-<li><a href="show.html">Displaying</a></li>
+<li><a href="show.html">Display</a></li>
 <li><a href="interactive_object.html">Interactive object</a></li>
 <li><a href="assemble.html">Hierarchical models</a></li>
 <li><a href="kinematic.html">Kinematics</a></li>
 <li><a href="animate.html">Animation</a></li>
 </ul></li>
-<li><a href="gui.html">Graphical user interface</a></li>
-<li><a href="expimp.html">Export/Import</a></li>
-<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="gui.html">Graphical interface</a></li>
+<li><a href="expimp.html">Export and import</a></li>
+<li><a href="internal.html">Inside ZenCad</a></li>
 <li><a href="headless.html">Automation: inspect, check, render</a></li>
-<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="version2.html">Differences between ZenCad 2 and ZenCad 1</a></li>
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
 <article class="article"><h1 id="installation">Installation</h1>
 
-<p>ZenCad is installed from PyPI together with a prebuilt geometry-backend wheel.
-Conda and a separate OpenCascade installation are not required.</p>
+<p>ZenCad installs from PyPI together with a binary wheel of the geometry backend. Neither Conda nor a separate OpenCascade installation is required.</p>
 
 <h2 id="graphical-interface">Graphical interface</h2>
 
@@ -79,8 +78,7 @@ Conda and a separate OpenCascade installation are not required.</p>
 </code></pre>
 </div>
 
-<p>On Debian and Ubuntu, install the Qt/X11 system libraries before the first
-run:</p>
+<p>On Debian and Ubuntu, install the Qt/X11 system libraries before the first launch:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="go">sudo apt update</span>
@@ -91,25 +89,20 @@ run:</p>
 </code></pre>
 </div>
 
-<p>The GUI uses X11; a Wayland session therefore needs XWayland.</p>
+<p>The graphical interface uses X11; a Wayland session requires XWayland.</p>
 
-<h2 id="headless-geometry-only">Headless geometry only</h2>
+<h2 id="geometry-only-without-gui">Geometry only, without GUI</h2>
 
 <div class="codehilite">
 <pre><span></span><code><span class="go">python3 -m pip install zencad</span>
 </code></pre>
 </div>
 
-<p>ZenCad requires 64-bit CPython 3.10–3.14. Headless geometry wheels cover
-Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc
-2.31 or newer. The GUI extra is available on Windows x86-64, macOS
-x86-64/arm64, and Linux x86-64; PyQt5 does not currently publish Linux
-aarch64 wheels.</p>
+<p>64-bit CPython 3.10–3.14 is required. Geometry wheels are available for Windows x86-64, macOS 11+ x86-64/arm64, and Linux x86-64/aarch64 with glibc 2.31 or newer. The GUI extra is available for Windows x86-64, macOS x86-64/arm64 and Linux x86-64; PyQt5 currently provides no Linux aarch64 wheel.</p>
 
 <h2 id="current-version-from-source">Current version from source</h2>
 
-<p>This guide describes the current ZenCad 2 source tree. <code>pip install zencad</code>
-selects the published package, not necessarily this revision. In a checkout:</p>
+<p>This manual describes the current ZenCad 2 source tree. <code>pip install zencad</code> retrieves the published package, which may not match this revision. In a checkout:</p>
 
 <div class="codehilite">
 <pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[gui]&quot;</span>
@@ -117,11 +110,7 @@ python<span class="w"> </span>-m<span class="w"> </span>zencad
 </code></pre>
 </div>
 
-<p>For geometry only, use <code>python -m pip install -e .</code>. Optional example dependencies:
-<code>python -m pip install -e ".[examples]"</code>.</p>
-
-<p>Package version <code>2.0.0</code> does not imply completed platform acceptance.
-Windows/macOS rendering still needs verification; Linux GUI needs working X11/OpenGL.</p>
+<p>For geometry only, use <code>python -m pip install -e .</code>. Install optional example dependencies with <code>python -m pip install -e ".[examples]"</code>.</p>
 </article>
 </div>
 </body>

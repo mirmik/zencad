@@ -19,18 +19,10 @@ ROOT = Path(__file__).resolve().parents[1]
 # Complete scripts; the other blocks on these pages are reference fragments
 # checked by check_reference with their shared context.
 STANDALONE_BLOCKS = {
-    "helloworld": [0, 6], "bbox": [2], "geomprop": [2],
-    "prim0d": [9, 10], "show": [7, 8], "trimesh": [8], "selectors": [1],
+    "helloworld": [0], "bbox": [2], "geomprop": [2],
+    "prim0d": [0, 1, 3], "show": [0, 1, 2, 3], "trimesh": [4], "selectors": [1],
+    "animate": [0], "expimp": [0, 1, 2, 3],
 }
-
-
-# The language trees may be edited independently.
-RU_STANDALONE_BLOCKS = {'animate': [0],
- 'expimp': [0, 1, 2, 3],
- 'helloworld': [0],
- 'prim0d': [0, 1, 3],
- 'show': [0, 1, 2, 3, 4],
- 'trimesh': [4]}
 
 
 def python_blocks(name: str, language: str) -> list[str]:
@@ -59,15 +51,12 @@ def check_examples() -> None:
         environment["PYTHONPATH"] = str(ROOT)
         environment["ZENCAD_CACHE_DIR"] = str(directory / "cache")
         (directory / "model.py").write_text(
-            python_blocks("helloworld", "en")[6], encoding="utf-8"
+            python_blocks("agents", "en")[0], encoding="utf-8"
         )
         for name in sorted(EXAMPLE_PAGES):
             for language in ("ru", "en"):
                 for index, block in enumerate(python_blocks(name, language)):
-                    selection = (
-                        RU_STANDALONE_BLOCKS.get(name, STANDALONE_BLOCKS.get(name))
-                        if language == "ru" else STANDALONE_BLOCKS.get(name)
-                    )
+                    selection = STANDALONE_BLOCKS.get(name)
                     if selection is not None and index not in selection:
                         continue
                     compile(block, f"{name}:{language}:{index}", "exec")

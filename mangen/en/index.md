@@ -1,24 +1,27 @@
 <div class="home-hero">
 <h1>ZenCad.</h1>
-<p class="home-tagline">Script CAD for righteous programmers.</p>
+<p class="home-tagline">Scripted CAD for righteous programmers.</p>
 <img src="../images/generic/zencad-logo.png" alt="ZenCad model: a cube with spherical cutouts">
 </div>
 
-## What is ZenCad?
-_ZenCad_ is a library for parametric 3D modeling. the library adheres to the idea of ​​creating a 3D model by writing a script and its legs grow from the _OpenScad_ system. Unlike _OpenScad_, the library uses the geometrical core of the boundary representation _OpenCascade_ and the general-purpose language _Python_.
+## What is it?
 
-_ZenCad_ can be used as an independent rapid prototyping system for prototyping or 3D printing purposes, and in combination with the libraries of the _Python_ ecosystem, in particular for building 3D models based on calculations performed in such systems as scipy and sympy.
+ZenCad is a library for parametric 3D modeling. It follows the idea of creating a 3D model by writing a script, with roots in OpenSCAD. Unlike OpenSCAD, it uses the OpenCascade boundary-representation geometry kernel and the general-purpose Python language.
 
-# Fast start.
+ZenCad can be used on its own for rapid prototyping, mockups and 3D printing, or together with the Python ecosystem—for example, to build models from calculations made in SciPy and SymPy.
+
+Development and installation instructions are on the [Installation](installation.html) page.
+
+# Quick start
 
 ------------
-## Install.
+## Installation
 ```sh
 python3 -m pip install "zencad[gui]"
 ```
 
 --------------
-## Graphic user intrface.
+## Starting the graphical interface
 ```sh
 zencad
 
@@ -45,6 +48,6 @@ show()
 ```
 
 ---------
-## References
-github: [https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
-pypi: [https://pypi.org/project/zencad](https://pypi.org/project/zencad)  
+## Links
+github: [https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)<br>
+pypi: [https://pypi.org/project/zencad](https://pypi.org/project/zencad)

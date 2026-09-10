@@ -1,14 +1,16 @@
 # Evaluation and caching
 
-A feature of the scripted cad is the need to restart the geometry generation script every time the model is updated. As the size of the model grows, this leads to a significant increase in the time required for calculating and drawing geometry. To solve this problem, computationally intensive ZenCad operations are cached and lenified by the [evalcache] library (https://github.com/mirmik/evalcache).
+Scripted CAD needs to rerun the geometry script whenever the model changes. As a model grows, calculating and displaying it takes longer. ZenCad uses [evalcache](https://github.com/mirmik/evalcache) to cache expensive operations and evaluate them lazily.
 
-Instead of calculating directly, evalcache builds a model building tree based on the hash keys of the generated objects. The library saves cacheable results on disk and retrieves them if the object has already been calculated. Changing parameters on the next script run changes the keys of dependent computations.
+Instead of calculating immediately, evalcache builds a model construction tree from the objects' hash keys. It saves cacheable results on disk and retrieves them when the same object has already been calculated. Changing parameters on the next run changes the keys of dependent computations.
 
-Since evalcache only performs computations when the object is actually requested, and not when it is declared, it can be difficult to understand where a possible error occurs. Problems can also arise due to the implicit expansion of lazy objects on some operations.
+Evaluation is deferred by default (`deferred`): operations create a graph, and geometry is computed when needed for display, export, `native()` or `value()`. The cache reuses identical results, including in a new process.
 
-Evaluation is deferred by default: operations construct a graph, and geometry is computed for display, export, `native()` or `value()`. Caching reuses identical computation results, including across processes.
+### Debugging lazy evaluation
 
-Enable immediate evaluation before constructing your model when debugging:
+Because evalcache computes an object when it is requested rather than when it is declared, the origin of an error can be harder to locate. Some operations also trigger implicit evaluation of lazy objects.
+
+For debugging, enable immediate evaluation at the top of the script. Public object types stay the same:
 
 ```python
 import zencad as z
@@ -20,20 +22,20 @@ assert isinstance(body, z.Shape)
 z.set_evaluation_mode("deferred")
 ```
 
-The mode persists until changed and does not alter object types. Switching does not evaluate all existing expressions. Caching is independent: disabling it does not disable lazy evaluation.
+The mode stays in effect until changed and does not alter object types. Switching modes does not evaluate all existing expressions. The cache is independent: disabling it does not itself disable lazy evaluation.
 
 | Mode | `cache_enabled=False` | `cache_enabled=True` |
 | --- | --- | --- |
-| `immediate` | The operation runs immediately without reading or writing the disk cache. | The result is requested immediately: loaded from disk cache, or computed and stored on a miss. |
-| `deferred` | The operation runs when its result is needed, without reading or writing the disk cache. | When needed, the result is loaded from disk cache, or computed and stored on a miss. |
+| `immediate` | The operation runs immediately, without reading or writing the disk cache. | The result is requested immediately: read from the cache, or computed and saved on a miss. |
+| `deferred` | The operation runs when its result is needed, without reading or writing the disk cache. | When needed, the result is read from the cache, or computed and saved on a miss. |
 
-`configure(cache_enabled=False)` disables disk cache reads and writes without deleting its files. Objects can reuse already computed results in memory. The table describes cacheable operations; simple values may be evaluated while constructing the graph.
+`configure(cache_enabled=False)` disables disk cache reads and writes without deleting its files. Objects may reuse results already computed in memory. The table describes cacheable operations; simple values may be evaluated while the graph is built.
 
 ## Shared disk cache
 
-The ZenCad settings dialog can change the directory and enabled state.
+By default, all ZenCad processes for the current user share `tempfile.gettempdir()/zencad-cache-<uid>`. ZenCad does not delete it on exit, but the operating system may clear temporary storage.
 
-The default directory is `tempfile.gettempdir()/zencad-cache-<uid>`. ZenCad does not delete it on exit, but the OS may clean temporary storage. Precedence is explicit process `configure()`, then `ZENCAD_CACHE_DIR`/`ZENCAD_CACHE_DISABLE`, then saved user settings.
+The cache directory and enabled state can be changed in ZenCad's settings. Precedence is explicit process `configure()`, then `ZENCAD_CACHE_DIR`/`ZENCAD_CACHE_DISABLE`, then saved user settings.
 
 ```python
 import zencad as z
@@ -53,6 +55,6 @@ zencad inspect model.py --tree
 zencad inspect model.py --tree --failed-path
 ```
 
-A script header can override the runner's initial mode. The graph exposes dependencies, cache hits and failures. [Command line](headless.html).
+A script header can override the runner's initial mode. The graph shows dependencies, cache hits and errors. [Command line](headless.html).
 
-Integrations can use an explicit owner: `context = z.Context.deferred(cache=False)` and `context.call(z.box, 10)`. `Context` has no CAD facade; ordinary scripts do not need one. Old `zencad.lazy` settings appear only in the [migration guide](migration.html).
+Integrations can use an explicit computation owner: `context = z.Context.deferred(cache=False)` and `context.call(z.box, 10)`. `Context` has no CAD facade; ordinary scripts do not need a separate context. Old `zencad.lazy` settings are described in the [migration guide](migration.html).
