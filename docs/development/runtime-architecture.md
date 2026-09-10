@@ -203,6 +203,10 @@ viewer helpers do not enlarge those bounds. Failed or cancelled runs retain
 the previous camera; a successful retry still initializes the new file's view.
 An explicit camera in snapshot metadata takes precedence over this default.
 
+Live placement patches use `AIS_InteractiveContext.SetLocation` and reuse the
+computed presentation. Only appearance changes require `Redisplay`; moving an
+object must not rebuild its geometry presentation on every animation frame.
+
 ## API transition
 
 Legacy direct display still has a `Scene`, while the editor runtime uses this

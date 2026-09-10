@@ -11,6 +11,7 @@ from OCP.Aspect import Aspect_TOD_ABSOLUTE, Aspect_TOL_SOLID
 from OCP.Geom import Geom_CartesianPoint
 from OCP.gp import gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
 from OCP.Prs3d import Prs3d_ArrowAspect, Prs3d_LineAspect
+from OCP.TopLoc import TopLoc_Location
 
 from zencad.color import Color
 from zencad._native.mesh import normalize_mesh_display_mode
@@ -415,7 +416,9 @@ class ScenePresenter:
         else:
             ais_object = item.ais_object
             if "transform" in changed:
-                ais_object.SetLocalTransformation(_transform(new_state))
+                self.context.SetLocation(
+                    ais_object, TopLoc_Location(_transform(new_state))
+                )
             if "color" in changed:
                 color = new_state["color"]
                 ais_object.SetColor(Color(color).to_Quantity_Color())
@@ -455,7 +458,9 @@ class ScenePresenter:
                     Color(new_state["color"]).to_Quantity_Color(),
                     Color(new_state["border_color"]).to_Quantity_Color(),
                 )
-            if changed - {"visible"}:
+            # Placement updates reuse the computed presentation. Redisplay
+            # rebuilds it and is only needed when its appearance changes.
+            if changed - {"visible", "transform"}:
                 self.context.Redisplay(ais_object, False)
 
         if "visible" in changed:

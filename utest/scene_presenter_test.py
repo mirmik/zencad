@@ -374,6 +374,37 @@ class ScenePresenterTest(unittest.TestCase):
         self.assertEqual(widget.Context.update_count, updates_before + 1)
         self.assertEqual(widget.thread_checks, 2)
 
+    def test_placement_patch_reuses_presentation_but_color_rebuilds_it(self):
+        widget = FakeWidget()
+        widget.Context = mock.Mock()
+        presenter = ScenePresenter(widget)
+        presenter.apply(snapshot(1, SceneObjectRecord(
+            object_id="box", kind="brep", payload=encode_brep(zencad.box(2)),
+            properties={},
+        )))
+        handle = presenter.objects[0].ais_object
+        widget.Context.reset_mock()
+        presenter.apply_patch(ScenePatch(1, 0, 1, (
+            SceneObjectPatch("box", {"transform": {
+                "scale": 1, "rotation": (0, 0, 0, 1),
+                "translation": (5, 6, 7),
+            }}),
+        )))
+        widget.Context.Redisplay.assert_not_called()
+        widget.Context.SetLocation.assert_called_once()
+        obj, location = widget.Context.SetLocation.call_args.args
+        self.assertIs(obj, handle)
+        self.assertEqual(location.Transformation().TranslationPart().Coord(), (5, 6, 7))
+        widget.Context.UpdateCurrentViewer.assert_called_once()
+
+        widget.Context.reset_mock()
+        presenter.apply_patch(ScenePatch(1, 0, 2, (
+            SceneObjectPatch("box", {"color": (1, 0, 0, 0)}),
+        )))
+        widget.Context.SetLocation.assert_not_called()
+        widget.Context.Redisplay.assert_called_once_with(handle, False)
+        widget.Context.UpdateCurrentViewer.assert_called_once()
+
     def test_stale_reordered_and_unknown_patches_do_not_mutate_scene(self):
         widget = FakeWidget()
         presenter = ScenePresenter(

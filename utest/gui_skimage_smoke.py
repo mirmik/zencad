@@ -25,6 +25,7 @@ def main():
         return
 
     from tempfile import TemporaryDirectory
+    from unittest import mock
     from zencad.gui.qt_backend import configure_qt_platform
 
     configure_qt_platform()
@@ -37,6 +38,9 @@ def main():
         window = MainWindow(restore_gui=False)
         window._runner_supervisor.cache_directory = Path(cache)
         window._runner_supervisor.cache_enabled = True
+        presenter = window.display_widget.scene_presenter
+        presenter.context = mock.Mock(wraps=presenter.context)
+        presenter.apply_patch = mock.Mock(wraps=presenter.apply_patch)
         window.show()
         application.processEvents()
         example = ROOT / "zencad/examples/Integration/skimage-mechanicus/cube.py"
@@ -48,9 +52,15 @@ def main():
             presenter = window.display_widget.scene_presenter
             if presenter.committed_generation != generation:
                 return
-            if presenter.last_patch_sequence is None:
+            if presenter.apply_patch.call_count < 20:
                 return
             assert len(presenter.objects) == 13
+            presenter.context.Redisplay.assert_not_called()
+            assert presenter.context.SetLocation.call_count >= 20 * 12
+            for item in presenter.objects[:12]:
+                actual = item.ais_object.LocalTransformation().TranslationPart().Coord()
+                expected = item.properties["transform"]["translation"]
+                assert all(abs(a - b) < 1e-7 for a, b in zip(actual, expected))
             # Identical copies need only one validity check per geometry.
             for index in (0, 6, 12):
                 assert BRepCheck_Analyzer(presenter.objects[index].shape).IsValid()
