@@ -15,6 +15,13 @@ from main import EXAMPLE_PAGES, check_source_pairs
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Complete scripts; the other blocks on these pages are reference fragments
+# checked by check_reference with their shared context.
+STANDALONE_BLOCKS = {
+    "helloworld": [0, 6], "bbox": [2], "geomprop": [2],
+    "prim0d": [9, 10, 11], "show": [7, 8], "trimesh": [8],
+}
+
 
 def python_blocks(name: str, language: str) -> list[str]:
     source = (ROOT / "mangen" / language / f"{name}.md").read_text(encoding="utf-8")
@@ -38,11 +45,13 @@ def check_examples() -> None:
         environment["PYTHONPATH"] = str(ROOT)
         environment["ZENCAD_CACHE_DIR"] = str(directory / "cache")
         (directory / "model.py").write_text(
-            python_blocks("helloworld", "en")[0], encoding="utf-8"
+            python_blocks("helloworld", "en")[6], encoding="utf-8"
         )
         for name in sorted(EXAMPLE_PAGES):
             for language in ("ru", "en"):
                 for index, block in enumerate(python_blocks(name, language)):
+                    if name in STANDALONE_BLOCKS and index not in STANDALONE_BLOCKS[name]:
+                        continue
                     compile(block, f"{name}:{language}:{index}", "exec")
                     script = directory / f"{name}-{language}-{index}.py"
                     if name == "animate":
@@ -139,7 +148,8 @@ def check_links() -> None:
         if page.parent.name in ("ru", "en") and page.stem in EXAMPLE_PAGES:
             source = (ROOT / "mangen" / page.parent.name / f"{page.stem}.md").read_text(encoding="utf-8")
             blocks = re.findall(r"```[^\n]*\n(.*?)```", source, re.S)
-            if [b.rstrip() for b in blocks] != [b.rstrip() for b in parser.code_blocks]:
+            if ["\n".join(line.rstrip() for line in b.expandtabs(4).splitlines()).rstrip()
+                    for b in blocks] != [b.rstrip() for b in parser.code_blocks]:
                 raise AssertionError(f"Generated code differs from source: {page}")
     checked = 0
     for page, parser in parsed.items():

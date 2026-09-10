@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -69,7 +68,141 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="triangulation-and-meshes">Triangulation and meshes</h1>
+<article class="article"><h1 id="triangulation-and-mesh">Triangulation and mesh</h1>
+
+<p>Functions for working with polygonal representation.</p>
+
+<hr />
+
+<h2 id="displayable-mesh">Displayable mesh</h2>
+
+<p><code>Shape.to_mesh()</code> builds an indexed <code>MeshData</code> triangle mesh. The mesh can be
+passed directly to <code>disp</code>; the viewer renders it through <code>AIS_Triangulation</code>
+without converting every triangle into a B-Rep face.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">torus</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">linear_deflection</span><span class="o">=</span><span class="mf">0.35</span><span class="p">)</span>
+
+<span class="n">controller</span> <span class="o">=</span> <span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="o">.</span><span class="n">orange</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>The default is <code>shaded_with_edges</code>: a shaded surface with all triangle edges.
+The display mode can be selected when displaying the mesh:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded_with_edges&quot;</span><span class="p">)</span>  <span class="c1"># поверхность и рёбра</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded&quot;</span><span class="p">)</span>             <span class="c1"># только поверхность</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;wireframe&quot;</span><span class="p">)</span>          <span class="c1"># только рёбра</span>
+</code></pre>
+</div>
+
+<p>The mode of an already displayed object can be changed with
+<code>controller.set_mesh_display_mode(...)</code>.</p>
+
+<p><code>MeshData</code> contains <code>positions</code>, <code>normals</code>, <code>triangles</code>, and
+<code>triangle_face_ids</code>. <code>linear_deflection</code> and <code>angular_deflection</code> control
+detail, while <code>crease_angle</code> determines where normals remain split across
+sharp edges.</p>
+
+<hr />
+
+<h2 id="triangulation">Triangulation</h2>
+
+<p>Materializing a polygonal mesh provides arrays in the format (<em>nodes</em>, <em>triangles</em>), where <em>pnts</em> is an array of points, and <em>triangles</em> is an array of 3-tuples, indices of points.
+The <em>deflection</em> parameter is responsible for resolving the splitting.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">mesh</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">deflection</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span>
+</code></pre>
+</div>
+
+<p>Пример:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="polyhedrone">Polyhedrone</h2>
+
+<p>A solid consisting of flat faces, specified by vertex points <em>pnts</em> and an array of tuples of indices of points defining the faces.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Пример:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">polyhedron</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p><img src="../images/generic/polyhedron0.png" alt="" /></p>
+
+<hr />
+
+<h2 id="convex-hull">Convex hull</h2>
+
+<p>Construction of the convex hull of a set of points.
+The scipy.spatial.ConvexHull procedure is used</p>
+
+<p><em>convex</em>hull_ computes an array of convex hull polygon point indices.
+<em>convex</em>hull<em>shape</em> builds a convex hull using the <em>polyhedron</em> procedure.</p>
+
+<p>Options:
+<em>incremental</em> and <em>qhull</em>options_ are scipy.spatial.ConvexHull options (see scipy documentation).
+<em>shell</em> - create a shell instead of a body.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Пример:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">pnts</span> <span class="o">=</span> <span class="n">points</span><span class="p">([</span>
+    <span class="p">(</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span> <span class="mi">5</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+<span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p><img src="../images/generic/convex_hull0.png" alt="" /></p>
+
+<h2 id="domain-values-and-evaluation">Domain values and evaluation</h2>
 
 <p><code>Shape.to_mesh()</code> returns typed <code>MeshData</code>, retaining the shape graph. Its materialized record contains positions, normals, triangle indices, face IDs and the number of dropped triangles.</p>
 
@@ -87,59 +220,6 @@
 </div>
 
 <p><code>mesh.positions</code> and <code>mesh.triangles</code> expose numeric tuples; <code>.to_numpy()</code> returns fresh mutable arrays; <code>.native()</code> returns <code>Poly_Triangulation</code>. These are explicit evaluation boundaries; changing an array does not change the source shape. A mesh approximates geometry rather than retaining exact BREP. For <a href="expimp.html">STL/3MF</a>, export directly without manually creating a mesh.</p>
-
-<h2 id="displaying-a-mesh">Displaying a mesh</h2>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">torus</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">linear_deflection</span><span class="o">=</span><span class="mf">0.35</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">orange</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded_with_edges&quot;</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p>The viewer displays the mesh directly without converting each triangle into a
-BREP face. Display modes are <code>shaded_with_edges</code>, <code>shaded</code> and <code>wireframe</code>.
-<code>linear_deflection</code> and <code>angular_deflection</code> control detail; <code>crease_angle</code>
-defines edges where normals remain split.</p>
-
-<h2 id="polyhedron">Polyhedron</h2>
-
-<p><code>polyhedron(pnts, faces, shell=False)</code> builds a shape from vertices and faces
-specified by vertex indices. Set <code>shell=True</code> to construct a shell instead of a solid.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">polyhedron</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><img src="../images/generic/polyhedron0.png" alt="Polyhedron from a sphere triangulation" /></p>
-
-<h2 id="convex-hull">Convex hull</h2>
-
-<p><code>convex_hull</code> computes face indices for the convex hull of a point set;
-<code>convex_hull_shape</code> constructs the corresponding shape. SciPy is required.
-<code>incremental</code> and <code>qhull_options</code> are passed to the SciPy algorithm;
-<code>convex_hull_shape(..., shell=True)</code> creates a shell instead of a solid.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">points</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><img src="../images/generic/convex_hull0.png" alt="Convex hull of five points" /></p>
 </article>
 </div>
 </body>

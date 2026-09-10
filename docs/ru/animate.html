@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -71,6 +70,8 @@
 </nav>
 <article class="article"><h1 id="анимация-ввод-и-камера">Анимация, ввод и камера</h1>
 
+<p>Графический интерфейс позволяет анимировать отображаемую сцену.</p>
+
 <p>В редакторе callback выполняется в изолированном runner. GUI владеет постоянным viewer и получает изменения представления. Аргумент callback — состояние ZenCad, не <code>DisplayWidget</code>.</p>
 
 <p>Сохраните как <code>animation.py</code> и откройте командой <code>zencad animation.py</code>:</p>
@@ -103,6 +104,9 @@
 <p><code>preanimate</code>, произвольные QWidget-панели и прямой доступ к viewer не поддерживаются managed runner. <code>close_handle</code> доступен для анимированной managed-сессии, но не для статической. Standalone-путь имеет отдельный контракт; пример выше предназначен для редактора.</p>
 
 <p><code>inspect</code>, <code>check</code> и <code>render</code> ожидают конечную статическую сцену, поэтому отвергают анимированный <code>show()</code>. Подробности: <a href="../development/managed-animation-migration.md">managed migration</a>.</p>
+
+<p>Здесь мы используем специальную функцию анимации <code>animate</code>, которая, используя объект контроллер, возвращенный функцией disp, в зависимости от текущего момента времени обновляет местоположение контролируемого объекта.
+В качестве параметра метода <code>relocate</code> выступает объект преобразования. (Подробнее в <a href="trans0.html">Преобразования</a>, <a href="trans1.html">Комбинации преобразований</a>)</p>
 </article>
 </div>
 </body>

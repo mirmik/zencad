@@ -1,5 +1,11 @@
 # Evaluation and caching
 
+A feature of the scripted cad is the need to restart the geometry generation script every time the model is updated. As the size of the model grows, this leads to a significant increase in the time required for calculating and drawing geometry. To solve this problem, computationally intensive ZenCad operations are cached and lenified by the [evalcache] library (https://github.com/mirmik/evalcache).
+
+Instead of calculating directly, evalcache builds a model building tree based on the hash keys of the generated objects. The library saves cacheable results on disk and retrieves them if the object has already been calculated. Changing parameters on the next script run changes the keys of dependent computations.
+
+Since evalcache only performs computations when the object is actually requested, and not when it is declared, it can be difficult to understand where a possible error occurs. Problems can also arise due to the implicit expansion of lazy objects on some operations.
+
 Evaluation is deferred by default: operations construct a graph, and geometry is computed for display, export, `native()` or `value()`. Caching reuses identical computation results, including across processes.
 
 Enable immediate evaluation before constructing your model when debugging:
@@ -24,6 +30,8 @@ The mode persists until changed and does not alter object types. Switching does 
 `configure(cache_enabled=False)` disables disk cache reads and writes without deleting its files. Objects can reuse already computed results in memory. The table describes cacheable operations; simple values may be evaluated while constructing the graph.
 
 ## Shared disk cache
+
+The ZenCad settings dialog can change the directory and enabled state.
 
 The default directory is `tempfile.gettempdir()/zencad-cache-<uid>`. ZenCad does not delete it on exit, but the OS may clean temporary storage. Precedence is explicit process `configure()`, then `ZENCAD_CACHE_DIR`/`ZENCAD_CACHE_DISABLE`, then saved user settings.
 

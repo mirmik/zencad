@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -71,7 +70,7 @@
 </nav>
 <article class="article"><h1 id="афинные-преобразования">Афинные преобразования.</h1>
 
-<p>Парадигма <em>ZenCad</em> предполагает, что большая часть объектов появляется в точке начала координат, после чего перемещается к месту своего назначения с помощью механизма преобразований. </p>
+<p>Парадигма <em>ZenCad</em> предполагает, что большая часть объектов появляется в точке начала координат, после чего перемещается к месту своего назначения с помощью механизма преобразований.</p>
 
 <p>Обычно, при работе с геометрией, преобразования выполняются с помощью методов класса <em>Shape</em> (представляющего геометрические тела), но для построения сложных преобразований или работы с анимацией афинные преобразования также могут создаваться в качестве обособленных объектов.</p>
 
@@ -97,7 +96,7 @@
 
 <p>Если угол <em>a</em> не указан, то в качестве угла поворота берётся радианная мера, численно равная модулю вектора <em>v</em>.</p>
 
-<p>Методы трансформируемых геометрических объектов: </p>
+<p>Методы трансформируемых геометрических объектов:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Основной синтаксис:</span>
@@ -134,7 +133,7 @@
 <p>Паралельный перенос тела на вектор <em>(x,y,z)</em>.
 По историческим причинам (в частности для совместимости с OpenScad), в библиотеке zencad есть два синонимичных семейства функций/методов translate и move, а также их мнемонические обозначения.</p>
 
-<p>Методы трансформируемых геометрических объектов: </p>
+<p>Методы трансформируемых геометрических объектов:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Основной, альтернативный, мнемонический синтаксис:</span>
@@ -220,7 +219,7 @@
 При отражение относительно оси задаётся вектор оси трансформации.
 При отражение относительно плоскости задаётся вектор нормали отражающей плоскости.</p>
 
-<p>Методы трансформируемых геометрических объектов: </p>
+<p>Методы трансформируемых геометрических объектов:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
@@ -410,7 +409,7 @@
 
 <h3 id="минимальныи-поворот">Минимальный поворот.</h3>
 
-<p>Данное преобразование соответствует минимальному поворота от вектора <em><span style="color:green">f</span></em> к вектору <em><span style="color:blue">t</span></em>. </p>
+<p>Данное преобразование соответствует минимальному поворота от вектора <em><span style="color:green">f</span></em> к вектору <em><span style="color:blue">t</span></em>.</p>
 
 <p>Сигнатура:</p>
 
@@ -446,7 +445,10 @@
 
 <h3 id="множественное-преобразование">Множественное преобразование.</h3>
 
-<p>Произвольный набор преобразований можно применить списковым выражением. Результат — список геометрических объектов; <code>union()</code> объединяет его в одну форму. Для круговых массивов доступны <code>rotate_array</code> и <code>rotate_array2</code>: <code>array=True</code> возвращает список, иначе выполняется объединение. Сборка создаётся явно: <code>unit(parts=copies)</code> после импорта <code>unit</code> из <code>zencad.assemble</code>.</p>
+<p>Проводит операцию множественного преобразования прототипа на массив объектов преобразований transes.
+При этом, если опция <em>array</em> неактивна, производится булево объединение результата. Если активен <em>array</em>, будет возвращен массив результатов.</p>
+
+<p>Сборка создаётся явно: <code>unit(parts=copies)</code> после импорта <code>unit</code> из <code>zencad.assemble</code>.</p>
 
 <p>Сигнатура:</p>
 
@@ -460,16 +462,15 @@
 <p>Пример:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extrans</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span>
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extrans</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span>
         <span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)),</span>
     <span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)),</span>
     <span class="n">translate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">180</span><span class="p">)),</span>
     <span class="n">nulltrans</span><span class="p">()</span>
-<span class="p">]</span>
-    <span class="k">return</span> <span class="n">union</span><span class="p">([</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">])</span>
+<span class="p">])</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">extrans</span><span class="p">(</span><span class="n">knight</span><span class="p">()))</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">extrans</span><span class="p">()(</span><span class="n">knight</span><span class="p">()))</span>
 </code></pre>
 </div>
 
@@ -535,7 +536,7 @@
 
 <p>Опция <em>roll</em> задаёт интервал крена тела вокруг траектории вращения.</p>
 
-<p>В отличии от <em>rotate</em>array_ имеет несколько отличную семантику работы с исходным объектом. В <em>rotate</em>array2_ исходный объект изначально находится в начале координат, после чего разворачивается на 90 градусов вокруг оси X и смещается по оси X на растояние равное радиусу <em>r</em>. </p>
+<p>В отличии от <em>rotate</em>array_ имеет несколько отличную семантику работы с исходным объектом. В <em>rotate</em>array2_ исходный объект изначально находится в начале координат, после чего разворачивается на 90 градусов вокруг оси X и смещается по оси X на растояние равное радиусу <em>r</em>.</p>
 
 <p>Сигнатура:</p>
 

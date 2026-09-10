@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -157,7 +156,7 @@ For historical reasons (in particular for compatibility with OpenScad), the zenc
 </code></pre>
 </div>
 
-<p>Creating a transformation object: </p>
+<p>Creating a transformation object:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Основной синтаксис:</span>
@@ -197,7 +196,7 @@ For historical reasons (in particular for compatibility with OpenScad), the zenc
 </code></pre>
 </div>
 
-<p>Creating a transformation object: </p>
+<p>Creating a transformation object:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">scale</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -218,7 +217,7 @@ For historical reasons (in particular for compatibility with OpenScad), the zenc
 When reflected about the axis, the vector of the transformation axis is specified.
 When reflecting relative to a plane, the normal vector of the reflecting plane is specified.</p>
 
-<p>Methods for transformable geometric objects: </p>
+<p>Methods for transformable geometric objects:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
@@ -241,7 +240,7 @@ When reflecting relative to a plane, the normal vector of the reflecting plane i
 </code></pre>
 </div>
 
-<p>Creating a transformation object: </p>
+<p>Creating a transformation object:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="c1"># Отражение относительно центра.</span>
@@ -277,7 +276,7 @@ When reflecting relative to a plane, the normal vector of the reflecting plane i
 <p>Compositions of affine transformations are performed using the multiplication operator.
 It should be noted that compositions of affine transformations are non-commutative.</p>
 
-<p>Transformation compositions should be read from right to left. For example, in the example below, the entry <code>moveX (20) * rotateZ (deg (60))</code> Means that we first rotate 60 degrees, and then do a parallel translation along the X axis by 20 units. </p>
+<p>Transformation compositions should be read from right to left. For example, in the example below, the entry <code>moveX (20) * rotateZ (deg (60))</code> Means that we first rotate 60 degrees, and then do a parallel translation along the X axis by 20 units.</p>
 
 <p>Пример:</p>
 
@@ -310,7 +309,7 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <h3 id="inversion">Inversion.</h3>
 
-<p>Computing the inverse transformation. </p>
+<p>Computing the inverse transformation.</p>
 
 <p>Сигнатура:</p>
 
@@ -382,7 +381,7 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <h3 id="converting-to-itself">Converting to itself.</h3>
 
-<p>A special transformation that does not alter the object in any way. </p>
+<p>A special transformation that does not alter the object in any way.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">nulltrans</span><span class="p">()</span>
@@ -396,7 +395,7 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <h3 id="minimum-turn">Minimum turn.</h3>
 
-<p>This transformation corresponds to the minimum rotation from the vector <em><span style = "color: green"> f </span></em> to the vector <em><span style = "color: blue">t</span></em>. </p>
+<p>This transformation corresponds to the minimum rotation from the vector <em><span style = "color: green"> f </span></em> to the vector <em><span style = "color: blue">t</span></em>.</p>
 
 <p>Сигнатура:</p>
 
@@ -432,7 +431,10 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <h3 id="multiple-transformation">Multiple transformation.</h3>
 
-<p>Apply a custom transform sequence with a list comprehension. The result is a list of shapes; <code>union()</code> combines it into one shape. Circular patterns use <code>rotate_array</code> and <code>rotate_array2</code>: <code>array=True</code> returns a list, otherwise the shapes are fused. Create assemblies explicitly with <code>unit(parts=copies)</code> after importing <code>unit</code> from <code>zencad.assemble</code>.</p>
+<p>Performs a multiple transformation of the prototype on an array of transformation objects transes.
+If the <em>array</em> option is inactive, the results are combined with a boolean union. If <em>array</em> is active, an array of results is returned.</p>
+
+<p>Create an assembly explicitly with <code>unit(parts=copies)</code> after importing <code>unit</code> from <code>zencad.assemble</code>.</p>
 
 <p>Сигнатура:</p>
 
@@ -446,16 +448,15 @@ It should be noted that compositions of affine transformations are non-commutati
 <p>Пример:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extrans</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span>
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extrans</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">multitransform</span><span class="p">([</span>
         <span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">60</span><span class="p">)),</span>
     <span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">120</span><span class="p">)),</span>
     <span class="n">translate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rotateZ</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">180</span><span class="p">)),</span>
     <span class="n">nulltrans</span><span class="p">()</span>
-<span class="p">]</span>
-    <span class="k">return</span> <span class="n">union</span><span class="p">([</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">])</span>
+<span class="p">])</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
-<span class="n">disp</span><span class="p">(</span><span class="n">extrans</span><span class="p">(</span><span class="n">knight</span><span class="p">()))</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">extrans</span><span class="p">()(</span><span class="n">knight</span><span class="p">()))</span>
 </code></pre>
 </div>
 
@@ -521,7 +522,7 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <p>The <em>roll</em> option specifies the roll interval of the body around the rotation path.</p>
 
-<p>Unlike <em>rotate</em>array_, it has slightly different semantics for working with the original object. In <em>rotate</em>array2_, the original object is initially located at the origin, then rotated 90 degrees around the X axis and shifted along the X axis by a distance equal to the radius of <em>r</em>. </p>
+<p>Unlike <em>rotate</em>array_, it has slightly different semantics for working with the original object. In <em>rotate</em>array2_, the original object is initially located at the origin, then rotated 90 degrees around the X axis and shifted along the X axis by a distance equal to the radius of <em>r</em>.</p>
 
 <p>Сигнатура:</p>
 
@@ -566,7 +567,7 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <p>Completes 3 reflections of the original object.</p>
 
-<p>Signature and conversion code: </p>
+<p>Signature and conversion code:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">sqrmirror</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>

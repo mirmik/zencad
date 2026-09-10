@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -77,7 +76,9 @@
 
 <p>Geometry objects and values retain dependencies between operations. The EvalCache evaluator executes them in <code>deferred</code> or <code>immediate</code> mode and manages result reuse. A <code>Context</code> owns an evaluator; ordinary scripts use module functions and object methods. <code>.value()</code> obtains a computed value, while a shape's <code>.native()</code> obtains an OCP object. See <a href="caching.html">Evaluation and caching</a> and <a href="prim0d.html">Values, points and transforms</a>.</p>
 
-<h2 id="main-window-and-script-runner">Main window and script runner</h2>
+<h2 id="organization-and-interaction-of-zencad-threads-and-processes">Organization and interaction of ZenCad threads and processes.</h2>
+
+<p>The ZenCad graphical interface is designed to minimize its influence on the order of calculations in the running scripts. To achieve this, scripts run in a separate process.</p>
 
 <p>When started with <code>zencad model.py</code> or <code>python -m zencad model.py</code>, the main process owns Qt, the OpenCascade viewer and the OpenGL context. Camera, selection, markers and AIS presentation objects also belong to this process.</p>
 

@@ -14,6 +14,8 @@ import re
 from main import ROOT as MANGEN
 
 EXAMPLES = {
+    'helloworld': [0, 1, 2, 3, 4, 5], 'bbox': [0, 1],
+    'prim0d': [0, 1, 2, 4, 6, 7], 'trimesh': [0, 1, 3, 5, 7],
     'assemble': [2], 'bool': [1, 3, 5, 7, 8, 9], 'crvalgo': [0, 1, 2],
     'fillet': [2], 'ops3d': [1, 3, 5], 'other': [1],
     'prim1d': [8, 10, 11, 13, 15], 'prim2d': [6, 7, 9, 11],

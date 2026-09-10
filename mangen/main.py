@@ -13,13 +13,13 @@ import markdown2
 ROOT = Path(__file__).resolve().parent
 PAGE_ALIASES = {
     "trans1": "trans0", "lincycle": "prim1d", "platonic": "prim3d",
-    "navigation": "gui", "markers": "interactive_object", "nut": "examples",
+    "navigation": "gui", "markers": "interactive_object",
 }
 
 EXAMPLE_PAGES = {
     "index", "installation", "helloworld", "migration", "version2", "caching",
     "prim0d", "modeling", "selectors", "validation", "show", "interactive_object",
-    "animate", "examples", "kinematic", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
+    "animate", "kinematic", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
 }
 
 

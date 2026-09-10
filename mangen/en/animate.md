@@ -1,4 +1,5 @@
 # Animation, input and camera
+The graphical interface allows you to animate the displayed scene.
 
 Editor callbacks run in an isolated runner. The GUI owns the persistent viewer and receives presentation changes. The callback argument is ZenCad state, not a `DisplayWidget`.
 
@@ -31,3 +32,6 @@ Create all geometry before `show()`. Callbacks may change placement, color and v
 `preanimate`, arbitrary QWidget panels and direct viewer access are unsupported in managed runners. `close_handle` is available for animated managed sessions, not static scenes. Standalone display has a separate contract; the example above targets the editor.
 
 `inspect`, `check` and `render` require a final static scene and reject animated `show()`. Details: [managed migration](../development/managed-animation-migration.md).
+
+Here we use a special animation function `animate`, which, using the controller object returned by the disp function, updates the location of the controlled object based on the current moment in time.
+The transformation object is used as a parameter of the `relocate` method. (More details in [Transformations](trans0.html), [Transformations](trans1.html))

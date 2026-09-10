@@ -6,31 +6,48 @@
 
 ## Что это?
 
-ZenCad — параметрическое 3D-моделирование на Python с геометрическим ядром OpenCascade. Скрипт создаёт точную BREP-геометрию, которую можно показать, проверить и экспортировать без ручного построения в редакторе.
+ZenCad - это библиотека параметрического 3д моделирования. Библиотека исповедует идею создания 3д модели путём написания скрипта, и ноги её растут из системы OpenScad. В отличие от OpenScad, библиотека использует геометрическое ядро граничного представления OpenCascade и язык общего назначения Python.
 
-ZenCad подходит для прототипирования, подготовки моделей к 3D-печати и построения геометрии по расчётам Python. Инструкции для разработки и установки находятся на странице [Установка](installation.html).
+ZenCad может использоваться как самостоятельная система быстрого прототипирования для целей макетирования или 3д печати, так и в комплексе с библиотеками экосистемы Python, в частности для построения 3д моделей на основе расчетов выполненных в таких системах как scipy и sympy.
 
-## Быстрый старт
+Инструкции для разработки и установки находятся на странице [Установка](installation.html).
 
-Установка и запуск редактора:
+# Быстрый старт.
 
+------------
+## Установка.
 ```sh
 python3 -m pip install "zencad[gui]"
+```
+
+--------------
+## Запуск графической оболочки.
+```sh
 zencad
+
+# alternate:
+python3 -m zencad
 ```
 
-Сохраните модель в Python-файл и откройте его в редакторе:
-
+-------------
+## HelloWorld
 ```python
-import zencad as z
+#!/usr/bin/env python3
+#coding: utf-8
 
-model = z.box(200, center=True) - z.sphere(120) + z.sphere(60)
-z.display(model)
-z.show()
+from zencad import *
+
+box = box(200, 200, 200, center = True)
+sphere1 = sphere(120)
+sphere2 = sphere(60)
+
+model = box - sphere1 + sphere2
+
+display(model)
+show()
 ```
 
+---------
 ## Ссылки
-
-- [Исходный код на GitHub](https://github.com/mirmik/zencad)
-- [Пакет на PyPI](https://pypi.org/project/zencad/)
-- [Миграция с ZenCad 1](migration.html)
+github: [https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
+pypi: [https://pypi.org/project/zencad](https://pypi.org/project/zencad)  

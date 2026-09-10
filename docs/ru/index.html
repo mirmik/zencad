@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -77,38 +76,62 @@
 
 <h2 id="что-это">Что это?</h2>
 
-<p>ZenCad — параметрическое 3D-моделирование на Python с геометрическим ядром OpenCascade. Скрипт создаёт точную BREP-геометрию, которую можно показать, проверить и экспортировать без ручного построения в редакторе.</p>
+<p>ZenCad - это библиотека параметрического 3д моделирования. Библиотека исповедует идею создания 3д модели путём написания скрипта, и ноги её растут из системы OpenScad. В отличие от OpenScad, библиотека использует геометрическое ядро граничного представления OpenCascade и язык общего назначения Python.</p>
 
-<p>ZenCad подходит для прототипирования, подготовки моделей к 3D-печати и построения геометрии по расчётам Python. Инструкции для разработки и установки находятся на странице <a href="installation.html">Установка</a>.</p>
+<p>ZenCad может использоваться как самостоятельная система быстрого прототипирования для целей макетирования или 3д печати, так и в комплексе с библиотеками экосистемы Python, в частности для построения 3д моделей на основе расчетов выполненных в таких системах как scipy и sympy.</p>
 
-<h2 id="быстрыи-старт">Быстрый старт</h2>
+<p>Инструкции для разработки и установки находятся на странице <a href="installation.html">Установка</a>.</p>
 
-<p>Установка и запуск редактора:</p>
+<h1 id="быстрыи-старт">Быстрый старт.</h1>
+
+<hr />
+
+<h2 id="установка">Установка.</h2>
 
 <div class="codehilite">
 <pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;zencad[gui]&quot;</span>
-zencad
 </code></pre>
 </div>
 
-<p>Сохраните модель в Python-файл и откройте его в редакторе:</p>
+<hr />
+
+<h2 id="запуск-графическои-оболочки">Запуск графической оболочки.</h2>
 
 <div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+<pre><span></span><code>zencad
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="c1"># alternate:</span>
+python3<span class="w"> </span>-m<span class="w"> </span>zencad
 </code></pre>
 </div>
+
+<hr />
+
+<h2 id="helloworld">HelloWorld</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">#coding: utf-8</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">sphere1</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">sphere2</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">box</span> <span class="o">-</span> <span class="n">sphere1</span> <span class="o">+</span> <span class="n">sphere2</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<hr />
 
 <h2 id="ссылки">Ссылки</h2>
 
-<ul>
-<li><a href="https://github.com/mirmik/zencad">Исходный код на GitHub</a></li>
-<li><a href="https://pypi.org/project/zencad/">Пакет на PyPI</a></li>
-<li><a href="migration.html">Миграция с ZenCad 1</a></li>
-</ul>
+<p>github: <a href="https://github.com/mirmik/zencad">https://github.com/mirmik/zencad</a><br />
+pypi: <a href="https://pypi.org/project/zencad">https://pypi.org/project/zencad</a>  </p>
 </article>
 </div>
 </body>

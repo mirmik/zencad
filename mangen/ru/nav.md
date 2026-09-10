@@ -1,5 +1,4 @@
 * [Главная страница](index.html)
-* [Примеры](examples.html)
 * [Разбор helloworld](helloworld.html)
 * [Установка](installation.html)
 * Основные концепции

@@ -74,7 +74,7 @@ shp.movY(y)
 shp.movZ(z)
 ```
 
-Creating a transformation object: 
+Creating a transformation object:
 ```python
 # Основной синтаксис:
 translate(x,y,z)
@@ -108,7 +108,7 @@ shp.scaleY(a)
 shp.scaleZ(a)
 ```
 
-Creating a transformation object: 
+Creating a transformation object:
 ```python
 scale(a)
 scaleX(a) # general_transformation
@@ -125,7 +125,7 @@ When flipping about a point, the coordinates of the transformation center are se
 When reflected about the axis, the vector of the transformation axis is specified.
 When reflecting relative to a plane, the normal vector of the reflecting plane is specified.
 
-Methods for transformable geometric objects: 
+Methods for transformable geometric objects:
 ```python
 # Отражение относительно центра.
 shp.transform(mirrorO(x,y,z))
@@ -146,7 +146,7 @@ shp.mirrorYZ() # equal to mirror_plane(1,0,0)
 shp.mirrorXZ() # equal to mirror_plane(0,1,0)
 ```
 
-Creating a transformation object: 
+Creating a transformation object:
 ```python
 # Отражение относительно центра.
 mirrorO(x,y,z)
@@ -177,7 +177,7 @@ An affine transformation has the form `p → A·p + t`. With nonzero translation
 Compositions of affine transformations are performed using the multiplication operator.
 It should be noted that compositions of affine transformations are non-commutative.
 
-Transformation compositions should be read from right to left. For example, in the example below, the entry `moveX (20) * rotateZ (deg (60))` Means that we first rotate 60 degrees, and then do a parallel translation along the X axis by 20 units. 
+Transformation compositions should be read from right to left. For example, in the example below, the entry `moveX (20) * rotateZ (deg (60))` Means that we first rotate 60 degrees, and then do a parallel translation along the X axis by 20 units.
 
 Пример:
 ```python
@@ -195,7 +195,7 @@ disp(trans(m))
 
 -----
 ### Inversion.
-Computing the inverse transformation. 
+Computing the inverse transformation.
 
 Сигнатура:
 ```python
@@ -210,7 +210,7 @@ m = knight()
 disp(trans(m), color.green)
 disp(trans.inverse()(m), color.red)
 ```
-| Conversion | Inversion | 
+| Conversion | Inversion |
 |---|---|
 | ![invtrans0](../images/generic/invtrans2.png) | ![invtrans1](../images/generic/invtrans3.png) |
 
@@ -222,20 +222,20 @@ m = knight()
 disp(trans(m), color.green)
 disp(trans.inverse()(m), color.red)
 ```
-| Conversion | Inversion | 
+| Conversion | Inversion |
 |---|---|
 | ![invtrans0](../images/generic/invtrans0.png) | ![invtrans1](../images/generic/invtrans1.png) |
 
-Note. The inversion of the composition of transformations can be calculated as: 
+Note. The inversion of the composition of transformations can be calculated as:
 _<p align=center>(A * B)<sup>-1</sup> = B<sup>-1</sup> * A<sup>-1</sup><p/>_
 
 
 ----
-## Additional transformations. 
+## Additional transformations.
 
 -----------------------------------
 ### Converting to itself.
-A special transformation that does not alter the object in any way. 
+A special transformation that does not alter the object in any way.
 
 ```python
 nulltrans()
@@ -246,7 +246,7 @@ nulltrans()
 
 ---------
 ### Minimum turn.
-This transformation corresponds to the minimum rotation from the vector _<span style = "color: green"> f </span>_ to the vector _<span style = "color: blue">t</span>_. 
+This transformation corresponds to the minimum rotation from the vector _<span style = "color: green"> f </span>_ to the vector _<span style = "color: blue">t</span>_.
 
 Сигнатура:
 ```python
@@ -265,7 +265,10 @@ short_rotate((0,0,1), (1,1,1))(knight())
 
 ------------------------------------
 ### Multiple transformation.
-Apply a custom transform sequence with a list comprehension. The result is a list of shapes; `union()` combines it into one shape. Circular patterns use `rotate_array` and `rotate_array2`: `array=True` returns a list, otherwise the shapes are fused. Create assemblies explicitly with `unit(parts=copies)` after importing `unit` from `zencad.assemble`.
+Performs a multiple transformation of the prototype on an array of transformation objects transes.
+If the _array_ option is inactive, the results are combined with a boolean union. If _array_ is active, an array of results is returned.
+
+Create an assembly explicitly with `unit(parts=copies)` after importing `unit` from `zencad.assemble`.
 
 Сигнатура:
 ```python
@@ -276,16 +279,15 @@ fused = multitrans(transes)(model)
 
 Пример:
 ```python
-def extrans(model):
-    transes = [
+def extrans():
+    return multitransform([
         translate(-20,20,0) * rotateZ(deg(60)),
     translate(-20,-20,0) * rotateZ(deg(120)),
     translate(20,20,0) * rotateZ(deg(180)),
     nulltrans()
-]
-    return union([trsf(model) for trsf in transes])
+])
 from zencad.internal_models import knight
-disp(extrans(knight()))
+disp(extrans()(knight()))
 ```
 
 |Before|After|
@@ -318,22 +320,22 @@ Multiple transform that produces a circular array of _n_ objects over the angula
 
 The _roll_ option specifies the roll interval of the body around the rotation path.
 
-Unlike _rotate_array_, it has slightly different semantics for working with the original object. In _rotate_array2_, the original object is initially located at the origin, then rotated 90 degrees around the X axis and shifted along the X axis by a distance equal to the radius of _r_. 
+Unlike _rotate_array_, it has slightly different semantics for working with the original object. In _rotate_array2_, the original object is initially located at the origin, then rotated 90 degrees around the X axis and shifted along the X axis by a distance equal to the radius of _r_.
 
 Сигнатура:
 ```python
 rotate_array2(
-	n, r=None, 
-	yaw=(0,deg(360)), roll=(0,0), 
+	n, r=None,
+	yaw=(0,deg(360)), roll=(0,0),
 	endpoint=False, array=False)
 ```
 Пример:
 ```python
 rotate_array2(
-	n=60, 
-	r=20, 
-	yaw=(0,deg(270)), 
-	roll=(0,deg(360)), 
+	n=60,
+	r=20,
+	yaw=(0,deg(270)),
+	roll=(0,deg(360)),
 	array=True)(
 		square(10, center=True, wire=True)
 	)
@@ -345,7 +347,7 @@ rotate_array2(
 ### Square reflection.
 Completes 3 reflections of the original object.
 
-Signature and conversion code: 
+Signature and conversion code:
 ```python
 sqrmirror(array=False)
 sqrtrans(array=False) # synonym
@@ -357,6 +359,6 @@ from zencad.internal_models import knight
 sqrmirror()(knight().move(20,30))
 ```
 
-| Before | After | 
+| Before | After |
 |---|---|
 | ![ra0](../images/generic/sqrmirror0.png) | ![ra1](../images/generic/sqrmirror1.png) |

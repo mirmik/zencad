@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -71,6 +70,8 @@
 </nav>
 <article class="article"><h1 id="animation-input-and-camera">Animation, input and camera</h1>
 
+<p>The graphical interface allows you to animate the displayed scene.</p>
+
 <p>Editor callbacks run in an isolated runner. The GUI owns the persistent viewer and receives presentation changes. The callback argument is ZenCad state, not a <code>DisplayWidget</code>.</p>
 
 <p>Save as <code>animation.py</code> and open with <code>zencad animation.py</code>:</p>
@@ -103,6 +104,9 @@
 <p><code>preanimate</code>, arbitrary QWidget panels and direct viewer access are unsupported in managed runners. <code>close_handle</code> is available for animated managed sessions, not static scenes. Standalone display has a separate contract; the example above targets the editor.</p>
 
 <p><code>inspect</code>, <code>check</code> and <code>render</code> require a final static scene and reject animated <code>show()</code>. Details: <a href="../development/managed-animation-migration.md">managed migration</a>.</p>
+
+<p>Here we use a special animation function <code>animate</code>, which, using the controller object returned by the disp function, updates the location of the controlled object based on the current moment in time.
+The transformation object is used as a parameter of the <code>relocate</code> method. (More details in <a href="trans0.html">Transformations</a>, <a href="trans1.html">Transformations</a>)</p>
 </article>
 </div>
 </body>

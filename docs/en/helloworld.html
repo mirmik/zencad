@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -69,7 +68,81 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="your-first-model">Your first model</h1>
+<article class="article"><h1 id="hello-friend">Hello Friend.</h1>
+
+<p>Here is an example to demonstrate the principle of building models in zencad.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="whats-happening">What's happening:</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+</code></pre>
+</div>
+
+<p>In the first line, we import into the current zencad namespace. In this case, we are interested in the <code>box</code>,<code>sphere</code>, <code>display</code>,<code>show</code> functions.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Preparing geometric primitives. A box object is created with dimensions 200x200x200 and an offset of the geometric center to the origin. It also creates two spheres with a radius of 120 and 60.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+</code></pre>
+</div>
+
+<p>Computing the model using boolean operations. First, a large sphere will be subtracted from the cube. Then a small one was added. The order of the terms is important in this case, since the difference of geometric bodies is non-commutative.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>The <code>disp</code> function passes the object into the scene for later display.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>Displaying the scene widget.</p>
+
+<hr />
+
+<h2 id="if-everything-went-well">If everything went well:</h2>
+
+<p><img src="../images/helloworld.png" alt="" /></p>
+
+<h2 id="running-and-checking-a-model">Running and checking a model</h2>
 
 <p>Save this complete script as <code>model.py</code>:</p>
 
@@ -104,30 +177,6 @@ zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="
 </div>
 
 <p><code>display()</code> adds the result to the scene; <code>show()</code> finishes declaring a static scene in the managed runner. Headless tools need a displayed result to inspect. <a href="prim0d.html">Next: value types</a>.</p>
-
-<h2 id="a-model-built-from-a-cube-and-spheres">A model built from a cube and spheres</h2>
-
-<p>This example builds a shape with a sequence of boolean operations:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">a</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
-<span class="n">c</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p>Cube <code>a</code> is centered at the origin. Sphere <code>b</code> cuts out its central region;
-sphere <code>c</code> adds a separate element at the center. The difference <code>a - b</code> is
-computed first, followed by union with <code>c</code>. Difference depends on operand order.
-<code>display()</code> adds the result to a scene; <code>show()</code> starts presentation or publishes
-the scene in the editor's computation process.</p>
-
-<p><img src="../images/helloworld.png" alt="Result of the cube and spheres construction" /></p>
 </article>
 </div>
 </body>

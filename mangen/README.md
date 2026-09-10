@@ -9,6 +9,11 @@ page has a counterpart in the other language; it does not check translation
 accuracy. Indentation inside code fences is preserved. Navigation is in
 `ru/nav.md` and `en/nav.md`; generated HTML lives in `docs/ru` and `docs/en`.
 
+Preserve existing explanations, examples, and the author's wording and style
+when they remain accurate. Update only the passages affected by API or behavior
+changes, and add new capabilities to the relevant sections. An API migration
+is not a reason to replace a tutorial or shorten the existing reference.
+
 From the repository root, in a development environment:
 
 ```sh
@@ -28,7 +33,10 @@ directories, exercises their managed animations, and checks the documented
 inspect/check commands. It does not open a viewer or claim native render coverage.
 
 `EXAMPLE_PAGES` in `main.py` selects pages whose complete Python snippets are
-executed by the documentation smoke check. It does not classify the remaining
+executed by the documentation smoke check. `STANDALONE_BLOCKS` in `check.py`
+selects complete scripts on pages that also contain explanatory fragments;
+the restored reference examples run with shared context in `check_reference.py`.
+This does not classify the remaining
 manual as obsolete. Preserve the full thematic navigation, detailed operation
 reference and illustrations when updating content. Historical URLs such as `platonic`, `lincycle`, and `trans1` render their current
 reference sections through `PAGE_ALIASES`; empty placeholders are replaced by

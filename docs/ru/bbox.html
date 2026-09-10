@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -70,6 +69,53 @@
 </ul>
 </nav>
 <article class="article"><h1 id="ограничивающая-коробка">Ограничивающая коробка</h1>
+
+<p>Ограничивающая коробка - это это минимальный основанный на осях Ox, Oy, Oz параллелепипед, описывающий геометрическую форму shape.</p>
+
+<hr />
+
+<h2 id="shapebbox">shape.bbox</h2>
+
+<p>Построить ограничивающую коробку на основе формы shape.</p>
+
+<p>Пример</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<h2 id="поля">Поля.</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">bbox</span><span class="o">.</span><span class="n">xmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">xmax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmax</span>
+</code></pre>
+</div>
+
+<h2 id="методы">Методы.</h2>
+
+<p>bbox.xrange()
+bbox.yrange()
+bbox.zrange()</p>
+
+<h2 id="построить-коробку-как-форму">Построить коробку как форму.</h2>
+
+<p>Пример</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">shape</span><span class="p">())</span>
+</code></pre>
+</div>
+
+<h2 id="доменные-значения-и-вычисления">Доменные значения и вычисления</h2>
 
 <p><code>shape.boundbox()</code> и <code>shape.bbox()</code> возвращают <code>BoundaryBox</code>, выровненную по осям. Координаты — <code>Scalar</code>, <code>minimum</code>/<code>maximum</code>/<code>center</code> — <code>Point3</code>, <code>size</code> — <code>Vector3</code>.</p>
 

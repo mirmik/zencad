@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -69,7 +68,141 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="триангуляция-и-mesh">Триангуляция и mesh</h1>
+<article class="article"><h1 id="триангуляция-и-меш">Триангуляция и меш</h1>
+
+<p>Функции для работы с полигональным представлением.</p>
+
+<hr />
+
+<h2 id="отображаемыи-меш">Отображаемый меш</h2>
+
+<p>Метод <code>Shape.to_mesh()</code> строит индексированную треугольную сетку <code>MeshData</code>.
+Такую сетку можно передать непосредственно в <code>disp</code>: просмотрщик отображает
+её через <code>AIS_Triangulation</code>, не превращая каждый треугольник в B-Rep-грань.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">torus</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">box</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">linear_deflection</span><span class="o">=</span><span class="mf">0.35</span><span class="p">)</span>
+
+<span class="n">controller</span> <span class="o">=</span> <span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="o">.</span><span class="n">orange</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>По умолчанию используется режим <code>shaded_with_edges</code>: затенённая поверхность
+с рёбрами всех треугольников. Режим можно выбрать при отображении:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded_with_edges&quot;</span><span class="p">)</span>  <span class="c1"># поверхность и рёбра</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded&quot;</span><span class="p">)</span>             <span class="c1"># только поверхность</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;wireframe&quot;</span><span class="p">)</span>          <span class="c1"># только рёбра</span>
+</code></pre>
+</div>
+
+<p>Режим уже отображённого объекта можно изменить через
+<code>controller.set_mesh_display_mode(...)</code>.</p>
+
+<p><code>MeshData</code> содержит массивы <code>positions</code>, <code>normals</code>, <code>triangles</code> и
+<code>triangle_face_ids</code>. Параметры <code>linear_deflection</code> и <code>angular_deflection</code>
+задают детализацию, а <code>crease_angle</code> определяет, на каких рёбрах нормали
+должны оставаться раздельными.</p>
+
+<hr />
+
+<h2 id="триангуляция">Триангуляция</h2>
+
+<p>Материализация полигональной сетки позволяет получить массивы в формате (<em>nodes</em>, <em>triangles</em>), где <em>pnts</em> - массив точек, а <em>triangles</em> - массив 3-кортежей, индексов точек.
+Параметр <em>deflection</em> отвечает за разрешение разбиения.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">mesh</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">deflection</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span>
+</code></pre>
+</div>
+
+<p>Пример:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_nodes:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;count_of_triangles:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triangles</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_nodes:&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first_five_triangles:&quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="полигедрон">Полигедрон</h2>
+
+<p>Объёмное тело, состоящее из плоских граней, заданное точками вершин <em>pnts</em> и массивом кортежей индексов точек, задающих грани.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">polyhedron</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Пример:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">m</span><span class="o">=</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">polyhedron</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">triangles</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p><img src="../images/generic/polyhedron0.png" alt="" /></p>
+
+<hr />
+
+<h2 id="выпуклая-оболочка">Выпуклая оболочка</h2>
+
+<p>Построение выпуклой оболочки множества точек.
+Используется процедура scipy.spatial.ConvexHull</p>
+
+<p><em>convex</em>hull_ вычисляет массив индексов точек полигонов выпуклой оболочки.
+<em>convex</em>hull<em>shape</em> строит выпуклую оболочку, используя процедуру <em>polyhedron</em>.</p>
+
+<p>Опции:
+<em>incremental</em> и <em>qhull</em>options_ являются опциями scipy.spatial.ConvexHull (см. документацию scipy).
+<em>shell</em> - создать оболочку вместо тела.</p>
+
+<p>Сигнатура:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qhull_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Пример:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">pnts</span> <span class="o">=</span> <span class="n">points</span><span class="p">([</span>
+    <span class="p">(</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span> <span class="mi">5</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+<span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">pnts</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p><img src="../images/generic/convex_hull0.png" alt="" /></p>
+
+<h2 id="доменные-значения-и-вычисления">Доменные значения и вычисления</h2>
 
 <p><code>Shape.to_mesh()</code> возвращает типизированный <code>MeshData</code>, сохраняя граф формы. Материализованная запись содержит позиции, нормали, индексы треугольников, соответствие граням и число отброшенных треугольников.</p>
 
@@ -87,59 +220,6 @@
 </div>
 
 <p><code>mesh.positions</code> и <code>mesh.triangles</code> дают численные кортежи, <code>.to_numpy()</code> — свежие изменяемые массивы, <code>.native()</code> — <code>Poly_Triangulation</code>. Это явные границы вычисления; изменение массива не меняет исходную форму. Mesh — приближение геометрии, не точный BREP. Для <a href="expimp.html">STL/3MF</a> можно сразу вызвать экспорт без ручного построения сетки.</p>
-
-<h2 id="отображение-сетки">Отображение сетки</h2>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">torus</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="n">linear_deflection</span><span class="o">=</span><span class="mf">0.35</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">orange</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;shaded_with_edges&quot;</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p>Просмотрщик отображает сетку напрямую, без преобразования каждого треугольника
-в BREP-грань. Режимы отображения: <code>shaded_with_edges</code>, <code>shaded</code>, <code>wireframe</code>.
-<code>linear_deflection</code> и <code>angular_deflection</code> задают детализацию; <code>crease_angle</code>
-определяет границы, на которых нормали остаются раздельными.</p>
-
-<h2 id="полигедрон">Полигедрон</h2>
-
-<p><code>polyhedron(pnts, faces, shell=False)</code> строит форму из вершин и граней,
-заданных индексами вершин. Для оболочки вместо тела задайте <code>shell=True</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_mesh</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">polyhedron</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangles</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><img src="../images/generic/polyhedron0.png" alt="Полигедрон по триангуляции сферы" /></p>
-
-<h2 id="выпуклая-оболочка">Выпуклая оболочка</h2>
-
-<p><code>convex_hull</code> вычисляет индексы граней выпуклой оболочки множества точек,
-<code>convex_hull_shape</code> строит соответствующую форму. Требуется SciPy.
-Параметры <code>incremental</code> и <code>qhull_options</code> передаются алгоритму SciPy;
-<code>convex_hull_shape(..., shell=True)</code> создаёт оболочку вместо тела.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">points</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">points</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">convex_hull_shape</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><img src="../images/generic/convex_hull0.png" alt="Выпуклая оболочка пяти точек" /></p>
 </article>
 </div>
 </body>

@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -69,7 +68,65 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="экспорт-и-импорт">Экспорт и импорт</h1>
+<article class="article"><h1 id="экспортимпорт">Экспорт/Импорт</h1>
+
+<p>Операции экспорта/импорта отличаются от большинства операций библиотеки zencad тем, что производятся не только над объектами в памяти программы, но и над файлами.</p>
+
+<hr />
+
+<h2 id="stl">STL</h2>
+
+<p>Создать файл мешсети формата STL, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>.
+Параметр <code>delta</code> определяет степень детализации. Чем меньше <code>delta</code>, тем меньше размер полигонов.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">to_stl</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Импортирование МАЛОПОЛИГОНАЛЬНЫХ stl и прочих форматов mesh сетей возможно с применением сторонних библиотек, таких как trimesh. (см. examples/Integration/trimesh)</p>
+
+<hr />
+
+<h2 id="brep">BREP</h2>
+
+<p>Создать файл brep представления формата BREP, находящийся по пути <code>path</code>, из твердотельной модели <code>model</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">to_brep</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Считать файл brep представления формата BREP, находящийся по пути <code>path</code>. Вернуть полученную модель.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">m</span> <span class="o">=</span> <span class="n">from_brep</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="svg">SVG</h2>
+
+<p>Поддержка ограничена. Поддерживаются не все типы кривых.</p>
+
+<p>Создать/считать svg файл из плоского тела <code>model</code>, находящийся по пути <code>path</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">to_svg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Создать/считать строку svg представления плоского тела <code>model</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">svg</span> <span class="o">=</span> <span class="n">to_svg_string</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">from_svg_string</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h2 id="экспорт-stl-step-и-3mf">Экспорт STL, STEP и 3MF</h2>
 
 <p>Экспорт — явная граница вычисления: форма материализуется, валидируется и записывается. Qt и вызов <code>show()</code> не нужны.</p>
 

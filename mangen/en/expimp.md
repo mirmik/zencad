@@ -1,4 +1,49 @@
-# Export and import
+# Export Import
+
+Export/import operations differ from most operations of the zencad library in that they operate not only on objects in program memory, but also on files.
+
+---
+## STL
+Create an STL mesh file located in the path from the solid model model.
+The `delta` parameter determines the granularity. The smaller the delta, the smaller the size of the polygons.
+```python3
+to_stl(model, path, delta)
+```
+
+Importing SMALL stl and other mesh mesh formats is possible using third-party libraries such as trimesh. (see examples / Integration / trimesh)
+
+---
+Create a brep file of the BREP format located in the path `path` from the solid model` model`.
+```python3
+to_brep(model, path)
+```
+
+Read the brep file of the BREP format located in the path `path`. Return the resulting model.
+```python3
+m = from_brep(path)
+```
+
+---
+## SVG
+("0.34.0: Currently limited support. Not all curve types are supported.")
+
+Create / read svg file from flat body `model`, located on path` path`.
+
+```python3
+to_svg(model, path)
+model = from_svg(path)
+```
+
+Create / read svg string of flat body representation `model`.
+
+```python3
+svg = to_svg_string(model)
+model = from_svg_string(svg)
+```
+
+
+
+## STL, STEP and 3MF export
 
 Export is an explicit evaluation boundary: the shape is materialized, validated and written. Qt and `show()` are not required.
 

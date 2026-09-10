@@ -6,7 +6,9 @@ ZenCad uses OpenCascade through `cadquery-ocp-novtk` and its `OCP` Python module
 
 Geometry objects and values retain dependencies between operations. The EvalCache evaluator executes them in `deferred` or `immediate` mode and manages result reuse. A `Context` owns an evaluator; ordinary scripts use module functions and object methods. `.value()` obtains a computed value, while a shape's `.native()` obtains an OCP object. See [Evaluation and caching](caching.html) and [Values, points and transforms](prim0d.html).
 
-## Main window and script runner
+## Organization and interaction of ZenCad threads and processes.
+
+The ZenCad graphical interface is designed to minimize its influence on the order of calculations in the running scripts. To achieve this, scripts run in a separate process.
 
 When started with `zencad model.py` or `python -m zencad model.py`, the main process owns Qt, the OpenCascade viewer and the OpenGL context. Camera, selection, markers and AIS presentation objects also belong to this process.
 

@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -69,7 +68,54 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="bounding-boxes">Bounding boxes</h1>
+<article class="article"><h1 id="bounding-box">Bounding box</h1>
+
+<p>The bounding box is a minimal Ox, Oy, Oz-based box that describes the geometric shape shape.</p>
+
+<hr />
+
+<h2 id="shapebbox">shape.bbox</h2>
+
+<p>Construct a bounding box based on the shape.</p>
+
+<p>Пример</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<h2 id="fields">Fields.</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">bbox</span><span class="o">.</span><span class="n">xmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmin</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">xmax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">ymax</span>
+<span class="n">bbox</span><span class="o">.</span><span class="n">zmax</span>
+</code></pre>
+</div>
+
+<h2 id="methods">Methods.</h2>
+
+<p>bbox.xrange()
+bbox.yrange()
+bbox.zrange()</p>
+
+<h2 id="to-shape">To Shape.</h2>
+
+<p>Пример</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shp</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+<span class="n">disp</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">shape</span><span class="p">())</span>
+</code></pre>
+</div>
+
+<h2 id="domain-values-and-evaluation">Domain values and evaluation</h2>
 
 <p><code>shape.boundbox()</code> and <code>shape.bbox()</code> return an axis-aligned <code>BoundaryBox</code>. Coordinates are <code>Scalar</code>; <code>minimum</code>/<code>maximum</code>/<code>center</code> are <code>Point3</code>; <code>size</code> is <code>Vector3</code>.</p>
 

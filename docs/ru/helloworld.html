@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -69,7 +68,81 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="первая-модель">Первая модель</h1>
+<article class="article"><h1 id="привет-друг">Привет, друг.</h1>
+
+<p>Вот пример, демонстрирующий принцип построения моделей в zencad.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="что-происходит">Что происходит:</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+</code></pre>
+</div>
+
+<p>В первой строчке мы импортируем в текущее пространство пространство имён zencad. В данном случае, нас интересуют функции <code>box</code>, <code>sphere</code>, <code>display</code>, <code>show</code>.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Подготавливаем геометрические примитивы. Создаётся объект box с размерами 200x200x200 и смещением геометрического центра в начало координат. Также создаются две сферы радиусом 120 и 60.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+</code></pre>
+</div>
+
+<p>Вычисляем модель с применением булевых операций. Сперва из куба будет вычтена большая сфера. Потом добавлена малая. Порядок слагаемых в данном случае важен, поскольку разность геометрических тел некоммутативна.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Функция <code>disp</code> передаёт объект в сцену для последующего отображения.
+</br>
+</br></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>Отображаем виджет сцены.</p>
+
+<hr />
+
+<h2 id="если-все-прошло-благополучно">Если всё прошло благополучно:</h2>
+
+<p><img src="../images/helloworld.png" alt="" /></p>
+
+<h2 id="запуск-и-проверка-модели">Запуск и проверка модели</h2>
 
 <p>Сохраните полный скрипт в <code>model.py</code>:</p>
 
@@ -104,30 +177,6 @@ zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="
 </div>
 
 <p><code>display()</code> добавляет результат в сцену, <code>show()</code> завершает объявление статической сцены в managed runner. Без отображаемого результата headless-инструмент не получит модель для проверки. <a href="prim0d.html">Далее: типы значений</a>.</p>
-
-<h2 id="модель-из-куба-и-сфер">Модель из куба и сфер</h2>
-
-<p>Этот пример показывает построение формы последовательностью булевых операций:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">a</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
-<span class="n">c</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sphere</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
-<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p>Куб <code>a</code> расположен симметрично относительно начала координат. Сфера <code>b</code> вырезает
-из него центральную часть; сфера <code>c</code> добавляет отдельный элемент в центре.
-Сначала вычисляется разность <code>a - b</code>, затем объединение с <code>c</code>. Разность зависит
-от порядка операндов. <code>display()</code> добавляет результат в сцену, <code>show()</code> запускает
-отображение или публикует сцену в вычислительном процессе редактора.</p>
-
-<p><img src="../images/helloworld.png" alt="Результат построения куба и сфер" /></p>
 </article>
 </div>
 </body>

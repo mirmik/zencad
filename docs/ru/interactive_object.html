@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Главная страница</a></li>
-<li><a href="examples.html">Примеры</a></li>
 <li><a href="helloworld.html">Разбор helloworld</a></li>
 <li><a href="installation.html">Установка</a></li>
 <li>Основные концепции
@@ -69,7 +68,82 @@
 <li><a href="migration.html">Миграция с ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="управление-отображаемым-объектом">Управление отображаемым объектом</h1>
+<article class="article"><h1 id="интерактивныи-объект">Интерактивный объект</h1>
+
+<p>Интерактивный объект - есть единица отображения в zencad.</p>
+
+<p>В этом разделе перечислены типы интерактивных объектов и указаны методы соответствующего базового класса.</p>
+
+<hr />
+
+<h2 id="геометрические-интерактивные-объекты">Геометрические интерактивные объекты.</h2>
+
+<p>Механизм интерактивных объектов используется для отображения геометрических форм, обрабатываемых zencad.</p>
+
+<p>Пример 1 (Создание интерактивного объекта формы):</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">scn</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">Scene</span><span class="p">()</span>
+
+<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">scene</span><span class="o">=</span><span class="n">scn</span><span class="p">)</span>
+
+<span class="n">zencad</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">scn</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Пример 2 (Создание интерактивного объекта формы с помощью функции отображения disp):</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">intobj</span> <span class="o">=</span> <span class="n">zencad</span><span class="o">.</span><span class="n">disp</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">yellow</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h2 id="методы-класса-interactive_object">Методы класса interactive_object:</h2>
+
+<h3 id="переразмещение">Переразмещение</h3>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">intobj</span><span class="o">.</span><span class="n">relocate</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Переразмещает объект в положение <em>trans</em> относительно исходного расположения.</p>
+
+<h3 id="скрытие">Скрытие</h3>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">intobj</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Скрыть или же вновь отобразить объект. Скрытый объект не удаляется из памяти.</p>
+
+<h3 id="установка-цвета">Установка цвета</h3>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+
+<span class="c1"># Examples:</span>
+<span class="c1"># RGB:</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
+
+<span class="c1"># RGBA:</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">intobj</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">zencad</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p>Изменить цвет интерактивного объекта.
+Параметр color представляет или кортеж или объект zencad.Color.</p>
+
+<h2 id="управление-объектом-в-редакторе">Управление объектом в редакторе</h2>
 
 <p>Геометрическая операция создаёт новую форму. Контроллер, возвращённый <code>display()</code>, меняет представление уже добавленного объекта:</p>
 
@@ -90,6 +164,52 @@
 <p><code>relocate(transform)</code> задаёт размещение, <code>location()</code> читает его; <code>set_color()</code>/<code>color()</code> меняют и читают цвет, <code>hide()</code>/<code>is_hidden()</code> — видимость. Контроллер также поддерживает helpers преобразований. Для каждого кадра обычно задавайте абсолютное размещение через <code>relocate</code>, чтобы не накапливать преобразования случайно.</p>
 
 <p>Это не изменение BREP и не булева операция: исходный <code>body</code> остаётся прежним. В managed-анимации обновляются только свойства заранее созданных объектов. Не создавайте <code>interactive_object</code> или QWidget вручную ради изменения модели. <a href="animate.html">Анимация</a>.</p>
+
+<h2 id="графические-интерактивные-объекты">Графические интерактивные объекты.</h2>
+
+<p>Помимо интерактивных объектов геометрических форм существуют интерактивные объекты, которые могут использоваться для передачи дополненительной информации на рабочей сцене:</p>
+
+<hr />
+
+<h3 id="стрелка">Стрелка:</h3>
+
+<p>Отобразить стрелку, соответствующую вектору <em>vec</em>, ведущему из точки <em>pnt</em>, размер головы стрелки определяется параметром <em>arrlen</em>, толщина линии параметром <em>width</em>.
+Объект добавляется в сцену вызовом <code>display()</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.interactive.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">arrow</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">arrow</span><span class="p">(</span><span class="n">pnt</span><span class="p">,</span> <span class="n">pnt</span> <span class="o">+</span> <span class="n">vec</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3 id="линия">Линия:</h3>
+
+<p>Отобразить линию, между точками <em>apnt</em> и <em>bpnt</em>, толщина линии параметром <em>width</em>.
+Объект добавляется в сцену вызовом <code>display()</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.interactive.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">line</span> <span class="k">as</span> <span class="n">display_line</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">display_line</span><span class="p">(</span><span class="n">apnt</span><span class="p">,</span> <span class="n">bpnt</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">zencad</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<hr />
+
+<p>Эти функции принимают начальную и конечную точки и создают объекты отображения; <code>zencad.line</code> создаёт геометрическую кривую и имеет другое назначение.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.interactive.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">arrow</span><span class="p">,</span> <span class="n">line</span> <span class="k">as</span> <span class="n">display_line</span>
+
+<span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">managed_scene</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">arrow</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">red</span><span class="p">,</span> <span class="n">arrlen</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">display_line</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">green</span><span class="p">))</span>
+</code></pre>
+</div>
 </article>
 </div>
 </body>

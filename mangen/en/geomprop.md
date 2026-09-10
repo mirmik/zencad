@@ -1,4 +1,27 @@
-# Geometric properties
+# Geometric characteristics.
+The section is devoted to measuring the geometric characteristics of the constructed geometry.
+
+Since the concepts of density and scale are very ephemeral for the computational library, all calculations are carried out in arbitrary units. Converting values to the si system requires additional calculations.
+
+----------------------------------------
+## Built-in methods
+Shape has a number of methods for querying geometric information.
+
+----
+### Center of mass.
+```python
+shape.center() # -> Point3
+```
+
+----
+### Volume.
+```python
+shape.mass() # -> Scalar
+```
+
+
+
+## Domain values and evaluation
 
 Geometry queries return domain values; use `.value()` for Python numbers. On a solid, `mass()` measures volume at unit density, not physical material mass.
 

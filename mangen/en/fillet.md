@@ -1,12 +1,14 @@
 # Topologically dependent transformations
 
+There is a class of operations required as part of the model topology. In interactive CAD, we can, using the mouse pointer, point to such an element and point it as a guide. This method is not available in scripted CAD. One approach of ZenCad is that such an element is specified using the "closest point" method. When specifying an argument, a point is specified instead of a topology element. The selected element is the element, the distance to which from the specified point will be minimal.
+
 Fillets, chamfers and drafts require selecting model topology. Use [geometric selectors](selectors.html) or pass edges and faces directly. Fillets and chamfers also accept reference points, selecting the nearest topology element.
 
 ---
 ## Fillet
 Body rounding operation.
 If the body is solid, the edges are modified. If flat - tops.
-Fillets are specified by radius `r` and an array of nearest points`refs`. If `refs == None`, all elements of the topology are considered selected. 
+Fillets are specified by radius `r` and an array of nearest points`refs`. If `refs == None`, all elements of the topology are considered selected.
 
 ```python
 fillet(model, radius, referencedPoints)
@@ -59,7 +61,7 @@ midplane = draft(
 ## Thicksolid
 The operation of creating a thin-walled volumetric body.
 Defined by the prototype model `shp` and an array of points closest to the removed faces` refs`.
-The wall thickness `t` is also specified. If the wall thickness is positive, the walls grow outward. If negative - inward. 
+The wall thickness `t` is also specified. If the wall thickness is positive, the walls grow outward. If negative - inward.
 
 ```python
 thicksolid(model, t=thickness, refs=referencedPoints)

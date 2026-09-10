@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -71,6 +70,12 @@
 </nav>
 <article class="article"><h1 id="evaluation-and-caching">Evaluation and caching</h1>
 
+<p>A feature of the scripted cad is the need to restart the geometry generation script every time the model is updated. As the size of the model grows, this leads to a significant increase in the time required for calculating and drawing geometry. To solve this problem, computationally intensive ZenCad operations are cached and lenified by the [evalcache] library (https://github.com/mirmik/evalcache).</p>
+
+<p>Instead of calculating directly, evalcache builds a model building tree based on the hash keys of the generated objects. The library saves cacheable results on disk and retrieves them if the object has already been calculated. Changing parameters on the next script run changes the keys of dependent computations.</p>
+
+<p>Since evalcache only performs computations when the object is actually requested, and not when it is declared, it can be difficult to understand where a possible error occurs. Problems can also arise due to the implicit expansion of lazy objects on some operations.</p>
+
 <p>Evaluation is deferred by default: operations construct a graph, and geometry is computed for display, export, <code>native()</code> or <code>value()</code>. Caching reuses identical computation results, including across processes.</p>
 
 <p>Enable immediate evaluation before constructing your model when debugging:</p>
@@ -113,6 +118,8 @@
 <p><code>configure(cache_enabled=False)</code> disables disk cache reads and writes without deleting its files. Objects can reuse already computed results in memory. The table describes cacheable operations; simple values may be evaluated while constructing the graph.</p>
 
 <h2 id="shared-disk-cache">Shared disk cache</h2>
+
+<p>The ZenCad settings dialog can change the directory and enabled state.</p>
 
 <p>The default directory is <code>tempfile.gettempdir()/zencad-cache-&lt;uid&gt;</code>. ZenCad does not delete it on exit, but the OS may clean temporary storage. Precedence is explicit process <code>configure()</code>, then <code>ZENCAD_CACHE_DIR</code>/<code>ZENCAD_CACHE_DISABLE</code>, then saved user settings.</p>
 

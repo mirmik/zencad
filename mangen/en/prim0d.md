@@ -1,4 +1,115 @@
-# Values, points and transforms
+# Point, vector, helper functions.
+
+ZenCad has some math helpers and functions for working with them.
+
+---
+## Point
+Some ZenCad functions use points or point arrays as parameters. You can use the `point3` function to create a point object. In addition, often a function can itself form points from a list or a tuple of coordinates.
+
+```python
+point3(0,3,6)
+
+#Equivalent calls
+interpolate([point3(0,0,0), point3(0,0,10), point3(10,0,10)])
+interpolate([(0,0,0), (0,0,10), (10,0,10)])
+interpolate(points([(0,0,0), (0,0,10), (10,0,10)]))
+```
+
+A point can be displayed with the display function as the corresponding vertex for such a point.
+
+---
+## Vector
+Sometimes, in addition to specifying points, vector objects are used to indicate directions. The principle of working with vectors is similar to working with points.
+
+```python
+vector3(1,2,3)
+
+interpolate(pnts=[(0,0,0), (0,0,10), (10,0,10)], tangs=[(0,0,1), (1,0,0), (0,1,0)])
+```
+
+The vector cannot be displayed directly.
+Unlike a point, a vector ignores translation during transformations.
+
+---
+## Point and vector arrays
+The vectors and points functions explicitly create arrays of points from arrays of coordinates.
+points2 creates a two-dimensional array of points from a two-dimensional list.
+
+```python
+points([(0,0,0), (0,0,10), (10,0,10)])
+vectors([(0,0,1), (1,0,0), (0,1,0)])
+
+points2([
+	[(0,0,0), (0,0,10), (10,0,10)],
+	[(1,6,0), (0,5,10), (10,5,10)]
+])
+```
+
+---
+## Operations on points and vectors
+Points and vectors can be used in mathematical operations according to the rules of linear algebra.
+
+```python
+pnt - pnt # -> vec
+pnt + vec # -> pnt
+vec + vec # -> vec
+vec - vec # -> vec
+```
+
+---
+## Empty primitive. nullshape
+Empty primitive. Can participate in boolean operations.
+
+An example of use in a loop:
+```python
+it = nullshape()
+for i in range(7):
+	it = it + box(20).translate(10*i,10*i,10*i)
+
+#alternate: union([box(20).translate(10*i,10*i,10*i) for i in range(7)])
+```
+
+---
+## Conversion of angular values. Radians and degrees
+The zencad API uses radians to define angles. Using degrees requires scaling a numerical factor. This is exactly what the deg function does (synonymous with deg2rad):
+`deg (180)` matches `math.pi`.
+
+The reverse conversion is performed by the rad2deg function.
+
+Сигнатуры:
+```python
+# Convert degrees to radians:
+deg2rad(grad)
+deg(grad)
+
+# Convert radians to degrees:
+rad2deg(rad)
+```
+
+Function code deg2rad, rad2deg:
+```python
+def deg2rad(grad):
+    return float(grad) / 180.0 * math.pi
+
+def rad2deg(rad):
+    return float(rad) * 180.0 / math.pi
+```
+
+Пример:
+```python
+rotateZ(deg(45))
+```
+
+---
+### Register font
+Register FreeType font in system.
+
+```python
+register_font(fontpath)
+```
+
+
+## Domain values and evaluation
 
 `scalar`, `point2`, `point3`, `vector2`, `vector3`, `quaternion` and `transform` construct numbers, points, vectors, quaternions and transforms. Their result types are `Scalar`, `Point2`, `Point3`, `Vector2`, `Vector3`, `Quaternion` and `Transform`, respectively. Geometry and numeric dependencies remain in the graph until explicitly requested.
 

@@ -5,32 +5,46 @@
 </div>
 
 ## What is ZenCad?
+_ZenCad_ is a library for parametric 3D modeling. the library adheres to the idea of ​​creating a 3D model by writing a script and its legs grow from the _OpenScad_ system. Unlike _OpenScad_, the library uses the geometrical core of the boundary representation _OpenCascade_ and the general-purpose language _Python_.
 
-ZenCad provides parametric 3D modeling in Python using OpenCascade. A script creates exact BREP geometry that you can display, validate and export without constructing it manually in an editor.
+_ZenCad_ can be used as an independent rapid prototyping system for prototyping or 3D printing purposes, and in combination with the libraries of the _Python_ ecosystem, in particular for building 3D models based on calculations performed in such systems as scipy and sympy.
 
-Use ZenCad for prototyping, preparing models for 3D printing and constructing geometry from Python calculations. See [Installation](installation.html) for source and package setup.
+# Fast start.
 
-## Quick start
-
-Install and start the editor:
-
+------------
+## Install.
 ```sh
 python3 -m pip install "zencad[gui]"
+```
+
+--------------
+## Graphic user intrface.
+```sh
 zencad
+
+# alternate:
+python3 -m zencad
 ```
 
-Save the model in a Python file and open it in the editor:
-
+-------------
+## HelloWorld
 ```python
-import zencad as z
+#!/usr/bin/env python3
+#coding: utf-8
 
-model = z.box(200, center=True) - z.sphere(120) + z.sphere(60)
-z.display(model)
-z.show()
+from zencad import *
+
+box = box(200, 200, 200, center = True)
+sphere1 = sphere(120)
+sphere2 = sphere(60)
+
+model = box - sphere1 + sphere2
+
+display(model)
+show()
 ```
 
-## Links
-
-- [Source on GitHub](https://github.com/mirmik/zencad)
-- [Package on PyPI](https://pypi.org/project/zencad/)
-- [Migrating from ZenCad 1](migration.html)
+---------
+## References
+github: [https://github.com/mirmik/zencad](https://github.com/mirmik/zencad)  
+pypi: [https://pypi.org/project/zencad](https://pypi.org/project/zencad)  

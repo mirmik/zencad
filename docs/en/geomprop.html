@@ -15,7 +15,6 @@
 <div id="content">
 <nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
-<li><a href="examples.html">Examples</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
 <li>Basic conceptions
@@ -69,7 +68,37 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-<article class="article"><h1 id="geometric-properties">Geometric properties</h1>
+<article class="article"><h1 id="geometric-characteristics">Geometric characteristics.</h1>
+
+<p>The section is devoted to measuring the geometric characteristics of the constructed geometry.</p>
+
+<p>Since the concepts of density and scale are very ephemeral for the computational library, all calculations are carried out in arbitrary units. Converting values to the si system requires additional calculations.</p>
+
+<hr />
+
+<h2 id="built-in-methods">Built-in methods</h2>
+
+<p>Shape has a number of methods for querying geometric information.</p>
+
+<hr />
+
+<h3 id="center-of-mass">Center of mass.</h3>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">center</span><span class="p">()</span> <span class="c1"># -&gt; Point3</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3 id="volume">Volume.</h3>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="c1"># -&gt; Scalar</span>
+</code></pre>
+</div>
+
+<h2 id="domain-values-and-evaluation">Domain values and evaluation</h2>
 
 <p>Geometry queries return domain values; use <code>.value()</code> for Python numbers. On a solid, <code>mass()</code> measures volume at unit density, not physical material mass.</p>
 
