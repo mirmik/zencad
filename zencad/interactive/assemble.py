@@ -239,6 +239,19 @@ class kinematic_unit(unit):
 
         raise NotImplementedError
 
+    def get_coords(self):
+        """Return coordinates in the same order as set_coords() and senses()."""
+        raise NotImplementedError
+
+    def _validated_coords(self, coords):
+        import math
+        values = tuple(float(value) for value in coords)
+        if len(values) != self.dim():
+            raise ValueError(f"Expected {self.dim()} coordinates")
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("Coordinates must be finite")
+        return values
+
     def link(self, arg):
         """Присоединить объект arg к выходной СК.
 
@@ -271,7 +284,10 @@ class kinematic_unit_one_axis(kinematic_unit):
 
     # override
     def set_coords(self, coords, **kwargs):
-        self.set_coord(coords[0], **kwargs)
+        self.set_coord(self._validated_coords(coords)[0], **kwargs)
+
+    def get_coords(self):
+        return (self.coord,)
 
     def update_coord(self, coord):
         self.coord = coord
@@ -344,39 +360,12 @@ class planemover(kinematic_unit):
 
     def set_coords(self, coords, **kwargs):
         kwargs.setdefault("deep", True)
-        self.x = coords[0]
-        self.y = coords[1]
+        self.x, self.y = self._validated_coords(coords)
         self.output.relocate(
             translate(vector3(self.x, self.y, 0)), **kwargs)
 
-
-class freemover(kinematic_unit):
-    """Кинематическое звено с двумя степенями свободы для перемещения
-    по плоскости"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.x = 0
-        self.y = 0
-
-    def dim(self):
-        return 6
-
-    def senses(self):
-        return (
-            screw(ang=vector3(1, 0, 0), lin=vector3(0, 0, 0)),
-            screw(ang=vector3(0, 1, 0), lin=vector3(0, 0, 0)),
-            screw(ang=vector3(0, 0, 1), lin=vector3(0, 0, 0)),
-            screw(ang=vector3(0, 0, 0), lin=vector3(1, 0, 0)),
-            screw(ang=vector3(0, 0, 0), lin=vector3(0, 1, 0)),
-            screw(ang=vector3(0, 0, 0), lin=vector3(0, 0, 1))
-        )
-
-    def set_coords(self, coords, **kwargs):
-        self.x = coords[0]
-        self.y = coords[1]
-        self.output.relocate(
-            translate(vector3(self.x, self.y, 0)), **kwargs)
+    def get_coords(self):
+        return (self.x, self.y)
 
 
 class spherical_rotator(kinematic_unit):
@@ -385,24 +374,26 @@ class spherical_rotator(kinematic_unit):
         self._yaw = 0
         self._pitch = 0
 
+    def dim(self):
+        return 2
+
+    def get_coords(self):
+        return (self._yaw, self._pitch)
+
     def senses(self):
-        raise NotImplementedError
-        # return (
-        #	(vector3(1,0,0), vector3()),
-        #	(vector3(0,1,0), vector3())
-        # )
+        return (
+            screw(ang=rotateY(-self._pitch).transform_vector(vector3(0, 0, 1))),
+            screw(ang=vector3(0, 1, 0)),
+        )
 
     def set_yaw(self, angle, **kwargs):
-        self._yaw = angle
-        self.update_position(**kwargs)
+        self.set_coords((angle, self._pitch), **kwargs)
 
     def set_pitch(self, angle, **kwargs):
-        self._pitch = angle
-        self.update_position(**kwargs)
+        self.set_coords((self._yaw, angle), **kwargs)
 
     def set_coords(self, coords, **kwargs):
-        self._yaw = coords[0]
-        self._pitch = coords[1]
+        self._yaw, self._pitch = self._validated_coords(coords)
         self.update_position(**kwargs)
 
     def update_position(self, **kwargs):

@@ -188,7 +188,7 @@
 </tr>
 <tr>
   <td><code>apply_step(increments)</code></td>
-  <td>Прибавляет приращения к координатам однокоординатных звеньев</td>
+  <td>Прибавляет приращения к координатам в порядке столбцов Якобиана</td>
 </tr>
 <tr>
   <td><code>apply(speeds, delta)</code></td>
@@ -197,7 +197,7 @@
 </tbody>
 </table>
 
-<p>Написание <code>sensivity</code> сохранено в именах методов API. Без <code>basis</code> чувствительности выражены в системе конечного юнита; <code>basis=base</code> выражает их в системе указанного юнита. Положения дерева должны быть обновлены перед расчётом. Приращения и скорости передавайте по одному значению на каждое однокоординатное звено в порядке <code>kinematic_pairs</code>.</p>
+<p>Написание <code>sensivity</code> сохранено в именах методов API. Без <code>basis</code> чувствительности выражены в системе конечного юнита; <code>basis=base</code> выражает их в системе указанного юнита. Положения дерева должны быть обновлены перед расчётом. Приращения и скорости передавайте по одному значению на столбец Якобиана: звенья идут в порядке <code>kinematic_pairs</code>, координаты внутри каждого звена — в обратном порядке относительно <code>set_coords()</code>.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -233,7 +233,11 @@
 
 <h2 id="границы-поддержки">Границы поддержки</h2>
 
-<p>Приведённые примеры используют <code>rotator</code> и <code>actuator</code>. В модуле есть также <code>planemover</code>, <code>freemover</code> и <code>spherical_rotator</code>, но их поддержка неоднородна: у <code>freemover</code> заявлены шесть степеней свободы, хотя установка координат реализует только перемещение по XY; <code>spherical_rotator.senses()</code> не реализован. Поэтому <code>freemover</code> и <code>spherical_rotator</code> нельзя считать готовыми заменами однокоординатных звеньев в расчёте Якоби. <code>planemover.set_coords([x, y])</code> задаёт перемещение по XY; его <code>senses()</code> возвращает линейные чувствительности по X и Y. В Якобиане цепи порядок чувствительностей внутри пары обратный: Y, затем X. <code>apply_step()</code> и <code>apply()</code> принимают только однокоординатные звенья и проверяют длину входного вектора до изменения координат.</p>
+<p><code>spherical_rotator</code> имеет две координаты: <code>set_coords([yaw, pitch])</code> задаёт поворот <code>rotateZ(yaw) * rotateY(pitch)</code>. Углы задаются в радианах; доступны отдельные <code>set_yaw()</code> и <code>set_pitch()</code>. <code>dim()</code> возвращает <code>2</code>, <code>get_coords()</code> — <code>(yaw, pitch)</code>. <code>senses()</code> возвращает угловые чувствительности по yaw и pitch в системе выхода звена; они учитывают текущие углы. Это двухосевой поворот, а не параметризация произвольной ориентации тремя координатами.</p>
+
+<p><code>planemover.set_coords([x, y])</code> задаёт перемещение по XY; <code>get_coords()</code> возвращает <code>(x, y)</code>, а <code>senses()</code> — линейные чувствительности по X и Y.</p>
+
+<p>Цепь сохраняет обратный порядок чувствительностей внутри пары: для <code>spherical_rotator</code> это pitch, затем yaw; для <code>planemover</code> — Y, затем X. <code>apply_step()</code> и <code>apply()</code> поддерживают смешанные цепи из этих звеньев, <code>rotator</code> и <code>actuator</code>. Длина входного вектора равна сумме <code>dim()</code> звеньев. Размер и конечность значений проверяются до изменения координат.</p>
 </article>
 </div>
 </body>

@@ -38,13 +38,19 @@ class kinematic_chain:
         return self.kinematic_pairs[key]
 
     def apply_step(self, x):
-        # Validate before changing any joint, including unsupported multi-DOF chains.
-        if any(k.dim() != 1 for k in self.kinematic_pairs):
-            raise NotImplementedError("apply_step supports only one-coordinate joints")
-        if len(x) != len(self.kinematic_pairs):
-            raise ValueError("Expected one coordinate change per kinematic pair")
-        for k, delta in zip(self.kinematic_pairs, x):
-            k.set_coord(k.coord + delta)
+        """Apply increments in Jacobian column order, including multi-DOF pairs."""
+        if len(x) != sum(k.dim() for k in self.kinematic_pairs):
+            raise ValueError("Expected one increment per Jacobian column")
+        updates = []
+        offset = 0
+        for k in self.kinematic_pairs:
+            # sensivity reverses each pair's senses, as well as the chain order.
+            increments = reversed(x[offset:offset + k.dim()])
+            coords = [q + dq for q, dq in zip(k.get_coords(), increments)]
+            updates.append((k, k._validated_coords(coords)))
+            offset += k.dim()
+        for k, coords in updates:
+            k.set_coords(coords)
 
     def apply(self, speeds, delta):
         self.apply_step([speed * delta for speed in speeds])

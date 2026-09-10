@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 from zencad import translate, rotate, rotateX, rotateY, rotateZ, mirrorYZ, scale
-from zencad.assemble import unit, rotator, actuator, planemover
+from zencad.assemble import unit, rotator, actuator, planemover, spherical_rotator
 from zencad.libs.kinematic import kinematic_chain
 
 
@@ -24,20 +24,25 @@ def numerical_jacobian(joints, target, basis, eps=1e-6):
     inverse_b = np.linalg.inv(b)
     columns = []
     for joint in joints:
-        q = joint.coord
-        try:
-            joint.set_coord(q + eps, view=False)
-            plus = matrix(target())
-            joint.set_coord(q - eps, view=False)
-            minus = matrix(target())
-        finally:
-            joint.set_coord(q, view=False)
-        derivative = (plus - minus) / (2 * eps)
-        spin = inverse_b @ derivative[:, :3] @ inverse_a @ b
-        angular = np.array([spin[2, 1] - spin[1, 2],
-                            spin[0, 2] - spin[2, 0],
-                            spin[1, 0] - spin[0, 1]]) / 2
-        columns.append(np.r_[angular, inverse_b @ derivative[:, 3]])
+        coordinates = joint.get_coords()
+        for index in reversed(range(joint.dim())):
+            plus_coords = list(coordinates)
+            minus_coords = list(coordinates)
+            plus_coords[index] += eps
+            minus_coords[index] -= eps
+            try:
+                joint.set_coords(plus_coords, view=False)
+                plus = matrix(target())
+                joint.set_coords(minus_coords, view=False)
+                minus = matrix(target())
+            finally:
+                joint.set_coords(coordinates, view=False)
+            derivative = (plus - minus) / (2 * eps)
+            spin = inverse_b @ derivative[:, :3] @ inverse_a @ b
+            angular = np.array([spin[2, 1] - spin[1, 2],
+                                spin[0, 2] - spin[2, 0],
+                                spin[1, 0] - spin[0, 1]]) / 2
+            columns.append(np.r_[angular, inverse_b @ derivative[:, 3]])
     return np.array(columns).T if columns else np.zeros((6, 0))
 
 
@@ -135,7 +140,7 @@ class KinematicTest(unittest.TestCase):
         chain.apply([2, 3], .5)
         self.assertEqual((root.coord, child.coord), (1.5, 1))
         planar = planemover(parent=child.output)
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaises(ValueError):
             kinematic_chain(planar.output).apply_step([1, 2, 3])
         self.assertEqual((root.coord, child.coord), (1.5, 1))
 
@@ -148,6 +153,49 @@ class KinematicTest(unittest.TestCase):
         expected = np.zeros((6, 2))
         expected[4, 0] = expected[3, 1] = 1
         np.testing.assert_allclose(kinematic_chain(tip).sensivity_jacobian(), expected)
+
+    def test_spherical_and_mixed_chain_derivatives(self):
+        for pitch in (0, .7, np.pi / 2, -np.pi / 2):
+            root = unit()
+            joint = spherical_rotator(parent=root, location=rotateX(.4) * mirrorYZ() * scale(2))
+            planar = planemover(parent=joint.output, location=translate(1, 2, 3))
+            end = rotator(axis=(1, 1, 0), parent=planar.output)
+            tip = unit(parent=end.output, location=translate(2, -3, 4))
+            joint.set_coords((.6, pitch), view=False)
+            planar.set_coords((2, -1), view=False)
+            end.set_coord(.3, view=False)
+            chain = kinematic_chain(tip, root)
+            for basis in (None, root, joint.output):
+                for body in (tip, planar, joint.output, joint):
+                    self.assert_jacobian(chain, body, unit(location=translate(.2, .4, -.1)).location, basis)
+            increments = np.array([.01, .02, .03, .04, .05])
+            before = np.array(tip.global_location.translation().to_array())
+            prediction = chain.translation_sensivity_jacobian(root) @ increments
+            step = 1e-5
+            chain.apply(increments, step)
+            actual = (np.array(tip.global_location.translation().to_array()) - before) / step
+            np.testing.assert_allclose(actual, prediction, atol=1e-6)
+            np.testing.assert_allclose(joint.get_coords(), [.6 + .05 * step, pitch + .04 * step])
+            np.testing.assert_allclose(planar.get_coords(), [2 + .03 * step, -1 + .02 * step])
+
+    def test_spherical_setters_and_validation(self):
+        joint = spherical_rotator()
+        tip = unit(parent=joint.output, location=translate(2, 0, 0))
+        joint.set_yaw(.4, view=False)
+        joint.set_pitch(-.7, view=False)
+        self.assertEqual(joint.get_coords(), (.4, -.7))
+        expected = unit(location=rotateZ(.4) * rotateY(-.7) * translate(2, 0, 0)).location
+        np.testing.assert_allclose(matrix(tip.global_location), matrix(expected))
+        for coords in ([1], [1, 2, 3], [float('nan'), 0]):
+            with self.assertRaises(ValueError):
+                joint.set_coords(coords)
+            self.assertEqual(joint.get_coords(), (.4, -.7))
+        end = actuator(axis=(1, 0, 0), parent=joint.output)
+        chain = kinematic_chain(end.output)
+        with self.assertRaises(ValueError):
+            chain.apply_step([1, float('nan'), 2])
+        self.assertEqual(end.coord, 0)
+        self.assertEqual(joint.get_coords(), (.4, -.7))
 
 
 if __name__ == '__main__':

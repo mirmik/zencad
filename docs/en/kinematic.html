@@ -188,7 +188,7 @@
 </tr>
 <tr>
   <td><code>apply_step(increments)</code></td>
-  <td>Adds increments to single-coordinate joints</td>
+  <td>Adds coordinate increments in Jacobian-column order</td>
 </tr>
 <tr>
   <td><code>apply(speeds, delta)</code></td>
@@ -197,7 +197,7 @@
 </tbody>
 </table>
 
-<p><code>sensivity</code> is the actual API spelling. Without <code>basis</code>, sensitivities are expressed in the terminal unit's frame; <code>basis=base</code> expresses them in that unit's frame. Update tree placements before calculating. Supply one increment or speed per single-coordinate joint in <code>kinematic_pairs</code> order.</p>
+<p><code>sensivity</code> is the actual API spelling. Without <code>basis</code>, sensitivities are expressed in the terminal unit's frame; <code>basis=base</code> expresses them in that unit's frame. Update tree placements before calculating. Supply one increment or speed per Jacobian column: joints follow <code>kinematic_pairs</code> order, and coordinates within each joint are reversed relative to <code>set_coords()</code>.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -233,7 +233,11 @@
 
 <h2 id="support-boundaries">Support boundaries</h2>
 
-<p>The examples use <code>rotator</code> and <code>actuator</code>. The module also contains <code>planemover</code>, <code>freemover</code> and <code>spherical_rotator</code>, but support is uneven: <code>freemover</code> declares six degrees of freedom while coordinate updates only translate in XY; <code>spherical_rotator.senses()</code> is unimplemented. <code>freemover</code> and <code>spherical_rotator</code> are therefore not ready substitutes for single-coordinate joints in Jacobian calculations. <code>planemover.set_coords([x, y])</code> sets an XY translation; its <code>senses()</code> returns linear sensitivities along X and Y. The chain Jacobian reverses sensitivities within a pair: Y, then X. <code>apply_step()</code> and <code>apply()</code> accept only single-coordinate joints and validate the input vector length before changing coordinates.</p>
+<p><code>spherical_rotator</code> has two coordinates: <code>set_coords([yaw, pitch])</code> sets <code>rotateZ(yaw) * rotateY(pitch)</code>. Angles are in radians; separate <code>set_yaw()</code> and <code>set_pitch()</code> methods are available. <code>dim()</code> returns <code>2</code>, and <code>get_coords()</code> returns <code>(yaw, pitch)</code>. <code>senses()</code> returns yaw and pitch angular sensitivities in the joint output frame, accounting for the current angles. This is a two-axis rotation, not a three-coordinate parameterization of arbitrary orientation.</p>
+
+<p><code>planemover.set_coords([x, y])</code> sets an XY translation; <code>get_coords()</code> returns <code>(x, y)</code>, and <code>senses()</code> returns linear sensitivities along X and Y.</p>
+
+<p>The chain preserves reversed sensitivity order within each pair: pitch then yaw for <code>spherical_rotator</code>, Y then X for <code>planemover</code>. <code>apply_step()</code> and <code>apply()</code> support mixed chains containing these joints, <code>rotator</code>, and <code>actuator</code>. The input vector length equals the sum of joint <code>dim()</code> values. Length and finite values are validated before changing coordinates.</p>
 </article>
 </div>
 </body>

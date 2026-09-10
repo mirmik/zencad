@@ -79,10 +79,10 @@ show()
 | `sensivity(basis=None)` | Список объектов `screw` с угловой частью `.ang` и линейной `.lin` |
 | `sensivity_jacobian(basis=None)` | NumPy-матрица `6 × N`: угловые компоненты в первых трёх строках, линейные в последних |
 | `translation_sensivity_jacobian(basis=None)` | NumPy-матрица `3 × N` линейных компонентов |
-| `apply_step(increments)` | Прибавляет приращения к координатам однокоординатных звеньев |
+| `apply_step(increments)` | Прибавляет приращения к координатам в порядке столбцов Якобиана |
 | `apply(speeds, delta)` | Прибавляет `speed * delta` к каждой координате |
 
-Написание `sensivity` сохранено в именах методов API. Без `basis` чувствительности выражены в системе конечного юнита; `basis=base` выражает их в системе указанного юнита. Положения дерева должны быть обновлены перед расчётом. Приращения и скорости передавайте по одному значению на каждое однокоординатное звено в порядке `kinematic_pairs`.
+Написание `sensivity` сохранено в именах методов API. Без `basis` чувствительности выражены в системе конечного юнита; `basis=base` выражает их в системе указанного юнита. Положения дерева должны быть обновлены перед расчётом. Приращения и скорости передавайте по одному значению на столбец Якобиана: звенья идут в порядке `kinematic_pairs`, координаты внутри каждого звена — в обратном порядке относительно `set_coords()`.
 
 ```python
 from zencad import *
@@ -118,7 +118,11 @@ assert abs(tip.global_location.translation().x - 13) < 1e-7
 
 ## Границы поддержки
 
-Приведённые примеры используют `rotator` и `actuator`. В модуле есть также `planemover`, `freemover` и `spherical_rotator`, но их поддержка неоднородна: у `freemover` заявлены шесть степеней свободы, хотя установка координат реализует только перемещение по XY; `spherical_rotator.senses()` не реализован. Поэтому `freemover` и `spherical_rotator` нельзя считать готовыми заменами однокоординатных звеньев в расчёте Якоби. `planemover.set_coords([x, y])` задаёт перемещение по XY; его `senses()` возвращает линейные чувствительности по X и Y. В Якобиане цепи порядок чувствительностей внутри пары обратный: Y, затем X. `apply_step()` и `apply()` принимают только однокоординатные звенья и проверяют длину входного вектора до изменения координат.
+`spherical_rotator` имеет две координаты: `set_coords([yaw, pitch])` задаёт поворот `rotateZ(yaw) * rotateY(pitch)`. Углы задаются в радианах; доступны отдельные `set_yaw()` и `set_pitch()`. `dim()` возвращает `2`, `get_coords()` — `(yaw, pitch)`. `senses()` возвращает угловые чувствительности по yaw и pitch в системе выхода звена; они учитывают текущие углы. Это двухосевой поворот, а не параметризация произвольной ориентации тремя координатами.
+
+`planemover.set_coords([x, y])` задаёт перемещение по XY; `get_coords()` возвращает `(x, y)`, а `senses()` — линейные чувствительности по X и Y.
+
+Цепь сохраняет обратный порядок чувствительностей внутри пары: для `spherical_rotator` это pitch, затем yaw; для `planemover` — Y, затем X. `apply_step()` и `apply()` поддерживают смешанные цепи из этих звеньев, `rotator` и `actuator`. Длина входного вектора равна сумме `dim()` звеньев. Размер и конечность значений проверяются до изменения координат.
 :en
 # Kinematics
 
@@ -200,10 +204,10 @@ A chain computes the local dependence of end-effector motion on joint coordinate
 | `sensivity(basis=None)` | A list of `screw` objects with angular `.ang` and linear `.lin` components |
 | `sensivity_jacobian(basis=None)` | A `6 × N` NumPy matrix: angular components in the first three rows, linear components in the last three |
 | `translation_sensivity_jacobian(basis=None)` | A `3 × N` NumPy matrix of linear components |
-| `apply_step(increments)` | Adds increments to single-coordinate joints |
+| `apply_step(increments)` | Adds coordinate increments in Jacobian-column order |
 | `apply(speeds, delta)` | Adds `speed * delta` to each coordinate |
 
-`sensivity` is the actual API spelling. Without `basis`, sensitivities are expressed in the terminal unit's frame; `basis=base` expresses them in that unit's frame. Update tree placements before calculating. Supply one increment or speed per single-coordinate joint in `kinematic_pairs` order.
+`sensivity` is the actual API spelling. Without `basis`, sensitivities are expressed in the terminal unit's frame; `basis=base` expresses them in that unit's frame. Update tree placements before calculating. Supply one increment or speed per Jacobian column: joints follow `kinematic_pairs` order, and coordinates within each joint are reversed relative to `set_coords()`.
 
 ```python
 from zencad import *
@@ -239,5 +243,9 @@ In `zencad/examples/4.Assemble/robot-arm.py`, a chain of rotary joints automatic
 
 ## Support boundaries
 
-The examples use `rotator` and `actuator`. The module also contains `planemover`, `freemover` and `spherical_rotator`, but support is uneven: `freemover` declares six degrees of freedom while coordinate updates only translate in XY; `spherical_rotator.senses()` is unimplemented. `freemover` and `spherical_rotator` are therefore not ready substitutes for single-coordinate joints in Jacobian calculations. `planemover.set_coords([x, y])` sets an XY translation; its `senses()` returns linear sensitivities along X and Y. The chain Jacobian reverses sensitivities within a pair: Y, then X. `apply_step()` and `apply()` accept only single-coordinate joints and validate the input vector length before changing coordinates.
+`spherical_rotator` has two coordinates: `set_coords([yaw, pitch])` sets `rotateZ(yaw) * rotateY(pitch)`. Angles are in radians; separate `set_yaw()` and `set_pitch()` methods are available. `dim()` returns `2`, and `get_coords()` returns `(yaw, pitch)`. `senses()` returns yaw and pitch angular sensitivities in the joint output frame, accounting for the current angles. This is a two-axis rotation, not a three-coordinate parameterization of arbitrary orientation.
+
+`planemover.set_coords([x, y])` sets an XY translation; `get_coords()` returns `(x, y)`, and `senses()` returns linear sensitivities along X and Y.
+
+The chain preserves reversed sensitivity order within each pair: pitch then yaw for `spherical_rotator`, Y then X for `planemover`. `apply_step()` and `apply()` support mixed chains containing these joints, `rotator`, and `actuator`. The input vector length equals the sum of joint `dim()` values. Length and finite values are validated before changing coordinates.
 ::
