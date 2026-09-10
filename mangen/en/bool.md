@@ -110,16 +110,9 @@ m1 = section(box(10, center=True), sphere(7))
 ---
 ## Splitting and slicing by a plane.
 
-`split(body, tools)` partitions a body with one or more Shape tools and returns
-a `SplitResult`: a lazy, deterministically ordered sequence of resulting
-solids. Empty tools and a tool that does not divide the body (including a
-tangent tool) raise `ValueError`.
+`split(body, tools)` partitions a body with Shape tools; `slice(body, z=..., axis=...)` uses one plane. Both return collections of solids and retain uncut bodies. An empty set of tools for `split` raises `ValueError`.
 
-`slice(body, z=..., axis=...)` is the convenient plane form. Its `SliceResult`
-unpacks as `(lower, upper)`, ordered from the negative to the positive side of
-the plane normal. An arbitrary plane may be a planar face or an
-`(origin, normal)` pair. A result other than exactly two solids is ambiguous
-and raises `ValueError`.
+The parts returned by `slice` are ordered along the plane normal. With two parts, unpack the result as `lower, upper`. See [Splitting bodies](split.html) for details and examples.
 
 ```python
 parts = split(box(10), (infplane().up(3), infplane().up(7)))

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — split</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/split.html">Ru</a> · <a href="../en/split.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
+<li><a href="index.html">Главная страница</a></li>
+<li><a href="helloworld.html">Разбор helloworld</a></li>
+<li><a href="installation.html">Установка</a></li>
+<li>Основные концепции
+<ul>
+<li><a href="scriptcad.html">Скриптовый CAD</a></li>
+<li><a href="geomcore.html">BREP представление</a></li>
+<li><a href="caching.html">Ленивые вычисления</a></li>
+<li><a href="agents.html">Работа с агентом</a></li>
+</ul></li>
+<li>Базовые примитивы и утилиты
+<ul>
+<li><a href="prim3d.html">Объёмные примитивы</a></li>
+<li><a href="prim2d.html">Плоские примитивы</a></li>
+<li><a href="prim1d.html">Линии и циклы</a></li>
+<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
+</ul></li>
+<li>Преобразования, операции над геометрическими телами
+<ul>
+<li><a href="trans0.html">Афинные преобразования</a></li>
+<li><a href="bool.html">Булевы операции</a></li>
+<li><a href="split.html">Разделение тел: split и slice</a></li>
+<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
+<li><a href="ops3d.html">Ссылочная геометрия</a></li>
+<li><a href="sweep.html">Траекторная развёртка</a></li>
+<li><a href="trimesh.html">Триангуляция и меш</a></li>
+</ul></li>
+<li>Рефлексия и анализ
+<ul>
+<li><a href="selectors.html">Топология и селекторы</a></li>
+<li><a href="validation.html">Проверка и исправление геометрии</a></li>
+<li><a href="crvalgo.html">Анализ кривых</a></li>
+<li><a href="surfalgo.html">Анализ поверхностей</a></li>
+<li><a href="geomprop.html">Геометрические характеристики</a></li>
+<li><a href="bbox.html">Ограничивающая коробка</a></li>
+</ul></li>
+<li>Визуализация
+<ul>
+<li><a href="show.html">Отображение</a></li>
+<li><a href="interactive_object.html">Интерактивный объект</a></li>
+<li><a href="assemble.html">Иерархические модели</a></li>
+<li><a href="kinematic.html">Кинематика</a></li>
+<li><a href="animate.html">Анимация</a></li>
+</ul></li>
+<li><a href="gui.html">Графический интерфейс</a></li>
+<li><a href="expimp.html">Экспорт/Импорт</a></li>
+<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<li><a href="headless.html">Автоматизация: inspect, check, render</a></li>
+<li><a href="version2.html">Отличия ZenCad 2 от ZenCad 1</a></li>
+<li><a href="migration.html">Миграция с ZenCad 1</a></li>
+</ul>
+</nav>
+<article class="article"><h1 id="разделение-тел-split-и-slice">Разделение тел: split и slice</h1>
+
+<p>Операции <code>split</code> и <code>slice</code> разрезают тело на отдельные объёмные части. </p>
+
+<h2 id="split-разделить-тело-заданнои-геометриеи">split — разделить тело заданной геометрией</h2>
+
+<p><code>split(body, tools)</code> разрезает тело <code>body</code> с помощью одного или нескольких геометрических инструментов. Инструмент задаёт границу разреза: это может быть плоская грань, например <code>infplane()</code>, или другое тело. </p>
+
+<p>Результат — <code>SplitResult</code>, коллекция отдельных тел <code>Solid</code>. Части можно перебирать, получать по индексу и обрабатывать независимо. Их количество зависит от расположения инструментов.</p>
+
+<h3 id="две-плоскости-три-слоя">Две плоскости — три слоя</h3>
+
+<p>Разрежем параллелепипед высотой 18 двумя горизонтальными плоскостями на отметках 6 и 12. Получатся три слоя толщиной 6. Для рисунка переместим весь набор вправо и добавим зазоры между слоями.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span>
+<span class="n">planes</span> <span class="o">=</span> <span class="p">[</span><span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">12</span><span class="p">)]</span>
+<span class="n">parts</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">planes</span><span class="p">)</span>
+
+<span class="c1"># Расположим три слоя снизу вверх.</span>
+<span class="n">layers</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">part</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">center</span><span class="p">()</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+
+<span class="c1"># Слева исходное тело, справа — разнесённые слои.</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span> <span class="o">*</span> <span class="mi">7</span><span class="p">),</span>
+            <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">),</span> <span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+                   <span class="n">Color</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)][</span><span class="n">index</span><span class="p">])</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/split-planes.png" alt="Слева исходное тело, справа три разнесённых слоя" /></p>
+
+<h3 id="разделение-цилиндром">Разделение цилиндром</h3>
+
+<p>Здесь инструментом служит цилиндр, проходящий насквозь через куб. Получаются две части: куб с цилиндрическим отверстием и цилиндрическая сердцевина. При вычитании <code>body - cutter</code> осталась бы только первая часть; <code>split</code> сохраняет обе. </p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span>
+<span class="n">cutter</span> <span class="o">=</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">parts</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">cutter</span><span class="p">)</span>
+
+<span class="c1"># При этих размерах цилиндрическая часть имеет меньший объём.</span>
+<span class="n">core</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">part</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">mass</span><span class="p">()))</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">+</span> <span class="n">remainder</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">-</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()))</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+
+<span class="c1"># Исходное тело, тело с отверстием и извлечённая сердцевина.</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">remainder</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">36</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/split-cylinder.png" alt="Слева исходный куб, в центре часть с отверстием, справа цилиндрическая сердцевина" /></p>
+
+<p>Пустой набор инструментов вызывает <code>ValueError</code>; входная форма должна содержать объёмные тела.</p>
+
+<h2 id="slice-разделить-тело-однои-плоскостью">slice — разделить тело одной плоскостью</h2>
+
+<p><code>slice</code> разделяет тело одной плоскостью. Для горизонтального разреза достаточно указать высоту: <code>parts = slice(body, z=8)</code>. Части упорядочены по проекции их центров на нормаль плоскости.</p>
+
+<p>Результат <code>SliceResult</code> — коллекция тел. Если плоскость не разрезает тело или только касается его, в коллекции остаётся одно тело. Например, <code>len(slice(box(2), z=3)) == 1</code>.</p>
+
+<p>При двух частях можно написать <code>lower, upper = parts</code>. Свойства <code>.lower</code> и <code>.upper</code> — синонимы <code>parts[0]</code> и <code>parts[1]</code>; при одной части обращение к <code>.upper</code> вызывает <code>IndexError</code> при вычислении.</p>
+
+<h3 id="наклонныи-разрез">Наклонный разрез</h3>
+
+<p>Произвольная плоскость задаётся парой <code>plane=(точка, нормаль)</code>. В примере она проходит через <code>(0, 0, 8)</code> и имеет нормаль <code>(0, -0.3, 1)</code>: высота разреза увеличивается от 8 до 14 при движении по Y от 0 до 20.</p>
+
+<p>Для наклонной плоскости порядок частей определяется её нормалью: первая лежит с отрицательной стороны, вторая — с положительной. </p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">plane</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># Точка на плоскости и её нормаль.</span>
+<span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="n">plane</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lower</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">+</span> <span class="n">upper</span><span class="o">.</span><span class="n">mass</span><span class="p">()</span> <span class="o">-</span> <span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">()))</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+
+<span class="c1"># Переносы нужны только для наглядного отображения частей.</span>
+<span class="n">display</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">lower</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">45</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">upper</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/slice-plane.png" alt="Слева исходное тело, справа две части с наклонными поверхностями разреза" /></p>
+</article>
+</div>
+</body>
+</html>

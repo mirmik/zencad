@@ -1,14 +1,64 @@
+import math
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from zencad.render import (
     contact_sheet_grid,
     parse_background,
     parse_size,
     parse_views,
+    _camera_options,
+    render_cli,
+    render_script,
 )
 
 
 class RenderOptionsTest(unittest.TestCase):
+    def test_camera_cardinal_directions_and_poles(self):
+        cases = (
+            (0, 0, (-1, 0, 0), (0, 0, 1)),
+            (math.pi / 2, 0, (0, -1, 0), (0, 0, 1)),
+            (0, math.pi / 2, (0, 0, -1), (-1, 0, 0)),
+            (0, -math.pi / 2, (0, 0, 1), (1, 0, 0)),
+        )
+        for yaw, pitch, expected_direction, expected_up in cases:
+            with self.subTest(yaw=yaw, pitch=pitch):
+                labels, (direction, up) = _camera_options(None, yaw, pitch)
+                self.assertEqual(labels, ("custom",))
+                for actual, expected in zip(direction + up, expected_direction + expected_up):
+                    self.assertAlmostEqual(actual, expected)
+        _, (direction, up) = _camera_options(None, 1.2, 0.4)
+        self.assertAlmostEqual(sum(a*b for a, b in zip(direction, up)), 0)
+        self.assertAlmostEqual(sum(a*a for a in direction), 1)
+        self.assertAlmostEqual(sum(a*a for a in up), 1)
+
+    def test_invalid_camera_and_msaa_fail_before_script_evaluation(self):
+        cases = (
+            {"yaw": 0}, {"pitch": 0},
+            {"yaw": 0, "pitch": 0, "views": ("front",)},
+            {"yaw": float("nan"), "pitch": 0},
+            {"yaw": 0, "pitch": float("inf")},
+            {"yaw": 0, "pitch": math.pi},
+            {"yaw": True, "pitch": 0},
+            {"msaa": 3}, {"msaa": -1}, {"msaa": True}, {"msaa": 4.0},
+        )
+        with patch("zencad.render._evaluate_script") as evaluate:
+            for options in cases:
+                with self.subTest(options=options), self.assertRaises(ValueError):
+                    render_script("unused.py", "unused.png", **options)
+            evaluate.assert_not_called()
+
+    def test_cli_converts_degrees_and_forwards_msaa(self):
+        with patch("zencad.render.render_script", return_value=SimpleNamespace(path="out.png")) as render:
+            self.assertEqual(render_cli([
+                "model.py", "-o", "out.png", "--yaw", "-60", "--pitch", "15", "--msaa", "8",
+            ]), 0)
+        self.assertIsNone(render.call_args.kwargs["views"])
+        self.assertAlmostEqual(render.call_args.kwargs["yaw"], -math.pi / 3)
+        self.assertAlmostEqual(render.call_args.kwargs["pitch"], math.pi / 12)
+        self.assertEqual(render.call_args.kwargs["msaa"], 8)
+
     def test_views_preserve_requested_order_and_accept_commas(self):
         self.assertEqual(
             parse_views(("iso,front", "top")),

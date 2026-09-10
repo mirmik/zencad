@@ -151,22 +151,5 @@ assert placement(p3).value() == p3.value()
 - `Scalar.value()`, `float()`, `int()`, `bool()` and comparisons require a number.
 - `Point/Vector.value()` returns a tuple; `.to_numpy()` returns a numeric array.
 - `Shape.native()` returns an OCP shape; `Point/Vector.to_ocp()` returns a native point/vector.
-- `Transform.matrix()` returns a numeric 4×4 matrix.
 
 Ordinary `math.sin(scalar)` requests a number through `float`; `z.sin(scalar)` retains the graph dependency. Domain values are logically immutable: create a new position with an operation rather than assigning a coordinate.
-
-## Transforms
-
-```python
-import zencad as z
-
-move = z.translate(10, 0, 0)
-turn = z.rotateZ(z.deg(90))
-combined = move * turn
-p = combined(z.point3(1, 0, 0))
-assert abs(float(p.x) - 10) < 1e-7
-assert abs(float(p.y) - 1) < 1e-7
-matrix = combined.matrix()
-```
-
-`outer * inner` applies `inner` first, then `outer`. `Transform` represents translation, rotation and uniform scale, including reflections through signed scale; general affine transformations use `AffineTransform`. [Topology selectors](selectors.html).

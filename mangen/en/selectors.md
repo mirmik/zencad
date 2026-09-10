@@ -1,6 +1,25 @@
 # Topology and selectors
 
-`vertices()`, `edges()`, `faces()` and other queries return `ShapeList[T]`. Indexing, slicing, filtering and sorting construct expressions; `len()`, iteration, `geometry_types()` and `group_by()` materialize collections.
+Geometric objects consist of simpler components: solids, faces, edges and vertices. See the [BREP introduction](geomcore.html).
+
+## Getting components
+
+These methods return `ShapeList` collections with the corresponding element types:
+
+```python
+shape.vertices() # -> ShapeList[Vertex]
+shape.solids() # -> ShapeList[Solid]
+shape.faces() # -> ShapeList[Face]
+shape.edges() # -> ShapeList[Edge]
+shape.wires() # -> ShapeList[Wire]
+shape.shells() # -> ShapeList[Shell]
+shape.compounds() # -> ShapeList[Compound]
+shape.compsolids() # -> ShapeList[CompSolid]
+```
+
+Use `vertex.point()` to get vertex coordinates. Indexing, slicing, filtering and sorting preserve the computation graph; `len()`, iteration, `geometry_types()` and `group_by()` evaluate the collection.
+
+## Selecting elements
 
 ```python
 import zencad as z
@@ -29,6 +48,30 @@ tapered.assert_valid()
 | `largest()` | Greatest length, area or volume for the shape type |
 | `only()` | Exactly one element, otherwise an evaluation error |
 
-Topology queries sort lexicographically by center X/Y/Z, rounded to nine decimal places. These are not persistent topology identities: an index can select another face after a model edit. Equal keys retain input order. Prefer geometric criteria for modeling.
+An index does not identify a particular face: the order can change after editing the model. Prefer selection by geometric properties.
 
-`fillet` and `chamfer` accept selected edges; `draft` accepts selected faces. Repeated occurrences of an edge are deduplicated before building; foreign edges cause an error. Full contract: [Topology selectors](../development/topology-selectors.md).
+`fillet` and `chamfer` accept edges; `draft` accepts faces. Details: [selector contract](../development/topology-selectors.md).
+
+## Nearest element
+
+These functions return the component of `shp` nearest to `pnt`:
+
+```python
+near_edge(shp, pnt) # -> Edge
+near_face(shp, pnt) # -> Face
+near_vertex(shp, pnt) # -> Vertex; .point() -> Point3
+```
+
+## Checking contents and restoring types
+
+Check for the absence of solids (faces and edges may still be present):
+
+```python
+len(shp.solids()) == 0
+```
+
+`restore_shapetype` extracts a single suitable component. To require exactly one solid, use `shp.solids().only()`.
+
+```python
+original_shp = restore_shapetype(shp)
+```

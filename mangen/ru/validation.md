@@ -1,20 +1,63 @@
 # Проверка и исправление геометрии
 
+## Проверка: validate и assert_valid
+
+`validate()` возвращает отчёт об ошибках, `is_valid()` — признак корректности. `assert_valid()` выбрасывает `ShapeValidationError`, если форма некорректна. Эти методы ничего не исправляют.
+
 ```python
 import zencad as z
 
-body = z.box(10) + z.box(10).right(10)
+body = z.box(10)
 report = body.validate()
 assert report.valid
 print(report.to_dict())
 body.assert_valid()
-cleaned = body.clean()
-healed = cleaned.heal(tolerance=1e-7, max_tolerance=1e-3)
-healed.assert_valid()
 ```
 
-`validate()` вычисляет форму и возвращает `ValidationReport`: `valid` и структурированные ошибки с `code`, `occt_status`, `path`, типом формы и, при необходимости, контекстом. `is_valid()` даёт краткий ответ, `assert_valid()` возвращает ту же форму или выбрасывает `ShapeValidationError`.
+Валидность не означает замкнутость тела. Для проверки итогового solid используйте `zencad check model.py --valid --solid`. [Формат отчёта](../development/shape-validation.md).
 
-Проверка не исправляет геометрию. `clean()` удаляет избыточные границы одной поверхности; `heal()` выполняет ограниченное допусками исправление OCCT. Обе операции создают новый результат, не изменяя исходник. `heal()` не гарантирует успеха — проверяйте возвращённую форму. `sew()` остаётся отдельной операцией сшивки.
+## unify
 
-Валидная открытая оболочка не является замкнутым телом. `is_closed()` проверяет замкнутость только `Edge` и `Wire`; для `Shell` и `Solid` этот метод не поддерживается. Для итогового тела проверяйте одновременно валидность и наличие solid-компонентов: `zencad check model.py --valid --solid`. [Headless workflow](headless.html), [формат отчёта](../development/shape-validation.md).
+Удаляет лишние рёбра и объединяет грани одной поверхности. Работает с двумерными и трёхмерными объектами. Для такого упрощения также доступен метод `body.clean()`.
+
+```python
+from zencad import *
+
+body = cylinder(r=10, h=10) + cylinder(r=10, h=10).move(5, 5)
+simplified = unify(body)
+simplified.assert_valid()
+display(simplified)
+show()
+```
+
+| До | После |
+|---|---|
+| ![](../images/generic/unify0.png) | ![](../images/generic/unify1.png) |
+
+## heal — исправление дефектов геометрии
+
+Исправляет дефекты средствами OpenCascade, создавая новую форму. Результат нужно проверить: исправление не всегда возможно.
+
+В примере ([box-reversed-face.brep](../files/box-reversed-face.brep)) — куб 10 × 10 × 10 с неправильно ориентированной гранью.
+
+```python
+from pathlib import Path
+import zencad as z
+
+body = z.from_brep(Path(__file__).with_name("box-reversed-face.brep"))
+before = body.validate()
+print(before.valid)  # False
+print([issue.code for issue in before.issues])
+# ['bad_orientation_of_subshape']
+
+fixed = body.heal(tolerance=1e-7, max_tolerance=1e-3)
+fixed.assert_valid()
+print(fixed.is_valid())  # True
+print(round(float(fixed.mass()), 6))  # 1000.0
+
+assert not body.is_valid()
+z.display(fixed)
+z.show()
+```
+
+`heal` исправляет ориентацию грани; исходная форма остаётся неизменной. `tolerance` задаёт рабочую точность, `max_tolerance` — верхнюю границу допуска, в единицах модели.

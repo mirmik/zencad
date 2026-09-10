@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
 <li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
-<li><a href="other.html">Other operations</a></li>
 </ul></li>
 <li>Reflection and analysis
 <ul>
-<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="selectors.html">Topology and selectors</a></li>
 <li><a href="validation.html">Validation and repair</a></li>
-<li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -250,27 +248,9 @@ points2 creates a two-dimensional array of points from a two-dimensional list.</
 <li><code>Scalar.value()</code>, <code>float()</code>, <code>int()</code>, <code>bool()</code> and comparisons require a number.</li>
 <li><code>Point/Vector.value()</code> returns a tuple; <code>.to_numpy()</code> returns a numeric array.</li>
 <li><code>Shape.native()</code> returns an OCP shape; <code>Point/Vector.to_ocp()</code> returns a native point/vector.</li>
-<li><code>Transform.matrix()</code> returns a numeric 4×4 matrix.</li>
 </ul>
 
 <p>Ordinary <code>math.sin(scalar)</code> requests a number through <code>float</code>; <code>z.sin(scalar)</code> retains the graph dependency. Domain values are logically immutable: create a new position with an operation rather than assigning a coordinate.</p>
-
-<h2 id="transforms">Transforms</h2>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
-
-<span class="n">move</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">turn</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">rotateZ</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
-<span class="n">combined</span> <span class="o">=</span> <span class="n">move</span> <span class="o">*</span> <span class="n">turn</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">combined</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">point3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
-<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
-<span class="n">matrix</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">matrix</span><span class="p">()</span>
-</code></pre>
-</div>
-
-<p><code>outer * inner</code> applies <code>inner</code> first, then <code>outer</code>. <code>Transform</code> represents translation, rotation and uniform scale, including reflections through signed scale; general affine transformations use <code>AffineTransform</code>. <a href="selectors.html">Topology selectors</a>.</p>
 </article>
 </div>
 </body>

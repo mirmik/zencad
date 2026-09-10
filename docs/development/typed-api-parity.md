@@ -103,10 +103,11 @@ is implemented; the remaining rows in this family belong to the sweep tasks.
 
 #1993 adds deterministic solid partitioning to the same boolean backend.
 `split()` returns a deferred `SplitResult`, while `slice()` returns an ordered
-`SliceResult` whose `lower` and `upper` solids follow the plane normal. Both
-legacy lazy nodes and typed handles share non-dividing and ambiguous-result
-errors, coordinate-axis planes, arbitrary planar faces, and `(origin, normal)`
-plane descriptions.
+`SliceResult` ordered by center projection along the plane normal. Both retain
+uncut solids and allow any resulting solid count. `lower` and `upper` alias
+indices 0 and 1; a missing index raises `IndexError` on evaluation. Legacy
+and typed APIs support coordinate-axis planes, arbitrary planar faces, and
+`(origin, normal)` plane descriptions.
 
 #1994 adds face draft as another graph-preserving modeling operation. Legacy
 lazy shapes and typed `Solid` handles share the OCCT draft-angle backend,

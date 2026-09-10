@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise deterministic CLI previews through an installed ZenCad wheel."""
 
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -93,6 +94,54 @@ show()
             mode_image = QImage(str(mode_path))
             assert not mode_image.isNull()
             assert (mode_image.width(), mode_image.height()) == (96, 64)
+
+        # CLI degrees and Python radians must describe the same actual camera.
+        custom = root / "custom.png"
+        custom_api = root / "custom-api.png"
+        run(model, "-o", custom, "--yaw", "-60", "--pitch", "15",
+            "--msaa", "4", "--size", "160x120")
+        result = render_script(
+            model, custom_api, yaw=math.radians(-60), pitch=math.radians(15),
+            msaa=4, size=(160, 120),
+        )
+        assert result.views == ("custom",)
+        assert custom.read_bytes() == custom_api.read_bytes()
+        changed = root / "changed-angle.png"
+        run(model, "-o", changed, "--yaw", "20", "--pitch", "15",
+            "--size", "160x120")
+        assert custom.read_bytes() != changed.read_bytes()
+
+        # Wireframe edges have extra coverage colors only when MSAA is active.
+        colors = []
+        for samples in (0, 4):
+            path = root / f"msaa-{samples}.png"
+            run(model, "-o", path, "--yaw", "-60", "--pitch", "15",
+                "--mode", "wireframe", "--background", "#000000",
+                "--size", "160x120", "--msaa", samples)
+            rendered = QImage(str(path))
+            colors.append({rendered.pixel(x, y)
+                           for x in range(rendered.width())
+                           for y in range(rendered.height())})
+        assert len(colors[1]) > len(colors[0]), tuple(map(len, colors))
+
+        for pitch in (-90, 90):
+            pole = root / f"pole-{pitch}.png"
+            run(model, "-o", pole, "--yaw", "30", "--pitch", pitch,
+                "--size", "96x64")
+            assert not QImage(str(pole)).isNull()
+
+        # Bad options must not execute a script or replace an existing output.
+        untouched = root / "untouched.png"
+        untouched.write_bytes(b"keep me")
+        for options in (
+            ("--yaw", "20"), ("--pitch", "10"),
+            ("--yaw", "0", "--pitch", "91"),
+            ("--yaw", "nan", "--pitch", "0"),
+            ("--views", "front", "--yaw", "0", "--pitch", "0"),
+            ("--msaa", "3"),
+        ):
+            run(root / "not-a-script.py", "-o", untouched, *options, expected=2)
+            assert untouched.read_bytes() == b"keep me"
 
         empty = root / "empty.py"
         empty.write_text("from zencad import show\nshow()\n", encoding="utf-8")

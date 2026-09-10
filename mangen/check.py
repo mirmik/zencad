@@ -6,6 +6,7 @@ from html.parser import HTMLParser
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -19,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # checked by check_reference with their shared context.
 STANDALONE_BLOCKS = {
     "helloworld": [0, 6], "bbox": [2], "geomprop": [2],
-    "prim0d": [9, 10, 11], "show": [7, 8], "trimesh": [8],
+    "prim0d": [9, 10], "show": [7, 8], "trimesh": [8], "selectors": [1],
 }
 
 
@@ -41,6 +42,10 @@ def check_examples() -> None:
     count = 0
     with TemporaryDirectory(prefix="zencad-manual-") as temporary:
         directory = Path(temporary)
+        shutil.copyfile(
+            ROOT / "docs" / "files" / "box-reversed-face.brep",
+            directory / "box-reversed-face.brep",
+        )
         environment = os.environ.copy()
         environment["PYTHONPATH"] = str(ROOT)
         environment["ZENCAD_CACHE_DIR"] = str(directory / "cache")

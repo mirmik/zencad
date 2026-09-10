@@ -112,8 +112,7 @@ def _split_resolved(body, tools):
     if not all(isinstance(tool, Shape) for tool in tools):
         raise TypeError("split tools must contain only Shape values")
 
-    original_count = len(_solid_parts(body))
-    if original_count == 0:
+    if not _solid_parts(body):
         raise TypeError("split body must contain at least one solid")
 
     algorithm = BOPAlgo_Splitter()
@@ -125,10 +124,7 @@ def _split_resolved(body, tools):
     if algorithm.HasErrors():
         raise ValueError("OCCT splitter failed for the supplied body and tools")
 
-    parts = _solid_parts(Shape(algorithm.Shape()))
-    if len(parts) <= original_count:
-        raise ValueError("split tools do not divide the body")
-    return parts
+    return _solid_parts(Shape(algorithm.Shape()))
 
 
 def _coordinates(value, name):
@@ -192,10 +188,6 @@ def _slice_resolved(body, plane, coordinate, axis):
     resolved_plane = _resolved_plane(plane, coordinate, axis)
     tool = Shape(BRepBuilderAPI_MakeFace(resolved_plane).Face())
     parts = _split_resolved(body, (tool,))
-    if len(parts) != 2:
-        raise ValueError(
-            f"slice requires exactly two resulting solids; got {len(parts)}"
-        )
 
     location = resolved_plane.Location()
     direction = resolved_plane.Axis().Direction()
@@ -251,27 +243,23 @@ class SplitResult(_Sequence):
         return f"SplitResult({tuple(self)!r})"
 
 
-class SliceResult(_Sequence):
-    """Ordered pair whose ``lower`` and ``upper`` members follow plane normal."""
+class SliceResult(SplitResult):
+    """Solids ordered along the plane normal; lower/upper alias indices 0/1."""
 
-    __slots__ = ("lower", "upper")
+    @property
+    def lower(self):
+        return self[0]
 
-    def __init__(self, lower, upper):
-        self.lower = lower
-        self.upper = upper
-
-    def __len__(self):
-        return 2
-
-    def __getitem__(self, index):
-        return (self.lower, self.upper)[index]
+    @property
+    def upper(self):
+        return self[1]
 
 
 def split(body, tools):
     """Partition a solid body with one or more Shape tools.
 
-    The returned solids are ordered deterministically. Evaluation raises
-    ``ValueError`` when the tools do not actually divide the body.
+    The returned solids are ordered deterministically. Non-dividing tools
+    leave the original solids in the result. At least one tool is required.
     """
 
     if isinstance(tools, Shape):
@@ -290,17 +278,14 @@ def slice(body, z=0, *, axis="z", plane=None):
     """Split a body into the negative and positive sides of a plane.
 
     ``z`` is the signed coordinate along ``axis``. Alternatively, ``plane``
-    accepts a planar face or an ``(origin, normal)`` pair. A non-dividing plane
-    and a result other than two solids raise ``ValueError`` on evaluation.
+    accepts a planar face or an ``(origin, normal)`` pair. Solids that the plane
+    does not cut are retained. Results are ordered along the plane normal.
     """
 
     if plane is not None and z != 0:
         raise TypeError("slice accepts either z/axis or plane, not both")
     source = _slice_lazy(body, plane, z, axis)
-    return SliceResult(
-        _lazy_shape_item(source, 0),
-        _lazy_shape_item(source, 1),
-    )
+    return SliceResult(source)
 
 
 def _section(a, b, pretty):

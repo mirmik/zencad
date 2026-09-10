@@ -120,7 +120,7 @@ class SplitResult(DeferredSequence[Solid]):
 
 
 class SliceResult(SplitResult):
-    """Two split solids ordered from negative to positive plane side."""
+    """Solids ordered along the plane normal; lower/upper alias indices 0/1."""
 
     @property
     def lower(self) -> Solid:
@@ -135,13 +135,17 @@ class SliceResult(SplitResult):
     result=_SOLID_SEQUENCE_SPEC,
     returns=SplitResult,
     operation_id="zencad.typed.split",
-    operation_version="1",
+    operation_version="2",
 )
 def split(
     body: Shape,
     tools: Shape | Sequence[Shape],
     /,
 ) -> SplitResult:
+    """Partition a body, retaining its solids when the tools do not cut it.
+
+    At least one tool is required; touching or disjoint tools are valid.
+    """
     if not isinstance(body, Shape):
         raise TypeError("split body must be a Shape")
     values = _require_shapes(tools, (), "split")
@@ -155,7 +159,7 @@ def split(
     result=_SOLID_SEQUENCE_SPEC,
     returns=SliceResult,
     operation_id="zencad.typed.slice",
-    operation_version="1",
+    operation_version="2",
 )
 def slice(
     body: Shape,
@@ -164,6 +168,7 @@ def slice(
     axis: object = "z",
     plane: object | None = None,
 ) -> SliceResult:
+    """Partition with one plane, retaining solids that it does not cut."""
     if not isinstance(body, Shape):
         raise TypeError("slice body must be a Shape")
     if plane is not None and not (

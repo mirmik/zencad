@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ZenCad</title>
-    <link href="../main.css" rel="stylesheet">
-  </head>
-  <body>
-    <meta charset="utf-8">
-    <div class="header" id="header">
-      <h1>
-        <a class="header_ref" href="index.html">ZenCad</a>
-      </h1>
-      <a class="btn btn-github" href="https://github.com/mirmik/zencad">View on GitHub
-        <span class="icon"></span>
-      </a>
-      <p>
-        <a href="../ru/nav.html">Ru</a>
-        <a href="../en/nav.html">En</a>
-      </p>
-    </div>
-    <div id="content">
-      <nav class="nav"><ul>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZenCad — nav</title>
+  <link rel="stylesheet" href="../main.css">
+</head>
+<body>
+<div id="header" class="header">
+  <h1><a class="header_ref" href="index.html">ZenCad</a></h1>
+  <a href="https://github.com/mirmik/zencad" class="btn btn-github">View on GitHub<span class="icon"></span></a>
+  <p><a href="../ru/nav.html">Ru</a> · <a href="../en/nav.html">En</a></p>
+</div>
+<div id="content">
+<nav class="nav"><ul>
 <li><a href="index.html">Main page</a></li>
 <li><a href="helloworld.html">Helloworld example</a></li>
 <li><a href="installation.html">Installation</a></li>
@@ -41,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
 <li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
-<li><a href="other.html">Other operations</a></li>
 </ul></li>
 <li>Reflection and analysis
 <ul>
-<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="selectors.html">Topology and selectors</a></li>
 <li><a href="validation.html">Validation and repair</a></li>
-<li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -74,44 +66,59 @@
 <li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </nav>
-      <article class="article"><ul>
-<li><a href="index.html">Главная страница</a></li>
-<li><a href="helloworld.html">Разбор helloworld</a></li>
-<li><a href="installation.html">Установка</a></li>
-<li>Основные концепции</li>
-<li><a href="scriptcad.html">Скриптовый CAD</a></li>
-<li><a href="geomcore.html">BREP представление</a></li>
-<li><a href="caching.html">Ленивые вычисления</a></li>
-<li>Базовые примитивы и утилиты</li>
-<li><a href="prim3d.html">Объёмные примитивы</a></li>
-<li><a href="prim2d.html">Плоские примитивы</a></li>
-<li><a href="prim1d.html">Линии и циклы</a></li>
-<li><a href="prim0d.html">Точки, вектора, утилиты</a></li>
-<li>Преобразования, операции над геометрическими телами</li>
-<li><a href="trans0.html">Афинные преобразования</a></li>
-<li><a href="bool.html">Булевы операции</a></li>
-<li><a href="fillet.html">Топологически зависимые преобразования</a></li>
-<li><a href="ops3d.html">Ссылочная геометрия</a></li>
-<li><a href="sweep.html">Траекторная развёртка</a></li>
-<li><a href="trimesh.html">Триангуляция и меш</a></li>
-<li><a href="other.html">Прочие операции</a></li>
-<li>Рефлексия и анализ</li>
-<li><a href="reflect.html">Рефлексия геометрии</a></li>
-<li><a href="crvalgo.html">Анализ кривых</a></li>
-<li><a href="surfalgo.html">Анализ поверхностей</a></li>
-<li><a href="geomprop.html">Геометрические характеристики</a></li>
-<li><a href="bbox.html">Ограничивающая коробка</a></li>
-<li>Визуализация</li>
-<li><a href="show.html">Отображение</a></li>
-<li><a href="interactive_object.html">Интерактивный объект</a></li>
-<li><a href="assemble.html">Иерархические модели</a></li>
-<li><a href="animate.html">Анимация</a></li>
-<li><a href="gui.html">Графический интерфейс</a></li>
-<li><a href="expimp.html">Экспорт/Импорт</a></li>
-<li><a href="internal.html">Внутренняя кухня ZenCad</a></li>
+<article class="article"><ul>
+<li><a href="index.html">Main page</a></li>
+<li><a href="helloworld.html">Helloworld example</a></li>
+<li><a href="installation.html">Installation</a></li>
+<li>Basic conceptions
+<ul>
+<li><a href="scriptcad.html">Scripting CAD</a></li>
+<li><a href="geomcore.html">Boundary representation</a></li>
+<li><a href="caching.html">Lazy evaluations</a></li>
+<li><a href="agents.html">Working with an agent</a></li>
+</ul></li>
+<li>Basic primitives and utilities
+<ul>
+<li><a href="prim3d.html">Solid primitives</a></li>
+<li><a href="prim2d.html">Plane primitives</a></li>
+<li><a href="prim1d.html">Lines and cycles</a></li>
+<li><a href="prim0d.html">Points, vectors, utilities</a></li>
+</ul></li>
+<li>Transformations, geometric operations
+<ul>
+<li><a href="trans0.html">Aphine transform</a></li>
+<li><a href="bool.html">Boolean operations</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
+<li><a href="fillet.html">Topologically dependent operations</a></li>
+<li><a href="ops3d.html">Reference geometry</a></li>
+<li><a href="sweep.html">Sweep operations</a></li>
+<li><a href="trimesh.html">Triangulate and meshing</a></li>
+</ul></li>
+<li>Reflection and analysis
+<ul>
+<li><a href="selectors.html">Topology and selectors</a></li>
+<li><a href="validation.html">Validation and repair</a></li>
+<li><a href="crvalgo.html">Curve analysis</a></li>
+<li><a href="surfalgo.html">Surface analysis</a></li>
+<li><a href="geomprop.html">Geometric properties</a></li>
+<li><a href="bbox.html">Bounding box</a></li>
+</ul></li>
+<li>Visualization
+<ul>
+<li><a href="show.html">Displaying</a></li>
+<li><a href="interactive_object.html">Interactive object</a></li>
+<li><a href="assemble.html">Hierarchical models</a></li>
+<li><a href="kinematic.html">Kinematics</a></li>
+<li><a href="animate.html">Animation</a></li>
+</ul></li>
+<li><a href="gui.html">Graphical user interface</a></li>
+<li><a href="expimp.html">Export/Import</a></li>
+<li><a href="internal.html">Internal ZenCad's kitchen</a></li>
+<li><a href="headless.html">Automation: inspect, check, render</a></li>
+<li><a href="version2.html">ZenCad 2 compared with ZenCad 1</a></li>
+<li><a href="migration.html">Migrating from ZenCad 1</a></li>
 </ul>
 </article>
-    </div>
-    <div id="footer"></div>
-  </body>
+</div>
+</body>
 </html>

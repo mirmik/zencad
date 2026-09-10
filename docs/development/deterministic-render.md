@@ -8,9 +8,10 @@ state.
 For every requested tile the renderer applies all camera inputs explicitly:
 
 - orthographic projection;
-- one of `iso`, `front`, `back`, `left`, `right`, `top`, or `bottom`;
+- one of `iso`, `front`, `back`, `left`, `right`, `top`, or `bottom`, or an
+  explicit camera azimuth/elevation pair;
 - `FitAll` with the requested margin;
-- fixed pixel size, solid sRGB background, zero MSAA, axes policy, and display
+- fixed pixel size, solid sRGB background, explicit MSAA (default 4), axes policy, and display
   mode.
 
 Multiple tiles are composed in request order into a row-major near-square PNG.
@@ -36,6 +37,27 @@ use exit code 3, an absent or empty scene uses 4, a timeout uses 5, and a native
 rendering failure uses 6. Argument errors use argparse's exit code 2. No output
 path is replaced on those failures.
 
+### Camera and MSAA options
+
+```sh
+zencad render model.py -o preview.png --yaw -65 --pitch 12 --msaa 8
+```
+
+CLI angles are degrees; `render_script` and `render_snapshot` accept `yaw` and
+`pitch` in radians. Yaw is the camera's azimuth from +X toward +Y, and pitch is
+its elevation above XY in [-pi/2, pi/2]. Both angles are required, and explicit
+`views` cannot be combined with them. Omitting both angles and views selects
+`iso`. A custom view returns `RenderResult.views == ("custom",)` and a single
+tile. Its orthogonal up vector preserves vertical orientation and defines roll
+at both poles. Projection remains orthographic with a fresh FitAll.
+
+`msaa` accepts the integers 0, 2, 4, and 8 (CLI: `--msaa`), defaulting to 4.
+It is explicit and independent of saved GUI settings; 0 disables MSAA. The
+requested sampling is applied to the native view before image capture.
+Invalid sampling, non-finite angles, out-of-range pitch, incomplete angle pairs,
+and conflicts with fixed views fail before executing the model. CLI usage
+errors return 2 and leave existing output files intact.
+
 ## Platform display contract
 
 This is a non-interactive render command, but OCCT still creates a native
@@ -50,4 +72,5 @@ LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a \
 CI exercises the command on Windows and macOS desktops and under Xvfb with
 software OpenGL on Linux. The smoke verifies image dimensions and content,
 exact solid-background color, deterministic repeated output, contact-sheet
-layout, error exits, and prompt cancellation of animated scripts.
+layout, custom CLI/API camera agreement, vertical poles, actual MSAA edge
+coverage, error exits, and prompt cancellation of animated scripts.

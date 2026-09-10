@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
 <li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
-<li><a href="other.html">Other operations</a></li>
 </ul></li>
 <li>Reflection and analysis
 <ul>
-<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="selectors.html">Topology and selectors</a></li>
 <li><a href="validation.html">Validation and repair</a></li>
-<li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -210,16 +208,9 @@
 
 <h2 id="splitting-and-slicing-by-a-plane">Splitting and slicing by a plane.</h2>
 
-<p><code>split(body, tools)</code> partitions a body with one or more Shape tools and returns
-a <code>SplitResult</code>: a lazy, deterministically ordered sequence of resulting
-solids. Empty tools and a tool that does not divide the body (including a
-tangent tool) raise <code>ValueError</code>.</p>
+<p><code>split(body, tools)</code> partitions a body with Shape tools; <code>slice(body, z=..., axis=...)</code> uses one plane. Both return collections of solids and retain uncut bodies. An empty set of tools for <code>split</code> raises <code>ValueError</code>.</p>
 
-<p><code>slice(body, z=..., axis=...)</code> is the convenient plane form. Its <code>SliceResult</code>
-unpacks as <code>(lower, upper)</code>, ordered from the negative to the positive side of
-the plane normal. An arbitrary plane may be a planar face or an
-<code>(origin, normal)</code> pair. A result other than exactly two solids is ambiguous
-and raises <code>ValueError</code>.</p>
+<p>The parts returned by <code>slice</code> are ordered along the plane normal. With two parts, unpack the result as <code>lower, upper</code>. See <a href="split.html">Splitting bodies</a> for details and examples.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">parts</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">infplane</span><span class="p">()</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">7</span><span class="p">)))</span>

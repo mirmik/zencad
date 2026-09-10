@@ -18,7 +18,7 @@ PAGE_ALIASES = {
 
 EXAMPLE_PAGES = {
     "index", "installation", "helloworld", "migration", "version2", "caching",
-    "prim0d", "modeling", "selectors", "validation", "show", "interactive_object",
+    "prim0d", "split", "selectors", "validation", "show", "interactive_object",
     "animate", "kinematic", "agents", "headless", "expimp", "geomprop", "bbox", "trimesh",
 }
 
@@ -109,7 +109,7 @@ def build(output: Path) -> None:
 <p><a href="en/index.html">English guide</a></p></body></html>
 ''', encoding="utf-8")
     shutil.copyfile(ROOT / "main.css", output / "main.css")
-    for name in ("images", "development", "architecture-council"):
+    for name in ("images", "files", "development", "architecture-council"):
         source = ROOT.parent / "docs" / name
         if source.exists() and source.resolve() != (output / name).resolve():
             shutil.copytree(source, output / name, dirs_exist_ok=True)

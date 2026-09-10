@@ -14,16 +14,14 @@
 * Transformations, geometric operations
 	* [Aphine transform](trans0.html)
 	* [Boolean operations](bool.html)
-	* [Splitting solids: split and slice](modeling.html)
+	* [Splitting solids: split and slice](split.html)
 	* [Topologically dependent operations](fillet.html)
 	* [Reference geometry](ops3d.html)
 	* [Sweep operations](sweep.html)
 	* [Triangulate and meshing](trimesh.html)
-	* [Other operations](other.html)
 * Reflection and analysis
-	* [Topology selectors](selectors.html)
+	* [Topology and selectors](selectors.html)
 	* [Validation and repair](validation.html)
-	* [Geometric reflection](reflect.html)
 	* [Curve analysis](crvalgo.html)
 	* [Surface analysis](surfalgo.html)
 	* [Geometric properties](geomprop.html)

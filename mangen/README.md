@@ -14,6 +14,11 @@ when they remain accurate. Update only the passages affected by API or behavior
 changes, and add new capabilities to the relevant sections. An API migration
 is not a reason to replace a tutorial or shorten the existing reference.
 
+Downloadable example inputs live in `docs/files` and are copied into preview
+builds. `box-reversed-face.brep` is a 10 × 10 × 10 cube with one deliberately
+reversed face; the `heal` example demonstrates repairing its orientation.
+`check.py` places this fixture beside the extracted example scripts.
+
 From the repository root, in a development environment:
 
 ```sh

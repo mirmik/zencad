@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
 <li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
-<li><a href="other.html">Other operations</a></li>
 </ul></li>
 <li>Reflection and analysis
 <ul>
-<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="selectors.html">Topology and selectors</a></li>
 <li><a href="validation.html">Validation and repair</a></li>
-<li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -70,7 +68,27 @@
 </nav>
 <article class="article"><h1 id="topology-and-selectors">Topology and selectors</h1>
 
-<p><code>vertices()</code>, <code>edges()</code>, <code>faces()</code> and other queries return <code>ShapeList[T]</code>. Indexing, slicing, filtering and sorting construct expressions; <code>len()</code>, iteration, <code>geometry_types()</code> and <code>group_by()</code> materialize collections.</p>
+<p>Geometric objects consist of simpler components: solids, faces, edges and vertices. See the <a href="geomcore.html">BREP introduction</a>.</p>
+
+<h2 id="getting-components">Getting components</h2>
+
+<p>These methods return <code>ShapeList</code> collections with the corresponding element types:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Vertex]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">solids</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Solid]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Face]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Edge]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">wires</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Wire]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">shells</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Shell]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compounds</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[Compound]</span>
+<span class="n">shape</span><span class="o">.</span><span class="n">compsolids</span><span class="p">()</span> <span class="c1"># -&gt; ShapeList[CompSolid]</span>
+</code></pre>
+</div>
+
+<p>Use <code>vertex.point()</code> to get vertex coordinates. Indexing, slicing, filtering and sorting preserve the computation graph; <code>len()</code>, iteration, <code>geometry_types()</code> and <code>group_by()</code> evaluate the collection.</p>
+
+<h2 id="selecting-elements">Selecting elements</h2>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
@@ -135,9 +153,36 @@
 </tbody>
 </table>
 
-<p>Topology queries sort lexicographically by center X/Y/Z, rounded to nine decimal places. These are not persistent topology identities: an index can select another face after a model edit. Equal keys retain input order. Prefer geometric criteria for modeling.</p>
+<p>An index does not identify a particular face: the order can change after editing the model. Prefer selection by geometric properties.</p>
 
-<p><code>fillet</code> and <code>chamfer</code> accept selected edges; <code>draft</code> accepts selected faces. Repeated occurrences of an edge are deduplicated before building; foreign edges cause an error. Full contract: <a href="../development/topology-selectors.md">Topology selectors</a>.</p>
+<p><code>fillet</code> and <code>chamfer</code> accept edges; <code>draft</code> accepts faces. Details: <a href="../development/topology-selectors.md">selector contract</a>.</p>
+
+<h2 id="nearest-element">Nearest element</h2>
+
+<p>These functions return the component of <code>shp</code> nearest to <code>pnt</code>:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">near_edge</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Edge</span>
+<span class="n">near_face</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Face</span>
+<span class="n">near_vertex</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">pnt</span><span class="p">)</span> <span class="c1"># -&gt; Vertex; .point() -&gt; Point3</span>
+</code></pre>
+</div>
+
+<h2 id="checking-contents-and-restoring-types">Checking contents and restoring types</h2>
+
+<p>Check for the absence of solids (faces and edges may still be present):</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="nb">len</span><span class="p">(</span><span class="n">shp</span><span class="o">.</span><span class="n">solids</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span>
+</code></pre>
+</div>
+
+<p><code>restore_shapetype</code> extracts a single suitable component. To require exactly one solid, use <code>shp.solids().only()</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">original_shp</span> <span class="o">=</span> <span class="n">restore_shapetype</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+</code></pre>
+</div>
 </article>
 </div>
 </body>

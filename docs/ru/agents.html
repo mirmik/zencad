@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="split.html">Разделение тел: split и slice</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
-<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
-<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="selectors.html">Топология и селекторы</a></li>
 <li><a href="validation.html">Проверка и исправление геометрии</a></li>
-<li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
@@ -70,53 +68,11 @@
 </nav>
 <article class="article"><h1 id="работа-с-агентом">Работа с агентом</h1>
 
-<p>ZenCad позволяет агенту пройти полный цикл работы с моделью: изменить Python-скрипт, исполнить его, получить измерения и ошибки, проверить требования и подготовить изображение для просмотра. Для этого модель доступна как код, а результат — как геометрия и структурированный отчёт. Агенту не нужно управлять мышью в редакторе, чтобы проверить размеры или корректность тела.</p>
+<p>Обновление модели zencad до второй версии продиктовано желанием облегчить работу с системой ИИ-агенту. </p>
 
-<h2 id="что-агент-может-проверить">Что агент может проверить</h2>
+<p>Изменения в api в основном касаются архиважного для агентского программирования принципа наименьшего удивления. В частности, для этого к более привычному, стандартному виду приведена система типов. Ленификация получила более системный контракт. </p>
 
-<table>
-<thead>
-<tr>
-  <th>Задача</th>
-  <th>Возможность ZenCad</th>
-  <th>Практический результат</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Построить и изменить модель</td>
-  <td>Python-скрипт с параметрами и геометрическими операциями</td>
-  <td>Изменения можно читать, сравнивать в Git и повторно исполнять.</td>
-</tr>
-<tr>
-  <td>Узнать, что получилось</td>
-  <td><code>inspect --json</code>: имена объектов, габариты, объём, топология и валидность</td>
-  <td>Агент получает измеримые свойства, а не только изображение.</td>
-</tr>
-<tr>
-  <td>Проверить условие задачи</td>
-  <td><code>check</code>: требования к валидности, типу тела, объёму и габаритам</td>
-  <td>Отчёт содержит ожидаемые и фактические значения; код выхода позволяет автоматически принять или отклонить результат.</td>
-</tr>
-<tr>
-  <td>Найти причину ошибки</td>
-  <td>Дерево и JSON графа вычислений, расположение операций в исходнике, <code>--failed-path</code></td>
-  <td>Можно проследить зависимости до сбойной операции и перейти к соответствующему коду.</td>
-</tr>
-<tr>
-  <td>Обратиться к нужной детали</td>
-  <td>Имена в <code>display(..., name=...)</code> и геометрические селекторы</td>
-  <td>Отчёт связывается с деталями модели, а грани и рёбра выбираются по свойствам.</td>
-</tr>
-<tr>
-  <td>Оценить внешний вид</td>
-  <td><code>render</code> с заданными ракурсами и размером PNG</td>
-  <td>Агент и человек могут просмотреть результат без ручной настройки камеры.</td>
-</tr>
-</tbody>
-</table>
-
-<p><code>inspect</code> и <code>check</code> запускают скрипт в отдельном процессе и работают без Qt и OpenGL. Вывод модели направляется в stderr, поэтому stdout с JSON можно разбирать программно. Команды различают ошибку скрипта, ошибку геометрии, таймаут и невыполнение требований.</p>
+<p>Для удобства агента реализованы инструменты inspect, check, render <a href="headless.html">Автоматизация</a>, позволяющие производить цикл моделирования и отладки не покидая консоли.</p>
 
 <h2 id="один-проверяемыи-цикл">Один проверяемый цикл</h2>
 
@@ -151,15 +107,141 @@ zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class
 </code></pre>
 </div>
 
-<p>Рендер требует установленной GUI-части и работоспособного OpenGL. Численные проверки и изображения дополняют друг друга: корректный объём не доказывает правильность расположения отверстия, а подходящий силуэт не доказывает валидность геометрии.</p>
-
 <h2 id="диагностика-и-повторные-итерации">Диагностика и повторные итерации</h2>
 
-<p>Граф вычислений сохраняет зависимости между операциями. Если построение падает, <code>zencad inspect model.py --tree --failed-path</code> помогает сузить поиск причины. Для отладки можно выбрать немедленное вычисление и отключить дисковый кэш; при повторной работе кэш позволяет использовать сохранённые результаты. Эти настройки независимы — см. <a href="caching.html">«Вычисления и кэш»</a>.</p>
+<p>Если построение падает, <code>zencad inspect model.py --tree --failed-path</code> помогает сузить поиск причины. Для отладки можно выбрать немедленное вычисление и отключить дисковый кэш; при повторной работе кэш позволяет использовать сохранённые результаты. Эти настройки независимы — см. <a href="caching.html">«Вычисления и кэш»</a>.</p>
 
-<p><a href="selectors.html">Геометрические селекторы</a> позволяют описать смысл выбора, например направление ребра или положение грани, вместо предположения об их порядке. <a href="validation.html">Проверка геометрии</a> возвращает структурированные сведения об ошибках. Ни селекторы, ни проверка не заменяют условий задачи: агенту всё равно нужно сформулировать, какие размеры, расположения и свойства считаются правильными.</p>
+<p><a href="selectors.html">Геометрические селекторы</a> позволяют описать смысл выбора, например направление ребра или положение грани, вместо предположения об их порядке. <a href="validation.html">Проверка геометрии</a> возвращает структурированные сведения об ошибках. </p>
 
 <p>Параметры команд, форматы отчётов и ограничения исполнения собраны в разделе <a href="headless.html">«Автоматизация: inspect, check, render»</a>.</p>
+
+<h2 id="агент-может-кодить-3d">Агент может кодить 3D?</h2>
+
+<p>Таки да, вот, например:</p>
+
+<p><code>antique_column.py</code>:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;A small Ionic-inspired column modelled entirely with ZenCad.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fluted_shaft</span><span class="p">(</span>
+    <span class="n">bottom_radius</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span>
+    <span class="n">top_radius</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">122</span><span class="p">,</span>
+    <span class="n">flute_count</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">flute_radius</span><span class="o">=</span><span class="mf">2.25</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a gently tapered shaft with shallow, tapered flutes.&quot;&quot;&quot;</span>
+    <span class="n">shaft</span> <span class="o">=</span> <span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="n">bottom_radius</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="n">top_radius</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">height</span><span class="p">)</span>
+
+    <span class="c1"># The cutters follow the taper of the shaft.  Leaving a small uncut band at</span>
+    <span class="c1"># either end makes the transition into the base and capital more legible.</span>
+    <span class="n">cutters</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">margin</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="mf">0.65</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">flute_count</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">index</span> <span class="o">/</span> <span class="n">flute_count</span>
+        <span class="n">c</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+
+        <span class="n">lower_distance</span> <span class="o">=</span> <span class="n">bottom_radius</span> <span class="o">+</span> <span class="n">flute_radius</span> <span class="o">-</span> <span class="n">depth</span>
+        <span class="n">upper_distance</span> <span class="o">=</span> <span class="n">top_radius</span> <span class="o">+</span> <span class="n">flute_radius</span> <span class="o">-</span> <span class="n">depth</span>
+        <span class="n">lower</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">flute_radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
+            <span class="n">lower_distance</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+            <span class="n">lower_distance</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+            <span class="n">margin</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">upper</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">flute_radius</span><span class="p">,</span> <span class="n">wire</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
+            <span class="n">upper_distance</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+            <span class="n">upper_distance</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+            <span class="n">height</span> <span class="o">-</span> <span class="n">margin</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cutters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loft</span><span class="p">([</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">shaft</span> <span class="o">-</span> <span class="n">union</span><span class="p">(</span><span class="n">cutters</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ionic_capital</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an abstracted Ionic capital with four visible scroll ends.&quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mf">19.5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span><span class="p">),</span>
+        <span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mf">18.6</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mf">2.2</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">cone</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">27</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">box</span><span class="p">(</span><span class="mi">62</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="mi">12</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Two horizontal rolls form the body of the volutes.  Rings placed on both</span>
+    <span class="c1"># faces give the scrolls a readable stepped profile in the CAD viewer.</span>
+    <span class="n">roll_z</span> <span class="o">=</span> <span class="n">z</span> <span class="o">+</span> <span class="mi">16</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="o">-</span><span class="mi">23</span><span class="p">,</span> <span class="mi">23</span><span class="p">):</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mf">7.2</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">roll_z</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="p">(</span><span class="o">-</span><span class="mf">16.1</span><span class="p">,</span> <span class="mf">16.1</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mf">4.8</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mf">1.35</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+                    <span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">roll_z</span><span class="p">),</span>
+                    <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">rotateX</span><span class="p">(</span><span class="n">deg</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span>
+                    <span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">roll_z</span><span class="p">),</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">box</span><span class="p">(</span><span class="mi">68</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="mi">20</span><span class="p">),</span>
+            <span class="n">box</span><span class="p">(</span><span class="mi">74</span><span class="p">,</span> <span class="mi">44</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="mi">27</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">union</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">antique_column</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the complete 181 mm high column as a single ZenCad shape.&quot;&quot;&quot;</span>
+    <span class="n">base_parts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">box</span><span class="p">(</span><span class="mi">72</span><span class="p">,</span> <span class="mi">72</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">),</span>
+        <span class="n">box</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span>
+        <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">13</span><span class="p">),</span>
+        <span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mi">26</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">18</span><span class="p">),</span>
+        <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">27</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">18</span><span class="p">),</span>
+        <span class="n">torus</span><span class="p">(</span><span class="n">r1</span><span class="o">=</span><span class="mf">22.5</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="mf">3.2</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">23</span><span class="p">),</span>
+        <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">23</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">shaft_z</span> <span class="o">=</span> <span class="mi">27</span>
+    <span class="n">shaft_height</span> <span class="o">=</span> <span class="mi">122</span>
+    <span class="n">shaft</span> <span class="o">=</span> <span class="n">fluted_shaft</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="n">shaft_height</span><span class="p">)</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">shaft_z</span><span class="p">)</span>
+
+    <span class="n">capital_z</span> <span class="o">=</span> <span class="n">shaft_z</span> <span class="o">+</span> <span class="n">shaft_height</span>
+    <span class="k">return</span> <span class="n">union</span><span class="p">(</span><span class="n">base_parts</span> <span class="o">+</span> <span class="p">[</span><span class="n">shaft</span><span class="p">,</span> <span class="n">ionic_capital</span><span class="p">(</span><span class="n">capital_z</span><span class="p">)])</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">marble</span> <span class="o">=</span> <span class="n">Color</span><span class="p">(</span><span class="mf">0.86</span><span class="p">,</span> <span class="mf">0.82</span><span class="p">,</span> <span class="mf">0.70</span><span class="p">)</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">antique_column</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="n">marble</span><span class="p">)</span>
+    <span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><img src="../images/antique-column.png" alt="Рендер античной колонны" /></p>
+
+<p>Команда для этого ракурса:</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>antique_column.py<span class="w"> </span>-o<span class="w"> </span>antique-column.png<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--yaw<span class="w"> </span>-65<span class="w"> </span>--pitch<span class="w"> </span><span class="m">12</span><span class="w"> </span>--msaa<span class="w"> </span><span class="m">8</span><span class="w"> </span>--size<span class="w"> </span>800x1000<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--background<span class="w"> </span><span class="s2">&quot;#f4f2ed&quot;</span><span class="w"> </span>--timeout<span class="w"> </span><span class="m">120</span>
+</code></pre>
+</div>
 </article>
 </div>
 </body>

@@ -68,10 +68,10 @@
 		* [триангуляция](trimesh.html)
 		* [полигедрон](trimesh.html)
 		* [выпуклая оболочка](trimesh.html)
-	* [Прочие операции](other.html)
-		* [unify](other.html)
 * Рефлексия и анализ
-	* [Рефлексия геометрии](reflect.html)
+	* [Проверка и исправление геометрии](validation.html)
+		* [unify](validation.html#unify)
+	* [Топология и селекторы](selectors.html)
 	* [Анализ кривых](crvalgo.html)
 	* [Анализ поверхностей](surfalgo.html)
 	* [Геометрические характеристики](geomprop.html)

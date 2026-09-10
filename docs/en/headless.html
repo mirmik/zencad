@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
 <li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
-<li><a href="other.html">Other operations</a></li>
 </ul></li>
 <li>Reflection and analysis
 <ul>
-<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="selectors.html">Topology and selectors</a></li>
 <li><a href="validation.html">Validation and repair</a></li>
-<li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -72,22 +70,39 @@
 
 <p><code>inspect</code> and <code>check</code> need only the geometry installation. Scripts must declare a static scene with <code>display()</code> and <code>show()</code>, as in <a href="helloworld.html">your first model</a>. Model code runs in an isolated process.</p>
 
-<h2 id="inspection-and-computation-graphs">Inspection and computation graphs</h2>
+<h2 id="inspect-get-information-about-a-model">inspect — get information about a model</h2>
+
+<p><code>inspect</code> runs a script and produces a report about the resulting scene. Use it to find out what the model contains and measure its geometry without opening the editor. Read the report in the terminal or pass JSON to another program. For example, it can report a part's volume and overall dimensions before export.</p>
+
+<h3 id="geometry-report">Geometry report</h3>
 
 <div class="codehilite">
-<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
 zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--output<span class="w"> </span>report.json
-zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--no-cache
-zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--graph-json<span class="w"> </span>graph.json
-zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--failed-path
 </code></pre>
 </div>
 
 <p>Reports contain object IDs and names, placement, bounding boxes, topology types/counts, area/volume, mesh statistics, digests and validity. Model stdout/stderr is forwarded to command stderr, keeping JSON stdout suitable for pipelines.</p>
 
+<h3 id="computation-graph">Computation graph</h3>
+
+<p>The graph helps explain which operations build a model, which results come from the cache, and where an evaluation failed.</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--no-cache
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--graph-json<span class="w"> </span>graph.json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--failed-path
+</code></pre>
+</div>
+
 <p>Trees show operations, shared dependencies, cache/evaluation state and source locations. <code>--root</code>, <code>--max-depth</code>, <code>--hide-literals</code> and <code>--max-graph-nodes</code> bound the view. If the output encoding cannot represent tree branches, the CLI uses ASCII; API <code>to_tree()</code> retains Unicode. <code>--graph-json</code> is a separate graph format, not the geometry report.</p>
 
-<h2 id="verifiable-requirements">Verifiable requirements</h2>
+<p>See the <a href="../development/headless-inspect.md">inspect reference</a> for parameters and report formats.</p>
+
+<h2 id="check-verify-model-requirements">check — verify model requirements</h2>
+
+<p><code>check</code> runs a script and tests the resulting geometry against specified requirements: for example, whether a shape is valid, whether it is a solid, and whether its volume and dimensions fall within acceptable limits. Use it to check model changes automatically from scripts, CI, or an agent. The result is success or a list of failed requirements.</p>
 
 <div class="codehilite">
 <pre><span></span><code>zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="w"> </span>--valid<span class="w"> </span>--solid
@@ -95,7 +110,45 @@ zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="
 </code></pre>
 </div>
 
-<p><code>--solid</code> requires each visible BREP object to have solid type; a compound containing a solid is not itself a solid. Checks target the visible result; multiple objects are aggregated according to the command contract. JSON includes expected/actual/tolerance. Exit <code>7</code> means an assertion failed after successful model execution; <code>0</code> means success. Script errors use <code>3</code>, geometry/scene errors <code>4</code>, timeouts <code>5</code>, output errors <code>6</code> and invalid arguments <code>2</code>. Details: <a href="../development/headless-inspect.md">inspect</a>, <a href="../development/headless-check.md">check</a>.</p>
+<p><code>--valid</code> checks geometry validity. <code>--volume 700:800</code> specifies an acceptable volume range; <code>--bbox-size 19:21,9:11,3:5</code> specifies dimension ranges along X, Y, and Z.</p>
+
+<p><code>--solid</code> requires each visible BREP object to have solid type; a compound containing a solid is not itself a solid. Checks target the visible result; multiple objects are aggregated according to the command contract. JSON includes expected/actual/tolerance. Exit <code>7</code> means an assertion failed after successful model execution; <code>0</code> means success. Script errors use <code>3</code>, geometry/scene errors <code>4</code>, timeouts <code>5</code>, output errors <code>6</code> and invalid arguments <code>2</code>. Details: <a href="../development/headless-check.md">check reference</a>.</p>
+
+<h2 id="render-create-an-image-of-a-model">render — create an image of a model</h2>
+
+<p><code>render</code> runs a script and saves a PNG image of the resulting scene. Use it to view the result without operating the editor: for example, to attach a preview to a report or examine a part from several sides. The image helps assess appearance; use <code>check</code> to test geometry validity and numeric requirements.</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
+zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top,right<span class="w"> </span>--size<span class="w"> </span>640x480
+</code></pre>
+</div>
+
+<p>Views are <code>iso</code>, <code>front</code>, <code>back</code>, <code>left</code>, <code>right</code>, <code>top</code>, <code>bottom</code>. Size applies to each tile; multiple views form a contact sheet. Rendering uses an orthographic camera and fresh FitAll, independent of saved editor state. Modes are <code>shaded</code>, <code>shaded-with-edges</code>, <code>wireframe</code>; background, axes and margin are configurable.</p>
+
+<h3 id="camera-angles-and-antialiasing">Camera angles and antialiasing</h3>
+
+<p>For a custom view, specify both <code>--yaw</code> and <code>--pitch</code> in degrees:</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png<span class="w"> </span>--yaw<span class="w"> </span>-65<span class="w"> </span>--pitch<span class="w"> </span><span class="m">12</span><span class="w"> </span>--msaa<span class="w"> </span><span class="m">8</span>
+</code></pre>
+</div>
+
+<p><code>yaw</code> places the camera around the Z axis: 0 looks from +X, 90 from +Y. <code>pitch</code> is camera elevation above XY: 0 is horizontal, 90 looks from above, and −90 from below. Pitch must be between −90 and 90. Supply both angles together; they cannot be combined with <code>--view</code>/<code>--views</code>. The model is fitted automatically, with padding controlled by <code>--margin</code>.</p>
+
+<p><code>--msaa</code> controls edge antialiasing: supported sample counts are 0, 2, 4, and 8. The default is 4; 0 disables antialiasing. It also works with named views.</p>
+
+<p>The Python APIs <code>render_script</code> and <code>render_snapshot</code> take <code>yaw</code> and <code>pitch</code> <strong>in radians</strong>, and integer <code>msaa</code>. For example: <code>render_script("model.py", "preview.png", yaw=deg(-65), pitch=deg(12), msaa=8)</code>, with <code>deg</code> imported from <code>zencad</code>. If neither angles nor <code>views</code> are specified, the view is <code>iso</code>.</p>
+
+<p>Rendering requires the <code>gui</code> extra and working OpenGL. On a Linux server:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>xvfb-run<span class="w"> </span>-a<span class="w"> </span>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
+</code></pre>
+</div>
+
+<p>Windows/macOS rendering still needs platform acceptance; GitHub-hosted macOS has shown OpenGL context creation failures. This does not prevent headless inspect/check, which need no viewer. <a href="../development/deterministic-render.md">Rendering contract</a>.</p>
 
 <h2 id="python-api">Python API</h2>
 
@@ -109,25 +162,6 @@ zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="
 </div>
 
 <p>Protect the entry point because evaluation starts a child process. <code>check_script</code>, <code>inspect_computation_graph</code> and <code>render_script</code> are also available; see the development references for formats and parameters.</p>
-
-<h2 id="png-previews">PNG previews</h2>
-
-<div class="codehilite">
-<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
-zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top,right<span class="w"> </span>--size<span class="w"> </span>640x480
-</code></pre>
-</div>
-
-<p>Views are <code>iso</code>, <code>front</code>, <code>back</code>, <code>left</code>, <code>right</code>, <code>top</code>, <code>bottom</code>. Size applies to each tile; multiple views form a contact sheet. Rendering uses an orthographic camera and fresh FitAll, independent of saved editor state. Modes are <code>shaded</code>, <code>shaded-with-edges</code>, <code>wireframe</code>; background, axes and margin are configurable.</p>
-
-<p>Rendering requires the <code>gui</code> extra and working OpenGL. On a Linux server:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>xvfb-run<span class="w"> </span>-a<span class="w"> </span>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
-</code></pre>
-</div>
-
-<p>Windows/macOS rendering still needs platform acceptance; GitHub-hosted macOS has shown OpenGL context creation failures. This does not prevent headless inspect/check, which need no viewer. <a href="../development/deterministic-render.md">Rendering contract</a>.</p>
 </article>
 </div>
 </body>

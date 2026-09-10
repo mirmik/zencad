@@ -9,6 +9,8 @@ import tempfile
 import threading
 from typing import Callable, Iterable
 
+from zencad.settings import DEFAULT_MSAA_SAMPLES, MSAA_SAMPLE_OPTIONS
+
 from zencad.runtime.script_evaluator import (
     AnimatedScriptError,
     MissingSceneError,
@@ -28,6 +30,36 @@ VIEW_NAMES = (
     "bottom",
 )
 DISPLAY_MODES = ("shaded", "shaded-with-edges", "wireframe")
+
+
+def _camera_options(views, yaw, pitch):
+    """Validate radians and return view labels plus optional direction/up."""
+    if yaw is None and pitch is None:
+        return parse_views(("iso",) if views is None else views), None
+    if yaw is None or pitch is None:
+        raise ValueError("Yaw and pitch must be specified together")
+    if views is not None:
+        raise ValueError("Yaw/pitch cannot be combined with fixed views")
+    for name, value in (("Yaw", yaw), ("Pitch", pitch)):
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value)):
+            raise ValueError(f"{name} must be a finite angle in radians")
+    if not -math.pi / 2 <= pitch <= math.pi / 2:
+        raise ValueError("Pitch must be between -pi/2 and pi/2 (-90 to 90 degrees)")
+    cy, sy = math.cos(yaw), math.sin(yaw)
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    # Angles describe the camera position relative to its target. This
+    # orthogonal up vector also fixes roll at the two vertical poles.
+    direction = (-cp * cy, -cp * sy, -sp)
+    up = (-sp * cy, -sp * sy, cp)
+    return ("custom",), (direction, up)
+
+
+def _validate_msaa(msaa):
+    if (isinstance(msaa, bool) or not isinstance(msaa, int)
+            or msaa not in MSAA_SAMPLE_OPTIONS):
+        raise ValueError("MSAA must be one of 0, 2, 4, 8")
+    return msaa
 
 
 class RenderError(RuntimeError):
@@ -246,7 +278,10 @@ def render_snapshot(
     snapshot,
     output_path,
     *,
-    views=("iso",),
+    views=None,
+    yaw=None,
+    pitch=None,
+    msaa=DEFAULT_MSAA_SAMPLES,
     size=(1024, 768),
     display_mode="shaded-with-edges",
     background="#303030",
@@ -257,12 +292,16 @@ def render_snapshot(
 
     ``size`` is the size of each view. Multiple views use a deterministic,
     row-major near-square grid in the order supplied by ``views``.
+    Alternatively, supply ``yaw`` and ``pitch`` in radians: yaw is camera
+    azimuth from +X toward +Y, pitch is elevation above XY. Both are required
+    and cannot be combined with ``views``. MSAA accepts 0, 2, 4, or 8 samples.
     """
     from zencad.runtime.scene_protocol import SceneSnapshot
 
     if not isinstance(snapshot, SceneSnapshot):
         raise TypeError("render_snapshot requires a SceneSnapshot")
-    normalized_views = parse_views(views)
+    normalized_views, camera_vectors = _camera_options(views, yaw, pitch)
+    msaa = _validate_msaa(msaa)
     tile_width, tile_height = parse_size(size)
     background_rgb = parse_background(background)
     if display_mode not in DISPLAY_MODES:
@@ -332,7 +371,7 @@ def render_snapshot(
         widget.show()
         application.processEvents()
         widget.View.MustBeResized()
-        widget.set_msaa_samples(0, redraw=False)
+        widget.set_msaa_samples(msaa, redraw=False)
         # Command-line colors are conventional sRGB hex values.  OCCT's
         # Quantity_TOC_RGB input is linear and would turn #303030 into a much
         # lighter framebuffer value, so keep the color space explicit here.
@@ -355,7 +394,15 @@ def render_snapshot(
         with tempfile.TemporaryDirectory(prefix="zencad-preview-") as temporary:
             temporary_path = Path(temporary)
             for index, view_name in enumerate(normalized_views):
-                widget.View.SetProj(orientations[view_name], False)
+                if camera_vectors is None:
+                    widget.View.SetProj(orientations[view_name], False)
+                else:
+                    from OCP.gp import gp_Dir
+
+                    direction, up = camera_vectors
+                    camera = widget.View.Camera()
+                    camera.SetDirection(gp_Dir(*direction))
+                    camera.SetUp(gp_Dir(*up))
                 widget.View.FitAll(float(margin), False)
                 widget.View.Redraw()
                 application.processEvents()
@@ -441,7 +488,10 @@ def render_script(
     script_path,
     output_path,
     *,
-    views=("iso",),
+    views=None,
+    yaw=None,
+    pitch=None,
+    msaa=DEFAULT_MSAA_SAMPLES,
     size=(1024, 768),
     display_mode="shaded-with-edges",
     background="#303030",
@@ -451,7 +501,14 @@ def render_script(
     arguments=(),
     output: Callable[[str, str], None] | None = None,
 ) -> RenderResult:
-    """Evaluate a ZenCad script in isolation and render its final scene."""
+    """Evaluate a script and render it; camera angles are in radians.
+
+    See :func:`render_snapshot` for camera and MSAA options.
+    """
+    normalized_views, _ = _camera_options(views, yaw, pitch)
+    if views is not None:
+        views = normalized_views
+    _validate_msaa(msaa)
     script = Path(script_path).expanduser().resolve()
     if not script.is_file():
         raise FileNotFoundError(script)
@@ -461,6 +518,9 @@ def render_script(
         snapshot,
         output_path,
         views=views,
+        yaw=yaw,
+        pitch=pitch,
+        msaa=msaa,
         size=size,
         display_mode=display_mode,
         background=background,
@@ -489,6 +549,19 @@ def _argument_parser():
         default="1024x768",
         metavar="WIDTHxHEIGHT",
         help="size of each view in pixels (default: 1024x768)",
+    )
+    parser.add_argument(
+        "--yaw", type=float, metavar="DEGREES",
+        help="camera azimuth from +X toward +Y; requires --pitch; excludes --view",
+    )
+    parser.add_argument(
+        "--pitch", type=float, metavar="DEGREES",
+        help="camera elevation above XY, -90 to 90 degrees; requires --yaw",
+    )
+    parser.add_argument(
+        "--msaa", type=int, choices=MSAA_SAMPLE_OPTIONS,
+        default=DEFAULT_MSAA_SAMPLES,
+        help="antialiasing samples; 0 disables MSAA (default: 4)",
     )
     parser.add_argument(
         "--mode",
@@ -528,13 +601,18 @@ def render_cli(argv=None):
     parser = _argument_parser()
     arguments = parser.parse_args(argv)
     try:
-        views = parse_views(arguments.views or ("iso",))
+        views = parse_views(arguments.views) if arguments.views is not None else None
+        yaw = math.radians(arguments.yaw) if arguments.yaw is not None else None
+        pitch = math.radians(arguments.pitch) if arguments.pitch is not None else None
         size = parse_size(arguments.size)
         background = parse_background(arguments.background)
         result = render_script(
             arguments.script,
             arguments.output,
             views=views,
+            yaw=yaw,
+            pitch=pitch,
+            msaa=arguments.msaa,
             size=size,
             display_mode=arguments.mode,
             background=background,

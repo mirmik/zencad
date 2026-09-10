@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Афинные преобразования</a></li>
 <li><a href="bool.html">Булевы операции</a></li>
-<li><a href="modeling.html">Разделение тел: split и slice</a></li>
+<li><a href="split.html">Разделение тел: split и slice</a></li>
 <li><a href="fillet.html">Топологически зависимые преобразования</a></li>
 <li><a href="ops3d.html">Ссылочная геометрия</a></li>
 <li><a href="sweep.html">Траекторная развёртка</a></li>
 <li><a href="trimesh.html">Триангуляция и меш</a></li>
-<li><a href="other.html">Прочие операции</a></li>
 </ul></li>
 <li>Рефлексия и анализ
 <ul>
-<li><a href="selectors.html">Селекторы топологии</a></li>
+<li><a href="selectors.html">Топология и селекторы</a></li>
 <li><a href="validation.html">Проверка и исправление геометрии</a></li>
-<li><a href="reflect.html">Рефлексия геометрии</a></li>
 <li><a href="crvalgo.html">Анализ кривых</a></li>
 <li><a href="surfalgo.html">Анализ поверхностей</a></li>
 <li><a href="geomprop.html">Геометрические характеристики</a></li>
@@ -72,22 +70,39 @@
 
 <p>Для <code>inspect</code> и <code>check</code> достаточно geometry-only установки. Скрипт должен объявить статическую сцену через <code>display()</code> и <code>show()</code>, как в <a href="helloworld.html">первой модели</a>. Код модели исполняется в отдельном процессе.</p>
 
-<h2 id="inspect-и-граф-вычислении">Inspect и граф вычислений</h2>
+<h2 id="inspect-получить-сведения-о-модели">inspect — получить сведения о модели</h2>
+
+<p><code>inspect</code> выполняет скрипт и составляет отчёт о построенной сцене. Он нужен, чтобы узнать состав модели, размеры и свойства геометрии без открытия редактора. Отчёт можно читать в терминале или передавать другой программе в JSON. Например, так можно узнать объём детали и её габариты перед экспортом.</p>
+
+<h3 id="отчет-о-геометрии">Отчёт о геометрии</h3>
 
 <div class="codehilite">
-<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--json
 zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--output<span class="w"> </span>report.json
-zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--no-cache
-zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--graph-json<span class="w"> </span>graph.json
-zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--failed-path
 </code></pre>
 </div>
 
 <p>Отчёт содержит ID и имена объектов, размещение, bounding box, типы и количество топологии, площадь/объём, статистику mesh, digest и валидность. <code>stdout</code>/<code>stderr</code> модели перенаправлены в stderr команды: stdout JSON можно передавать следующему инструменту.</p>
 
+<h3 id="граф-вычислении">Граф вычислений</h3>
+
+<p>Граф помогает разобраться, из каких операций построена модель, какие результаты взяты из кэша и где возникла ошибка вычисления.</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--no-cache
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--graph-json<span class="w"> </span>graph.json
+zencad<span class="w"> </span>inspect<span class="w"> </span>model.py<span class="w"> </span>--tree<span class="w"> </span>--failed-path
+</code></pre>
+</div>
+
 <p>Дерево показывает операции, общие зависимости, состояние кэша/вычислений и источник в коде. <code>--root</code>, <code>--max-depth</code>, <code>--hide-literals</code>, <code>--max-graph-nodes</code> ограничивают представление. При неподдерживаемой кодировке вывода ветви дерева печатаются в ASCII; API <code>to_tree()</code> сохраняет Unicode. <code>--graph-json</code> — отдельный формат графа, не отчёт геометрии.</p>
 
-<h2 id="проверяемые-требования">Проверяемые требования</h2>
+<p>Подробности параметров и формата отчёта: <a href="../development/headless-inspect.md">справка inspect</a>.</p>
+
+<h2 id="check-проверить-требования-к-модели">check — проверить требования к модели</h2>
+
+<p><code>check</code> выполняет скрипт и проверяет, соответствует ли полученная геометрия заданным требованиям: например, корректна ли форма, является ли она твёрдым телом и попадают ли её объём и габариты в допустимые пределы. Команда нужна для автоматической проверки после изменения модели — в скрипте, CI или при работе агента. Результат проверки — успех либо список невыполненных требований.</p>
 
 <div class="codehilite">
 <pre><span></span><code>zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="w"> </span>--valid<span class="w"> </span>--solid
@@ -95,7 +110,45 @@ zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="
 </code></pre>
 </div>
 
-<p><code>--solid</code> требует solid-тип каждого видимого BREP-объекта; compound с телом внутри не равнозначен solid. Проверяется видимый результат; несколько объектов агрегируются по контракту команды. JSON содержит expected/actual/tolerance. Код <code>7</code> означает несоответствие требованиям при успешно исполненной модели; <code>0</code> — успех. Ошибка скрипта — <code>3</code>, геометрии/сцены — <code>4</code>, таймаут — <code>5</code>, ошибка вывода — <code>6</code>, неправильные аргументы — <code>2</code>. Подробности: <a href="../development/headless-inspect.md">inspect</a>, <a href="../development/headless-check.md">check</a>.</p>
+<p><code>--valid</code> проверяет корректность геометрии. <code>--volume 700:800</code> задаёт допустимый диапазон объёма, а <code>--bbox-size 19:21,9:11,3:5</code> — диапазоны габаритов по X, Y и Z.</p>
+
+<p><code>--solid</code> требует solid-тип каждого видимого BREP-объекта; compound с телом внутри не равнозначен solid. Проверяется видимый результат; несколько объектов агрегируются по контракту команды. JSON содержит expected/actual/tolerance. Код <code>7</code> означает несоответствие требованиям при успешно исполненной модели; <code>0</code> — успех. Ошибка скрипта — <code>3</code>, геометрии/сцены — <code>4</code>, таймаут — <code>5</code>, ошибка вывода — <code>6</code>, неправильные аргументы — <code>2</code>. Подробности: <a href="../development/headless-check.md">справка check</a>.</p>
+
+<h2 id="render-создать-изображение-модели">render — создать изображение модели</h2>
+
+<p><code>render</code> выполняет скрипт и сохраняет изображение построенной сцены в PNG. Он нужен для визуального просмотра результата без работы в редакторе: например, чтобы приложить превью к отчёту или рассмотреть деталь с нескольких сторон. Изображение помогает оценить внешний вид; корректность геометрии и численные требования проверяются командой <code>check</code>.</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
+zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top,right<span class="w"> </span>--size<span class="w"> </span>640x480
+</code></pre>
+</div>
+
+<p>Ракурсы: <code>iso</code>, <code>front</code>, <code>back</code>, <code>left</code>, <code>right</code>, <code>top</code>, <code>bottom</code>. Размер задаётся для каждого тайла; несколько видов собираются в контактный лист. Камера ортографическая с новым FitAll, без сохранённого состояния редактора. Режимы: <code>shaded</code>, <code>shaded-with-edges</code>, <code>wireframe</code>; доступны фон, оси и margin.</p>
+
+<h3 id="ракурс-и-сглаживание">Ракурс и сглаживание</h3>
+
+<p>Для произвольного ракурса задайте оба угла <code>--yaw</code> и <code>--pitch</code> в градусах:</p>
+
+<div class="codehilite">
+<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png<span class="w"> </span>--yaw<span class="w"> </span>-65<span class="w"> </span>--pitch<span class="w"> </span><span class="m">12</span><span class="w"> </span>--msaa<span class="w"> </span><span class="m">8</span>
+</code></pre>
+</div>
+
+<p><code>yaw</code> задаёт положение камеры вокруг оси Z: 0 — со стороны +X, 90 — со стороны +Y. <code>pitch</code> задаёт высоту камеры над плоскостью XY: 0 — горизонтальный взгляд, 90 — сверху, −90 — снизу. Диапазон <code>pitch</code> — от −90 до 90. Углы задаются вместе и не сочетаются с <code>--view</code>/<code>--views</code>. Модель автоматически вписывается в кадр; отступ регулируется <code>--margin</code>.</p>
+
+<p><code>--msaa</code> управляет сглаживанием краёв: доступны 0, 2, 4 и 8 отсчётов. По умолчанию используется 4; 0 отключает сглаживание. Параметр работает и с готовыми ракурсами.</p>
+
+<p>В Python API <code>render_script</code> и <code>render_snapshot</code> принимают <code>yaw</code>, <code>pitch</code> <strong>в радианах</strong>, а <code>msaa</code> — целое число. Например: <code>render_script("model.py", "preview.png", yaw=deg(-65), pitch=deg(12), msaa=8)</code>, где <code>deg</code> импортирована из <code>zencad</code>. Если ни углы, ни <code>views</code> не заданы, используется <code>iso</code>.</p>
+
+<p>Render требует <code>gui</code> extra и работоспособный OpenGL. На сервере Linux:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>xvfb-run<span class="w"> </span>-a<span class="w"> </span>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
+</code></pre>
+</div>
+
+<p>Windows/macOS-render ещё требует платформенной приёмки; на GitHub-hosted macOS зафиксирован отказ создания OpenGL-контекста. Это не препятствует headless inspect/check, которым viewer не нужен. <a href="../development/deterministic-render.md">Контракт рендера</a>.</p>
 
 <h2 id="python-api">Python API</h2>
 
@@ -109,25 +162,6 @@ zencad<span class="w"> </span>check<span class="w"> </span>model.py<span class="
 </div>
 
 <p>Защита entry point нужна из-за запуска дочернего процесса. Также доступны <code>check_script</code>, <code>inspect_computation_graph</code>, <code>render_script</code>; форматы и параметры описаны в development-справке.</p>
-
-<h2 id="png-превью">PNG-превью</h2>
-
-<div class="codehilite">
-<pre><span></span><code>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
-zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>views.png<span class="w"> </span>--views<span class="w"> </span>iso,front,top,right<span class="w"> </span>--size<span class="w"> </span>640x480
-</code></pre>
-</div>
-
-<p>Ракурсы: <code>iso</code>, <code>front</code>, <code>back</code>, <code>left</code>, <code>right</code>, <code>top</code>, <code>bottom</code>. Размер задаётся для каждого тайла; несколько видов собираются в контактный лист. Камера ортографическая с новым FitAll, без сохранённого состояния редактора. Режимы: <code>shaded</code>, <code>shaded-with-edges</code>, <code>wireframe</code>; доступны фон, оси и margin.</p>
-
-<p>Render требует <code>gui</code> extra и работоспособный OpenGL. На сервере Linux:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>xvfb-run<span class="w"> </span>-a<span class="w"> </span>zencad<span class="w"> </span>render<span class="w"> </span>model.py<span class="w"> </span>-o<span class="w"> </span>preview.png
-</code></pre>
-</div>
-
-<p>Windows/macOS-render ещё требует платформенной приёмки; на GitHub-hosted macOS зафиксирован отказ создания OpenGL-контекста. Это не препятствует headless inspect/check, которым viewer не нужен. <a href="../development/deterministic-render.md">Контракт рендера</a>.</p>
 </article>
 </div>
 </body>

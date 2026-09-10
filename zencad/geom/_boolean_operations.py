@@ -162,8 +162,7 @@ def _split_resolved(
     if not all(isinstance(tool, ResolvedShape) for tool in tools):
         raise TypeError("split tools must contain only Shape values")
 
-    original_count = len(_solid_parts(body))
-    if original_count == 0:
+    if not _solid_parts(body):
         raise TypeError("split body must contain at least one solid")
 
     algorithm = BOPAlgo_Splitter()
@@ -175,10 +174,7 @@ def _split_resolved(
     if algorithm.HasErrors():
         raise ValueError("OCCT splitter failed for the supplied body and tools")
 
-    parts = _solid_parts(ResolvedShape(algorithm.Shape()))
-    if len(parts) <= original_count:
-        raise ValueError("split tools do not divide the body")
-    return parts
+    return _solid_parts(ResolvedShape(algorithm.Shape()))
 
 
 def _coordinates(value: object, name: str) -> tuple[float, float, float]:
@@ -260,10 +256,6 @@ def _slice_resolved(
     resolved_plane = _resolved_plane(plane, coordinate, axis)
     tool = ResolvedShape(BRepBuilderAPI_MakeFace(resolved_plane).Face())
     parts = _split_resolved(body, (tool,))
-    if len(parts) != 2:
-        raise ValueError(
-            f"slice requires exactly two resulting solids; got {len(parts)}"
-        )
 
     location = resolved_plane.Location()
     direction = resolved_plane.Axis().Direction()

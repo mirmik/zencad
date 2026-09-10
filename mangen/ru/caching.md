@@ -60,4 +60,4 @@ zencad inspect model.py --tree --failed-path
 
 Заголовок скрипта может переопределить начальный режим runner. Граф показывает зависимости, cache hit и ошибки. [Командная строка](headless.html).
 
-Для интеграций доступен явный владелец вычислений: `context = z.Context.deferred(cache=False)` и `context.call(z.box, 10)`. У `Context` нет CAD-фасада; для обычных скриптов отдельный контекст не нужен. Старые настройки `zencad.lazy` описаны только в [руководстве миграции](migration.html).
+Для интеграций доступен явный владелец вычислений: `context = z.Context.deferred(cache=False)` и `context.call(z.box, 10)`. У `Context` нет CAD-фасада; для обычных скриптов отдельный контекст не нужен. Старые настройки `zencad.lazy` описаны в [руководстве миграции](migration.html).

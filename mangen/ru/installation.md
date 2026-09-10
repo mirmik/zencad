@@ -43,6 +43,3 @@ python -m zencad
 
 Без GUI используйте `python -m pip install -e .`. Дополнительные зависимости
 примеров: `python -m pip install -e ".[examples]"`.
-
-Номер `2.0.0` в метаданных не означает завершённую платформенную приёмку.
-Windows/macOS-render ещё проверяется; Linux GUI требует рабочего X11/OpenGL.

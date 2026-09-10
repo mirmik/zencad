@@ -35,18 +35,16 @@
 <ul>
 <li><a href="trans0.html">Aphine transform</a></li>
 <li><a href="bool.html">Boolean operations</a></li>
-<li><a href="modeling.html">Splitting solids: split and slice</a></li>
+<li><a href="split.html">Splitting solids: split and slice</a></li>
 <li><a href="fillet.html">Topologically dependent operations</a></li>
 <li><a href="ops3d.html">Reference geometry</a></li>
 <li><a href="sweep.html">Sweep operations</a></li>
 <li><a href="trimesh.html">Triangulate and meshing</a></li>
-<li><a href="other.html">Other operations</a></li>
 </ul></li>
 <li>Reflection and analysis
 <ul>
-<li><a href="selectors.html">Topology selectors</a></li>
+<li><a href="selectors.html">Topology and selectors</a></li>
 <li><a href="validation.html">Validation and repair</a></li>
-<li><a href="reflect.html">Geometric reflection</a></li>
 <li><a href="crvalgo.html">Curve analysis</a></li>
 <li><a href="surfalgo.html">Surface analysis</a></li>
 <li><a href="geomprop.html">Geometric properties</a></li>
@@ -70,25 +68,81 @@
 </nav>
 <article class="article"><h1 id="geometry-validation-and-repair">Geometry validation and repair</h1>
 
+<h2 id="validation-validate-and-assert_valid">Validation: validate and assert_valid</h2>
+
+<p><code>validate()</code> returns an error report; <code>is_valid()</code> returns a boolean. <code>assert_valid()</code> raises <code>ShapeValidationError</code> for an invalid shape. These methods do not repair anything.</p>
+
 <div class="codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
 
-<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">report</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
 <span class="k">assert</span> <span class="n">report</span><span class="o">.</span><span class="n">valid</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
 <span class="n">body</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
-<span class="n">cleaned</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
-<span class="n">healed</span> <span class="o">=</span> <span class="n">cleaned</span><span class="o">.</span><span class="n">heal</span><span class="p">(</span><span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">max_tolerance</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
-<span class="n">healed</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
 </code></pre>
 </div>
 
-<p><code>validate()</code> materializes the shape and returns a <code>ValidationReport</code>: <code>valid</code> and structured issues with <code>code</code>, <code>occt_status</code>, <code>path</code>, shape type and optional context. <code>is_valid()</code> provides a short answer; <code>assert_valid()</code> returns the same shape or raises <code>ShapeValidationError</code>.</p>
+<p>Validity does not imply a closed solid. Use <code>zencad check model.py --valid --solid</code> to check the final solid. <a href="../development/shape-validation.md">Report format</a>.</p>
 
-<p>Validation does not repair geometry. <code>clean()</code> removes redundant same-domain boundaries; <code>heal()</code> applies tolerance-bounded OCCT healing. Both create a new result without mutating the source. Healing is best-effort: validate its result. <code>sew()</code> remains a separate sewing operation.</p>
+<h2 id="unify">unify</h2>
 
-<p>A valid open shell is not a closed solid. <code>is_closed()</code> checks closure only for <code>Edge</code> and <code>Wire</code>; it does not support <code>Shell</code> or <code>Solid</code>. Check both validity and solid components for a final body: <code>zencad check model.py --valid --solid</code>. <a href="headless.html">Headless workflow</a>, <a href="../development/shape-validation.md">report format</a>.</p>
+<p>Removes redundant edges and merges faces on the same surface. Works with 2D and 3D shapes. The <code>body.clean()</code> method also provides this simplification.</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="n">cylinder</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">simplified</span> <span class="o">=</span> <span class="n">unify</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+<span class="n">simplified</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">simplified</span><span class="p">)</span>
+<span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Before</th>
+  <th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><img src="../images/generic/unify0.png" alt="" /></td>
+  <td><img src="../images/generic/unify1.png" alt="" /></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="heal-repairing-geometry-defects">heal — repairing geometry defects</h2>
+
+<p>Repairs defects using OpenCascade, creating a new shape. Validate the result: repair is not always possible.</p>
+
+<p>This example uses a 10 × 10 × 10 cube with an incorrectly oriented face. Download <a href="../files/box-reversed-face.brep">box-reversed-face.brep</a> and place it beside the script:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">z</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">from_brep</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;box-reversed-face.brep&quot;</span><span class="p">))</span>
+<span class="n">before</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">before</span><span class="o">.</span><span class="n">valid</span><span class="p">)</span>  <span class="c1"># False</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">issue</span><span class="o">.</span><span class="n">code</span> <span class="k">for</span> <span class="n">issue</span> <span class="ow">in</span> <span class="n">before</span><span class="o">.</span><span class="n">issues</span><span class="p">])</span>
+<span class="c1"># [&#39;bad_orientation_of_subshape&#39;]</span>
+
+<span class="n">fixed</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">heal</span><span class="p">(</span><span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">max_tolerance</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">fixed</span><span class="o">.</span><span class="n">assert_valid</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fixed</span><span class="o">.</span><span class="n">is_valid</span><span class="p">())</span>  <span class="c1"># True</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">fixed</span><span class="o">.</span><span class="n">mass</span><span class="p">()),</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1"># 1000.0</span>
+
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">body</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+<span class="n">z</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+<span class="n">z</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p><code>heal</code> corrects the face orientation; the original shape stays unchanged. <code>tolerance</code> sets the working precision and <code>max_tolerance</code> the upper tolerance limit, in model units.</p>
 </article>
 </div>
 </body>

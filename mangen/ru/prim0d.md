@@ -151,22 +151,5 @@ assert placement(p3).value() == p3.value()
 - `Scalar.value()`, `float()`, `int()`, `bool()` и сравнения требуют число.
 - `Point/Vector.value()` возвращает кортеж; `.to_numpy()` — массив чисел.
 - `Shape.native()` возвращает OCP-форму; `Point/Vector.to_ocp()` — native точку/вектор.
-- `Transform.matrix()` возвращает числовую матрицу 4×4.
 
 Обычный `math.sin(scalar)` получает число через `float`; `z.sin(scalar)` сохраняет зависимость в графе. Доменные значения логически неизменяемы: новую позицию создают операцией, а не присваиванием координате.
-
-## Преобразования
-
-```python
-import zencad as z
-
-move = z.translate(10, 0, 0)
-turn = z.rotateZ(z.deg(90))
-combined = move * turn
-p = combined(z.point3(1, 0, 0))
-assert abs(float(p.x) - 10) < 1e-7
-assert abs(float(p.y) - 1) < 1e-7
-matrix = combined.matrix()
-```
-
-`outer * inner` сначала применяет `inner`, затем `outer`. `Transform` описывает перенос, вращение и равномерный масштаб, включая отражения через знаковый масштаб; для общего аффинного преобразования есть отдельный `AffineTransform`. [Селекторы топологии](selectors.html).
