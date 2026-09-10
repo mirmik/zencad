@@ -9,6 +9,7 @@ from collections import Counter
 import hashlib
 import importlib
 import json
+import re
 from pathlib import Path
 import sys
 from typing import Any
@@ -202,6 +203,14 @@ def validate(matrix: dict[str, Any], entries: list[dict[str, str]]) -> None:
     if not entries:
         raise ContractError("parity matrix is empty")
     zencad = importlib.import_module("zencad")
+    for entry in entries:
+        if entry["status"] != "implemented":
+            continue
+        for name in re.findall(r"\bzencad\.([A-Za-z_]\w*)", entry["typed"]):
+            if name not in zencad.__all__ or not hasattr(zencad, name):
+                raise ContractError(
+                    f"{entry['legacy']}: implemented target zencad.{name} is not exported"
+                )
     domain = importlib.import_module("zencad.geom")
     root_exports = getattr(zencad, "__all__", ())
     if len(root_exports) != len(set(root_exports)):

@@ -125,6 +125,27 @@
 
 <p>Совместимость с <code>zencad.lazy</code> намеренно не поддерживается в ZenCad 2. Старый пользовательский <code>@lazy</code> не имеет автоматической совместимой замены. Новые доменные операции используют <code>@zencad.operation</code>; описание деклараций находится в исходнике <code>zencad/operation.py</code> и development-документах. Не следует механически переименовывать декоратор.</p>
 
+<h2 id="геометрические-массивы-и-сборки">Геометрические массивы и сборки</h2>
+
+<p>Аргумент <code>unit=True</code> удалён из <code>multitrans</code>, <code>multitransform</code>, <code>sqrmirror</code>, <code>sqrtrans</code>, <code>rotate_array</code> и <code>rotate_array2</code>. Геометрические функции работают с формами и не создают сборочные или кинематические объекты. При <code>array=True</code> они возвращают отдельные копии; по умолчанию — их булево объединение.</p>
+
+<p>Для сохранения отдельных деталей в сборке создайте юнит явно:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span>
+
+<span class="n">part</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">copies</span> <span class="o">=</span> <span class="n">rotate_array</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">part</span><span class="p">)</span>
+<span class="n">assembly</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parts</span><span class="o">=</span><span class="n">copies</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">copies</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">copies</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">())</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p>Сборка зависит от геометрии, а геометрия не зависит от сборок. Вместо передачи интерактивного объекта или юнита в массив преобразований передавайте геометрическую форму и затем добавляйте её копии в сборку. <code>multitransform</code> — строчная функция создания <code>MultiTransform</code>, <code>sqrtrans</code> — синоним <code>sqrmirror</code>.</p>
+
 <h2 id="граф-и-явные-границы">Граф и явные границы</h2>
 
 <div class="codehilite">

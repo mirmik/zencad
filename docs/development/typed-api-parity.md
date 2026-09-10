@@ -5,6 +5,16 @@ ZenCad geometry API and the public domain layer. The machine-readable source
 of truth is [`typed-api-parity.json`](typed-api-parity.json); it is checked by
 `tools/check_typed_api_parity.py` and `utest/typed_api_parity_test.py`.
 
+The checker also verifies that explicit `zencad.*` targets marked as implemented
+exist in the public root exports. This detects missing advertised entry points;
+it does not replace behavioral tests for their arguments and results.
+
+Transform patterns are geometry-only. `multitrans`/`multitransform`, `sqrmirror`/
+`sqrtrans`, `rotate_array` and `rotate_array2` return copies with `array=True`
+and fuse them otherwise. They do not accept `unit`; assemblies are constructed
+explicitly with `zencad.assemble.unit(parts=copies)`. This is an intentional
+API change that keeps geometry independent of assemblies and kinematics.
+
 ## Compatibility promise
 
 The public cutover, completed on 2026-09-02, does not reduce ZenCad's intentionally supported geometry

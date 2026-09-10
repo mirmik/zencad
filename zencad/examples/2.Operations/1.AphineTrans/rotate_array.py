@@ -2,23 +2,33 @@
 """ZenCad API example: rotate_array."""
 
 from zencad import *
+from zencad.assemble import unit
 
 a = box(15, center=True)
 b = cylinder(r=15, h=10)
 c = ellipse(10, 5)
 d = square(10, center=True, wire=True)
 
-k1 = rotate_array(n=6, unit=True)(a.right(25))
-k2 = rotate_array(n=4, yaw=deg(180), endpoint=True, unit=True)(a.right(25))
-k3 = rotate_array(n=4, yaw=deg(180), endpoint=False, unit=True)(a.right(25))
+k1 = rotate_array(n=6, array=True)(a.right(25))
+k2 = rotate_array(n=4, yaw=deg(180), endpoint=True, array=True)(a.right(25))
+k3 = rotate_array(n=4, yaw=deg(180), endpoint=False, array=True)(a.right(25))
 k4 = rotate_array2(
     n=4,
     r=25,
     yaw=(0, deg(180)),
     roll=(0, deg(-60)),
     endpoint=True,
-    unit=True,
+    array=True,
 )(a.rotX(deg(-90)))
+
+# Keep each copy as a separate part in the assembly.
+groups = []
+for copies, tint in zip((k1, k2, k3, k4), (None, red, green, blue)):
+    assembly = unit()
+    for part in copies:
+        assembly.add(part, color=tint)
+    groups.append(assembly)
+k1, k2, k3, k4 = groups
 
 m1 = unify(rotate_array(n=6)(b.right(20)))
 m2 = rotate_array2(n=12, r=20)(c.rotZ(deg(90)))
@@ -41,8 +51,8 @@ disp(m2).right(S).forw(S * 2)
 for item in m3:
     disp(item).right(S * 2).forw(S * 2)
 
-disp(k1).forw(0)
-disp(k2, color.red).right(S).forw(0)
-disp(k3, color.green).right(S * 2).forw(0)
-disp(k4, color.blue).right(S * 3).forw(0)
+disp(k1.forw(0))
+disp(k2.right(S))
+disp(k3.right(S * 2))
+disp(k4.right(S * 3))
 show()

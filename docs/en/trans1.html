@@ -431,13 +431,14 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <h3 id="multiple-transformation">Multiple transformation.</h3>
 
-<p>Apply a custom transform sequence with a list comprehension. The result is a list of shapes; <code>union()</code> combines it into one shape. Circular patterns use <code>rotate_array</code> and <code>rotate_array2</code>: <code>array=True</code> returns a list, otherwise the shapes are fused. The <code>unit</code> argument does not create an assembly unit.</p>
+<p>Apply a custom transform sequence with a list comprehension. The result is a list of shapes; <code>union()</code> combines it into one shape. Circular patterns use <code>rotate_array</code> and <code>rotate_array2</code>: <code>array=True</code> returns a list, otherwise the shapes are fused. Create assemblies explicitly with <code>unit(parts=copies)</code> after importing <code>unit</code> from <code>zencad.assemble</code>.</p>
 
 <p>Сигнатура:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="n">copies</span> <span class="o">=</span> <span class="p">[</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">]</span>
-<span class="n">fused</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">copies</span><span class="p">)</span>
+<pre><span></span><code><span class="n">copies</span> <span class="o">=</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">fused</span> <span class="o">=</span> <span class="n">multitrans</span><span class="p">(</span><span class="n">transes</span><span class="p">)(</span><span class="n">model</span><span class="p">)</span>
+<span class="c1"># multitransform is a synonym for multitrans</span>
 </code></pre>
 </div>
 
@@ -477,7 +478,7 @@ It should be noted that compositions of affine transformations are non-commutati
 <h3 id="circular-array">Circular array.</h3>
 
 <p>Multiple transform that produces a circular array of <em>n</em> objects over the angular range of <em>yaw</em>. The <em>endpoint</em> parameter is responsible for including the last point of the linear space of the corners.
-(parameters <em>array</em>, <em>unit</em> - see Multiple conversion.)</p>
+(For <em>array</em>, see Multiple transformation.)</p>
 
 <p>Signature and conversion code:</p>
 
@@ -515,7 +516,7 @@ It should be noted that compositions of affine transformations are non-commutati
 <h3 id="circular-pattern-with-additional-roll">Circular pattern with additional roll.</h3>
 
 <p>Multiple transform that produces a circular array of <em>n</em> objects over the angular range of <em>yaw</em>. The <em>endpoint</em> parameter is responsible for including the last point of the linear space of the corners.
-(parameters <em>array</em>, <em>unit</em> - see Multiple conversion.)</p>
+(For <em>array</em>, see Multiple transformation.)</p>
 
 <p>The <em>roll</em> option specifies the roll interval of the body around the rotation path.</p>
 
@@ -527,7 +528,7 @@ It should be noted that compositions of affine transformations are non-commutati
 <pre><span></span><code><span class="n">rotate_array2</span><span class="p">(</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">yaw</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">deg</span><span class="p">(</span><span class="mi">360</span><span class="p">)),</span> <span class="n">roll</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
-    <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre>
 </div>
 
@@ -567,9 +568,8 @@ It should be noted that compositions of affine transformations are non-commutati
 <p>Signature and conversion code: </p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sqrmirror</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="n">transes</span> <span class="o">=</span> <span class="p">[</span><span class="n">transform</span><span class="p">(),</span> <span class="n">mirrorYZ</span><span class="p">(),</span> <span class="n">mirrorXZ</span><span class="p">(),</span> <span class="n">mirrorZ</span><span class="p">()]</span>
-    <span class="k">return</span> <span class="n">union</span><span class="p">([</span><span class="n">trsf</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">trsf</span> <span class="ow">in</span> <span class="n">transes</span><span class="p">])</span>
+<pre><span></span><code><span class="n">sqrmirror</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">sqrtrans</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># synonym</span>
 </code></pre>
 </div>
 
@@ -577,7 +577,7 @@ It should be noted that compositions of affine transformations are non-commutati
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad.internal_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">knight</span>
-<span class="n">sqrmirror</span><span class="p">(</span><span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+<span class="n">sqrmirror</span><span class="p">()(</span><span class="n">knight</span><span class="p">()</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
 </code></pre>
 </div>
 

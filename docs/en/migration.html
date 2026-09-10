@@ -125,6 +125,27 @@
 
 <p>ZenCad 2 intentionally does not provide compatibility with <code>zencad.lazy</code>. The former user <code>@lazy</code> decorator has no automatic compatible replacement. New domain operations use <code>@zencad.operation</code>; declarations are described in <code>zencad/operation.py</code> and development documents. Do not mechanically rename decorators.</p>
 
+<h2 id="geometry-patterns-and-assemblies">Geometry patterns and assemblies</h2>
+
+<p>The <code>unit=True</code> argument is removed from <code>multitrans</code>, <code>multitransform</code>, <code>sqrmirror</code>, <code>sqrtrans</code>, <code>rotate_array</code> and <code>rotate_array2</code>. Geometry functions operate on shapes and do not create assembly or kinematic objects. With <code>array=True</code> they return separate copies; by default they return their boolean union.</p>
+
+<p>Create an explicit unit to keep separate assembly parts:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zencad</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zencad.assemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit</span>
+
+<span class="n">part</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">copies</span> <span class="o">=</span> <span class="n">rotate_array</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">part</span><span class="p">)</span>
+<span class="n">assembly</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">parts</span><span class="o">=</span><span class="n">copies</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="n">copies</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">copies</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">mass</span><span class="p">())</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+</code></pre>
+</div>
+
+<p>Assemblies depend on geometry; geometry does not depend on assemblies. Pass geometric shapes to transform patterns, then put their copies into an assembly, instead of passing interactive objects or units to the pattern. <code>multitransform</code> is a lowercase factory for <code>MultiTransform</code>; <code>sqrtrans</code> is a synonym for <code>sqrmirror</code>.</p>
+
 <h2 id="graphs-and-explicit-boundaries">Graphs and explicit boundaries</h2>
 
 <div class="codehilite">

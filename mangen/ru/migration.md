@@ -18,6 +18,26 @@
 
 Совместимость с `zencad.lazy` намеренно не поддерживается в ZenCad 2. Старый пользовательский `@lazy` не имеет автоматической совместимой замены. Новые доменные операции используют `@zencad.operation`; описание деклараций находится в исходнике `zencad/operation.py` и development-документах. Не следует механически переименовывать декоратор.
 
+## Геометрические массивы и сборки
+
+Аргумент `unit=True` удалён из `multitrans`, `multitransform`, `sqrmirror`, `sqrtrans`, `rotate_array` и `rotate_array2`. Геометрические функции работают с формами и не создают сборочные или кинематические объекты. При `array=True` они возвращают отдельные копии; по умолчанию — их булево объединение.
+
+Для сохранения отдельных деталей в сборке создайте юнит явно:
+
+```python
+from zencad import *
+from zencad.assemble import unit
+
+part = box(2).right(5)
+copies = rotate_array(4, array=True)(part)
+assembly = unit(parts=copies)
+body = union(copies)
+assert len(copies) == 4
+assert abs(float(body.mass()) - 32) < 1e-7
+```
+
+Сборка зависит от геометрии, а геометрия не зависит от сборок. Вместо передачи интерактивного объекта или юнита в массив преобразований передавайте геометрическую форму и затем добавляйте её копии в сборку. `multitransform` — строчная функция создания `MultiTransform`, `sqrtrans` — синоним `sqrmirror`.
+
 ## Граф и явные границы
 
 ```python
@@ -60,6 +80,26 @@ Geometry capabilities are retained, but types, materialization and some historic
 | Accidental `time`, `math`, `numpy` wildcard exports | Explicit imports of those modules |
 
 ZenCad 2 intentionally does not provide compatibility with `zencad.lazy`. The former user `@lazy` decorator has no automatic compatible replacement. New domain operations use `@zencad.operation`; declarations are described in `zencad/operation.py` and development documents. Do not mechanically rename decorators.
+
+## Geometry patterns and assemblies
+
+The `unit=True` argument is removed from `multitrans`, `multitransform`, `sqrmirror`, `sqrtrans`, `rotate_array` and `rotate_array2`. Geometry functions operate on shapes and do not create assembly or kinematic objects. With `array=True` they return separate copies; by default they return their boolean union.
+
+Create an explicit unit to keep separate assembly parts:
+
+```python
+from zencad import *
+from zencad.assemble import unit
+
+part = box(2).right(5)
+copies = rotate_array(4, array=True)(part)
+assembly = unit(parts=copies)
+body = union(copies)
+assert len(copies) == 4
+assert abs(float(body.mass()) - 32) < 1e-7
+```
+
+Assemblies depend on geometry; geometry does not depend on assemblies. Pass geometric shapes to transform patterns, then put their copies into an assembly, instead of passing interactive objects or units to the pattern. `multitransform` is a lowercase factory for `MultiTransform`; `sqrtrans` is a synonym for `sqrmirror`.
 
 ## Graphs and explicit boundaries
 

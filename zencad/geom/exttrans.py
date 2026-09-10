@@ -11,7 +11,7 @@ from zencad.operation import resolve_context, using_context
 from ._core import require_same_context
 from .records import Interval
 from .topology import Shape
-from .transforms import Transform, right, rotateX, rotateZ
+from .transforms import Transform, identity_transform, mirrorYZ, mirrorXZ, mirrorZ, right, rotateX, rotateZ
 from .values import ScalarInput
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ ShapeT = TypeVar("ShapeT", bound=Shape)
 class MultiTransform:
     """An immutable transform sequence whose members retain their lazy graphs."""
 
-    __slots__ = ("_context", "_transforms", "array", "unit")
+    __slots__ = ("_context", "_transforms", "array")
 
     def __init__(
         self,
@@ -32,10 +32,9 @@ class MultiTransform:
         *,
         context: Context,
         array: bool = False,
-        unit: bool = False,
     ) -> None:
-        if not isinstance(array, bool) or not isinstance(unit, bool):
-            raise TypeError("MultiTransform array and unit flags must be bool")
+        if not isinstance(array, bool):
+            raise TypeError("MultiTransform array flag must be bool")
         resolved = tuple(transforms)
         for transform in resolved:
             if not isinstance(transform, Transform):
@@ -44,7 +43,6 @@ class MultiTransform:
         self._context = context
         self._transforms = resolved
         self.array = array
-        self.unit = unit
 
     @property
     def context(self) -> Context:
@@ -113,7 +111,6 @@ def rotate_array(
     yaw: ScalarInput = 2 * math.pi,
     endpoint: bool = False,
     array: bool = False,
-    unit: bool = False,
 ) -> MultiTransform:
     """Create evenly spaced rotations around the Z axis."""
 
@@ -124,7 +121,7 @@ def rotate_array(
     with using_context(context):
         angles = _linspace(0, yaw, count, endpoint)
         transforms = tuple(rotateZ(angle) for angle in angles)
-    return MultiTransform(transforms, context=context, array=array, unit=unit)
+    return MultiTransform(transforms, context=context, array=array)
 
 
 def rotate_array2(
@@ -134,7 +131,6 @@ def rotate_array2(
     roll: Interval | Sequence[ScalarInput] = (0, 0),
     endpoint: bool = False,
     array: bool = False,
-    unit: bool = False,
 ) -> MultiTransform:
     """Create radial transforms with independently interpolated yaw and roll."""
 
@@ -155,4 +151,26 @@ def rotate_array2(
             * rotateZ(roll_angle)
             for yaw_angle, roll_angle in zip(yaws, rolls)
         )
-    return MultiTransform(transforms, context=context, array=array, unit=unit)
+    return MultiTransform(transforms, context=context, array=array)
+
+
+def multitrans(transes: Sequence[Transform], array: bool = False) -> MultiTransform:
+    """Apply transforms to geometry, returning separate copies or their union."""
+    return MultiTransform(transes, context=resolve_context(transes), array=array)
+
+
+def multitransform(transes: Sequence[Transform], array: bool = False) -> MultiTransform:
+    """Synonym for multitrans; the result is a MultiTransform object."""
+    return multitrans(transes, array=array)
+
+
+def sqrmirror(array: bool = False) -> MultiTransform:
+    """Copy geometry into four XY quadrants using the identity and mirrors."""
+    return multitrans(
+        [identity_transform(), mirrorYZ(), mirrorXZ(), mirrorZ()], array=array
+    )
+
+
+def sqrtrans(array: bool = False) -> MultiTransform:
+    """Synonym for sqrmirror."""
+    return sqrmirror(array=array)

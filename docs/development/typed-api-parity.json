@@ -248,12 +248,12 @@
             },
             "to_Vertex": {
               "status": "implemented",
-              "typed": "zencad.to_Vertex() -> TopoDS_Vertex",
+              "typed": "Point3.Vtx() -> TopoDS_Vertex",
               "materialization": "explicit native conversion"
             },
             "to_GeomPoint": {
               "status": "implemented",
-              "typed": "zencad.to_GeomPoint() -> Geom_CartesianPoint",
+              "typed": "OCP.Geom.Geom_CartesianPoint(Point3.Pnt())",
               "materialization": "explicit native conversion"
             }
           }
@@ -1138,7 +1138,7 @@
             "get_triangles": {"status": "implemented", "typed": "zencad.get_triangles(MeshData | Poly_Triangulation) -> tuple[TriangleRow, ...]"},
             "restore_shapetype": {"status": "implemented", "typed": "zencad.restore_shapetype() / Shape.restore_shapetype() -> precise Shape subtype"},
             "triangulate": {"status": "implemented", "typed": "zencad.triangulate() / Shape.to_mesh() -> MeshData"},
-            "triangulate_face": {"status": "implemented", "typed": "zencad.triangulate_face() / Face.triangulate() -> MeshData"}
+            "triangulate_face": {"status": "implemented", "typed": "zencad.triangulate() / Face.triangulate() -> MeshData"}
           }
         },
         {

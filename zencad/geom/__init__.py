@@ -62,7 +62,10 @@ from .curve_constructors import (
     segment2,
     trim_curve2,
 )
-from .exttrans import MultiTransform, rotate_array, rotate_array2
+from .exttrans import (
+    MultiTransform, multitrans, multitransform, rotate_array, rotate_array2,
+    sqrmirror, sqrtrans,
+)
 from .face_constructors import (
     circle,
     ellipse,
@@ -268,6 +271,7 @@ from .values import (
 from .wire_builder import WireBuilder, wire_builder
 
 __all__ = [
+    "multitrans", "multitransform", "sqrmirror", "sqrtrans",
     "Axis",
     "Compound",
     "CompSolid",

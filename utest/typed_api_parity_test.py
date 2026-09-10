@@ -9,6 +9,14 @@ CHECKER = ROOT / "tools" / "check_typed_api_parity.py"
 
 
 class TypedApiParityContract(unittest.TestCase):
+    def test_implemented_target_must_be_public(self):
+        from tools.check_typed_api_parity import ContractError, signature_digest, validate
+        entries = [{"legacy": "example:missing", "signature": "()",
+                    "status": "implemented", "typed": "zencad.not_exported()"}]
+        matrix = {"legacy_signature_sha256": signature_digest(entries)}
+        with self.assertRaisesRegex(ContractError, "not_exported is not exported"):
+            validate(matrix, entries)
+
     def test_legacy_surface_is_classified_and_signature_locked(self):
         result = subprocess.run(
             [sys.executable, str(CHECKER)],

@@ -391,16 +391,17 @@ short_rotate((0,0,1), (1,1,1))(knight())
 ------------------------------------
 :ru
 ### Множественное преобразование.
-Произвольный набор преобразований можно применить списковым выражением. Результат — список геометрических объектов; `union()` объединяет его в одну форму. Для круговых массивов доступны `rotate_array` и `rotate_array2`: `array=True` возвращает список, иначе выполняется объединение. Аргумент `unit` не создаёт сборочный юнит.
+Произвольный набор преобразований можно применить списковым выражением. Результат — список геометрических объектов; `union()` объединяет его в одну форму. Для круговых массивов доступны `rotate_array` и `rotate_array2`: `array=True` возвращает список, иначе выполняется объединение. Сборка создаётся явно: `unit(parts=copies)` после импорта `unit` из `zencad.assemble`.
 :en
 ### Multiple transformation.
-Apply a custom transform sequence with a list comprehension. The result is a list of shapes; `union()` combines it into one shape. Circular patterns use `rotate_array` and `rotate_array2`: `array=True` returns a list, otherwise the shapes are fused. The `unit` argument does not create an assembly unit.
+Apply a custom transform sequence with a list comprehension. The result is a list of shapes; `union()` combines it into one shape. Circular patterns use `rotate_array` and `rotate_array2`: `array=True` returns a list, otherwise the shapes are fused. Create assemblies explicitly with `unit(parts=copies)` after importing `unit` from `zencad.assemble`.
 ::
 
 Сигнатура:
 ```python
-copies = [trsf(model) for trsf in transes]
-fused = union(copies)
+copies = multitrans(transes, array=True)(model)
+fused = multitrans(transes)(model)
+# multitransform is a synonym for multitrans
 ```
 
 Пример:
@@ -429,13 +430,13 @@ disp(extrans(knight()))
 :ru
 ### Круговой массив.
 Множественное преобразование, порождающее круговой массив из _n_ объектов на угловом диапазоне _yaw_. Параметр _endpoint_ отвечает за включение последней точки линейного пространства углов. 
-(праметры _array_, _unit_ - см. Множественное преобразование.)
+(параметр _array_ — см. Множественное преобразование.)
 
 Сигнатура и код преобразования:
 :en
 ### Circular array.
 Multiple transform that produces a circular array of _n_ objects over the angular range of _yaw_. The _endpoint_ parameter is responsible for including the last point of the linear space of the corners.
-(parameters _array_, _unit_ - see Multiple conversion.)
+(For _array_, see Multiple transformation.)
 
 Signature and conversion code:
 ::
@@ -460,7 +461,7 @@ disp(rotate_array(6, yaw=deg(270), endpoint=True)(m))
 :ru
 ### Круговой массив c дополнительным креном.
 Множественное преобразование, порождающее круговой массив из _n_ объектов на угловом диапазоне _yaw_. Параметр _endpoint_ отвечает за включение последней точки линейного пространства углов. 
-(праметры _array_, _unit_ - см. Множественное преобразование.)
+(параметр _array_ — см. Множественное преобразование.)
 
 Опция _roll_ задаёт интервал крена тела вокруг траектории вращения.
 
@@ -468,7 +469,7 @@ disp(rotate_array(6, yaw=deg(270), endpoint=True)(m))
 :en
 ### Circular pattern with additional roll.
 Multiple transform that produces a circular array of _n_ objects over the angular range of _yaw_. The _endpoint_ parameter is responsible for including the last point of the linear space of the corners.
-(parameters _array_, _unit_ - see Multiple conversion.)
+(For _array_, see Multiple transformation.)
 
 The _roll_ option specifies the roll interval of the body around the rotation path.
 
@@ -480,7 +481,7 @@ Unlike _rotate_array_, it has slightly different semantics for working with the 
 rotate_array2(
 	n, r=None, 
 	yaw=(0,deg(360)), roll=(0,0), 
-	endpoint=False, array=False, unit=False)
+	endpoint=False, array=False)
 ```
 Пример:
 ```python
@@ -509,15 +510,14 @@ Completes 3 reflections of the original object.
 Signature and conversion code: 
 ::
 ```python
-def sqrmirror(model):
-    transes = [transform(), mirrorYZ(), mirrorXZ(), mirrorZ()]
-    return union([trsf(model) for trsf in transes])
+sqrmirror(array=False)
+sqrtrans(array=False) # synonym
 ```
 
 Пример:
 ```python
 from zencad.internal_models import knight
-sqrmirror(knight().move(20,30))
+sqrmirror()(knight().move(20,30))
 ```
 
 :ru
