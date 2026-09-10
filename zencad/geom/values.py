@@ -29,11 +29,11 @@ ScalarInput = Union[Number, "Scalar"]
 ValueT = TypeVar("ValueT")
 
 
-SCALAR_SPEC = ResultSpec.for_type(float, type_id="zencad.typed.Scalar.v1")
-POINT2_SPEC = ResultSpec.for_type(ops.Point2Value, type_id="zencad.typed.Point2.v1")
-VECTOR2_SPEC = ResultSpec.for_type(ops.Vector2Value, type_id="zencad.typed.Vector2.v1")
-POINT3_SPEC = ResultSpec.for_type(ops.Point3Value, type_id="zencad.typed.Point3.v1")
-VECTOR3_SPEC = ResultSpec.for_type(ops.Vector3Value, type_id="zencad.typed.Vector3.v1")
+SCALAR_SPEC = ResultSpec.for_type(float, type_id="zencad.geom.Scalar.v1")
+POINT2_SPEC = ResultSpec.for_type(ops.Point2Value, type_id="zencad.geom.Point2.v1")
+VECTOR2_SPEC = ResultSpec.for_type(ops.Vector2Value, type_id="zencad.geom.Vector2.v1")
+POINT3_SPEC = ResultSpec.for_type(ops.Point3Value, type_id="zencad.geom.Point3.v1")
+VECTOR3_SPEC = ResultSpec.for_type(ops.Vector3Value, type_id="zencad.geom.Vector3.v1")
 
 
 def _number(value: Number) -> float:
@@ -109,7 +109,7 @@ class Scalar(Handle[float]):
     @classmethod
     def _from_state(cls, context: Context, state: State[float]) -> Scalar:
         if not isinstance(state, Expression):
-            state = SCALAR_SPEC.validate(state, "zencad.typed.scalar.bind")
+            state = SCALAR_SPEC.validate(state, "zencad.geom.scalar.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -170,11 +170,11 @@ class Scalar(Handle[float]):
         return self.__add__(other)
 
     def __sub__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_subtract, "zencad.typed.scalar.subtract")
+        return self._binary(other, ops.scalar_subtract, "zencad.geom.scalar.subtract")
 
     def __rsub__(self, other: ScalarInput) -> Scalar:
         return self._reflected_binary(
-            other, ops.scalar_subtract, "zencad.typed.scalar.subtract"
+            other, ops.scalar_subtract, "zencad.geom.scalar.subtract"
         )
 
     @overload
@@ -192,54 +192,54 @@ class Scalar(Handle[float]):
         return self._binary(
             cast(ScalarInput, other),
             ops.scalar_multiply,
-            "zencad.typed.scalar.multiply",
+            "zencad.geom.scalar.multiply",
         )
 
     def __rmul__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_multiply, "zencad.typed.scalar.multiply")
+        return self._binary(other, ops.scalar_multiply, "zencad.geom.scalar.multiply")
 
     def __truediv__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_divide, "zencad.typed.scalar.divide")
+        return self._binary(other, ops.scalar_divide, "zencad.geom.scalar.divide")
 
     def __rtruediv__(self, other: ScalarInput) -> Scalar:
         return self._reflected_binary(
-            other, ops.scalar_divide, "zencad.typed.scalar.divide"
+            other, ops.scalar_divide, "zencad.geom.scalar.divide"
         )
 
     def __floordiv__(self, other: ScalarInput) -> Scalar:
         return self._binary(
-            other, ops.scalar_floor_divide, "zencad.typed.scalar.floor_divide"
+            other, ops.scalar_floor_divide, "zencad.geom.scalar.floor_divide"
         )
 
     def __rfloordiv__(self, other: ScalarInput) -> Scalar:
         return self._reflected_binary(
-            other, ops.scalar_floor_divide, "zencad.typed.scalar.floor_divide"
+            other, ops.scalar_floor_divide, "zencad.geom.scalar.floor_divide"
         )
 
     def __mod__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_modulo, "zencad.typed.scalar.modulo")
+        return self._binary(other, ops.scalar_modulo, "zencad.geom.scalar.modulo")
 
     def __rmod__(self, other: ScalarInput) -> Scalar:
         return self._reflected_binary(
-            other, ops.scalar_modulo, "zencad.typed.scalar.modulo"
+            other, ops.scalar_modulo, "zencad.geom.scalar.modulo"
         )
 
     def __pow__(self, other: ScalarInput) -> Scalar:
-        return self._binary(other, ops.scalar_power, "zencad.typed.scalar.power")
+        return self._binary(other, ops.scalar_power, "zencad.geom.scalar.power")
 
     def __rpow__(self, other: ScalarInput) -> Scalar:
         return self._reflected_binary(
-            other, ops.scalar_power, "zencad.typed.scalar.power"
+            other, ops.scalar_power, "zencad.geom.scalar.power"
         )
 
     def __neg__(self) -> Scalar:
-        return self._unary(ops.scalar_negate, "zencad.typed.scalar.negate")
+        return self._unary(ops.scalar_negate, "zencad.geom.scalar.negate")
 
     def __pos__(self) -> Scalar:
         return self
 
     def __abs__(self) -> Scalar:
-        return self._unary(ops.scalar_absolute, "zencad.typed.scalar.absolute")
+        return self._unary(ops.scalar_absolute, "zencad.geom.scalar.absolute")
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, (Scalar, int, float)) or isinstance(other, bool):
@@ -463,7 +463,7 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
             selected_context = execution_context() if context is None else context
             self._bind(
                 selected_context,
-                POINT2_SPEC.validate(x, "zencad.typed.point2.construct"),
+                POINT2_SPEC.validate(x, "zencad.geom.point2.construct"),
             )
             return
         components = _components2(x, y)
@@ -472,14 +472,14 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
             ops.point2,
             result=POINT2_SPEC,
             args=tuple(_scalar_state(resolved_context, item) for item in components),
-            operation_id="zencad.typed.point2",
+            operation_id="zencad.geom.point2",
         )
         self._bind(resolved_context, state)
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Point2Value]) -> Point2:
         if not isinstance(state, Expression):
-            state = POINT2_SPEC.validate(state, "zencad.typed.point2.bind")
+            state = POINT2_SPEC.validate(state, "zencad.geom.point2.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -487,13 +487,13 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
     @property
     def x(self) -> Scalar:
         return self._coordinate(
-            0, ops.point2_coordinate, "zencad.typed.point2.coordinate"
+            0, ops.point2_coordinate, "zencad.geom.point2.coordinate"
         )
 
     @property
     def y(self) -> Scalar:
         return self._coordinate(
-            1, ops.point2_coordinate, "zencad.typed.point2.coordinate"
+            1, ops.point2_coordinate, "zencad.geom.point2.coordinate"
         )
 
     def value(self) -> tuple[float, float]:
@@ -511,7 +511,7 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
             ops.point2_add_vector,
             result=POINT2_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.point2.add_vector",
+            operation_id="zencad.geom.point2.add_vector",
         )
         return Point2._from_state(self.context, state)
 
@@ -530,14 +530,14 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
                 ops.point2_subtract_point,
                 result=VECTOR2_SPEC,
                 args=(self._state, other._state),
-                operation_id="zencad.typed.point2.subtract_point",
+                operation_id="zencad.geom.point2.subtract_point",
             )
             return Vector2._from_state(self.context, state)
         state = self.context._value_state(
             ops.point2_subtract_vector,
             result=POINT2_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.point2.subtract_vector",
+            operation_id="zencad.geom.point2.subtract_vector",
         )
         return Point2._from_state(self.context, state)
 
@@ -549,7 +549,7 @@ class Point2(_CoordinateHandle[ops.Point2Value]):
             ops.point2_distance,
             result=SCALAR_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.point2.distance",
+            operation_id="zencad.geom.point2.distance",
         )
         return Scalar._from_state(self.context, state)
 
@@ -597,7 +597,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             selected_context = execution_context() if context is None else context
             self._bind(
                 selected_context,
-                VECTOR2_SPEC.validate(x, "zencad.typed.vector2.construct"),
+                VECTOR2_SPEC.validate(x, "zencad.geom.vector2.construct"),
             )
             return
         components = _components2(x, y)
@@ -606,14 +606,14 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2,
             result=VECTOR2_SPEC,
             args=tuple(_scalar_state(resolved_context, item) for item in components),
-            operation_id="zencad.typed.vector2",
+            operation_id="zencad.geom.vector2",
         )
         self._bind(resolved_context, state)
 
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Vector2Value]) -> Vector2:
         if not isinstance(state, Expression):
-            state = VECTOR2_SPEC.validate(state, "zencad.typed.vector2.bind")
+            state = VECTOR2_SPEC.validate(state, "zencad.geom.vector2.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -621,13 +621,13 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
     @property
     def x(self) -> Scalar:
         return self._coordinate(
-            0, ops.vector2_coordinate, "zencad.typed.vector2.coordinate"
+            0, ops.vector2_coordinate, "zencad.geom.vector2.coordinate"
         )
 
     @property
     def y(self) -> Scalar:
         return self._coordinate(
-            1, ops.vector2_coordinate, "zencad.typed.vector2.coordinate"
+            1, ops.vector2_coordinate, "zencad.geom.vector2.coordinate"
         )
 
     def value(self) -> tuple[float, float]:
@@ -652,14 +652,14 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
                 ops.vector2_add_point,
                 result=POINT2_SPEC,
                 args=(self._state, other._state),
-                operation_id="zencad.typed.vector2.add_point",
+                operation_id="zencad.geom.vector2.add_point",
             )
             return Point2._from_state(self.context, state)
         state = self.context._value_state(
             ops.vector2_add,
             result=VECTOR2_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector2.add",
+            operation_id="zencad.geom.vector2.add",
         )
         return Vector2._from_state(self.context, state)
 
@@ -671,7 +671,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_subtract,
             result=VECTOR2_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector2.subtract",
+            operation_id="zencad.geom.vector2.subtract",
         )
         return Vector2._from_state(self.context, state)
 
@@ -680,7 +680,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_scale,
             result=VECTOR2_SPEC,
             args=(self._state, _scalar_state(self.context, factor)),
-            operation_id="zencad.typed.vector2.scale",
+            operation_id="zencad.geom.vector2.scale",
         )
         return Vector2._from_state(self.context, state)
 
@@ -692,7 +692,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_divide,
             result=VECTOR2_SPEC,
             args=(self._state, _scalar_state(self.context, divisor)),
-            operation_id="zencad.typed.vector2.divide",
+            operation_id="zencad.geom.vector2.divide",
         )
         return Vector2._from_state(self.context, state)
 
@@ -701,7 +701,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_negate,
             result=VECTOR2_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector2.negate",
+            operation_id="zencad.geom.vector2.negate",
         )
         return Vector2._from_state(self.context, state)
 
@@ -713,7 +713,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_dot,
             result=SCALAR_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector2.dot",
+            operation_id="zencad.geom.vector2.dot",
         )
         return Scalar._from_state(self.context, state)
 
@@ -725,7 +725,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_cross,
             result=SCALAR_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector2.cross",
+            operation_id="zencad.geom.vector2.cross",
         )
         return Scalar._from_state(self.context, state)
 
@@ -734,7 +734,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_length,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector2.length",
+            operation_id="zencad.geom.vector2.length",
         )
         return Scalar._from_state(self.context, state)
 
@@ -743,7 +743,7 @@ class Vector2(_CoordinateHandle[ops.Vector2Value]):
             ops.vector2_normalized,
             result=VECTOR2_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector2.normalized",
+            operation_id="zencad.geom.vector2.normalized",
         )
         return Vector2._from_state(self.context, state)
 
@@ -793,7 +793,7 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
             selected_context = execution_context() if context is None else context
             self._bind(
                 selected_context,
-                POINT3_SPEC.validate(x, "zencad.typed.point3.construct"),
+                POINT3_SPEC.validate(x, "zencad.geom.point3.construct"),
             )
             return
         components = _components3(x, y, z)
@@ -802,7 +802,7 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
             ops.point3,
             result=POINT3_SPEC,
             args=tuple(_scalar_state(resolved_context, item) for item in components),
-            operation_id="zencad.typed.point3",
+            operation_id="zencad.geom.point3",
         )
         self._bind(resolved_context, state)
 
@@ -823,7 +823,7 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Point3Value]) -> Point3:
         if not isinstance(state, Expression):
-            state = POINT3_SPEC.validate(state, "zencad.typed.point3.bind")
+            state = POINT3_SPEC.validate(state, "zencad.geom.point3.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -831,19 +831,19 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
     @property
     def x(self) -> Scalar:
         return self._coordinate(
-            0, ops.point3_coordinate, "zencad.typed.point3.coordinate"
+            0, ops.point3_coordinate, "zencad.geom.point3.coordinate"
         )
 
     @property
     def y(self) -> Scalar:
         return self._coordinate(
-            1, ops.point3_coordinate, "zencad.typed.point3.coordinate"
+            1, ops.point3_coordinate, "zencad.geom.point3.coordinate"
         )
 
     @property
     def z(self) -> Scalar:
         return self._coordinate(
-            2, ops.point3_coordinate, "zencad.typed.point3.coordinate"
+            2, ops.point3_coordinate, "zencad.geom.point3.coordinate"
         )
 
     def value(self) -> tuple[float, float, float]:
@@ -861,7 +861,7 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
             ops.point3_add_vector,
             result=POINT3_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.point3.add_vector",
+            operation_id="zencad.geom.point3.add_vector",
         )
         return Point3._from_state(self.context, state)
 
@@ -883,14 +883,14 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
                 ops.point3_subtract_point,
                 result=VECTOR3_SPEC,
                 args=(self._state, other._state),
-                operation_id="zencad.typed.point3.subtract_point",
+                operation_id="zencad.geom.point3.subtract_point",
             )
             return Vector3._from_state(self.context, state)
         state = self.context._value_state(
             ops.point3_subtract_vector,
             result=POINT3_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.point3.subtract_vector",
+            operation_id="zencad.geom.point3.subtract_vector",
         )
         return Point3._from_state(self.context, state)
 
@@ -902,7 +902,7 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
             ops.point3_negate,
             result=POINT3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.point3.negate",
+            operation_id="zencad.geom.point3.negate",
         )
         return Point3._from_state(self.context, state)
 
@@ -914,7 +914,7 @@ class Point3(_Coordinate3Handle[ops.Point3Value]):
             ops.point3_distance,
             result=SCALAR_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.point3.distance",
+            operation_id="zencad.geom.point3.distance",
         )
         return Scalar._from_state(self.context, state)
 
@@ -978,7 +978,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             selected_context = execution_context() if context is None else context
             self._bind(
                 selected_context,
-                VECTOR3_SPEC.validate(x, "zencad.typed.vector3.construct"),
+                VECTOR3_SPEC.validate(x, "zencad.geom.vector3.construct"),
             )
             return
         components = _components3(x, y, z)
@@ -987,7 +987,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3,
             result=VECTOR3_SPEC,
             args=tuple(_scalar_state(resolved_context, item) for item in components),
-            operation_id="zencad.typed.vector3",
+            operation_id="zencad.geom.vector3",
         )
         self._bind(resolved_context, state)
 
@@ -1008,7 +1008,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
     @classmethod
     def _from_state(cls, context: Context, state: State[ops.Vector3Value]) -> Vector3:
         if not isinstance(state, Expression):
-            state = VECTOR3_SPEC.validate(state, "zencad.typed.vector3.bind")
+            state = VECTOR3_SPEC.validate(state, "zencad.geom.vector3.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -1016,19 +1016,19 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
     @property
     def x(self) -> Scalar:
         return self._coordinate(
-            0, ops.vector3_coordinate, "zencad.typed.vector3.coordinate"
+            0, ops.vector3_coordinate, "zencad.geom.vector3.coordinate"
         )
 
     @property
     def y(self) -> Scalar:
         return self._coordinate(
-            1, ops.vector3_coordinate, "zencad.typed.vector3.coordinate"
+            1, ops.vector3_coordinate, "zencad.geom.vector3.coordinate"
         )
 
     @property
     def z(self) -> Scalar:
         return self._coordinate(
-            2, ops.vector3_coordinate, "zencad.typed.vector3.coordinate"
+            2, ops.vector3_coordinate, "zencad.geom.vector3.coordinate"
         )
 
     def value(self) -> tuple[float, float, float]:
@@ -1053,14 +1053,14 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
                 ops.vector3_add_point,
                 result=POINT3_SPEC,
                 args=(self._state, other._state),
-                operation_id="zencad.typed.vector3.add_point",
+                operation_id="zencad.geom.vector3.add_point",
             )
             return Point3._from_state(self.context, state)
         state = self.context._value_state(
             ops.vector3_add,
             result=VECTOR3_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector3.add",
+            operation_id="zencad.geom.vector3.add",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1075,7 +1075,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_subtract,
             result=VECTOR3_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector3.subtract",
+            operation_id="zencad.geom.vector3.subtract",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1087,7 +1087,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_scale,
             result=VECTOR3_SPEC,
             args=(self._state, _scalar_state(self.context, factor)),
-            operation_id="zencad.typed.vector3.scale",
+            operation_id="zencad.geom.vector3.scale",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1099,7 +1099,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_divide,
             result=VECTOR3_SPEC,
             args=(self._state, _scalar_state(self.context, divisor)),
-            operation_id="zencad.typed.vector3.divide",
+            operation_id="zencad.geom.vector3.divide",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1108,7 +1108,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_negate,
             result=VECTOR3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector3.negate",
+            operation_id="zencad.geom.vector3.negate",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1120,7 +1120,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_dot,
             result=SCALAR_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector3.dot",
+            operation_id="zencad.geom.vector3.dot",
         )
         return Scalar._from_state(self.context, state)
 
@@ -1144,7 +1144,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_cross,
             result=VECTOR3_SPEC,
             args=(self._state, other._state),
-            operation_id="zencad.typed.vector3.cross",
+            operation_id="zencad.geom.vector3.cross",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1153,7 +1153,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_length,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector3.length",
+            operation_id="zencad.geom.vector3.length",
         )
         return Scalar._from_state(self.context, state)
 
@@ -1162,7 +1162,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_normalized,
             result=VECTOR3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector3.normalized",
+            operation_id="zencad.geom.vector3.normalized",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1171,7 +1171,7 @@ class Vector3(_Coordinate3Handle[ops.Vector3Value]):
             ops.vector3_normalize_compat,
             result=VECTOR3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vector3.normalize_compat",
+            operation_id="zencad.geom.vector3.normalize_compat",
         )
         return Vector3._from_state(self.context, state)
 
@@ -1311,39 +1311,39 @@ def _unary_math(
 
 
 def sin(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_sin, "zencad.typed.math.sin")
+    return _unary_math(value, ops.scalar_sin, "zencad.geom.math.sin")
 
 
 def cos(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_cos, "zencad.typed.math.cos")
+    return _unary_math(value, ops.scalar_cos, "zencad.geom.math.cos")
 
 
 def tan(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_tan, "zencad.typed.math.tan")
+    return _unary_math(value, ops.scalar_tan, "zencad.geom.math.tan")
 
 
 def asin(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_asin, "zencad.typed.math.asin")
+    return _unary_math(value, ops.scalar_asin, "zencad.geom.math.asin")
 
 
 def acos(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_acos, "zencad.typed.math.acos")
+    return _unary_math(value, ops.scalar_acos, "zencad.geom.math.acos")
 
 
 def atan(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_atan, "zencad.typed.math.atan")
+    return _unary_math(value, ops.scalar_atan, "zencad.geom.math.atan")
 
 
 def sqrt(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_sqrt, "zencad.typed.math.sqrt")
+    return _unary_math(value, ops.scalar_sqrt, "zencad.geom.math.sqrt")
 
 
 def exp(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_exp, "zencad.typed.math.exp")
+    return _unary_math(value, ops.scalar_exp, "zencad.geom.math.exp")
 
 
 def log(value: Scalar) -> Scalar:
-    return _unary_math(value, ops.scalar_log, "zencad.typed.math.log")
+    return _unary_math(value, ops.scalar_log, "zencad.geom.math.log")
 
 
 @overload
@@ -1360,7 +1360,7 @@ def atan2(y: ScalarInput, x: ScalarInput) -> Scalar:
         ops.scalar_atan2,
         result=SCALAR_SPEC,
         args=(_scalar_state(context, y), _scalar_state(context, x)),
-        operation_id="zencad.typed.math.atan2",
+        operation_id="zencad.geom.math.atan2",
     )
     return Scalar._from_state(context, state)
 
@@ -1368,7 +1368,7 @@ def atan2(y: ScalarInput, x: ScalarInput) -> Scalar:
 @_domain_operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.scalar.add",
+    operation_id="zencad.geom.scalar.add",
     operation_version="1",
     fold_literals=True,
 )

@@ -196,6 +196,13 @@ mid-commit failure rolls back the previous scene and camera.  `preserve` fits
 the first successful scene and keeps the camera thereafter, while `fit` and
 an explicit camera in snapshot metadata are opt-in policies.
 
+The editor preserves the camera when rerunning the same file. Opening a
+different file resets the orientation and fits the visible model bounds after
+a successful scene commit, for both static and animated scenes. Permanent
+viewer helpers do not enlarge those bounds. Failed or cancelled runs retain
+the previous camera; a successful retry still initializes the new file's view.
+An explicit camera in snapshot metadata takes precedence over this default.
+
 ## API transition
 
 Legacy direct display still has a `Scene`, while the editor runtime uses this

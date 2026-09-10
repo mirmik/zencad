@@ -2,6 +2,7 @@
 """Named GUI smoke for managed reload into one persistent viewer."""
 
 from pathlib import Path
+import math
 import sys
 from tempfile import TemporaryDirectory
 from unittest import mock
@@ -51,7 +52,7 @@ def main():
         replacement_path = Path(temporary_directory) / "replacement.py"
         replacement_path.write_text(
             "from zencad import *\n"
-            "display(sphere(7))\n"
+            "display(sphere(70).translate(1000, -2000, 3000))\n"
             "show()\n",
             encoding="utf-8",
         )
@@ -153,6 +154,27 @@ def main():
             assert display.Context is context
             assert window.texteditor is editor
             assert window.console is console
+
+        def assert_default_camera(center):
+            from zencad.gui.display import STARTED_YAW, STARTED_PITCH
+
+            direction = display.View.Camera().Direction().Coord()
+            expected = (
+                math.cos(STARTED_PITCH) * math.cos(STARTED_YAW),
+                math.cos(STARTED_PITCH) * math.sin(STARTED_YAW),
+                math.sin(STARTED_PITCH),
+            )
+            assert all(abs(a - b) < 1e-7 for a, b in zip(direction, expected))
+            actual_center = display.store_location()["center"]
+            # AIS bounds can follow tessellation rather than exact extrema.
+            assert all(abs(a - b) < 0.1 for a, b in zip(actual_center, center)), actual_center
+
+        def change_camera():
+            display.yaw = 0.3
+            display.pitch = -0.2
+            display.set_orient1()
+            display.set_scale(20.0)
+            state["camera"] = display.store_location()
 
         def assert_visible_frame():
             if sys.platform.startswith("win"):
@@ -261,8 +283,7 @@ def main():
                     assert camera_after_pan["scale"] == camera_before_pan["scale"]
                     # Keep a deliberately non-default camera while leaving
                     # enough of the model visible in the full-size viewport.
-                    display.set_scale(20.0)
-                    state["camera"] = display.store_location()
+                    change_camera()
                 else:
                     current_camera = display.store_location()
                     assert current_camera == state["camera"], (
@@ -286,6 +307,17 @@ def main():
                 assert display.scene_presenter.objects[0] is state["stable_object"]
                 assert display.store_location() == state["camera"]
                 assert_persistent_viewer()
+                # The same filename must still reset after its failed first run.
+                window.notifier.clear()
+                error_path.write_text(replacement_path.read_text(), encoding="utf-8")
+                state["phase"] = "retry"
+                state["target"] = window.open(str(error_path), update_texteditor=False)
+            elif state["phase"] == "retry" and generation == state["target"]:
+                assert_default_camera((1000, -2000, 3000))
+                assert 100 < display.scale() < 500
+                state["generation"] = generation
+                state["stable_object"] = display.scene_presenter.objects[0]
+                change_camera()
                 start_cancel_case()
             elif state["phase"] == "cancel" and status == "cancelled":
                 assert not window.calculation_overlay.active
@@ -300,9 +332,11 @@ def main():
                 )
             elif state["phase"] == "supersede" and generation == state["target"]:
                 assert display.scene_presenter.objects[0] is not state["stable_object"]
-                assert display.store_location() == state["camera"]
+                assert_default_camera((1000, -2000, 3000))
+                assert 100 < display.scale() < 500
                 assert_persistent_viewer()
                 assert_visible_frame()
+                change_camera()
                 state["phase"] = "animation"
                 state["target"] = window.open(
                     str(animation_path), update_texteditor=False
@@ -311,6 +345,9 @@ def main():
                 presenter = display.scene_presenter
                 handle = presenter.objects[0].ais_object
                 if state["animation_handle"] is None:
+                    assert_default_camera((0, 0, 0))
+                    assert display.store_location() != state["camera"]
+                    state["camera"] = display.store_location()
                     state["animation_handle"] = handle
                     state["animation_sequence"] = presenter.last_patch_sequence
                 if not state["input_sent"]:

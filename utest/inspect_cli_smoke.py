@@ -95,11 +95,11 @@ show()
         assert graph["schema"] == "zencad.computation_graph"
         assert graph["status"] == "success"
         assert graph["roots"][0]["id"] == "housing"
-        assert "zencad.typed.shape.transform" in tree.stdout
+        assert "zencad.geom.shape.transform" in tree.stdout
         assert "0x" not in tree.stdout
 
         ansi_tree = run(root, model, "--tree", "--no-cache", io_encoding="cp1252")
-        assert "`- zencad.typed.box" in ansi_tree.stdout, ansi_tree.stdout
+        assert "`- zencad.geom.box" in ansi_tree.stdout, ansi_tree.stdout
 
         from zencad import inspect_computation_graph
 
@@ -170,13 +170,13 @@ show()
             "--no-cache",
             expected=3,
         )
-        assert "zencad.typed.box [error" in graph_failure.stdout
-        assert "zencad.typed.shape.transform [error" in graph_failure.stdout
+        assert "zencad.geom.box [error" in graph_failure.stdout
+        assert "zencad.geom.shape.transform [error" in graph_failure.stdout
         ansi_failure = run(
             root, graph_failure_model, "--tree", "--failed-path", "--no-cache",
             expected=3, io_encoding="cp1252",
         )
-        assert "`- zencad.typed.box [error" in ansi_failure.stdout
+        assert "`- zencad.geom.box [error" in ansi_failure.stdout
 
         syntax_error = root / "syntax_error.py"
         syntax_error.write_text("if True print('broken')\n", encoding="utf-8")

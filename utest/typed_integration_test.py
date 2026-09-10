@@ -192,10 +192,10 @@ class TypedDomainIntegrationTest(unittest.TestCase):
         hit_operations = {event.operation_id for event in hits}
         self.assertTrue(
             {
-                "zencad.typed.edge.curve",
-                "zencad.typed.face.surface",
-                "zencad.typed.shape.boundbox",
-                "zencad.typed.shape.to-mesh",
+                "zencad.geom.edge.curve",
+                "zencad.geom.face.surface",
+                "zencad.geom.shape.boundbox",
+                "zencad.geom.shape.to-mesh",
             }
             <= hit_operations
         )

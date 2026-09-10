@@ -314,7 +314,7 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         )
         self.assertEqual(
             {event.operation_id for event in events},
-            {"zencad.typed.shape.vertices.item"},
+            {"zencad.geom.shape.vertices.item"},
         )
 
     def test_wrong_cached_query_item_kind_is_rejected_and_recomputed(self):
@@ -325,7 +325,7 @@ class TypedTopologyQueriesTest(unittest.TestCase):
         vertex_entries = [
             (key, record)
             for key, record in store.records.items()
-            if record.result_type_id == "zencad.typed.Vertex.v1"
+            if record.result_type_id == "zencad.geom.Vertex.v1"
         ]
         self.assertEqual(len(vertex_entries), 1)
         key, record = vertex_entries[0]

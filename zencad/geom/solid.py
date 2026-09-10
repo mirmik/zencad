@@ -26,7 +26,7 @@ from .values import Vector3
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.box",
+    operation_id="zencad.geom.box",
     operation_version="1",
 )
 def box(
@@ -77,7 +77,7 @@ def cube(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.sphere",
+    operation_id="zencad.geom.sphere",
     operation_version="1",
 )
 def sphere(
@@ -101,7 +101,7 @@ def sphere(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.cylinder",
+    operation_id="zencad.geom.cylinder",
     operation_version="1",
 )
 def cylinder(
@@ -126,7 +126,7 @@ def cylinder(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.cone",
+    operation_id="zencad.geom.cone",
     operation_version="1",
 )
 def cone(
@@ -152,7 +152,7 @@ def cone(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.torus",
+    operation_id="zencad.geom.torus",
     operation_version="1",
 )
 def torus(
@@ -177,7 +177,7 @@ def torus(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.halfspace",
+    operation_id="zencad.geom.halfspace",
     operation_version="1",
 )
 def halfspace() -> Solid:
@@ -188,7 +188,7 @@ def halfspace() -> Solid:
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.make_solid",
+    operation_id="zencad.geom.make_solid",
     operation_version="1",
 )
 def make_solid(shells: Shell | Sequence[Shell], /) -> Solid:

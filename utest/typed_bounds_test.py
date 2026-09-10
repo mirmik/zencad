@@ -50,25 +50,25 @@ class TypedBoundaryBoxTest(unittest.TestCase):
         self.assertIs(shape_bounds.context, context)
         self.assertEqual(
             bounds._state.operation_id,
-            "zencad.typed.boundary-box.from-points",
+            "zencad.geom.boundary-box.from-points",
         )
         self.assertEqual(
-            shape_bounds._state.operation_id, "zencad.typed.shape.boundbox"
+            shape_bounds._state.operation_id, "zencad.geom.shape.boundbox"
         )
         self.assertEqual(
-            bounds.minimum._state.operation_id, "zencad.typed.boundary-box.minimum"
+            bounds.minimum._state.operation_id, "zencad.geom.boundary-box.minimum"
         )
         self.assertEqual(
-            bounds.maximum._state.operation_id, "zencad.typed.boundary-box.maximum"
+            bounds.maximum._state.operation_id, "zencad.geom.boundary-box.maximum"
         )
         self.assertEqual(
-            bounds.size._state.operation_id, "zencad.typed.boundary-box.size"
+            bounds.size._state.operation_id, "zencad.geom.boundary-box.size"
         )
         self.assertEqual(
-            bounds.center._state.operation_id, "zencad.typed.boundary-box.center"
+            bounds.center._state.operation_id, "zencad.geom.boundary-box.center"
         )
         self.assertEqual(
-            bounds.xmin._state.operation_id, "zencad.typed.boundary-box.coordinate"
+            bounds.xmin._state.operation_id, "zencad.geom.boundary-box.coordinate"
         )
 
     def test_shape_bounds_are_policy_independent_structured_handles(self):
@@ -279,11 +279,11 @@ class TypedBoundaryBoxCacheTest(unittest.TestCase):
         key, record = next(
             (key, record)
             for key, record in store.records.items()
-            if record.result_type_id == "zencad.typed.BoundaryBox.v1"
+            if record.result_type_id == "zencad.geom.BoundaryBox.v1"
         )
         self.assertEqual(record.serializer_id, "zencad.boundary-box.struct.v1")
         self.assertTrue(
-            record.value.payload.startswith(b"zencad.typed.boundary-box\x00v1\x00B")
+            record.value.payload.startswith(b"zencad.geom.boundary-box\x00v1\x00B")
         )
         self.assertEqual(record.value.artifacts, ())
 
@@ -291,7 +291,7 @@ class TypedBoundaryBoxCacheTest(unittest.TestCase):
             schema=record.schema,
             result_type_id=record.result_type_id,
             serializer_id=record.serializer_id,
-            value=SerializedValue(payload=b"zencad.typed.surface\x00v1"),
+            value=SerializedValue(payload=b"zencad.geom.surface\x00v1"),
         )
         events = []
         second = typed.Context.deferred(

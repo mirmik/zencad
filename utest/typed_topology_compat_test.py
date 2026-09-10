@@ -120,8 +120,10 @@ class TypedTopologyCompatibilityTest(unittest.TestCase):
         self.assertAlmostEqual(float(parameters[-1]), 2 * 3.141592653589793)
         self.assertEqual(points[0].value(), (2.0, 0.0, 0.0))
 
-        with self.assertRaisesRegex(ValueError, "positive int"):
-            circle.uniform(0)
+        for count in (0, 1):
+            with self.subTest(count=count):
+                with self.assertRaisesRegex(ValueError, "int >= 2"):
+                    circle.uniform(count)
         with self.assertRaisesRegex(TypeError, "provided together"):
             circle.uniform(3, 0)
 

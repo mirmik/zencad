@@ -109,7 +109,7 @@ def _as_scalar(value: ScalarInput) -> Scalar:
 @operation(
     result=SHELL_SPEC,
     returns=Shell,
-    operation_id="zencad.typed.make_shell",
+    operation_id="zencad.geom.make_shell",
     operation_version="1",
 )
 def make_shell(faces: Face | Sequence[Face], /) -> Shell:
@@ -120,7 +120,7 @@ def make_shell(faces: Face | Sequence[Face], /) -> Shell:
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.fill3d",
+    operation_id="zencad.geom.fill3d",
     operation_version="1",
 )
 def fill3d(shell: Shell, /) -> Solid:
@@ -132,7 +132,7 @@ def fill3d(shell: Shell, /) -> Solid:
 @operation(
     result=SHELL_SPEC,
     returns=Shell,
-    operation_id="zencad.typed.polyhedron_shell",
+    operation_id="zencad.geom.polyhedron_shell",
     operation_version="1",
 )
 def polyhedron_shell(
@@ -260,7 +260,7 @@ def convex_hull_shape(
     result=SOLID_SPEC,
     returns=_shell_result_type,
     select_result=_shell_result_spec,
-    operation_id="zencad.typed.convex_hull_shape",
+    operation_id="zencad.geom.convex_hull_shape",
     operation_version="1",
 )
 def convex_hull_shape(

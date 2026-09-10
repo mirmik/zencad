@@ -214,7 +214,7 @@ show()
         self.assertTrue(
             any(
                 message.payload.get("operation") == "load"
-                and message.payload.get("object") == "zencad.typed.box"
+                and message.payload.get("object") == "zencad.geom.box"
                 for message in second_progress
             )
         )

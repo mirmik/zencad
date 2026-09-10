@@ -115,10 +115,3 @@ are data inside that JSON document, never loose text on stdout.
 | 4 | Missing scene or geometry that could not be decoded/measured |
 | 5 | Script evaluation timed out |
 | 6 | The requested report file could not be written |
-
-The bundled `zencad/examples/0.Base/agent_inspection.py` is a small inspection
-target. For example:
-
-```sh
-zencad inspect zencad/examples/0.Base/agent_inspection.py --json
-```

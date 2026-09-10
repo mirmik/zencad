@@ -59,7 +59,7 @@ class MeshArrayRecord:
 _MESH_SERIALIZER = MeshSerializer()
 MESH_SPEC = ResultSpec.for_type(
     ops.MeshValue,
-    type_id="zencad.typed.MeshData.v1",
+    type_id="zencad.geom.MeshData.v1",
     serializer=_MESH_SERIALIZER,
     validator=ops.valid_mesh,
 )
@@ -82,7 +82,7 @@ class MeshData(Handle[ops.MeshValue]):
         selected_context = execution_context() if context is None else context
         self._bind(
             selected_context,
-            self._result_spec.validate(value, "zencad.typed.mesh.construct"),
+            self._result_spec.validate(value, "zencad.geom.mesh.construct"),
         )
 
     @classmethod
@@ -92,7 +92,7 @@ class MeshData(Handle[ops.MeshValue]):
         state: State[ops.MeshValue],
     ) -> MeshHandleT:
         if not isinstance(state, Expression):
-            state = cls._result_spec.validate(state, "zencad.typed.mesh.bind")
+            state = cls._result_spec.validate(state, "zencad.geom.mesh.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -217,7 +217,7 @@ def _require_shape(value: object, name: str) -> None:
 @operation(
     result=MESH_SPEC,
     returns=MeshData,
-    operation_id="zencad.typed.shape.to-mesh",
+    operation_id="zencad.geom.shape.to-mesh",
     operation_version="1",
 )
 def to_mesh(
@@ -283,7 +283,7 @@ def triangulate(
 @operation(
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
-    operation_id="zencad.typed.mesh.boundbox",
+    operation_id="zencad.geom.mesh.boundbox",
     operation_version="1",
 )
 def mesh_boundbox(mesh: MeshData, /) -> BoundaryBox:

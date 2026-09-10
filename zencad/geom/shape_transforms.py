@@ -39,7 +39,7 @@ def _shape_result_spec(
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
-    operation_id="zencad.typed.shape.transform",
+    operation_id="zencad.geom.shape.transform",
     operation_version="1",
 )
 def _shape_transform(
@@ -56,7 +56,7 @@ def _shape_transform(
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
-    operation_id="zencad.typed.shape.affine_transform",
+    operation_id="zencad.geom.shape.affine_transform",
     operation_version="1",
 )
 def _shape_affine_transform(
@@ -75,7 +75,7 @@ def _shape_affine_transform(
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
-    operation_id="zencad.typed.shape.translate",
+    operation_id="zencad.geom.shape.translate",
     operation_version="1",
 )
 def _shape_translate(shape: Shape, vector: Vector3, /) -> Shape:

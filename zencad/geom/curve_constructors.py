@@ -19,7 +19,7 @@ from .values import Point2, Point3, Point3Input, Vector3, Vector3Input
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.line",
+    operation_id="zencad.geom.line",
     operation_version="1",
 )
 def line(origin: Point3Input, direction: Vector3Input, /) -> Curve:
@@ -33,7 +33,7 @@ def line(origin: Point3Input, direction: Vector3Input, /) -> Curve:
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.circle_curve",
+    operation_id="zencad.geom.circle_curve",
     operation_version="1",
 )
 def circle_curve(radius: float, /) -> Curve:
@@ -43,7 +43,7 @@ def circle_curve(radius: float, /) -> Curve:
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.ellipse_curve",
+    operation_id="zencad.geom.ellipse_curve",
     operation_version="1",
 )
 def ellipse_curve(
@@ -57,7 +57,7 @@ def ellipse_curve(
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.interpolate_curve",
+    operation_id="zencad.geom.interpolate_curve",
     operation_version="1",
 )
 def interpolate_curve(
@@ -94,7 +94,7 @@ def interpolate(
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.bezier_curve",
+    operation_id="zencad.geom.bezier_curve",
     operation_version="1",
 )
 def bezier_curve(
@@ -123,7 +123,7 @@ def bezier(
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.bspline_curve",
+    operation_id="zencad.geom.bspline_curve",
     operation_version="1",
 )
 def bspline_curve(
@@ -186,7 +186,7 @@ def bspline(
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.make_edge",
+    operation_id="zencad.geom.make_edge",
     operation_version="1",
 )
 def make_edge(
@@ -207,7 +207,7 @@ def make_edge(
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.circle_arc",
+    operation_id="zencad.geom.circle_arc",
     operation_version="1",
 )
 def circle_arc(p1: Point3Input, p2: Point3Input, p3: Point3Input, /) -> Edge:
@@ -218,7 +218,7 @@ def circle_arc(p1: Point3Input, p2: Point3Input, p3: Point3Input, /) -> Edge:
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.svg_elliptic_arc",
+    operation_id="zencad.geom.svg_elliptic_arc",
     operation_version="1",
 )
 def _svg_elliptic_arc(
@@ -249,7 +249,7 @@ def _svg_elliptic_arc(
 @operation(
     result=WIRE_SPEC,
     returns=Wire,
-    operation_id="zencad.typed.make_wire",
+    operation_id="zencad.geom.make_wire",
     operation_version="1",
 )
 def make_wire(*shapes: Edge | Wire | Sequence[Edge | Wire]) -> Wire:
@@ -260,7 +260,7 @@ def make_wire(*shapes: Edge | Wire | Sequence[Edge | Wire]) -> Wire:
 @operation(
     result=WIRE_SPEC,
     returns=Wire,
-    operation_id="zencad.typed.rounded_polysegment",
+    operation_id="zencad.geom.rounded_polysegment",
     operation_version="1",
 )
 def rounded_polysegment(
@@ -280,7 +280,7 @@ def rounded_polysegment(
 @operation(
     result=WIRE_SPEC,
     returns=Wire,
-    operation_id="zencad.typed.helix",
+    operation_id="zencad.geom.helix",
     operation_version="1",
 )
 def helix(
@@ -300,7 +300,7 @@ def helix(
 @operation(
     result=CURVE2_SPEC,
     returns=Curve2,
-    operation_id="zencad.typed.segment2",
+    operation_id="zencad.geom.segment2",
     operation_version="1",
 )
 def segment2(start: Point2, end: Point2, /) -> Curve2:
@@ -312,7 +312,7 @@ def segment2(start: Point2, end: Point2, /) -> Curve2:
 @operation(
     result=CURVE2_SPEC,
     returns=Curve2,
-    operation_id="zencad.typed.ellipse2",
+    operation_id="zencad.geom.ellipse2",
     operation_version="1",
 )
 def ellipse2(
@@ -326,7 +326,7 @@ def ellipse2(
 @operation(
     result=CURVE2_SPEC,
     returns=Curve2,
-    operation_id="zencad.typed.trim_curve2",
+    operation_id="zencad.geom.trim_curve2",
     operation_version="1",
 )
 def trim_curve2(
@@ -343,7 +343,7 @@ def trim_curve2(
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.segment",
+    operation_id="zencad.geom.segment",
     operation_version="1",
 )
 def segment(start: Point3Input, end: Point3Input, /) -> Edge:
@@ -354,7 +354,7 @@ def segment(start: Point3Input, end: Point3Input, /) -> Edge:
 @operation(
     result=WIRE_SPEC,
     returns=Wire,
-    operation_id="zencad.typed.polysegment",
+    operation_id="zencad.geom.polysegment",
     operation_version="1",
 )
 def polysegment(
@@ -373,7 +373,7 @@ def polysegment(
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.curve.trimmed_edge",
+    operation_id="zencad.geom.curve.trimmed_edge",
     operation_version="1",
 )
 def _curve_trimmed_edge(
@@ -388,7 +388,7 @@ def _curve_trimmed_edge(
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.curve.transform",
+    operation_id="zencad.geom.curve.transform",
     operation_version="1",
 )
 def _curve_transform(curve: Curve, transformation: Transform, /) -> Curve:
@@ -402,7 +402,7 @@ def _curve_transform(curve: Curve, transformation: Transform, /) -> Curve:
 @operation(
     result=CURVE2_SPEC,
     returns=Curve2,
-    operation_id="zencad.typed.curve2.rotate",
+    operation_id="zencad.geom.curve2.rotate",
     operation_version="1",
 )
 def _curve2_rotate(
@@ -416,7 +416,7 @@ def _curve2_rotate(
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.edge.curve",
+    operation_id="zencad.geom.edge.curve",
     operation_version="1",
     fold_literals=True,
 )

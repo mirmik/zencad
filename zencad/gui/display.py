@@ -286,9 +286,9 @@ class DisplayWidget(BaseViewer):
         if QtCore.QThread.currentThread() != self.thread():
             raise RuntimeError("Scene snapshots must be applied on the GUI thread")
 
-    def apply_snapshot(self, snapshot, scene_revision=0):
+    def apply_snapshot(self, snapshot, scene_revision=0, *, reset_camera=False):
         generation = self.scene_presenter.apply(
-            snapshot, scene_revision=scene_revision
+            snapshot, scene_revision=scene_revision, reset_camera=reset_camera
         )
         self.camera_action_presenter.reset()
         return generation
@@ -380,14 +380,13 @@ class DisplayWidget(BaseViewer):
         self.set_orient1()
         self.redraw()
 
-    def reset_orient1(self):
+    def reset_orient1(self, redraw=True):
         self._orient = 1
         self.yaw = STARTED_YAW
         self.pitch = STARTED_PITCH
         self.set_orient1()
-        # self.set_orient1()
-        # self.update_orient1_from_view()
-        self.redraw()
+        if redraw:
+            self.redraw()
 
     def reset_orient2(self):
         self._orient = 2

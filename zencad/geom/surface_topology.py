@@ -13,7 +13,7 @@ from .topology import EDGE_SPEC, Edge, Face
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.surface.map",
+    operation_id="zencad.geom.surface.map",
     operation_version="1",
 )
 def _surface_map_curve2(
@@ -31,7 +31,7 @@ def _surface_map_curve2(
 @operation(
     result=SURFACE_SPEC,
     returns=Surface,
-    operation_id="zencad.typed.face.surface",
+    operation_id="zencad.geom.face.surface",
     operation_version="1",
     fold_literals=True,
 )

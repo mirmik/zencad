@@ -31,8 +31,8 @@ class TypedTextTest(unittest.TestCase):
         self.assertIs(type(alias), typed.Compound)
         self.assertIs(text.context, context)
         self.assertIs(alias.context, context)
-        self.assertEqual(text._state.operation_id, "zencad.typed.text_to_brep")
-        self.assertEqual(alias._state.operation_id, "zencad.typed.text_to_brep")
+        self.assertEqual(text._state.operation_id, "zencad.geom.text_to_brep")
+        self.assertEqual(alias._state.operation_id, "zencad.geom.text_to_brep")
         self.assertEqual(events, [])
 
     def test_text_factories_are_policy_independent(self):
@@ -114,7 +114,7 @@ class TypedTextTest(unittest.TestCase):
         self.assertFalse(
             any(
                 event.kind is EvaluationEventKind.CACHE_STORE
-                and event.operation_id == "zencad.typed.text_to_brep"
+                and event.operation_id == "zencad.geom.text_to_brep"
                 for event in first_events
             )
         )
@@ -132,7 +132,7 @@ class TypedTextTest(unittest.TestCase):
         self.assertFalse(
             any(
                 event.kind is EvaluationEventKind.CACHE_HIT
-                and event.operation_id == "zencad.typed.text_to_brep"
+                and event.operation_id == "zencad.geom.text_to_brep"
                 for event in second_events
             )
         )

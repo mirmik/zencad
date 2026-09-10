@@ -223,10 +223,10 @@ class TypedMeshCacheTest(unittest.TestCase):
         key, record = next(
             (key, record)
             for key, record in store.records.items()
-            if record.result_type_id == "zencad.typed.MeshData.v1"
+            if record.result_type_id == "zencad.geom.MeshData.v1"
         )
         self.assertEqual(record.serializer_id, "zencad.mesh.binary-artifact.v1")
-        self.assertEqual(record.value.payload, b"zencad.typed.mesh\x00v1")
+        self.assertEqual(record.value.payload, b"zencad.geom.mesh\x00v1")
         self.assertEqual(record.value.artifacts[0].name, "mesh.bin")
         self.assertTrue(record.value.artifacts[0].data.startswith(b"ZCTM"))
 
@@ -234,7 +234,7 @@ class TypedMeshCacheTest(unittest.TestCase):
             schema=record.schema,
             result_type_id=record.result_type_id,
             serializer_id=record.serializer_id,
-            value=SerializedValue(payload=b"zencad.typed.surface\x00v1"),
+            value=SerializedValue(payload=b"zencad.geom.surface\x00v1"),
         )
         events = []
         second = typed.Context.deferred(

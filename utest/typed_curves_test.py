@@ -238,12 +238,12 @@ class TypedCurveCacheTest(unittest.TestCase):
 
         self.assertEqual(len(store.records), 1)
         key, record = next(iter(store.records.items()))
-        self.assertEqual(record.result_type_id, "zencad.typed.Curve.v2")
+        self.assertEqual(record.result_type_id, "zencad.geom.Curve.v2")
         self.assertEqual(
             record.serializer_id,
             "zencad.curve.occt-set-artifact.v2",
         )
-        self.assertEqual(record.value.payload, b"zencad.typed.curve\x00v2")
+        self.assertEqual(record.value.payload, b"zencad.geom.curve\x00v2")
         self.assertEqual(record.value.artifacts[0].name, "curve.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 10)
 

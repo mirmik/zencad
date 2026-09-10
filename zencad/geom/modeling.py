@@ -57,7 +57,7 @@ RoundedReference = PointReference | Edge
 ShapeModelT = TypeVar("ShapeModelT", bound=Shape)
 VALIDATION_REPORT_SPEC = ResultSpec.for_type(
     ValidationReport,
-    type_id="zencad.typed.ValidationReport.v1",
+    type_id="zencad.geom.ValidationReport.v1",
 )
 
 
@@ -92,7 +92,7 @@ def _rounded_values(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.fillet",
+    operation_id="zencad.geom.shape.fillet",
     operation_version="1",
 )
 def fillet(
@@ -109,7 +109,7 @@ def fillet(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.chamfer",
+    operation_id="zencad.geom.shape.chamfer",
     operation_version="1",
 )
 def chamfer(
@@ -126,7 +126,7 @@ def chamfer(
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.shape.fillet2d",
+    operation_id="zencad.geom.shape.fillet2d",
     operation_version="1",
 )
 def fillet2d(
@@ -144,7 +144,7 @@ def fillet2d(
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.shape.chamfer2d",
+    operation_id="zencad.geom.shape.chamfer2d",
     operation_version="1",
 )
 def chamfer2d(
@@ -162,7 +162,7 @@ def chamfer2d(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.solid.draft",
+    operation_id="zencad.geom.solid.draft",
     operation_version="1",
 )
 def draft(
@@ -254,7 +254,7 @@ def restore_shapetype(shape: Shape, /) -> Shape:
 @operation(
     result=WIRE_SPEC,
     returns=Wire,
-    operation_id="zencad.typed.sew.wire",
+    operation_id="zencad.geom.sew.wire",
     operation_version="1",
 )
 def _sew_wire(
@@ -270,7 +270,7 @@ def _sew_wire(
 @operation(
     result=SHELL_SPEC,
     returns=Shell,
-    operation_id="zencad.typed.sew.shell",
+    operation_id="zencad.geom.sew.shell",
     operation_version="1",
 )
 def _sew_shell(
@@ -318,7 +318,7 @@ def sew(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.offset",
+    operation_id="zencad.geom.shape.offset",
     operation_version="1",
 )
 def offset(shape: Shape, distance: float, /) -> Shape:
@@ -329,7 +329,7 @@ def offset(shape: Shape, distance: float, /) -> Shape:
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.solid.thicksolid",
+    operation_id="zencad.geom.solid.thicksolid",
     operation_version="1",
 )
 def thicksolid(
@@ -369,7 +369,7 @@ def thicksolid(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.solid.shapefix",
+    operation_id="zencad.geom.solid.shapefix",
     operation_version="1",
 )
 def shapefix_solid(shape: Solid, /) -> Solid:
@@ -433,7 +433,7 @@ def unify(shape: Shape, /) -> Shape: ...
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
-    operation_id="zencad.typed.shape.unify",
+    operation_id="zencad.geom.shape.unify",
     operation_version="1",
 )
 def unify(shape: Shape, /) -> Shape:
@@ -456,7 +456,7 @@ def validate(
         ops.validate_shape,
         result=VALIDATION_REPORT_SPEC,
         args=(shape._state, exact, parallel),
-        operation_id="zencad.typed.shape.validate",
+        operation_id="zencad.geom.shape.validate",
     )
     if isinstance(state, Expression):
         return shape.context._resolve(state)
@@ -524,7 +524,7 @@ def clean(shape: Shape, /) -> Shape: ...
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
-    operation_id="zencad.typed.shape.clean",
+    operation_id="zencad.geom.shape.clean",
     operation_version="1",
 )
 def clean(shape: Shape, /) -> Shape:
@@ -584,7 +584,7 @@ def heal(
     result=SHAPE_SPEC,
     returns=_shape_result_type,
     select_result=_shape_result_spec,
-    operation_id="zencad.typed.shape.heal",
+    operation_id="zencad.geom.shape.heal",
     operation_version="1",
 )
 def heal(
@@ -599,7 +599,7 @@ def heal(
 @operation(
     result=VERTEX_SPEC,
     returns=Vertex,
-    operation_id="zencad.typed.shape.near_vertex",
+    operation_id="zencad.geom.shape.near_vertex",
     operation_version="1",
 )
 def near_vertex(shape: Shape, point: Point3, /) -> Vertex:
@@ -610,7 +610,7 @@ def near_vertex(shape: Shape, point: Point3, /) -> Vertex:
 @operation(
     result=EDGE_SPEC,
     returns=Edge,
-    operation_id="zencad.typed.shape.near_edge",
+    operation_id="zencad.geom.shape.near_edge",
     operation_version="1",
 )
 def near_edge(shape: Shape, point: Point3, /) -> Edge:
@@ -621,7 +621,7 @@ def near_edge(shape: Shape, point: Point3, /) -> Edge:
 @operation(
     result=WIRE_SPEC,
     returns=Wire,
-    operation_id="zencad.typed.shape.near_wire",
+    operation_id="zencad.geom.shape.near_wire",
     operation_version="1",
 )
 def near_wire(shape: Shape, point: Point3, /) -> Wire:
@@ -632,7 +632,7 @@ def near_wire(shape: Shape, point: Point3, /) -> Wire:
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.shape.near_face",
+    operation_id="zencad.geom.shape.near_face",
     operation_version="1",
 )
 def near_face(shape: Shape, point: Point3, /) -> Face:
@@ -643,7 +643,7 @@ def near_face(shape: Shape, point: Point3, /) -> Face:
 @operation(
     result=SHELL_SPEC,
     returns=Shell,
-    operation_id="zencad.typed.shape.near_shell",
+    operation_id="zencad.geom.shape.near_shell",
     operation_version="1",
 )
 def near_shell(shape: Shape, point: Point3, /) -> Shell:
@@ -654,7 +654,7 @@ def near_shell(shape: Shape, point: Point3, /) -> Shell:
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.shape.near_solid",
+    operation_id="zencad.geom.shape.near_solid",
     operation_version="1",
 )
 def near_solid(shape: Shape, point: Point3, /) -> Solid:
@@ -665,7 +665,7 @@ def near_solid(shape: Shape, point: Point3, /) -> Solid:
 @operation(
     result=COMPSOLID_SPEC,
     returns=CompSolid,
-    operation_id="zencad.typed.shape.near_compsolid",
+    operation_id="zencad.geom.shape.near_compsolid",
     operation_version="1",
 )
 def near_compsolid(shape: Shape, point: Point3, /) -> CompSolid:
@@ -676,7 +676,7 @@ def near_compsolid(shape: Shape, point: Point3, /) -> CompSolid:
 @operation(
     result=COMPOUND_SPEC,
     returns=Compound,
-    operation_id="zencad.typed.shape.near_compound",
+    operation_id="zencad.geom.shape.near_compound",
     operation_version="1",
 )
 def near_compound(shape: Shape, point: Point3, /) -> Compound:
@@ -707,7 +707,7 @@ def project(point: Point3, target: Curve | Edge, /) -> CurveProjection:
 @operation(
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
-    operation_id="zencad.typed.shape.boundbox",
+    operation_id="zencad.geom.shape.boundbox",
     operation_version="1",
 )
 def boundbox(shape: Shape, /) -> BoundaryBox:

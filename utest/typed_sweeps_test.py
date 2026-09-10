@@ -74,14 +74,14 @@ class TypedBasicSweepsTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.shape.extrude",
-                "zencad.typed.shape.extrude",
-                "zencad.typed.shape.revol",
-                "zencad.typed.loft",
-                "zencad.typed.pipe",
-                "zencad.typed.pipe_shell",
-                "zencad.typed.pipe_shell",
-                "zencad.typed.revol2",
+                "zencad.geom.shape.extrude",
+                "zencad.geom.shape.extrude",
+                "zencad.geom.shape.revol",
+                "zencad.geom.loft",
+                "zencad.geom.pipe",
+                "zencad.geom.pipe_shell",
+                "zencad.geom.pipe_shell",
+                "zencad.geom.revol2",
             ),
         )
 
@@ -404,7 +404,7 @@ class TypedBasicSweepsTest(unittest.TestCase):
         self.assertTrue(
             any(
                 event.kind is EvaluationEventKind.CACHE_HIT
-                and event.operation_id == "zencad.typed.shape.revol"
+                and event.operation_id == "zencad.geom.shape.revol"
                 for event in events
             )
         )
@@ -469,7 +469,7 @@ print(json.dumps({
         first_result = json.loads(first.stdout.strip().splitlines()[-1])
         second_result = json.loads(second.stdout.strip().splitlines()[-1])
         self.assertGreater(first_result["stored"], 0)
-        self.assertIn("zencad.typed.revol2", second_result["hits"])
+        self.assertIn("zencad.geom.revol2", second_result["hits"])
 
 
 if __name__ == "__main__":

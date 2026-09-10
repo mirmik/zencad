@@ -68,16 +68,16 @@ class TypedShellConstructorsTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.make_shell",
-                "zencad.typed.fill3d",
-                "zencad.typed.fill3d",
-                "zencad.typed.convex_hull_shape",
-                "zencad.typed.fill3d",
-                "zencad.typed.polyhedron_shell",
-                "zencad.typed.fill3d",
-                "zencad.typed.polyhedron_shell",
-                "zencad.typed.fill3d",
-                "zencad.typed.fill3d",
+                "zencad.geom.make_shell",
+                "zencad.geom.fill3d",
+                "zencad.geom.fill3d",
+                "zencad.geom.convex_hull_shape",
+                "zencad.geom.fill3d",
+                "zencad.geom.polyhedron_shell",
+                "zencad.geom.fill3d",
+                "zencad.geom.polyhedron_shell",
+                "zencad.geom.fill3d",
+                "zencad.geom.fill3d",
             ),
         )
 
@@ -291,9 +291,9 @@ class TypedShellConstructorsTest(unittest.TestCase):
         }
         self.assertTrue(
             {
-                "zencad.typed.polyhedron_shell",
-                "zencad.typed.fill3d",
-                "zencad.typed.convex_hull_shape",
+                "zencad.geom.polyhedron_shell",
+                "zencad.geom.fill3d",
+                "zencad.geom.convex_hull_shape",
             }.issubset(hits)
         )
 

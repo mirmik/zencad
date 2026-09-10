@@ -95,7 +95,7 @@ z.show()
             )
             graph = json.loads(graph_path.read_text())
             self.assertTrue(graph["nodes"])
-            self.assertTrue(any(node["operation"] == "zencad.typed.box" for node in graph["nodes"]))
+            self.assertTrue(any(node["operation"] == "zencad.geom.box" for node in graph["nodes"]))
 
 
 if __name__ == "__main__":

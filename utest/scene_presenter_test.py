@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 
 import zencad
 from OCP.AIS import AIS_Triangulation
@@ -23,6 +24,9 @@ class FakeHandle:
         self.object_id = object_id
         self.state = None
         self.fail_next_patch = False
+
+    def BoundingBox(self, bounds):
+        bounds.Update(0, 0, 0, 1, 1, 1)
 
 
 class FakeContext:
@@ -62,9 +66,11 @@ class FakeContext:
 class FakeView:
     def __init__(self):
         self.fit_calls = []
+        self.fit_bounds = []
 
-    def FitAll(self, margin, update):
-        self.fit_calls.append((margin, update))
+    def FitAll(self, *args):
+        self.fit_calls.append(args[-2:])
+        self.fit_bounds.append(args[0].Get() if len(args) == 3 else None)
 
 
 class FakeWidget:
@@ -77,12 +83,19 @@ class FakeWidget:
             "center": (0.0, 0.0, 0.0),
         }
         self.thread_checks = 0
+        self.orientation_resets = 0
 
     def assert_gui_thread(self):
         self.thread_checks += 1
 
     def store_location(self):
         return dict(self.camera)
+
+    def reset_orient1(self, redraw=True):
+        if redraw:
+            raise AssertionError("transactional camera changes must not redraw")
+        self.orientation_resets += 1
+        self.camera["eye"] = (10.0, 10.0, 10.0)
 
     def restore_location(self, camera, redraw=True):
         if redraw:
@@ -127,6 +140,37 @@ def fake_patch_applier(item, old_state, new_state, changed):
 
 
 class ScenePresenterTest(unittest.TestCase):
+    def test_new_file_resets_orientation_and_fits_but_reload_preserves_camera(self):
+        widget = FakeWidget()
+        presenter = ScenePresenter(widget, materializer=fake_materializer)
+        presenter.apply(snapshot(1, record("first")))
+        presenter.apply(snapshot(2, record("second")), reset_camera=True)
+        self.assertEqual(widget.orientation_resets, 1)
+        self.assertEqual(widget.View.fit_calls, [(0.07, False)] * 2)
+        self.assertEqual(widget.View.fit_bounds[-1], (0, 0, 0, 1, 1, 1))
+        self.assertEqual(widget.Context.update_count, 2)
+
+        widget.camera["scale"] = 123.0
+        old_camera = widget.store_location()
+        presenter.apply(snapshot(3, record("reload")))
+        self.assertEqual(widget.store_location(), old_camera)
+        self.assertEqual(widget.orientation_resets, 1)
+        self.assertEqual(len(widget.View.fit_calls), 2)
+
+    def test_failed_camera_reset_restores_previous_scene_and_camera(self):
+        widget = FakeWidget()
+        presenter = ScenePresenter(widget, materializer=fake_materializer)
+        presenter.apply(snapshot(1, record("old")))
+        old_camera = widget.store_location()
+        with mock.patch.object(widget.View, "FitAll", side_effect=RuntimeError("fit failed")) as fit:
+            with self.assertRaisesRegex(ScenePresentationError, "commit"):
+                presenter.apply(snapshot(2, record("new")), reset_camera=True)
+            fit.assert_called_once()
+        self.assertEqual(widget.orientation_resets, 1)
+        self.assertEqual(widget.store_location(), old_camera)
+        self.assertEqual([item.object_id for item in widget.Context.active], ["old"])
+        self.assertEqual(presenter.committed_generation, 1)
+
     def test_two_snapshots_reuse_viewer_and_update_once_each(self):
         widget = FakeWidget()
         permanent = FakeHandle("permanent-axis")

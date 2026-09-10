@@ -57,7 +57,7 @@ class BoundaryBoxRecord:
 _BOUNDARY_BOX_SERIALIZER = BoundaryBoxSerializer()
 BOUNDARY_BOX_SPEC = ResultSpec.for_type(
     ops.BoundaryBoxValue,
-    type_id="zencad.typed.BoundaryBox.v1",
+    type_id="zencad.geom.BoundaryBox.v1",
     serializer=_BOUNDARY_BOX_SERIALIZER,
     validator=ops.valid_boundary_box,
 )
@@ -80,7 +80,7 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         selected_context = execution_context() if context is None else context
         self._bind(
             selected_context,
-            self._result_spec.validate(value, "zencad.typed.boundary-box.construct"),
+            self._result_spec.validate(value, "zencad.geom.boundary-box.construct"),
         )
 
     @classmethod
@@ -90,7 +90,7 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
         state: State[ops.BoundaryBoxValue],
     ) -> BoundaryBoxHandleT:
         if not isinstance(state, Expression):
-            state = cls._result_spec.validate(state, "zencad.typed.boundary-box.bind")
+            state = cls._result_spec.validate(state, "zencad.geom.boundary-box.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -207,7 +207,7 @@ class BoundaryBox(Handle[ops.BoundaryBoxValue]):
 @operation(
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
-    operation_id="zencad.typed.boundary-box.empty",
+    operation_id="zencad.geom.boundary-box.empty",
     operation_version="1",
     fold_literals=True,
 )
@@ -218,7 +218,7 @@ def empty_boundary_box() -> BoundaryBox:
 @operation(
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
-    operation_id="zencad.typed.boundary-box.from-points",
+    operation_id="zencad.geom.boundary-box.from-points",
     operation_version="1",
     fold_literals=True,
 )
@@ -233,7 +233,7 @@ def boundary_box(minimum: Point3, maximum: Point3, /) -> BoundaryBox:
 @operation(
     result=BOUNDARY_BOX_SPEC,
     returns=BoundaryBox,
-    operation_id="zencad.typed.boundary-box.union",
+    operation_id="zencad.geom.boundary-box.union",
     operation_version="1",
     fold_literals=True,
 )
@@ -250,7 +250,7 @@ def _boundary_box_union(
 @operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.boundary-box.coordinate",
+    operation_id="zencad.geom.boundary-box.coordinate",
     operation_version="1",
     fold_literals=True,
 )
@@ -269,7 +269,7 @@ def _boundary_box_coordinate(
 @operation(
     result=POINT3_SPEC,
     returns=Point3,
-    operation_id="zencad.typed.boundary-box.minimum",
+    operation_id="zencad.geom.boundary-box.minimum",
     operation_version="1",
     fold_literals=True,
 )
@@ -283,7 +283,7 @@ def _boundary_box_minimum(value: BoundaryBox, /) -> Point3:
 @operation(
     result=POINT3_SPEC,
     returns=Point3,
-    operation_id="zencad.typed.boundary-box.maximum",
+    operation_id="zencad.geom.boundary-box.maximum",
     operation_version="1",
     fold_literals=True,
 )
@@ -297,7 +297,7 @@ def _boundary_box_maximum(value: BoundaryBox, /) -> Point3:
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.boundary-box.size",
+    operation_id="zencad.geom.boundary-box.size",
     operation_version="1",
     fold_literals=True,
 )
@@ -311,7 +311,7 @@ def _boundary_box_size(value: BoundaryBox, /) -> Vector3:
 @operation(
     result=POINT3_SPEC,
     returns=Point3,
-    operation_id="zencad.typed.boundary-box.center",
+    operation_id="zencad.geom.boundary-box.center",
     operation_version="1",
     fold_literals=True,
 )

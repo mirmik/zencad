@@ -89,20 +89,20 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.polygon",
-                "zencad.typed.polysegment",
-                "zencad.typed.rectangle",
-                "zencad.typed.polysegment",
-                "zencad.typed.rectangle",
-                "zencad.typed.polygon",
-                "zencad.typed.face.circle",
-                "zencad.typed.face.ellipse",
-                "zencad.typed.face.fill",
-                "zencad.typed.face.interpolate2",
-                "zencad.typed.face.fix",
-                "zencad.typed.face.infplane",
-                "zencad.typed.face.ruled",
-                "zencad.typed.face.widewire",
+                "zencad.geom.polygon",
+                "zencad.geom.polysegment",
+                "zencad.geom.rectangle",
+                "zencad.geom.polysegment",
+                "zencad.geom.rectangle",
+                "zencad.geom.polygon",
+                "zencad.geom.face.circle",
+                "zencad.geom.face.ellipse",
+                "zencad.geom.face.fill",
+                "zencad.geom.face.interpolate2",
+                "zencad.geom.face.fix",
+                "zencad.geom.face.infplane",
+                "zencad.geom.face.ruled",
+                "zencad.geom.face.widewire",
             ),
         )
 
@@ -373,11 +373,11 @@ class TypedFaceConstructorsTest(unittest.TestCase):
         }
         self.assertTrue(
             {
-                "zencad.typed.face.circle",
-                "zencad.typed.face.ellipse",
-                "zencad.typed.face.fill",
-                "zencad.typed.face.interpolate2",
-                "zencad.typed.face.ruled",
+                "zencad.geom.face.circle",
+                "zencad.geom.face.ellipse",
+                "zencad.geom.face.fill",
+                "zencad.geom.face.interpolate2",
+                "zencad.geom.face.ruled",
             }.issubset(hits)
         )
 
@@ -422,7 +422,7 @@ class TypedFaceConstructorsTest(unittest.TestCase):
             second_value.SurfaceProperties().mass.value(), 20 + math.pi
         )
         self.assertIn(
-            "zencad.typed.face.widewire",
+            "zencad.geom.face.widewire",
             {
                 event.operation_id
                 for event in second_events

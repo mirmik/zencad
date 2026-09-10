@@ -56,7 +56,7 @@ class PipeTransition(Enum):
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.extrude",
+    operation_id="zencad.geom.shape.extrude",
     operation_version="1",
 )
 def extrude(
@@ -91,7 +91,7 @@ def linear_extrude(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.revol",
+    operation_id="zencad.geom.shape.revol",
     operation_version="1",
 )
 def revol(
@@ -159,7 +159,7 @@ def loft(
     result=SOLID_SPEC,
     returns=_loft_result_type,
     select_result=_loft_result_spec,
-    operation_id="zencad.typed.loft",
+    operation_id="zencad.geom.loft",
     operation_version="2",
 )
 def loft(
@@ -216,7 +216,7 @@ def pipe(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.pipe",
+    operation_id="zencad.geom.pipe",
     operation_version="1",
 )
 def pipe(
@@ -323,7 +323,7 @@ def pipe_shell(
     result=SOLID_SPEC,
     returns=_pipe_shell_result_type,
     select_result=_pipe_shell_result_spec,
-    operation_id="zencad.typed.pipe_shell",
+    operation_id="zencad.geom.pipe_shell",
     operation_version="2",
 )
 def pipe_shell(
@@ -395,7 +395,7 @@ def sweep(
 @operation(
     result=SOLID_SPEC,
     returns=Solid,
-    operation_id="zencad.typed.revol2",
+    operation_id="zencad.geom.revol2",
     operation_version="1",
 )
 def revol2(

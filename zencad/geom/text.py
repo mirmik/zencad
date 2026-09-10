@@ -42,7 +42,7 @@ def register_font(
 @operation(
     result=COMPOUND_SPEC,
     returns=Compound,
-    operation_id="zencad.typed.text_to_brep",
+    operation_id="zencad.geom.text_to_brep",
     operation_version="1",
     cacheable=False,
 )

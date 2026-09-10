@@ -183,7 +183,7 @@ class TypedSolidConstructorsTest(unittest.TestCase):
         self.assertTrue(
             any(
                 event.kind is EvaluationEventKind.CACHE_HIT
-                and event.operation_id == "zencad.typed.empty_shape"
+                and event.operation_id == "zencad.geom.empty_shape"
                 for event in second_events
             )
         )

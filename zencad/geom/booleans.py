@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.empty_shape",
+    operation_id="zencad.geom.empty_shape",
     operation_version="1",
 )
 def empty_shape() -> Shape:
@@ -48,7 +48,7 @@ def nullshape() -> Shape:
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.union",
+    operation_id="zencad.geom.union",
     operation_version="2",
 )
 def union(
@@ -63,7 +63,7 @@ def union(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.intersect",
+    operation_id="zencad.geom.intersect",
     operation_version="1",
 )
 def intersect(
@@ -88,7 +88,7 @@ def intersection(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.difference",
+    operation_id="zencad.geom.difference",
     operation_version="1",
 )
 def difference(
@@ -115,7 +115,7 @@ class SplitResult(DeferredSequence[Solid]):
             sequence_spec=_SOLID_SEQUENCE_SPEC,
             item_type=Solid,
             item_spec=SOLID_SPEC,
-            operation_id="zencad.typed.split.item",
+            operation_id="zencad.geom.split.item",
         )
 
 
@@ -134,7 +134,7 @@ class SliceResult(SplitResult):
 @operation(
     result=_SOLID_SEQUENCE_SPEC,
     returns=SplitResult,
-    operation_id="zencad.typed.split",
+    operation_id="zencad.geom.split",
     operation_version="2",
 )
 def split(
@@ -158,7 +158,7 @@ def split(
 @operation(
     result=_SOLID_SEQUENCE_SPEC,
     returns=SliceResult,
-    operation_id="zencad.typed.slice",
+    operation_id="zencad.geom.slice",
     operation_version="2",
 )
 def slice(
@@ -185,7 +185,7 @@ def slice(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.section",
+    operation_id="zencad.geom.section",
     operation_version="1",
 )
 def section(
@@ -207,7 +207,7 @@ def section(
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.union",
+    operation_id="zencad.geom.shape.union",
     operation_version="2",
 )
 def _shape_union(left: Shape, right: Shape) -> Shape:
@@ -218,7 +218,7 @@ def _shape_union(left: Shape, right: Shape) -> Shape:
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.difference",
+    operation_id="zencad.geom.shape.difference",
     operation_version="1",
 )
 def _shape_difference(left: Shape, right: Shape) -> Shape:
@@ -229,7 +229,7 @@ def _shape_difference(left: Shape, right: Shape) -> Shape:
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.shape.intersection",
+    operation_id="zencad.geom.shape.intersection",
     operation_version="1",
 )
 def _shape_intersection(left: Shape, right: Shape) -> Shape:

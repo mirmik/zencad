@@ -288,7 +288,7 @@ class TypedShapeBooleansTest(unittest.TestCase):
         ]
         self.assertEqual(
             [event.operation_id for event in hits],
-            ["zencad.typed.shape.union"],
+            ["zencad.geom.shape.union"],
         )
         shape_records = [
             record

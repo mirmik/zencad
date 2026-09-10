@@ -15,6 +15,10 @@ and fuse them otherwise. They do not accept `unit`; assemblies are constructed
 explicitly with `zencad.assemble.unit(parts=copies)`. This is an intentional
 API change that keeps geometry independent of assemblies and kinematics.
 
+The signature snapshot also accounts for `SliceResult` becoming a collection
+instead of a fixed `(lower, upper)` pair. A plane that does not cut the solid
+leaves a one-element result.
+
 ## Compatibility promise
 
 The public cutover, completed on 2026-09-02, does not reduce ZenCad's intentionally supported geometry

@@ -42,19 +42,19 @@ _CURVE2_SERIALIZER = Curve2Serializer()
 
 CURVE_SPEC = ResultSpec.for_type(
     ops.CurveValue,
-    type_id="zencad.typed.Curve.v2",
+    type_id="zencad.geom.Curve.v2",
     serializer=_CURVE_SERIALIZER,
     validator=ops.valid_curve,
 )
 CURVE2_SPEC = ResultSpec.for_type(
     ops.Curve2Value,
-    type_id="zencad.typed.Curve2.v2",
+    type_id="zencad.geom.Curve2.v2",
     serializer=_CURVE2_SERIALIZER,
     validator=ops.valid_curve2,
 )
 CURVE_KIND_SPEC = ResultSpec.for_type(
     str,
-    type_id="zencad.typed.CurveKind.v1",
+    type_id="zencad.geom.CurveKind.v1",
     validator=lambda value: (
         value
         in {
@@ -72,19 +72,19 @@ CURVE_KIND_SPEC = ResultSpec.for_type(
 )
 LINE_PARAMETERS_SPEC = ResultSpec.for_type(
     ops.LineParametersValue,
-    type_id="zencad.typed.LineParameters.v1",
+    type_id="zencad.geom.LineParameters.v1",
 )
 CIRCLE_PARAMETERS_SPEC = ResultSpec.for_type(
     ops.CircleParametersValue,
-    type_id="zencad.typed.CircleParameters.v1",
+    type_id="zencad.geom.CircleParameters.v1",
 )
 ELLIPSE_PARAMETERS_SPEC = ResultSpec.for_type(
     ops.EllipseParametersValue,
-    type_id="zencad.typed.EllipseParameters.v1",
+    type_id="zencad.geom.EllipseParameters.v1",
 )
 SCALAR_SEQUENCE_SPEC = cast(
     ResultSpec[tuple[float, ...]],
-    ResultSpec.for_type(tuple, type_id="zencad.typed.Sequence[Scalar].v1"),
+    ResultSpec.for_type(tuple, type_id="zencad.geom.Sequence[Scalar].v1"),
 )
 
 CurveKind = Literal[
@@ -117,7 +117,7 @@ class Curve(Handle[ops.CurveValue]):
         selected_context = execution_context() if context is None else context
         self._bind(
             selected_context,
-            self._result_spec.validate(value, "zencad.typed.curve.construct"),
+            self._result_spec.validate(value, "zencad.geom.curve.construct"),
         )
 
     @classmethod
@@ -127,7 +127,7 @@ class Curve(Handle[ops.CurveValue]):
         state: State[ops.CurveValue],
     ) -> CurveHandleT:
         if not isinstance(state, Expression):
-            state = cls._result_spec.validate(state, "zencad.typed.curve.bind")
+            state = cls._result_spec.validate(state, "zencad.geom.curve.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -147,7 +147,7 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_point,
             result=POINT3_SPEC,
             args=(self._state, _scalar_state(self.context, parameter)),
-            operation_id="zencad.typed.curve.point",
+            operation_id="zencad.geom.curve.point",
         )
         return Point3._from_state(self.context, state)
 
@@ -163,7 +163,7 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_tangent,
             result=VECTOR3_SPEC,
             args=(self._state, _scalar_state(self.context, parameter)),
-            operation_id="zencad.typed.curve.tangent",
+            operation_id="zencad.geom.curve.tangent",
         )
         return Vector3._from_state(self.context, state)
 
@@ -175,13 +175,13 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_first_parameter,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve.first_parameter",
+            operation_id="zencad.geom.curve.first_parameter",
         )
         last = self.context._value_state(
             ops.curve_last_parameter,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve.last_parameter",
+            operation_id="zencad.geom.curve.last_parameter",
         )
         return Interval(
             Scalar._from_state(self.context, first),
@@ -193,7 +193,7 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_kind,
             result=CURVE_KIND_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve.kind",
+            operation_id="zencad.geom.curve.kind",
         )
         if isinstance(state, Expression):
             state = self.context._resolve(state)
@@ -208,19 +208,19 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_line_parameters,
             result=LINE_PARAMETERS_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve.line_parameters",
+            operation_id="zencad.geom.curve.line_parameters",
         )
         origin = self.context._value_state(
             ops.line_parameters_origin,
             result=POINT3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.line_parameters.origin",
+            operation_id="zencad.geom.curve.line_parameters.origin",
         )
         direction = self.context._value_state(
             ops.line_parameters_direction,
             result=VECTOR3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.line_parameters.direction",
+            operation_id="zencad.geom.curve.line_parameters.direction",
         )
         return LineParameters(
             Point3._from_state(self.context, origin),
@@ -232,31 +232,31 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_circle_parameters,
             result=CIRCLE_PARAMETERS_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve.circle_parameters",
+            operation_id="zencad.geom.curve.circle_parameters",
         )
         center = self.context._value_state(
             ops.circle_parameters_center,
             result=POINT3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.circle_parameters.center",
+            operation_id="zencad.geom.curve.circle_parameters.center",
         )
         radius = self.context._value_state(
             ops.circle_parameters_radius,
             result=SCALAR_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.circle_parameters.radius",
+            operation_id="zencad.geom.curve.circle_parameters.radius",
         )
         x_direction = self.context._value_state(
             ops.circle_parameters_x_direction,
             result=VECTOR3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.circle_parameters.x_direction",
+            operation_id="zencad.geom.curve.circle_parameters.x_direction",
         )
         y_direction = self.context._value_state(
             ops.circle_parameters_y_direction,
             result=VECTOR3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.circle_parameters.y_direction",
+            operation_id="zencad.geom.curve.circle_parameters.y_direction",
         )
         return CircleParameters(
             Point3._from_state(self.context, center),
@@ -270,37 +270,37 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_ellipse_parameters,
             result=ELLIPSE_PARAMETERS_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve.ellipse_parameters",
+            operation_id="zencad.geom.curve.ellipse_parameters",
         )
         center = self.context._value_state(
             ops.ellipse_parameters_center,
             result=POINT3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.ellipse_parameters.center",
+            operation_id="zencad.geom.curve.ellipse_parameters.center",
         )
         major_radius = self.context._value_state(
             ops.ellipse_parameters_major_radius,
             result=SCALAR_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.ellipse_parameters.major_radius",
+            operation_id="zencad.geom.curve.ellipse_parameters.major_radius",
         )
         minor_radius = self.context._value_state(
             ops.ellipse_parameters_minor_radius,
             result=SCALAR_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.ellipse_parameters.minor_radius",
+            operation_id="zencad.geom.curve.ellipse_parameters.minor_radius",
         )
         x_direction = self.context._value_state(
             ops.ellipse_parameters_x_direction,
             result=VECTOR3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.ellipse_parameters.x_direction",
+            operation_id="zencad.geom.curve.ellipse_parameters.x_direction",
         )
         y_direction = self.context._value_state(
             ops.ellipse_parameters_y_direction,
             result=VECTOR3_SPEC,
             args=(state,),
-            operation_id="zencad.typed.curve.ellipse_parameters.y_direction",
+            operation_id="zencad.geom.curve.ellipse_parameters.y_direction",
         )
         return EllipseParameters(
             Point3._from_state(self.context, center),
@@ -318,7 +318,7 @@ class Curve(Handle[ops.CurveValue]):
             ops.curve_lower_distance_parameter,
             result=SCALAR_SPEC,
             args=(self._state, point._state),
-            operation_id="zencad.typed.curve.lower_distance_parameter",
+            operation_id="zencad.geom.curve.lower_distance_parameter",
         )
         return Scalar._from_state(self.context, state)
 
@@ -347,7 +347,7 @@ class Curve(Handle[ops.CurveValue]):
                 None if start is None else _scalar_state(self.context, start),
                 None if end is None else _scalar_state(self.context, end),
             ),
-            operation_id="zencad.typed.curve.uniform",
+            operation_id="zencad.geom.curve.uniform",
             cacheable=False,
         )
         parameters = []
@@ -356,7 +356,7 @@ class Curve(Handle[ops.CurveValue]):
                 ops.scalar_sequence_item,
                 result=SCALAR_SPEC,
                 args=(expression, index),
-                operation_id="zencad.typed.curve.uniform.item",
+                operation_id="zencad.geom.curve.uniform.item",
             )
             parameters.append(Scalar._from_state(self.context, state))
         return parameters
@@ -415,7 +415,7 @@ class Curve2(Handle[ops.Curve2Value]):
         selected_context = execution_context() if context is None else context
         self._bind(
             selected_context,
-            self._result_spec.validate(value, "zencad.typed.curve2.construct"),
+            self._result_spec.validate(value, "zencad.geom.curve2.construct"),
         )
 
     @classmethod
@@ -425,7 +425,7 @@ class Curve2(Handle[ops.Curve2Value]):
         state: State[ops.Curve2Value],
     ) -> Curve2HandleT:
         if not isinstance(state, Expression):
-            state = cls._result_spec.validate(state, "zencad.typed.curve2.bind")
+            state = cls._result_spec.validate(state, "zencad.geom.curve2.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -445,7 +445,7 @@ class Curve2(Handle[ops.Curve2Value]):
             ops.curve2_point,
             result=POINT2_SPEC,
             args=(self._state, _scalar_state(self.context, parameter)),
-            operation_id="zencad.typed.curve2.point",
+            operation_id="zencad.geom.curve2.point",
         )
         return Point2._from_state(self.context, state)
 
@@ -455,7 +455,7 @@ class Curve2(Handle[ops.Curve2Value]):
             ops.curve2_tangent,
             result=VECTOR2_SPEC,
             args=(self._state, _scalar_state(self.context, parameter)),
-            operation_id="zencad.typed.curve2.tangent",
+            operation_id="zencad.geom.curve2.tangent",
         )
         return Vector2._from_state(self.context, state)
 
@@ -464,13 +464,13 @@ class Curve2(Handle[ops.Curve2Value]):
             ops.curve2_first_parameter,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve2.first_parameter",
+            operation_id="zencad.geom.curve2.first_parameter",
         )
         last = self.context._value_state(
             ops.curve2_last_parameter,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.curve2.last_parameter",
+            operation_id="zencad.geom.curve2.last_parameter",
         )
         return Interval(
             Scalar._from_state(self.context, first),

@@ -92,15 +92,15 @@ class TypedSurfaceHandlesTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.cylinder_surface",
-                "zencad.typed.sweep_surface_from_laws",
-                "zencad.typed.sweep_surface_from_laws",
-                "zencad.typed.surface.point",
-                "zencad.typed.surface.normal",
-                "zencad.typed.surface.u_iso",
-                "zencad.typed.surface.v_iso",
-                "zencad.typed.surface.map",
-                "zencad.typed.face.surface",
+                "zencad.geom.cylinder_surface",
+                "zencad.geom.sweep_surface_from_laws",
+                "zencad.geom.sweep_surface_from_laws",
+                "zencad.geom.surface.point",
+                "zencad.geom.surface.normal",
+                "zencad.geom.surface.u_iso",
+                "zencad.geom.surface.v_iso",
+                "zencad.geom.surface.map",
+                "zencad.geom.face.surface",
             ),
         )
 
@@ -485,7 +485,7 @@ class TypedSurfaceCacheTest(unittest.TestCase):
         self.assertTrue(
             any(
                 event.kind is EvaluationEventKind.CACHE_HIT
-                and event.operation_id == "zencad.typed.surface.map"
+                and event.operation_id == "zencad.geom.surface.map"
                 for event in events
             )
         )
@@ -497,12 +497,12 @@ class TypedSurfaceCacheTest(unittest.TestCase):
 
         self.assertEqual(len(store.records), 1)
         key, record = next(iter(store.records.items()))
-        self.assertEqual(record.result_type_id, "zencad.typed.Surface.v1")
+        self.assertEqual(record.result_type_id, "zencad.geom.Surface.v1")
         self.assertEqual(
             record.serializer_id,
             "zencad.surface.occt-set-artifact.v1",
         )
-        self.assertEqual(record.value.payload, b"zencad.typed.surface\x00v1")
+        self.assertEqual(record.value.payload, b"zencad.geom.surface\x00v1")
         self.assertEqual(record.value.artifacts[0].name, "surface.geom")
         self.assertGreater(len(record.value.artifacts[0].data), 20)
 

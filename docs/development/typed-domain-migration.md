@@ -1342,6 +1342,12 @@ code imports it only at explicit materialization, conversion, and GUI
 boundaries. The `_typed` package is retained solely as an identity-preserving
 compatibility alias for code written against the private preview.
 
+On 2026-09-11, operation IDs, result type IDs, and cache payload markers were
+also moved to the `zencad.geom.*` namespace. The earlier stage notes retain
+their historical identifiers. Existing cache entries are disposable: the new
+IDs use new keys, so results are recomputed without migrating or deleting the
+old cache. Computation graphs and diagnostics now use the canonical names.
+
 ## Cross-cutting rules
 
 - Public domain handles use composition, not inheritance from evalcache,

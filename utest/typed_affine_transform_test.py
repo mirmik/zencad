@@ -242,14 +242,14 @@ class TypedAffineTransformTest(unittest.TestCase):
         self.assertAlmostEqual(float(affine.determinant), 12.0, delta=TOLERANCE)
 
         records = [
-            record for record in store.records.values() if record.result_type_id == "zencad.typed.AffineTransform.v1"
+            record for record in store.records.values() if record.result_type_id == "zencad.geom.AffineTransform.v1"
         ]
         self.assertEqual(len(records), 1)
         self.assertEqual(
             records[0].serializer_id,
             "zencad.affine-transform.struct.v1",
         )
-        self.assertTrue(records[0].value.payload.startswith(b"zencad.typed.affine-transform\x00v1\x00"))
+        self.assertTrue(records[0].value.payload.startswith(b"zencad.geom.affine-transform\x00v1\x00"))
         self.assertEqual(records[0].value.artifacts, ())
 
         script = """

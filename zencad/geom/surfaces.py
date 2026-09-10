@@ -152,7 +152,7 @@ class SweepLocationLaw:
 _SURFACE_SERIALIZER = SurfaceSerializer()
 SURFACE_SPEC = ResultSpec.for_type(
     ops.SurfaceValue,
-    type_id="zencad.typed.Surface.v1",
+    type_id="zencad.geom.Surface.v1",
     serializer=_SURFACE_SERIALIZER,
     validator=ops.valid_surface,
 )
@@ -175,7 +175,7 @@ class Surface(Handle[ops.SurfaceValue]):
         selected_context = execution_context() if context is None else context
         self._bind(
             selected_context,
-            self._result_spec.validate(value, "zencad.typed.surface.construct"),
+            self._result_spec.validate(value, "zencad.geom.surface.construct"),
         )
 
     @classmethod
@@ -185,7 +185,7 @@ class Surface(Handle[ops.SurfaceValue]):
         state: State[ops.SurfaceValue],
     ) -> SurfaceHandleT:
         if not isinstance(state, Expression):
-            state = cls._result_spec.validate(state, "zencad.typed.surface.bind")
+            state = cls._result_spec.validate(state, "zencad.geom.surface.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -232,7 +232,7 @@ class Surface(Handle[ops.SurfaceValue]):
 @operation(
     result=SURFACE_SPEC,
     returns=Surface,
-    operation_id="zencad.typed.cylinder_surface",
+    operation_id="zencad.geom.cylinder_surface",
     operation_version="1",
 )
 def cylinder_surface(radius: float, /) -> Surface:
@@ -242,7 +242,7 @@ def cylinder_surface(radius: float, /) -> Surface:
 @operation(
     result=POINT3_SPEC,
     returns=Point3,
-    operation_id="zencad.typed.surface.point",
+    operation_id="zencad.geom.surface.point",
     operation_version="1",
     fold_literals=True,
 )
@@ -260,7 +260,7 @@ def _surface_point(
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.surface.normal",
+    operation_id="zencad.geom.surface.normal",
     operation_version="1",
     fold_literals=True,
 )
@@ -291,16 +291,16 @@ def _surface_bound_operation(operation_id: str, index: int):
     return bound
 
 
-_surface_u_first = _surface_bound_operation("zencad.typed.surface.u_range.first", 0)
-_surface_u_last = _surface_bound_operation("zencad.typed.surface.u_range.last", 1)
-_surface_v_first = _surface_bound_operation("zencad.typed.surface.v_range.first", 2)
-_surface_v_last = _surface_bound_operation("zencad.typed.surface.v_range.last", 3)
+_surface_u_first = _surface_bound_operation("zencad.geom.surface.u_range.first", 0)
+_surface_u_last = _surface_bound_operation("zencad.geom.surface.u_range.last", 1)
+_surface_v_first = _surface_bound_operation("zencad.geom.surface.v_range.first", 2)
+_surface_v_last = _surface_bound_operation("zencad.geom.surface.v_range.last", 3)
 
 
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.surface.u_iso",
+    operation_id="zencad.geom.surface.u_iso",
     operation_version="1",
     fold_literals=True,
 )
@@ -317,7 +317,7 @@ def _surface_u_iso(
 @operation(
     result=CURVE_SPEC,
     returns=Curve,
-    operation_id="zencad.typed.surface.v_iso",
+    operation_id="zencad.geom.surface.v_iso",
     operation_version="1",
     fold_literals=True,
 )
@@ -379,7 +379,7 @@ def sweep_location(
 @operation(
     result=SURFACE_SPEC,
     returns=Surface,
-    operation_id="zencad.typed.sweep_surface_from_laws",
+    operation_id="zencad.geom.sweep_surface_from_laws",
     operation_version="1",
 )
 def sweep_surface_from_laws(

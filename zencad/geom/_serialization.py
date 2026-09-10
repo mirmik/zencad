@@ -16,13 +16,13 @@ from ._surface_operations import SurfaceValue
 from ._transform_operations import AffineTransformValue
 
 
-_SHAPE_PAYLOAD = b"zencad.typed.shape\x00v1"
-_CURVE_PAYLOAD = b"zencad.typed.curve\x00v2"
-_CURVE2_PAYLOAD = b"zencad.typed.curve2\x00v2"
-_SURFACE_PAYLOAD = b"zencad.typed.surface\x00v1"
-_BOUNDARY_BOX_PAYLOAD = b"zencad.typed.boundary-box\x00v1"
-_MESH_PAYLOAD = b"zencad.typed.mesh\x00v1"
-_AFFINE_TRANSFORM_PAYLOAD = b"zencad.typed.affine-transform\x00v1"
+_SHAPE_PAYLOAD = b"zencad.geom.shape\x00v1"
+_CURVE_PAYLOAD = b"zencad.geom.curve\x00v2"
+_CURVE2_PAYLOAD = b"zencad.geom.curve2\x00v2"
+_SURFACE_PAYLOAD = b"zencad.geom.surface\x00v1"
+_BOUNDARY_BOX_PAYLOAD = b"zencad.geom.boundary-box\x00v1"
+_MESH_PAYLOAD = b"zencad.geom.mesh\x00v1"
+_AFFINE_TRANSFORM_PAYLOAD = b"zencad.geom.affine-transform\x00v1"
 
 
 class ShapeBrepSerializer:
@@ -187,7 +187,7 @@ class MeshSerializer:
                 Artifact(
                     name="mesh.bin",
                     data=encode_mesh_value(value),
-                    media_type="application/vnd.zencad.typed-mesh",
+                    media_type="application/vnd.zencad.geom-mesh",
                 ),
             ),
         )

@@ -170,8 +170,8 @@ class TypedWireBuilderTest(unittest.TestCase):
             for event in second_events
             if event.kind is EvaluationEventKind.CACHE_HIT
         }
-        self.assertIn("zencad.typed.make_wire", hits)
-        self.assertIn("zencad.typed.svg_elliptic_arc", hits)
+        self.assertIn("zencad.geom.make_wire", hits)
+        self.assertIn("zencad.geom.svg_elliptic_arc", hits)
 
     def test_invalid_builder_inputs_are_explicit(self):
         context = typed.Context.deferred(cache=False)

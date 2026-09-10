@@ -103,22 +103,22 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.line",
-                "zencad.typed.circle_curve",
-                "zencad.typed.ellipse_curve",
-                "zencad.typed.interpolate_curve",
-                "zencad.typed.bezier_curve",
-                "zencad.typed.bspline_curve",
-                "zencad.typed.make_edge",
-                "zencad.typed.circle_arc",
-                "zencad.typed.segment",
-                "zencad.typed.make_wire",
-                "zencad.typed.rounded_polysegment",
-                "zencad.typed.helix",
-                "zencad.typed.segment2",
-                "zencad.typed.ellipse2",
-                "zencad.typed.trim_curve2",
-                "zencad.typed.polysegment",
+                "zencad.geom.line",
+                "zencad.geom.circle_curve",
+                "zencad.geom.ellipse_curve",
+                "zencad.geom.interpolate_curve",
+                "zencad.geom.bezier_curve",
+                "zencad.geom.bspline_curve",
+                "zencad.geom.make_edge",
+                "zencad.geom.circle_arc",
+                "zencad.geom.segment",
+                "zencad.geom.make_wire",
+                "zencad.geom.rounded_polysegment",
+                "zencad.geom.helix",
+                "zencad.geom.segment2",
+                "zencad.geom.ellipse2",
+                "zencad.geom.trim_curve2",
+                "zencad.geom.polysegment",
             ),
         )
         self.assertEqual(
@@ -131,12 +131,12 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
                 recovered_curve._state.operation_id,
             ),
             (
-                "zencad.typed.curve.transform",
-                "zencad.typed.curve.trimmed_edge",
-                "zencad.typed.make_edge",
-                "zencad.typed.curve2.rotate",
-                "zencad.typed.trim_curve2",
-                "zencad.typed.edge.curve",
+                "zencad.geom.curve.transform",
+                "zencad.geom.curve.trimmed_edge",
+                "zencad.geom.make_edge",
+                "zencad.geom.curve2.rotate",
+                "zencad.geom.trim_curve2",
+                "zencad.geom.edge.curve",
             ),
         )
         self.assertTrue(all(type(value) is typed.Edge for value in aliases))
@@ -368,8 +368,8 @@ class TypedCurveWireConstructorsTest(unittest.TestCase):
             for event in second_events
             if event.kind is EvaluationEventKind.CACHE_HIT
         }
-        self.assertIn("zencad.typed.bezier_curve", hits)
-        self.assertIn("zencad.typed.helix", hits)
+        self.assertIn("zencad.geom.bezier_curve", hits)
+        self.assertIn("zencad.geom.helix", hits)
 
     def test_invalid_inputs_fail_before_or_at_the_resolved_boundary(self):
         context = typed.Context.deferred(cache=False)

@@ -37,11 +37,11 @@ class TypedBooleanOperationsTest(unittest.TestCase):
         self.assertEqual(
             tuple(result._state.operation_id for result in results),
             (
-                "zencad.typed.union",
-                "zencad.typed.intersect",
-                "zencad.typed.intersect",
-                "zencad.typed.difference",
-                "zencad.typed.section",
+                "zencad.geom.union",
+                "zencad.geom.intersect",
+                "zencad.geom.intersect",
+                "zencad.geom.difference",
+                "zencad.geom.section",
             ),
         )
 
@@ -189,21 +189,21 @@ class TypedOperationCompatibilityTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.shape.fillet",
-                "zencad.typed.shape.chamfer",
-                "zencad.typed.shape.fillet2d",
-                "zencad.typed.shape.chamfer2d",
-                "zencad.typed.shape.offset",
-                "zencad.typed.solid.thicksolid",
-                "zencad.typed.solid.shapefix",
-                "zencad.typed.shape.unify",
-                "zencad.typed.shape.near_vertex",
-                "zencad.typed.shape.near_edge",
-                "zencad.typed.shape.near_wire",
-                "zencad.typed.shape.near_face",
-                "zencad.typed.shape.near_shell",
-                "zencad.typed.shape.near_solid",
-                "zencad.typed.shape.boundbox",
+                "zencad.geom.shape.fillet",
+                "zencad.geom.shape.chamfer",
+                "zencad.geom.shape.fillet2d",
+                "zencad.geom.shape.chamfer2d",
+                "zencad.geom.shape.offset",
+                "zencad.geom.solid.thicksolid",
+                "zencad.geom.solid.shapefix",
+                "zencad.geom.shape.unify",
+                "zencad.geom.shape.near_vertex",
+                "zencad.geom.shape.near_edge",
+                "zencad.geom.shape.near_wire",
+                "zencad.geom.shape.near_face",
+                "zencad.geom.shape.near_shell",
+                "zencad.geom.shape.near_solid",
+                "zencad.geom.shape.boundbox",
             ),
         )
 

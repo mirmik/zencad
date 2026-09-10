@@ -199,9 +199,9 @@ class TypedValueAlgebraTest(unittest.TestCase):
 
         self.assertGreater(float(result), 0)
         operation_ids = [event.operation_id for event in events]
-        self.assertIn("zencad.typed.math.sqrt", operation_ids)
-        self.assertIn("zencad.typed.scalar.add", operation_ids)
-        self.assertIn("zencad.typed.shape.mass", operation_ids)
+        self.assertIn("zencad.geom.math.sqrt", operation_ids)
+        self.assertIn("zencad.geom.scalar.add", operation_ids)
+        self.assertIn("zencad.geom.shape.mass", operation_ids)
 
     def test_immediate_geometry_value_then_uses_constant_folding(self):
         events = []
@@ -216,7 +216,7 @@ class TypedValueAlgebraTest(unittest.TestCase):
         self.assertNotIsInstance(result._state, Expression)
         self.assertEqual(len(events), before)
         self.assertNotIn(
-            "zencad.typed.scalar.add",
+            "zencad.geom.scalar.add",
             [event.operation_id for event in events],
         )
 

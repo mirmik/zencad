@@ -78,7 +78,7 @@ class TypedOperationTest(unittest.TestCase):
         self.assertIs(direct.context, context)
         self.assertIs(forwarded.context, context)
         self.assertIsInstance(direct._state, evalcache.Expression)
-        self.assertEqual(direct._state.operation_id, "zencad.typed.box")
+        self.assertEqual(direct._state.operation_id, "zencad.geom.box")
         self.assertEqual(events, [])
         self.assertAlmostEqual(float(direct.mass()), 24.0)
 
@@ -86,7 +86,7 @@ class TypedOperationTest(unittest.TestCase):
         declaration = typed.box
 
         self.assertIsInstance(declaration, DomainOperation)
-        self.assertEqual(declaration.backend.operation_id, "zencad.typed.box")
+        self.assertEqual(declaration.backend.operation_id, "zencad.geom.box")
         self.assertIs(
             inspect.signature(declaration).return_annotation,
             typed.Solid,
@@ -141,8 +141,8 @@ class TypedOperationTest(unittest.TestCase):
         self.assertIs(type(preserved), typed.Shape)
         self.assertIs(type(selected), typed.Solid)
         self.assertEqual(preserved._state.operation_id, "zencad.test.selected_shape")
-        self.assertEqual(preserved._state.result.type_id, "zencad.typed.Shape.v1")
-        self.assertEqual(selected._state.result.type_id, "zencad.typed.Solid.v1")
+        self.assertEqual(preserved._state.result.type_id, "zencad.geom.Shape.v1")
+        self.assertEqual(selected._state.result.type_id, "zencad.geom.Solid.v1")
         self.assertFalse(selected.native().IsNull())
 
     def test_public_geometry_does_not_expose_the_legacy_lazy_contract(self):

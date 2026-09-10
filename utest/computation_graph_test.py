@@ -53,12 +53,12 @@ show()
             [(node.node_id, node.dependencies) for node in second.nodes],
         )
         box_node = next(
-            node for node in first.nodes if node.operation == "zencad.typed.box"
+            node for node in first.nodes if node.operation == "zencad.geom.box"
         )
         transforms = [
             node
             for node in first.nodes
-            if node.operation == "zencad.typed.shape.transform"
+            if node.operation == "zencad.geom.shape.transform"
         ]
         self.assertEqual(len(transforms), 2)
         self.assertTrue(
@@ -73,7 +73,7 @@ show()
 
         hidden = first.filtered(hide_literals=True)
         hidden_box = next(
-            node for node in hidden.nodes if node.operation == "zencad.typed.box"
+            node for node in hidden.nodes if node.operation == "zencad.geom.box"
         )
         self.assertEqual(hidden_box.arguments, ())
 

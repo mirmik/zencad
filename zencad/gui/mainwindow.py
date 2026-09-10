@@ -1,3 +1,4 @@
+import os
 import threading
 
 from PyQt5 import QtCore, QtWidgets
@@ -29,6 +30,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         super().__init__()
         self._persist_gui_state = restore_gui
         self._current_opened = None
+        self._presented_path = None
         self._reopen_mode = False
         self._fullscreen = False
         self.view_mode = False
@@ -322,6 +324,17 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             )
         return "Calculating scene…"
 
+    def _apply_snapshot(self, snapshot, scene_revision=0):
+        path = os.path.normcase(os.path.realpath(self._current_opened))
+        self.display_widget.apply_snapshot(
+            snapshot,
+            scene_revision=scene_revision,
+            reset_camera=path != self._presented_path,
+        )
+        # Remember only successful presentations: a failed first run of a new
+        # file must still reset the camera when it is fixed and rerun.
+        self._presented_path = path
+
     @QtCore.pyqtSlot(object)
     def _handle_runner_message(self, message):
         message_type = message.message_type
@@ -362,7 +375,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
                 return
             self._pending_snapshots.pop(generation, None)
             try:
-                self.display_widget.apply_snapshot(
+                self._apply_snapshot(
                     snapshot,
                     scene_revision=message.payload.get("scene_revision", 0),
                 )
@@ -396,7 +409,7 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             snapshot = self._pending_snapshots.pop(generation, None)
             if status == "success" and snapshot is not None:
                 try:
-                    self.display_widget.apply_snapshot(snapshot)
+                    self._apply_snapshot(snapshot)
                 except Exception:
                     import traceback
 

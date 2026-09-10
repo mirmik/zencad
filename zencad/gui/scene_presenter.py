@@ -300,8 +300,29 @@ class ScenePresenter:
             }
         raise ScenePresentationError(f"Unsupported camera policy: {policy!r}")
 
-    def _apply_camera(self, action, camera):
-        if action == "fit":
+    @staticmethod
+    def _scene_bounds(objects):
+        from OCP.Bnd import Bnd_Box
+
+        bounds = Bnd_Box()
+        for item in objects:
+            if item.visible:
+                item_bounds = Bnd_Box()
+                try:
+                    item.ais_object.BoundingBox(item_bounds)
+                except TypeError:
+                    item_bounds = item.ais_object.BoundingBox()
+                bounds.Add(item_bounds)
+        return bounds
+
+    def _apply_camera(self, action, camera, objects):
+        if action == "reset":
+            self.widget.reset_orient1(redraw=False)
+            # Permanent viewer helpers must not enlarge the new model's frame.
+            bounds = self._scene_bounds(objects)
+            if not bounds.IsVoid():
+                self.view.FitAll(bounds, 0.07, False)
+        elif action == "fit":
             self.view.FitAll(0.07, False)
         elif action == "explicit":
             self.widget.restore_location(camera, redraw=False)
@@ -315,7 +336,7 @@ class ScenePresenter:
         self.widget.restore_location(previous_camera, redraw=False)
         self.context.UpdateCurrentViewer()
 
-    def apply(self, snapshot: SceneSnapshot, scene_revision=0):
+    def apply(self, snapshot: SceneSnapshot, scene_revision=0, *, reset_camera=False):
         """Replace the current scene and return the committed generation."""
         self._assert_gui_thread()
         if not isinstance(snapshot, SceneSnapshot):
@@ -331,6 +352,8 @@ class ScenePresenter:
 
         try:
             camera_action, explicit_camera = self._camera_action(snapshot)
+            if reset_camera and camera_action != "explicit":
+                camera_action = "reset"
             prepared = []
             for record in snapshot.objects:
                 item = self._materializer(record)
@@ -357,7 +380,7 @@ class ScenePresenter:
                 if item.visible:
                     added.append(item)
                     self.context.Display(item.ais_object, False)
-            self._apply_camera(camera_action, explicit_camera)
+            self._apply_camera(camera_action, explicit_camera, prepared)
             self.context.ClearSelected(False)
             self.context.UpdateCurrentViewer()
         except Exception as exception:
@@ -526,19 +549,10 @@ class ScenePresenter:
             None,
         )
         try:
-            from OCP.Bnd import Bnd_Box
             from zencad._native.shape import Shape
 
             self.widget._first_shape = Shape(first) if first is not None else None
-            bounds = Bnd_Box()
-            for item in prepared:
-                if item.visible:
-                    item_bounds = Bnd_Box()
-                    try:
-                        item.ais_object.BoundingBox(item_bounds)
-                    except TypeError:
-                        item_bounds = item.ais_object.BoundingBox()
-                    bounds.Add(item_bounds)
+            bounds = self._scene_bounds(prepared)
             if bounds.IsVoid():
                 self.widget.scene_max0 = 1.0
                 return

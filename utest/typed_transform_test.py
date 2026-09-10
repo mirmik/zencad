@@ -80,17 +80,17 @@ class TypedTransformTest(unittest.TestCase):
         self.assertEqual(
             tuple(value._state.operation_id for value in values),
             (
-                "zencad.typed.transform.translation",
-                "zencad.typed.transform.rotation",
-                "zencad.typed.transform.scale",
-                "zencad.typed.transform.mirror",
-                "zencad.typed.transform.shortest_rotation",
-                "zencad.typed.affine.scale_xyz",
+                "zencad.geom.transform.translation",
+                "zencad.geom.transform.rotation",
+                "zencad.geom.transform.scale",
+                "zencad.geom.transform.mirror",
+                "zencad.geom.transform.shortest_rotation",
+                "zencad.geom.affine.scale_xyz",
             ),
         )
         moved = context.call(typed.box, 1).transform(values[0])
         self.assertIs(type(moved), typed.Solid)
-        self.assertEqual(moved._state.result.type_id, "zencad.typed.Solid.v1")
+        self.assertEqual(moved._state.result.type_id, "zencad.geom.Solid.v1")
 
     def assertCoordinatesAlmostEqual(
         self,
@@ -304,15 +304,15 @@ class TypedTransformTest(unittest.TestCase):
         operation_ids = {event.operation_id for event in events}
         self.assertTrue(
             {
-                "zencad.typed.shape.mass",
-                "zencad.typed.shape.center",
-                "zencad.typed.quaternion.axis_angle",
-                "zencad.typed.quaternion.norm",
-                "zencad.typed.transform.translation",
-                "zencad.typed.transform.rotation",
-                "zencad.typed.transform.scale",
-                "zencad.typed.transform.compose",
-                "zencad.typed.shape.transform",
+                "zencad.geom.shape.mass",
+                "zencad.geom.shape.center",
+                "zencad.geom.quaternion.axis_angle",
+                "zencad.geom.quaternion.norm",
+                "zencad.geom.transform.translation",
+                "zencad.geom.transform.rotation",
+                "zencad.geom.transform.scale",
+                "zencad.geom.transform.compose",
+                "zencad.geom.shape.transform",
             }.issubset(operation_ids)
         )
         self.assertGreater(store.reads, 0)

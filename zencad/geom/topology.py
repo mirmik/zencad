@@ -115,7 +115,7 @@ def _topology_validator(
 def _topology_spec(name: str, kind: TopAbs_ShapeEnum) -> ResultSpec[ResolvedShape]:
     return ResultSpec.for_type(
         ResolvedShape,
-        type_id=f"zencad.typed.{name}.v1",
+        type_id=f"zencad.geom.{name}.v1",
         serializer=_SHAPE_SERIALIZER,
         validator=_topology_validator(kind),
     )
@@ -130,7 +130,7 @@ def _topology_sequence_spec(
         ResultSpec[tuple[ResolvedShape, ...]],
         ResultSpec.for_type(
             tuple,
-            type_id=f"zencad.typed.Sequence[{name}].v1",
+            type_id=f"zencad.geom.Sequence[{name}].v1",
             validator=lambda values: all(
                 isinstance(value, ResolvedShape) and item_validator(value)
                 for value in values
@@ -141,14 +141,14 @@ def _topology_sequence_spec(
 
 SHAPE_SPEC = ResultSpec.for_type(
     ResolvedShape,
-    type_id="zencad.typed.Shape.v1",
+    type_id="zencad.geom.Shape.v1",
     serializer=_SHAPE_SERIALIZER,
     validator=_valid_shape,
 )
-BOOL_SPEC = ResultSpec.for_type(bool, type_id="zencad.typed.bool.v1")
+BOOL_SPEC = ResultSpec.for_type(bool, type_id="zencad.geom.bool.v1")
 SHAPE_KIND_SPEC = ResultSpec.for_type(
     str,
-    type_id="zencad.typed.ShapeKind.v1",
+    type_id="zencad.geom.ShapeKind.v1",
     validator=lambda value: (
         value
         in {
@@ -213,7 +213,7 @@ class Shape(Handle[ResolvedShape]):
         selected_context = execution_context() if context is None else context
         self._bind(
             selected_context,
-            self._result_spec.validate(resolved, "zencad.typed.shape.construct"),
+            self._result_spec.validate(resolved, "zencad.geom.shape.construct"),
         )
 
     @classmethod
@@ -223,7 +223,7 @@ class Shape(Handle[ResolvedShape]):
         state: State[ResolvedShape],
     ) -> ShapeT:
         if not isinstance(state, Expression):
-            state = cls._result_spec.validate(state, "zencad.typed.shape.bind")
+            state = cls._result_spec.validate(state, "zencad.geom.shape.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -249,7 +249,7 @@ class Shape(Handle[ResolvedShape]):
             raise TypeError(f"{cls.__name__}.from_ocp expects TopoDS_Shape")
         if value.IsNull():
             raise ValueError("typed topology handles cannot contain a null shape")
-        operation_id = f"zencad.typed.{cls.__name__.lower()}.from_ocp"
+        operation_id = f"zencad.geom.{cls.__name__.lower()}.from_ocp"
         cls._result_spec.validate(
             ResolvedShape(value),
             operation_id,
@@ -520,7 +520,7 @@ class Shape(Handle[ResolvedShape]):
             ops.shape_kind,
             result=SHAPE_KIND_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.kind",
+            operation_id="zencad.geom.shape.kind",
         )
         if isinstance(state, Expression):
             state = self.context._resolve(state)
@@ -530,7 +530,7 @@ class Shape(Handle[ResolvedShape]):
         return self._materialized_bool(
             ops.shape_has_kind,
             int(kind),
-            operation_id=f"zencad.typed.shape.is_{name}",
+            operation_id=f"zencad.geom.shape.is_{name}",
         )
 
     def is_vertex(self) -> bool:
@@ -560,19 +560,19 @@ class Shape(Handle[ResolvedShape]):
     def is_wire_or_edge(self) -> bool:
         return self._materialized_bool(
             ops.shape_is_wire_or_edge,
-            operation_id="zencad.typed.shape.is_wire_or_edge",
+            operation_id="zencad.geom.shape.is_wire_or_edge",
         )
 
     def is_closed(self) -> bool:
         return self._materialized_bool(
             ops.shape_is_closed,
-            operation_id="zencad.typed.shape.is_closed",
+            operation_id="zencad.geom.shape.is_closed",
         )
 
     def is_volumed(self) -> bool:
         return self._materialized_bool(
             ops.shape_is_volumed,
-            operation_id="zencad.typed.shape.is_volumed",
+            operation_id="zencad.geom.shape.is_volumed",
         )
 
     def Wire_orEdgeToWire(self) -> Wire:
@@ -580,7 +580,7 @@ class Shape(Handle[ResolvedShape]):
             ops.wire_from_wire_or_edge,
             result=WIRE_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.to_wire",
+            operation_id="zencad.geom.shape.to_wire",
         )
         return Wire._from_state(self.context, expression)
 
@@ -619,7 +619,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_VERTEX_SEQUENCE_SPEC,
             item_type=Vertex,
             item_spec=VERTEX_SPEC,
-            operation_id="zencad.typed.shape.vertices",
+            operation_id="zencad.geom.shape.vertices",
         )
 
     def native_vertices(self) -> ShapeList[Vertex]:
@@ -630,7 +630,7 @@ class Shape(Handle[ResolvedShape]):
             ops.edge_curve,
             result=CURVE_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.curve",
+            operation_id="zencad.geom.shape.curve",
         )
         return Curve._from_state(self.context, state)
 
@@ -660,13 +660,13 @@ class Shape(Handle[ResolvedShape]):
             ops.shape_endpoint,
             result=POINT3_SPEC,
             args=(self._state, False),
-            operation_id="zencad.typed.shape.endpoint.start",
+            operation_id="zencad.geom.shape.endpoint.start",
         )
         end = self.context._value_state(
             ops.shape_endpoint,
             result=POINT3_SPEC,
             args=(self._state, True),
-            operation_id="zencad.typed.shape.endpoint.end",
+            operation_id="zencad.geom.shape.endpoint.end",
         )
         return (
             Point3._from_state(self.context, start),
@@ -712,7 +712,7 @@ class Shape(Handle[ResolvedShape]):
             ops.face_surface,
             result=SURFACE_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.surface",
+            operation_id="zencad.geom.shape.surface",
         )
         return Surface._from_state(self.context, state)
 
@@ -731,13 +731,13 @@ class Shape(Handle[ResolvedShape]):
             ops.surface_center,
             result=POINT3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.surface_properties.center",
+            operation_id="zencad.geom.shape.surface_properties.center",
         )
         mass = self.context._value_state(
             ops.surface_mass,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.surface_properties.mass",
+            operation_id="zencad.geom.shape.surface_properties.mass",
         )
         return ShapeProperties(
             Point3._from_state(self.context, center),
@@ -749,13 +749,13 @@ class Shape(Handle[ResolvedShape]):
             ops.volume_center,
             result=POINT3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.volume_properties.center",
+            operation_id="zencad.geom.shape.volume_properties.center",
         )
         mass = self.context._value_state(
             ops.volume_mass,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.volume_properties.mass",
+            operation_id="zencad.geom.shape.volume_properties.mass",
         )
         return ShapeProperties(
             Point3._from_state(self.context, center),
@@ -945,7 +945,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_EDGE_SEQUENCE_SPEC,
             item_type=Edge,
             item_spec=EDGE_SPEC,
-            operation_id="zencad.typed.shape.edges",
+            operation_id="zencad.geom.shape.edges",
         )
 
     def wires(self) -> ShapeList[Wire]:
@@ -954,7 +954,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_WIRE_SEQUENCE_SPEC,
             item_type=Wire,
             item_spec=WIRE_SPEC,
-            operation_id="zencad.typed.shape.wires",
+            operation_id="zencad.geom.shape.wires",
         )
 
     def faces(self) -> ShapeList[Face]:
@@ -963,7 +963,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_FACE_SEQUENCE_SPEC,
             item_type=Face,
             item_spec=FACE_SPEC,
-            operation_id="zencad.typed.shape.faces",
+            operation_id="zencad.geom.shape.faces",
         )
 
     def shells(self) -> ShapeList[Shell]:
@@ -972,7 +972,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_SHELL_SEQUENCE_SPEC,
             item_type=Shell,
             item_spec=SHELL_SPEC,
-            operation_id="zencad.typed.shape.shells",
+            operation_id="zencad.geom.shape.shells",
         )
 
     def solids(self) -> ShapeList[Solid]:
@@ -981,7 +981,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_SOLID_SEQUENCE_SPEC,
             item_type=Solid,
             item_spec=SOLID_SPEC,
-            operation_id="zencad.typed.shape.solids",
+            operation_id="zencad.geom.shape.solids",
         )
 
     def compounds(self) -> ShapeList[Compound]:
@@ -990,7 +990,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_COMPOUND_SEQUENCE_SPEC,
             item_type=Compound,
             item_spec=COMPOUND_SPEC,
-            operation_id="zencad.typed.shape.compounds",
+            operation_id="zencad.geom.shape.compounds",
         )
 
     def compsolids(self) -> ShapeList[CompSolid]:
@@ -999,7 +999,7 @@ class Shape(Handle[ResolvedShape]):
             sequence_spec=_COMPSOLID_SEQUENCE_SPEC,
             item_type=CompSolid,
             item_spec=COMPSOLID_SPEC,
-            operation_id="zencad.typed.shape.compsolids",
+            operation_id="zencad.geom.shape.compsolids",
         )
 
     def mass(self) -> Scalar:
@@ -1007,7 +1007,7 @@ class Shape(Handle[ResolvedShape]):
             ops.mass,
             result=SCALAR_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.mass",
+            operation_id="zencad.geom.shape.mass",
         )
         return Scalar._from_state(self.context, state)
 
@@ -1016,7 +1016,7 @@ class Shape(Handle[ResolvedShape]):
             ops.center,
             result=POINT3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shape.center",
+            operation_id="zencad.geom.shape.center",
         )
         return Point3._from_state(self.context, state)
 
@@ -1072,7 +1072,7 @@ class Vertex(Shape):
             ops.vertex_point,
             result=POINT3_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.vertex.point",
+            operation_id="zencad.geom.vertex.point",
         )
         return Point3._from_state(self.context, state)
 
@@ -1203,7 +1203,7 @@ _GEOMETRY_TYPE_SEQUENCE_SPEC = cast(
     ResultSpec[tuple[str, ...]],
     ResultSpec.for_type(
         tuple,
-        type_id="zencad.typed.Sequence[GeomType].v1",
+        type_id="zencad.geom.Sequence[GeomType].v1",
         validator=lambda values: all(
             isinstance(value, str) and value in {kind.value for kind in GeomType}
             for value in values
@@ -1303,7 +1303,7 @@ class ShapeList(Generic[ShapeHandleT]):
                 index.start,
                 index.stop,
                 index.step,
-                operation_id="zencad.typed.shapelist.slice",
+                operation_id="zencad.geom.shapelist.slice",
             )
         if not isinstance(index, int) or isinstance(index, bool):
             raise TypeError("ShapeList indices must be integers or slices")
@@ -1337,7 +1337,7 @@ class ShapeList(Generic[ShapeHandleT]):
             return self._sequence(
                 selector_ops.filter_geometry_type,
                 criterion.value,
-                operation_id="zencad.typed.shapelist.filter.geometry_type",
+                operation_id="zencad.geom.shapelist.filter.geometry_type",
             )
         if isinstance(criterion, Axis):
             return self._filter_direction(
@@ -1362,7 +1362,7 @@ class ShapeList(Generic[ShapeHandleT]):
             values,
             _selector_tolerance(tolerance, "direction tolerance"),
             planar_only,
-            operation_id="zencad.typed.shapelist.filter.direction",
+            operation_id="zencad.geom.shapelist.filter.direction",
         )
 
     def normal_to(
@@ -1409,7 +1409,7 @@ class ShapeList(Generic[ShapeHandleT]):
             origin._state,
             _selector_direction(normal),
             _selector_tolerance(tolerance, "position tolerance"),
-            operation_id="zencad.typed.shapelist.filter.position",
+            operation_id="zencad.geom.shapelist.filter.position",
         )
 
     def sort_by(
@@ -1430,7 +1430,7 @@ class ShapeList(Generic[ShapeHandleT]):
             selector_ops.sort_axis,
             _selector_direction(direction),
             _selector_reverse(reverse),
-            operation_id="zencad.typed.shapelist.sort.axis",
+            operation_id="zencad.geom.shapelist.sort.axis",
         )
 
     def sort_by_distance(
@@ -1447,7 +1447,7 @@ class ShapeList(Generic[ShapeHandleT]):
             selector_ops.sort_distance,
             query._state,
             _selector_reverse(reverse),
-            operation_id="zencad.typed.shapelist.sort.distance",
+            operation_id="zencad.geom.shapelist.sort.distance",
         )
 
     def longer_than(self, threshold: ScalarInput) -> ShapeList[ShapeHandleT]:
@@ -1458,7 +1458,7 @@ class ShapeList(Generic[ShapeHandleT]):
         return self._sequence(
             selector_ops.filter_measure,
             _scalar_state(self._context, threshold),
-            operation_id="zencad.typed.shapelist.filter.longer_than",
+            operation_id="zencad.geom.shapelist.filter.longer_than",
         )
 
     def largest(self) -> ShapeHandleT:
@@ -1466,7 +1466,7 @@ class ShapeList(Generic[ShapeHandleT]):
 
         return self._item(
             selector_ops.largest,
-            operation_id="zencad.typed.shapelist.largest",
+            operation_id="zencad.geom.shapelist.largest",
         )
 
     def only(self) -> ShapeHandleT:
@@ -1474,7 +1474,7 @@ class ShapeList(Generic[ShapeHandleT]):
 
         return self._item(
             selector_ops.only,
-            operation_id="zencad.typed.shapelist.only",
+            operation_id="zencad.geom.shapelist.only",
         )
 
     def geometry_types(self) -> tuple[GeomType, ...]:
@@ -1482,7 +1482,7 @@ class ShapeList(Generic[ShapeHandleT]):
             selector_ops.sequence_geometry_types,
             result=_GEOMETRY_TYPE_SEQUENCE_SPEC,
             args=(self._state,),
-            operation_id="zencad.typed.shapelist.geometry_types",
+            operation_id="zencad.geom.shapelist.geometry_types",
         )
         values = (
             self._context._resolve(state) if isinstance(state, Expression) else state

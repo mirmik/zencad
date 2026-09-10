@@ -42,16 +42,16 @@ ShapeT = TypeVar("ShapeT", bound="Shape")
 
 QUATERNION_SPEC = ResultSpec.for_type(
     ops.QuaternionValue,
-    type_id="zencad.typed.Quaternion.v1",
+    type_id="zencad.geom.Quaternion.v1",
 )
 TRANSFORM_SPEC = ResultSpec.for_type(
     ops.TransformValue,
-    type_id="zencad.typed.Transform.v1",
+    type_id="zencad.geom.Transform.v1",
 )
 _AFFINE_TRANSFORM_SERIALIZER = AffineTransformSerializer()
 AFFINE_TRANSFORM_SPEC = ResultSpec.for_type(
     ops.AffineTransformValue,
-    type_id="zencad.typed.AffineTransform.v1",
+    type_id="zencad.geom.AffineTransform.v1",
     serializer=_AFFINE_TRANSFORM_SERIALIZER,
 )
 
@@ -97,7 +97,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
             selected_context = execution_context() if context is None else context
             self._bind(
                 selected_context,
-                QUATERNION_SPEC.validate(x, "zencad.typed.quaternion.construct"),
+                QUATERNION_SPEC.validate(x, "zencad.geom.quaternion.construct"),
             )
             return
         components = _components4(x, y, z, w)
@@ -113,7 +113,7 @@ class Quaternion(Handle[ops.QuaternionValue]):
         state: State[ops.QuaternionValue],
     ) -> Quaternion:
         if not isinstance(state, Expression):
-            state = QUATERNION_SPEC.validate(state, "zencad.typed.quaternion.bind")
+            state = QUATERNION_SPEC.validate(state, "zencad.geom.quaternion.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -222,7 +222,7 @@ class Transform(Handle[ops.TransformValue]):
         resolved = ops.identity_transform() if value is None else value
         self._bind(
             selected_context,
-            TRANSFORM_SPEC.validate(resolved, "zencad.typed.transform.construct"),
+            TRANSFORM_SPEC.validate(resolved, "zencad.geom.transform.construct"),
         )
 
     @classmethod
@@ -232,7 +232,7 @@ class Transform(Handle[ops.TransformValue]):
         state: State[ops.TransformValue],
     ) -> Transform:
         if not isinstance(state, Expression):
-            state = TRANSFORM_SPEC.validate(state, "zencad.typed.transform.bind")
+            state = TRANSFORM_SPEC.validate(state, "zencad.geom.transform.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -413,7 +413,7 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         if isinstance(rows, ops.AffineTransformValue):
             self._bind(
                 selected_context,
-                AFFINE_TRANSFORM_SPEC.validate(rows, "zencad.typed.affine.construct"),
+                AFFINE_TRANSFORM_SPEC.validate(rows, "zencad.geom.affine.construct"),
             )
             return
         if rows is None:
@@ -430,7 +430,7 @@ class AffineTransform(Handle[ops.AffineTransformValue]):
         state: State[ops.AffineTransformValue],
     ) -> AffineTransform:
         if not isinstance(state, Expression):
-            state = AFFINE_TRANSFORM_SPEC.validate(state, "zencad.typed.affine.bind")
+            state = AFFINE_TRANSFORM_SPEC.validate(state, "zencad.geom.affine.bind")
         value = cls.__new__(cls)
         value._bind(context, state)
         return value
@@ -677,7 +677,7 @@ def _matrix3x4_components(
 @operation(
     result=QUATERNION_SPEC,
     returns=Quaternion,
-    operation_id="zencad.typed.quaternion",
+    operation_id="zencad.geom.quaternion",
     operation_version="1",
     fold_literals=True,
 )
@@ -701,7 +701,7 @@ def quaternion(
 @operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.quaternion.coordinate",
+    operation_id="zencad.geom.quaternion.coordinate",
     operation_version="1",
     fold_literals=True,
 )
@@ -720,7 +720,7 @@ def _quaternion_coordinate(
 @operation(
     result=QUATERNION_SPEC,
     returns=Quaternion,
-    operation_id="zencad.typed.quaternion.axis_angle",
+    operation_id="zencad.geom.quaternion.axis_angle",
     operation_version="1",
     fold_literals=True,
 )
@@ -737,7 +737,7 @@ def quaternion_axis_angle(
 @operation(
     result=QUATERNION_SPEC,
     returns=Quaternion,
-    operation_id="zencad.typed.quaternion.compose",
+    operation_id="zencad.geom.quaternion.compose",
     operation_version="1",
     fold_literals=True,
 )
@@ -753,7 +753,7 @@ def _quaternion_compose(
 @operation(
     result=QUATERNION_SPEC,
     returns=Quaternion,
-    operation_id="zencad.typed.quaternion.inverse",
+    operation_id="zencad.geom.quaternion.inverse",
     operation_version="1",
     fold_literals=True,
 )
@@ -765,7 +765,7 @@ def _quaternion_inverse(value: Quaternion, /) -> Quaternion:
 @operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.quaternion.norm",
+    operation_id="zencad.geom.quaternion.norm",
     operation_version="1",
     fold_literals=True,
 )
@@ -777,7 +777,7 @@ def _quaternion_norm(value: Quaternion, /) -> Scalar:
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.quaternion.rotate_vector",
+    operation_id="zencad.geom.quaternion.rotate_vector",
     operation_version="1",
     fold_literals=True,
 )
@@ -794,7 +794,7 @@ def _quaternion_rotate_vector(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.identity",
+    operation_id="zencad.geom.transform.identity",
     operation_version="1",
     fold_literals=True,
 )
@@ -812,7 +812,7 @@ def transform(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.translation",
+    operation_id="zencad.geom.transform.translation",
     operation_version="1",
     fold_literals=True,
 )
@@ -836,7 +836,7 @@ def translation(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.rotation",
+    operation_id="zencad.geom.transform.rotation",
     operation_version="1",
     fold_literals=True,
 )
@@ -861,7 +861,7 @@ def rotation(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.scale",
+    operation_id="zencad.geom.transform.scale",
     operation_version="1",
     fold_literals=True,
 )
@@ -878,7 +878,7 @@ def scale(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.mirror",
+    operation_id="zencad.geom.transform.mirror",
     operation_version="1",
     fold_literals=True,
 )
@@ -899,7 +899,7 @@ def mirror(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.shortest_rotation",
+    operation_id="zencad.geom.transform.shortest_rotation",
     operation_version="1",
     fold_literals=True,
 )
@@ -920,7 +920,7 @@ def short_rotate(
 @operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.transform.scale_value",
+    operation_id="zencad.geom.transform.scale_value",
     operation_version="1",
     fold_literals=True,
 )
@@ -932,7 +932,7 @@ def _transform_scale(value: Transform, /) -> Scalar:
 @operation(
     result=QUATERNION_SPEC,
     returns=Quaternion,
-    operation_id="zencad.typed.transform.rotation_value",
+    operation_id="zencad.geom.transform.rotation_value",
     operation_version="1",
     fold_literals=True,
 )
@@ -944,7 +944,7 @@ def _transform_rotation(value: Transform, /) -> Quaternion:
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.transform.translation_value",
+    operation_id="zencad.geom.transform.translation_value",
     operation_version="1",
     fold_literals=True,
 )
@@ -956,7 +956,7 @@ def _transform_translation(value: Transform, /) -> Vector3:
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.compose",
+    operation_id="zencad.geom.transform.compose",
     operation_version="1",
     fold_literals=True,
 )
@@ -972,7 +972,7 @@ def _transform_compose(
 @operation(
     result=TRANSFORM_SPEC,
     returns=Transform,
-    operation_id="zencad.typed.transform.inverse",
+    operation_id="zencad.geom.transform.inverse",
     operation_version="1",
     fold_literals=True,
 )
@@ -984,7 +984,7 @@ def _transform_inverse(value: Transform, /) -> Transform:
 @operation(
     result=POINT3_SPEC,
     returns=Point3,
-    operation_id="zencad.typed.transform.point",
+    operation_id="zencad.geom.transform.point",
     operation_version="1",
     fold_literals=True,
 )
@@ -1001,7 +1001,7 @@ def _transform_point(
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.transform.vector",
+    operation_id="zencad.geom.transform.vector",
     operation_version="1",
     fold_literals=True,
 )
@@ -1018,7 +1018,7 @@ def _transform_vector(
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.transform.rotation_euler",
+    operation_id="zencad.geom.transform.rotation_euler",
     operation_version="1",
     fold_literals=True,
 )
@@ -1030,7 +1030,7 @@ def _transform_rotation_euler(value: Transform, /) -> Vector3:
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.transform.rotation_axis",
+    operation_id="zencad.geom.transform.rotation_axis",
     operation_version="1",
     fold_literals=True,
 )
@@ -1042,7 +1042,7 @@ def _transform_rotation_axis(value: Transform, /) -> Vector3:
 @operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.transform.rotation_angle",
+    operation_id="zencad.geom.transform.rotation_angle",
     operation_version="1",
     fold_literals=True,
 )
@@ -1054,7 +1054,7 @@ def _transform_rotation_angle(value: Transform, /) -> Scalar:
 @operation(
     result=AFFINE_TRANSFORM_SPEC,
     returns=AffineTransform,
-    operation_id="zencad.typed.affine.identity",
+    operation_id="zencad.geom.affine.identity",
     operation_version="1",
     fold_literals=True,
 )
@@ -1065,7 +1065,7 @@ def identity_affine_transform() -> AffineTransform:
 @operation(
     result=AFFINE_TRANSFORM_SPEC,
     returns=AffineTransform,
-    operation_id="zencad.typed.affine.matrix",
+    operation_id="zencad.geom.affine.matrix",
     operation_version="1",
     fold_literals=True,
 )
@@ -1084,7 +1084,7 @@ def affine(rows: Sequence[Sequence[float]], /) -> AffineTransform:
 @operation(
     result=AFFINE_TRANSFORM_SPEC,
     returns=AffineTransform,
-    operation_id="zencad.typed.affine.from_transform",
+    operation_id="zencad.geom.affine.from_transform",
     operation_version="1",
     fold_literals=True,
 )
@@ -1096,7 +1096,7 @@ def _affine_from_transform(value: Transform, /) -> AffineTransform:
 @operation(
     result=AFFINE_TRANSFORM_SPEC,
     returns=AffineTransform,
-    operation_id="zencad.typed.affine.scale_xyz",
+    operation_id="zencad.geom.affine.scale_xyz",
     operation_version="1",
     fold_literals=True,
 )
@@ -1144,7 +1144,7 @@ def scaleZ(
 @operation(
     result=AFFINE_TRANSFORM_SPEC,
     returns=AffineTransform,
-    operation_id="zencad.typed.affine.compose",
+    operation_id="zencad.geom.affine.compose",
     operation_version="1",
     fold_literals=True,
 )
@@ -1160,7 +1160,7 @@ def _affine_compose(
 @operation(
     result=AFFINE_TRANSFORM_SPEC,
     returns=AffineTransform,
-    operation_id="zencad.typed.affine.inverse",
+    operation_id="zencad.geom.affine.inverse",
     operation_version="1",
     fold_literals=True,
 )
@@ -1172,7 +1172,7 @@ def _affine_inverse(value: AffineTransform, /) -> AffineTransform:
 @operation(
     result=POINT3_SPEC,
     returns=Point3,
-    operation_id="zencad.typed.affine.point",
+    operation_id="zencad.geom.affine.point",
     operation_version="1",
     fold_literals=True,
 )
@@ -1189,7 +1189,7 @@ def _affine_point(
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.affine.vector",
+    operation_id="zencad.geom.affine.vector",
     operation_version="1",
     fold_literals=True,
 )
@@ -1206,7 +1206,7 @@ def _affine_vector(
 @operation(
     result=VECTOR3_SPEC,
     returns=Vector3,
-    operation_id="zencad.typed.affine.translation",
+    operation_id="zencad.geom.affine.translation",
     operation_version="1",
     fold_literals=True,
 )
@@ -1218,7 +1218,7 @@ def _affine_translation(value: AffineTransform, /) -> Vector3:
 @operation(
     result=SCALAR_SPEC,
     returns=Scalar,
-    operation_id="zencad.typed.affine.determinant",
+    operation_id="zencad.geom.affine.determinant",
     operation_version="1",
     fold_literals=True,
 )

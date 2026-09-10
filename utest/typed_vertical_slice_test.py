@@ -140,9 +140,9 @@ class TypedVerticalSliceTest(unittest.TestCase):
 
         self.assertEqual(len(store.records), 1)
         record = next(iter(store.records.values()))
-        self.assertEqual(record.result_type_id, "zencad.typed.Solid.v1")
+        self.assertEqual(record.result_type_id, "zencad.geom.Solid.v1")
         self.assertEqual(record.serializer_id, "zencad.shape.brep-artifact.v1")
-        self.assertEqual(record.value.payload, b"zencad.typed.shape\x00v1")
+        self.assertEqual(record.value.payload, b"zencad.geom.shape\x00v1")
         self.assertEqual(len(record.value.artifacts), 1)
         self.assertEqual(record.value.artifacts[0].name, "shape.brep")
         self.assertGreater(len(record.value.artifacts[0].data), 100)

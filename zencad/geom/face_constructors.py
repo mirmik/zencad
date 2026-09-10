@@ -103,7 +103,7 @@ def _as_scalar(value: float | Scalar) -> Scalar:
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.polygon",
+    operation_id="zencad.geom.polygon",
     operation_version="1",
 )
 def _polygon_face(points: Sequence[Point3], /) -> Face:
@@ -137,7 +137,7 @@ def polygon(
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.rectangle",
+    operation_id="zencad.geom.rectangle",
     operation_version="1",
 )
 def _rectangle_face(
@@ -366,7 +366,7 @@ def circle(
     result=FACE_SPEC,
     returns=_circle_result_type,
     select_result=_circle_result_spec,
-    operation_id="zencad.typed.face.circle",
+    operation_id="zencad.geom.face.circle",
     operation_version="1",
 )
 def circle(
@@ -434,7 +434,7 @@ def ellipse(
     result=FACE_SPEC,
     returns=_ellipse_result_type,
     select_result=_ellipse_result_spec,
-    operation_id="zencad.typed.face.ellipse",
+    operation_id="zencad.geom.face.ellipse",
     operation_version="1",
 )
 def ellipse(
@@ -451,7 +451,7 @@ def ellipse(
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.face.fill",
+    operation_id="zencad.geom.face.fill",
     operation_version="1",
 )
 def fill(shapes: Edge | Wire | Sequence[Edge | Wire], /) -> Face:
@@ -462,7 +462,7 @@ def fill(shapes: Edge | Wire | Sequence[Edge | Wire], /) -> Face:
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.face.interpolate2",
+    operation_id="zencad.geom.face.interpolate2",
     operation_version="1",
 )
 def interpolate2(
@@ -495,7 +495,7 @@ def interpolate2(
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.face.fix",
+    operation_id="zencad.geom.face.fix",
     operation_version="1",
 )
 def fix_face(shape: Face, /) -> Face:
@@ -507,7 +507,7 @@ def fix_face(shape: Face, /) -> Face:
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.face.infplane",
+    operation_id="zencad.geom.face.infplane",
     operation_version="1",
 )
 def infplane() -> Face:
@@ -517,7 +517,7 @@ def infplane() -> Face:
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.face.ruled",
+    operation_id="zencad.geom.face.ruled",
     operation_version="1",
 )
 def ruled(first: Edge, second: Edge, /) -> Face:
@@ -529,7 +529,7 @@ def ruled(first: Edge, second: Edge, /) -> Face:
 @operation(
     result=SHAPE_SPEC,
     returns=Shape,
-    operation_id="zencad.typed.face.widewire",
+    operation_id="zencad.geom.face.widewire",
     operation_version="1",
 )
 def widewire(
@@ -548,7 +548,7 @@ def widewire(
 @operation(
     result=FACE_SPEC,
     returns=Face,
-    operation_id="zencad.typed.shape.fill",
+    operation_id="zencad.geom.shape.fill",
     operation_version="1",
 )
 def _fill_shape(shape: Shape, /) -> Face:
