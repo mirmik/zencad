@@ -147,6 +147,8 @@
 <p><img src="../images/generic/loft0.png" alt="" /> <img src="../images/generic/loft1.png" alt="" />  </br>
 <img src="../images/generic/loft2.png" alt="" /> <img src="../images/generic/loft3.png" alt="" />  </br>
 <img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" />  </p>
+
+<p><code>loft(..., shell=False)</code> returns <code>Solid</code> and requires closed profiles to construct a valid body. Use <code>shell=True</code> for open profiles; the result is <code>Shell</code>. A <code>Solid</code> handle alone does not guarantee valid geometry: check <code>result.validate()</code>.</p>
 </article>
 </div>
 </body>

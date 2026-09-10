@@ -149,6 +149,12 @@ The wall thickness <code>t</code> is also specified. If the wall thickness is po
 </div>
 
 <p><img src="../images/generic/thicksolid0.png" alt="" /> <img src="../images/generic/thicksolid1.png" alt="" /></p>
+
+<h2 id="result-type-and-references">Result type and references</h2>
+
+<p><code>fillet()</code> and <code>chamfer()</code> return <code>Shape</code>; inspect their contents using <code>faces()</code> and <code>solids()</code>. The result handle remains <code>Shape</code> even when it contains one solid.</p>
+
+<p>Pass a list of <code>point3(...)</code> or <code>Vertex</code> values to select nearby elements, or a list of <code>Edge</code> objects from the original body to select edges explicitly. Do not mix edges and points. Plain numeric tuples inside the reference list are not supported; use <code>point3</code>. <code>None</code> selects all elements, while an empty list raises <code>ValueError</code>. Edges from another model are rejected. For a planar face fillet, select vertices or points.</p>
 </article>
 </div>
 </body>

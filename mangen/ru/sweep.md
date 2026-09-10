@@ -162,3 +162,13 @@ revol2(profile=square(10, center=True), r=20, n=60, yaw=(0,deg(360)), roll=(0,de
 ```
 
 ![](../images/generic/revol20.png)
+
+:ru
+## Типы результатов
+
+`extrude()` и `revol()` возвращают `Shape`; форму с единственным телом можно извлечь через `result.solids().only()`. `pipe_shell(..., solid=True)` возвращает `Solid` и требует замкнутых профилей. При `solid=False` результат имеет тип `Shell`, допустимы открытые профили. `revol2()` с параметрами приведённого примера возвращает `Solid`.
+:en
+## Result types
+
+`extrude()` and `revol()` return `Shape`; extract a single solid with `result.solids().only()`. `pipe_shell(..., solid=True)` returns `Solid` and requires closed profiles. With `solid=False`, it returns `Shell` and permits open profiles. `revol2()` with the parameters of the example above returns `Solid`.
+::

@@ -107,3 +107,17 @@ thicksolid(model, t=thickness, refs=referencedPoints)
 ```
 
 ![](../images/generic/thicksolid0.png) ![](../images/generic/thicksolid1.png)
+
+:ru
+## Тип результата и выбор элементов
+
+`fillet()` и `chamfer()` возвращают `Shape`; тип содержимого проверяется через `faces()` и `solids()`. Даже для одного полученного тела оболочка результата остаётся `Shape`.
+
+Для выбора ближайших элементов передавайте список `point3(...)` или `Vertex`, а для явного выбора рёбер — список `Edge` исходного тела. Смешивать рёбра с точками нельзя. Обычные числовые кортежи внутри списка ссылок не поддерживаются; используйте `point3`. `None` выбирает все элементы, пустой список вызывает `ValueError`. Рёбра другой модели отвергаются. Для скругления плоской грани выбирайте вершины или точки.
+:en
+## Result type and references
+
+`fillet()` and `chamfer()` return `Shape`; inspect their contents using `faces()` and `solids()`. The result handle remains `Shape` even when it contains one solid.
+
+Pass a list of `point3(...)` or `Vertex` values to select nearby elements, or a list of `Edge` objects from the original body to select edges explicitly. Do not mix edges and points. Plain numeric tuples inside the reference list are not supported; use `point3`. `None` selects all elements, while an empty list raises `ValueError`. Edges from another model are rejected. For a planar face fillet, select vertices or points.
+::

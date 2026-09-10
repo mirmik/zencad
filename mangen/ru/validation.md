@@ -18,7 +18,7 @@ healed.assert_valid()
 
 Проверка не исправляет геометрию. `clean()` удаляет избыточные границы одной поверхности; `heal()` выполняет ограниченное допусками исправление OCCT. Обе операции создают новый результат, не изменяя исходник. `heal()` не гарантирует успеха — проверяйте возвращённую форму. `sew()` остаётся отдельной операцией сшивки.
 
-Валидная открытая оболочка не обязательно является замкнутым телом. Для замкнутости используйте `is_closed()`, для автоматической проверки итогового тела — `zencad check model.py --valid --solid`. [Headless workflow](headless.html), [формат отчёта](../development/shape-validation.md).
+Валидная открытая оболочка не является замкнутым телом. `is_closed()` проверяет замкнутость только `Edge` и `Wire`; для `Shell` и `Solid` этот метод не поддерживается. Для итогового тела проверяйте одновременно валидность и наличие solid-компонентов: `zencad check model.py --valid --solid`. [Headless workflow](headless.html), [формат отчёта](../development/shape-validation.md).
 :en
 # Geometry validation and repair
 
@@ -39,5 +39,5 @@ healed.assert_valid()
 
 Validation does not repair geometry. `clean()` removes redundant same-domain boundaries; `heal()` applies tolerance-bounded OCCT healing. Both create a new result without mutating the source. Healing is best-effort: validate its result. `sew()` remains a separate sewing operation.
 
-A valid open shell is not necessarily a closed solid. Use `is_closed()` for closure, or `zencad check model.py --valid --solid` for automated checks of the final body. [Headless workflow](headless.html), [report format](../development/shape-validation.md).
+A valid open shell is not a closed solid. `is_closed()` checks closure only for `Edge` and `Wire`; it does not support `Shell` or `Solid`. Check both validity and solid components for a final body: `zencad check model.py --valid --solid`. [Headless workflow](headless.html), [report format](../development/shape-validation.md).
 ::

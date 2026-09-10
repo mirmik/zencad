@@ -89,7 +89,7 @@
 
 <p>Validation does not repair geometry. <code>clean()</code> removes redundant same-domain boundaries; <code>heal()</code> applies tolerance-bounded OCCT healing. Both create a new result without mutating the source. Healing is best-effort: validate its result. <code>sew()</code> remains a separate sewing operation.</p>
 
-<p>A valid open shell is not necessarily a closed solid. Use <code>is_closed()</code> for closure, or <code>zencad check model.py --valid --solid</code> for automated checks of the final body. <a href="headless.html">Headless workflow</a>, <a href="../development/shape-validation.md">report format</a>.</p>
+<p>A valid open shell is not a closed solid. <code>is_closed()</code> checks closure only for <code>Edge</code> and <code>Wire</code>; it does not support <code>Shell</code> or <code>Solid</code>. Check both validity and solid components for a final body: <code>zencad check model.py --valid --solid</code>. <a href="headless.html">Headless workflow</a>, <a href="../development/shape-validation.md">report format</a>.</p>
 </article>
 </div>
 </body>

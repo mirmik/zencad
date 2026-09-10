@@ -76,3 +76,9 @@ shell = loft(profiles, smooth=True, shell=True)
 ![](../images/generic/loft0.png) ![](../images/generic/loft1.png)  </br>
 ![](../images/generic/loft2.png) ![](../images/generic/loft3.png)  </br>
 ![](../images/generic/loft4.png) ![](../images/generic/loft5.png)  
+
+:ru
+`loft(..., shell=False)` возвращает `Solid` и требует замкнутых профилей для построения корректного тела. Для открытых профилей используйте `shell=True`, результат — `Shell`. Наличие типа `Solid` само по себе не гарантирует корректность геометрии: проверяйте `result.validate()`.
+:en
+`loft(..., shell=False)` returns `Solid` and requires closed profiles to construct a valid body. Use `shell=True` for open profiles; the result is `Shell`. A `Solid` handle alone does not guarantee valid geometry: check `result.validate()`.
+::

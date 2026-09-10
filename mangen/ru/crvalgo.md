@@ -97,10 +97,12 @@ Return the parameter corresponding to the point on the curve closest to the poin
 :ru
 ## Равнораспределённые точки кривой.
 Вернуть массив точек, равномерно распределённых на кривой. Параметр _npnts_ - задаёт количество точек.
+Количество точек должно быть целым числом не меньше двух. Обе границы диапазона задаются вместе или обе опускаются; результат включает его концы. Равномерность относится к длине вдоль кривой, а не к параметру.
 Параметры umin, umax задают диапазон на множестве параметров в котором будет проведена процедура распределения.
 :en
 ## Equidistant curve points.
 Return an array of points equally spaced along the curve. The _npnts_ parameter sets the number of points.
+The count must be an integer of at least two. Supply both range bounds together or omit both; the endpoints are included. Spacing is uniform along arc length, not in parameter values.
 The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out. 
 ::
 

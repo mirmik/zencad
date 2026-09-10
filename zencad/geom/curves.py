@@ -334,8 +334,8 @@ class Curve(Handle[ops.CurveValue]):
         end: ScalarInput | None = None,
         /,
     ) -> list[Scalar]:
-        if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
-            raise ValueError("uniform sample count must be a positive int")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 2:
+            raise ValueError("uniform sample count must be an int >= 2")
         if (start is None) != (end is None):
             raise TypeError("uniform start and end must be provided together")
         expression = self.context._expression(

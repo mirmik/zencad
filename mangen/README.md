@@ -42,3 +42,10 @@ parsed and calls with known receivers are checked using `inspect.signature`.
 This does not prove runtime behavior for every possible argument or resolve
 locally constructed receiver types. When adding reference examples, update the
 mapping; use standalone tutorial snippets for examples needing separate files.
+
+`check_contracts.py` executes symbolic reference calls on fresh concrete fixtures,
+checks exact result types and validates resulting shapes. Alternative spellings
+run independently, so a builder operation is not accidentally repeated at the
+same point. It also checks boundary behavior (empty references, foreign edges,
+open shell profiles, sample counts) in immediate and deferred modes with cache
+disabled. `CASES` refers to the same zero-based Python fences as `EXAMPLES`.

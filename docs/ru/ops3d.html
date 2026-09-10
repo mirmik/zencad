@@ -147,6 +147,8 @@
 <p><img src="../images/generic/loft0.png" alt="" /> <img src="../images/generic/loft1.png" alt="" />  </br>
 <img src="../images/generic/loft2.png" alt="" /> <img src="../images/generic/loft3.png" alt="" />  </br>
 <img src="../images/generic/loft4.png" alt="" /> <img src="../images/generic/loft5.png" alt="" />  </p>
+
+<p><code>loft(..., shell=False)</code> возвращает <code>Solid</code> и требует замкнутых профилей для построения корректного тела. Для открытых профилей используйте <code>shell=True</code>, результат — <code>Shell</code>. Наличие типа <code>Solid</code> само по себе не гарантирует корректность геометрии: проверяйте <code>result.validate()</code>.</p>
 </article>
 </div>
 </body>

@@ -160,4 +160,6 @@ if __name__ == "__main__":
     check_links()
     from check_reference import check_reference
     check_reference()
+    from check_contracts import check_contracts
+    check_contracts()
     check_examples()

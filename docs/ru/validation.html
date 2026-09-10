@@ -89,7 +89,7 @@
 
 <p>Проверка не исправляет геометрию. <code>clean()</code> удаляет избыточные границы одной поверхности; <code>heal()</code> выполняет ограниченное допусками исправление OCCT. Обе операции создают новый результат, не изменяя исходник. <code>heal()</code> не гарантирует успеха — проверяйте возвращённую форму. <code>sew()</code> остаётся отдельной операцией сшивки.</p>
 
-<p>Валидная открытая оболочка не обязательно является замкнутым телом. Для замкнутости используйте <code>is_closed()</code>, для автоматической проверки итогового тела — <code>zencad check model.py --valid --solid</code>. <a href="headless.html">Headless workflow</a>, <a href="../development/shape-validation.md">формат отчёта</a>.</p>
+<p>Валидная открытая оболочка не является замкнутым телом. <code>is_closed()</code> проверяет замкнутость только <code>Edge</code> и <code>Wire</code>; для <code>Shell</code> и <code>Solid</code> этот метод не поддерживается. Для итогового тела проверяйте одновременно валидность и наличие solid-компонентов: <code>zencad check model.py --valid --solid</code>. <a href="headless.html">Headless workflow</a>, <a href="../development/shape-validation.md">формат отчёта</a>.</p>
 </article>
 </div>
 </body>

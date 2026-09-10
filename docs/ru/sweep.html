@@ -214,6 +214,10 @@
 </div>
 
 <p><img src="../images/generic/revol20.png" alt="" /></p>
+
+<h2 id="типы-результатов">Типы результатов</h2>
+
+<p><code>extrude()</code> и <code>revol()</code> возвращают <code>Shape</code>; форму с единственным телом можно извлечь через <code>result.solids().only()</code>. <code>pipe_shell(..., solid=True)</code> возвращает <code>Solid</code> и требует замкнутых профилей. При <code>solid=False</code> результат имеет тип <code>Shell</code>, допустимы открытые профили. <code>revol2()</code> с параметрами приведённого примера возвращает <code>Solid</code>.</p>
 </article>
 </div>
 </body>
