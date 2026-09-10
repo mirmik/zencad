@@ -1,11 +1,6 @@
-:ru
 # Анализ кривых
-:en
-# Curve analysis 
-::
 
 -------------------------
-:ru
 ## Теоретическая сводка.
 Общепризнанным методом задания кривых в системах вычислительной геометрии является параметрический метод.
 
@@ -13,47 +8,21 @@
 _P = F(U) : P ∈ R^N, U ∈ R^1[U\_min, U\_max]_, где _F_ - функтор отображения, а _N_ - мерность пространства.
 
 На практике это означает, что любая точка _P_ на кривой имеет соответствующее ей значение скалярного параметра _U_. Следует понимать, что в общем случае функция связывающая параметр _U_ в точке _P_ и длину кривой из точки начала _O_ до точки _P_ не линейна. Поэтому вычисления над кривой в терминах длин требуют применения специального математического аппарата (реализованного в виде методов настоящей библиотеки).
-:en
-## Theoretical summary.
-The generally accepted method for defining curves in computational geometry systems is the parametric method.
-
-According to him, the curve is given by a continuous mapping of the scalar set _[U \_min, U \_max]_ onto a space of a given dimension.
-_P = F (U): P ∈ R ^ N, U ∈ R ^ 1 [U \_min, U \_max]_, where _F_ is the mapping functor and _N_ is the dimension of the space.
-
-In practice, this means that any point _P_ on the curve has a corresponding value of the scalar parameter _U_. It should be understood that, in the general case, the function connecting the parameter _U_ at the point _P_ and the length of the curve from the start point _O_ to the point _P_ is not linear. Therefore, calculations over a curve in terms of lengths require the use of a special mathematical apparatus (implemented in the form of methods in this library). 
-::
 
 -----------------
-:ru
 ## Классы кривых.
 В ZenCad существуют следующие классы реализующие методы анализа кривых:
 
 * Edge (порождается инструментами segment, interpolate, bezier, bspline и т.д.)
 * Curve
 * Curve2
-:en
-## Classes of curves.
-ZenCad has the following classes that implement curve analysis methods:
-
-* Edge (spawned by segment, interpolate, bezier, bspline, etc.)
-* Curve
-* Curve2 
-::
 
 ---
-:ru
 ## Крайние точки и диапазон конечной кривой.
 Определение концевых точек конечных кривых.
 
 Метод _endpoints_ возвращает объекты крайних точек. 
 Параметры этих точек могут быть запрошены методом _range_.
-:en
-## End points and end curve range.
-Determines the endpoints of the end curves.
-
-The _endpoints_ method returns endpoint objects.
-The parameters of these points can be queried using the _range_ method. 
-::
 
 ```python 
 curve.endpoints() # -> tuple[Point3, Point3]
@@ -68,43 +37,21 @@ disp([crv, s, f])
 ![](../images/generic/endpoints0.png)
 
 --------------
-:ru
 ## curve.d0(u)
 Вернуть точку, соответствующую параметру _u_.
-:en
-## curve.d0 (u)
-Return the point corresponding to the _u_ parameter. 
-::
 
 ---------------
-:ru
 ## curve.d1(u)
 Вернуть вектор первой производной, соответствующие параметру _u_.
-:en
-## curve.d1 (u)
-Return the vector of the first derivative matching the _u_ parameter. 
-::
 
-:ru
 ## curve.lower_distance_parameter(pnt)
 Вернуть параметр, соответствующий точке кривой наиболее близкой к точке pnt. 
-:en
-## curve.lower_distance_parameter(pnt)
-Return the parameter corresponding to the point on the curve closest to the point pnt. 
-::
 
 -------------------------------------------
-:ru
 ## Равнораспределённые точки кривой.
 Вернуть массив точек, равномерно распределённых на кривой. Параметр _npnts_ - задаёт количество точек.
 Количество точек должно быть целым числом не меньше двух. Обе границы диапазона задаются вместе или обе опускаются; результат включает его концы. Равномерность относится к длине вдоль кривой, а не к параметру.
 Параметры umin, umax задают диапазон на множестве параметров в котором будет проведена процедура распределения.
-:en
-## Equidistant curve points.
-Return an array of points equally spaced along the curve. The _npnts_ parameter sets the number of points.
-The count must be an integer of at least two. Supply both range bounds together or omit both; the endpoints are included. Spacing is uniform along arc length, not in parameter values.
-The parameters umin, umax set the range on the set of parameters in which the distribution procedure will be carried out. 
-::
 
 ```python3
 curve.uniform(npnts, U_min, U_max) # -> list[Scalar]
@@ -123,15 +70,9 @@ disp(pnts + [crv])
 
 ![](../images/generic/uniform_points0.png)
 
-:ru
 ## Двумерные кривые
 
 У `Curve2` свой интерфейс: `point(u)` возвращает `Point2`, `tangent(u)` — `Vector2` первой производной, `range()` — `Interval`. Для ограничения диапазона используйте `trim(start, end)`. Методы `d0`, `d1`, `endpoints` и `uniform_points`, описанные выше для `Edge` и `Curve`, не входят в интерфейс `Curve2`.
-:en
-## Two-dimensional curves
-
-`Curve2` has its own interface: `point(u)` returns `Point2`, `tangent(u)` returns the first derivative as `Vector2`, and `range()` returns `Interval`. Use `trim(start, end)` to restrict its domain. The `d0`, `d1`, `endpoints`, and `uniform_points` methods described above for `Edge` and `Curve` are not part of the `Curve2` interface.
-::
 
 ```python
 from zencad import *

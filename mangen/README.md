@@ -1,8 +1,13 @@
 # Building the ZenCad manual
 
-The bilingual source lives in `ru/*.md`: `:ru` and `:en` select language blocks,
-`::` resumes shared content. Indentation inside code fences is preserved. Navigation
-is in `ru/nav.md` and `en/nav.md`; generated HTML lives in `docs/ru` and `docs/en`.
+The manual has two independent source trees: `ru/*.md` for Russian and
+`en/*.md` for English. Each page is ordinary Markdown; matching translations
+have the same filename, for example `ru/kinematic.md` and `en/kinematic.md`.
+Edit each language directly, including its code examples. When changing API
+documentation or examples, update both versions. The build checks that every
+page has a counterpart in the other language; it does not check translation
+accuracy. Indentation inside code fences is preserved. Navigation is in
+`ru/nav.md` and `en/nav.md`; generated HTML lives in `docs/ru` and `docs/en`.
 
 From the repository root, in a development environment:
 

@@ -4,7 +4,7 @@ import ast
 import math
 import re
 
-from main import ROOT as MANGEN, localized
+from main import ROOT as MANGEN
 
 # Each symbolic block is run statement-by-statement with fresh geometry. This
 # preserves the intended meaning of alternative spellings (especially builders).
@@ -90,7 +90,7 @@ def check_symbolic_calls():
     failures=[]
     for language in ('ru','en'):
         for page,cases in CASES.items():
-            source=localized((MANGEN/'ru'/f'{page}.md').read_text(),language)
+            source=(MANGEN/language/f'{page}.md').read_text(encoding='utf-8')
             blocks=re.findall(r'```python\n(.*?)```',source,re.S)
             for index,types in cases.items():
                 statements=ast.parse(blocks[index]).body

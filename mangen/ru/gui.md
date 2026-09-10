@@ -1,68 +1,33 @@
-:ru
 # Графический интерфейс, основные моменты.
-:en
-# Graphical interface, highlights. 
-::
 
 ![gui.png](../images/gui.png)
 
 ---
-:ru
 ## Вызов
 Окно графического интерфейса может быть вызвано следующими способами:
 
 * Вызов `show()` в Python-скрипте открывает самостоятельный viewer в процессе скрипта; полный редактор запускается командами ниже.
 * Выполнение `python3 -m zencad` в среде терминала. (usage: `python3 -m zencad [filepath]`)
 * Вызов утилиты командной строки `zencad` (usage: `zencad [filepath]`)
-:en
-## Call
-The GUI window can be invoked in the following ways:
-
-* Calling `show()` in a Python script opens a standalone viewer in that process; the commands below start the full editor.
-* Executing `python3 -m zencad` in a terminal environment. (usage: `python3 -m zencad [filepath]`)
-* Call the command line utility `zencad` (usage:` zencad [filepath] `) 
-::  
 
 ---
-:ru
 ## Обновление модели по обновлению файла источника
 Визуализатор отслеживает изменения файла, источника геометрии. По обновлению источника, программа автоматически начинает перевыполнение скрипта. Редактор запускает отдельного исполнителя скрипта и получает снимок сцены. Сам viewer и камера сохраняются между пересчётами. При ошибке остаётся видимым последний успешный результат. См. [«Внутренняя кухня»](internal.html).
-:en
-## Updating the model by updating the source file
-The renderer keeps track of changes in the file, the source of the geometry. When the source is updated, the program automatically starts re-executing the script. The editor starts a separate script runner and receives a scene snapshot. The viewer and camera persist across evaluations. On failure, the last successful result remains visible. See [ZenCad internals](internal.html).
-::
 
 ---
-:ru
 ## Встроенный текстовый редактор
 Визуализатор имеет встроенный виджет текстового редактора, который может быть использован для быстрого редактирования или проведения экспериментов. Отображение редактора `View/'Hide editor'`
-:en
-## Built-in text editor
-The visualizer has a built-in text editor widget that can be used for quick editing or experimentation. Show editor `View/'Hide editor'`
-::
 
 ---
-:ru
 ## Встроенная консоль
 ZenCad также ретранслирует вывод терминала на встроенную консоль. Отображение консоли `View/'Hide console'`.
 Это может использоваться в случае, когда вывод основного терминала недоступен.
-:en
-## Built-in console
-ZenCad also relays the terminal output to the embedded console. Show console `View/'Hide console'`.
-This can be used when the main terminal output is not available. 
-::
 
 ---
-:ru
 ## Маркеры, определение координат
 Для установки маркеров следует используются клавиши `Q(F1)`, `W(F2)`. После установки координаты маркера выводятся в соответствующем поле. Если установлены оба маркера, дистанция между ними отображается в поле Distance.
-:en
-## Markers, determination of coordinates
-To set markers, use the keys `Q (F1)`, `W (F2)`. After setting, the coordinates of the marker are displayed in the corresponding field. If both markers are set, the distance between them is displayed in the Distance field. 
-::
 
 ---
-:ru
 ## 3D навигация
 Вращение: MouseLeftClick/Alt + MouseMove  
 Смещение: MouseMiddleClick/MouseRightClick/Shift + MouseMove
@@ -73,15 +38,3 @@ Blender, FreeCAD CAD, Maya или Custom. В Custom отдельно назна�
 Rotate, Pan и Zoom. Там же можно инвертировать колесо и направление вращения.
 
 Визуализатор поддерживает два режима ориентации. Ортогональную ориентацию (ось Z всегда направлена вверх) и режим свободного вращения. Переключение между ними - `Navigation/'Axionometric view'`, `Navigation/'Free rotation view'`
-:en
-## 3D navigation
-Rotation: MouseLeftClick / Alt + MouseMove
-Offset: MouseMiddleClick / MouseRightClick / Shift + MouseMove
-Scaling: PgUp / PgDown / MouseWheel
-
-The navigation preset can be selected in `Edit/Settings`: ZenCad, Legacy
-ZenCad, Blender, FreeCAD CAD, Maya, or Custom. Custom assigns separate Rotate,
-Pan, and Zoom gestures. Wheel zoom and orbit direction can also be inverted.
-
-The renderer supports two orientation modes. Orthogonal orientation (Z axis is always upward) and free rotation mode. Switch between them - `Navigation/'Axionometric view'`, `Navigation / 'Free rotation view'`. 
-::

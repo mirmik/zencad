@@ -1,0 +1,61 @@
+# Reference geometry 
+
+---
+## Offset
+By displacing the shells, builds a thickened / thinned body based on the prototype _proto_ and the radius of the thickening _r_. If _r_ is positive, the shell is shifted outward, if negative - inward. 
+
+Сигнатура:
+```python
+offset(proto, distance)
+```
+
+Пример:
+```python
+offset(cone(r1=15,r2=10,h=20), 5)
+```
+![](../images/generic/offset0.png)
+
+---
+## Ruled surface
+Draws a face defined by a ruled surface based on the lines _a_, _b_. 
+
+Сигнатура:
+```python
+ruled(a, b)
+```
+
+Пример:
+```python
+ruled(circle(r=20, wire=True), circle(r=20, wire=True).up(20))
+ruled(circle(r=20, wire=True), circle(r=20, wire=True).rotZ(math.pi/2*3).up(20))
+ruled(
+    interpolate([(0,0),(-4,10),(4,20),(-6,30),(6,40)]),
+    interpolate([(0,0),(-2,10),(2,20),(-4,30),(4,40)]).up(20),
+)
+```
+
+![](../images/generic/ruled0.png) ![](../images/generic/ruled1.png)   </br>
+![](../images/generic/ruled2.png) ![](../images/generic/ruled3.png)
+
+---
+## Binding
+Constructing a shell on the _profiles_ wireframe array. When the _shell_ option is activated, a shell is built instead of a solid body. Activating the _smooth_ option changes the ruled surface mode to a smooth approximation. When approximation is active, the _maxdegree_ option limits the maximum degree of the polynomial.
+
+Сигнатура:
+```python
+loft(profiles, smooth=False, shell=False, maxdegree=4)
+```
+
+Пример:
+```python
+profiles = [circle(10, wire=True), circle(15, wire=True).up(20),
+            circle(8, wire=True).up(40)]
+body = loft(profiles, smooth=True)
+shell = loft(profiles, smooth=True, shell=True)
+```
+
+![](../images/generic/loft0.png) ![](../images/generic/loft1.png)  </br>
+![](../images/generic/loft2.png) ![](../images/generic/loft3.png)  </br>
+![](../images/generic/loft4.png) ![](../images/generic/loft5.png)  
+
+`loft(..., shell=False)` returns `Solid` and requires closed profiles to construct a valid body. Use `shell=True` for open profiles; the result is `Shell`. An open profile with `shell=False` raises `ValueError` identifying the profile. This check runs when the operation is evaluated; use `result.validate()` to detect other geometry defects.

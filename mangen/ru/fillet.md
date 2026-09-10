@@ -1,25 +1,12 @@
-:ru
 # Топологически зависимые преобразования
 
 Скругление, фаска и уклон требуют выбора элементов топологии модели. Их можно выбирать по геометрическим свойствам через [селекторы](selectors.html) или передавать сами рёбра и грани. Для скруглений и фасок поддерживаются также ближайшие точки: выбирается элемент с минимальным расстоянием до точки.
-:en
-# Topologically dependent transformations
-
-Fillets, chamfers and drafts require selecting model topology. Use [geometric selectors](selectors.html) or pass edges and faces directly. Fillets and chamfers also accept reference points, selecting the nearest topology element.
-::
 
 ---
-:ru
 ## Fillet
 Операция скругления тела. 
 Если тело объёмное - модификации подвергаются ребра. Если плоское - вершины.
 Скругления задаются радиусом `r` и масивом ближайших точек `refs`. Если `refs == None`, выбранными считаются все элементы топологии. 
-:en
-## Fillet
-Body rounding operation.
-If the body is solid, the edges are modified. If flat - tops.
-Fillets are specified by radius `r` and an array of nearest points`refs`. If `refs == None`, all elements of the topology are considered selected. 
-::
 
 ```python
 fillet(model, radius, referencedPoints)
@@ -32,17 +19,10 @@ model.fillet(radius)
 ![](../images/generic/fillet4.png) ![](../images/generic/fillet5.png)  
 
 ---
-:ru
 ## Chamfer
 Операция взятия фаски тела. В отличие от скругления применяется только к объёмным телам.
 Фаска задаётся расстоянием `r`, взятым от ребра до линии фаски и масивом ближайших точек `refs`. Если `refs == None`, выбранными считаются все элементы топологии. 
 
-:en
-## Chamfer
-Body chamfering operation. Unlike rounding, it is applied only to solid bodies.
-The chamfer is specified by the distance `r` taken from the edge to the chamfer line and an array of the nearest points` refs`. If `refs == None`, all elements of the topology are considered selected.
-
-::
 
 ```python
 chamfer(model, radius, referencedPoints)
@@ -51,7 +31,6 @@ chamfer(model, radius, referencedPoints)
 ![](../images/generic/chamfer2.png) ![](../images/generic/chamfer3.png)
 
 ---
-:ru
 ## Уклон граней (Draft)
 
 `draft` наклоняет выбранные грани относительно нейтральной плоскости. Это
@@ -63,17 +42,6 @@ chamfer(model, radius, referencedPoints)
 начало координат перпендикулярно направлению. `neutral` также принимает плоскую
 грань или пару `(origin, normal)`. Выбранные грани должны принадлежать исходному
 телу и быть плоскими, цилиндрическими или коническими.
-:en
-## Face draft
-
-`draft` inclines selected faces around a neutral plane, commonly so a molded
-part can be released from its tooling. A positive angle removes material along
-the pull direction; a negative angle adds it. The neutral plane remains fixed.
-
-The pull direction defaults to `+Z`, with an origin plane perpendicular to it.
-`neutral` also accepts a planar face or an `(origin, normal)` pair. Selected
-faces must belong to the source body and be planar, cylindrical, or conical.
-::
 
 ```python
 body = box(20)
@@ -90,17 +58,10 @@ midplane = draft(
 ```
 
 ---
-:ru
 ## Thicksolid
 Операция создания тонкостенного объёмного тела.
 Задаётся прототипной моделью `shp` и массивом точек, ближайших к удаляемым граням `refs`.
 Также задаётся толщина стенок `t`. Если толщина стенок положительная, стенки наращиваются наружу. Если отрицательная - внутрь.
-:en
-## Thicksolid
-The operation of creating a thin-walled volumetric body.
-Defined by the prototype model `shp` and an array of points closest to the removed faces` refs`.
-The wall thickness `t` is also specified. If the wall thickness is positive, the walls grow outward. If negative - inward. 
-::
 
 ```python
 thicksolid(model, t=thickness, refs=referencedPoints)
@@ -108,16 +69,8 @@ thicksolid(model, t=thickness, refs=referencedPoints)
 
 ![](../images/generic/thicksolid0.png) ![](../images/generic/thicksolid1.png)
 
-:ru
 ## Тип результата и выбор элементов
 
 `fillet()` и `chamfer()` возвращают `Shape`; тип содержимого проверяется через `faces()` и `solids()`. Даже для одного полученного тела оболочка результата остаётся `Shape`.
 
 Для выбора ближайших элементов передавайте список `point3(...)` или `Vertex`, а для явного выбора рёбер — список `Edge` исходного тела. Смешивать рёбра с точками нельзя. Обычные числовые кортежи внутри списка ссылок не поддерживаются; используйте `point3`. `None` выбирает все элементы, пустой список вызывает `ValueError`. Рёбра другой модели отвергаются. Для скругления плоской грани выбирайте вершины или точки.
-:en
-## Result type and references
-
-`fillet()` and `chamfer()` return `Shape`; inspect their contents using `faces()` and `solids()`. The result handle remains `Shape` even when it contains one solid.
-
-Pass a list of `point3(...)` or `Vertex` values to select nearby elements, or a list of `Edge` objects from the original body to select edges explicitly. Do not mix edges and points. Plain numeric tuples inside the reference list are not supported; use `point3`. `None` selects all elements, while an empty list raises `ValueError`. Edges from another model are rejected. For a planar face fillet, select vertices or points.
-::

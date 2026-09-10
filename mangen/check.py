@@ -11,14 +11,14 @@ import sys
 from tempfile import TemporaryDirectory
 from urllib.parse import unquote, urlsplit
 
-from main import EXAMPLE_PAGES, localized
+from main import EXAMPLE_PAGES, check_source_pairs
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def python_blocks(name: str, language: str) -> list[str]:
-    source = (ROOT / "mangen" / "ru" / f"{name}.md").read_text(encoding="utf-8")
-    return re.findall(r"```python\n(.*?)```", localized(source, language), re.S)
+    source = (ROOT / "mangen" / language / f"{name}.md").read_text(encoding="utf-8")
+    return re.findall(r"```python\n(.*?)```", source, re.S)
 
 
 def run(script: Path, directory: Path, environment: dict[str, str]) -> None:
@@ -119,6 +119,7 @@ class PageLinks(HTMLParser):
 
 
 def check_links() -> None:
+    check_source_pairs()
     docs = ROOT / "docs"
     reference_pages = {
         page.stem + ".html" for page in (ROOT / "mangen" / "ru").glob("*.md")
@@ -136,8 +137,8 @@ def check_links() -> None:
         parser.feed(page.read_text(encoding="utf-8"))
         parsed[page.resolve()] = parser
         if page.parent.name in ("ru", "en") and page.stem in EXAMPLE_PAGES:
-            source = (ROOT / "mangen" / "ru" / f"{page.stem}.md").read_text(encoding="utf-8")
-            blocks = re.findall(r"```[^\n]*\n(.*?)```", localized(source, page.parent.name), re.S)
+            source = (ROOT / "mangen" / page.parent.name / f"{page.stem}.md").read_text(encoding="utf-8")
+            blocks = re.findall(r"```[^\n]*\n(.*?)```", source, re.S)
             if [b.rstrip() for b in blocks] != [b.rstrip() for b in parser.code_blocks]:
                 raise AssertionError(f"Generated code differs from source: {page}")
     checked = 0

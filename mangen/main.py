@@ -23,18 +23,17 @@ EXAMPLE_PAGES = {
 }
 
 
-def localized(source: str, language: str) -> str:
-    """Select language blocks without changing Python indentation."""
-    selected = True
-    result = []
-    for line in source.splitlines():
-        marker = line.strip()
-        if marker in {":ru", ":en", "::", ":end"}:
-            selected = marker in {"::", ":end", ":" + language}
-            continue
-        if selected:
-            result.append(line)
-    return "\n".join(result) + "\n"
+def check_source_pairs() -> None:
+    """Require a matching source page in each language tree."""
+    pages = {
+        language: {page.name for page in (ROOT / language).glob("*.md")}
+        for language in ("ru", "en")
+    }
+    if pages["ru"] != pages["en"]:
+        raise ValueError(
+            f"Unpaired manual pages: missing in en: {sorted(pages['ru'] - pages['en'])}; "
+            f"missing in ru: {sorted(pages['en'] - pages['ru'])}"
+        )
 
 
 def markdown(source: str) -> str:
@@ -70,17 +69,18 @@ def render_page(name: str, source: str, nav: str, language: str) -> str:
 
 
 def build(output: Path) -> None:
+    check_source_pairs()
     output.mkdir(parents=True, exist_ok=True)
     for language in ("ru", "en"):
         destination = output / language
         destination.mkdir(exist_ok=True)
         nav = (ROOT / language / "nav.md").read_text(encoding="utf-8")
         generated = set()
-        for source in sorted((ROOT / "ru").glob("*.md")):
+        for source in sorted((ROOT / language).glob("*.md")):
             if source.stem == "nav":
                 continue
             name = source.stem
-            content = localized(source.read_text(encoding="utf-8"), language)
+            content = source.read_text(encoding="utf-8")
             (destination / f"{name}.html").write_text(
                 render_page(name, content, nav, language), encoding="utf-8"
             )
@@ -91,7 +91,7 @@ def build(output: Path) -> None:
                 continue
             if old.stem in PAGE_ALIASES:
                 target = PAGE_ALIASES[old.stem]
-                content = localized((ROOT / "ru" / f"{target}.md").read_text(encoding="utf-8"), language)
+                content = (ROOT / language / f"{target}.md").read_text(encoding="utf-8")
                 (destination / old.name).write_text(
                     render_page(old.stem, content, nav, language), encoding="utf-8"
                 )

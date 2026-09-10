@@ -11,7 +11,7 @@ import math
 from pathlib import Path
 import re
 
-from main import ROOT as MANGEN, localized
+from main import ROOT as MANGEN
 
 EXAMPLES = {
     'assemble': [2], 'bool': [1, 3, 5, 7, 8, 9], 'crvalgo': [0, 1, 2],
@@ -44,8 +44,8 @@ def check_reference():
                 ast.Name('_force', ast.Load()), [node.value], [])), node)
 
     for language in ('ru', 'en'):
-        for page in sorted((MANGEN / 'ru').glob('*.md')):
-            source = localized(page.read_text(encoding='utf-8'), language)
+        for page in sorted((MANGEN / language).glob('*.md')):
+            source = page.read_text(encoding='utf-8')
             # Symbolic signatures still must name valid methods and bind arguments.
             owners = dict(vars(z), z=z, zencad=z, math=math)
             shape = z.box(10)
