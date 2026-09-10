@@ -1304,10 +1304,31 @@ Verification on 2026-09-01 after the Context checkpoint:
 ## Stage 8: typing and cleanup
 
 Status: complete for the public cutover. ZenCad 2.0 is the incompatible major;
-there is no parallel `zencad2` package. `py.typed`, overload contracts,
-representative type checks, examples, runtime tests, parity checks, and wheel
-smoke cover the canonical `Context`/module/domain API. Compatibility Runtime
+there is no parallel `zencad2` package. Examples, runtime tests, parity checks,
+and wheel smoke cover the canonical `Context`/module/domain API. Compatibility Runtime
 and the old external lazy geometry surface were removed atomically.
+
+Public static typing was reviewed on 2026-09-10. ZenCad does not publish a
+`py.typed` marker: existing annotations and the 16 representative type-check
+fixtures are useful for development, but do not establish a supported static
+contract for user scripts. In particular, `@operation` preserves the resolved
+implementation's parameter types while accepting domain values at runtime.
+Thus mypy rejects valid calls such as `box(scalar(2))`,
+`box(size=(scalar(2), 3, 4))`, `sphere(scalar(2))`, and
+`fillet(body, scalar(0.08))`; the equivalent `body.fillet` accepts `Scalar`.
+Conversely, compatibility factories accepting `*args: object`, including
+`point3`, `vector3`, and `translate`, allow invalid inputs through static
+checking. Some public entry points, including `display` and `show`, remain
+unannotated.
+
+The review reproduced the valid calls with materialization in both immediate
+and deferred modes, and confirmed the static discrepancies with mypy 2.3.1.
+All 16 existing strict type-check fixtures still passed before removing the
+marker. Keep the annotations and internal checks, but do not make PEP 561
+publication a release requirement or change runtime signatures merely to
+satisfy a checker. Reintroducing the marker would require a separate decision
+on an accurate public contract, including operation argument adaptation.
+Earlier typing checkpoints below and above describe their historical state.
 
 ## Stage 9: canonical package ownership
 
