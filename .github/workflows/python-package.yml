@@ -247,8 +247,8 @@ jobs:
   gui-windows-macos:
     needs: build-distributions
     env:
-      # Intel hosted Macs may lack an accelerated OpenGL renderer.
-      ZENCAD_OPENGL_SOFTWARE: ${{ matrix.os == 'macos-15-intel' && '1' || '0' }}
+      # Both Intel and ARM hosted Macs can lack accelerated OpenGL.
+      ZENCAD_OPENGL_SOFTWARE: ${{ startsWith(matrix.os, 'macos-') && '1' || '0' }}
     strategy:
       fail-fast: false
       matrix:

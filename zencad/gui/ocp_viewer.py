@@ -26,7 +26,7 @@ class Viewer3d:
             # lacks the multisample textures used by OCCT. Prefer its core
             # profile; OCCT can still fall back to legacy on older systems.
             self._graphic_driver.ChangeOptions().contextCompatible = False
-            # Hosted Intel Macs may have no accelerated OpenGL renderer.
+            # Hosted Macs may have no accelerated OpenGL renderer.
             # Opt in explicitly; desktop Macs keep hardware acceleration.
             self._graphic_driver.ChangeOptions().contextNoAccel = (
                 os.environ.get("ZENCAD_OPENGL_SOFTWARE") == "1"

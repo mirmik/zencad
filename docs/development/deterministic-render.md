@@ -85,9 +85,9 @@ textures OCCT needs for MSAA even when the GPU supports them in a core context.
 OCCT retains its legacy fallback for systems unable to create a core context.
 
 On macOS, `ZENCAD_OPENGL_SOFTWARE=1` explicitly selects Apple's software
-OpenGL renderer through OCCT's `contextNoAccel` option. Intel macOS CI uses
-this mode because hosted machines may lack accelerated OpenGL; desktop Macs
-and ARM macOS CI keep the default accelerated renderer. This setting does
+OpenGL renderer through OCCT's `contextNoAccel` option. Both Intel and ARM
+macOS CI request this mode because hosted machines may lack accelerated
+OpenGL; desktop Macs keep the default accelerated renderer. This setting does
 not change rendering on Windows or Linux (use Mesa's `LIBGL_ALWAYS_SOFTWARE`
 on Linux). The render tests still require actual MSAA edge coverage.
 

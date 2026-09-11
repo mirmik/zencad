@@ -37,6 +37,14 @@ def main():
             lambda: destroyed.append(threading.get_ident())
         )
         widgets.append(widget)
+        if not context_reported:
+            options = widget._display._graphic_driver.ChangeOptions()
+            print(
+                "OCCT context request:",
+                "compatible=", options.contextCompatible,
+                "no_accel=", options.contextNoAccel,
+                flush=True,
+            )
         initialize_driver(widget)
         if not context_reported:
             from OpenGL.GL import glGetString, GL_VERSION, GL_RENDERER
