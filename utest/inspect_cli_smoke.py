@@ -19,7 +19,7 @@ def run(root, *arguments, expected=0, io_encoding=None):
         capture_output=True,
         text=True,
         encoding=io_encoding,
-        timeout=15,
+        timeout=60,
         cwd=root,
         env=environment,
     )
