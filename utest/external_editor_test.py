@@ -122,6 +122,7 @@ class ExternalEditorTest(unittest.TestCase):
                     mock.patch.object(sys, 'frozen', True, create=True), \
                     mock.patch.object(sys, '_MEIPASS', '/bundle/_internal', create=True), \
                     mock.patch.object(sys, 'platform', 'linux'), \
+                    mock.patch.object(os, 'sep', '/'), \
                     mock.patch('subprocess.Popen') as popen:
                 launch_external_editor('editor {path}', '/tmp/model.py')
                 child_env = popen.call_args.kwargs['env']
