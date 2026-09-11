@@ -9,7 +9,7 @@ from zencad.operation import DomainOperation, using_context
 
 
 FONT_PATH = (
-    Path(zencad.__file__).resolve().parent / "examples" / "fonts" / "mandarinc.ttf"
+    Path(zencad.__file__).resolve().parent / "examples" / "fonts" / "testfont.ttf"
 )
 
 
@@ -24,8 +24,8 @@ class TypedTextTest(unittest.TestCase):
         )
         typed.register_font(FONT_PATH)
         with using_context(context):
-            text = typed.text_to_brep("Text", "MandarinC", 10)
-            alias = typed.textshape("Alias", "MandarinC", 10)
+            text = typed.text_to_brep("Text", "Ubuntu Mono", 10)
+            alias = typed.textshape("Alias", "Ubuntu Mono", 10)
 
         self.assertIs(type(text), typed.Compound)
         self.assertIs(type(alias), typed.Compound)
@@ -52,13 +52,13 @@ class TypedTextTest(unittest.TestCase):
                     text = context.call(
                         typed.text_to_brep,
                         "Hello, Мир",
-                        "MandarinC",
+                        "Ubuntu Mono",
                         20,
                     )
                     legacy_text = context.call(
                         typed.textshape,
                         "A",
-                        "MandarinC",
+                        "Ubuntu Mono",
                         10,
                         composite_curve=True,
                     )
@@ -89,7 +89,7 @@ class TypedTextTest(unittest.TestCase):
         text = context.call(
             typed.text_to_brep,
             "Graph",
-            "MandarinC",
+            "Ubuntu Mono",
             size,
             typed.FontAspect.REGULAR,
         )
@@ -109,7 +109,7 @@ class TypedTextTest(unittest.TestCase):
         )
         first.call(typed.register_font, FONT_PATH)
         self.assertGreater(
-            len(first.call(typed.textshape, "A", "MandarinC", 10).edges()), 0
+            len(first.call(typed.textshape, "A", "Ubuntu Mono", 10).edges()), 0
         )
         self.assertFalse(
             any(
@@ -127,7 +127,7 @@ class TypedTextTest(unittest.TestCase):
         )
         second.call(typed.register_font, FONT_PATH)
         self.assertGreater(
-            len(second.call(typed.textshape, "A", "MandarinC", 10).edges()), 0
+            len(second.call(typed.textshape, "A", "Ubuntu Mono", 10).edges()), 0
         )
         self.assertFalse(
             any(
@@ -147,21 +147,21 @@ class TypedTextTest(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "must be FontAspect"):
             context.call(typed.register_font, FONT_PATH, "regular")  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "text must be str"):
-            context.call(typed.text_to_brep, 3, "MandarinC", 10).native()  # type: ignore[arg-type]
+            context.call(typed.text_to_brep, 3, "Ubuntu Mono", 10).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "font_name must be str"):
             context.call(typed.text_to_brep, "A", 3, 10).native()  # type: ignore[arg-type]
         with self.assertRaisesRegex(TypeError, "composite_curve must be bool"):
             context.call(
-                typed.text_to_brep, "A", "MandarinC", 10, composite_curve=1
+                typed.text_to_brep, "A", "Ubuntu Mono", 10, composite_curve=1
             ).native()  # type: ignore[arg-type]
 
         context.call(typed.register_font, FONT_PATH)
         with self.assertRaisesRegex(ValueError, "size must be finite and positive"):
-            context.call(typed.textshape, "A", "MandarinC", 0).native()
+            context.call(typed.textshape, "A", "Ubuntu Mono", 0).native()
         immediate = typed.Context.immediate(cache=False)
         immediate.call(typed.register_font, FONT_PATH)
         with self.assertRaisesRegex(ValueError, "size must be finite and positive"):
-            immediate.call(typed.text_to_brep, "A", "MandarinC", 0)
+            immediate.call(typed.text_to_brep, "A", "Ubuntu Mono", 0)
 
 
 if __name__ == "__main__":

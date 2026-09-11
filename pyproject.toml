@@ -8,8 +8,8 @@ version = "2.0.0"
 description = "Scriptable CAD system built on OpenCascade"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
-license = "MIT"
-license-files = ["LICENSE.txt"]
+license = "MIT AND Ubuntu-font-1.0"
+license-files = ["LICENSE.txt", "zencad/examples/fonts/UBUNTU-FONT-LICENCE.txt"]
 authors = [
   { name = "mirmik", email = "mirmikns@yandex.ru" },
 ]
@@ -30,6 +30,7 @@ dependencies = [
   "cadquery-ocp-novtk>=7.9.3.1.1,<7.10",
   "evalcache>=2.0.0a1,<3",
   "numpy",
+  "scipy",
   "svgwrite",
 ]
 
@@ -68,6 +69,7 @@ zencad = [
   "examples/**/*.py",
   "examples/**/*.STL",
   "examples/**/*.ttf",
+  "examples/**/*.txt",
 ]
 
 [tool.setuptools.exclude-package-data]

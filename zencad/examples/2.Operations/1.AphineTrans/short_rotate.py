@@ -20,11 +20,11 @@ import os
 from zencad import *
 from zencad.interactive import arrow, line
 
-mandarinc = os.path.join(
+font_path = os.path.join(
     moduledir,
-    "examples/fonts/mandarinc.ttf",
+    "examples/fonts/testfont.ttf",
 )
-register_font(mandarinc)
+register_font(font_path)
 
 u = 20
 
@@ -73,7 +73,7 @@ for target in tgt:
         disp(
             textshape(
                 "BOOM!!!!",
-                "Mandarinc",
+                "Ubuntu Mono",
                 20,
                 True,
             )

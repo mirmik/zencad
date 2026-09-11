@@ -2,29 +2,9 @@
 """Install the single ZenCad wheel produced by the distribution build."""
 
 import argparse
-from email.parser import Parser
 from pathlib import Path
 import subprocess
 import sys
-from zipfile import ZipFile
-
-
-def wheel_version(wheel):
-    with ZipFile(wheel) as archive:
-        metadata_files = [
-            name
-            for name in archive.namelist()
-            if name.endswith(".dist-info/METADATA")
-        ]
-        if len(metadata_files) != 1:
-            raise SystemExit(
-                f"Expected exactly one METADATA file in {wheel}, "
-                f"found {metadata_files}"
-            )
-        metadata = Parser().parsestr(
-            archive.read(metadata_files[0]).decode("utf-8")
-        )
-    return metadata["Version"]
 
 
 def main():
@@ -43,7 +23,7 @@ def main():
             f"found {len(wheels)}: {wheels}"
         )
 
-    requirement = "zencad"
+    requirement = str(wheels[0].resolve())
     extras = []
     if arguments.gui:
         extras.append("gui")
@@ -53,7 +33,6 @@ def main():
         extras.append("test")
     if extras:
         requirement = f"{requirement}[{','.join(extras)}]"
-    requirement = f"{requirement}=={wheel_version(wheels[0])}"
 
     command = [
         sys.executable,
@@ -61,8 +40,7 @@ def main():
         "pip",
         "install",
         "--only-binary=:all:",
-        "--find-links",
-        str(wheels[0].parent.resolve()),
+        "--force-reinstall",
     ]
     if arguments.upgrade:
         command.append("--upgrade")

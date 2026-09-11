@@ -35,10 +35,10 @@ def main():
             Path(zencad.__file__).resolve().parent
             / "examples"
             / "fonts"
-            / "mandarinc.ttf"
+            / "testfont.ttf"
         )
         zencad.register_font(font_path)
-        text = zencad.textshape("Upgrade", "MandarinC", 10)
+        text = zencad.textshape("Upgrade", "Ubuntu Mono", 10)
         assert len(text.edges()) > 0
 
     print("Upgrade from zencad 1.3.3 to 2.0.0 release candidate: OK")

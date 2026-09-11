@@ -6,8 +6,8 @@ import os
 
 from zencad import *
 
-mandarinc = os.path.join(moduledir, "examples", "fonts/mandarinc.ttf")
-fontpath = register_font(mandarinc)
+font_path = os.path.join(moduledir, "examples", "fonts/testfont.ttf")
+fontpath = register_font(font_path)
 
 NUT_RENDER = True
 DISPLAY_BOLT = False
@@ -64,7 +64,7 @@ base = loft([
 ])
 bolt = bolt.left(l/2 - 2.3)
 
-m = textshape("ZenCad", "Mandarinc", 20)
+m = textshape("ZenCad", "Ubuntu Mono", 20)
 m = m.translate(- m.center())
 m = m.extrude(6) + base
 m = m - bolt

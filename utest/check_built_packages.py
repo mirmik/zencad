@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 REQUIRED_PACKAGE_PATHS = (
     "zencad/examples/0.Base/helloworld.py",
     "zencad/examples/fonts/testfont.ttf",
+    "zencad/examples/fonts/UBUNTU-FONT-LICENCE.txt",
     "zencad/zencad_logo.png",
 )
 
@@ -50,6 +51,11 @@ def check_artifact(artifact):
     if missing:
         raise AssertionError(
             f"{artifact} is missing required examples/assets: {missing}"
+        )
+
+    if artifact.name.endswith(".tar.gz"):
+        assert "docs/images/antique-column.png" in package_paths, (
+            f"{artifact} is missing images used by the bundled manual"
         )
 
     print(f"Package content smoke: {artifact.name}: OK")

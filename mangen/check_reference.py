@@ -95,8 +95,8 @@ def check_reference():
                 continue
             blocks = re.findall(r'```python\n(.*?)```', source, re.S)
             namespace = dict(vars(z), zencad=z, math=math, _force=force,
-                             FONTPATH=str(MANGEN.parent / 'zencad/examples/fonts/mandarinc.ttf'),
-                             FONTNAME='Mandarinc')
+                             FONTPATH=str(MANGEN.parent / 'zencad/examples/fonts/testfont.ttf'),
+                             FONTNAME='Ubuntu Mono')
             for index in selected:
                 tree = MaterializeExpressions().visit(ast.parse(blocks[index]))
                 exec(compile(ast.fix_missing_locations(tree),

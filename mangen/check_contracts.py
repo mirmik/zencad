@@ -53,7 +53,7 @@ def fixtures(page, index):
               p1=(0,0,0),p2=(2,1,0),p3=(4,0,0),
               pnts=[(0,0,0),(10,0,0),(10,10,0),(20,10,0)],
               weights=[1,2,2,1],knots=[0,1],muls=[4,4],degree=3,
-              text='ZenCad',fontname='Mandarinc',size=5,
+              text='ZenCad',fontname='Ubuntu Mono',size=5,
               face=z.square(10), surface=z.square(10).surface(),
               wire=z.rectangle(10,10,wire=True),
               wires=[z.segment((0,0,0),(10,0,0)),z.segment((10,0,0),(10,10,0))],
@@ -84,7 +84,7 @@ def fixtures(page, index):
 
 def check_symbolic_calls():
     import zencad as z
-    z.register_font(str(MANGEN.parent/'zencad/examples/fonts/mandarinc.ttf'))
+    z.register_font(str(MANGEN.parent/'zencad/examples/fonts/testfont.ttf'))
     count=0
     failures=[]
     for language in ('ru','en'):

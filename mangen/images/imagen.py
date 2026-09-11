@@ -401,7 +401,6 @@ doscreen(
 )
 
 register_font("../../zencad/examples/fonts/testfont.ttf")
-register_font("../../zencad/examples/fonts/mandarinc.ttf")
 doscreen(
     model=textshape("TextShape", "Ubuntu Mono", size=100),
     path="textshape0.png",
@@ -411,7 +410,7 @@ doscreen(
     triedron=True,
 )
 doscreen(
-    model=textshape("TextShape", "Mandarinc", size=100),
+    model=textshape("TextShape", "Ubuntu Mono", size=100),
     path="textshape1.png",
     size=wsize,
     yaw=yaw2d,
@@ -714,9 +713,9 @@ doscreen(
     yaw=yaw,
     pitch=pitch,
 )
-register_font("../../zencad/examples/fonts/mandarinc.ttf")
+register_font("../../zencad/examples/fonts/testfont.ttf")
 doscreen(
-    model=textshape("TextShape", "Mandarinc", size=100
+    model=textshape("TextShape", "Ubuntu Mono", size=100
                     ).extrude(20),
     path="extrude3.png",
     size=wsize,

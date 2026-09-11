@@ -1,5 +1,5 @@
 include LICENSE.txt
 include README.md
-recursive-include zencad *.jpg *.png *.py *.svg *.ttf
-recursive-include docs *.html *.md
+recursive-include zencad *.jpg *.png *.py *.svg *.ttf *.txt
+recursive-include docs *.html *.md *.png *.css *.json
 global-exclude *.py[cod]

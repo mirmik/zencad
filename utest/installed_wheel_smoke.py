@@ -105,6 +105,11 @@ def main():
         assert isinstance(typed.fill3d, DomainOperation)
         assert isinstance(typed.polyhedron_shell, DomainOperation)
         assert isinstance(typed.convex_hull_shape, DomainOperation)
+        hull_points = zencad.points([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
+        assert len(zencad.convex_hull(hull_points)) == 4
+        hull = zencad.convex_hull_shape(hull_points)
+        assert hull.is_valid()
+        assert abs(float(hull.mass()) - 1 / 6) < 1e-8
         assert isinstance(typed.split, DomainOperation)
         assert isinstance(typed.slice, DomainOperation)
         assert isinstance(typed.draft, DomainOperation)
@@ -479,13 +484,13 @@ def main():
             Path(zencad.__file__).resolve().parent
             / "examples"
             / "fonts"
-            / "mandarinc.ttf"
+            / "testfont.ttf"
         )
         typed_context.call(typed.register_font, font_path)
-        typed_text = typed_context.call(typed.textshape, "Hello", "MandarinC", 10)
+        typed_text = typed_context.call(typed.textshape, "Hello", "Ubuntu Mono", 10)
         typed.register_font(font_path)
         with using_context(typed_context):
-            module_text = typed.text_to_brep("Module", "MandarinC", 10)
+            module_text = typed.text_to_brep("Module", "Ubuntu Mono", 10)
         assert type(typed_text) is typed.Compound
         assert type(module_text) is typed.Compound
         assert len(typed_text.edges()) > 0
