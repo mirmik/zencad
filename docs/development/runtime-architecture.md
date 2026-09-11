@@ -327,6 +327,14 @@ Progress appears in the status bar while the previous scene remains visible.
 Navigation and export actions are routed directly to the local display instead
 of a worker-side window.
 
+The external editor setting is an executable followed by arguments, for example
+`code --wait "{path}"`. ZenCad splits this template before substituting the model
+path and starts the process without a shell. Quote executable paths containing
+spaces; Windows paths retain their backslashes. Use the editor's `.exe` on
+Windows, not a `.bat`/`.cmd` launcher. For more elaborate startup, use a wrapper
+script that accepts the model path as an argument. Launch errors appear in a
+dialog and leave the current document open.
+
 The normal `zencad SCRIPT.py` entry point always creates this persistent editor
 and evaluates scripts through `RunnerSupervisor`. The old worker/frame/sleeping
 process modes fail immediately with a migration hint and cannot enter an

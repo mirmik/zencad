@@ -5,13 +5,13 @@ from PyQt5.QtGui import *
 import os
 from pathlib import Path
 import tempfile
-import subprocess
 
 import zencad.gui.util
 import zencad.gui.settingswdg
 from zencad.gui.navigation import navigation_scheme_help
 
 from zencad.gui.defaults import SCRIPT_TEMPLATE
+from zencad.gui.external_editor import launch_external_editor
 from zencad.settings import Settings
 
 ABOUT_TEXT = "CAD system for righteous zen programmers."
@@ -162,7 +162,10 @@ class MainWindowActionsMixin:
         if current is None:
             return
         command = Settings.get(["gui", "text_editor"])
-        subprocess.Popen(command.format(path=current), shell=True)
+        try:
+            launch_external_editor(command, current)
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, "External editor", str(error))
 
     def hideConsole(self, hidden):
         self.console.setHidden(hidden)

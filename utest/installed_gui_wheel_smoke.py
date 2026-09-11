@@ -6,8 +6,30 @@ import os
 from pathlib import Path
 import re
 import sys
+from unittest import mock
 
 import zencad
+
+
+def check_external_editor_action():
+    from zencad.gui.actions import MainWindowActionsMixin
+
+    window = mock.Mock()
+    path = '/tmp/моя модель & (copy).py'
+    with mock.patch('zencad.gui.actions.launch_external_editor') as launch, \
+            mock.patch('zencad.gui.actions.QMessageBox.warning') as warning, \
+            mock.patch('zencad.gui.actions.Settings.get', return_value='editor {path}'):
+        window.current_opened.return_value = None
+        MainWindowActionsMixin.externalTextEditorOpen(window)
+        launch.assert_not_called()
+        window.current_opened.return_value = path
+        MainWindowActionsMixin.externalTextEditorOpen(window)
+        launch.assert_called_once_with('editor {path}', path)
+        for error in (FileNotFoundError('missing editor'), ValueError('invalid command')):
+            warning.reset_mock()
+            launch.side_effect = error
+            MainWindowActionsMixin.externalTextEditorOpen(window)
+            warning.assert_called_once_with(window, 'External editor', str(error))
 
 
 def main():
@@ -42,6 +64,7 @@ def main():
     else:
         raise AssertionError(f"Unsupported smoke-test platform: {sys.platform}")
 
+    check_external_editor_action()
     print(f"Installed GUI wheel import smoke on {sys.platform}: OK")
 
 

@@ -9,6 +9,8 @@ REQUIRED_PACKAGE_PATHS = (
     "zencad/examples/0.Base/helloworld.py",
     "zencad/examples/fonts/testfont.ttf",
     "zencad/examples/fonts/UBUNTU-FONT-LICENCE.txt",
+    "zencad/examples/Integration/trimesh/README.md",
+    "zencad/examples/Integration/trimesh/CC-BY-NC-SA-4.0.txt",
     "zencad/zencad_logo.png",
 )
 

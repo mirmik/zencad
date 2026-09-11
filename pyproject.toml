@@ -8,8 +8,12 @@ version = "2.0.0"
 description = "Scriptable CAD system built on OpenCascade"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
-license = "MIT AND Ubuntu-font-1.0"
-license-files = ["LICENSE.txt", "zencad/examples/fonts/UBUNTU-FONT-LICENCE.txt"]
+license = "MIT AND Ubuntu-font-1.0 AND CC-BY-NC-SA-4.0"
+license-files = [
+  "LICENSE.txt",
+  "zencad/examples/fonts/UBUNTU-FONT-LICENCE.txt",
+  "zencad/examples/Integration/trimesh/CC-BY-NC-SA-4.0.txt",
+]
 authors = [
   { name = "mirmik", email = "mirmikns@yandex.ru" },
 ]

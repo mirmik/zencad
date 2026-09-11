@@ -248,3 +248,10 @@ uses X11/XWayland; on a server or in CI, install Xvfb and run:
 ```sh
 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a zencad render model.py -o preview.png
 ```
+
+## Licences
+
+ZenCad's Python code is [MIT-licensed](LICENSE.txt). Bundled example assets have
+separate licences: [Ubuntu Mono](zencad/examples/fonts/README.md) uses the Ubuntu
+Font Licence, and [Low-Poly Bulbasaur by flowalistik](zencad/examples/Integration/trimesh/README.md)
+uses CC BY-NC-SA 4.0, including its noncommercial and share-alike conditions.

@@ -159,6 +159,10 @@ class SettingsWidget(QDialog):
         self.default_color_edit = ColorChanger()
         self.texteditor_edit = TextFieldChanger(
             path=["gui", "text_editor"], label="Text editor command:")
+        self.texteditor_edit.setToolTip(
+            'Executable and arguments, for example: code --wait "{path}". '
+            'Quote executable paths containing spaces. On Windows, use the .exe.'
+        )
         self.marker_size_edit = TextFieldChanger(
             path=["markers", "size"], label="Marker size:")
         self.cache_directory_edit = TextFieldChanger(
