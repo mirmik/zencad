@@ -6,6 +6,7 @@ only the operations used by ZenCad.
 """
 
 import ctypes
+import os
 import sys
 
 from OCP.AIS import AIS_InteractiveContext
@@ -25,6 +26,11 @@ class Viewer3d:
             # lacks the multisample textures used by OCCT. Prefer its core
             # profile; OCCT can still fall back to legacy on older systems.
             self._graphic_driver.ChangeOptions().contextCompatible = False
+            # Hosted Intel Macs may have no accelerated OpenGL renderer.
+            # Opt in explicitly; desktop Macs keep hardware acceleration.
+            self._graphic_driver.ChangeOptions().contextNoAccel = (
+                os.environ.get("ZENCAD_OPENGL_SOFTWARE") == "1"
+            )
         self.Viewer = V3d_Viewer(self._graphic_driver)
         self.View = self.Viewer.CreateView()
         self.Context = AIS_InteractiveContext(self.Viewer)

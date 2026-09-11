@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import tempfile
 import threading
+import traceback
 from typing import Callable, Iterable
 
 from zencad.settings import DEFAULT_MSAA_SAMPLES, MSAA_SAMPLE_OPTIONS
@@ -364,12 +365,16 @@ def render_snapshot(
 
     widget = None
     try:
-        widget = DisplayWidget(axis_triedron=bool(axes))
+        widget = DisplayWidget(axis_triedron=bool(axes), init_driver=False)
         widget.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
         widget.resize(tile_width, tile_height)
         widget.move(-20000, -20000)
         widget.show()
         application.processEvents()
+        # Cocoa's adapter must not outlive an unshown Qt native view. Own and
+        # show the widget first, then bind OCCT outside Qt event callbacks so
+        # a context-creation exception reaches our cleanup below.
+        widget.InitDriver()
         widget.View.MustBeResized()
         widget.set_msaa_samples(msaa, redraw=False)
         # Command-line colors are conventional sRGB hex values.  OCCT's
@@ -464,6 +469,10 @@ def render_snapshot(
     except RenderError:
         raise
     except Exception as exception:
+        # Failed native initialization can leave Cocoa_Window references in
+        # completed frames. Release their locals before deleting Qt objects;
+        # retain traceback locations and the original exception for diagnosis.
+        traceback.clear_frames(exception.__traceback__)
         raise RenderEnvironmentError(
             f"Native preview rendering failed: {exception}"
         ) from exception

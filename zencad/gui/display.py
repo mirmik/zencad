@@ -138,7 +138,8 @@ class BaseViewer(_ViewerWidget):
 class DisplayWidget(BaseViewer):
     def __init__(self,
                  axis_triedron=True,
-                 parent=None):
+                 parent=None,
+                 *, init_driver=True):
 
         super().__init__(parent=parent)
         self.reload_navigation_settings()
@@ -149,6 +150,9 @@ class DisplayWidget(BaseViewer):
         # A child viewer receives its final native window only when the full
         # parent hierarchy is shown. Standalone viewers have no such reparent.
         self.init_driver_in_constructor = parent is None
+        # Previews bind explicitly after Qt has shown the native window, so
+        # initialization errors propagate to Python rather than a Qt callback.
+        self._auto_init_driver = init_driver
         self._orient = 1
         self._drawbox = False
         self._zoom_area = False
@@ -197,7 +201,7 @@ class DisplayWidget(BaseViewer):
         self.MarkerQController.hide(True)
         self.set_center_visible(False)
 
-        if self.init_driver_in_constructor:
+        if self.init_driver_in_constructor and self._auto_init_driver:
             self.InitDriver()
 
         self.scene_presenter = ScenePresenter(self)
@@ -720,11 +724,11 @@ class DisplayWidget(BaseViewer):
         if not self._inited0:
             self._inited0 = True
 
-            if not self.init_driver_in_constructor:
+            if not self.init_driver_in_constructor and self._auto_init_driver:
                 self.InitDriver()
 
     def paintEvent(self, event):
-        if self._display._closed:
+        if self._display._closed or self._display._window is None:
             return
         if not self._inited1:
             self._inited1 = True
