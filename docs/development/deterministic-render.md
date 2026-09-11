@@ -75,6 +75,11 @@ LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a \
   zencad render model.py -o preview.png --view iso,front,top,right
 ```
 
+On macOS the viewer requests an OpenGL core profile. The default OCCT
+compatibility profile selects OpenGL 2.1, which cannot supply the multisample
+textures OCCT needs for MSAA even when the GPU supports them in a core context.
+OCCT retains its legacy fallback for systems unable to create a core context.
+
 CI exercises the command on Windows and macOS desktops and under Xvfb with
 software OpenGL on Linux. The smoke verifies image dimensions and content,
 exact solid-background color, deterministic repeated output, contact-sheet

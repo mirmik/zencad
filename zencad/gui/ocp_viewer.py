@@ -20,6 +20,11 @@ class Viewer3d:
         self._graphic_driver = OpenGl_GraphicDriver(
             self._display_connection
         )
+        if sys.platform == "darwin":
+            # Cocoa's compatibility profile is limited to OpenGL 2.1, which
+            # lacks the multisample textures used by OCCT. Prefer its core
+            # profile; OCCT can still fall back to legacy on older systems.
+            self._graphic_driver.ChangeOptions().contextCompatible = False
         self.Viewer = V3d_Viewer(self._graphic_driver)
         self.View = self.Viewer.CreateView()
         self.Context = AIS_InteractiveContext(self.Viewer)
