@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Copy
-from OCP.BRepCheck import BRepCheck_Analyzer
+from OCP.BRepCheck import BRepCheck_Analyzer, BRepCheck_ListOfStatus
 from OCP.ShapeFix import ShapeFix_Shape
 from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
 from OCP.TopAbs import (
@@ -23,6 +23,7 @@ from OCP.TopAbs import (
     TopAbs_WIRE,
 )
 from OCP.TopoDS import TopoDS_Iterator, TopoDS_Shape
+from OCP.TopTools import TopTools_IndexedMapOfShape
 
 from zencad._native.shape import Shape
 
@@ -105,15 +106,16 @@ def _kind(shape: TopoDS_Shape) -> str:
     return _KIND_NAMES.get(shape.ShapeType(), "shape")
 
 
-def _same(left: TopoDS_Shape, right: TopoDS_Shape) -> bool:
-    return bool(left.IsSame(right))
-
-
-def _topology_paths(root: TopoDS_Shape) -> list[tuple[TopoDS_Shape, str]]:
+def _topology_paths(
+    root: TopoDS_Shape,
+) -> tuple[list[tuple[TopoDS_Shape, str]], TopTools_IndexedMapOfShape]:
     entries: list[tuple[TopoDS_Shape, str]] = []
+    indices = TopTools_IndexedMapOfShape()
 
     def visit(shape: TopoDS_Shape, path: str) -> None:
-        if any(_same(shape, existing) for existing, _ in entries):
+        # OCCT keys use IsSame: location matters, orientation does not.
+        # Add preserves the first occurrence and returns a one-based index.
+        if indices.Add(shape) <= len(entries):
             return
         entries.append((shape, path))
         children = TopoDS_Iterator(shape)
@@ -127,16 +129,17 @@ def _topology_paths(root: TopoDS_Shape) -> list[tuple[TopoDS_Shape, str]]:
             children.Next()
 
     visit(root, _kind(root))
-    return entries
+    return entries, indices
 
 
 def _path_for(
     entries: list[tuple[TopoDS_Shape, str]],
+    indices: TopTools_IndexedMapOfShape,
     target: TopoDS_Shape,
 ) -> str:
-    for shape, path in entries:
-        if _same(shape, target):
-            return path
+    index = indices.FindIndex(target)
+    if index:
+        return entries[index - 1][1]
     return f"{_kind(target)}[unmapped]"
 
 
@@ -146,8 +149,12 @@ def _status_code(name: str) -> str:
     return re.sub(r"(?<=[a-z])(?=\d)", "_", value)
 
 
-def _statuses(values: Iterable[object]) -> Iterator[object]:
-    yield from values
+def _statuses(values: BRepCheck_ListOfStatus) -> Iterator[object]:
+    # Avoid costly binding iterator creation for the usual single status.
+    if values.Size() == 1:
+        yield values.First()
+    else:
+        yield from values
 
 
 def _issue(
@@ -188,7 +195,7 @@ def _validate(
             shape_type="shape",
         )
         return ValidationReport(False, "shape", 0, (issue,), exact, parallel)
-    entries = _topology_paths(native)
+    entries, indices = _topology_paths(native)
     analyzer = BRepCheck_Analyzer(native)
     analyzer.SetExactMethod(exact)
     analyzer.SetParallel(parallel)
@@ -210,7 +217,7 @@ def _validate(
         result.InitContextIterator()
         while result.MoreShapeInContext():
             context = result.ContextualShape()
-            context_path = _path_for(entries, context)
+            context_path = _path_for(entries, indices, context)
             for status in _statuses(result.StatusOnShape(context)):
                 issue = _issue(status, subshape, path, context, context_path)
                 if issue is not None:
