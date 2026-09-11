@@ -91,7 +91,16 @@ OpenGL; desktop Macs keep the default accelerated renderer. This setting does
 not change rendering on Windows or Linux (use Mesa's `LIBGL_ALWAYS_SOFTWARE`
 on Linux). The render tests still require actual MSAA edge coverage.
 
-CI exercises the command on Windows and macOS desktops and under Xvfb with
+Hosted Windows CI exposes GDI Generic OpenGL 1.1, which cannot satisfy these
+render tests. Windows CI therefore checks wheel installation, GUI imports and
+native-window bindings, plus the headless suite, but does not run native viewer
+or PNG rendering smokes. No third-party Windows OpenGL driver is downloaded.
+Windows graphics coverage currently requires a local machine with a suitable
+GPU driver; run `python -m utest.gui_ocp_smoke`,
+`python -m utest.render_lifecycle_smoke`, and `python -m utest.render_cli_smoke`
+from the checkout. The tests retain their full image and MSAA assertions.
+
+CI exercises the command on macOS and under Xvfb with distribution-provided
 software OpenGL on Linux. The smoke verifies image dimensions and content,
 exact solid-background color, deterministic repeated output, contact-sheet
 layout, custom CLI/API camera agreement, vertical poles, actual MSAA edge

@@ -47,14 +47,25 @@ def main():
             )
         initialize_driver(widget)
         if not context_reported:
-            from OpenGL.GL import glGetString, GL_VERSION, GL_RENDERER
-            from OCP.Graphic3d import Graphic3d_TypeOfLimit_MaxMsaa
+            from OCP.Graphic3d import (
+                Graphic3d_DiagnosticInfo_Device, Graphic3d_TypeOfLimit_MaxMsaa,
+            )
+            from OCP.TColStd import TColStd_IndexedDataMapOfStringString
 
+            # Query OCCT's context, not PyOpenGL's independently loaded DLL.
+            native_info = TColStd_IndexedDataMapOfStringString()
+            widget.View.DiagnosticInformation(native_info, Graphic3d_DiagnosticInfo_Device)
+            device = {
+                native_info.FindKey(index).ToCString():
+                native_info.FindFromIndex(index).ToCString()
+                for index in range(1, native_info.Extent() + 1)
+            }
+            max_msaa = widget._display._graphic_driver.InquireLimit(
+                Graphic3d_TypeOfLimit_MaxMsaa
+            )
             print(
-                "OpenGL:", glGetString(GL_VERSION), glGetString(GL_RENDERER),
-                "max MSAA:", widget._display._graphic_driver.InquireLimit(
-                    Graphic3d_TypeOfLimit_MaxMsaa
-                ),
+                "OpenGL:", device,
+                "max MSAA:", max_msaa,
                 flush=True,
             )
             context_reported = True
