@@ -126,12 +126,10 @@ and is not sufficient to launch the GUI.
 
 Release status
 --------------
-The source declares version 2.0.0; cross-platform release acceptance is still in
-progress, particularly native PNG rendering on Windows and macOS. Use the source
-installation above to try this checkout. `pip install zencad` installs the
-published package and does not necessarily select this development revision.
-Older standalone Windows downloads are historical artifacts, not verification
-of the v2 runtime.
+ZenCad 2.0.0 is published on PyPI. Native checks have passed on Linux, Windows
+and macOS. Linux standalone build and run instructions are in
+[tools/standalone/README.md](tools/standalone/README.md).
+Older standalone Windows downloads belong to ZenCad 1.
 
 Source code
 ---------------

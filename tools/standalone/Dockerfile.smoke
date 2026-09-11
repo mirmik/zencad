@@ -1,0 +1,6 @@
+# Runtime-only environment: no system Python, Qt, OCP or pip.
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 libgl1 libegl1 libgl1-mesa-dri xvfb xauth \
+    && rm -rf /var/lib/apt/lists/*

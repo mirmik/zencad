@@ -109,6 +109,29 @@ class ExternalEditorTest(unittest.TestCase):
             self.assertEqual(json.loads(output.read_text(encoding='utf-8')), [path])
             self.assertFalse(marker.exists())
 
+    def test_frozen_linux_editor_uses_original_library_path(self):
+        for original in (None, '', '/opt/editor-libs'):
+            environment = {
+                'LD_LIBRARY_PATH': '/bundle/_internal', 'PATH': '/usr/bin',
+                'QT_QPA_PLATFORM_PLUGIN_PATH': '/bundle/_internal/PyQt5/plugins',
+                'QT_QPA_FONTDIR': '/usr/share/fonts',
+            }
+            if original is not None:
+                environment['LD_LIBRARY_PATH_ORIG'] = original
+            with mock.patch.dict(os.environ, environment, clear=True), \
+                    mock.patch.object(sys, 'frozen', True, create=True), \
+                    mock.patch.object(sys, '_MEIPASS', '/bundle/_internal', create=True), \
+                    mock.patch.object(sys, 'platform', 'linux'), \
+                    mock.patch('subprocess.Popen') as popen:
+                launch_external_editor('editor {path}', '/tmp/model.py')
+                child_env = popen.call_args.kwargs['env']
+                self.assertEqual(child_env.get('LD_LIBRARY_PATH'), original)
+                self.assertNotIn('LD_LIBRARY_PATH_ORIG', child_env)
+                self.assertNotIn('QT_QPA_PLATFORM_PLUGIN_PATH', child_env)
+                self.assertEqual(child_env['QT_QPA_FONTDIR'], '/usr/share/fonts')
+                self.assertEqual(child_env['PATH'], '/usr/bin')
+                self.assertEqual(dict(os.environ), environment)
+
 
 if __name__ == '__main__':
     unittest.main()

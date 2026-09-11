@@ -4,6 +4,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 
 
 def editor_arguments(command, path, *, windows=None):
@@ -38,4 +39,19 @@ def editor_arguments(command, path, *, windows=None):
 def launch_external_editor(command, path):
     if path is None:
         return None
-    return subprocess.Popen(editor_arguments(command, path), shell=False)
+    environment = None
+    if getattr(sys, "frozen", False) and sys.platform.startswith("linux"):
+        # System editors must load their own libraries, not the frozen Qt stack.
+        environment = os.environ.copy()
+        original = environment.pop("LD_LIBRARY_PATH_ORIG", None)
+        if original is None:
+            environment.pop("LD_LIBRARY_PATH", None)
+        else:
+            environment["LD_LIBRARY_PATH"] = original
+        bundle = getattr(sys, "_MEIPASS", "")
+        for name in ("QT_QPA_PLATFORM_PLUGIN_PATH", "QT_QPA_FONTDIR"):
+            if bundle and environment.get(name, "").startswith(bundle + os.sep):
+                environment.pop(name)
+    return subprocess.Popen(
+        editor_arguments(command, path), shell=False, env=environment,
+    )
