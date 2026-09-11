@@ -223,6 +223,11 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         working-directory: ${{ runner.temp }}
         run: xvfb-run -a python -m zencad --display "${{ github.workspace }}/utest/gui_standalone_smoke.py"
+      - name: Exercise native preview cleanup
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        working-directory: ${{ runner.temp }}
+        run: xvfb-run -a python "${{ github.workspace }}/utest/render_lifecycle_smoke.py"
       - name: Exercise deterministic PNG rendering
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
@@ -271,6 +276,9 @@ jobs:
         if: runner.os == 'Windows'
         working-directory: ${{ runner.temp }}
         run: python "${{ github.workspace }}/utest/gui_ocp_smoke.py"
+      - name: Exercise native preview cleanup
+        working-directory: ${{ runner.temp }}
+        run: python "${{ github.workspace }}/utest/render_lifecycle_smoke.py"
       - name: Exercise deterministic PNG rendering
         working-directory: ${{ runner.temp }}
         run: python "${{ github.workspace }}/utest/render_cli_smoke.py"

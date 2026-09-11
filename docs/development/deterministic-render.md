@@ -18,6 +18,12 @@ Multiple tiles are composed in request order into a row-major near-square PNG.
 The output is encoded into a temporary file in the destination directory and
 atomically replaces the destination only after the complete render succeeds.
 
+Each preview releases its OCCT resources and explicitly destroys its native Qt
+widget on the GUI thread, including when rendering fails. Closing the widget
+alone leaves Python presenter cycles alive; collecting them later on a runner
+thread can crash Cocoa. Cleanup completes before an owned QApplication is
+released, and preserves an application's existing quit-on-last-window policy.
+
 ## Interfaces
 
 The CLI entry point is:

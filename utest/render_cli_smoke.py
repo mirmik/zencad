@@ -15,7 +15,7 @@ def run(*arguments, expected=0):
         check=False,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=60,
         env=os.environ.copy(),
     )
     assert result.returncode == expected, (

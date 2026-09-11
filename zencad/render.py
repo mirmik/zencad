@@ -332,7 +332,7 @@ def render_snapshot(
             f"{exception}"
         ) from exception
     try:
-        from PyQt5 import QtCore, QtGui, QtWidgets
+        from PyQt5 import QtCore, QtGui, QtWidgets, sip
         from OCP.Aspect import Aspect_GFM_VER
         from OCP.Quantity import Quantity_Color, Quantity_TOC_sRGB
         from zencad.gui.display import DisplayWidget
@@ -468,12 +468,26 @@ def render_snapshot(
             f"Native preview rendering failed: {exception}"
         ) from exception
     finally:
-        if widget is not None:
-            widget.close()
-            application.processEvents()
-        application.setQuitOnLastWindowClosed(quit_on_last_window)
-        if owns_application:
-            application.quit()
+        try:
+            if widget is not None:
+                try:
+                    widget.close()
+                finally:
+                    # close() releases OCCT but leaves the native Qt widget
+                    # alive. Presenter cycles may later be collected by a
+                    # runner thread; dispose on the owning thread instead.
+                    # An exception traceback can retain even a deleted widget.
+                    # This private preview will never be reused: release its
+                    # Python-held native handles and presenter cycles here too.
+                    widget.__dict__.clear()
+                    sip.delete(widget)
+                application.processEvents()
+        finally:
+            application.setQuitOnLastWindowClosed(quit_on_last_window)
+            if owns_application:
+                application.quit()
+                # A failure traceback may keep this wrapper alive as well.
+                sip.delete(application)
 
     columns, rows = contact_sheet_grid(len(normalized_views))
     return RenderResult(
