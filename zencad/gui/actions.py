@@ -385,6 +385,23 @@ class MainWindowActionsMixin:
 
         menu.addAction(self.create_action(name, callback, path))
 
+    def open_example(self, path):
+        """Open an editable copy while keeping the bundled example pristine."""
+        try:
+            copy_path = self._example_workspace.prepare(path)
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, "Open example", str(error))
+            return None
+        self.open(str(copy_path))
+        return copy_path
+
+    def _add_example_action(self, menu, name, path):
+        def callback():
+            self.open_example(path)
+
+        tip = "Open an editable temporary copy of {}".format(path)
+        menu.addAction(self.create_action(name, callback, tip))
+
     def _init_example_menu(self, menu, directory):
         files = os.listdir(directory)
         scripts = [f for f in files if os.path.splitext(f)[1] == ".py"]
@@ -397,7 +414,7 @@ class MainWindowActionsMixin:
         ]
 
         for f in sorted(scripts):
-            self._add_open_action(menu, f, os.path.join(directory, f))
+            self._add_example_action(menu, f, os.path.join(directory, f))
 
         for d in sorted(dirs):
             m = menu.addMenu(d)

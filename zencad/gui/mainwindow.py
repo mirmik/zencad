@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import threading
 
 from PyQt5 import QtCore, QtWidgets
@@ -13,6 +14,7 @@ from zencad.gui.defaults import (
     MINIMUM_CONSOLE_HEIGHT,
 )
 from zencad.gui.editor import CodeEditor
+from zencad.gui.example_workspace import ExampleWorkspace
 from zencad.gui.file_watcher import FileWatcher
 from zencad.gui.info_widget import InfoWidget
 from zencad.settings import Settings
@@ -45,6 +47,9 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         self._camera_action_notification_pending = False
         self._camera_action_bridge_error = None
         self._failed_live_generation = None
+        self._example_workspace = ExampleWorkspace(
+            Path(__file__).resolve().parents[1] / "examples"
+        )
 
         Settings.restore()
         self.setWindowTitle(title)
@@ -220,8 +225,14 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
             self.notifier.clear()
             self.notifier.add_target(openpath)
             self.console.clear()
-            self.setWindowTitle(openpath)
-            self.openStartEvent(openpath)
+            example_path = self._example_workspace.relative_path(openpath)
+            if example_path is None:
+                self.setWindowTitle(openpath)
+                self.openStartEvent(openpath)
+            else:
+                self.setWindowTitle(
+                    "{} — editable example copy — ZenCad".format(example_path)
+                )
             self.enable_display_changed_mode(reset=True)
             try:
                 generation = self._runner_supervisor.start(openpath)
@@ -505,4 +516,5 @@ class MainWindow(MainWindowActionsMixin, QtWidgets.QMainWindow):
         self.notifier.stop()
         self.console.restore_stdout()
         self.display_widget.close_viewer()
+        self._example_workspace.cleanup()
         super().closeEvent(event)

@@ -21,6 +21,7 @@ def main():
 
     from zencad.gui.mainwindow import MainWindow
     from zencad.gui.settingswdg import SettingsWidget
+    from zencad.settings import Settings
 
     with TemporaryDirectory() as temporary_directory:
         script_path = Path(temporary_directory) / "model.py"
@@ -79,6 +80,53 @@ def main():
         window.resize(800, 600)
         window.show()
         application.processEvents()
+        bundled_example = (
+            Path(__file__).parents[1]
+            / "zencad/examples/0.Base/helloworld.py"
+        )
+        bundled_contents = bundled_example.read_text(encoding="utf-8")
+        recent_before = list(Settings.get(["memory", "recents"]) or [])
+        example_action = next(
+            action
+            for action in window.findChildren(QtWidgets.QAction)
+            if action.text() == "helloworld.py"
+            and "editable temporary copy" in action.statusTip()
+        )
+        example_action.trigger()
+        example_copy = Path(window.current_opened())
+        assert example_copy != bundled_example
+        assert example_copy.read_text(encoding="utf-8") == bundled_contents
+        assert window.current_opened() == str(example_copy)
+        assert "editable example copy" in window.windowTitle()
+        assert list(Settings.get(["memory", "recents"]) or []) == recent_before
+        window.texteditor.appendPlainText("# edited copy")
+        window.saveAction()
+        assert bundled_example.read_text(encoding="utf-8") == bundled_contents
+        assert example_copy.read_text(encoding="utf-8").rstrip().endswith(
+            "# edited copy"
+        )
+        state_example_copy = example_copy
+        saved_example = Path(temporary_directory) / "saved-example.py"
+        with mock.patch(
+            "zencad.gui.actions.QFileDialog.getSaveFileName",
+            return_value=(str(saved_example), "*.py"),
+        ):
+            window.saveAsAction()
+        assert window.current_opened() == str(saved_example)
+        assert window.windowTitle() == str(saved_example)
+        assert saved_example.read_text(encoding="utf-8").rstrip().endswith(
+            "# edited copy"
+        )
+        assert Settings.get(["memory", "recents"])[0] == str(saved_example)
+        application.processEvents()
+        example_generation = window._runner_supervisor.current_generation
+        window._runner_supervisor.cancel_current()
+        window._runner_supervisor.wait(example_generation, timeout=10)
+        for _attempt in range(10):
+            application.processEvents()
+            if not window.calculation_overlay.active:
+                break
+            QtTest.QTest.qWait(10)
         with mock.patch(
             "zencad.gui.actions.QMessageBox.about"
         ) as about_dialog:
@@ -412,6 +460,7 @@ def main():
         )
         assert state["commits"] == RELOAD_COUNT
         assert state["phase"] == "done"
+        assert not state_example_copy.exists()
 
     print("ZenCad managed reload smoke: OK")
 
